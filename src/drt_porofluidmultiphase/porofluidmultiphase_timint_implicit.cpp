@@ -93,6 +93,7 @@ POROFLUIDMULTIPHASE::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> ac
           poroparams_, "VECTORNORM_INC")),
       ittolres_(poroparams_.get<double>("TOLRES")),
       ittolinc_(poroparams_.get<double>("TOLINC")),
+      artery_coupling_active_(DRT::INPUT::IntegralValue<int>(params_, "ARTERY_COUPLING")),
       // Initialization of degrees of freedom variables
       phin_(Teuchos::null),
       phinp_(Teuchos::null),
@@ -264,7 +265,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // build mesh tying strategy
   // -------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(params_, "ARTERY_COUPLING"))
+  if (artery_coupling_active_)
     strategy_ =
         Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyArtery(this, params_, poroparams_));
   else
@@ -1031,16 +1032,22 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
     const int itnum, const int itemax, const double abstolres, double& actresidual)
 {
   //----------------------------------------------------- compute norms
-  double preresnorm;
-  double incprenorm;
-  double prenorm;
+  std::vector<double> preresnorm;
+  std::vector<double> incprenorm;
+  std::vector<double> prenorm;
   strategy_->CalculateNorms(preresnorm, incprenorm, prenorm, increment_);
 
-  // care for the case that nothing really happens in the pressure
-  if (prenorm < 1e-5)
+  std::vector<double> relinc(prenorm.size());
+
+  for (std::size_t i = 0; i < prenorm.size(); ++i)
   {
-    prenorm = 1.0;
+    // care for the case that nothing really happens in the pressure
+    if (prenorm[i] < 1.0e-6) prenorm[i] = 1.0;
+    relinc[i] = incprenorm[i] / prenorm[i];
   }
+
+  const double maxres = *std::max_element(preresnorm.begin(), preresnorm.end());
+  const double maxrelinc = *std::max_element(relinc.begin(), relinc.end());
 
   //-------------------------------------------------- output to screen
   // special case of very first iteration step: solution increment is not yet available
@@ -1060,7 +1067,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
     PrintConvergenceValues(itnum, itemax, ittolinc_, preresnorm, incprenorm, prenorm);
 
     // convergence check
-    if (preresnorm <= ittolres_ and incprenorm / prenorm <= ittolinc_)
+    if (maxres <= ittolres_ and maxrelinc <= ittolinc_)
     {
       // print finish line of convergence table to screen
       PrintConvergenceFinishLine();
@@ -1069,7 +1076,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
       if (myrank_ == 0)
         if (errfile_ != NULL)
           fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
-              itemax, ittolinc_, preresnorm, incprenorm / prenorm);
+              itemax, ittolinc_, maxres, maxrelinc);
 
       return true;
     }
@@ -1078,7 +1085,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
   // abort iteration, when there's nothing more to do! -> more robustness
   // absolute tolerance for deciding if residual is (already) zero
   // prevents additional solver calls that will not improve the residual anymore
-  if ((preresnorm < abstolres))
+  if ((maxres < abstolres))
   {
     // print finish line of convergence table to screen
     PrintConvergenceFinishLine();
@@ -1110,7 +1117,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
             fprintf(errfile_,
                 "divergent solve continued:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  "
                 "pinc=%10.3E\n",
-                itnum, itemax, ittolinc_, preresnorm, incprenorm / prenorm);
+                itnum, itemax, ittolinc_, maxres, maxrelinc);
           }
         }
         break;
@@ -1121,7 +1128,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
         {
           fprintf(errfile_,
               "divergent solve stoped:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n",
-              itnum, itemax, ittolinc_, preresnorm, incprenorm / prenorm);
+              itnum, itemax, ittolinc_, maxres, maxrelinc);
         }
         dserror("Porofluid multiphase solver not converged in itemax steps!");
         break;
@@ -1135,14 +1142,15 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
   }
 
   // return the maximum residual value -> used for adaptivity of linear solver tolerance
-  actresidual = std::max(preresnorm, incprenorm / prenorm);
+  actresidual = std::max(maxres, maxrelinc);
 
   // check for INF's and NaN's before going on...
-  if (std::isnan(incprenorm) or std::isnan(prenorm) or std::isnan(preresnorm))
-    dserror("calculated vector norm is NaN.");
-
-  if (std::isinf(incprenorm) or std::isinf(prenorm) or std::isinf(preresnorm))
-    dserror("calculated vector norm is INF.");
+  for (std::size_t i = 0; i < prenorm.size(); ++i)
+    if (std::isnan(incprenorm[i]) or std::isnan(prenorm[i]) or std::isnan(preresnorm[i]))
+      dserror("calculated vector norm is NaN.");
+  for (std::size_t i = 0; i < prenorm.size(); ++i)
+    if (std::isinf(incprenorm[i]) or std::isinf(prenorm[i]) or std::isinf(preresnorm[i]))
+      dserror("calculated vector norm is INF.");
 
   return false;
 }  // TimIntImpl::AbortNonlinIter
@@ -1156,9 +1164,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::PrintHeader()
   {
     std::cout << "\n";
     std::cout << "+--------------------------------------------------------------------------------"
-                 "-------------------------------+\n";
+                 "--------------------------------+\n";
     std::cout << "| PORO MULTIPHASE FLUID SOLVER                                                   "
-                 "                               |\n";
+                 "                                |\n";
   }
   return;
 }
@@ -1403,11 +1411,26 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateDomainIntegrals()
 inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceHeader()
 {
   if (myrank_ == 0)
-    std::cout
-        << "+------------+-------------------+--------------+-------------------+--------------+---"
-           "-------------------------+\n"
-        << "|- step/max -|- tol-res   [norm]-|-- pre-res ---|- tol-relinc[norm]-|-- pre-inc ---|"
-        << std::endl;
+  {
+    if (artery_coupling_active_)
+    {
+      std::cout
+          << "+------------+-------------------+--------------+--------------+-------------------+-"
+             "-------------+--------------+\n"
+          << "|- step/max -|- tol-res   [norm]-|-- pre-res ---|--- 1D-res ---|- "
+             "tol-relinc[norm]-|-- pre-inc ---|--- 1D-inc ---|"
+          << std::endl;
+    }
+    else
+    {
+      std::cout
+          << "+------------+-------------------+--------------+-------------------+--------------+-"
+             "--"
+             "--------------------------+\n"
+          << "|- step/max -|- tol-res   [norm]-|-- pre-res ---|- tol-relinc[norm]-|-- pre-inc ---|"
+          << std::endl;
+    }
+  }
 
   return;
 }  // POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceHeader
@@ -1417,21 +1440,29 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceHeader()
  | print first line of convergence table to screen          vuong 08/16 |
  *----------------------------------------------------------------------*/
 inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceValuesFirstIter(
-    const int& itnum,         //!< current Newton-Raphson iteration step
-    const int& itemax,        //!< maximum number of Newton-Raphson iteration steps
-    const double& ittol,      //!< relative tolerance for Newton-Raphson scheme
-    const double& preresnorm  //!< L2 norm of pressure residual
+    const int& itnum,                      //!< current Newton-Raphson iteration step
+    const int& itemax,                     //!< maximum number of Newton-Raphson iteration steps
+    const double& ittol,                   //!< relative tolerance for Newton-Raphson scheme
+    const std::vector<double>& preresnorm  //!< L2 norm of pressure residual
 )
 {
   if (myrank_ == 0)
+  {
     std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
               << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
-              << std::setw(3) << VectorNormString(vectornormfres_).c_str() << "]  | "
-              << std::setw(10) << std::setprecision(3) << std::scientific << preresnorm << "   | "
-              << std::setw(10) << std::setprecision(3) << std::scientific << ittolinc_ << " ["
-              << std::setw(3) << VectorNormString(vectornorminc_).c_str() << "]  | "
-              << "     --      | (    --   ,te=" << std::setw(10) << std::setprecision(3)
-              << std::scientific << dtele_ << ")" << std::endl;
+              << std::setw(3) << VectorNormString(vectornormfres_).c_str() << "]  | ";
+
+    for (std::size_t i = 0; i < preresnorm.size(); ++i)
+      std::cout << std::setw(10) << std::setprecision(3) << std::scientific << preresnorm[i]
+                << "   | ";
+
+    std::cout << std::setw(10) << std::setprecision(3) << std::scientific << ittolinc_ << " ["
+              << std::setw(3) << VectorNormString(vectornorminc_).c_str() << "]  |";
+
+    for (std::size_t i = 0; i < preresnorm.size(); ++i) std::cout << "      --      |";
+    std::cout << " (    --   ,te=" << std::setw(10) << std::setprecision(3) << std::scientific
+              << dtele_ << ")" << std::endl;
+  }
 
   return;
 }  // POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceValuesFirstIter
@@ -1441,25 +1472,31 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceValuesFirstIter(
  | print current line of convergence table to screen        vuong 08/16 |
  *----------------------------------------------------------------------*/
 inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceValues(
-    const int& itnum,          //!< current Newton-Raphson iteration step
-    const int& itemax,         //!< maximum number of Newton-Raphson iteration steps
-    const double& ittol,       //!< relative tolerance for Newton-Raphson scheme
-    const double& preresnorm,  //!< norm of pressure residual
-    const double& incprenorm,  //!< norm of pressure increment
-    const double& prenorm      //!< norm of pressure state vector
+    const int& itnum,                       //!< current Newton-Raphson iteration step
+    const int& itemax,                      //!< maximum number of Newton-Raphson iteration steps
+    const double& ittol,                    //!< relative tolerance for Newton-Raphson scheme
+    const std::vector<double>& preresnorm,  //!< norm of pressure residual
+    const std::vector<double>& incprenorm,  //!< norm of pressure increment
+    const std::vector<double>& prenorm      //!< norm of pressure state vector
 )
 {
   if (myrank_ == 0)
+  {
     std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
               << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
-              << std::setw(3) << VectorNormString(vectornormfres_).c_str() << "]  | "
-              << std::setw(10) << std::setprecision(3) << std::scientific << preresnorm << "   | "
-              << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
-              << std::setw(3) << VectorNormString(vectornorminc_).c_str() << "]  | "
-              << std::setw(10) << std::setprecision(3) << std::scientific << incprenorm / prenorm
-              << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_
+              << std::setw(3) << VectorNormString(vectornormfres_).c_str() << "]  | ";
+    for (std::size_t i = 0; i < preresnorm.size(); ++i)
+      std::cout << std::setw(10) << std::setprecision(3) << std::scientific << preresnorm[i]
+                << "   | ";
+    std::cout << std::setw(10) << std::setprecision(3) << std::scientific << ittolres_ << " ["
+              << std::setw(3) << VectorNormString(vectornorminc_).c_str() << "]  | ";
+    for (std::size_t i = 0; i < preresnorm.size(); ++i)
+      std::cout << std::setw(10) << std::setprecision(3) << std::scientific
+                << incprenorm[i] / prenorm[i] << "   | ";
+    std::cout << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_
               << ",te=" << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")"
               << std::endl;
+  }
 
   return;
 }  // POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceValues
@@ -1471,9 +1508,20 @@ inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceValues(
 inline void POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceFinishLine()
 {
   if (myrank_ == 0)
-    std::cout
-        << "+------------+-------------------+--------------+-------------------+--------------+"
-        << std::endl;
+  {
+    if (artery_coupling_active_)
+    {
+      std::cout << "+------------+-------------------+--------------+--------------+---------------"
+                   "----+--------------+--------------+"
+                << std::endl;
+    }
+    else
+    {
+      std::cout
+          << "+------------+-------------------+--------------+-------------------+--------------+"
+          << std::endl;
+    }
+  }
 
   return;
 }  // POROFLUIDMULTIPHASE::TimIntImpl::PrintConvergenceFinishLine

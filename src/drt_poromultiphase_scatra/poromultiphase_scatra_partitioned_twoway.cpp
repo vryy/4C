@@ -21,6 +21,9 @@
 #include "../drt_adapter/ad_porofluidmultiphase_wrapper.H"
 #include "../drt_adapter/ad_str_wrapper.H"
 
+#include "../drt_scatra/scatra_timint_meshtying_strategy_artery.H"
+#include "../drt_adapter/ad_art_net.H"
+
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
@@ -31,7 +34,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTr
       structincnp_(Teuchos::null),
       fluidincnp_(Teuchos::null),
       itmax_(-1),
-      ittol_(-1)
+      ittol_(-1),
+      artery_coupling_active_(false)
 {
 }
 
@@ -56,11 +60,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::Init(
   itmax_ = algoparams.get<int>("ITEMAX");
   ittol_ = algoparams.sublist("PARTITIONED").get<double>("CONVTOL");
 
+  artery_coupling_active_ = DRT::INPUT::IntegralValue<int>(algoparams, "ARTERY_COUPLING");
+
   // initialize increment vectors
   scaincnp_ = Teuchos::rcp(
       new Epetra_Vector(*(ScatraAlgo()->ScaTraField()->Discretization()->DofRowMap())));
   structincnp_ = Teuchos::rcp(new Epetra_Vector(*(PoroField()->StructDofRowMap())));
   fluidincnp_ = (Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidDofRowMap()))));
+  if (artery_coupling_active_)
+  {
+    arterypressincnp_ =
+        Teuchos::rcp(new Epetra_Vector(*(PoroField()->FluidField()->ArteryDofRowMap())));
+    artscaincnp_ = Teuchos::rcp(new Epetra_Vector(*(scatramsht_->ArtScatraDofRowMap())));
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -146,6 +158,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::IterUpdateStat
   scaincnp_->Update(1.0, *ScatraAlgo()->ScaTraField()->Phinp(), 0.0);
   structincnp_->Update(1.0, *PoroField()->StructDispnp(), 0.0);
   fluidincnp_->Update(1.0, *PoroField()->FluidPhinp(), 0.0);
+  if (artery_coupling_active_)
+  {
+    arterypressincnp_->Update(1.0, *(PoroField()->FluidField()->ArtNetTimInt()->Pressurenp()), 0.0);
+    artscaincnp_->Update(1.0, *(scatramsht_->ArtScatraField()->Phinp()), 0.0);
+  }
 
   return;
 }  // IterUpdateStates()
@@ -170,12 +187,22 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
   double dispnorm_L2(0.0);
   double fluidincnorm_L2(0.0);
   double fluidnorm_L2(0.0);
+  double artpressincnorm_L2(0.0);
+  double artpressnorm_L2(0.0);
+  double artscaincnorm_L2(0.0);
+  double artscanorm_L2(0.0);
 
   // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   scaincnp_->Update(1.0, *(ScatraAlgo()->ScaTraField()->Phinp()), -1.0);
   structincnp_->Update(1.0, *(PoroField()->StructDispnp()), -1.0);
   fluidincnp_->Update(1.0, *(PoroField()->FluidPhinp()), -1.0);
+  if (artery_coupling_active_)
+  {
+    arterypressincnp_->Update(
+        1.0, *(PoroField()->FluidField()->ArtNetTimInt()->Pressurenp()), -1.0);
+    artscaincnp_->Update(1.0, *(scatramsht_->ArtScatraField()->Phinp()), -1.0);
+  }
 
   // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
@@ -184,11 +211,20 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
   PoroField()->StructDispnp()->Norm2(&dispnorm_L2);
   fluidincnp_->Norm2(&fluidincnorm_L2);
   PoroField()->FluidPhinp()->Norm2(&fluidnorm_L2);
+  if (artery_coupling_active_)
+  {
+    arterypressincnp_->Norm2(&artpressincnorm_L2);
+    PoroField()->FluidField()->ArtNetTimInt()->Pressurenp()->Norm2(&artpressnorm_L2);
+    artscaincnp_->Norm2(&artscaincnorm_L2);
+    PoroField()->FluidField()->ArtNetTimInt()->Pressurenp()->Norm2(&artscanorm_L2);
+  }
 
   // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
   if (fluidnorm_L2 < 1e-6) fluidnorm_L2 = 1.0;
+  if (artpressnorm_L2 < 1e-6) artpressnorm_L2 = 1.0;
+  if (artscanorm_L2 < 1e-6) artscanorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
   if (Comm().MyPID() == 0)
@@ -196,28 +232,32 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
     std::cout << "                                                                                 "
                  "                                                             *\n";
     std::cout << "+--------------------------------------------------------------------------------"
-                 "----------------------+                                      *\n";
+                 "-----------------------------------------+                   *\n";
     std::cout << "| PARTITIONED OUTER ITERATION STEP ----- MULTIPORO  <-------> SCATRA             "
-                 "                      |                                      *\n";
+                 "                                         |                   *\n";
     printf(
-        "+--------------+------------------------+--------------------+--------------------+-------"
-        "-------------+                                      *\n");
+        "+--------------+---------------------+----------------+----------------+-----"
+        "-----------+----------------+----------------+                   *\n");
     printf(
-        "|-  step/max  -|-  tol      [norm]     -|--  scalar-inc    --|--  disp-inc      --|--  "
-        "fluid-inc     --|                                      *\n");
+        "|-  step/max  -|-  tol      [norm]  -|-- scalar-inc --|-- disp-inc   --|-- "
+        "fluid-inc  --|--  1Dp-inc   --|--  1Ds-inc   --|                   *\n");
     printf(
-        "|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         | %10.3E         |",
+        "|   %3d/%3d    |  %10.3E[L_2 ]   | %10.3E     | %10.3E     | %10.3E     | "
+        "%10.3E     | %10.3E     |",
         itnum, itmax_, ittol_, scaincnorm_L2 / scanorm_L2, dispincnorm_L2 / dispnorm_L2,
-        fluidincnorm_L2 / fluidnorm_L2);
-    printf("                                      *\n");
+        fluidincnorm_L2 / fluidnorm_L2, artpressincnorm_L2 / artpressnorm_L2,
+        artscaincnorm_L2 / artscanorm_L2);
+    printf("                   *\n");
     printf(
-        "+--------------+------------------------+--------------------+--------------------+-------"
-        "-------------+                                      *\n");
+        "+--------------+---------------------+----------------+----------------+-----"
+        "-----------+----------------+----------------+                   *\n");
   }
 
   // converged
   if ((scaincnorm_L2 / scanorm_L2 <= ittol_) and (dispincnorm_L2 / dispnorm_L2 <= ittol_) and
-      (fluidincnorm_L2 / fluidnorm_L2 <= ittol_))
+      (fluidincnorm_L2 / fluidnorm_L2 <= ittol_) and
+      ((artpressincnorm_L2 / artpressnorm_L2) <= ittol_) and
+      ((artscaincnorm_L2 / artscanorm_L2) <= ittol_))
   {
     stopnonliniter = true;
     if (Comm().MyPID() == 0)
@@ -236,7 +276,9 @@ bool POROMULTIPHASESCATRA::PoroMultiPhaseScaTraPartitionedTwoWay::ConvergenceChe
   // timestep
   if ((itnum == itmax_) and
       ((scaincnorm_L2 / scanorm_L2 > ittol_) or (dispincnorm_L2 / dispnorm_L2 > ittol_) or
-          (fluidincnorm_L2 / fluidnorm_L2 > ittol_)))
+          (fluidincnorm_L2 / fluidnorm_L2 > ittol_) or
+          ((artpressincnorm_L2 / artpressnorm_L2) > ittol_) or
+          ((artscaincnorm_L2 / artscanorm_L2) > ittol_)))
   {
     stopnonliniter = true;
     if ((Comm().MyPID() == 0))

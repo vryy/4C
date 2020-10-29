@@ -1135,7 +1135,7 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatra::AbortNonlinIter(
     dserror("Calculated vector norm for concentration is infinity!");
 
   // care for the case that nothing really happens in the concentration field
-  if (conc_state_L2 < 1.e-5) conc_state_L2 = 1.;
+  if (conc_state_L2 < 1.e-6) conc_state_L2 = 1.;
 
   // special case: very first iteration step --> solution increment is not yet available
   if (itnum == 1)
@@ -1239,33 +1239,53 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // extract current Newton-Raphson iteration step
   const int itnum = scatratimint.IterNum();
 
-  // compute L2 norm of concentration state vector
-  // TODO: actually here the combined phinp should be taken
-  double conc_state_L2(0.0);
-  scatratimint.Phinp()->Norm2(&conc_state_L2);
-
   // get mesh tying strategy
   Teuchos::RCP<SCATRA::MeshtyingStrategyArtery> scatramsht =
       Teuchos::rcp_dynamic_cast<SCATRA::MeshtyingStrategyArtery>(scatratimint.Strategy());
   if (scatramsht == Teuchos::null) dserror("cast to Meshtying strategy failed!");
 
+  // compute L2 norm of concentration state vector
+  double conc_state_L2(0.0);
+  scatratimint.Phinp()->Norm2(&conc_state_L2);
+  double conc_state_art_L2(0.0);
+  scatramsht->ArtScatraField()->Phinp()->Norm2(&conc_state_art_L2);
+
+  // extract single field rhs vectors
+  Teuchos::RCP<const Epetra_Vector> artscatrarhs;
+  Teuchos::RCP<const Epetra_Vector> contscatrarhs;
+  scatramsht->ExtractSingleFieldVectors(scatramsht->CoupledRHS(), contscatrarhs, artscatrarhs);
+
   // compute Rms norm of concentration residual vector
   double conc_res_Rms(0.);
-  scatramsht->CoupledRHS()->Norm2(&conc_res_Rms);
-  conc_res_Rms /= sqrt(scatramsht->CoupledRHS()->GlobalLength());
+  contscatrarhs->Norm2(&conc_res_Rms);
+  conc_res_Rms /= sqrt(contscatrarhs->GlobalLength());
+  double conc_res_art_Rms(0.);
+  artscatrarhs->Norm2(&conc_res_art_Rms);
+  conc_res_art_Rms /= sqrt(artscatrarhs->GlobalLength());
+
+  // extract single field increment vectors
+  Teuchos::RCP<const Epetra_Vector> artscatrainc;
+  Teuchos::RCP<const Epetra_Vector> contscatrainc;
+  scatramsht->ExtractSingleFieldVectors(
+      scatramsht->CombinedIncrement(), contscatrainc, artscatrainc);
 
   // compute L2 norm of concentration increment vector
   double conc_inc_L2(0.);
-  scatramsht->CombinedIncrement()->Norm2(&conc_inc_L2);
+  contscatrainc->Norm2(&conc_inc_L2);
+  double conc_inc_art_L2(0.);
+  artscatrainc->Norm2(&conc_inc_art_L2);
 
   // safety checks
-  if (std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2))
+  if (std::isnan(conc_state_L2) or std::isnan(conc_res_Rms) or std::isnan(conc_inc_L2) or
+      std::isnan(conc_state_art_L2) or std::isnan(conc_res_art_Rms) or std::isnan(conc_inc_art_L2))
     dserror("Calculated vector norm for concentration is not a number!");
-  if (std::isinf(conc_state_L2) or std::isinf(conc_res_Rms) or std::isinf(conc_inc_L2))
+  if (std::isinf(conc_state_L2) or std::isinf(conc_res_Rms) or std::isinf(conc_inc_L2) or
+      std::isinf(conc_state_art_L2) or std::isinf(conc_res_art_Rms) or std::isinf(conc_inc_art_L2))
     dserror("Calculated vector norm for concentration is infinity!");
 
   // care for the case that nothing really happens in the concentration field
-  if (conc_state_L2 < 1.e-5) conc_state_L2 = 1.;
+  if (conc_state_L2 < 1.e-6) conc_state_L2 = 1.;
+  if (conc_state_art_L2 < 1.e-6) conc_state_art_L2 = 1.;
 
   // special case: very first iteration step --> solution increment is not yet available
   if (itnum == 1)
@@ -1273,20 +1293,21 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
     if (mypid == 0)
     {
       // print header of convergence table to screen
-      std::cout
-          << "+------------+-------------------+--------------+-------------------+--------------+"
-          << std::endl;
-      std::cout
-          << "|- step/max -|- tol-res  [norm] -|-- con-res ---|- tol-inc  [norm] -|-- con-inc ---|"
-          << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+---------------"
+                   "----+--------------+--------------+"
+                << std::endl;
+      std::cout << "|- step/max -|- tol-res  [norm] -|-- con-res ---|--- 1D-res ---|- tol-inc  "
+                   "[norm] -|-- con-inc ---|--- 1D-inc ---|"
+                << std::endl;
 
       // print first line of convergence table to screen
       std::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itmax_ << "   | "
                 << std::setw(10) << std::setprecision(3) << std::scientific << ittol_
                 << "[Rms ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << conc_res_Rms << "   | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << ittol_
-                << "[ L2 ]  |      --      | (      --     ,te=" << std::setw(10)
+                << std::scientific << conc_res_art_Rms << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << ittol_
+                << "[ L2 ]  |      --      |      --      | (      --     ,te=" << std::setw(10)
                 << std::setprecision(3) << std::scientific << scatratimint.DtEle() << ")"
                 << std::endl;
     }
@@ -1302,20 +1323,25 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
                 << std::setw(10) << std::setprecision(3) << std::scientific << ittol_
                 << "[Rms ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << conc_res_Rms << "   | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << ittol_ << "[ L2 ]  | " << std::setw(10)
+                << std::scientific << conc_res_art_Rms << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << ittol_ << "[ L2 ]  | "
+                << std::setw(10) << std::setprecision(3) << std::scientific
+                << conc_inc_art_L2 / conc_state_art_L2 << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << conc_inc_L2 / conc_state_L2
                 << "   | (ts=" << std::setw(10) << std::setprecision(3) << std::scientific
                 << scatratimint.DtSolve() << ",te=" << std::setw(10) << std::setprecision(3)
                 << std::scientific << scatratimint.DtEle() << ")" << std::endl;
 
     // convergence check
-    if (conc_res_Rms <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_)
+    if (conc_res_Rms <= ittol_ and conc_inc_L2 / conc_state_L2 <= ittol_ and
+        conc_res_art_Rms <= ittol_ and conc_inc_art_L2 / conc_state_art_L2 <= ittol_)
     {
       if (mypid == 0)
         // print finish line of convergence table to screen
-        std::cout << "+------------+-------------------+--------------+-------------------+--------"
-                     "------+"
-                  << std::endl;
+        std::cout
+            << "+------------+-------------------+--------------+--------------+---------------"
+               "----+--------------+--------------+"
+            << std::endl;
 
       return true;
     }
@@ -1324,13 +1350,13 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   // abort iteration when there is nothing more to do --> better robustness
   // absolute tolerance determines whether residual is already zero
   // prevents additional solver calls that will not improve the solution anymore
-  if (conc_res_Rms < abstolres_)
+  if (conc_res_Rms < abstolres_ and conc_res_art_Rms < abstolres_)
   {
     if (mypid == 0)
       // print finish line of convergence table to screen
-      std::cout
-          << "+------------+-------------------+--------------+-------------------+--------------+"
-          << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+---------------"
+                   "----+--------------+--------------+"
+                << std::endl;
 
     return true;
   }
@@ -1350,7 +1376,8 @@ bool SCATRA::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying::AbortNonlinIter(
   }
 
   // return maximum residual value for adaptivity of linear solver tolerance
-  actresidual = std::max(conc_res_Rms, conc_inc_L2 / conc_state_L2);
+  actresidual = std::max(std::max(conc_res_Rms, conc_inc_L2 / conc_state_L2),
+      std::max(conc_res_art_Rms, conc_inc_art_L2 / conc_state_art_L2));
   // proceed with next iteration step
   return false;
 }  // SCATRA::ConvCheckStrategyStd::AbortNonlinIter()

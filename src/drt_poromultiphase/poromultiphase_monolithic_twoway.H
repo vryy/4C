@@ -106,14 +106,23 @@ namespace POROMULTIPHASE
         Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
     );
 
-    //! extract the field vectors from a given composed vector.
+    //! extract the field vectors from a given composed vector x.
     /*!
-     x is the sum of all increments up to this point.
+     \param x  (i) composed vector that contains all field vectors
+     \param sx (o) structural vector (e.g. displacements)
+     \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
+     and 1D artery pressure)
+     */
+    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
+
+    //! extract only the structure and fluid field vectors from a given composed vector x.
+    /*!
      \param x  (i) composed vector that contains all field vectors
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void ExtractStructureAndFluidVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
 
     /// setup composed system matrix from field solvers
@@ -167,8 +176,8 @@ namespace POROMULTIPHASE
     //! variables)
     void UpdateFieldsAfterConvergence();
 
-    // build norms for convergence check
-    void BuildConvergenceNorms();
+    //! build norms for convergence check
+    virtual void BuildConvergenceNorms();
 
     void PoroFDCheck();
 
@@ -240,13 +249,19 @@ namespace POROMULTIPHASE
     double tolfres_fluid_;  //!< tolerance force residual for fluid
 
     double normrhs_;  //!< norm of residual forces
-    double norminc_;  //!< norm of residual unknowns
 
     double normrhsfluid_;  //!< norm of residual forces (fluid )
     double normincfluid_;  //!< norm of residual unknowns (fluid )
 
     double normrhsstruct_;  //!< norm of residual forces (structure)
     double normincstruct_;  //!< norm of residual unknowns (structure)
+
+    double normrhsart_;       //!< norm of residual (artery)
+    double normincart_;       //!< norm of residual unknowns (artery)
+    double arterypressnorm_;  //!< norm of artery pressure
+
+    double maxinc_;  //!< maximum increment
+    double maxres_;  //!< maximum residual
 
     enum INPAR::POROMULTIPHASE::VectorNorm vectornormfres_;  //!< type of norm for residual
     enum INPAR::POROMULTIPHASE::VectorNorm vectornorminc_;   //!< type of norm for increments
@@ -279,11 +294,14 @@ namespace POROMULTIPHASE
      x is the sum of all increments up to this point.
      \param x  (i) composed vector that contains all field vectors
      \param sx (o) structural vector (e.g. displacements)
-     \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations)
-                   and artery pressure
+     \param fx (o) fluid vector (primary variables of fluid field, i.e. pressures or saturations,
+     and 1D artery pressure)
      */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx);
+
+    //! build norms for convergence check
+    void BuildConvergenceNorms();
 
    protected:
     /// setup composed system matrix from field solvers

@@ -240,7 +240,7 @@ void SCATRA::MeshtyingStrategyArtery::Solve(const Teuchos::RCP<LINALG::Solver>& 
   // extract increments of scatra and artery-scatra field
   Teuchos::RCP<const Epetra_Vector> artscatrainc;
   Teuchos::RCP<const Epetra_Vector> myinc;
-  arttoscatracoupling_->ExtractSingleFieldVectors(comb_increment_, myinc, artscatrainc);
+  ExtractSingleFieldVectors(comb_increment_, myinc, artscatrainc);
 
   // update the scatra increment, update iter is performed outside
   increment->Update(1.0, *(myinc), 1.0);
@@ -275,9 +275,21 @@ void SCATRA::MeshtyingStrategyArtery::UpdateArtScatraIter(
 {
   Teuchos::RCP<const Epetra_Vector> artscatrainc;
   Teuchos::RCP<const Epetra_Vector> myinc;
-  arttoscatracoupling_->ExtractSingleFieldVectors(combined_inc, myinc, artscatrainc);
+  ExtractSingleFieldVectors(combined_inc, myinc, artscatrainc);
 
   artscatratimint_->UpdateIter(artscatrainc);
+
+  return;
+}
+
+/*-------------------------------------------------------------------------*
+ | extract single field vectors                           kremheller 10/20 |
+ *------------------------------------------------------------------------ */
+void SCATRA::MeshtyingStrategyArtery::ExtractSingleFieldVectors(
+    Teuchos::RCP<const Epetra_Vector> globalvec, Teuchos::RCP<const Epetra_Vector>& vec_cont,
+    Teuchos::RCP<const Epetra_Vector>& vec_art) const
+{
+  arttoscatracoupling_->ExtractSingleFieldVectors(globalvec, vec_cont, vec_art);
 
   return;
 }
