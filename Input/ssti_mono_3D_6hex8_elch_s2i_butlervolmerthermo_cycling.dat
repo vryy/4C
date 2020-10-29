@@ -37,6 +37,7 @@ INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   1
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
+ADAPTIVE_TIMESTEPPING           Yes
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -47,14 +48,16 @@ INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
+CYCLING_TIMESTEP                0.1
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 -------------------------------------------------------SSTI CONTROL
-NUMSTEP                         30
-TIMESTEP                        0.05
+NUMSTEP                         100
+TIMESTEP                        0.35
 COUPALGO                        ssti_Monolithic
 SCATRATIMINTTYPE                Elch
-RESTARTEVRY                     5
+RESTARTEVRY                     10
+ADAPTIVE_TIMESTEPPING           Yes
 --------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
@@ -104,30 +107,42 @@ COMPONENT 0 FUNCTION 1.2e3
 COMPONENT 1 FUNCTION 0.0221
 ------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION 10000
-COMPONENT 1 FUNCTION 3.6
+COMPONENT 1 FUNCTION 4.0
 ------------------------------------------------------------FUNCT4
 FUNCTION 300.0
 ------------------------------------------------------------FUNCT5
 FUNCTION (-0.5*(1+cos((t-0.2)*pi))*heaviside(1.2-t)+1)*heaviside(t-0.2)
 ------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE  2.57009235019811757e-07 TOLERANCE 2.6e-15
-STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE  2.22225111057882355e-06 TOLERANCE 2.2e-14
+STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE  1.01294172477278545e-06 TOLERANCE 1.0e-14
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE  1.30957173920112175e-05 TOLERANCE 1.3e-13
 STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
 STRUCTURE DIS structure NODE 20 QUANTITY dispz VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE  8.09015887101033851e-06 TOLERANCE 8.1e-14
-SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  4.99935582198312201e+00 TOLERANCE 5.0e-08
-SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE  1.19755842783578412e-01 TOLERANCE 1.2e-09
-SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  9.93339553240326859e+03 TOLERANCE 9.9e-05
-SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.99962719749041241e+02 TOLERANCE 3.0e-06
-SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.00039343029539225e+02 TOLERANCE 3.0e-06
-SCATRA DIS thermo NODE 28 QUANTITY phi VALUE  3.00079220951492061e+02 TOLERANCE 3.0e-06
+STRUCTURE DIS structure NODE 30 QUANTITY dispx VALUE  4.93345898942829558e-05 TOLERANCE 4.9e-13
+SCATRA DIS scatra NODE 5 QUANTITY phi1 VALUE  1.65719675941108235e+01 TOLERANCE 1.7e-07
+SCATRA DIS scatra NODE 15 QUANTITY phi2 VALUE -8.52792110084280991e-02 TOLERANCE 8.5e-10
+SCATRA DIS scatra NODE 25 QUANTITY phi1 VALUE  9.65936932115704076e+03 TOLERANCE 9.7e-05
+SCATRA DIS thermo NODE 8 QUANTITY phi VALUE  2.99856563550114799e+02 TOLERANCE 3.0e-06
+SCATRA DIS thermo NODE 18 QUANTITY phi VALUE  3.00243115883242581e+02 TOLERANCE 3.0e-06
+SCATRA DIS thermo NODE 28 QUANTITY phi VALUE  3.00493063449885994e+02 TOLERANCE 3.0e-06
 ------------------------------------------------DESIGN DESCRIPTION
 NDSURF  12
 NDVOL   7
---------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
+--------------------------DESIGN CCCV CELL CYCLING SURF CONDITIONS
 DSURF  1
 // inflow
-E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 1.0e-2 FUNCT 0 5
+E 6 - NumberOfHalfCycles 2 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime 1.0 AdaptiveTimeSteppingInitRelax 1 StepsToReset 3
+----------------------------DESIGN CCCV HALF-CYCLE SURF CONDITIONS
+DSURF  2
+// inflow
+E 6 - ID 1 Current 5.0e-3 CutoffVoltage 4.1812 CutoffCRate 1000.0 RelaxTime -1.0 AdaptiveTimeSteppingPhaseOnOff 1 0 0
+// inflow
+E 6 - ID 2 Current -5.0e-3 CutoffVoltage 3.8187 CutoffCRate 1000.0 RelaxTime -1.0 AdaptiveTimeSteppingPhaseOnOff 0 0 0
+-------------------------------DESIGN CELL VOLTAGE SURF CONDITIONS
+DSURF  2
+// pot_zero
+E 1 - ID 0
+// inflow
+E 6 - ID 1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // pot_zero

@@ -1,0 +1,167 @@
+//
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    1
+//NODES       8
+DIM           3
+-------------------------------------------------------------TITLE
+simple, academic test case for monolithic scalar-structure interaction:
+- three-dimensional problem involving standard scalar transport
+- cubic domain discretized by 1 hex8 elements
+- scalar controlled via volume Dirichlet condition (linearly ramped from 10000.0 to 11000.0)
+- temperature controlled via volume Dirichlet condition (linearly ramped from 300.0 to 310.0)
+- structure, scatra, and thermo fields are coupled via MAT_MultiplicativeSplitDefgradElastHyper using:
+  = MAT_InelasticDefgradLinScalarIso: isotropic strain dependent on lithiation X
+  = MAT_InelasticDefgradLinTempIso: isotropic strain dependent on temperature
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure_Scalar_Thermo_Interaction
+----------------------------------------------------------------IO
+STDOUTEVRY                      0
+------------------------------------------------STRUCTURAL DYNAMIC
+DYNAMICTYP                      GenAlpha
+LINEAR_SOLVER                   1
+INT_STRATEGY                    Standard
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+RHO_INF                         0.95
+------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      nonlinear
+VELOCITYFIELD                   Navier_Stokes
+INITIALFIELD                    field_by_function
+CONVFORM                        conservative
+INITFUNCNO                      2
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        no_stabilization
+DEFINITION_TAU                  Zero
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
+------------------------------------------------------ELCH CONTROL
+INITPOTCALC                     yes
+DIFFCOND_FORMULATION            Yes
+EQUPOT                          divi
+COUPLE_BOUNDARY_FLUXES          No
+-----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
+COUPLINGTYPE                    MatchingNodes
+-------------------------------------------------------SSTI CONTROL
+NUMSTEP                         12
+TIMESTEP                        0.05
+COUPALGO                        ssti_Monolithic
+SCATRATIMINTTYPE                Elch
+RESTARTEVRY                     5
+--------------------------------------------SSTI CONTROL/MONOLITHIC
+LINEAR_SOLVER                   1
+MATRIXTYPE                      sparse
+ABSTOLRES                       0
+------------------------------------------------SSTI CONTROL/THERMO
+LINEAR_SOLVER                   1
+INITIALFIELD                    field_by_function
+INITTHERMOFUNCT                 3
+----------------------------------------------------------SOLVER 1
+SOLVER                          UMFPACK
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 1.0e-10 COND_PARA_NUM 1 COND_PARA 1.0e5 C_MAX 5.0e4 CHI_MAX 1.0 OCP_MODEL Polynomial X_MIN -1.0 X_MAX -1.0 OCP_PARA_NUM 1 OCP_PARA 0.0 END
+MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 2 INELDEFGRADFACIDS 4 5 DENS 1.0e-3
+MAT 3 ELAST_CoupNeoHooke YOUNG 1.0e4 NUE 0.3
+MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_MolarGrowthFac 1.0e-5 SCALAR1_RefConc 1.0e4
+MAT 5 MAT_InelasticDefgradLinTempIso Temp_GrowthFac 1.0e-2 RefTemp 300.0
+MAT 6 THERM_FourierIso CAPA 5.0e2 CONDUCT 1.0e1
+----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
+SRC_FIELD scatra SRC_MAT 1 TAR_FIELD thermo TAR_MAT 6
+------------------------------------------------------------FUNCT1
+FUNCTION 1.0e4+1.0e3*(-0.5*(1+cos((t-0.1)*pi/0.4))*heaviside(0.5-t)+1)*heaviside(t-0.1)
+------------------------------------------------------------FUNCT2
+COMPONENT 0 FUNCTION 1.0e4
+COMPONENT 1 FUNCTION 3.6
+------------------------------------------------------------FUNCT3
+FUNCTION 300.0
+------------------------------------------------------------FUNCT4
+FUNCTION 300+10*(-0.5*(1+cos((t-0.1)*pi/0.4))*heaviside(0.5-t)+1)*heaviside(t-0.1)
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE  4.04362018753093230e-02 TOLERANCE 4.0e-11
+STRUCTURE DIS structure NODE 3 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  4.04362018753098920e-02 TOLERANCE 4.0e-11
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE  4.04362018753100724e-02 TOLERANCE 4.0e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE  4.04362018753093161e-02 TOLERANCE 4.0e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE  4.04362018753095520e-02 TOLERANCE 4.0e-11
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE  0.00000000000000000e+00 TOLERANCE 1.0e-16
+------------------------------------------------DESIGN DESCRIPTION
+NDVOL   2
+NDSURF  3
+NDLINE  3
+NDPOINT 1
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT  1
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE   3
+// curve_x
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// curve_y
+E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// curve_z
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF   3
+// side_x
+E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// side_y
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+// side_z
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+----------------------------DESIGN VOL TRANSPORT DIRICH CONDITIONS
+DVOL   1
+E 1 - NUMDOF 2 ONOFF 1 1 VAL 1.0 3.6 FUNCT 1 none
+-------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
+DVOL   1
+E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 4
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    2 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    2 DLINE 1
+NODE    6 DLINE 1
+NODE    2 DLINE 2
+NODE    3 DLINE 2
+NODE    1 DLINE 3
+NODE    2 DLINE 3
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    1 DSURFACE 2
+NODE    2 DSURFACE 2
+NODE    5 DSURFACE 2
+NODE    6 DSURFACE 2
+NODE    2 DSURFACE 3
+NODE    3 DSURFACE 3
+NODE    6 DSURFACE 3
+NODE    7 DSURFACE 3
+------------------------------------------------DVOL-NODE TOPOLOGY
+NODE    1 DVOL 1
+NODE    2 DVOL 1
+NODE    3 DVOL 1
+NODE    4 DVOL 1
+NODE    5 DVOL 1
+NODE    6 DVOL 1
+NODE    7 DVOL 1
+NODE    8 DVOL 1
+-------------------------------------------------------NODE COORDS
+NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 3 COORD -5.0000000000000000e-01  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 4 COORD -5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
+NODE 5 COORD  5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e-01
+NODE 6 COORD  5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 7 COORD  5.0000000000000000e-01  5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 8 COORD  5.0000000000000000e-01  5.0000000000000000e-01  5.0000000000000000e-01
+------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8SCATRA HEX8  1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none TYPE ElchElectrode
+---------------------------------------------------------------END
