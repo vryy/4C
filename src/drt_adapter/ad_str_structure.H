@@ -522,6 +522,9 @@ namespace ADAPTER
 
     /// bool indicating if micro material is used
     virtual bool HaveMicroMat() = 0;
+
+    /// \brief Returns true if the final state has been written
+    virtual bool HasFinalStateBeenWritten() const = 0;
   };
 
 

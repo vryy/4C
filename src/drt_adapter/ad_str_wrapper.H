@@ -511,6 +511,11 @@ namespace ADAPTER
       return structure_->ModelEvaluator(mtype);
     }
 
+    bool HasFinalStateBeenWritten() const override
+    {
+      return structure_->HasFinalStateBeenWritten();
+    };
+
    protected:
     Teuchos::RCP<Structure> structure_;  ///< underlying structural time integration
   };

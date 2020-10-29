@@ -119,6 +119,15 @@ namespace STR
       /// \brief return TRUE if the results shall be written for this load/time \c step
       bool WriteResultsForThisStep(const int step) const;
 
+      /// \brief return TRUE if the restart state shall be written for this load/time step
+      bool ShouldWriteRestartForStep(int step) const;
+
+      /// \brief return the number of the load/time step for which the results have been written
+      int GetLastWrittenResults() const;
+
+      /// \brief sets the last written load/time step for which the results have been written
+      void SetLastWrittenResults(int step);
+
       /// @name Get printing and output parameters/files
       ///@{
       /// get the output file for energy
@@ -415,6 +424,9 @@ namespace STR
 
       /// write system energy every given step
       int writeenergyevery_;
+
+      /// timestep of the last written results
+      int lastwrittenresultsstep_;
 
       /// stress output type
       INPAR::STR::StressType writestress_;

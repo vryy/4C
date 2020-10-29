@@ -134,6 +134,9 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("WRITE_INITIAL_STATE", "yes",
       "Do you want to write output for initial state ?", yesnotuple, yesnovalue, &io);
+  setStringToIntegralParameter<int>("WRITE_FINAL_STATE", "no",
+      "Do you want to explicitly write output and restart for final state ?", yesnotuple,
+      yesnovalue, &io);
 
   BoolParameter("PREFIX_GROUP_ID", "No", "Put a <GroupID>: in front of every line", &io);
   IntParameter("LIMIT_OUTP_TO_PROC", -1, "Only the specified procs will write output", &io);

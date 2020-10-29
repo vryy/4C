@@ -338,12 +338,7 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
-{
-  CheckInitSetup();
-
-  dserror("Not yet implemented");
-}
+void STR::MODELEVALUATOR::SpringDashpot::ResetStepState() { CheckInitSetup(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

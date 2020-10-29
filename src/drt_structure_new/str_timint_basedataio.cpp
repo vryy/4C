@@ -221,6 +221,18 @@ bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
           GetInitialStateIsToBeWritten());
 }
 
+bool STR::TIMINT::BaseDataIO::ShouldWriteRestartForStep(const int step) const
+{
+  return GetWriteRestartEveryNStep() && (step % GetWriteRestartEveryNStep() == 0) && step != 0;
+}
+
+int STR::TIMINT::BaseDataIO::GetLastWrittenResults() const { return lastwrittenresultsstep_; }
+
+void STR::TIMINT::BaseDataIO::SetLastWrittenResults(const int step)
+{
+  lastwrittenresultsstep_ = step;
+}
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::NLN::Solver::PrePostOp::TIMINT::WriteOutputEveryIteration::WriteOutputEveryIteration(

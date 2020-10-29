@@ -122,8 +122,10 @@ void dyn_nlnstructural_drt()
     }
   }
 
-  bool write_initial_state =
+  const bool write_initial_state =
       DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "WRITE_INITIAL_STATE");
+  const bool write_final_state =
+      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "WRITE_FINAL_STATE");
 
   // do restart
   const int restart = DRT::Problem::Instance()->Restart();
@@ -145,6 +147,15 @@ void dyn_nlnstructural_drt()
 
   // run time integration
   structadapter->Integrate();
+
+  if (write_final_state && !structadapter->HasFinalStateBeenWritten())
+  {
+    constexpr bool forceWriteRestart = true;
+    structadapter->PrepareOutput();
+    structadapter->PreOutput();
+    structadapter->Output(forceWriteRestart);
+    structadapter->PostOutput();
+  }
 
   // test results
   DRT::Problem::Instance()->AddFieldTest(structadapter->CreateFieldTest());
