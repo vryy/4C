@@ -311,39 +311,45 @@ void SSTI::SSTIMono::SetupSystem()
     // block system matrix
     BuildNullSpaces();
   }
-
-  // setup interface maps with master and slace side dofs
-  Teuchos::RCP<Epetra_Map> interface_map_scatra = ssti_maps_mono_->MapInterface(MeshtyingScatra());
-  Teuchos::RCP<Epetra_Map> interface_map_thermo = ssti_maps_mono_->MapInterface(MeshtyingThermo());
+  // setup interface maps with master and slace side dofs (fill only, if interface condition
+  // available)
+  Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
+  Teuchos::RCP<Epetra_Map> interface_map_thermo(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerfaceslave(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
 
-  switch (ScaTraField()->MatrixType())
+  if (InterfaceMeshtying())
   {
-    case LINALG::MatrixType::block_condition:
-    {
-      blockmapscatrainterface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
-          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
+    interface_map_scatra = ssti_maps_mono_->MapInterface(MeshtyingScatra());
+    interface_map_thermo = ssti_maps_mono_->MapInterface(MeshtyingThermo());
 
-      blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
-          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
-      blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
-          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
-      break;
-    }
-    case LINALG::MatrixType::sparse:
+    switch (ScaTraField()->MatrixType())
     {
-      blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(
-          MeshtyingThermo(), LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
-      blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(
-          MeshtyingThermo(), LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
-      break;
-    }
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
+      case LINALG::MatrixType::block_condition:
+      {
+        blockmapscatrainterface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
+
+        blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
+        blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
+        break;
+      }
+      case LINALG::MatrixType::sparse:
+      {
+        blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
+            LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
+        blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
+            LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
+        break;
+      }
+      default:
+      {
+        dserror("Invalid matrix type associated with scalar transport field!");
+        break;
+      }
     }
   }
 
