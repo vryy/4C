@@ -151,7 +151,7 @@ namespace SCATRA
 
     //! true if difference between 'step' is and the step when the phase was last changed is equal
     //! or more than dstep
-    bool IsStepsFromLastPhaseChange(int deltastep, int step);
+    bool IsStepsFromLastPhaseChange(int step);
 
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
@@ -171,10 +171,10 @@ namespace SCATRA
 
    private:
     //! adaptive time stepping for initial relaxation?
-    int adaptivetimesteppingonoff_;
+    const int adaptivetimesteppingonoff_;
 
     //! how to begin with CCCV condition (charge/discharge)
-    bool beginwithcharge_;
+    const bool beginwithcharge_;
 
     //! flag indicating whether cell is currently being charged or discharged
     bool charging_;
@@ -189,10 +189,10 @@ namespace SCATRA
     int ihalfcycle_;
 
     //! initial relaxation time of cccv condition
-    double initrelaxtime_;
+    const double initrelaxtime_;
 
     //! total number of charge and discharge half-cycles
-    int nhalfcycles_;
+    const int nhalfcycles_;
 
     //! for time step adaptivity: was phase changed since last time step adaptivity?
     bool phasechanged_;
@@ -202,6 +202,9 @@ namespace SCATRA
 
     //! step when phase lastly changed
     int steplastphasechange_;
+
+    //! number of steps after phase was changed to reset time step to original value
+    const int stepstoreset_;
 
   };  // class CCCVCondition
 

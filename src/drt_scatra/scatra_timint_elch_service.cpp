@@ -27,7 +27,8 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
       nhalfcycles_(cccvcyclingcondition.GetInt("NumberOfHalfCycles")),
       phasechanged_(false),
       phaseinitialrelaxation_(false),
-      steplastphasechange_(-1)
+      steplastphasechange_(-1),
+      stepstoreset_(cccvcyclingcondition.GetInt("StepsToReset"))
 {
   // safety checks
   if (adaptivetimesteppingonoff_ and !adaptivetimestepping)
@@ -180,9 +181,9 @@ int SCATRA::CCCVCondition::GetHalfCycleConditionID() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVCondition::IsStepsFromLastPhaseChange(int deltastep, int step)
+bool SCATRA::CCCVCondition::IsStepsFromLastPhaseChange(int step)
 {
-  bool out = phasechanged_ ? (step >= (steplastphasechange_ + deltastep)) : false;
+  bool out = phasechanged_ ? (step >= (steplastphasechange_ + stepstoreset_)) : false;
   if (out) phasechanged_ = false;
 
   return out;

@@ -118,7 +118,7 @@ E 1 - ID 0
 E 6 - ID 1
 --------------------------DESIGN CCCV CELL CYCLING LINE CONDITIONS
 DLINE  1
-E 6 - NumberOfHalfCycles 3 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime -1.0 AdaptiveTimeSteppingInitRelax 0
+E 6 - NumberOfHalfCycles 3 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime -1.0 AdaptiveTimeSteppingInitRelax 0 StepsToReset 3
 ----------------------------DESIGN CCCV HALF-CYCLE LINE CONDITIONS
 DLINE  2
 E 6 - ID 1 Current 1.229302022e-06 CutoffVoltage 3.55 CutoffCRate 0.25 RelaxTime -1.0 AdaptiveTimeSteppingPhaseOnOff 0 0 0

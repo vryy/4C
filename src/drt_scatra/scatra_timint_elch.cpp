@@ -387,7 +387,7 @@ void SCATRA::ScaTraTimIntElch::ComputeTimeStepSize(double& dt)
     {
       // if time step adaptivity is enabled for more than 3 steps after last change of phase:
       // disable, otherwise keep adapted time step
-      if (cccv_condition_->IsStepsFromLastPhaseChange(3, step_))
+      if (cccv_condition_->IsStepsFromLastPhaseChange(step_))
         adapted_timestep_active_ = false;
       else
         dt = dt_adapted_;
@@ -2963,7 +2963,12 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
         cccv_condition_->NextPhase(step_, time_);
 
     // all half cycles completed?
-    return (cccv_condition_->NotFinished());
+    const bool notfinished = cccv_condition_->NotFinished();
+
+    if (!notfinished and discret_->Comm().MyPID() == 0)
+      std::cout << "CCCV cycling is completed. Terminating simulation..." << std::endl;
+
+    return (notfinished);
   }
 }
 
