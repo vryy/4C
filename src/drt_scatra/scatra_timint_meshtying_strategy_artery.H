@@ -133,7 +133,7 @@ namespace SCATRA
     }
 
     //! get the combined rhs
-    Teuchos::RCP<Epetra_Vector> CoupledRHS() const { return rhs_; }
+    Teuchos::RCP<Epetra_Vector> CombinedRHS() const { return rhs_; }
 
     //! get the combined increment
     Teuchos::RCP<Epetra_Vector> CombinedIncrement() const { return comb_increment_; }

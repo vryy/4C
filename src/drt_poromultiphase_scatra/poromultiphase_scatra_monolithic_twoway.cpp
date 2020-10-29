@@ -1619,16 +1619,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
       *(PoroField()->Extractor()->ExtractVector(PoroField()->RHS(), 1)), struct_offset_, *rhs_);
   // scatra
   Extractor()->InsertVector(
-      *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CoupledRHS(), 0)), struct_offset_ + 1,
-      *rhs_);
+      *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CombinedRHS(), 0)),
+      struct_offset_ + 1, *rhs_);
 
   // artery
   Extractor()->InsertVector(
       *(PoroField()->Extractor()->ExtractVector(PoroField()->RHS(), 2)), struct_offset_ + 2, *rhs_);
   // arteryscatra
   Extractor()->InsertVector(
-      *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CoupledRHS(), 1)), struct_offset_ + 3,
-      *rhs_);
+      *(blockrowdofmap_artscatra_->ExtractVector(scatramsht_->CombinedRHS(), 1)),
+      struct_offset_ + 3, *rhs_);
 
   return;
 }
