@@ -282,34 +282,38 @@ void STR::MonitorDbc::Execute(IO::DiscretizationWriter& writer)
   double& area_ref = area[0];
   double& area_curr = area[1];
   LINALG::Matrix<DIM, 1> rforce_xyz(false);
+  LINALG::Matrix<DIM, 1> rmoment_xyz(false);
 
   auto filepath = full_filepaths_.cbegin();
   for (const Teuchos::RCP<DRT::Condition>& rcond_ptr : rconds)
   {
     std::fill(area, area + 2, 0.0);
     std::fill(rforce_xyz.A(), rforce_xyz.A() + DIM, 0.0);
+    std::fill(rmoment_xyz.A(), rmoment_xyz.A() + DIM, 0.0);
 
     const int rid = rcond_ptr->Id();
     GetArea(area, rcond_ptr.get());
 
     GetReactionForce(rforce_xyz, react_maps_[rid].data());
+    GetReactionMoment(rmoment_xyz, react_maps_[rid].data(), rcond_ptr.get());
 
-    WriteResultsToFile(*(filepath++), rforce_xyz, area_ref, area_curr);
-    WriteResultsToScreen(rcond_ptr, rforce_xyz, area_ref, area_curr);
+    WriteResultsToFile(*(filepath++), rforce_xyz, rmoment_xyz, area_ref, area_curr);
+    WriteResultsToScreen(rcond_ptr, rforce_xyz, rmoment_xyz, area_ref, area_curr);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::WriteResultsToFile(const std::string& full_filepath,
-    const LINALG::Matrix<DIM, 1>& rforce, const double& area_ref, const double& area_curr) const
+    const LINALG::Matrix<DIM, 1>& rforce, const LINALG::Matrix<DIM, 1>& rmoment,
+    const double& area_ref, const double& area_curr) const
 {
   if (Comm().MyPID() != 0) return;
 
   std::ofstream of(full_filepath, std::ios_base::out | std::ios_base::app);
 
   WriteResults(of, OF_WIDTH, of_precision_, gstate_ptr_->GetStepN(), gstate_ptr_->GetTimeN(),
-      rforce, area_ref, area_curr);
+      rforce, rmoment, area_ref, area_curr);
 
   of.close();
 }
@@ -317,7 +321,8 @@ void STR::MonitorDbc::WriteResultsToFile(const std::string& full_filepath,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::WriteResultsToScreen(const Teuchos::RCP<DRT::Condition>& rcond_ptr,
-    const LINALG::Matrix<DIM, 1>& rforce, const double& area_ref, const double& area_curr) const
+    const LINALG::Matrix<DIM, 1>& rforce, const LINALG::Matrix<DIM, 1>& rmoment,
+    const double& area_ref, const double& area_curr) const
 {
   if (Comm().MyPID() != 0) return;
 
@@ -325,7 +330,7 @@ void STR::MonitorDbc::WriteResultsToScreen(const Teuchos::RCP<DRT::Condition>& r
   WriteConditionHeader(IO::cout.os(), OS_WIDTH);
   WriteColumnHeader(IO::cout.os(), OS_WIDTH);
   WriteResults(IO::cout.os(), OS_WIDTH, os_precision_, gstate_ptr_->GetStepN(),
-      gstate_ptr_->GetTimeN(), rforce, area_ref, area_curr);
+      gstate_ptr_->GetTimeN(), rforce, rmoment, area_ref, area_curr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -384,20 +389,22 @@ void STR::MonitorDbc::WriteColumnHeader(std::ostream& os, const int col_width) c
 {
   os << std::setw(col_width) << "step" << std::setw(col_width) << "time" << std::setw(col_width)
      << "ref_area" << std::setw(col_width) << "curr_area" << std::setw(col_width) << "f_x"
-     << std::setw(col_width) << "f_y" << std::setw(col_width) << "f_z\n";
+     << std::setw(col_width) << "f_y" << std::setw(col_width) << "f_z" << std::setw(col_width)
+     << "m_x" << std::setw(col_width) << "m_y" << std::setw(col_width) << "m_z\n";
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::WriteResults(std::ostream& os, const int col_width, const int precision,
     const unsigned step, const double time, const LINALG::Matrix<DIM, 1>& rforce,
-    const double& area_ref, const double& area_curr) const
+    const LINALG::Matrix<DIM, 1>& rmoment, const double& area_ref, const double& area_curr) const
 {
   os << std::setw(col_width) << step << std::setprecision(precision);
   os << std::setw(col_width) << std::scientific << time << std::setw(col_width) << std::scientific
      << area_ref << std::setw(col_width) << std::scientific << area_curr;
 
   for (unsigned i = 0; i < DIM; ++i) os << std::setw(col_width) << std::scientific << rforce(i, 0);
+  for (unsigned i = 0; i < DIM; ++i) os << std::setw(col_width) << std::scientific << rmoment(i, 0);
 
   os << "\n";
   os << std::flush;
@@ -512,4 +519,66 @@ double STR::MonitorDbc::GetReactionForce(
 
   discret_ptr_->Comm().SumAll(lrforce_xyz.A(), rforce_xyz.A(), DIM);
   return rforce_xyz.Norm2();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::MonitorDbc::GetReactionMoment(LINALG::Matrix<DIM, 1>& rmoment_xyz,
+    const Teuchos::RCP<Epetra_Map>* react_maps, const DRT::Condition* rcond) const
+{
+  Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->GetDisNp();
+
+  Epetra_Vector complete_freact(*gstate_ptr_->GetFreactNp());
+  dbc_ptr_->RotateGlobalToLocal(Teuchos::rcpFromRef(complete_freact));
+
+  LINALG::Matrix<DIM, 1> lrmoment_xyz(true);
+  LINALG::Matrix<DIM, 1> node_reaction_force(true);
+  LINALG::Matrix<DIM, 1> node_position(true);
+  LINALG::Matrix<DIM, 1> node_reaction_moment(true);
+  std::vector<int> node_gid(3);
+
+  const std::vector<int>* onoff = rcond->Get<std::vector<int>>("onoff");
+  const std::vector<int>* nids = rcond->Get<std::vector<int>>("Node Ids");
+  std::vector<int> my_dofs[DIM];
+  int ndof = 0;
+  for (int i : *onoff) ndof += i;
+
+  for (unsigned i = 0; i < DIM; ++i) my_dofs[i].reserve(nids->size() * ndof);
+
+  for (int nid : *nids)
+  {
+    // Check if the node of the boundary condition is owned by this rank.
+    const int rlid = discret_ptr_->NodeRowMap()->LID(nid);
+    if (rlid == -1) continue;
+
+    const DRT::Node* node = discret_ptr_->lRowNode(rlid);
+
+    for (unsigned i = 0; i < DIM; ++i) node_gid[i] = discret_ptr_->Dof(node, i);
+
+    std::vector<double> mydisp;
+    DRT::UTILS::ExtractMyValues(*dispn, mydisp, node_gid);
+    for (unsigned i = 0; i < DIM; ++i) node_position(i) = node->X()[i] + mydisp[i];
+
+    // Get the reaction force at this node. This force will only contain non-zero values at the DOFs
+    // where the DBC is active.
+    node_reaction_force.PutScalar(0.0);
+    for (unsigned i = 0; i < DIM; ++i)
+    {
+      if ((*onoff)[i] == 1)
+      {
+        const int lid = complete_freact.Map().LID(node_gid[i]);
+        if (lid < 0)
+          dserror("Proc %d: Cannot find gid=%d in Epetra_Vector", complete_freact.Comm().MyPID(),
+              node_gid[i]);
+        node_reaction_force(i) = complete_freact[lid];
+      }
+    }
+
+    // Add the moment contribution w.r.t the origin of this reaction force.
+    node_reaction_moment.CrossProduct(node_position, node_reaction_force);
+    lrmoment_xyz += node_reaction_moment;
+  }
+
+  discret_ptr_->Comm().SumAll(lrmoment_xyz.A(), rmoment_xyz.A(), DIM);
+  return rmoment_xyz.Norm2();
 }
