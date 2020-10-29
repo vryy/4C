@@ -15,7 +15,7 @@
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
-    std::vector<DRT::Condition*> cccvhalfcycleconditions, bool adaptivetimestepping)
+    const std::vector<DRT::Condition*>& cccvhalfcycleconditions, bool adaptivetimestepping)
     : adaptivetimesteppingonoff_(
           static_cast<bool>(cccvcyclingcondition.GetInt("AdaptiveTimeSteppingInitRelax"))),
       beginwithcharge_(static_cast<bool>(cccvcyclingcondition.GetInt("BeginWithCharging"))),
@@ -32,21 +32,27 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
 {
   // safety checks
   if (adaptivetimesteppingonoff_ and !adaptivetimestepping)
+  {
     dserror(
         "Must not activate adaptive time stepping for initial relaxation while adaptive time "
         "stepping in scatra is disabled.");
+  }
   if (nhalfcycles_ < 1)
+  {
     dserror(
         "Less than one constant-current constant-voltage (CCCV) half-cycle specified in CCCV "
         "cell cycling boundary condition!");
+  }
 
   // loop over all conditions and create half cycles
   for (const auto& condition : cccvhalfcycleconditions)
   {
     if (condition->GetInt("ConditionID") < 0)
+    {
       dserror(
           "Constant-current constant-voltage (CCCV) half-cycle boundary condition has invalid "
           "condition ID!");
+    }
 
     if (condition->GetInt("ConditionID") == cccvcyclingcondition.GetInt("ConditionIDForCharge"))
       halfcycle_charge_ =
@@ -65,8 +71,6 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
     phaseinitialrelaxation_ = true;
   else
     dserror("Please choose an initial relaxation time larger than 0.0");
-
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -86,8 +90,8 @@ void SCATRA::CCCVCondition::SetFirstCCCVHalfCycle(int step)
     ihalfcycle_ = 1;
 
     // set phase of half cycles to constant current
-    halfcycle_charge_->ResetPhase(step);
-    halfcycle_discharge_->ResetPhase(step);
+    halfcycle_charge_->ResetPhase();
+    halfcycle_discharge_->ResetPhase();
 
     // initial relaxation is over (or has never been started)
     phaseinitialrelaxation_ = false;
@@ -150,7 +154,7 @@ void SCATRA::CCCVCondition::NextPhase(int step, double time)
   {
     // if half cylce is over reset all phases to constant current, flip charge mode and increase
     // counter
-    charging_ ? halfcycle_discharge_->ResetPhase(step) : halfcycle_charge_->ResetPhase(step);
+    charging_ ? halfcycle_discharge_->ResetPhase() : halfcycle_charge_->ResetPhase();
     charging_ = !charging_;
     ihalfcycle_++;
   }
@@ -183,7 +187,7 @@ int SCATRA::CCCVCondition::GetHalfCycleConditionID() const
  *-----------------------------------------------------------------------------*/
 bool SCATRA::CCCVCondition::IsStepsFromLastPhaseChange(int step)
 {
-  bool out = phasechanged_ ? (step >= (steplastphasechange_ + stepstoreset_)) : false;
+  bool out = (phasechanged_ && (step >= (steplastphasechange_ + stepstoreset_)));
   if (out) phasechanged_ = false;
 
   return out;
@@ -247,7 +251,7 @@ void SCATRA::CCCVCondition::ReadRestart(IO::DiscretizationReader& reader)
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
-    const DRT::Condition cccvhalfcyclecondition, bool adaptivetimestepping)
+    const DRT::Condition& cccvhalfcyclecondition, bool adaptivetimestepping)
     : adaptivetimesteppingonoff_(
           *cccvhalfcyclecondition.Get<std::vector<int>>("AdaptiveTimeSteppingPhaseOnOff")),
       current_(0.0),
@@ -259,13 +263,15 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
       relaxtime_(cccvhalfcyclecondition.GetDouble("RelaxTime"))
 {
   // safety check
-  for (unsigned i = 0; i < adaptivetimesteppingonoff_.size(); ++i)
-    if (adaptivetimesteppingonoff_[i] and !adaptivetimestepping)
+  for (int i : adaptivetimesteppingonoff_)
+  {
+    if (i and !adaptivetimestepping)
+    {
       dserror(
           "Must not activate adaptive time stepping for half cycles while adaptive time "
           "stepping in scatra is disabled.");
-
-  return;
+    }
+  }
 }
 
 /*-----------------------------------------------------------------------------*
@@ -303,7 +309,7 @@ bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(double time)
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVHalfCycleCondition::ResetPhase(int step)
+void SCATRA::CCCVHalfCycleCondition::ResetPhase()
 {
   phase_cccv_ = INPAR::ELCH::CCCVHalfCyclePhase::constant_current;
 }

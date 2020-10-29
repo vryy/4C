@@ -34,7 +34,7 @@ namespace SCATRA
   {
    public:
     //! constructor
-    CCCVHalfCycleCondition(const DRT::Condition cccvhalfcyclecondition, bool adaptivetimestepping);
+    CCCVHalfCycleCondition(const DRT::Condition& cccvhalfcyclecondition, bool adaptivetimestepping);
 
     //! Get phase of half cycle
     INPAR::ELCH::CCCVHalfCyclePhase GetCCCVHalfCyclePhase() const { return phase_cccv_; };
@@ -58,7 +58,7 @@ namespace SCATRA
     bool IsEndOfHalfCycleNextPhase(double time);
 
     //! reset phase of this half cycle to constant current
-    void ResetPhase(int step);
+    void ResetPhase();
 
     //! read restart
     void ReadRestart(IO::DiscretizationReader& reader);
@@ -106,7 +106,7 @@ namespace SCATRA
    public:
     //! constructor
     CCCVCondition(const DRT::Condition& cccvcyclingcondition,
-        std::vector<DRT::Condition*> cccvhalfcycleconditions, bool adaptivetimestepping);
+        const std::vector<DRT::Condition*>& cccvhalfcycleconditions, bool adaptivetimestepping);
 
     //! true, when all half cylces are completed
     bool NotFinished() const { return nhalfcycles_ >= ihalfcycle_; };
@@ -208,5 +208,5 @@ namespace SCATRA
 
   };  // class CCCVCondition
 
-};  // namespace SCATRA
+}  // namespace SCATRA
 #endif
