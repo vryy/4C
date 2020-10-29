@@ -614,6 +614,8 @@ pages: # job name needs to be pages
         - pip install anybadge
         # Create doxygen badge
         - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
+        # Create website badge
+        - anybadge -l website -v ok --color=green -f public/website.svg
     cache:
         key: cache-weekly-coverage-report
         paths:
