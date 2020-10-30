@@ -338,7 +338,15 @@ void STR::MODELEVALUATOR::SpringDashpot::OutputStepState(IO::DiscretizationWrite
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::ResetStepState() { CheckInitSetup(); }
+void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
+{
+  CheckInitSetup();
+
+  for (auto& spring : springs_)
+  {
+    spring->ResetStepState();
+  }
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -877,3 +877,5 @@ void UTILS::SpringDashpot::Update()
   // store current time step
   gapn_ = gap_;
 }
+
+void UTILS::SpringDashpot::ResetStepState() { gap_ = gapn_; }
