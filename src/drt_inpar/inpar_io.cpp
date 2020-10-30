@@ -134,7 +134,7 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("WRITE_INITIAL_STATE", "yes",
       "Do you want to write output for initial state ?", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("WRITE_FINAL_STATE", "yes",
+  setStringToIntegralParameter<int>("WRITE_FINAL_STATE", "no",
       "Enforce to write output/restart data at the final state regardless of the other "
       "output/restart intervals",
       yesnotuple, yesnovalue, &io);
