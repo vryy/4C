@@ -130,7 +130,7 @@ NDVOL   7
 --------------------------DESIGN CCCV CELL CYCLING SURF CONDITIONS
 DSURF  1
 // inflow
-E 6 - NumberOfHalfCycles 2 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime 1.0 AdaptiveTimeSteppingInitRelax 1 StepsToReset 3
+E 6 - NumberOfHalfCycles 2 BeginWithCharging 1 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime 1.0 AdaptiveTimeSteppingInitRelax 1 NumAddAdaptTimeSteps 3
 ----------------------------DESIGN CCCV HALF-CYCLE SURF CONDITIONS
 DSURF  2
 // inflow

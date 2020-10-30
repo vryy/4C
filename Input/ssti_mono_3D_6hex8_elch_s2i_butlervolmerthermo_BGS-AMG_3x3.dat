@@ -58,7 +58,7 @@ RESTARTEVRY                     5
 --------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
-ABSTOLRES                       0.0e-11
+ABSTOLRES                       1.0e-11
 --------------------------------------------SSTI CONTROL/THERMO
 LINEAR_SOLVER                   2
 INITIALFIELD                    field_by_condition

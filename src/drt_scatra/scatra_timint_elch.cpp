@@ -891,9 +891,8 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
     dserror(
         "Cannot have electrode boundary kinetics point conditions and electrode boundary "
         "kinetics line/surface conditions at the same time!");
-
-    // process conditions
   }
+  // process conditions
   else if (!cond.empty() or !pointcond.empty())
   {
     double sum(0.0);
@@ -926,10 +925,14 @@ void SCATRA::ScaTraTimIntElch::OutputElectrodeInfoBoundary()
 
       // electrode boundary kinetics line/surface condition
       if (!cond.empty())
+      {
         scalars = EvaluateSingleElectrodeInfo(condid, "ElchBoundaryKinetics");
+      }
+      // electrode boundary kinetics point condition
       else
-        scalars = EvaluateSingleElectrodeInfoPoint(
-            pointcond[icond]);  // electrode boundary kinetics point condition
+      {
+        scalars = EvaluateSingleElectrodeInfoPoint(pointcond[icond]);
+      }
 
       // initialize unused dummy variable
       double dummy(0.);
@@ -2233,9 +2236,8 @@ bool SCATRA::ScaTraTimIntElch::ApplyGalvanostaticControl()
         if (condstring != "ElchBoundaryPointKinetics")
         {
           scalars = EvaluateSingleElectrodeInfo(condid, condstring);
-
-          // electrode boundary kinetics point condition
         }
+        // electrode boundary kinetics point condition
         else
           scalars = EvaluateSingleElectrodeInfoPoint(conditions[icond]);
 
@@ -3030,11 +3032,10 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
   if (cccv_condition_ == Teuchos::null)
   {
     return ScaTraTimIntImpl::NotFinished();
-
-    // control progress of simulation in case cell cycling is performed
-    // note that the maximum number of time steps and the maximum simulation time are ignored in
-    // this case
   }
+  // control progress of simulation in case cell cycling is performed
+  // note that the maximum number of time steps and the maximum simulation time are ignored in
+  // this case
   else
   {
     // which mode was last converged step? Is this phase over? Is the current half cycle over?
@@ -3314,9 +3315,8 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
       // remove zero null space vector associated with electric potential dofs by truncating
       // null space
       nullspace.resize(BlockMaps().Map(iblock)->NumMyElements());
-
-      // null space associated with electric potential dofs
     }
+    // null space associated with electric potential dofs
     else
     {
       // remove zero null space vector(s) associated with concentration dofs and retain only

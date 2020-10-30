@@ -561,9 +561,9 @@ void INPAR::ELCH::SetValidConditions(
       cccvcyclingcomponents.emplace_back(
           Teuchos::rcp(new IntConditionComponent("AdaptiveTimeSteppingInitRelax")));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("StepsToReset")));
+          Teuchos::rcp(new SeparatorConditionComponent("NumAddAdaptTimeSteps")));
       cccvcyclingcomponents.emplace_back(
-          Teuchos::rcp(new IntConditionComponent("StepsToReset", false, true)));
+          Teuchos::rcp(new IntConditionComponent("NumAddAdaptTimeSteps", false, true)));
     }
 
     // insert input file line components into condition definitions

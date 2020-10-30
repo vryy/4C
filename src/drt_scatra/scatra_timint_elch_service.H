@@ -194,6 +194,9 @@ namespace SCATRA
     //! total number of charge and discharge half-cycles
     const int nhalfcycles_;
 
+    //! number of steps after phase was changed until reset time step to original value
+    const int num_add_adapt_timesteps_;
+
     //! for time step adaptivity: was phase changed since last time step adaptivity?
     bool phasechanged_;
 
@@ -202,9 +205,6 @@ namespace SCATRA
 
     //! step when phase lastly changed
     int steplastphasechange_;
-
-    //! number of steps after phase was changed to reset time step to original value
-    const int stepstoreset_;
 
   };  // class CCCVCondition
 

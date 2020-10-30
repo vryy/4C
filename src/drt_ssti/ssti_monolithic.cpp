@@ -311,7 +311,7 @@ void SSTI::SSTIMono::SetupSystem()
     // block system matrix
     BuildNullSpaces();
   }
-  // setup interface maps with master and slace side dofs (fill only, if interface condition
+  // setup interface maps with master and slave side dofs (fill only, if interface condition
   // available)
   Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
   Teuchos::RCP<Epetra_Map> interface_map_thermo(Teuchos::null);
@@ -368,8 +368,8 @@ void SSTI::SSTIMono::SetupSystem()
       new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
-          CouplingAdapterStructure(), ssti_maps_mono_->MapInterface(MeshtyingScatra()),
-          MeshtyingScatra(), ScaTraFieldBase(), StructureField()));
+          CouplingAdapterStructure(), interface_map_scatra, MeshtyingScatra(), ScaTraFieldBase(),
+          StructureField()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
       ssti_maps_mono_->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
@@ -382,8 +382,8 @@ void SSTI::SSTIMono::SetupSystem()
       ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
-      ssti_maps_mono_->MapInterface(MeshtyingScatra()), interface_map_thermo, true,
-      MeshtyingScatra(), MeshtyingThermo(), ScaTraFieldBase(), ThermoFieldBase()));
+      interface_map_scatra, interface_map_thermo, true, MeshtyingScatra(), MeshtyingThermo(),
+      ScaTraFieldBase(), ThermoFieldBase()));
 
   // initialize equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(

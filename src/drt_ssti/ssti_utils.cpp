@@ -107,18 +107,13 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
 const Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy) const
 {
-  // only relevant in case of meshtying
-  if (meshtyingstrategy == Teuchos::null)
-    return Teuchos::null;
-  else
-  {
-    auto mergedInterfaceMap =
-        LINALG::MultiMapExtractor::MergeMaps({meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
-            meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
-    if (not mergedInterfaceMap->UniqueGIDs()) dserror("Map not unique");
-    return mergedInterfaceMap;
-  }
+  auto mergedInterfaceMap =
+      LINALG::MultiMapExtractor::MergeMaps({meshtyingstrategy->CouplingAdapter()->MasterDofMap(),
+          meshtyingstrategy->CouplingAdapter()->SlaveDofMap()});
+  if (not mergedInterfaceMap->UniqueGIDs()) dserror("Map not unique");
+  return mergedInterfaceMap;
 }
+
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
