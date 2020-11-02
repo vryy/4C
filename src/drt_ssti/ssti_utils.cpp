@@ -114,6 +114,7 @@ const Teuchos::RCP<Epetra_Map> SSTI::SSTIMaps::MapInterface(
   return mergedInterfaceMap;
 }
 
+
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 const Teuchos::RCP<LINALG::MultiMapExtractor> SSTI::SSTIMaps::MapsInterfaceBlocks(

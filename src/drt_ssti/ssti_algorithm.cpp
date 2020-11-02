@@ -345,11 +345,14 @@ void SSTI::SSTIAlgorithm::DistributeDtFromScaTra()
   const double newtimestep = ScaTraField()->Dt();
   const int newstep = Step();
 
-  // change current time and time step of thermo according to ScaTra
+  // change time step size of thermo according to ScaTra
   ThermoField()->SetDt(newtimestep);
-  ThermoField()->SetTimeStep(newtime, newstep);
+  // change current time and time step number of thermo field according to ScaTra
+  // The incremental reduction is is needed, because time and step are incremented in
+  // PrepareTimeStep() of thermo field
+  ThermoField()->SetTimeStep(newtime - newtimestep, newstep - 1);
 
-  // change current time and time step of structure according to ScaTra
+  // change current time and time step number of structure according to ScaTra
   StructureField()->SetDt(newtimestep);
   StructureField()->SetTimen(newtime);
   StructureField()->PostUpdate();

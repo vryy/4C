@@ -311,39 +311,45 @@ void SSTI::SSTIMono::SetupSystem()
     // block system matrix
     BuildNullSpaces();
   }
-
-  // setup interface maps with master and slace side dofs
-  Teuchos::RCP<Epetra_Map> interface_map_scatra = ssti_maps_mono_->MapInterface(MeshtyingScatra());
-  Teuchos::RCP<Epetra_Map> interface_map_thermo = ssti_maps_mono_->MapInterface(MeshtyingThermo());
+  // setup interface maps with master and slave side dofs (fill only, if interface condition
+  // available)
+  Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
+  Teuchos::RCP<Epetra_Map> interface_map_thermo(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerfaceslave(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
 
-  switch (ScaTraField()->MatrixType())
+  if (InterfaceMeshtying())
   {
-    case LINALG::MatrixType::block_condition:
-    {
-      blockmapscatrainterface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
-          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
+    interface_map_scatra = ssti_maps_mono_->MapInterface(MeshtyingScatra());
+    interface_map_thermo = ssti_maps_mono_->MapInterface(MeshtyingThermo());
 
-      blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
-          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
-      blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
-          LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
-      break;
-    }
-    case LINALG::MatrixType::sparse:
+    switch (ScaTraField()->MatrixType())
     {
-      blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(
-          MeshtyingThermo(), LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
-      blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(
-          MeshtyingThermo(), LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
-      break;
-    }
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
+      case LINALG::MatrixType::block_condition:
+      {
+        blockmapscatrainterface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
+
+        blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
+        blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
+        break;
+      }
+      case LINALG::MatrixType::sparse:
+      {
+        blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
+            LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
+        blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
+            LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
+        break;
+      }
+      default:
+      {
+        dserror("Invalid matrix type associated with scalar transport field!");
+        break;
+      }
     }
   }
 
@@ -362,8 +368,8 @@ void SSTI::SSTIMono::SetupSystem()
       new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
-          CouplingAdapterStructure(), ssti_maps_mono_->MapInterface(MeshtyingScatra()),
-          MeshtyingScatra(), ScaTraFieldBase(), StructureField()));
+          CouplingAdapterStructure(), interface_map_scatra, MeshtyingScatra(), ScaTraFieldBase(),
+          StructureField()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
       ssti_maps_mono_->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
@@ -376,8 +382,8 @@ void SSTI::SSTIMono::SetupSystem()
       ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
-      ssti_maps_mono_->MapInterface(MeshtyingScatra()), interface_map_thermo, true,
-      MeshtyingScatra(), MeshtyingThermo(), ScaTraFieldBase(), ThermoFieldBase()));
+      interface_map_scatra, interface_map_thermo, true, MeshtyingScatra(), MeshtyingThermo(),
+      ScaTraFieldBase(), ThermoFieldBase()));
 
   // initialize equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
