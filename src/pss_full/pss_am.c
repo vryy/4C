@@ -261,7 +261,7 @@ void *amdef(char *namstr, ARRAY *a, INT fdim, INT sdim, char typstr[])
 
   dsassert(fdim > 0 && sdim > 0, "no empty array allowed");
 
-  strncpy(a->name, namstr, 9);
+  strcpy(a->name, namstr);
   a->fdim = fdim;
   a->sdim = sdim;
   if (strncmp("DA", typstr, 2) == 0)
@@ -1001,7 +1001,7 @@ void *am4def(char *namstr, ARRAY4D *a, INT fdim, INT sdim, INT tdim, INT fodim, 
 {
   register INT i;
   INT endloop;
-  strncpy(a->name, namstr, 9);
+  strcpy(a->name, namstr);
   a->fdim = fdim;
   a->sdim = sdim;
   a->tdim = tdim;
