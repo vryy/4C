@@ -604,6 +604,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialParticles()
 
 void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialRigidBodies()
 {
+  // set initial affiliation pair data
+  if (not isrestarted_) particlerigidbody_->SetInitialAffiliationPairData();
+
   // set unique global ids for all rigid bodies
   if (not isrestarted_) particlerigidbody_->SetUniqueGlobalIdsForAllRigidBodies();
 
