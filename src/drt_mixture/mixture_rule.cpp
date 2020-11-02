@@ -91,10 +91,10 @@ void MIXTURE::MixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
   DRT::ParObject::AddtoPack(data, numgp_);
 
   // Add flag whether it has already read the element
-  DRT::ParObject::AddtoPack(data, static_cast<const int>(has_read_element_));
+  DRT::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
 
   // Add flags whether it is setup
-  DRT::ParObject::AddtoPack(data, static_cast<const int>(is_setup_));
+  DRT::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack the mixture rule

@@ -1302,8 +1302,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::MatScaTraMultiScale(
     dserror("Multi-scale scalar transport only implemented for one transported scalar!");
 
   // extract multi-scale scalar transport material
-  const MAT::ScatraMatMultiScale* const matmultiscale =
-      static_cast<const MAT::ScatraMatMultiScale* const>(material.get());
+  const MAT::ScatraMatMultiScale* matmultiscale =
+      static_cast<const MAT::ScatraMatMultiScale*>(material.get());
 
   // set densities equal to porosity
   densn = densnp = densam = matmultiscale->Porosity();
@@ -2174,8 +2174,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
 )
 {
   // extract multi-scale scalar transport material
-  const MAT::ScatraMatMultiScale* const matmultiscale =
-      static_cast<const MAT::ScatraMatMultiScale* const>(ele->Material().get());
+  const MAT::ScatraMatMultiScale* matmultiscale =
+      static_cast<const MAT::ScatraMatMultiScale*>(ele->Material().get());
 
   // initialize variables for micro-scale coupling flux and derivative of micro-scale coupling flux
   // w.r.t. macro-scale state variable

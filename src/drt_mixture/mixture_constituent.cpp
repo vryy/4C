@@ -135,8 +135,8 @@ void MIXTURE::MixtureConstituent::Setup(Teuchos::ParameterList& params, const in
 void MIXTURE::MixtureConstituent::PackConstituent(DRT::PackBuffer& data) const
 {
   DRT::ParObject::AddtoPack(data, numgp_);
-  DRT::ParObject::AddtoPack(data, static_cast<const int>(has_read_element_));
-  DRT::ParObject::AddtoPack(data, static_cast<const int>(is_setup_));
+  DRT::ParObject::AddtoPack(data, static_cast<int>(has_read_element_));
+  DRT::ParObject::AddtoPack(data, static_cast<int>(is_setup_));
 }
 
 // Unpack base constituent data, need to be called by every derived class
