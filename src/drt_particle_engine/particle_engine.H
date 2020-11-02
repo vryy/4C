@@ -263,7 +263,7 @@ namespace PARTICLEENGINE
     /*!
      * \brief hand over particles to be inserted
      *
-     * Hand over owend particles of any type to be inserted in the respective container on this
+     * Hand over owned particles of any type to be inserted in the respective container on this
      * processor.
      *
      * \note All particle added need a global id assigned.
