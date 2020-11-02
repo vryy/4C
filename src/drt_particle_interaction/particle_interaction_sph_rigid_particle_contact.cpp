@@ -133,12 +133,12 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
 
     if (particlepair.absdist_ < initialparticlespacing)
     {
-      const double gap = initialparticlespacing - particlepair.absdist_;
+      const double gap = particlepair.absdist_ - initialparticlespacing;
       const double gapdot =
-          UTILS::vec_dot(vel_j, particlepair.e_ij_) - UTILS::vec_dot(vel_i, particlepair.e_ij_);
+          UTILS::vec_dot(vel_i, particlepair.e_ij_) - UTILS::vec_dot(vel_j, particlepair.e_ij_);
 
       // magnitude of rigid particle contact force
-      const double fac = stiff_ * gap + damp_ * gapdot;
+      const double fac = -(stiff_ * gap + damp_ * gapdot);
 
       // add contributions
       if (force_i) UTILS::vec_addscale(force_i, fac, particlepair.e_ij_);
