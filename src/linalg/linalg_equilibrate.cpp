@@ -162,8 +162,6 @@ void LINALG::Equilibration::EquilibrateSystem(
 
   // Equilibrate the RHS
   EquilibrateRHS(residual);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -180,14 +180,14 @@ void INPAR::SSI::SetValidConditions(
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponentsplain;
-  ssicoupcomponentsplain.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  ssicoupcomponentsplain.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < ssicoupcomponentsplain.size(); ++i)
+  for (auto& ssicoupcomponentplain : ssicoupcomponentsplain)
   {
-    linessiplain->AddComponent(ssicoupcomponentsplain[i]);
-    surfssiplain->AddComponent(ssicoupcomponentsplain[i]);
-    volssiplain->AddComponent(ssicoupcomponentsplain[i]);
+    linessiplain->AddComponent(ssicoupcomponentplain);
+    surfssiplain->AddComponent(ssicoupcomponentplain);
+    volssiplain->AddComponent(ssicoupcomponentplain);
   }
 
   condlist.push_back(linessiplain);
@@ -211,14 +211,14 @@ void INPAR::SSI::SetValidConditions(
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponents;
-  ssicoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  ssicoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < ssicoupcomponents.size(); ++i)
+  for (auto& ssicoupcomponent : ssicoupcomponents)
   {
-    linessi->AddComponent(ssicoupcomponents[i]);
-    surfssi->AddComponent(ssicoupcomponents[i]);
-    volssi->AddComponent(ssicoupcomponents[i]);
+    linessi->AddComponent(ssicoupcomponent);
+    surfssi->AddComponent(ssicoupcomponent);
+    volssi->AddComponent(ssicoupcomponent);
   }
 
   condlist.push_back(linessi);
@@ -242,14 +242,14 @@ void INPAR::SSI::SetValidConditions(
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponents2;
-  ssicoupcomponents2.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  ssicoupcomponents2.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < ssicoupcomponents2.size(); ++i)
+  for (auto& ssicoupcomponent2 : ssicoupcomponents2)
   {
-    linessi2->AddComponent(ssicoupcomponents2[i]);
-    surfssi2->AddComponent(ssicoupcomponents2[i]);
-    volssi2->AddComponent(ssicoupcomponents2[i]);
+    linessi2->AddComponent(ssicoupcomponent2);
+    surfssi2->AddComponent(ssicoupcomponent2);
+    volssi2->AddComponent(ssicoupcomponent2);
   }
 
   condlist.push_back(linessi2);
@@ -275,18 +275,19 @@ void INPAR::SSI::SetValidConditions(
   // meshtying version for matching node is implemented within the SSI framework and therefore no
   // reference is neccessary.
   std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacemeshtying;
-  ssiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  ssiinterfacemeshtying.push_back(Teuchos::rcp(
+  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(
       new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
           Teuchos::tuple<std::string>("Master", "Slave"))));
-  ssiinterfacemeshtying.push_back(Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
-  ssiinterfacemeshtying.push_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+  ssiinterfacemeshtying.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
+  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < ssiinterfacemeshtying.size(); ++i)
+  for (auto& i : ssiinterfacemeshtying)
   {
-    linessiinterfacemeshtying->AddComponent(ssiinterfacemeshtying[i]);
-    surfssiinterfacemeshtying->AddComponent(ssiinterfacemeshtying[i]);
+    linessiinterfacemeshtying->AddComponent(i);
+    surfssiinterfacemeshtying->AddComponent(i);
   }
 
   condlist.push_back(linessiinterfacemeshtying);
