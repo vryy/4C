@@ -32,8 +32,8 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
   void test_uninitializedUse()
   {
     Pstream ps;
-    TS_ASSERT_THROWS(ps.flush(), std::runtime_error);
-    TS_ASSERT_THROWS((ps << "blub"), std::runtime_error);
+    TS_ASSERT_THROWS(ps.flush(), const std::runtime_error &);
+    TS_ASSERT_THROWS((ps << "blub"), const std::runtime_error &);
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
@@ -43,7 +43,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
     TS_ASSERT_THROWS(
         ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 2, ""),
-        std::runtime_error);
+        const std::runtime_error &);
   }
 
   void test_nonexistantProc()
@@ -51,7 +51,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     Pstream ps;
     TS_ASSERT_THROWS(
         ps.setup(false, false, false, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 4, 2, ""),
-        std::runtime_error);
+        const std::runtime_error &);
   }
 
   void test_initializedUse()
