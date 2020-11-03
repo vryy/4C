@@ -10,6 +10,7 @@ VERBOSITY                       Standard
 STRUCT_STRAIN                   gl
 STRUCT_STRESS                   cauchy
 OUTPUT_SPRING                   Yes
+WRITE_FINAL_STATE               yes
 -----------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
@@ -28,8 +29,8 @@ DYNAMICTYP                      Statics
 PRESTRESS                       material_iterative
 PRESTRESSTIME                   100
 PRESTRESSTOLDISP                1e-9
-RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESULTSEVRY                     5
+RESTARTEVRY                     5
 TIMESTEP                        0.1
 NUMSTEP                         1000
 MAXTIME                         100

@@ -415,6 +415,8 @@ namespace STR
     void OutputStep(const bool forced_writerestart = false  ///< [in] Force writing of restart data
     );
 
+    bool HasFinalStateBeenWritten() const override;
+
     //! Write output for every Newton or line search iteration
     //! The step numbers are formated in the following manner:
     //!  n    5               4 2                     1 0
@@ -1276,6 +1278,9 @@ namespace STR
 
     //! flag indicating if class is initialized
     bool isinit_;
+
+    //! load/time step of the last written results
+    int lastwrittenresultsstep_;
 
    protected:
     //! returns true if Setup() was called and is still valid

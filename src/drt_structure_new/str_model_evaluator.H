@@ -370,7 +370,11 @@ namespace STR
     //! Do things after writing output
     void PostOutput();
 
-    //! reset all variables which are directly related to the current new step n+1.
+    /*!
+     * \brief Reset the current state variables to the ones of the previous timestep
+     *
+     * This is used for example to output the last successfull timestep.
+     */
     void ResetStepState();
 
     /*! \brief Recover the current state

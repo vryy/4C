@@ -745,6 +745,8 @@ namespace STR
         return dbc_ptr_;
       }
 
+      bool HasFinalStateBeenWritten() const override;
+
       ///@}
      protected:
       /// get the indicator state

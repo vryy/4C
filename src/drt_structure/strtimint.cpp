@@ -2136,6 +2136,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
       DRT::Problem::Instance()->RestartManager()->Restart(step_, discret_->Comm()))
   {
     OutputRestart(datawritten);
+    lastwrittenresultsstep_ = step_;
   }
 
   // output results (not necessary if restart in same step)
@@ -2143,6 +2144,7 @@ void STR::TimInt::OutputStep(const bool forced_writerestart)
       (not datawritten))
   {
     OutputState(datawritten);
+    lastwrittenresultsstep_ = step_;
   }
 
   // output stress & strain
@@ -2211,6 +2213,7 @@ void STR::TimInt::writeGmshStrucOutputStep()
   gmshfilecontent << "};" << std::endl;
 }
 
+bool STR::TimInt::HasFinalStateBeenWritten() const { return step_ == lastwrittenresultsstep_; }
 /*----------------------------------------------------------------------*/
 /* We need the restart data to perform on "restarts" on the fly for parameter
  * continuation

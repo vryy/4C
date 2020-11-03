@@ -525,12 +525,10 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
 
   // output restart (try this first)
   // write restart step
-  if ((dataio_->GetWriteRestartEveryNStep() and
-          (dataglobalstate_->GetStepN() % dataio_->GetWriteRestartEveryNStep() == 0) and
-          dataglobalstate_->GetStepN() != 0) or
-      forced_writerestart)
+  if (forced_writerestart || dataio_->ShouldWriteRestartForStep(dataglobalstate_->GetStepN()))
   {
     OutputRestart(datawritten);
+    dataio_->SetLastWrittenResults(dataglobalstate_->GetStepN());
   }
 
   // output results (not necessary if restart in same step)
@@ -539,6 +537,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   {
     NewIOStep(datawritten);
     OutputState();
+    dataio_->SetLastWrittenResults(dataglobalstate_->GetStepN());
   }
 
   // output results during runtime ( not used for restart so far )
@@ -562,7 +561,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output stress, strain and optional quantity
-  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
+  if ((forced_writerestart or dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN())) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
@@ -1170,3 +1169,8 @@ void STR::TIMINT::Base::OutputErrorNorms()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
+
+bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
+{
+  return dataio_->GetLastWrittenResults() == dataglobalstate_->GetStepN();
+}
