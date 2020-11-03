@@ -607,7 +607,8 @@ namespace DRT
      This method is templated for stuff of type std::pair<T,U>
 
      \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
+     by this method
+     \param data (in)         : char vector where stuff is extracted from \param
      stuff (out)       : std::pair<T,U> to extract from data
 
      */
@@ -624,10 +625,45 @@ namespace DRT
     /*!
      \brief Extract stuff from a char vector data and increment position
 
+     This method is templated for stuff of type std::vector<std::pair<T,U>>
+
+     \param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     \param data (in)         : char vector where stuff is extracted from \param
+     stuff (out)       : std::vector<std::pair<T,U>> to extract from data
+
+     */
+    template <typename T, typename U>
+    static void ExtractfromPack(std::vector<char>::size_type& position,
+        const std::vector<char>& data, std::vector<std::pair<T, U>>& stuff)
+    {
+      int numentries = 0;
+      ExtractfromPack(position, data, numentries);
+
+      stuff.clear();
+
+      for (int i = 0; i < numentries; i++)
+      {
+        T first;
+        U second;
+        ExtractfromPack(position, data, first);
+        ExtractfromPack(position, data, second);
+
+        // add to map
+        stuff.push_back(std::pair<T, U>(first, second));
+      }
+
+      return;
+    }
+
+    /*!
+     \brief Extract stuff from a char vector data and increment position
+
      This method is a template for stuff of type pairedvector<Key,T0,Ts...>
 
      \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
+     by this method
+     \param data (in)         : char vector where stuff is extracted from \param
      stuff (out)       : pairedvector<Key,T0,Ts...> to extract from data
 
      */
