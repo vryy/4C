@@ -6,88 +6,162 @@
   <UnstructuredGrid>
     <FieldData>
       <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
-0
+0.000000000000000e+00 
       </DataArray>
     </FieldData>
 
     <Piece NumberOfPoints="12" NumberOfCells="2" >
       <Points>
-        <DataArray type="Float64" NumberOfComponents="3" format="binary">
-AQAAACABAAAgAQAAzwAAAA==eNpjYMAOxLmmc79Q4HQwyt5moOCz0h4mnnLzZ+oeWUmHZV1dD8+5nYSLL2+6rBl+SckhqX6Vy9rMO3Dxlo7vDfyCmg5zTho569i8hItnMn2/WOip7yCVtpTv9qbPcPGeO1bHrj6zc2i/qcl/YbKwA0zcUper4fp7B4eqfdc23FsqDhdf9MZ/2Z90JweTxspNbOIycPGN7w0ya247O4glpWdzFCvAxSdWvr/9w9PV4c0Uzw+POJTh4vlnzwqKbHZzCF/l6Fl+RhUuDgCrNU7U
+        <DataArray type="Float64" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+3.141067591235025e+00 4.940891832958129e-02 0.000000000000000e+00
+6.279038995146355e+00 1.974733926081928e-01 0.000000000000000e+00
+9.410821253842483e+00 4.439500017706363e-01 0.000000000000000e+00
+1.253332140943190e+01 7.885953247517139e-01 0.000000000000000e+00
+1.564344650402309e+01 1.231165940486227e+00 0.000000000000000e+00
+3.090169943749474e+01 4.894348370484642e+00 0.000000000000000e+00
+3.387376404282481e+01 5.911982310397088e+00 0.000000000000000e+00
+3.681239775564724e+01 7.022486485162791e+00 0.000000000000000e+00
+3.971473421945064e+01 8.224673611040128e+00 0.000000000000000e+00
+4.257790707772359e+01 9.517356404287476e+00 0.000000000000000e+00
+4.539904997395467e+01 1.089934758116321e+01 0.000000000000000e+00
         </DataArray>
       </Points>
 
       <Cells>
-        <DataArray type="Int32" Name="connectivity" format="binary">
-AQAAADAAAAAwAAAAIQAAAA==eNoNw4cNACAAA6C61///CglJUqw2u8Ppcnu8Pj8EqABD
-
+        <DataArray type="Int32" Name="connectivity" format="ascii">
+0 1 2 3 4 5 6 7 8 9 10 11 
         </DataArray>
-        <DataArray type="Int32" Name="offsets" format="binary">
-AQAAAAgAAAAIAAAADgAAAA==eNpjY2Bg4AFiAABoABM=
-
+        <DataArray type="Int32" Name="offsets" format="ascii">
+6 12 
         </DataArray>
-        <DataArray type="UInt8" Name="types" format="binary">
-AQAAAAIAAAACAAAACgAAAA==eNpjYQEAAA4ACQ==
-
+        <DataArray type="UInt8" Name="types" format="ascii">
+4 4 
         </DataArray>
       </Cells>
 
   <PointData>
-        <DataArray type="Float64" Name="base_vector_1" NumberOfComponents="3" format="binary">
-AQAAACABAAAgAQAA0wAAAA==eNpjYACBD/YMaKBNYK7e19/v7bMivusKiS6Ay/9zfrL/6vv39k2TH0hzCW+Ai8dMfnx4ye339r/F/9RXi++AizPdbAhJ3//e/kX0wtjXXAfg4tFP9KeozH5vXx+8Ip2b7QjC/lAXYb78d/aeL/XN3x+7DBe/8b/pz0bpd/bXp4VfeLj2Klz8adT7ubsOvLUXWbnCI6r/Olz8nfijT3Zxb+33v6z5cy/rJly8R/TOnfAvb+znNKqe/G5/Gy6eq2Mrq9D8xp7xnou2Ht9duDgAil9dCQ==
+        <DataArray type="Float64" Name="base_vector_1" NumberOfComponents="3" format="ascii">
+1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+9.995065603657316e-01 3.141075907812836e-02 0.000000000000000e+00
+9.980267284282716e-01 6.279051952931350e-02 0.000000000000000e+00
+9.955619646030800e-01 9.410831331851448e-02 0.000000000000000e+00
+9.921147013144778e-01 1.253332335643045e-01 0.000000000000000e+00
+9.876883405951377e-01 1.564344650402311e-01 0.000000000000000e+00
+9.510565162951536e-01 3.090169943749471e-01 0.000000000000000e+00
+9.408807689542256e-01 3.387379202452911e-01 0.000000000000000e+00
+9.297764858882515e-01 3.681245526846777e-01 0.000000000000000e+00
+9.177546256839813e-01 3.971478906347805e-01 0.000000000000000e+00
+9.048270524660196e-01 4.257792915650727e-01 0.000000000000000e+00
+8.910065241883679e-01 4.539904997395468e-01 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="base_vector_2" NumberOfComponents="3" format="binary">
-AQAAACABAAAgAQAAzQAAAA==eNpjYEAGH+xhrKyI77pCogv2twnM1fv6+z1cvGnyA2ku4Q37/zk/2X/1PUL8t/if+mrxHftjJj8+vOQ2QvxF9MLY11wH9jPdbAhJ348Qrw9ekc7NdmR/9BP9KSqzEeKeL/XN3x+7vJ8h1EWYL/8dXPz6tPALD9de3X/jf9OfjdIIcZGVKzyi+q/vfxr1fu6uA2/h4vtf1vy5l3Vz/zvxR5/s4hDicxpVT363v72/R/TOnfAvb+DijPdctPX47u7P1bGVVWhGiAMARGxiiQ==
+        <DataArray type="Float64" Name="base_vector_2" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
+-3.141075907812836e-02 9.995065603657316e-01 0.000000000000000e+00
+-6.279051952931350e-02 9.980267284282716e-01 0.000000000000000e+00
+-9.410831331851448e-02 9.955619646030800e-01 0.000000000000000e+00
+-1.253332335643045e-01 9.921147013144778e-01 0.000000000000000e+00
+-1.564344650402311e-01 9.876883405951377e-01 0.000000000000000e+00
+-3.090169943749471e-01 9.510565162951536e-01 0.000000000000000e+00
+-3.387379202452911e-01 9.408807689542256e-01 0.000000000000000e+00
+-3.681245526846777e-01 9.297764858882515e-01 0.000000000000000e+00
+-3.971478906347805e-01 9.177546256839813e-01 0.000000000000000e+00
+-4.257792915650727e-01 9.048270524660196e-01 0.000000000000000e+00
+-4.539904997395468e-01 8.910065241883679e-01 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="base_vector_3" NumberOfComponents="3" format="binary">
-AQAAACABAAAgAQAAEgAAAA==eNpjYMAGPtgzjIqDxQFtzQ41
+        <DataArray type="Float64" Name="base_vector_3" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
-AQAAACABAAAgAQAADQAAAA==eNpjYBgF+AAAASAAAQ==
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
   </PointData>
   <CellData>
-        <DataArray type="Float64" Name="axial_strain_GPs" NumberOfComponents="3" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Float64" Name="axial_strain_GPs" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="cross_section_radius" format="binary">
-AQAAABAAAAAQAAAAEwAAAA==eNpTVVq8N9/5kb0qlAYAOCIG9Q==
+        <DataArray type="Float64" Name="cross_section_radius" format="ascii">
+5.707319930889453e-01
+5.707319930889453e-01
         </DataArray>
-        <DataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="2" format="binary">
-AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        <DataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="2" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="2" format="binary">
-AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        <DataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="2" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="element_owner" format="binary">
-AQAAABAAAAAQAAAACwAAAA==eNpjYEAFAAAQAAE=
+        <DataArray type="Float64" Name="element_gid" format="ascii">
+0.000000000000000e+00
+2.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="material_axial_force_GPs" NumberOfComponents="3" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Float64" Name="element_owner" format="ascii">
+0.000000000000000e+00
+0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="material_bending_moment_2_GPs" NumberOfComponents="2" format="binary">
-AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        <DataArray type="Float64" Name="material_axial_force_GPs" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="material_bending_moment_3_GPs" NumberOfComponents="2" format="binary">
-AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        <DataArray type="Float64" Name="material_bending_moment_2_GPs" NumberOfComponents="2" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="material_shear_force_2_GPs" NumberOfComponents="3" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Float64" Name="material_bending_moment_3_GPs" NumberOfComponents="2" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="material_shear_force_3_GPs" NumberOfComponents="3" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Float64" Name="material_shear_force_2_GPs" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="material_torque_GPs" NumberOfComponents="2" format="binary">
-AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        <DataArray type="Float64" Name="material_shear_force_3_GPs" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Float64" Name="material_torque_GPs" NumberOfComponents="2" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
-        <DataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="binary">
-AQAAADAAAAAwAAAADAAAAA==eNpjYCANAAAAMAAB
+        <DataArray type="Float64" Name="ref_length" format="ascii">
+1.570792349466516e+01
+1.570792349466515e+01
         </DataArray>
-        <DataArray type="Float64" Name="twist_GPs" NumberOfComponents="2" format="binary">
-AQAAACAAAAAgAAAACwAAAA==eNpjYMAPAAAgAAE=
+        <DataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+        </DataArray>
+        <DataArray type="Float64" Name="twist_GPs" NumberOfComponents="2" format="ascii">
+0.000000000000000e+00 0.000000000000000e+00
+0.000000000000000e+00 0.000000000000000e+00
         </DataArray>
       </CellData>
 
