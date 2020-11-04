@@ -61,7 +61,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] freeuniquegids free unique global ids
      */
-    virtual void FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids) = 0;
+    virtual void FreeUniqueGlobalIds(std::vector<int>& freeuniquegids) = 0;
 
     /*!
      * \brief get unique global ids for all particles

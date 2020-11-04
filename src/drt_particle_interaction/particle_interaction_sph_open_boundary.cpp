@@ -182,6 +182,12 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::CheckOpenBoundaryPhaseChange(
     }
   }
 
+  // free unique global ids
+  particleengineinterface_->FreeUniqueGlobalIds(globalidstofree);
+
+  // hand over particles to be removed
+  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+
   // get unique global ids for all particles
   particleengineinterface_->GetUniqueGlobalIdsForAllParticles(particlesgenerated);
 
@@ -189,12 +195,6 @@ void PARTICLEINTERACTION::SPHOpenBoundaryBase::CheckOpenBoundaryPhaseChange(
   for (auto& particleobject : particlesgenerated)
     particlestoinsert[particleobject->ReturnParticleType()].push_back(
         std::make_pair(-1, particleobject));
-
-  // free unique global ids
-  particleengineinterface_->FreeUniqueGlobalIds(globalidstofree);
-
-  // hand over particles to be removed
-  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
 
   // hand over particles to be inserted
   particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);

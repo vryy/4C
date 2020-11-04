@@ -65,7 +65,8 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
   neighborpairs_ = neighborpairs;
 
   // update with actual integrated thermo particle types
-  for (const auto& type_i : intthermotypes_)
+  const auto intthermotypes = intthermotypes_;
+  for (const auto& type_i : intthermotypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       intthermotypes_.erase(type_i);
 

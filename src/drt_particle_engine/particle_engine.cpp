@@ -155,11 +155,14 @@ void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
   particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
-void PARTICLEENGINE::ParticleEngine::FreeUniqueGlobalIds(const std::vector<int>& freeuniquegids)
+void PARTICLEENGINE::ParticleEngine::FreeUniqueGlobalIds(std::vector<int>& freeuniquegids)
 {
   // insert freed global id
   for (const int currfreegid : freeuniquegids)
     particleuniqueglobalidhandler_->InsertFreedGlobalId(currfreegid);
+
+  // clear after all unique global ids are freed
+  freeuniquegids.clear();
 }
 
 void PARTICLEENGINE::ParticleEngine::GetUniqueGlobalIdsForAllParticles(
@@ -716,7 +719,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
     std::vector<int>& particlestoproc) const
 {
   // global ids on this processor
-  std::set<int> thisprocglobalids;
+  std::vector<int> thisprocglobalids;
 
   // iterate over particle types
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
@@ -735,11 +738,13 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
     int* globalids = container->GetPtrToParticleGlobalID(0);
 
     // insert global id of particles
-    thisprocglobalids.insert(globalids, globalids + particlestored);
+    thisprocglobalids.insert(thisprocglobalids.end(), globalids, globalids + particlestored);
   }
 
   // get maximum global id on this processor
-  int thisprocmaxglobalid = (thisprocglobalids.empty()) ? 0 : *thisprocglobalids.rbegin();
+  int thisprocmaxglobalid = 0;
+  if (not thisprocglobalids.empty())
+    thisprocmaxglobalid = *std::max_element(thisprocglobalids.begin(), thisprocglobalids.end());
 
   // get maximum global id on all processors
   int allprocmaxglobalid(0);

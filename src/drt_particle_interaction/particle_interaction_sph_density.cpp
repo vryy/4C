@@ -83,7 +83,8 @@ void PARTICLEINTERACTION::SPHDensityBase::Setup(
   virtualwallparticle_ = virtualwallparticle;
 
   // update with actual fluid particle types
-  for (const auto& type_i : fluidtypes_)
+  const auto fluidtypes = fluidtypes_;
+  for (const auto& type_i : fluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
 
   // setup density of ghosted particles to refresh

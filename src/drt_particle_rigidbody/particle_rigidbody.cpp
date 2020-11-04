@@ -167,7 +167,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::WriteRigidBodyRuntimeOutput(
   rigidbodyvtpwriter_->WriteCollectionFileOfAllWrittenFiles();
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
+void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
 {
   // get reference to affiliation pair data
   std::unordered_map<int, int>& affiliationpairdata =
@@ -180,9 +180,6 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
   // get container of owned particles of rigid phase
   PARTICLEENGINE::ParticleContainer* container_i = particlecontainerbundle->GetSpecificContainer(
       PARTICLEENGINE::RigidPhase, PARTICLEENGINE::Owned);
-
-  // maximum global id of rigid bodies on this processor
-  int maxglobalid = -1;
 
   // loop over particles in container
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
@@ -199,15 +196,25 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
 
     // insert affiliation pair
     affiliationpairdata.insert(std::make_pair(globalid_i[0], rigidbody_k));
-
-    // get maximum global id of rigid bodies on this processor
-    maxglobalid = std::max(maxglobalid, rigidbody_k);
   }
 
 #ifdef DEBUG
   if (static_cast<int>(affiliationpairdata.size()) != container_i->ParticlesStored())
     dserror("number of affiliation pairs and rigid particles not equal!");
 #endif
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::SetUniqueGlobalIdsForAllRigidBodies()
+{
+  // get reference to affiliation pair data
+  std::unordered_map<int, int>& affiliationpairdata =
+      affiliationpairs_->GetRefToAffiliationPairData();
+
+  // maximum global id of rigid bodies on this processor
+  int maxglobalid = -1;
+
+  // get maximum global id of rigid bodies on this processor
+  for (const auto& it : affiliationpairdata) maxglobalid = std::max(maxglobalid, it.second);
 
   // get maximum global id of rigid bodies on all processors
   int allprocmaxglobalid = -1;
