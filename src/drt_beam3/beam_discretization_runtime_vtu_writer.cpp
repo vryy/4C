@@ -1525,9 +1525,10 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
     // this needs to be done for all cells that make up a cut element
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
