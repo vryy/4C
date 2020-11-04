@@ -73,11 +73,13 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::Setup(
     dserror("interface to particle wall handler required in virtual wall particle handler!");
 
   // update with actual fluid particle types
-  for (const auto& type_i : allfluidtypes_)
+  const auto allfluidtypes = allfluidtypes_;
+  for (const auto& type_i : allfluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       allfluidtypes_.erase(type_i);
 
-  for (const auto& type_i : intfluidtypes_)
+  const auto intfluidtypes = intfluidtypes_;
+  for (const auto& type_i : intfluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       intfluidtypes_.erase(type_i);
 }

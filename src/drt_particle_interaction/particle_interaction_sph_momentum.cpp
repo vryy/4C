@@ -122,20 +122,24 @@ void PARTICLEINTERACTION::SPHMomentum::Setup(
   artificialviscosity_->Setup();
 
   // update with actual fluid particle types
-  for (const auto& type_i : allfluidtypes_)
+  const auto allfluidtypes = allfluidtypes_;
+  for (const auto& type_i : allfluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       allfluidtypes_.erase(type_i);
 
-  for (const auto& type_i : intfluidtypes_)
+  const auto intfluidtypes = intfluidtypes_;
+  for (const auto& type_i : intfluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       intfluidtypes_.erase(type_i);
 
-  for (const auto& type_i : purefluidtypes_)
+  const auto purefluidtypes = purefluidtypes_;
+  for (const auto& type_i : purefluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       purefluidtypes_.erase(type_i);
 
   // update with actual boundary particle types
-  for (const auto& type_i : boundarytypes_)
+  const auto boundarytypes = boundarytypes_;
+  for (const auto& type_i : boundarytypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       boundarytypes_.erase(type_i);
 

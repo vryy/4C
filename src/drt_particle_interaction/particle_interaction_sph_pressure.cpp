@@ -53,7 +53,8 @@ void PARTICLEINTERACTION::SPHPressure::Setup(
   equationofstatebundle_ = equationofstatebundle;
 
   // update with actual fluid particle types
-  for (const auto& type_i : fluidtypes_)
+  const auto fluidtypes = fluidtypes_;
+  for (const auto& type_i : fluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
 
   // setup pressure of ghosted particles to refresh
