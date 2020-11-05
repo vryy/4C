@@ -18,6 +18,7 @@
       <PDataArray type="Float64" Name="cross_section_radius" format="ascii"/>
       <PDataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="2" format="ascii"/>
       <PDataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="2" format="ascii"/>
+      <PDataArray type="Float64" Name="element_gid" format="ascii"/>
       <PDataArray type="Float64" Name="element_owner" format="ascii"/>
       <PDataArray type="Float64" Name="material_axial_force_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="material_bending_moment_2_GPs" NumberOfComponents="2" format="ascii"/>
@@ -25,6 +26,7 @@
       <PDataArray type="Float64" Name="material_shear_force_2_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="material_shear_force_3_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="material_torque_GPs" NumberOfComponents="2" format="ascii"/>
+      <PDataArray type="Float64" Name="ref_length" format="ascii"/>
       <PDataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="twist_GPs" NumberOfComponents="2" format="ascii"/>

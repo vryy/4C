@@ -157,7 +157,7 @@ src/drt_inpar/inpar_beaminteraction.H @jeichinger
 src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
 src/drt_inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
 src/drt_inpar/inpar_IO_runtime_vt*_output*                 @baci/team_input @baci/team_output
-src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams* @jeichinger
+src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams* @jeichinger @baci/team_output
 src/drt_inpar/inpar_particle*      @sfuchs @baci/team_particle
 src/drt_inpar/inpar_pasi*          @sfuchs @baci/team_particle
 src/drt_inpar/inpar_poro*          @baci/team_poro

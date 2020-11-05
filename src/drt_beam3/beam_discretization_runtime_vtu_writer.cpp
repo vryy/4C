@@ -1510,6 +1510,37 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementElasticEnergy()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
+{
+  // determine number of row BEAM elements for each processor
+  // output is completely independent of the number of processors involved
+  unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
+  std::vector<double> ref_lengths;
+  ref_lengths.reserve(num_beam_row_elements);
+
+  // loop over my elements and collect the data about triads/base vectors
+  for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
+  {
+    const DRT::Element* ele =
+        discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
+
+    // cast to beam element
+    auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+
+    // this needs to be done for all cells that make up a cut element
+    for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
+      ref_lengths.push_back(beamele->RefLength());
+  }
+
+  // append the solution vector to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationCellDataVector(ref_lengths, 1, "ref_length");
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::WriteFiles() { runtime_vtuwriter_->WriteFiles(); }
 
 /*-----------------------------------------------------------------------------------------------*
