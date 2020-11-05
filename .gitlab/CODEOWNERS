@@ -381,6 +381,7 @@ Input/rigidsphere*                 @baci/team_structure
 /Input/spring_dashpot*             @agebauer @baci/team_discretization
 
 /Input/ssi*                        @cschmidt @ssinzig
+/Input/ssti*                       @cschmidt @ssinzig
 /Input/sti*                        @cschmidt @ssinzig
 
 /Input/thermo*                     @baci/team_thermo

@@ -129,13 +129,21 @@ namespace PARTICLERIGIDBODY
     void WriteRigidBodyRuntimeOutput(const int step, const double time) const;
 
     /*!
+     * \brief set initial affiliation pair data
+     *
+     * The rigid body color of each rigid particle given via the input file in the particle section
+     * defines the affiliation of a rigid particle to a rigid body. Upon this information the
+     * affiliation pair data is initialized.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void SetInitialAffiliationPairData();
+
+    /*!
      * \brief set unique global ids for all rigid bodies
      *
-     * Currently, the rigid body color of each rigid particle defined via the input file in the
-     * particle section defines the affiliation of a rigid particle to a rigid body. First, the
-     * affiliation pair data is initialized. Then, the rigid body unique global identifier handler
-     * is initialized. This requires knowledge of all global ids currently assigned to rigid bodies
-     * over all processors.
+     * The rigid body unique global identifier handler is initialized. This requires knowledge of
+     * all global ids currently assigned to rigid bodies over all processors.
      *
      * \author Sebastian Fuchs \date 09/2020
      */

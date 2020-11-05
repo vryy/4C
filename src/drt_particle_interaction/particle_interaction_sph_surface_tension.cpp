@@ -70,11 +70,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
   neighborpairs_ = neighborpairs;
 
   // update with actual fluid particle types
-  for (const auto& type_i : fluidtypes_)
+  const auto fluidtypes = fluidtypes_;
+  for (const auto& type_i : fluidtypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
 
   // update with actual boundary particle types
-  for (const auto& type_i : boundarytypes_)
+  const auto boundarytypes = boundarytypes_;
+  for (const auto& type_i : boundarytypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       boundarytypes_.erase(type_i);
 }

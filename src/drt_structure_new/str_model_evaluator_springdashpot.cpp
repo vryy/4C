@@ -342,7 +342,10 @@ void STR::MODELEVALUATOR::SpringDashpot::ResetStepState()
 {
   CheckInitSetup();
 
-  dserror("Not yet implemented");
+  for (auto& spring : springs_)
+  {
+    spring->ResetStepState();
+  }
 }
 
 /*----------------------------------------------------------------------*
