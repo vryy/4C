@@ -520,13 +520,13 @@ namespace PARTICLERIGIDBODY
     void BroadcastRigidBodyAccelerations();
 
     /*!
-     * \brief set relative position of rigid particles in reference frame
+     * \brief set relative position of rigid particles in body frame
      *
-     * Set the relative position of rigid particles in the reference frame owned on this processor.
+     * Set the relative position of rigid particles in the body frame owned on this processor.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetRigidParticleReferenceRelativePosition();
+    void SetRigidParticleRelativePositionInBodyFrame();
 
     /*!
      * \brief update relative position of rigid particles

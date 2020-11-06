@@ -152,7 +152,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
     {
       // insert states of rigid particles
       particlestates.insert(
-          {PARTICLEENGINE::RigidBodyColor, PARTICLEENGINE::ReferenceRelativePosition,
+          {PARTICLEENGINE::RigidBodyColor, PARTICLEENGINE::RelativePositionBodyFrame,
               PARTICLEENGINE::RelativePosition, PARTICLEENGINE::Inertia, PARTICLEENGINE::Force});
     }
   }
@@ -281,8 +281,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialStates()
   // broadcast positions of rigid bodies
   BroadcastRigidBodyPositions();
 
-  // set relative position of rigid particles in reference frame
-  SetRigidParticleReferenceRelativePosition();
+  // set relative position of rigid particles in body frame
+  SetRigidParticleRelativePositionInBodyFrame();
 
   // update relative position of rigid particles
   UpdateRigidParticleRelativePosition();
@@ -1459,7 +1459,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleReferenceRelativePosition()
+void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBodyFrame()
 {
   // get reference to affiliation pair data
   const std::unordered_map<int, int>& affiliationpairdata =
@@ -1500,11 +1500,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleReferenceRelativePosit
 
     // get pointer to particle states
     const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    double* refrelpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::ReferenceRelativePosition, particle_i);
+    double* relposbody_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
 
-    PARTICLEINTERACTION::UTILS::vec_set(refrelpos_i, pos_i);
-    PARTICLEINTERACTION::UTILS::vec_sub(refrelpos_i, pos_k);
+    PARTICLEINTERACTION::UTILS::vec_set(relposbody_i, pos_i);
+    PARTICLEINTERACTION::UTILS::vec_sub(relposbody_i, pos_k);
   }
 }
 
@@ -1548,13 +1548,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
     const double* rot_k = &rigidbodydatastate_->GetRefRotation()[rigidbody_k][0];
 
     // get pointer to particle states
-    const double* refrelpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::ReferenceRelativePosition, particle_i);
+    const double* relposbody_i =
+        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
     double* relpos_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
 
     // update relative position of particle i
-    UTILS::quaternion_rotate_vector(relpos_i, rot_k, refrelpos_i);
+    UTILS::quaternion_rotate_vector(relpos_i, rot_k, relposbody_i);
   }
 }
 
