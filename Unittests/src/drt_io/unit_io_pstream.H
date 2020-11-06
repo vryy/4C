@@ -68,7 +68,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     Pstream ps;
     ps.setup(true, false, false, IO::minimal, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
     TS_ASSERT_EQUALS(ps.RequestedOutputLevel(), IO::minimal);
-    Level& lvl = ps(IO::debug);
+    Level &lvl = ps(IO::debug);
     TS_ASSERT_THROWS_NOTHING(lvl << 4);
   }
 
@@ -94,7 +94,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
-    Level& lvl = ps(IO::debug);
+    Level &lvl = ps(IO::debug);
     TS_ASSERT_THROWS_NOTHING(lvl.stream(1.2));
     TS_ASSERT_THROWS_NOTHING(lvl << 4);
     TS_ASSERT_THROWS_NOTHING(lvl.SetLevel(IO::minimal) << 5);
@@ -104,7 +104,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
   {
     Pstream ps;
     ps.setup(true, false, true, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
-    Level& lvl = ps(IO::debug);
+    Level &lvl = ps(IO::debug);
     TS_ASSERT_THROWS_NOTHING(lvl << 1.2 << IO::flush);
     TS_ASSERT_THROWS_NOTHING(lvl << 23 << IO::endl);
   }
