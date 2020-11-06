@@ -58,7 +58,7 @@ void DRT::ELEMENTS::So_base::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, kintype_);
 
   // material post setup routine
-  AddtoPack(data, static_cast<const int>(material_post_setup_));
+  AddtoPack(data, static_cast<int>(material_post_setup_));
 }
 
 

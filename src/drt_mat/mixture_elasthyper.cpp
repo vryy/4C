@@ -124,7 +124,7 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, matid);
 
   // pack setup flag
-  AddtoPack(data, static_cast<const int>(setup_));
+  AddtoPack(data, static_cast<int>(setup_));
 
   // Pack isPreEvaluated flag
   std::vector<int> isPreEvaluatedInt;

@@ -525,7 +525,7 @@ bool DRT::INPUT::NeedToPrintEqualSign(const Teuchos::ParameterList& list)
   {
     pes = list.get<bool>(printequalsign);
   }
-  catch (Teuchos::Exceptions::InvalidParameter)
+  catch (const Teuchos::Exceptions::InvalidParameter&)
   {
     pes = false;
   }
