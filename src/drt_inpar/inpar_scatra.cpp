@@ -12,7 +12,6 @@
 #include "drt_validparameters.H"
 #include "inpar_fluid.H"
 #include "inpar_s2i.H"
-#include "inpar_thermo.H"
 #include "inpar_bio.H"
 
 #include "../drt_lib/drt_conditiondefinition.H"
@@ -455,8 +454,8 @@ void INPAR::SCATRA::SetValidConditions(
       Teuchos::rcp(new ConditionDefinition("SCATRA FLUX CALC SURF CONDITIONS", "ScaTraFluxCalc",
           "Scalar Transport Boundary Flux Calculation", DRT::Condition::ScaTraFluxCalc, true,
           DRT::Condition::Surface));
-  condlist.push_back(linebndryfluxeval);
-  condlist.push_back(surfbndryfluxeval);
+  condlist.emplace_back(linebndryfluxeval);
+  condlist.emplace_back(surfbndryfluxeval);
 
   /*--------------------------------------------------------------------*/
   // conditions for calculation of total and mean values of transported scalars
@@ -477,22 +476,23 @@ void INPAR::SCATRA::SetValidConditions(
   std::vector<Teuchos::RCP<ConditionComponent>> totalandmeanscalarcomponents;
 
   {
-    totalandmeanscalarcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
-    totalandmeanscalarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    totalandmeanscalarcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+    totalandmeanscalarcomponents.emplace_back(
+        Teuchos::rcp(new IntConditionComponent("ConditionID")));
   }
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < totalandmeanscalarcomponents.size(); ++i)
+  for (auto& totalandmeanscalarcomponent : totalandmeanscalarcomponents)
   {
-    totalandmeanscalarline->AddComponent(totalandmeanscalarcomponents[i]);
-    totalandmeanscalarsurf->AddComponent(totalandmeanscalarcomponents[i]);
-    totalandmeanscalarvol->AddComponent(totalandmeanscalarcomponents[i]);
+    totalandmeanscalarline->AddComponent(totalandmeanscalarcomponent);
+    totalandmeanscalarsurf->AddComponent(totalandmeanscalarcomponent);
+    totalandmeanscalarvol->AddComponent(totalandmeanscalarcomponent);
   }
 
   // insert condition definitions into global list of valid condition definitions
-  condlist.push_back(totalandmeanscalarline);
-  condlist.push_back(totalandmeanscalarsurf);
-  condlist.push_back(totalandmeanscalarvol);
+  condlist.emplace_back(totalandmeanscalarline);
+  condlist.emplace_back(totalandmeanscalarsurf);
+  condlist.emplace_back(totalandmeanscalarvol);
 
   /*--------------------------------------------------------------------*/
   // conditions for calculation of relative error with reference to analytical solution
@@ -513,24 +513,24 @@ void INPAR::SCATRA::SetValidConditions(
   std::vector<Teuchos::RCP<ConditionComponent>> relerrorcomponents;
 
   {
-    relerrorcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
-    relerrorcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-    relerrorcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("Function")));
-    relerrorcomponents.push_back(Teuchos::rcp(new IntConditionComponent("FunctionID")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("Function")));
+    relerrorcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("FunctionID")));
   }
 
   // insert input file line components into condition definitions
-  for (unsigned i = 0; i < relerrorcomponents.size(); ++i)
+  for (auto& relerrorcomponent : relerrorcomponents)
   {
-    relerrorline->AddComponent(relerrorcomponents[i]);
-    relerrorsurf->AddComponent(relerrorcomponents[i]);
-    relerrorvol->AddComponent(relerrorcomponents[i]);
+    relerrorline->AddComponent(relerrorcomponent);
+    relerrorsurf->AddComponent(relerrorcomponent);
+    relerrorvol->AddComponent(relerrorcomponent);
   }
 
   // insert condition definitions into global list of valid condition definitions
-  condlist.push_back(relerrorline);
-  condlist.push_back(relerrorsurf);
-  condlist.push_back(relerrorvol);
+  condlist.emplace_back(relerrorline);
+  condlist.emplace_back(relerrorsurf);
+  condlist.emplace_back(relerrorvol);
 
   /*--------------------------------------------------------------------*/
   // Coupling of different scalar transport fields
@@ -538,47 +538,46 @@ void INPAR::SCATRA::SetValidConditions(
   std::vector<Teuchos::RCP<ConditionComponent>> scatracoupcomponents;
 
   std::vector<Teuchos::RCP<SeparatorConditionComponent>> KKintsepveccompstoich;
-  KKintsepveccompstoich.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  KKintsepveccompstoich.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
   // definition int vectors
   std::vector<Teuchos::RCP<IntVectorConditionComponent>> KKintveccompstoich;
-  KKintveccompstoich.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
+  KKintveccompstoich.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
   // definition separator for real vectors: length of the real vector is zero -> nothing is read
   std::vector<Teuchos::RCP<SeparatorConditionComponent>> KKrealsepveccompstoich;
   // definition real vectors: length of the real vector is zero -> nothing is read
   std::vector<Teuchos::RCP<RealVectorConditionComponent>> KKrealveccompstoich;
 
 
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
       Teuchos::rcp(new IntConditionComponent("numscal")), KKintsepveccompstoich, KKintveccompstoich,
       KKrealsepveccompstoich, KKrealveccompstoich)));
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
-  scatracoupcomponents.push_back(
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
+  scatracoupcomponents.emplace_back(
       Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CONDUCT")));
-  scatracoupcomponents.push_back(
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("CONDUCT")));
+  scatracoupcomponents.emplace_back(
       Teuchos::rcp(new RealConditionComponent("hydraulic conductivity")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FILTR")));
-  scatracoupcomponents.push_back(
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FILTR")));
+  scatracoupcomponents.emplace_back(
       Teuchos::rcp(new RealConditionComponent("filtration coefficient")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("WSSONOFF")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new IntConditionComponent("wss onoff")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("WSSCOEFFS")));
-  scatracoupcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("wss coeffs", 2)));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("WSSONOFF")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("wss onoff")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("WSSCOEFFS")));
+  scatracoupcomponents.emplace_back(
+      Teuchos::rcp(new RealVectorConditionComponent("wss coeffs", 2)));
 
 
   Teuchos::RCP<ConditionDefinition> surfscatracoup = Teuchos::rcp(
       new ConditionDefinition("DESIGN SCATRA COUPLING SURF CONDITIONS", "ScaTraCoupling",
           "ScaTra Coupling", DRT::Condition::ScaTraCoupling, true, DRT::Condition::Surface));
 
-  for (unsigned i = 0; i < scatracoupcomponents.size(); ++i)
-  {
-    surfscatracoup->AddComponent(scatracoupcomponents[i]);
-  }
+  for (auto& scatracoupcomponent : scatracoupcomponents)
+    surfscatracoup->AddComponent(scatracoupcomponent);
 
-  condlist.push_back(surfscatracoup);
+  condlist.emplace_back(surfscatracoup);
 
   /*--------------------------------------------------------------------*/
   // Robin boundary condition for scalar transport problems
@@ -596,34 +595,34 @@ void INPAR::SCATRA::SetValidConditions(
   std::vector<Teuchos::RCP<ConditionComponent>> scatrarobincomponents;
 
   std::vector<Teuchos::RCP<SeparatorConditionComponent>> Robinintsepveccompstoich;
-  Robinintsepveccompstoich.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  Robinintsepveccompstoich.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
   // definition int vectors
   std::vector<Teuchos::RCP<IntVectorConditionComponent>> Robinintveccompstoich;
-  Robinintveccompstoich.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
+  Robinintveccompstoich.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
   // definition separator for real vectors: length of the real vector is zero -> nothing is read
   std::vector<Teuchos::RCP<SeparatorConditionComponent>> Robinrealsepveccompstoich;
   // definition real vectors: length of the real vector is zero -> nothing is read
   std::vector<Teuchos::RCP<RealVectorConditionComponent>> Robinrealveccompstoich;
 
 
-  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
       Teuchos::rcp(new IntConditionComponent("numscal")), Robinintsepveccompstoich,
       Robinintveccompstoich, Robinrealsepveccompstoich, Robinrealveccompstoich)));
 
-  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
-  scatrarobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
 
-  for (unsigned i = 0; i < scatrarobincomponents.size(); ++i)
+  for (auto& scatrarobincomponent : scatrarobincomponents)
   {
-    scatrarobinline->AddComponent(scatrarobincomponents[i]);
-    scatrarobinsurf->AddComponent(scatrarobincomponents[i]);
+    scatrarobinline->AddComponent(scatrarobincomponent);
+    scatrarobinsurf->AddComponent(scatrarobincomponent);
   }
 
-  condlist.push_back(scatrarobinline);
-  condlist.push_back(scatrarobinsurf);
+  condlist.emplace_back(scatrarobinline);
+  condlist.emplace_back(scatrarobinsurf);
 
   /*--------------------------------------------------------------------*/
   // Neumann inflow for SCATRA
@@ -637,8 +636,8 @@ void INPAR::SCATRA::SetValidConditions(
           "TransportNeumannInflow", "Surface Transport Neumann Inflow",
           DRT::Condition::TransportNeumannInflow, true, DRT::Condition::Surface));
 
-  condlist.push_back(linetransportneumanninflow);
-  condlist.push_back(surftransportneumanninflow);
+  condlist.emplace_back(linetransportneumanninflow);
+  condlist.emplace_back(surftransportneumanninflow);
 
   /*--------------------------------------------------------------------*/
   // Scatra convective heat transfer (Newton's law of heat transfer)
@@ -649,26 +648,27 @@ void INPAR::SCATRA::SetValidConditions(
   // --> Tempn (old temperature T_n)
   // or if the exact solution is needed
   // --> Tempnp (current temperature solution T_n+1) with linearisation
-  transportthermoconvectcomponents.push_back(Teuchos::rcp(new StringConditionComponent(
+  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent(
       "temperature state", "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
       Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
   // heat transfer coefficient h
-  transportthermoconvectcomponents.push_back(
+  transportthermoconvectcomponents.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("coeff")));
-  transportthermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("coeff")));
+  transportthermoconvectcomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("coeff")));
   // surrounding (fluid) temperature T_oo
-  transportthermoconvectcomponents.push_back(
+  transportthermoconvectcomponents.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
-  transportthermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
+  transportthermoconvectcomponents.emplace_back(
+      Teuchos::rcp(new RealConditionComponent("surtemp")));
   // time curve to increase the surrounding (fluid) temperature T_oo in time
-  transportthermoconvectcomponents.push_back(
+  transportthermoconvectcomponents.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("surtempfunct")));
-  transportthermoconvectcomponents.push_back(
+  transportthermoconvectcomponents.emplace_back(
       Teuchos::rcp(new IntConditionComponent("surtempfunct", true, true)));
   // time curve to increase the complete boundary condition, i.e., the heat flux
-  transportthermoconvectcomponents.push_back(
+  transportthermoconvectcomponents.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("funct")));
-  transportthermoconvectcomponents.push_back(
+  transportthermoconvectcomponents.emplace_back(
       Teuchos::rcp(new IntConditionComponent("funct", true, true)));
 
   Teuchos::RCP<ConditionDefinition> linetransportthermoconvect =
@@ -680,14 +680,14 @@ void INPAR::SCATRA::SetValidConditions(
           "TransportThermoConvections", "Surface Transport Thermo Convections",
           DRT::Condition::TransportThermoConvections, true, DRT::Condition::Surface));
 
-  for (unsigned i = 0; i < transportthermoconvectcomponents.size(); ++i)
+  for (auto& transportthermoconvectcomponent : transportthermoconvectcomponents)
   {
-    linetransportthermoconvect->AddComponent(transportthermoconvectcomponents[i]);
-    surftransportthermoconvect->AddComponent(transportthermoconvectcomponents[i]);
+    linetransportthermoconvect->AddComponent(transportthermoconvectcomponent);
+    surftransportthermoconvect->AddComponent(transportthermoconvectcomponent);
   }
 
-  condlist.push_back(linetransportthermoconvect);
-  condlist.push_back(surftransportthermoconvect);
+  condlist.emplace_back(linetransportthermoconvect);
+  condlist.emplace_back(surftransportthermoconvect);
 
   /*--------------------------------------------------------------------*/
   // Macro-micro coupling condition for micro scale in multi-scale scalar transport problems
@@ -707,64 +707,64 @@ void INPAR::SCATRA::SetValidConditions(
       {
         // constant permeability
         std::vector<Teuchos::RCP<ConditionComponent>> constperm;
-        constperm.push_back(Teuchos::rcp(
+        constperm.emplace_back(Teuchos::rcp(
             new SeparatorConditionComponent("numscal")));  // total number of existing scalars
         std::vector<Teuchos::RCP<SeparatorConditionComponent>>
             intsepcomp;  // empty vector --> no separators for integer vectors needed
         std::vector<Teuchos::RCP<IntVectorConditionComponent>>
             intvectcomp;  // empty vector --> no integer vectors needed
         std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
-        realsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent(
+        realsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent(
             "permeabilities")));  // string separator in front of real permeability vector in input
                                   // file line
         std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
-        realvectcomp.push_back(Teuchos::rcp(new RealVectorConditionComponent(
+        realvectcomp.emplace_back(Teuchos::rcp(new RealVectorConditionComponent(
             "permeabilities", 0)));  // real vector of constant permeabilities
-        constperm.push_back(Teuchos::rcp(
+        constperm.emplace_back(Teuchos::rcp(
             new IntRealBundle("permeabilities", Teuchos::rcp(new IntConditionComponent("numscal")),
                 intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
 
-        kineticmodels.push_back(Teuchos::rcp(
+        kineticmodels.emplace_back(Teuchos::rcp(
             new CondCompBundle("ConstantPermeability", constperm, INPAR::S2I::kinetics_constperm)));
       }
 
       {
         // Butler-Volmer
         std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
-        butlervolmer.push_back(Teuchos::rcp(
+        butlervolmer.emplace_back(Teuchos::rcp(
             new SeparatorConditionComponent("numscal")));  // total number of existing scalars
         std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
-        intsepcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
         std::vector<Teuchos::RCP<IntVectorConditionComponent>>
             intvectcomp;  // string separator in front of integer stoichiometry vector in input file
                           // line
-        intvectcomp.push_back(Teuchos::rcp(new IntVectorConditionComponent(
+        intvectcomp.emplace_back(Teuchos::rcp(new IntVectorConditionComponent(
             "stoichiometries", 0)));  // integer vector of stoichiometric coefficients
         std::vector<Teuchos::RCP<SeparatorConditionComponent>>
             realsepcomp;  // empty vector --> no separators for real vectors needed
         std::vector<Teuchos::RCP<RealVectorConditionComponent>>
             realvectcomp;  // empty vector --> no real vectors needed
-        butlervolmer.push_back(Teuchos::rcp(
+        butlervolmer.emplace_back(Teuchos::rcp(
             new IntRealBundle("stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")),
                 intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
-        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
-        butlervolmer.push_back(Teuchos::rcp(new IntConditionComponent("e-")));
-        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
-        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("k_r")));
-        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
-        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-        butlervolmer.push_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
-        butlervolmer.push_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+        butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+        butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+        butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+        butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+        butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
 
-        kineticmodels.push_back(Teuchos::rcp(
+        kineticmodels.emplace_back(Teuchos::rcp(
             new CondCompBundle("Butler-Volmer", butlervolmer, INPAR::S2I::kinetics_butlervolmer)));
       }
     }  // kinetic models for macro-micro coupling
 
     // insert kinetic models into vector with condition components
-    multiscalecouplingcomponents.push_back(
+    multiscalecouplingcomponents.emplace_back(
         Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
-    multiscalecouplingcomponents.push_back(
+    multiscalecouplingcomponents.emplace_back(
         Teuchos::rcp(new CondCompBundleSelector("kinetic models for macro-micro coupling",
             Teuchos::rcp(new StringConditionComponent("kinetic model", "ConstantPermeability",
                 Teuchos::tuple<std::string>("ConstantPermeability", "Butler-Volmer"),
@@ -773,11 +773,11 @@ void INPAR::SCATRA::SetValidConditions(
             kineticmodels)));
 
     // insert input file line components into condition definitions
-    for (unsigned i = 0; i < multiscalecouplingcomponents.size(); ++i)
-      multiscalecouplingpoint->AddComponent(multiscalecouplingcomponents[i]);
+    for (auto& multiscalecouplingcomponent : multiscalecouplingcomponents)
+      multiscalecouplingpoint->AddComponent(multiscalecouplingcomponent);
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(multiscalecouplingpoint);
+    condlist.emplace_back(multiscalecouplingpoint);
   }
 
   /*--------------------------------------------------------------------*/
@@ -792,8 +792,8 @@ void INPAR::SCATRA::SetValidConditions(
           DRT::Condition::ScatraHeteroReactionCondMaster, true, DRT::Condition::Surface));
 
   // insert condition definitions into global list of valid condition definitions
-  condlist.push_back(scatraheteroreactionmasterline);
-  condlist.push_back(scatraheteroreactionmastersurf);
+  condlist.emplace_back(scatraheteroreactionmasterline);
+  condlist.emplace_back(scatraheteroreactionmastersurf);
 
   /*--------------------------------------------------------------------*/
   // conditions for calculation of calculation of heterogeneous reactions
@@ -807,8 +807,8 @@ void INPAR::SCATRA::SetValidConditions(
           DRT::Condition::ScatraHeteroReactionCondSlave, true, DRT::Condition::Surface));
 
   // insert condition definitions into global list of valid condition definitions
-  condlist.push_back(scatraheteroreactionslaveline);
-  condlist.push_back(scatraheteroreactionslavesurf);
+  condlist.emplace_back(scatraheteroreactionslaveline);
+  condlist.emplace_back(scatraheteroreactionslavesurf);
 
 
   /*--------------------------------------------------------------------*/
@@ -830,7 +830,7 @@ void INPAR::SCATRA::SetValidConditions(
             DRT::Condition::ScatraPartitioning, false, DRT::Condition::Volume));
 
     // insert condition definitions into global list of valid condition definitions
-    condlist.push_back(scatrasurfpartitioning);
-    condlist.push_back(scatravolpartitioning);
+    condlist.emplace_back(scatrasurfpartitioning);
+    condlist.emplace_back(scatravolpartitioning);
   }
 }
