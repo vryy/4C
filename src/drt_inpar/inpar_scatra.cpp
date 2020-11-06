@@ -209,9 +209,9 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // type of global system matrix in global system of equations
   setStringToIntegralParameter<LINALG::MatrixType>("MATRIXTYPE", "sparse",
       "type of global system matrix in global system of equations",
-      tuple<std::string>("sparse", "block_meshtying", "block_condition", "block_condition_dof"),
-      tuple<LINALG::MatrixType>(LINALG::MatrixType::sparse, LINALG::MatrixType::block_meshtying,
-          LINALG::MatrixType::block_condition, LINALG::MatrixType::block_condition_dof),
+      tuple<std::string>("sparse", "block_condition", "block_condition_dof"),
+      tuple<LINALG::MatrixType>(LINALG::MatrixType::sparse, LINALG::MatrixType::block_condition,
+          LINALG::MatrixType::block_condition_dof),
       &scatradyn);
 
   // flag for natural convection effects
