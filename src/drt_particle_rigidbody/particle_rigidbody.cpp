@@ -298,17 +298,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::DistributeRigidBody()
   // distribute affiliation pairs
   affiliationpairs_->DistributeAffiliationPairs();
 
-  // store rigid bodies previously owned by this processor
-  std::vector<int> previouslyownedrigidbodies = ownedrigidbodies_;
-
   // update rigid body ownership
   UpdateRigidBodyOwnership();
-
-  // relate owned rigid bodies to all hosting processors
-  RelateOwnedRigidBodiesToHostingProcs();
-
-  // communicate rigid body states
-  CommunicateRigidBodyStates(previouslyownedrigidbodies);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
@@ -318,17 +309,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
   // communicate affiliation pairs
   affiliationpairs_->CommunicateAffiliationPairs();
 
-  // store rigid bodies previously owned by this processor
-  std::vector<int> previouslyownedrigidbodies = ownedrigidbodies_;
-
   // update rigid body ownership
   UpdateRigidBodyOwnership();
-
-  // relate owned rigid bodies to all hosting processors
-  RelateOwnedRigidBodiesToHostingProcs();
-
-  // communicate rigid body states
-  CommunicateRigidBodyStates(previouslyownedrigidbodies);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ClearForcesAndTorques()
@@ -531,6 +513,21 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyOwnership()
+{
+  // store rigid bodies previously owned by this processor
+  std::vector<int> previouslyownedrigidbodies = ownedrigidbodies_;
+
+  // determine owned and hosted rigid bodies
+  DetermineOwnedAndHostedRigidBodies();
+
+  // relate owned rigid bodies to all hosting processors
+  RelateOwnedRigidBodiesToHostingProcs();
+
+  // communicate rigid body states
+  CommunicateRigidBodyStates(previouslyownedrigidbodies);
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::DetermineOwnedAndHostedRigidBodies()
 {
   ownedrigidbodies_.clear();
   hostedrigidbodies_.clear();

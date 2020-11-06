@@ -314,15 +314,23 @@ namespace PARTICLERIGIDBODY
     /*!
      * \brief update rigid body ownership
      *
-     * Update the ownership of rigid bodies on all processors. First, the global ids of rigid bodies
-     * hosted, i.e., owned and non-owned, by this processor are determined using the affiliation of
-     * rigid particles to rigid bodies. Then, based on the maximum number of rigid particles per
-     * processor the owning processor of all rigid bodies is determined. Finally, each processor
-     * stores the global ids of rigid bodies owned.
+     * Update the ownership of rigid bodies on all processors.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     */
+    void UpdateRigidBodyOwnership();
+
+    /*!
+     * \brief determine owned and hosted rigid bodies
+     *
+     * First, the global ids of rigid bodies hosted, i.e., owned and non-owned, by this processor
+     * are determined using the affiliation of rigid particles to rigid bodies. Then, based on the
+     * maximum number of rigid particles per processor the owning processor of all rigid bodies is
+     * determined. Finally, each processor stores the global ids of rigid bodies owned.
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void UpdateRigidBodyOwnership();
+    void DetermineOwnedAndHostedRigidBodies();
 
     /*!
      * \brief relate owned rigid bodies to all hosting processors
