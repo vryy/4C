@@ -328,28 +328,6 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBody()
   CommunicateRigidBodyStates(previouslyownedrigidbodies);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities()
-{
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities");
-
-  // clear partial mass quantities of rigid bodies
-  ClearPartialMassQuantities();
-
-  // compute partial mass quantities of rigid bodies
-  ComputePartialMassQuantities();
-
-  // gathered partial mass quantities of rigid bodies from all corresponding processors
-  std::unordered_map<int, std::vector<double>> gatheredpartialmass;
-  std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialinertia;
-  std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialposition;
-
-  // gather partial mass quantities of rigid bodies
-  GatherPartialMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
-
-  // compute full mass quantities of rigid bodies
-  ComputeFullMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
-}
-
 void PARTICLERIGIDBODY::RigidBodyHandler::ClearForcesAndTorques()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ClearForcesAndTorques");
@@ -728,6 +706,28 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
     if (position != rmsg.size())
       dserror("mismatch in size of data %d <-> %d", static_cast<int>(rmsg.size()), position);
   }
+}
+
+void PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities");
+
+  // clear partial mass quantities of rigid bodies
+  ClearPartialMassQuantities();
+
+  // compute partial mass quantities of rigid bodies
+  ComputePartialMassQuantities();
+
+  // gathered partial mass quantities of rigid bodies from all corresponding processors
+  std::unordered_map<int, std::vector<double>> gatheredpartialmass;
+  std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialinertia;
+  std::unordered_map<int, std::vector<std::vector<double>>> gatheredpartialposition;
+
+  // gather partial mass quantities of rigid bodies
+  GatherPartialMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
+
+  // compute full mass quantities of rigid bodies
+  ComputeFullMassQuantities(gatheredpartialmass, gatheredpartialinertia, gatheredpartialposition);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ClearPartialMassQuantities()

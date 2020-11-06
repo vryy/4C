@@ -178,16 +178,6 @@ namespace PARTICLERIGIDBODY
     void CommunicateRigidBody();
 
     /*!
-     * \brief compute mass quantities of rigid bodies
-     *
-     * Compute the mass quantities, i.e., mass, center of gravity, and mass moment of inertia, of
-     * rigid bodies over all processor.
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     */
-    void ComputeRigidBodyMassQuantities();
-
-    /*!
      * \brief clear forces and torques
      *
      * Clear the forces and torques acting on rigid bodies and on the corresponding rigid particles
@@ -351,6 +341,16 @@ namespace PARTICLERIGIDBODY
      * \param[in] previouslyownedrigidbodies rigid bodies previously owned by this processor
      */
     void CommunicateRigidBodyStates(std::vector<int>& previouslyownedrigidbodies);
+
+    /*!
+     * \brief compute mass quantities of rigid bodies
+     *
+     * Compute the mass quantities, i.e., mass, center of gravity, and mass moment of inertia, of
+     * rigid bodies over all processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputeRigidBodyMassQuantities();
 
     /*!
      * \brief clear partial mass quantities of rigid bodies
