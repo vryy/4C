@@ -270,8 +270,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::AllocateRigidBodyStates()
   rigidbodydatastate_->AllocateStoredStates(numglobalids);
 }
 
-void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialStates()
+void PARTICLERIGIDBODY::RigidBodyHandler::InitializeRigidBodyMassQuantitiesAndOrientation()
 {
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLERIGIDBODY::RigidBodyHandler::InitializeRigidBodyMassQuantitiesAndOrientation");
+
   // compute mass quantities of rigid bodies
   ComputeRigidBodyMassQuantities();
 
@@ -710,8 +713,6 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
 
 void PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLERIGIDBODY::RigidBodyHandler::ComputeRigidBodyMassQuantities");
-
   // clear partial mass quantities of rigid bodies
   ClearPartialMassQuantities();
 

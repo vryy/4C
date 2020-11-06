@@ -157,11 +157,15 @@ namespace PARTICLERIGIDBODY
     void AllocateRigidBodyStates();
 
     /*!
-     * \brief set initial states
+     * \brief initialize rigid body mass quantities and orientation
+     *
+     * Compute the mass quantities and clear the orientation (describing the body frame) of rigid
+     * bodies. This includes setting the relative position of rigid particles in the body frame and
+     * in the reference frame.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetInitialStates();
+    void InitializeRigidBodyMassQuantitiesAndOrientation();
 
     /*!
      * \brief distribute rigid body

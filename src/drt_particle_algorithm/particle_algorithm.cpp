@@ -622,8 +622,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   // set initial states
   if (particleinteraction_) particleinteraction_->SetInitialStates();
 
-  // set initial states
-  if (particlerigidbody_) particlerigidbody_->SetInitialStates();
+  // initialize rigid body mass quantities and orientation
+  if (particlerigidbody_) particlerigidbody_->InitializeRigidBodyMassQuantitiesAndOrientation();
 
   // set initial conditions
   SetInitialConditions();
