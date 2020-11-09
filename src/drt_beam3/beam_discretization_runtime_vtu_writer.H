@@ -188,6 +188,11 @@ class BeamDiscretizationRuntimeVtuWriter
    *  \date 03/17 */
   void AppendElementElasticEnergy();
 
+  /**
+   * \brief append the reference element length of the beam for the Hermitian interpolation.
+   */
+  void AppendRefLength();
+
 
   /** \brief write all required VTU files to filesystem
    *

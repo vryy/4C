@@ -447,45 +447,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           break;
         }
 
-        case LINALG::MatrixType::block_meshtying:
-        {
-          // check matrix
-          Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
-              scatratimint_->BlockSystemMatrix();
-          if (blocksystemmatrix == Teuchos::null) dserror("System matrix is not a block matrix!");
-
-          // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
-          blocksystemmatrix->Matrix(1, 1).Add(*islavematrix_, false, 1., 1.);
-
-          if (not slaveonly_)
-          {
-            // transform linearizations of slave fluxes w.r.t. master dofs and assemble into global
-            // system matrix
-            (*islavetomastercoltransform_)(imastermatrix_->RowMap(), imastermatrix_->ColMap(),
-                *imastermatrix_, 1., ADAPTER::CouplingSlaveConverter(*icoup_),
-                blocksystemmatrix->Matrix(1, 2));
-
-            // derive linearizations of master fluxes w.r.t. slave dofs and assemble into global
-            // system matrix
-            (*islavetomasterrowtransform_)(*islavematrix_, -1.,
-                ADAPTER::CouplingSlaveConverter(*icoup_), blocksystemmatrix->Matrix(2, 1));
-
-            // derive linearizations of master fluxes w.r.t. master dofs and assemble into global
-            // system matrix
-            (*islavetomasterrowcoltransform_)(*imastermatrix_, -1.,
-                ADAPTER::CouplingSlaveConverter(*icoup_), ADAPTER::CouplingSlaveConverter(*icoup_),
-                blocksystemmatrix->Matrix(2, 2), true, true);
-          }
-
-          // safety check
-          else
-            dserror(
-                "Scatra-scatra interface coupling with evaluation of interface linearizations and "
-                "residuals on slave side only is not yet available for block system matrices!");
-
-          break;
-        }
-
         case LINALG::MatrixType::block_condition:
         case LINALG::MatrixType::block_condition_dof:
         {
@@ -2625,7 +2586,6 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
     }
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
-    case LINALG::MatrixType::block_meshtying:
     {
       // safety check
       if (!scatratimint_->Solver()->Params().isSublist("AMGnxn Parameters"))

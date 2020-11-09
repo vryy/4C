@@ -3916,9 +3916,6 @@ void SCATRA::ScaTraTimIntImpl::BuildBlockMaps(
  *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 {
-  // matrix block map extractor equals interface map extractor in this case
-  if (matrixtype_ == LINALG::MatrixType::block_meshtying) blockmaps_ = strategy_->InterfaceMaps();
-
   // now build the null spaces
   BuildBlockNullSpaces(Solver(), 0);
 
@@ -3972,7 +3969,6 @@ void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMapsAndMeshtying()
     }
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
-    case LINALG::MatrixType::block_meshtying:
     {
       // safety check
       if (!Solver()->Params().isSublist("AMGnxn Parameters"))
@@ -4011,22 +4007,6 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
       // initialize system matrix
       systemmatrix =
           Teuchos::rcp(new LINALG::SparseMatrix(*discret_->DofRowMap(), 27, false, true));
-      break;
-    }
-
-    case LINALG::MatrixType::block_meshtying:
-    {
-      if (S2ICoupling())
-      {
-        // initialize system matrix and associated strategy
-        systemmatrix =
-            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
-                *strategy_->InterfaceMaps(), *strategy_->InterfaceMaps(), 81, false, true));
-      }
-      else
-        dserror("Scatra Matrixtype %i is only possible in combination with S2ICoupling!",
-            static_cast<int>(matrixtype_));
-
       break;
     }
 

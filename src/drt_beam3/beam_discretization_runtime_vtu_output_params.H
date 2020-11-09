@@ -122,6 +122,13 @@ namespace DRT
         return write_rve_crosssection_forces_;
       };
 
+      /// whether to write the element reference length
+      bool IsWriteRefLength() const
+      {
+        CheckInitSetup();
+        return write_ref_length_;
+      };
+
       /// whether to write beam element GIDs.
       bool IsWriteElementGID() const
       {
@@ -185,6 +192,9 @@ namespace DRT
 
       /// whether to write crosssection forces of periodic rve in x, y, and z direction
       bool write_rve_crosssection_forces_;
+
+      /// whether to write the element GIDs.
+      bool write_ref_length_;
 
       /// whether to write the element GIDs.
       bool write_element_gid_;

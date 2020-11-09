@@ -30,6 +30,7 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       write_filament_condition_(false),
       write_orientation_parameter_(false),
       write_rve_crosssection_forces_(false),
+      write_ref_length_(false),
       write_element_gid_(false)
 {
   // empty constructor
@@ -74,6 +75,9 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
 
   write_rve_crosssection_forces_ = (bool)DRT::INPUT::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "RVE_CROSSSECTION_FORCES");
+
+  write_ref_length_ =
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "REF_LENGTH");
 
   write_element_gid_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
