@@ -87,8 +87,8 @@ namespace PARTICLEINTERACTION
     //! set initial states
     virtual void SetInitialStates() = 0;
 
-    //! prepare time step
-    virtual void PrepareTimeStep() = 0;
+    //! pre evaluate time step
+    virtual void PreEvaluateTimeStep() = 0;
 
     //! evaluate particle interactions
     virtual void EvaluateInteractions() = 0;

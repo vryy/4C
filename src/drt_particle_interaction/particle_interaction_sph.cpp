@@ -328,9 +328,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep");
 
   // prescribe open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->PrescribeOpenBoundaryStates(time_);

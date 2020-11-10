@@ -60,6 +60,9 @@ void PASI::PASI_PartOneWayCoup::Timeloop()
     // prepare time step
     PrepareTimeStep();
 
+    // pre evaluate time step
+    PreEvaluateTimeStep();
+
     // structural time step
     StructStep();
 

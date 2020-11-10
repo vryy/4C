@@ -199,6 +199,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     // counter and print header
     PrepareTimeStep();
 
+    // pre evaluate time step
+    PreEvaluateTimeStep();
+
     // integrate time step
     IntegrateTimeStep();
 
@@ -233,9 +236,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
 
   // set current write result flag
   SetCurrentWriteResultFlag();
+}
 
-  // prepare time step
-  if (particleinteraction_) particleinteraction_->PrepareTimeStep();
+void PARTICLEALGORITHM::ParticleAlgorithm::PreEvaluateTimeStep()
+{
+  // pre evaluate time step
+  if (particleinteraction_) particleinteraction_->PreEvaluateTimeStep();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
@@ -632,20 +638,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   // time integration scheme specific initialization routine
   particletimint_->SetInitialStates();
 
-  // update connectivity
-  UpdateConnectivity();
-
   // evaluate consistent initial states
   {
-    // prepare time step
-    if (particleinteraction_) particleinteraction_->PrepareTimeStep();
+    // pre evaluate time step
+    PreEvaluateTimeStep();
+
+    // update connectivity
+    UpdateConnectivity();
 
     // evaluate time step
     EvaluateTimeStep();
 
     // post evaluate time step
-    std::vector<PARTICLEENGINE::ParticleTypeToType> particlesfromphasetophase;
-    if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep(particlesfromphasetophase);
+    PostEvaluateTimeStep();
   }
 }
 

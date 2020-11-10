@@ -136,9 +136,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialStates()
   SetInitialInertia();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::PrepareTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionDEM::PreEvaluateTimeStep()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PrepareTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PreEvaluateTimeStep");
 }
 
 void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()

@@ -86,8 +86,8 @@ namespace PARTICLEINTERACTION
     //! set initial states
     void SetInitialStates() override;
 
-    //! prepare time step
-    void PrepareTimeStep() override;
+    //! pre evaluate time step
+    void PreEvaluateTimeStep() override;
 
     //! evaluate particle interactions
     void EvaluateInteractions() override;
