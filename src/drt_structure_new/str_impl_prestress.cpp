@@ -56,12 +56,12 @@ void STR::IMPLICIT::PreStress::PostUpdate()
   else if (::UTILS::PRESTRESS::IsMaterialIterativeActive(GlobalState().GetTimeN()))
   {
     // Compute norm of the displacements before resetting them
-    GlobalState().GetDisN()->Norm2(&absoluteDisplacementNorm_);
+    GlobalState().GetDisN()->NormInf(&absoluteDisplacementNorm_);
 
     if (GlobalState().GetMyRank() == 0)
     {
       IO::cout << "====== Iterative Prestress Status" << IO::endl;
-      IO::cout << "abs-dis-norm:                    " << absoluteDisplacementNorm_ << IO::endl;
+      IO::cout << "abs-dis-inf-norm:                    " << absoluteDisplacementNorm_ << IO::endl;
     }
   }
 }
@@ -77,7 +77,8 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
       if (::UTILS::PRESTRESS::IsMaterialIterative() && GlobalState().GetMyRank() == 0)
       {
         IO::cout << "Prestress is converged. Stopping simulation." << IO::endl;
-        IO::cout << "abs-dis-norm:                    " << absoluteDisplacementNorm_ << IO::endl;
+        IO::cout << "abs-dis-inf-norm:                    " << absoluteDisplacementNorm_
+                 << IO::endl;
       }
       return true;
     }
@@ -93,7 +94,8 @@ void STR::IMPLICIT::PreStress::PostTimeLoop()
     if (absoluteDisplacementNorm_ > SDyn().GetPreStressDisplacementTolerance())
     {
       dserror(
-          "Prestress algorithm did not converged within the given timesteps. abs-dis-norm is %f",
+          "Prestress algorithm did not converged within the given timesteps. abs-dis-inf-norm is "
+          "%f",
           absoluteDisplacementNorm_);
     }
   }
