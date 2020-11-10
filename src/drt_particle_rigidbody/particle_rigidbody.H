@@ -429,6 +429,8 @@ namespace PARTICLERIGIDBODY
      * \brief clear force acting on rigid particles
      *
      * Clear the force of rigid particles owned on this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void ClearRigidParticleForce();
 
@@ -545,6 +547,8 @@ namespace PARTICLERIGIDBODY
      *
      * Update the relative position of rigid particles in the rotating frame owned on this
      * processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void UpdateRigidParticleRelativePosition();
 
@@ -553,6 +557,8 @@ namespace PARTICLERIGIDBODY
      *
      * Set the position of rigid particles owned on this processor consistent to the affiliated
      * rigid body.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticlePosition();
 
@@ -561,6 +567,8 @@ namespace PARTICLERIGIDBODY
      *
      * Set the velocities of rigid particles owned on this processor consistent to the affiliated
      * rigid body.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticleVelocities();
 
@@ -569,6 +577,8 @@ namespace PARTICLERIGIDBODY
      *
      * Set the accelerations of rigid particles owned on this processor consistent to the affiliated
      * rigid body.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticleAccelerations();
 
