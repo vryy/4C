@@ -264,6 +264,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PostEvaluateTimeStep()
   // post evaluate time step
   std::vector<PARTICLEENGINE::ParticleTypeToType> particlesfromphasetophase;
   if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep(particlesfromphasetophase);
+
+  if (particlerigidbody_)
+  {
+    // have rigid body phase change
+    if (particlerigidbody_->HaveRigidBodyPhaseChange(particlesfromphasetophase))
+    {
+      // update connectivity
+      UpdateConnectivity();
+
+      // evaluate rigid body phase change
+      particlerigidbody_->EvaluateRigidBodyPhaseChange(particlesfromphasetophase);
+    }
+  }
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const

@@ -248,6 +248,33 @@ namespace PARTICLERIGIDBODY
      */
     void ClearAccelerations() override;
 
+    /*!
+     * \brief have rigid body phase change
+     *
+     * Check for phase change, i.e., melting or solidification, of rigid bodies over all processors.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     *
+     * \return have phase change
+     */
+    bool HaveRigidBodyPhaseChange(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
+    /*!
+     * \brief evaluate rigid body phase change
+     *
+     * Evaluate phase change, i.e., melting or solidification, of rigid bodies by tracking the phase
+     * change of rigid particles owned on this processor from or to the rigid phase.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     */
+    void EvaluateRigidBodyPhaseChange(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
     {
       return rigidbodydatastate_;
@@ -358,7 +385,7 @@ namespace PARTICLERIGIDBODY
      * \brief compute mass quantities of rigid bodies
      *
      * Compute the mass quantities, i.e., mass, center of gravity, and mass moment of inertia, of
-     * rigid bodies over all processor.
+     * rigid bodies over all processors.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
@@ -581,6 +608,38 @@ namespace PARTICLERIGIDBODY
      * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticleAccelerations();
+
+    /*!
+     * \brief evaluate melting of rigid bodies
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     */
+    void EvaluateRigidBodyMelting(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
+    /*!
+     * \brief evaluate solidification of rigid bodies
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     */
+    void EvaluateRigidBodySolidification(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
+    /*!
+     * \brief set velocities of rigid bodies after phase change
+     *
+     * Set the velocities of rigid bodies after a phase change on the owning processor.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] previousposition previous position of rigid bodies
+     */
+    void SetRigidBodyVelocitiesAfterPhaseChange(
+        const std::vector<std::vector<double>>& previousposition);
 
     //! communicator
     const Epetra_Comm& comm_;
