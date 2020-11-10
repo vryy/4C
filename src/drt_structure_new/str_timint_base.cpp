@@ -1170,6 +1170,8 @@ void STR::TIMINT::Base::OutputErrorNorms()
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
 
+void STR::TIMINT::Base::PostTimeLoop() { int_ptr_->PostTimeLoop(); }
+
 bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
 {
   return dataio_->GetLastWrittenResults() == dataglobalstate_->GetStepN();

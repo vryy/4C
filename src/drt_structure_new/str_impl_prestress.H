@@ -46,6 +46,8 @@ namespace STR
        */
       bool EarlyStopping() const override;
 
+      void PostTimeLoop() override;
+
      private:
       /// Absolute displacement norm used for the convergence check of the prestress state
       double absoluteDisplacementNorm_;

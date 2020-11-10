@@ -85,3 +85,16 @@ bool STR::IMPLICIT::PreStress::EarlyStopping() const
 
   return false;
 }
+
+void STR::IMPLICIT::PreStress::PostTimeLoop()
+{
+  if (::UTILS::PRESTRESS::IsMaterialIterative())
+  {
+    if (absoluteDisplacementNorm_ > SDyn().GetPreStressDisplacementTolerance())
+    {
+      dserror(
+          "Prestress algorithm did not converged within the given timesteps. abs-dis-norm is %f",
+          absoluteDisplacementNorm_);
+    }
+  }
+}
