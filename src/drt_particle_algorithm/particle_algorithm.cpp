@@ -256,7 +256,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
 void PARTICLEALGORITHM::ParticleAlgorithm::PostEvaluateTimeStep()
 {
   // post evaluate time step
-  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
+  std::vector<PARTICLEENGINE::ParticleTypeToType> particlesfromphasetophase;
+  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep(particlesfromphasetophase);
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const
@@ -643,7 +644,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
     EvaluateTimeStep();
 
     // post evaluate time step
-    if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
+    std::vector<PARTICLEENGINE::ParticleTypeToType> particlesfromphasetophase;
+    if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep(particlesfromphasetophase);
   }
 }
 

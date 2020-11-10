@@ -58,7 +58,8 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle);
 
     //! evaluate phase change
-    virtual void EvaluatePhaseChange() const = 0;
+    virtual void EvaluatePhaseChange(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const = 0;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -94,7 +95,8 @@ namespace PARTICLEINTERACTION
         override;
 
     //! evaluate phase change
-    void EvaluatePhaseChange() const override;
+    void EvaluatePhaseChange(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
 
    private:
     //! phase below transition value

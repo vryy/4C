@@ -170,7 +170,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateInteractions()
   historypairs_->UpdateHistoryPairs();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionDEM::PostEvaluateTimeStep");
 

@@ -126,7 +126,8 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() const
+void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -204,6 +205,9 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() cons
 
         // store index of particle to be removed from containers
         particlestoremove[type_source].insert(index);
+
+        // append source and target type together with global id of particle
+        particlesfromphasetophase.push_back(std::make_tuple(type_source, type_target, globalid));
       }
     }
   }

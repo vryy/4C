@@ -94,7 +94,8 @@ namespace PARTICLEINTERACTION
     virtual void EvaluateInteractions() = 0;
 
     //! post evaluate time step
-    virtual void PostEvaluateTimeStep() = 0;
+    virtual void PostEvaluateTimeStep(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) = 0;
 
     //! check particle interaction distance concerning bin size
     virtual void CheckParticleInteractionDistanceConcerningBinSize() const final;
