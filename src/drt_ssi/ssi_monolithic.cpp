@@ -1023,23 +1023,30 @@ int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
+Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEquilibration()
 {
-  std::vector<LINALG::EquilibrationMethod> equilibration_method_vector;
+  Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> equilibration_method_vector;
   switch (matrixtype_)
   {
     case LINALG::MatrixType::sparse:
     {
-      equilibration_method_vector.emplace_back(equilibration_method_.global);
+      equilibration_method_vector = Teuchos::rcp(
+          new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
       break;
     }
     case LINALG::MatrixType::block_field:
     {
       if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
-        equilibration_method_vector.emplace_back(equilibration_method_.global);
+      {
+        equilibration_method_vector = Teuchos::rcp(
+            new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+      }
       else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
                equilibration_method_.scatra == LINALG::EquilibrationMethod::none)
-        equilibration_method_vector.emplace_back(LINALG::EquilibrationMethod::none);
+      {
+        equilibration_method_vector = Teuchos::rcp(
+            new std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none));
+      }
       else
       {
         Teuchos::RCP<std::vector<int>> block_positions_scatra =
@@ -1047,13 +1054,14 @@ std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
         Teuchos::RCP<std::vector<int>> block_position_structure =
             GetBlockPositions(Subproblem::structure);
 
-        equilibration_method_vector.resize(
-            block_positions_scatra->size() + block_position_structure->size());
+        equilibration_method_vector = Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(
+            block_positions_scatra->size() + block_position_structure->size(),
+            LINALG::EquilibrationMethod::none));
 
         for (const int block_position_scatra : *block_positions_scatra)
-          equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
+          equilibration_method_vector->at(block_position_scatra) = equilibration_method_.scatra;
 
-        equilibration_method_vector.at(block_position_structure->at(0)) =
+        equilibration_method_vector->at(block_position_structure->at(0)) =
             equilibration_method_.structure;
       }
 
@@ -1065,6 +1073,5 @@ std::vector<LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibration()
       break;
     }
   }
-
   return equilibration_method_vector;
 }

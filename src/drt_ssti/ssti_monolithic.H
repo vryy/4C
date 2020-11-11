@@ -125,7 +125,7 @@ namespace SSTI
     Teuchos::RCP<Epetra_Vector> ExtractSubIncrement(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
-    std::vector<LINALG::EquilibrationMethod> GetBlockEquilibration();
+    Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();

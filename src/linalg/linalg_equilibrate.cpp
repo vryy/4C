@@ -51,10 +51,10 @@ LINALG::EquilibrationBlock::EquilibrationBlock(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 LINALG::EquilibrationLocal::EquilibrationLocal(
-    std::vector<EquilibrationMethod> method, Teuchos::RCP<const Epetra_Map> dofrowmap)
+    Teuchos::RCP<std::vector<EquilibrationMethod>> method, Teuchos::RCP<const Epetra_Map> dofrowmap)
     : Equilibration(dofrowmap), method_blocks_(std::move(method))
 {
-  for (const auto& method_block : method_blocks_)
+  for (const auto& method_block : *method_blocks_)
   {
     if (method_block == EquilibrationMethod::columns_full or
         method_block == EquilibrationMethod::rows_full or
@@ -413,7 +413,7 @@ void LINALG::EquilibrationLocal::EquilibrateMatrix(
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksparsematrix =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
-  if (blocksparsematrix->Rows() != static_cast<int>(method_blocks_.size()))
+  if (blocksparsematrix->Rows() != static_cast<int>(method_blocks_->size()))
     dserror("No match between number of equilibration methods and Matrix blocks");
 
   // init: no scaling
@@ -423,7 +423,7 @@ void LINALG::EquilibrationLocal::EquilibrateMatrix(
   // loop over all blocks of matrix and apply equilibration for each block
   for (int i = 0; i < blocksparsematrix->Rows(); ++i)
   {
-    const EquilibrationMethod method = method_blocks_.at(i);
+    const EquilibrationMethod method = method_blocks_->at(i);
     if (method == EquilibrationMethod::rows_maindiag or
         method == EquilibrationMethod::rowsandcolumns_maindiag)
     {
@@ -475,13 +475,13 @@ void LINALG::EquilibrationLocal::EquilibrateMatrix(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::Equilibration> LINALG::BuildEquilibration(MatrixType type,
-    std::vector<EquilibrationMethod> method, Teuchos::RCP<const Epetra_Map> dofrowmap)
+    Teuchos::RCP<std::vector<EquilibrationMethod>> method, Teuchos::RCP<const Epetra_Map> dofrowmap)
 {
   Teuchos::RCP<LINALG::Equilibration> equilibration = Teuchos::null;
 
-  if (method.size() == 1)
+  if (method->size() == 1)
   {
-    EquilibrationMethod method_global = method.at(0);
+    EquilibrationMethod method_global = method->at(0);
 
     if (method_global == LINALG::EquilibrationMethod::none)
       equilibration = Teuchos::rcp(new LINALG::EquilibrationNone(dofrowmap));

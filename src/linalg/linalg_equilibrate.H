@@ -216,8 +216,8 @@ namespace LINALG
   class EquilibrationLocal : public Equilibration
   {
    public:
-    EquilibrationLocal(
-        std::vector<EquilibrationMethod> method, Teuchos::RCP<const Epetra_Map> dofrowmap);
+    EquilibrationLocal(Teuchos::RCP<std::vector<EquilibrationMethod>> method,
+        Teuchos::RCP<const Epetra_Map> dofrowmap);
 
     ~EquilibrationLocal() override = default;
 
@@ -229,7 +229,7 @@ namespace LINALG
     void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override;
 
    private:
-    std::vector<EquilibrationMethod> method_blocks_;
+    Teuchos::RCP<std::vector<EquilibrationMethod>> method_blocks_;
   };
 
   /*----------------------------------------------------------------------*
@@ -261,6 +261,7 @@ namespace LINALG
    * @return equilibration method
    */
   Teuchos::RCP<LINALG::Equilibration> BuildEquilibration(MatrixType type,
-      std::vector<EquilibrationMethod> method, Teuchos::RCP<const Epetra_Map> dofrowmap);
+      Teuchos::RCP<std::vector<EquilibrationMethod>> method,
+      Teuchos::RCP<const Epetra_Map> dofrowmap);
 }  // namespace LINALG
 #endif
