@@ -157,11 +157,15 @@ namespace PARTICLERIGIDBODY
     void AllocateRigidBodyStates();
 
     /*!
-     * \brief set initial states
+     * \brief initialize rigid body mass quantities and orientation
+     *
+     * Compute the mass quantities and clear the orientation (describing the body frame) of rigid
+     * bodies. This includes setting the relative position of rigid particles in the body frame and
+     * in the reference frame.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetInitialStates();
+    void InitializeRigidBodyMassQuantitiesAndOrientation();
 
     /*!
      * \brief distribute rigid body
@@ -176,16 +180,6 @@ namespace PARTICLERIGIDBODY
      * \author Sebastian Fuchs \date 08/2020
      */
     void CommunicateRigidBody();
-
-    /*!
-     * \brief compute mass quantities of rigid bodies
-     *
-     * Compute the mass quantities, i.e., mass, center of gravity, and mass moment of inertia, of
-     * rigid bodies over all processor.
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     */
-    void ComputeRigidBodyMassQuantities();
 
     /*!
      * \brief clear forces and torques
@@ -254,6 +248,33 @@ namespace PARTICLERIGIDBODY
      */
     void ClearAccelerations() override;
 
+    /*!
+     * \brief have rigid body phase change
+     *
+     * Check for phase change, i.e., melting or solidification, of rigid bodies over all processors.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     *
+     * \return have phase change
+     */
+    bool HaveRigidBodyPhaseChange(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
+    /*!
+     * \brief evaluate rigid body phase change
+     *
+     * Evaluate phase change, i.e., melting or solidification, of rigid bodies by tracking the phase
+     * change of rigid particles owned on this processor from or to the rigid phase.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     */
+    void EvaluateRigidBodyPhaseChange(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> GetRigidBodyDataState() const override
     {
       return rigidbodydatastate_;
@@ -320,15 +341,23 @@ namespace PARTICLERIGIDBODY
     /*!
      * \brief update rigid body ownership
      *
-     * Update the ownership of rigid bodies on all processors. First, the global ids of rigid bodies
-     * hosted, i.e., owned and non-owned, by this processor are determined using the affiliation of
-     * rigid particles to rigid bodies. Then, based on the maximum number of rigid particles per
-     * processor the owning processor of all rigid bodies is determined. Finally, each processor
-     * stores the global ids of rigid bodies owned.
+     * Update the ownership of rigid bodies on all processors.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     */
+    void UpdateRigidBodyOwnership();
+
+    /*!
+     * \brief determine owned and hosted rigid bodies
+     *
+     * First, the global ids of rigid bodies hosted, i.e., owned and non-owned, by this processor
+     * are determined using the affiliation of rigid particles to rigid bodies. Then, based on the
+     * maximum number of rigid particles per processor the owning processor of all rigid bodies is
+     * determined. Finally, each processor stores the global ids of rigid bodies owned.
      *
      * \author Sebastian Fuchs \date 08/2020
      */
-    void UpdateRigidBodyOwnership();
+    void DetermineOwnedAndHostedRigidBodies();
 
     /*!
      * \brief relate owned rigid bodies to all hosting processors
@@ -351,6 +380,16 @@ namespace PARTICLERIGIDBODY
      * \param[in] previouslyownedrigidbodies rigid bodies previously owned by this processor
      */
     void CommunicateRigidBodyStates(std::vector<int>& previouslyownedrigidbodies);
+
+    /*!
+     * \brief compute mass quantities of rigid bodies
+     *
+     * Compute the mass quantities, i.e., mass, center of gravity, and mass moment of inertia, of
+     * rigid bodies over all processors.
+     *
+     * \author Sebastian Fuchs \date 09/2020
+     */
+    void ComputeRigidBodyMassQuantities();
 
     /*!
      * \brief clear partial mass quantities of rigid bodies
@@ -417,6 +456,8 @@ namespace PARTICLERIGIDBODY
      * \brief clear force acting on rigid particles
      *
      * Clear the force of rigid particles owned on this processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void ClearRigidParticleForce();
 
@@ -520,19 +561,21 @@ namespace PARTICLERIGIDBODY
     void BroadcastRigidBodyAccelerations();
 
     /*!
-     * \brief set relative position of rigid particles in reference frame
+     * \brief set relative position of rigid particles in body frame
      *
-     * Set the relative position of rigid particles in the reference frame owned on this processor.
+     * Set the relative position of rigid particles in the body frame owned on this processor.
      *
      * \author Sebastian Fuchs \date 09/2020
      */
-    void SetRigidParticleReferenceRelativePosition();
+    void SetRigidParticleRelativePositionInBodyFrame();
 
     /*!
      * \brief update relative position of rigid particles
      *
      * Update the relative position of rigid particles in the rotating frame owned on this
      * processor.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void UpdateRigidParticleRelativePosition();
 
@@ -541,6 +584,8 @@ namespace PARTICLERIGIDBODY
      *
      * Set the position of rigid particles owned on this processor consistent to the affiliated
      * rigid body.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticlePosition();
 
@@ -549,6 +594,8 @@ namespace PARTICLERIGIDBODY
      *
      * Set the velocities of rigid particles owned on this processor consistent to the affiliated
      * rigid body.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticleVelocities();
 
@@ -557,8 +604,42 @@ namespace PARTICLERIGIDBODY
      *
      * Set the accelerations of rigid particles owned on this processor consistent to the affiliated
      * rigid body.
+     *
+     * \author Sebastian Fuchs \date 09/2020
      */
     void SetRigidParticleAccelerations();
+
+    /*!
+     * \brief evaluate melting of rigid bodies
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     */
+    void EvaluateRigidBodyMelting(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
+    /*!
+     * \brief evaluate solidification of rigid bodies
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] particlesfromphasetophase particle phase change tuples
+     */
+    void EvaluateRigidBodySolidification(
+        const std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase);
+
+    /*!
+     * \brief set velocities of rigid bodies after phase change
+     *
+     * Set the velocities of rigid bodies after a phase change on the owning processor.
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     *
+     * \param[in] previousposition previous position of rigid bodies
+     */
+    void SetRigidBodyVelocitiesAfterPhaseChange(
+        const std::vector<std::vector<double>>& previousposition);
 
     //! communicator
     const Epetra_Comm& comm_;

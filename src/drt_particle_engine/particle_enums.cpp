@@ -45,7 +45,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::ModifiedAcceleration:
     case PARTICLEENGINE::ReferencePosition:
     case PARTICLEENGINE::RelativePosition:
-    case PARTICLEENGINE::ReferenceRelativePosition:
+    case PARTICLEENGINE::RelativePositionBodyFrame:
     case PARTICLEENGINE::BoundaryVelocity:
     case PARTICLEENGINE::ColorfieldGradient:
     case PARTICLEENGINE::InterfaceNormal:
@@ -137,8 +137,8 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::RelativePosition:
       name = "relative position";
       break;
-    case PARTICLEENGINE::ReferenceRelativePosition:
-      name = "reference relative position";
+    case PARTICLEENGINE::RelativePositionBodyFrame:
+      name = "body frame relative position";
       break;
     case PARTICLEENGINE::ModifiedVelocity:
       name = "modified velocity";

@@ -54,8 +54,8 @@ namespace PARTICLEENGINE
     /*---------------------------------------------------------------------------*/
     // particle states for rigid body evaluation
     RigidBodyColor,             //!< rigid body color
-    RelativePosition,           //!< position relative to rigid body position in rotating frame
-    ReferenceRelativePosition,  //!< position relative to rigid body position in reference frame
+    RelativePosition,           //!< position relative to rigid body position in reference frame
+    RelativePositionBodyFrame,  //!< position relative to rigid body position in body frame
     Inertia,                    //!< mass moment of inertia
     /*---------------------------------------------------------------------------*/
     // particle states for SPH interaction

@@ -328,9 +328,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep");
 
   // prescribe open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->PrescribeOpenBoundaryStates(time_);
@@ -381,7 +381,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   if (rigidparticlecontact_) rigidparticlecontact_->AddForceContribution();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep");
 
@@ -394,7 +395,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
     neumannopenboundary_->CheckOpenBoundaryPhaseChange(MaxInteractionDistance());
 
   // evaluate phase change
-  if (phasechange_) phasechange_->EvaluatePhaseChange();
+  if (phasechange_) phasechange_->EvaluatePhaseChange(particlesfromphasetophase);
 }
 
 double PARTICLEINTERACTION::ParticleInteractionSPH::MaxInteractionDistance() const

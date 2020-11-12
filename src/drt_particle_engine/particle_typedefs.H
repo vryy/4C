@@ -104,6 +104,9 @@ namespace PARTICLEENGINE
   //! potential particle wall neighbor pairs
   using PotentialWallNeighbors = std::vector<std::pair<LocalIndexTuple, DRT::Element*>>;
 
+  //! relate particle source to target type after phase change
+  using ParticleTypeToType = std::tuple<PARTICLEENGINE::TypeEnum, PARTICLEENGINE::TypeEnum, int>;
+
 }  // namespace PARTICLEENGINE
 
 /*---------------------------------------------------------------------------*/
