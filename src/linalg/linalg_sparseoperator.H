@@ -65,10 +65,6 @@ namespace LINALG
                             matrices. Each of the blocks as created by block_condition is
                             further subdivided by the dofs, meaning e.g. for two dofs per node
                             each 'original' block is divided into 2 blocks. */
-    block_meshtying      /*!< System matrix is a block matrix that consists of 3x3 sparse
-                            matrices. The system matrix is divided into interior dofs, slave-side and
-                            master-side dofs, based on its definition according to an interface coupling
-                            condition (e.g. \link DRT::Condition::S2ICoupling S2ICoupling \endlink.) */
   };
 
   /// Linear operator interface enhanced for use in FE simulations

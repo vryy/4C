@@ -47,14 +47,14 @@ macro (baci_test_and_post_ensight_test arg nproc restart)
   set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --outputtype=bin)
 
   add_test(NAME ${arg}-p${nproc}-post_ensight-ser
-    COMMAND sh -c " ${RUNPOSTFILTER_SER} && python\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_SER_structure.case")
+    COMMAND sh -c " ${RUNPOSTFILTER_SER} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_SER_structure.case")
   set_tests_properties(${arg}-p${nproc}-post_ensight-ser PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 
   # additionally run postprocessing in parallel mode
   set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --outputtype=bin)
 
   add_test(NAME ${arg}-p${nproc}-post_ensight-par
-    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && python\ ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_PAR_structure.case")
+    COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_PAR_structure.case")
   set_tests_properties(${arg}-p${nproc}-post_ensight-par PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
 endmacro (baci_test_and_post_ensight_test)
 
@@ -2164,7 +2164,6 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_AMG_vectorbased 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_AMG-BGS_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 3 "")
 muelu_agg2vtk(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3 2 3 3 100.)
-baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_3x3_geometry 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_BGS-AMG_4x4 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_BGS-AMG_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_redist_BGS-AMG_3x3 3 "")
