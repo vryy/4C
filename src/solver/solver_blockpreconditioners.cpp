@@ -42,6 +42,12 @@ LINALG::SOLVER::MueLuBlockPreconditioner::MueLuBlockPreconditioner(
 void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
+#ifdef TRILINOS_DEVELOP
+  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
+#else
+  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
+#endif
+
   SetupLinearProblem(matrix, x, b);
 
   // some typedefs
@@ -105,13 +111,13 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
       stridingInfo.push_back(np);
 
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
 
       // create maps
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> epetra_fullrangemap =
@@ -242,13 +248,13 @@ void LINALG::SOLVER::MueLuBlockPreconditioner::Setup(
 #endif
 
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
-          Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
 
       // define strided maps
       int nPDE = params_.sublist("Inverse1").get<int>("PDE equations", 1);

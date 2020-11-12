@@ -99,7 +99,11 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
 
     // wrap Epetra_CrsMatrix to Xpetra::Matrix for use in MueLu
     Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
+#ifdef TRILINOS_DEVELOP
+        Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(Pmatrix_));
+#else
         Teuchos::rcp(new Xpetra::EpetraCrsMatrix(Pmatrix_));
+#endif
     Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> mueluOp =
         Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
 

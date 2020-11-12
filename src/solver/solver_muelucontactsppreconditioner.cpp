@@ -208,12 +208,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   using Teuchos::RCP;
   using Teuchos::rcp;
 
-#if defined(TRILINOS_Q1_2015)
+#ifdef TRILINOS_Q1_2015
   using EpetraMap = Xpetra::EpetraMap;
-#elif defined(TRILINOS_DEVELOP)
-  using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
 #else
-  dserror("MueLuContactSpPreconditioner only available for TRILINOS_Q1_2015 and TRILINOS_DEVELOP.");
+  using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
 #endif
 
   SetupLinearProblem(matrix, x, b);
@@ -899,6 +897,13 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     } // end debug output
     Write(H);
 #endif  // 0
+
+    // set multigrid preconditioner
+    P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
+
+    // store multigrid hierarchy
+    H_ = H;
+
 #elif defined(TRILINOS_DEVELOP)
 
     if (!mllist_.isParameter("MUELU_XML_FILE"))
@@ -963,15 +968,15 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
         "PrimalInterfaceDofRowMap", Teuchos::rcp_dynamic_cast<const Map>(xSlaveDofMap, true));
 
     mueLuFactory.SetupHierarchy(*H);
-#else
-    dserror("Not implemented for your Trilinos installation.");
-#endif  // TRILINOS_Q1_2015, else TRILINOS_DEVELOP
 
     // set multigrid preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
 
     // store multigrid hierarchy
     H_ = H;
+#else
+    dserror("Not implemented for your Trilinos installation.");
+#endif  // TRILINOS_Q1_2015, else TRILINOS_DEVELOP
   }
   else
   {
