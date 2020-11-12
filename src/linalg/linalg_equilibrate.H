@@ -157,12 +157,12 @@ namespace LINALG
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   //! Global system matrix is equilibrated using the same method
-  class EquilibrationGlobal : public Equilibration
+  class EquilibrationUniversal : public Equilibration
   {
    public:
-    EquilibrationGlobal(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
+    EquilibrationUniversal(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
 
-    ~EquilibrationGlobal() override = default;
+    ~EquilibrationUniversal() override = default;
 
     //! return equilibration method
     EquilibrationMethod Method() const { return method_; }
@@ -178,7 +178,7 @@ namespace LINALG
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   //! System matrix is a sparse matrix
-  class EquilibrationSparse : public EquilibrationGlobal
+  class EquilibrationSparse : public EquilibrationUniversal
   {
    public:
     EquilibrationSparse(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
@@ -199,7 +199,7 @@ namespace LINALG
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   //! System matrix is a block matrix
-  class EquilibrationBlock : public EquilibrationGlobal
+  class EquilibrationBlock : public EquilibrationUniversal
   {
    public:
     EquilibrationBlock(EquilibrationMethod method, Teuchos::RCP<const Epetra_Map> dofrowmap);
@@ -213,13 +213,13 @@ namespace LINALG
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   //! System matrix is a block matrix and every block should be scaled individually
-  class EquilibrationLocal : public Equilibration
+  class EquilibrationBlockSpecific : public Equilibration
   {
    public:
-    EquilibrationLocal(Teuchos::RCP<std::vector<EquilibrationMethod>> method,
+    EquilibrationBlockSpecific(Teuchos::RCP<std::vector<EquilibrationMethod>> method,
         Teuchos::RCP<const Epetra_Map> dofrowmap);
 
-    ~EquilibrationLocal() override = default;
+    ~EquilibrationBlockSpecific() override = default;
 
     void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
         const LINALG::MultiMapExtractor& blockmaps) const override;
@@ -243,11 +243,13 @@ namespace LINALG
     ~EquilibrationNone() override = default;
 
     void EquilibrateMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
-        const LINALG::MultiMapExtractor& blockmaps) const override{};
+        const LINALG::MultiMapExtractor& blockmaps) const override
+    {
+    }
 
-    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const override{};
+    void EquilibrateRHS(const Teuchos::RCP<Epetra_Vector>& residual) const override {}
 
-    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override{};
+    void UnequilibrateIncrement(const Teuchos::RCP<Epetra_Vector>& increment) const override {}
   };
 
   /*----------------------------------------------------------------------*

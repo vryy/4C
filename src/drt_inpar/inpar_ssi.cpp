@@ -284,10 +284,10 @@ void INPAR::SSI::SetValidConditions(
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
 
   // insert input file line components into condition definitions
-  for (auto& i : ssiinterfacemeshtying)
+  for (auto& conditioncomponent : ssiinterfacemeshtying)
   {
-    linessiinterfacemeshtying->AddComponent(i);
-    surfssiinterfacemeshtying->AddComponent(i);
+    linessiinterfacemeshtying->AddComponent(conditioncomponent);
+    surfssiinterfacemeshtying->AddComponent(conditioncomponent);
   }
 
   condlist.push_back(linessiinterfacemeshtying);
