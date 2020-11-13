@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 import os
 import sys
@@ -127,7 +127,7 @@ def adapt(do_configure_file,build_folder,build_type):
         for option in project.iter("option"):
             superClass = option.get("superClass")
 
-            if superClass[-29:] == "compiler.option.include.paths":
+            if superClass.endswith("org.eclipse.cdt.build.core.settings.holder.incpaths") or superClass.endswith("compiler.option.include.paths"):
                 #print(etree.tostring(option, pretty_print=True))
                 for entry in option:
                     option.remove(entry)
@@ -136,7 +136,7 @@ def adapt(do_configure_file,build_folder,build_type):
                 #print(etree.tostring(option, pretty_print=True))
                 found_path = True
 
-            if superClass.endswith("gnu.cpp.compiler.option.preprocessor.def") or superClass.endswith("gnu.c.compiler.option.preprocessor.def.symbols"):
+            if superClass.endswith("gnu.cpp.compiler.option.preprocessor.def") or superClass.endswith("gnu.c.compiler.option.preprocessor.def.symbols") or superClass.endswith("org.eclipse.cdt.build.core.settings.holder.symbols"):
                 #print(etree.tostring(option, pretty_print=True))
                 for entry in option:
                     option.remove(entry)
