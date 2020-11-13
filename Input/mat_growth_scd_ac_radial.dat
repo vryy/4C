@@ -130,7 +130,7 @@ TIMESTEP                        0.05
 RESULTSEVRY                     1
 SCATRATIMINTTYPE                Standard
 --------------------------------------------------------SSI CONTROL/PARTITIONED
-CONVTOL                         1e-08
+CONVTOL                         5e-08
 STARTOMEGA                      0.9
 MAXOMEGA                        1.2
 MINOMEGA                        0.7
