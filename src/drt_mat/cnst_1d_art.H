@@ -24,8 +24,14 @@ namespace MAT
     enum ArteryViscosityLaw
     {
       viscositylaw_undefined,
-      constant,
-      blood
+      viscositylaw_constant,
+      viscositylaw_blood
+    };
+    enum ArteryDiameterLaw
+    {
+      diameterlaw_undefined,
+      diameterlaw_constant,
+      diameterlaw_by_function
     };
     /*----------------------------------------------------------------------*/
     /// material parameters for constant 1D_Artery
@@ -58,9 +64,13 @@ namespace MAT
       const double pext2_;
       /// viscosity law
       ArteryViscosityLaw viscositylaw_;
+      /// viscosity law
+      ArteryDiameterLaw diameterlaw_;
       //! used to scale the diameter for blood viscosity law to microns if your problem is not
       //! given in microns, e.g., if you use mms, set this parameter to 1.0e3
       const double blood_visc_scale_diam_to_microns_;
+      //! function used for calculating the diameter
+      const int diameter_law_funct_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -148,6 +158,12 @@ namespace MAT
 
     /// return density
     virtual double Density() const { return params_->density_; }
+
+    /// return DiameterLaw
+    virtual MAT::PAR::ArteryDiameterLaw DiameterLaw() const { return params_->diameterlaw_; }
+
+    /// return DiameterFunction
+    virtual int DiameterFunction() const { return params_->diameter_law_funct_; }
 
     /// return Youngs modulus
     double Young() const { return params_->young_; }

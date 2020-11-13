@@ -29,14 +29,23 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
       pext1_(matdata->GetDouble("PEXT1")),
       pext2_(matdata->GetDouble("PEXT2")),
       viscositylaw_(viscositylaw_undefined),
-      blood_visc_scale_diam_to_microns_(matdata->GetDouble("BLOOD_VISC_SCALE_DIAM_TO_MICRONS"))
+      diameterlaw_(diameterlaw_undefined),
+      blood_visc_scale_diam_to_microns_(matdata->GetDouble("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
+      diameter_law_funct_(matdata->GetInt("VARYING_DIAMETER_FUNCTION"))
 {
-  const std::string* typestring = matdata->Get<std::string>("VISCOSITYLAW");
+  const std::string* typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
 
-  if (*typestring == "CONSTANT")
-    viscositylaw_ = constant;
-  else if (*typestring == "BLOOD")
-    viscositylaw_ = blood;
+  if (*typestring_visc == "CONSTANT")
+    viscositylaw_ = viscositylaw_constant;
+  else if (*typestring_visc == "BLOOD")
+    viscositylaw_ = viscositylaw_blood;
+
+  const std::string* typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
+
+  if (*typestring_diam == "CONSTANT")
+    diameterlaw_ = diameterlaw_constant;
+  else if (*typestring_diam == "by_function")
+    diameterlaw_ = diameterlaw_by_function;
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::Cnst_1d_art::CreateMaterial()
@@ -124,9 +133,9 @@ double MAT::Cnst_1d_art::Viscosity() const
 {
   switch (params_->viscositylaw_)
   {
-    case MAT::PAR::ArteryViscosityLaw::constant:
+    case MAT::PAR::ArteryViscosityLaw::viscositylaw_constant:
       return params_->viscosity_;
-    case MAT::PAR::ArteryViscosityLaw::blood:
+    case MAT::PAR::ArteryViscosityLaw::viscositylaw_blood:
       return CalculateBloodViscosity(
           diam_ * params_->blood_visc_scale_diam_to_microns_, params_->viscosity_);
     default:
