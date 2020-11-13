@@ -52,6 +52,15 @@ namespace SSTI
   class SSTIMatrices;
   class ThermoStructureOffDiagCoupling;
 
+  //! equilibration methods applied to system matrix
+  struct SSTIMonoEquilibrationMethod
+  {
+    const LINALG::EquilibrationMethod global;     //! unique equilibration
+    const LINALG::EquilibrationMethod scatra;     //! equilibration for scatra block
+    const LINALG::EquilibrationMethod structure;  //! equilibration for structure block
+    const LINALG::EquilibrationMethod thermo;     //! equilibration for thermo block
+  };
+
   enum class Subproblem
   {
     structure,
@@ -115,6 +124,9 @@ namespace SSTI
     //! get solution increment for given subproblem
     Teuchos::RCP<Epetra_Vector> ExtractSubIncrement(Subproblem sub);
 
+    // build and return vector of equilibration methods for each block of system matrix
+    Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
+
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();
 
@@ -163,7 +175,8 @@ namespace SSTI
 
     //! control parameters
     //@{
-    const LINALG::EquilibrationMethod equilibration_method_;
+    //! equilibration method applied to system matrix
+    const struct SSTIMonoEquilibrationMethod equilibration_method_;
     const LINALG::MatrixType matrixtype_;
     //@}
 

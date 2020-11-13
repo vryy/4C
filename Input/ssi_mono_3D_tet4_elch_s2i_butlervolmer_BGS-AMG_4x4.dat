@@ -18,6 +18,7 @@ and electrode-electrolyte interface coupling:
 - structural field compressed in x-direction via Dirichlet boundary condition
 - discharge from fully charged state
 - 429 tet4 elements with matching interface nodes
+- equilibration is performed for every field in a different way (local)
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    429
 //NODES       212
@@ -58,7 +59,9 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
-EQUILIBRATION                   columns_maindiag
+EQUILIBRATION                   local
+EQUILIBRATION_STRUCTURE         symmetry
+EQUILIBRATION_SCATRA            columns_maindiag
 ----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn

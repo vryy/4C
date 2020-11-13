@@ -166,8 +166,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystem()
           81, true, true));
 
   // instantiate appropriate equilibration class
+  auto equilibration_method =
+      Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_));
   equilibration_ =
-      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method_, fullmap_);
+      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method, fullmap_);
 
   return;
 }
