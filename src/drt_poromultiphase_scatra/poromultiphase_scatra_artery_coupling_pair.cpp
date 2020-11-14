@@ -546,13 +546,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  | evaluate                                            kremheller 05/18 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
-void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::Evaluate(LINALG::SerialDenseVector* forcevec1,
-    LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-    LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-    LINALG::SerialDenseMatrix* stiffmat22, LINALG::SerialDenseMatrix* D_ele,
-    LINALG::SerialDenseMatrix* M_ele, LINALG::SerialDenseVector* Kappa_ele,
-    const std::vector<double>& segmentlengths)
+double
+POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont>::Evaluate(
+    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
+    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
+    LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
+    LINALG::SerialDenseVector* Kappa_ele, const std::vector<double>& segmentlengths)
 {
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
@@ -601,7 +601,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // evaluate derivative of 1D shape function times solid velocity
   EvaluatedNdsSolidVel(myEta, myXi, segmentlengths, *forcevec1, etaA, etaB);
 
-  return;
+  return arterydiam_ * segmentlengths[segmentid_];
 }
 
 /*------------------------------------------------------------------------*

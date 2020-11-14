@@ -110,6 +110,9 @@ namespace POROMULTIPHASESCATRA
     //! fill the length not changed through deformation
     void FillUnaffectedArteryLength();
 
+    //! fill the integrated diameter not changed through varying blood vessel diameter
+    void FillUnaffectedIntegratedDiam();
+
     //! calculate the volume fraction occupied by blood vessels
     void CalculateBloodVesselVolumeFraction();
 
@@ -126,9 +129,12 @@ namespace POROMULTIPHASESCATRA
     void EvaluateCouplingPairs(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
+    //! set the artery diameter in material to be able to use it on 1D discretization
+    void SetArteryDiamInMaterial();
+
     //! FE-assemble into force and stiffness matrix
     void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
-        std::vector<LINALG::SerialDenseVector> const& elevec,
+        const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
@@ -238,6 +244,17 @@ namespace POROMULTIPHASESCATRA
 
     //! length of artery elements in current configuration
     Teuchos::RCP<Epetra_FEVector> current_seg_lengths_artery_;
+
+    //! diameter of the artery element integrated over the length of the artery element (row format
+    //! and FE vector due to non-local assembly)
+    Teuchos::RCP<Epetra_FEVector> integrated_diams_artery_row_;
+
+    //! diameter of artery element integrated over the length of the artery element (col format)
+    Teuchos::RCP<Epetra_Vector> integrated_diams_artery_col_;
+
+    //! unaffected diameter integrated over the length of the artery element
+    //! (protruding elements for which diameter does not change)
+    Teuchos::RCP<Epetra_Vector> unaffected_integrated_diams_artery_col_;
 
     //! volume fraction of blood vessels (for output)
     Teuchos::RCP<Epetra_Vector> bloodvesselvolfrac_;

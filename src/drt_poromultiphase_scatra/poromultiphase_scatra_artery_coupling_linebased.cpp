@@ -26,6 +26,7 @@
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 #include "../drt_mat/cnst_1d_art.H"
 
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 05/18 |
@@ -119,6 +120,17 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   // check global map extractor
   globalex_->CheckForValidMapExtractor();
 
+  // only the porofluid sub-part of the problem deals with the diameter
+  if (contdis_->Name() == "porofluid")
+  {
+    integrated_diams_artery_row_ =
+        Teuchos::rcp(new Epetra_FEVector(*arterydis_->ElementRowMap(), true));
+    unaffected_integrated_diams_artery_col_ =
+        Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
+    integrated_diams_artery_col_ =
+        Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
+  }
+
   return;
 }
 
@@ -139,6 +151,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
   // fill length of artery elements that is not influenced if the underlying
   // 2D/3D mesh moves (basically protruding artery elements or segments)
   FillUnaffectedArteryLength();
+
+  // fill unaffected integrated diam (basically protruding artery elements or segments)
+  if (contdis_->Name() == "porofluid") FillUnaffectedIntegratedDiam();
 
   // calculate blood vessel volume fraction (only porofluid needs to do this)
   if (contdis_->Name() == "porofluid" &&
@@ -505,6 +520,54 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffected
 }
 
 /*------------------------------------------------------------------------*
+ | fill the unaffected integrated diameter               kremheller 11/20 |
+ *------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillUnaffectedIntegratedDiam()
+{
+  Teuchos::RCP<Epetra_FEVector> unaffected_diams_artery_row =
+      Teuchos::rcp(new Epetra_FEVector(*arterydis_->ElementRowMap(), true));
+
+  for (int i = 0; i < arterydis_->ElementRowMap()->NumMyElements(); ++i)
+  {
+    const int artelegid = arterydis_->ElementRowMap()->GID(i);
+    DRT::Element* artele = arterydis_->gElement(artelegid);
+
+    // TODO: this will not work for higher order artery eles
+    const double initlength = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
+
+    // first add all contributions int unaffected_diams_artery_row-vector
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    const double length_diam = initlength * arterymat->Diam();
+    unaffected_diams_artery_row->SumIntoGlobalValues(1, &artelegid, &length_diam);
+  }
+  // then subtract the coupling pairs to detect protruding parts
+  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
+  {
+    // get the initial lengths
+    double init_segment_length = coupl_elepairs_[i]->ApplyMeshMovement(true, contdis_);
+    init_segment_length *= -1.0;
+
+    const int artelegid = coupl_elepairs_[i]->Ele1GID();
+    DRT::Element* artele = arterydis_->gElement(artelegid);
+
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(artele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+    const double length_diam = init_segment_length * arterymat->Diam();
+    unaffected_diams_artery_row->SumIntoGlobalValues(1, &artelegid, &length_diam);
+  }
+
+  // global assembly and export
+  if (unaffected_diams_artery_row->GlobalAssemble(Add, false) != 0)
+    dserror("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
+  LINALG::Export(*unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
+
+  return;
+}
+
+/*------------------------------------------------------------------------*
  | calculate blood vessel volume fraction                kremheller 08/19 |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
@@ -704,6 +767,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
     arterydis_->SetState("one_d_artery_pressure", phinp_art_);
     if (not evaluate_in_ref_config_ && not contdis_->HasState(1, "velocity field"))
       dserror("evaluation in current configuration wanted but solid phase velocity not available!");
+    integrated_diams_artery_row_->PutScalar(0.0);
   }
   else if (contdis_->Name() == "scatra")
   {
@@ -724,12 +788,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
     const std::vector<double> seglengths = GetEleSegmentLengths(coupl_elepairs_[i]->Ele1GID());
 
     // evaluate
-    coupl_elepairs_[i]->Evaluate(&eleforce[0], &eleforce[1], &elestiff[0][0], &elestiff[0][1],
-        &elestiff[1][0], &elestiff[1][1], &D_ele, &M_ele, &Kappa_ele, seglengths);
+    const double integrated_diam =
+        coupl_elepairs_[i]->Evaluate(&eleforce[0], &eleforce[1], &elestiff[0][0], &elestiff[0][1],
+            &elestiff[1][0], &elestiff[1][1], &D_ele, &M_ele, &Kappa_ele, seglengths);
 
     // assemble
     FEAssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
-        coupl_elepairs_[i]->Ele2GID(), eleforce, elestiff, sysmat, rhs);
+        coupl_elepairs_[i]->Ele2GID(), integrated_diam, eleforce, elestiff, sysmat, rhs);
 
     // in case of MP, assemble D, M and Kappa
     if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
@@ -756,15 +821,51 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
       num_coupled_dofs_ > 0)
     SumDMIntoGlobalForceStiff(sysmat, rhs);
 
+  // set artery diameter in material to be able to evalute the 1D elements with varying diameter
+  if (contdis_->Name() == "porofluid") SetArteryDiamInMaterial();
+
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | (re-)set the artery diameter in the material        kremheller 11/20 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamInMaterial()
+{
+  // assemble
+  if (integrated_diams_artery_row_->GlobalAssemble(Add, false) != 0)
+    dserror("GlobalAssemble of integrated_integrated_diams_artery_row_ failed");
+
+  // export to column format
+  LINALG::Export(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
+
+  // set the diameter in material
+  for (int i = 0; i < arterydis_->NumMyColElements(); ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = arterydis_->lColElement(i);
+
+    // get the artery-material
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    const std::vector<double> seglengths = GetEleSegmentLengths(actele->Id());
+    const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
+    // diam = int(diam)/length_element
+    // also add the unaffected diameter --> diameter of artery elements which protrude
+    const double diam =
+        ((*integrated_diams_artery_col_)[i] + (*unaffected_integrated_diams_artery_col_)[i]) /
+        curr_ele_length;
+    arterymat->SetDiam(&diam);
+  }
+}
 /*----------------------------------------------------------------------*
  | FE-assemble into global force and stiffness         kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
-        std::vector<LINALG::SerialDenseVector> const& elevec,
+        const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
@@ -788,6 +889,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
 
   FErhs_->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
   FErhs_->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
+
+  if (contdis_->Name() == "porofluid")
+    integrated_diams_artery_row_->SumIntoGlobalValues(1, &ele1gid, &(integrated_diam));
 
   return;
 }

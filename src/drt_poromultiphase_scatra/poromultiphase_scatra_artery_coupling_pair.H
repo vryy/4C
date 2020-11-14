@@ -70,8 +70,8 @@ namespace POROMULTIPHASESCATRA
     //! over all coupling pairs
     virtual void PreEvaluate() = 0;
 
-    //! evaluate this pair
-    virtual void Evaluate(LINALG::SerialDenseVector* forcevec1,
+    //! evaluate this pair (return integral of diameter of the segment)
+    virtual double Evaluate(LINALG::SerialDenseVector* forcevec1,
         LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
         LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
         LINALG::SerialDenseMatrix* stiffmat22, LINALG::SerialDenseMatrix* D_ele,
@@ -160,8 +160,8 @@ namespace POROMULTIPHASESCATRA
     void SetupFluidManagersAndMaterials(const std::string disname, const double& timefacrhs_art,
         const double& timefacrhs_cont) override;
 
-    //! evaluate this pair
-    void Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+    //! evaluate this pair (return integral of diameter of the segment)
+    double Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
         LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
