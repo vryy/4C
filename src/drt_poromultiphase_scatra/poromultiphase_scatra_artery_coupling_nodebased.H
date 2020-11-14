@@ -44,6 +44,14 @@ namespace POROMULTIPHASESCATRA
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraArtCouplNodeBased() {}
 
+    //! Evaluate the 1D-3D coupling
+    virtual void Evaluate(
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    {
+      // nothing to do here, is done in SetupSystem for this type of coupling
+      return;
+    }
+
     //! set-up of global system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,

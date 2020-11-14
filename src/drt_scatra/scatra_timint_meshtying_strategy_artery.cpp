@@ -181,12 +181,10 @@ Teuchos::RCP<const Epetra_Map> SCATRA::MeshtyingStrategyArtery::ArtScatraDofRowM
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyArtery::EvaluateMeshtying()
 {
-  // here we just assemble matrix and rhs of artery-scatra problem
+  // nothing is done here
   // actual coupling (meshtying) is evaluated in Solve
   // reason for that is that we need the system matrix of the continuous scatra
   // problem with DBCs applied which is performed directly before calling solve
-
-  artscatratimint_->PrepareLinearSolve();
 
   return;
 }
@@ -261,6 +259,13 @@ void SCATRA::MeshtyingStrategyArtery::SetupSystem(
   arttoscatracoupling_->SetSolutionVectors(
       scatratimint_->Phinp(), Teuchos::null, artscatratimint_->Phinp());
 
+  // evaluate the 1D-3D coupling
+  arttoscatracoupling_->Evaluate(comb_systemmatrix_, rhs_);
+
+  // evaluate 1D sub-problem
+  artscatratimint_->PrepareLinearSolve();
+
+  // setup the entire system
   arttoscatracoupling_->SetupSystem(comb_systemmatrix_, rhs_,
       Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix),
       artscatratimint_->SystemMatrix(), residual, artscatratimint_->Residual(),

@@ -156,14 +156,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
 }
 
 /*----------------------------------------------------------------------*
- | setup the linear system of equations                kremheller 05/18 |
+ | evaluate the coupling                               kremheller 05/18 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Evaluate(
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   if (!issetup_) dserror("Setup() has not been called");
 
@@ -178,11 +174,20 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
   }
 
   // evaluate and assemble the pairs
-  // note: OD terms, i.e., (0,1) and (1,0) directly assembled into sysmat
-  //       main-diag terms, i.e., (0,0) and (1,1) added into _cont and _art
-  //       rhs is added into global rhs
-  EvaluateCouplingPairs(sysmat, rhs, sysmat_cont, sysmat_art);
+  EvaluateCouplingPairs(sysmat, rhs);
+  return;
+}
 
+/*----------------------------------------------------------------------*
+ | setup the linear system of equations                kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art,
+    Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
+    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
+{
   // add normal part to rhs
   rhs->Update(1.0, *globalex_->InsertVector(rhs_cont, 0), 1.0);
   rhs->Update(1.0, *globalex_->InsertVector(rhs_art, 1), 1.0);
@@ -191,18 +196,23 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
   // 1) on vector
   LINALG::ApplyDirichlettoSystem(rhs, zeros_cont_, *(dbcmap_cont->CondMap()));
   LINALG::ApplyDirichlettoSystem(rhs, zeros_art_, *(dbcmap_art->CondMap()));
-  // 2) on main-diag-matrices
-  sysmat_cont->ApplyDirichlet(*(dbcmap_cont->CondMap()), true);
-  sysmat_art->ApplyDirichlet(*(dbcmap_art->CondMap()), true);
-  // 3) on OD-matrices
+  // 2) on OD-matrices
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());
   sysmat->Matrix(0, 1).ApplyDirichlet(*(dbcmap_cont->CondMap()), false);
   sysmat->Matrix(1, 0).ApplyDirichlet(*(dbcmap_art->CondMap()), false);
 
-  // get also the main-diag terms into the global sysmat
-  sysmat->Assign(0, 0, LINALG::View, *sysmat_cont);
-  sysmat->Assign(1, 1, LINALG::View, *sysmat_art);
+  // 3) get also the main-diag terms into the global sysmat
+  sysmat->Matrix(0, 0).Add(*sysmat_cont, false, 1.0, 1.0);
+  sysmat->Matrix(1, 1).Add(*sysmat_art, false, 1.0, 1.0);
+  sysmat->Matrix(0, 0).Complete();
+  sysmat->Matrix(1, 1).Complete();
+  // and apply DBC
+  sysmat->Matrix(0, 0).ApplyDirichlet(*(dbcmap_cont->CondMap()), true);
+  sysmat->Matrix(1, 1).ApplyDirichlet(*(dbcmap_art->CondMap()), true);
+  // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
+  // this is important! Monolithic algorithms use this matrix
+  sysmat_cont->Assign(LINALG::View, sysmat->Matrix(0, 0));
 
   bool matlab = false;
   if (matlab)
@@ -661,8 +671,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillGIDToSegme
  | evaluate the pairs                                  kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCouplingPairs(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art)
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // reset
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp)
@@ -720,7 +729,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
 
     // assemble
     FEAssembleEleForceStiffIntoSystemVectorMatrix(coupl_elepairs_[i]->Ele1GID(),
-        coupl_elepairs_[i]->Ele2GID(), eleforce, elestiff, sysmat, rhs, sysmat_cont, sysmat_art);
+        coupl_elepairs_[i]->Ele2GID(), eleforce, elestiff, sysmat, rhs);
 
     // in case of MP, assemble D, M and Kappa
     if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
@@ -739,13 +748,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
   blockartery->Complete();
   sysmat->Matrix(1, 0).Add(blockartery->Matrix(1, 0), false, 1.0, 0.0);
   sysmat->Matrix(0, 1).Add(blockartery->Matrix(0, 1), false, 1.0, 0.0);
-  sysmat_cont->Add(blockartery->Matrix(0, 0), false, 1.0, 1.0);
-  sysmat_art->Add(blockartery->Matrix(1, 1), false, 1.0, 1.0);
+  sysmat->Matrix(0, 0).Add(blockartery->Matrix(0, 0), false, 1.0, 0.0);
+  sysmat->Matrix(1, 1).Add(blockartery->Matrix(1, 1), false, 1.0, 0.0);
 
   // assemble D and M contributions into global force and stiffness
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
       num_coupled_dofs_ > 0)
-    SumDMIntoGlobalForceStiff(sysmat, rhs, sysmat_cont, sysmat_art);
+    SumDMIntoGlobalForceStiff(sysmat, rhs);
 
   return;
 }
@@ -757,9 +766,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
     FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
         std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<LINALG::SparseMatrix> sysmat_art)
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
   const DRT::Element* ele2 = contdis_->gElement(ele2gid);
@@ -816,8 +823,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FEAssembleDMKa
  | sum global D and M into global force and stiff      kremheller 05/18 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGlobalForceStiff(
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont, Teuchos::RCP<LINALG::SparseMatrix> sysmat_art)
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
   bool matlab = false;
   if (matlab)
@@ -860,10 +866,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SumDMIntoGloba
       LINALG::MLMultiply(*M_, true, *km, false, false, false, true);
 
   // add matrices
-  sysmat_art->Add(*dtkd, false, pp_ * timefacrhs_art_, 1.0);
+  sysmat->Matrix(0, 0).Add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
+  sysmat->Matrix(1, 1).Add(*dtkd, false, pp_ * timefacrhs_art_, 1.0);
   sysmat->Matrix(1, 0).Add(*dtkm, false, -pp_ * timefacrhs_art_, 1.0);
   sysmat->Matrix(0, 1).Add(*dtkm, true, -pp_ * timefacrhs_cont_, 1.0);
-  sysmat_cont->Add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
 
   // add vector
   Teuchos::RCP<Epetra_Vector> art_contribution =
