@@ -40,6 +40,7 @@ namespace DRT
 namespace MAT
 {
   class MatList;
+  class Cnst_1d_art;
 }  // namespace MAT
 namespace LINALG
 {
@@ -258,12 +259,13 @@ namespace POROMULTIPHASESCATRA
         LINALG::Matrix<numdim_, numdim_, T>& x2_xi, const LINALG::Matrix<1, numnodescont_, T>& N2,
         const LINALG::Matrix<numdim_, numnodescont_, T>& N2_xi);
 
-    //! evaluate the function coupling
+    //! evaluate the function coupling (return integral of diameter of the segment)
     void EvaluateFunctionCoupling(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
         LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
+        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
+        double& integrated_diam);
 
     /**
      * evaluate derivative of 1D shape function times solid velocity (only porofluid has this term)
@@ -304,7 +306,11 @@ namespace POROMULTIPHASESCATRA
         const LINALG::Matrix<1, numnodescont_>& N2, const double& jacobi,
         LINALG::SerialDenseVector& forcevec1, LINALG::SerialDenseVector& forcevec2,
         LINALG::SerialDenseMatrix& stiffmat11, LINALG::SerialDenseMatrix& stiffmat12,
-        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22);
+        LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22,
+        double& integrated_diam);
+
+    //! evaluate the diameter function
+    double EvaluateDiamFunction(const double artpressnpAtGP);
 
     //! integrate in deformed configuration from eta_A to eta_s
     FAD IntegrateLengthToEtaS(const FAD& eta_s);
@@ -412,6 +418,9 @@ namespace POROMULTIPHASESCATRA
     //! indicates if function coupling is active, i.e., if functions are defined
     bool funct_coupl_active_;
 
+    //! indicates if diameter function is active, i.e, if diameter function is defined
+    bool diam_funct_active_;
+
     //! so far, it is assumed that artery elements always follow the deformation of the underlying
     //! porous medium
     //! hence, we actually have to evalute them in current configuration
@@ -435,7 +444,9 @@ namespace POROMULTIPHASESCATRA
     //! current velocity of element 2
     LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
 
-    //! diameter of the artery element
+    //! reference diameter of the artery element
+    double arterydiamref_;
+    //! current diameter of the artery element
     double arterydiam_;
 
     //! numdofs of artery element
@@ -548,6 +559,8 @@ namespace POROMULTIPHASESCATRA
     std::vector<std::vector<int>> scale_vec_;
     //! function vector
     std::vector<std::vector<DRT::UTILS::VariableExprFunction*>> funct_vec_;
+    //! diameter function
+    DRT::UTILS::VariableExprFunction* artdiam_funct_;
 
     //! string name used for scalars in function parser
     std::vector<std::string> scalarnames_;
@@ -591,6 +604,9 @@ namespace POROMULTIPHASESCATRA
     //! vector where to assemble rhs-(function) coupling into
     //! summed up phase requires special treatment
     std::vector<std::vector<int>> cont_dofs_to_assemble_functions_into_;
+
+    // the artery material
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat_;
   };
 
 }  // namespace POROMULTIPHASESCATRA

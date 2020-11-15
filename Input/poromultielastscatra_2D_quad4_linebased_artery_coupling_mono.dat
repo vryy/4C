@@ -133,7 +133,7 @@ MAT 2 MAT_StructPoro MATID 20 POROLAWID 200 INITPOROSITY 0.7
 MAT 20 MAT_Struct_StVenantKirchhoff YOUNG 10.0 NUE 0.35 DENS 0.1
 MAT 200 MAT_PoroLawConstant
 
-MAT 3 MAT_CNST_ART VISCOSITY 1.0 DENS 1.0 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
+MAT 3 MAT_CNST_ART VISCOSITY 1.0 DENS 1.0 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0 VARYING_DIAMETER_FUNCTION 14
 
 MAT 6 MAT_scatra DIFFUSIVITY 2.0 REACOEFF 0 SCNUM 0 DENSIFICATION 0
 
@@ -181,6 +181,8 @@ VARFUNCTION pi*D*0.8*(phi_art1-phi1)+pi*D*0.001*(p_art-p3)*(phi_art1-phi1)
 VARFUNCTION pi*D*1.0*(p_art-p3)
 ----------------------------------------------------------------------FUNCT13
 VARFUNCTION pi*D*8.0*(phi_art1-phi1)+pi*D*0.01*(p_art-p3)*(phi_art1-phi1)
+----------------------------------------------------------------------FUNCT14
+VARFUNCTION D0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 3
 NDLINE  5
