@@ -113,6 +113,9 @@ void ART::ArtNetImplStationary::Init(const Teuchos::ParameterList& globaltimepar
   // for output of volumetric flow
   ele_volflow_ = LINALG::CreateVector(*discret_->ElementRowMap());
 
+  // for output of element radius
+  ele_radius_ = LINALG::CreateVector(*discret_->ElementRowMap());
+
   // -------------------------------------------------------------------
   // set initial field
   // -------------------------------------------------------------------
@@ -458,8 +461,9 @@ void ART::ArtNetImplStationary::Output(
     if (step_ == upres_ or step_ == 0)
     {
       output_.WriteElementData(true);
-      OutputRadius();
     }
+    // for variable radius, we need the output of the radius at every time step
+    OutputRadius();
 
     // "pressure in the arteries" vector
     output_.WriteVector("one_d_artery_pressure", pressurenp_);
@@ -484,10 +488,6 @@ void ART::ArtNetImplStationary::Output(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetImplStationary::OutputRadius()
 {
-  // vector containing element radius
-  Teuchos::RCP<Epetra_Vector> eleradiusvector =
-      LINALG::CreateVector(*discret_->ElementRowMap(), true);
-
   // loop over row elements
   const int numrowele = discret_->NumMyRowElements();
   for (int i = 0; i < numrowele; ++i)
@@ -499,11 +499,11 @@ void ART::ArtNetImplStationary::OutputRadius()
     if (arterymat == Teuchos::null)
       dserror("cast to MAT::Cnst_1d_art failed during output of radius!");
     const double radius = arterymat->Diam() / 2.0;
-    eleradiusvector->ReplaceGlobalValue(actele->Id(), 0, radius);
+    ele_radius_->ReplaceGlobalValue(actele->Id(), 0, radius);
   }
 
   // write the output
-  output_.WriteVector("ele_radius", eleradiusvector, IO::elementvector);
+  output_.WriteVector("ele_radius", ele_radius_, IO::elementvector);
 
   return;
 }
