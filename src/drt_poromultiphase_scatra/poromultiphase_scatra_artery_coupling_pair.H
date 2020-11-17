@@ -309,16 +309,15 @@ namespace POROMULTIPHASESCATRA
 
     //! evalute GPTS
     void EvaluateGPTS(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
-        const std::vector<double>& segmentlengths, const int& dim1, const int& dim2,
-        LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
-        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
-        LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
+        const std::vector<double>& segmentlengths, LINALG::SerialDenseVector* forcevec1,
+        LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
+        LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
+        LINALG::SerialDenseMatrix* stiffmat22);
 
     //! evaluate mortar coupling matrices D and M
     void EvaluateDMKappa(const std::vector<double>& eta, const std::vector<std::vector<double>>& xi,
-        const std::vector<double>& segmentlengths, const int& dim1, const int& dim2,
-        LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
-        LINALG::SerialDenseVector* Kappa_ele);
+        const std::vector<double>& segmentlengths, LINALG::SerialDenseMatrix* D_ele,
+        LINALG::SerialDenseMatrix* M_ele, LINALG::SerialDenseVector* Kappa_ele);
 
     //! evaluate the function coupling
     void EvaluateFunctionCoupling(const double& w_gp, const LINALG::Matrix<1, numnodesart_>& N1,
@@ -475,6 +474,10 @@ namespace POROMULTIPHASESCATRA
     int numdof_cont_;
     //! numdofs of 2D/3D element
     int numdof_art_;
+    //! number of dofs * number of nodes of artery element
+    int dim1_;
+    //! number of dofs * number of nodes of 2D/3D element
+    int dim2_;
 
     //! coupled dofs of continuous (2D/3D) element
     std::vector<int> coupleddofs_cont_;

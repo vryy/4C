@@ -49,6 +49,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       arterydiamAtGP_(0.0),
       numdof_cont_(0),
       numdof_art_(0),
+      dim1_(0),
+      dim2_(0),
       numcoupleddofs_(0),
       numfluidphases_(0),
       numvolfrac_(0),
@@ -121,6 +123,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   for (int i = 1; i < element1_->NumNode(); i++)
     if (numdof_art_ != element1_->NumDofPerNode(*artnodes[i]))
       dserror("It is not possible to have different number of Dofs in artery discretization");
+  dim1_ = numdof_art_ * element1_->NumNode();
 
   // get number of DOFs of continuous ele (scatra or porofluid)
   const DRT::Node* const* contnodes;
@@ -130,6 +133,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   for (int i = 1; i < element2_->NumNode(); i++)
     if (numdof_cont_ != element2_->NumDofPerNode(*contnodes[i]))
       dserror("It is not possible to have different number of Dofs in continuos discretization");
+  dim2_ = numdof_cont_ * element2_->NumNode();
 
   // safety check
   if (numdof_art_ != (int)(scale_vec[0].size())) dserror("Wrong size of scale-vector (artery)");
@@ -582,17 +586,14 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
 {
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
-  const int dim1 = artelephinp_.size();
-  const int dim2 = contelephinp_.size();
-
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->Size(dim1);
-  if (forcevec2 != NULL) forcevec2->Size(dim2);
+  if (forcevec1 != NULL) forcevec1->Size(dim1_);
+  if (forcevec2 != NULL) forcevec2->Size(dim2_);
 
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->Shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->Shape(dim2, dim2);
+  if (stiffmat11 != NULL) stiffmat11->Shape(dim1_, dim1_);
+  if (stiffmat12 != NULL) stiffmat12->Shape(dim1_, dim2_);
+  if (stiffmat21 != NULL) stiffmat21->Shape(dim2_, dim1_);
+  if (stiffmat22 != NULL) stiffmat22->Shape(dim2_, dim2_);
 
   std::vector<double> myEta(n_gp_);
   std::vector<std::vector<double>> myXi(n_gp_, std::vector<double>(numdim_, 0.0));
@@ -606,13 +607,13 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
   {
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
     {
-      EvaluateGPTS(myEta, myXi, segmentlengths, dim1, dim2, forcevec1, forcevec2, stiffmat11,
-          stiffmat12, stiffmat21, stiffmat22);
+      EvaluateGPTS(myEta, myXi, segmentlengths, forcevec1, forcevec2, stiffmat11, stiffmat12,
+          stiffmat21, stiffmat22);
       break;
     }
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
     {
-      EvaluateDMKappa(myEta, myXi, segmentlengths, dim1, dim2, D_ele, M_ele, Kappa_ele);
+      EvaluateDMKappa(myEta, myXi, segmentlengths, D_ele, M_ele, Kappa_ele);
       break;
     }
     default:
@@ -646,11 +647,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 {
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
-  const int dim1 = artelephinp_.size();
-  const int dim2 = contelephinp_.size();
-
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1, dim2);
+  if (stiffmat11 != NULL) stiffmat11->Shape(dim1_, dim1_);
+  if (stiffmat12 != NULL) stiffmat12->Shape(dim1_, dim2_);
 
   // this is the integrated diameter over the entire element (all segments)
   const double arterydiam = arterymat_->Diam();
@@ -920,10 +918,9 @@ template <DRT::Element::DiscretizationType distypeArt, DRT::Element::Discretizat
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::EvaluateGPTS(const std::vector<double>& eta,
     const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
-    const int& dim1, const int& dim2, LINALG::SerialDenseVector* forcevec1,
-    LINALG::SerialDenseVector* forcevec2, LINALG::SerialDenseMatrix* stiffmat11,
-    LINALG::SerialDenseMatrix* stiffmat12, LINALG::SerialDenseMatrix* stiffmat21,
-    LINALG::SerialDenseMatrix* stiffmat22)
+    LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
+    LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
+    LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22)
 {
   if (numcoupleddofs_ > 0)
   {
@@ -945,10 +942,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       static LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      GPTS_stiffmat11_.Shape(dim1, dim1);
-      GPTS_stiffmat12_.Shape(dim1, dim2);
-      GPTS_stiffmat21_.Shape(dim2, dim1);
-      GPTS_stiffmat22_.Shape(dim2, dim2);
+      GPTS_stiffmat11_.Shape(dim1_, dim1_);
+      GPTS_stiffmat12_.Shape(dim1_, dim2_);
+      GPTS_stiffmat21_.Shape(dim2_, dim1_);
+      GPTS_stiffmat22_.Shape(dim2_, dim2_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -983,12 +980,12 @@ template <DRT::Element::DiscretizationType distypeArt, DRT::Element::Discretizat
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::EvaluateDMKappa(const std::vector<double>& eta,
     const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
-    const int& dim1, const int& dim2, LINALG::SerialDenseMatrix* D_ele,
-    LINALG::SerialDenseMatrix* M_ele, LINALG::SerialDenseVector* Kappa_ele)
+    LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
+    LINALG::SerialDenseVector* Kappa_ele)
 {
-  if (D_ele != NULL) D_ele->Shape(dim1, dim1);
-  if (M_ele != NULL) M_ele->Shape(dim1, dim2);
-  if (Kappa_ele != NULL) Kappa_ele->Size(dim1);
+  if (D_ele != NULL) D_ele->Shape(dim1_, dim1_);
+  if (M_ele != NULL) M_ele->Shape(dim1_, dim2_);
+  if (Kappa_ele != NULL) Kappa_ele->Size(dim1_);
 
   if (numcoupleddofs_ > 0)
   {
@@ -1008,9 +1005,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       static LINALG::Matrix<1, numnodescont_> N2(true);           // = N2
       static LINALG::Matrix<numdim_, numnodescont_> N2_xi(true);  // = N2,xi1
 
-      D_.Shape(dim1, dim1);
-      M_.Shape(dim1, dim2);
-      Kappa_.Size(dim1);
+      D_.Shape(dim1_, dim1_);
+      M_.Shape(dim1_, dim2_);
+      Kappa_.Size(dim1_);
 
       const double curr_seg_length = segmentlengths[segmentid_];
 
@@ -1069,10 +1066,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   if (diam_funct_active_ && coupltype_ == type_porofluid)
   {
     integrated_diam = 0.0;
-    const int dim1 = artelephinp_.size();
-    const int dim2 = contelephinp_.size();
-    diam_stiffmat11_.Shape(dim1, dim1);
-    diam_stiffmat12_.Shape(dim1, dim2);
+    diam_stiffmat11_.Shape(dim1_, dim1_);
+    diam_stiffmat12_.Shape(dim1_, dim2_);
   }
 
   for (int i_gp = 0; i_gp < n_gp_; i_gp++)
@@ -1302,22 +1297,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     const LINALG::SerialDenseMatrix& stiffmat12, const LINALG::SerialDenseMatrix& stiffmat21,
     const LINALG::SerialDenseMatrix& stiffmat22)
 {
-  const int dim1 = artelephinp_.size();
-  const int dim2 = contelephinp_.size();
-
   // Evaluate meshtying forces for artery element
-  for (int i = 0; i < dim1; i++)
-    for (int j = 0; j < dim1; j++) forcevec1(i) -= stiffmat11(i, j) * artelephinp_[j];
+  for (int i = 0; i < dim1_; i++)
+    for (int j = 0; j < dim1_; j++) forcevec1(i) -= stiffmat11(i, j) * artelephinp_[j];
 
-  for (int i = 0; i < dim1; i++)
-    for (int j = 0; j < dim2; j++) forcevec1(i) -= stiffmat12(i, j) * contelephinp_[j];
+  for (int i = 0; i < dim1_; i++)
+    for (int j = 0; j < dim2_; j++) forcevec1(i) -= stiffmat12(i, j) * contelephinp_[j];
 
   // Evaluate meshtying forces for continuous-dis element
-  for (int i = 0; i < dim2; i++)
-    for (int j = 0; j < dim1; j++) forcevec2(i) -= stiffmat21(i, j) * artelephinp_[j];
+  for (int i = 0; i < dim2_; i++)
+    for (int j = 0; j < dim1_; j++) forcevec2(i) -= stiffmat21(i, j) * artelephinp_[j];
 
-  for (int i = 0; i < dim2; i++)
-    for (int j = 0; j < dim2; j++) forcevec2(i) -= stiffmat22(i, j) * contelephinp_[j];
+  for (int i = 0; i < dim2_; i++)
+    for (int j = 0; j < dim2_; j++) forcevec2(i) -= stiffmat22(i, j) * contelephinp_[j];
 
   return;
 }
