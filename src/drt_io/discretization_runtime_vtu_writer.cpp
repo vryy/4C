@@ -424,7 +424,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string resultname)
+void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultname)
 {
   // Vector with element IDs for elements in the row map.
   std::vector<double> gid_of_row_elements;
@@ -435,7 +435,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string resultna
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
     // Since we do not output beam elements we filter them here.
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele != nullptr) continue;
 
     gid_of_row_elements.push_back(ele->Id());
@@ -447,13 +447,13 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string resultna
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string resultname)
+void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string& resultname)
 {
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
-  unsigned int num_row_elements = discretization_->NumMyRowElements();
-  unsigned int num_nodes = 0;
-  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+  int num_row_elements = discretization_->NumMyRowElements();
+  int num_nodes = 0;
+  for (int iele = 0; iele < num_row_elements; ++iele)
     num_nodes += discretization_->lRowElement(iele)->NumNode();
 
   // Setup the vector with the GIDs of the nodes.
@@ -461,12 +461,12 @@ void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string resultname)
   gid_of_nodes.reserve(num_nodes);
 
   // Loop over each element and add the node GIDs.
-  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+  for (int iele = 0; iele < num_row_elements; ++iele)
   {
     const DRT::Element* ele = discretization_->lRowElement(iele);
 
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    auto beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     if (beamele != nullptr) continue;
 
     // Add the node GIDs.
