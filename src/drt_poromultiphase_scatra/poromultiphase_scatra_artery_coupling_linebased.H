@@ -132,6 +132,10 @@ namespace POROMULTIPHASESCATRA
     //! set the artery diameter in material to be able to use it on 1D discretization
     void SetArteryDiamInMaterial();
 
+    //! evaluate additional linearization of (integrated) element diameter dependent terms
+    //! (Hagen-Poiseuille)
+    void EvaluateAdditionalLinearizationofIntegratedDiam();
+
     //! FE-assemble into force and stiffness matrix
     void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
         const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,

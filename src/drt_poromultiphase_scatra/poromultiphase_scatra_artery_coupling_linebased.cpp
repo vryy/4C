@@ -803,6 +803,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
           coupl_elepairs_[i]->Ele1GID(), coupl_elepairs_[i]->Ele2GID(), D_ele, M_ele, Kappa_ele);
   }
 
+  // set artery diameter in material to be able to evalute the 1D elements with varying diameter
+  // and evaluate additional linearization of (integrated) element diameters
+  if (contdis_->Name() == "porofluid")
+  {
+    SetArteryDiamInMaterial();
+    EvaluateAdditionalLinearizationofIntegratedDiam();
+  }
+
   if (FErhs_->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble of right hand side failed");
   rhs->Update(1.0, *FErhs_, 0.0);
 
@@ -820,9 +828,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
   if (coupling_method_ == INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp and
       num_coupled_dofs_ > 0)
     SumDMIntoGlobalForceStiff(sysmat, rhs);
-
-  // set artery diameter in material to be able to evalute the 1D elements with varying diameter
-  if (contdis_->Name() == "porofluid") SetArteryDiamInMaterial();
 
   return;
 }
@@ -858,6 +863,47 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
         ((*integrated_diams_artery_col_)[i] + (*unaffected_integrated_diams_artery_col_)[i]) /
         curr_ele_length;
     arterymat->SetDiam(&diam);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | evaluate additional linearization of diameter dependent terms        |
+ |                                                     kremheller 11/20 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
+    EvaluateAdditionalLinearizationofIntegratedDiam()
+{
+  // linearizations
+  std::vector<LINALG::SerialDenseMatrix> elestiff(2);
+
+  // evaluate all pairs
+  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
+  {
+    // only needed if varying diameter is set for this pair
+    if (coupl_elepairs_[i]->DiamFunctionActive())
+    {
+      // evaluate
+      coupl_elepairs_[i]->EvaluateAdditionalLinearizationofIntegratedDiam(
+          &elestiff[0], &elestiff[1]);
+
+      // and FE-Assemble
+      const int ele1gid = coupl_elepairs_[i]->Ele1GID();
+      const int ele2gid = coupl_elepairs_[i]->Ele2GID();
+      const DRT::Element* ele1 = arterydis_->gElement(ele1gid);
+      const DRT::Element* ele2 = contdis_->gElement(ele2gid);
+      // get element location vector and ownerships
+      std::vector<int> lmrow1;
+      std::vector<int> lmrow2;
+      std::vector<int> lmrowowner1;
+      std::vector<int> lmrowowner2;
+      std::vector<int> lmstride;
+
+      ele1->LocationVector(*arterydis_, lmrow1, lmrowowner1, lmstride);
+      ele2->LocationVector(*contdis_, lmrow2, lmrowowner2, lmstride);
+
+      FEmat_->FEAssemble(elestiff[0], lmrow1, lmrow1);
+      FEmat_->FEAssemble(elestiff[1], lmrow1, lmrow2);
+    }
   }
 }
 /*----------------------------------------------------------------------*

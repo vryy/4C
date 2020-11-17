@@ -46,7 +46,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       element1_(NULL),
       element2_(NULL),
       arterydiamref_(0.0),
-      arterydiam_(0.0),
+      arterydiamAtGP_(0.0),
       numdof_cont_(0),
       numdof_art_(0),
       numcoupleddofs_(0),
@@ -57,6 +57,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       nds_porofluid_(-1),
       n_gp_(0),
       arteryelelengthref_(0.0),
+      arteryelelength_(0.0),
       jacobi_(0.0),
       pp_(0.0),
       eta_a_(0.0),
@@ -275,7 +276,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(element1_->Material(0));
       if (arterymat_ == Teuchos::null)
         dserror("cast to artery material failed for porofluid-artery coupling!");
-      arterydiam_ = arterymat_->Diam();
+      arterydiamAtGP_ = arterymat_->Diam();
       arterydiamref_ = arterymat_->Diam();
       arterydens = arterymat_->Density();
 
@@ -325,7 +326,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       arterymat_ = Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(element1_->Material(1));
       if (arterymat_ == Teuchos::null)
         dserror("cast to artery material failed for arteryscatra-scatra coupling!");
-      arterydiam_ = arterymat_->Diam();
+      arterydiamAtGP_ = arterymat_->Diam();
       arterydiamref_ = arterymat_->Diam();
       arterydens = arterymat_->Density();
       break;
@@ -347,6 +348,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
           "terms, you can still define a zero exchange term");
     diam_funct_active_ = true;
     artdiam_funct_ = Function(diam_funct_num - 1);
+    if (coupltype_ == type_porofluid)
+    {
+      // cont derivatives + 1 artery pressure derivative
+      diamderivs_ = std::vector<double>(numdof_cont_ + 1, 0.0);
+      diam_stiffmat11_ = new LINALG::SerialDenseMatrix();
+      diam_stiffmat12_ = new LINALG::SerialDenseMatrix();
+    }
   }
 
   numfluidphases_ = multiphasemat->NumFluidPhases();
@@ -627,6 +635,34 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
 }
 
 /*------------------------------------------------------------------------*
+ | evaluate additional linearization of diameter dependent terms          |
+ |           (Hagen-Poiseuille)                          kremheller 11/20 |
+ *------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::EvaluateAdditionalLinearizationofIntegratedDiam(LINALG::SerialDenseMatrix*
+                                                                      stiffmat11,
+    LINALG::SerialDenseMatrix* stiffmat12)
+{
+  if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
+
+  const int dim1 = artelephinp_.size();
+  const int dim2 = contelephinp_.size();
+
+  if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
+  if (stiffmat12 != NULL) stiffmat12->Shape(dim1, dim2);
+
+  // this is the integrated diameter over the entire element (all segments)
+  const double arterydiam = arterymat_->Diam();
+  const double prefac = M_PI * std::pow(arterydiam, 3) / 32.0 / arterymat_->Viscosity();
+  // TODO: for viscosity law blood, viscosity depends on diameter, this linearization is still
+  // missing
+
+  stiffmat11->Update(prefac, diam_stiffmat11_, 0.0);
+  stiffmat12->Update(prefac, diam_stiffmat12_, 0.0);
+}
+
+/*------------------------------------------------------------------------*
  | element-id of artery element                          kremheller 05/18 |
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
@@ -804,13 +840,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   {
     myEta = eta_;
     myXi = xi_;
+    arteryelelength_ = arteryelelengthref_;
   }
   else
   {
     // current length of artery
-    double curr_ele_length = 0.0;
-    for (unsigned int iseg = 0; iseg < segmentlengths.size(); iseg++)
-      curr_ele_length += segmentlengths[iseg];
+    arteryelelength_ = std::accumulate(segmentlengths.begin(), segmentlengths.end(), 0.0);
 
     // length of segments [0, 1, ..., this_seg-1]
     double length_so_far = 0.0;
@@ -820,8 +855,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     const double curr_seg_length = segmentlengths[segmentid_];
 
     // get new etaA and etaB
-    etaA = -1.0 + 2.0 * (length_so_far / curr_ele_length);
-    etaB = -1.0 + 2.0 * ((length_so_far + curr_seg_length) / curr_ele_length);
+    etaA = -1.0 + 2.0 * (length_so_far / arteryelelength_);
+    etaB = -1.0 + 2.0 * ((length_so_far + curr_seg_length) / arteryelelength_);
 
     DRT::UTILS::IntegrationPoints1D gaussPoints =
         DRT::UTILS::IntegrationPoints1D(DRT::UTILS::GaussRule1D::intrule_line_3point);
@@ -1029,8 +1064,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   const double curr_seg_length = segmentlengths[segmentid_];
 
-  // case with varying diameter (integral has to be calculated)
-  if (diam_funct_active_) integrated_diam = 0.0;
+  // case with varying diameter and type porofluid: (integral and linearizations have to be
+  // calculated) --> reset
+  if (diam_funct_active_ && coupltype_ == type_porofluid)
+  {
+    integrated_diam = 0.0;
+    const int dim1 = artelephinp_.size();
+    const int dim2 = contelephinp_.size();
+    diam_stiffmat11_.Shape(dim1, dim1);
+    diam_stiffmat12_.Shape(dim1, dim2);
+  }
 
   for (int i_gp = 0; i_gp < n_gp_; i_gp++)
   {
@@ -1390,8 +1433,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   if (diam_funct_active_)
   {
-    arterydiam_ = EvaluateDiamFunction(artpressAtGP);
-    integrated_diam = integrated_diam + w_gp * jacobi * arterydiam_;
+    EvaluateDiamFunctionAndDeriv(artpressAtGP, w_gp, N1, N2, jacobi);
+    // integral is only calculated in this case
+    if (coupltype_ == type_porofluid) integrated_diam += w_gp * jacobi * arterydiamAtGP_;
   }
 
   // artery functions
@@ -1435,8 +1479,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  | evaluate the diameter function                      kremheller 11/20 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
-double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::EvaluateDiamFunction(const double artpressnpAtGP)
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::EvaluateDiamFunctionAndDeriv(const double artpressnpAtGP, const double& w_gp,
+    const LINALG::Matrix<1, numnodesart_>& N1, const LINALG::Matrix<1, numnodescont_>& N2,
+    const double& jacobi)
 {
   // we have to derive w.r.t. fluid variables
   std::vector<std::pair<std::string, double>> variables;
@@ -1447,11 +1493,75 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   constants.reserve(1);
   constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));
 
+  // set fluid values as variables
   SetFluidValuesAsVariables(variables, artpressnpAtGP);
 
-  const double diamAtGP = artdiam_funct_->Evaluate(0, variables, constants);
+  // evaluate the diameter at GP by evaluating the function
+  arterydiamAtGP_ = artdiam_funct_->Evaluate(0, variables, constants);
 
-  return diamAtGP;
+  // derivatives and linearizations are so far only calculated for coupltype porofluid
+  if (coupltype_ == type_porofluid)
+  {
+    // function derivatives
+    std::vector<double> curderivs(artdiam_funct_->EvaluateDerivative(0, variables, constants));
+    // derivatives w.r.t. primary variables
+    std::fill(diamderivs_.begin(), diamderivs_.end(), 0.0);
+
+    // diameter derivatives w.r.t. saturations and pressures
+    for (int doftoderive = 0; doftoderive < numfluidphases_; doftoderive++)
+    {
+      for (int idof = 0; idof < numfluidphases_; idof++)
+        diamderivs_[doftoderive] +=
+            curderivs[idof] * phasemanager_->PressureDeriv(idof, doftoderive) +
+            curderivs[idof + numfluidphases_] * phasemanager_->SaturationDeriv(idof, doftoderive);
+      if (phasemanager_->PorosityDependsOnFluid())
+        diamderivs_[doftoderive] +=
+            curderivs[2 * numfluidphases_] * phasemanager_->PorosityDeriv(doftoderive);
+    }
+    // diameter derivs w.r.t. to volume fraction phases
+    for (int doftoderive = numfluidphases_; doftoderive < numdof_cont_ - numvolfrac_; doftoderive++)
+    {
+      // diameter derivatives w.r.t. volume fractions directly appearing
+      //                             and porosity (since it depends on volfrac)
+      diamderivs_[doftoderive] +=
+          curderivs[doftoderive + numfluidphases_ + 1] +
+          curderivs[2 * numfluidphases_] * phasemanager_->PorosityDeriv(doftoderive);
+    }
+    // diameter derivs w.r.t. to volume fraction pressures
+    for (int doftoderive = numfluidphases_ + numvolfrac_; doftoderive < numdof_cont_; doftoderive++)
+      diamderivs_[doftoderive] += curderivs[doftoderive + numfluidphases_ + 1];
+
+    // diameter derivs w.r.t. to artery pressure
+    diamderivs_[numfluidphases_ + 2 * numvolfrac_] +=
+        curderivs[numfluidphases_ + numfluidphases_ + 1 + numvolfrac_ + numvolfrac_];
+
+
+    // Now the derivative of the integrated (element) diameter needed in the Hagen-Poiseuille terms
+    // is built and stored in the respective stiffness matrices for later use
+
+    // pre-compute some values
+    const double pressgrad = (artelephinp_[1] - artelephinp_[0]) / arteryelelength_;
+    std::vector<double> dummy = {-1.0, 1.0};
+    const double preprefac = pressgrad * w_gp * jacobi / arteryelelength_;
+
+    // assemble into the respective stiffness matrices
+    for (unsigned int i = 0; i < numnodesart_; i++)
+    {
+      // build diameter stiffness matrix w.r.t. artery primary variables
+      const double prefac_art =
+          dummy[i] * diamderivs_[numfluidphases_ + 2 * numvolfrac_] * preprefac;
+      for (unsigned int j = 0; j < numnodesart_; j++) diam_stiffmat11_(i, j) += prefac_art * N1(j);
+
+      // build diameter stiffness matrix w.r.t. 2D/3D primary variables
+      const double prefac_cont = dummy[i] * preprefac;
+      for (unsigned int j = 0; j < numnodescont_; j++)
+      {
+        const double prefac_cont2 = prefac_cont * N2(j);
+        for (int j_cont = 0; j_cont < numdof_cont_; j_cont++)
+          diam_stiffmat12_(i, j * numdof_cont_ + j_cont) += prefac_cont2 * diamderivs_[j_cont];
+      }
+    }
+  }
 }
 /*----------------------------------------------------------------------*
  | set time fac for rhs terms                          kremheller 07/18 |
@@ -1818,7 +1928,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));
 
       // set artery diameter as variable
-      variables.push_back(std::pair<std::string, double>("D", arterydiam_));
+      variables.push_back(std::pair<std::string, double>("D", arterydiamAtGP_));
 
       // evaluate the reaction term
       functval = funct->Evaluate(0, variables, constants);
@@ -1952,7 +2062,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   constants.push_back(std::pair<std::string, double>(artpressname_, artpressnpAtGP));
 
   // set artery diameter as constant
-  constants.push_back(std::pair<std::string, double>("D", arterydiam_));
+  constants.push_back(std::pair<std::string, double>("D", arterydiamAtGP_));
 
   // set reference artery diameter as constant
   constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));
@@ -1987,7 +2097,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::EvaluateFluidDerivs(std::vector<double>& artderivs,
     std::vector<double>& contderivs, const std::vector<double>& functderivs)
 {
-  // function derivs w.r.t. to fluid phases
+  // basically dependency of exchange terms f is as follows:
+  // f(D(p),g(p)) where p are generic 1D and 3D fluid primary variables
+  // so derivative is df/dp = df/dg*dg/dp + df/dD*dD/dp
+  // first part
+  // function derivs w.r.t. to fluid phases: df/dg*dp/dp
   for (int doftoderive = 0; doftoderive < numfluidphases_; doftoderive++)
   {
     for (int idof = 0; idof < numfluidphases_; idof++)
@@ -2013,6 +2127,22 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // function derivs w.r.t. to artery pressure
   artderivs[0] += functderivs[numfluidphases_ + numfluidphases_ + 1 + numvolfrac_ + numvolfrac_];
+
+  // second part
+  // derivatives w.r.t. to fluid diameter: df/dD*dD/dp
+  if (diam_funct_active_)
+  {
+    // df/dD
+    const double functderivdiam =
+        functderivs[numfluidphases_ + numfluidphases_ + 1 + numvolfrac_ + numvolfrac_ + 1];
+
+    // now follow the terms df/dD*dD/dp
+    for (int doftoderive = 0; doftoderive < numdof_cont_; doftoderive++)
+      contderivs[doftoderive] += functderivdiam * diamderivs_[doftoderive];
+
+    // diameter derivs w.r.t. to artery pressure
+    artderivs[0] += functderivdiam * diamderivs_[numfluidphases_ + 2 * numvolfrac_];
+  }
 
   return;
 }

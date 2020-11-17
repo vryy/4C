@@ -79,6 +79,15 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix* M_ele, LINALG::SerialDenseVector* Kappa_ele,
         const std::vector<double>& segmentlengths) = 0;
 
+    //! evaluate additional linearization of (integrated) element diameter dependent terms
+    //! (Hagen-Poiseuille)
+    virtual void EvaluateAdditionalLinearizationofIntegratedDiam(
+        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12) = 0;
+
+    //! flag if diameter function is active, i.e., varying diameter linearization need to be
+    //! calculated
+    virtual bool DiamFunctionActive() = 0;
+
     //! reset state
     virtual void ResetState(
         Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis) = 0;
@@ -148,6 +157,10 @@ namespace POROMULTIPHASESCATRA
     //! over all coupling pairs
     void PreEvaluate() override;
 
+    //! flag if diameter function is active, i.e., varying diameter linearization need to be
+    //! calculated
+    bool DiamFunctionActive() override { return diam_funct_active_; }
+
     //! reset state
     void ResetState(Teuchos::RCP<DRT::Discretization> contdis,
         Teuchos::RCP<DRT::Discretization> artdis) override;
@@ -167,6 +180,11 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22,
         LINALG::SerialDenseMatrix* D_ele, LINALG::SerialDenseMatrix* M_ele,
         LINALG::SerialDenseVector* Kappa_ele, const std::vector<double>& segmentlengths) override;
+
+    //! evaluate additional linearization of (integrated) element diameter dependent terms
+    //! (Hagen-Poiseuille)
+    void EvaluateAdditionalLinearizationofIntegratedDiam(
+        LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12) override;
 
     //! beginning and end of integration segment
     double EtaA() const override { return eta_a_; }
@@ -215,10 +233,11 @@ namespace POROMULTIPHASESCATRA
     /**
      * \brief create segment [eta_a, eta_b]
      *
-     * \note: the following algorithm works only for linear 1D elements and linear 2D/3D elements
-     *        where always 0,1 or 2 intersections can be found. For higher order elements with
-     *        special cases, it has to be re-thought. For instance, if we find two intersections, it
-     *        is always assumed that the integration segment lies between these two intersections
+     * \note: the following algorithm works only for linear 1D elements and linear 2D/3D
+     * elements where always 0,1 or 2 intersections can be found. For higher order elements with
+     *        special cases, it has to be re-thought. For instance, if we find two
+     * intersections, it is always assumed that the integration segment lies between these two
+     * intersections
      *        --> for a higher order 1D element this may not be the case
      */
     void CreateIntegrationSegment();
@@ -309,8 +328,10 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix& stiffmat21, LINALG::SerialDenseMatrix& stiffmat22,
         double& integrated_diam);
 
-    //! evaluate the diameter function
-    double EvaluateDiamFunction(const double artpressnpAtGP);
+    //! evaluate the diameter function and derivative (for couplingtype porofluid)
+    void EvaluateDiamFunctionAndDeriv(const double artpressnpAtGP, const double& w_gp,
+        const LINALG::Matrix<1, numnodesart_>& N1, const LINALG::Matrix<1, numnodescont_>& N2,
+        const double& jacobi);
 
     //! integrate in deformed configuration from eta_A to eta_s
     FAD IntegrateLengthToEtaS(const FAD& eta_s);
@@ -421,11 +442,10 @@ namespace POROMULTIPHASESCATRA
     //! indicates if diameter function is active, i.e, if diameter function is defined
     bool diam_funct_active_;
 
-    //! so far, it is assumed that artery elements always follow the deformation of the underlying
-    //! porous medium
-    //! hence, we actually have to evalute them in current configuration
-    //! if this flag is set to true, artery elements will not move and are evaluated in reference
-    //! configuration
+    //! so far, it is assumed that artery elements always follow the deformation of the
+    //! underlying porous medium hence, we actually have to evalute them in current
+    //! configuration if this flag is set to true, artery elements will not move and are
+    //! evaluated in reference configuration
     bool evaluate_in_ref_config_;
 
     //! first element of interacting pair (artery element)
@@ -444,10 +464,12 @@ namespace POROMULTIPHASESCATRA
     //! current velocity of element 2
     LINALG::Matrix<numdim_, numnodescont_> ele2vel_;
 
-    //! reference diameter of the artery element
+    //! reference diameter of the artery element (constant across element)
     double arterydiamref_;
-    //! current diameter of the artery element
-    double arterydiam_;
+    //! current diameter of the artery element at the GP
+    double arterydiamAtGP_;
+    //! derivatives of the diameter function
+    std::vector<double> diamderivs_;
 
     //! numdofs of artery element
     int numdof_cont_;
@@ -482,6 +504,9 @@ namespace POROMULTIPHASESCATRA
 
     //! stores the artery element length in reference configuration
     double arteryelelengthref_;
+
+    //! artery element length in current configuration
+    double arteryelelength_;
 
     //! stores initial direction of artery element
     LINALG::Matrix<numdim_, 1> lambda0_;
@@ -537,6 +562,11 @@ namespace POROMULTIPHASESCATRA
     LINALG::SerialDenseMatrix GPTS_stiffmat21_;
     //! GPTS stiffness matrix (cont-cont contribution)
     LINALG::SerialDenseMatrix GPTS_stiffmat22_;
+
+    //! (varying) diameter stiffness matrix (artery-artery contribution)
+    LINALG::SerialDenseMatrix diam_stiffmat11_;
+    //! (varying) diameter stiffness matrix (artery-cont contribution)
+    LINALG::SerialDenseMatrix diam_stiffmat12_;
 
     //! mortar coupling matrix D
     LINALG::SerialDenseMatrix D_;
