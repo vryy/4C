@@ -447,6 +447,41 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string resultna
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string resultname)
+{
+  // count number of nodes and number for each processor; output is completely independent of
+  // the number of processors involved
+  unsigned int num_row_elements = discretization_->NumMyRowElements();
+  unsigned int num_nodes = 0;
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+    num_nodes += discretization_->lRowElement(iele)->NumNode();
+
+  // Setup the vector with the GIDs of the nodes.
+  std::vector<double> gid_of_nodes;
+  gid_of_nodes.reserve(num_nodes);
+
+  // Loop over each element and add the node GIDs.
+  for (unsigned int iele = 0; iele < num_row_elements; ++iele)
+  {
+    const DRT::Element* ele = discretization_->lRowElement(iele);
+
+    // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
+    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    if (beamele != nullptr) continue;
+
+    // Add the node GIDs.
+    const std::vector<int>& numbering =
+        DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
+    const DRT::Node* const* nodes = ele->Nodes();
+    for (int inode = 0; inode < ele->NumNode(); ++inode)
+      gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
+  }
+
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(gid_of_nodes, 1, resultname);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::WriteFiles() { runtime_vtuwriter_->WriteFiles(); }
 
 /*-----------------------------------------------------------------------------------------------*
