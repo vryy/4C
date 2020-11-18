@@ -25,6 +25,7 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
       output_displacement_state_(false),
       output_element_owner_(false),
       output_element_gid_(false),
+      output_node_gid_(false),
       output_stress_strain_(false)
 {
   // empty constructor
@@ -45,6 +46,8 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
+  output_node_gid_ =
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
   output_stress_strain_ =
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
 

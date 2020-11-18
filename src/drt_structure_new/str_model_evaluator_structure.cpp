@@ -661,6 +661,9 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   if (structure_vtu_output_params.OutputElementGID())
     vtu_writer_ptr_->AppendElementGID("element_gid");
 
+  // append node GIDs if desired
+  if (structure_vtu_output_params.OutputNodeGID()) vtu_writer_ptr_->AppendNodeGID("node_gid");
+
   // append stress if desired
   if (structure_vtu_output_params.OutputStressStrain() and
       not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
