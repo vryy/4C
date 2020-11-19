@@ -203,9 +203,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
     Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
     Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art)
 {
+  // copy vector
+  Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed = Teuchos::rcp(new Epetra_Vector(*rhs_art));
+  Teuchos::RCP<Epetra_Map> dbcmap_art_with_collapsed =
+      GetAdditionalDBCForCollapsedEles(dbcmap_art, rhs_art_with_collapsed);
   // add normal part to rhs
   rhs->Update(1.0, *globalex_->InsertVector(rhs_cont, 0), 1.0);
-  rhs->Update(1.0, *globalex_->InsertVector(rhs_art, 1), 1.0);
+  rhs->Update(1.0, *globalex_->InsertVector(rhs_art_with_collapsed, 1), 1.0);
 
   // apply DBCs
   // 1) on vector
@@ -215,7 +219,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
   sysmat->Matrix(0, 1).Complete(sysmat_art->RangeMap(), sysmat_cont->RangeMap());
   sysmat->Matrix(1, 0).Complete(sysmat_cont->RangeMap(), sysmat_art->RangeMap());
   sysmat->Matrix(0, 1).ApplyDirichlet(*(dbcmap_cont->CondMap()), false);
-  sysmat->Matrix(1, 0).ApplyDirichlet(*(dbcmap_art->CondMap()), false);
+  sysmat->Matrix(1, 0).ApplyDirichlet(*(dbcmap_art_with_collapsed), false);
 
   // 3) get also the main-diag terms into the global sysmat
   sysmat->Matrix(0, 0).Add(*sysmat_cont, false, 1.0, 1.0);
@@ -224,7 +228,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
   sysmat->Matrix(1, 1).Complete();
   // and apply DBC
   sysmat->Matrix(0, 0).ApplyDirichlet(*(dbcmap_cont->CondMap()), true);
-  sysmat->Matrix(1, 1).ApplyDirichlet(*(dbcmap_art->CondMap()), true);
+  sysmat->Matrix(1, 1).ApplyDirichlet(*(dbcmap_art_with_collapsed), true);
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is important! Monolithic algorithms use this matrix
   sysmat_cont->Assign(LINALG::View, sysmat->Matrix(0, 0));
@@ -243,6 +247,75 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetupSystem(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | apply additional Dirichlet boundary condition for collapsed          |
+ | 1D elements to avoid singular stiffness matrix      kremheller 11/20 |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Map>
+POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCForCollapsedEles(
+    Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art,
+    Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed)
+{
+  // Zero flux is automatically assumed for nodes which border a a collapsed element
+  // since the respective collapsed element is not evaluated
+  // nodes which only border collapsed elements are not evaluated at all, hence, leading to zero
+  // rows in global stiffness matrix and to singularity of this matrix
+  // here we identify these nodes and set a zero dirichlet boundary condition on them
+  // Note that this procedure is equivalent to taking collapsed elements out of the simulation
+  // entirely
+
+  int artelematerial = 0;
+  if (contdis_->Name() == "scatra") artelematerial = 1;
+  std::vector<int> mydirichdofs(0);
+
+  const int numrownodes = arterydis_->NumMyRowNodes();
+  const Epetra_Map* dofrowmap = arterydis_->DofRowMap();
+
+  for (int inode = 0; inode < numrownodes; ++inode)
+  {
+    DRT::Node* actnode = arterydis_->lRowNode(inode);
+    DRT::Element** eles = actnode->Elements();
+    bool all_eles_collapsed = true;
+    for (int iele = 0; iele < (actnode->NumElement()); iele++)
+    {
+      DRT::Element* actele = eles[iele];
+      const Teuchos::RCP<const MAT::Cnst_1d_art>& arterymat =
+          Teuchos::rcp_dynamic_cast<const MAT::Cnst_1d_art>(actele->Material(artelematerial));
+      if (not arterymat->IsCollapsed())
+      {
+        all_eles_collapsed = false;
+        break;
+      }
+    }
+
+    // all elements of this node are collapsed
+    if (all_eles_collapsed)
+    {
+      // 1) insert all dofs of this node into dirichlet dof vector
+      std::vector<int> dofs = arterydis_->Dof(0, actnode);
+      mydirichdofs.insert(mydirichdofs.end(), dofs.begin(), dofs.end());
+      // 2) insert the negative value of all dofs of this node into the rhs, with the employed
+      // incremental form this will force the value to zero
+      for (const auto& mydof : dofs)
+        rhs_art_with_collapsed->ReplaceGlobalValue(mydof, 0, -(*phinp_art_)[dofrowmap->LID(mydof)]);
+    }
+  }
+
+  // build map
+  int nummydirichvals = mydirichdofs.size();
+  Teuchos::RCP<Epetra_Map> dirichmap =
+      Teuchos::rcp(new Epetra_Map(-1, nummydirichvals, &(mydirichdofs[0]), 0, arterydis_->Comm()));
+
+  // build vector of maps
+  std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+  condmaps.push_back(dirichmap);
+  condmaps.push_back(dbcmap_art->CondMap());
+
+  // combined map
+  Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
+
+  return condmerged;
+}
 /*----------------------------------------------------------------------*
  | create the pairs                                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
@@ -862,7 +935,19 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
     const double diam =
         ((*integrated_diams_artery_col_)[i] + (*unaffected_integrated_diams_artery_col_)[i]) /
         curr_ele_length;
-    arterymat->SetDiam(&diam);
+    const double zero_diam = 0.0;
+
+    // set to zero if collapsed
+    if (diam < arterymat->CollapseThreshold())
+    {
+      // Collapse happens for first time --> inform user
+      if (arterymat->Diam() >= arterymat->CollapseThreshold() && actele->Owner() == myrank_)
+        std::cout << ">>>>>> Artery element " << actele->Id() << " just collapsed <<<<<<"
+                  << std::endl;
+      arterymat->SetDiam(&zero_diam);
+    }
+    else  // otherwise set to calculated diameter
+      arterymat->SetDiam(&diam);
   }
 }
 

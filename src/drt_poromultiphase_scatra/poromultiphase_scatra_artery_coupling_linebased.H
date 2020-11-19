@@ -136,6 +136,21 @@ namespace POROMULTIPHASESCATRA
     //! (Hagen-Poiseuille)
     void EvaluateAdditionalLinearizationofIntegratedDiam();
 
+    /*!
+     * apply additional dirichlet boundary conditions of zero pressure or mass fraction on nodes
+     * which only border collapsed 1D elements, i.e., free-hanging nodes with zero row in global
+     * stiffness matrix to avoid singularity of this matrix
+     * \note this procedure is equivalent to taking collapsed elements out of the simulation
+     * entirely
+     *
+     * @param dbcmap_art[i]               : map of nodes with DBC of 1D discretization
+     * @param rhs_art_with_collapsed[i,o] : right hand side of artery subpart
+     * @return dbcmap also containing additional boundary condition for collapsed eles
+     */
+    Teuchos::RCP<Epetra_Map> GetAdditionalDBCForCollapsedEles(
+        Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art,
+        Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed);
+
     //! FE-assemble into force and stiffness matrix
     void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
         const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,

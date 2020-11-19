@@ -71,6 +71,9 @@ namespace MAT
       const double blood_visc_scale_diam_to_microns_;
       //! function used for calculating the diameter
       const int diameter_law_funct_;
+      //! collapse threshold (below this diameter, element is assumed to be collapsed with zero
+      //! diameter and is not evaluated)
+      const double collapse_threshold_;
       //@}
 
       /// create material instance of matching type with my parameters
@@ -174,8 +177,29 @@ namespace MAT
     /// set the artery diameter
     void SetDiam(const double* diam) { diam_ = *diam; }
 
+    /// set the initial artery diameter
+    void SetDiamInitial(const double* diam) { diam_init_ = *diam; }
+
     /// return artery diameter
     double Diam() const { return diam_; }
+
+    /// return initial artery diameter
+    double DiamInitial() const { return diam_init_; }
+
+    /// return artery diameter of previous time step
+    double DiamPreviousTimeStep() const { return diam_previous_time_step_; }
+
+    /// set the artery diameter of previous time step
+    void SetDiamPreviousTimeStep(const double* diam_previous_time_step)
+    {
+      diam_previous_time_step_ = *diam_previous_time_step;
+    }
+
+    /// check if element is collapsed
+    bool IsCollapsed() const { return diam_ < params_->collapse_threshold_; }
+
+    /// return threshold for collapse
+    double CollapseThreshold() const { return params_->collapse_threshold_; }
 
     /// return artery wall thickness
     double Th() const { return params_->th_; }
@@ -222,7 +246,11 @@ namespace MAT
     /// my material parameters
     MAT::PAR::Cnst_1d_art* params_;
     /// Artery initial diameter
+    double diam_init_;
+    /// Artery current diameter
     double diam_;
+    /// Artery diameter of previous time step
+    double diam_previous_time_step_;
   };
 
 }  // namespace MAT

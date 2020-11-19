@@ -31,7 +31,8 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
       viscositylaw_(viscositylaw_undefined),
       diameterlaw_(diameterlaw_undefined),
       blood_visc_scale_diam_to_microns_(matdata->GetDouble("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
-      diameter_law_funct_(matdata->GetInt("VARYING_DIAMETER_FUNCTION"))
+      diameter_law_funct_(matdata->GetInt("VARYING_DIAMETER_FUNCTION")),
+      collapse_threshold_(matdata->GetDouble("COLLAPSE_THRESHOLD"))
 {
   const std::string* typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
 
@@ -67,12 +68,18 @@ DRT::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst_1d_art::Cnst_1d_art() : params_(NULL), diam_(0.0) {}
+MAT::Cnst_1d_art::Cnst_1d_art()
+    : params_(NULL), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
+{
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params) : params_(params), diam_(0.0) {}
+MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params)
+    : params_(params), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
+{
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -90,7 +97,9 @@ void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
+  AddtoPack(data, diam_init_);
   AddtoPack(data, diam_);
+  AddtoPack(data, diam_previous_time_step_);
 }
 
 
@@ -122,7 +131,9 @@ void MAT::Cnst_1d_art::Unpack(const std::vector<char>& data)
     }
 
   // diameter
+  ExtractfromPack(position, data, diam_init_);
   ExtractfromPack(position, data, diam_);
+  ExtractfromPack(position, data, diam_previous_time_step_);
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }

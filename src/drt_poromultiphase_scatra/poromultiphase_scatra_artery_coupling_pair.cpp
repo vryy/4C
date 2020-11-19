@@ -281,7 +281,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (arterymat_ == Teuchos::null)
         dserror("cast to artery material failed for porofluid-artery coupling!");
       arterydiamAtGP_ = arterymat_->Diam();
-      arterydiamref_ = arterymat_->Diam();
+      arterydiamref_ = arterymat_->DiamInitial();
       arterydens = arterymat_->Density();
 
       break;
@@ -331,7 +331,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       if (arterymat_ == Teuchos::null)
         dserror("cast to artery material failed for arteryscatra-scatra coupling!");
       arterydiamAtGP_ = arterymat_->Diam();
-      arterydiamref_ = arterymat_->Diam();
+      arterydiamref_ = arterymat_->DiamInitial();
       arterydens = arterymat_->Density();
       break;
     }
@@ -595,6 +595,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distype
   if (stiffmat21 != NULL) stiffmat21->Shape(dim2_, dim1_);
   if (stiffmat22 != NULL) stiffmat22->Shape(dim2_, dim2_);
 
+  if (arterymat_->IsCollapsed()) return 0.0;
+
   std::vector<double> myEta(n_gp_);
   std::vector<std::vector<double>> myXi(n_gp_, std::vector<double>(numdim_, 0.0));
   double etaA = 0.0;
@@ -649,6 +651,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   if (stiffmat11 != NULL) stiffmat11->Shape(dim1_, dim1_);
   if (stiffmat12 != NULL) stiffmat12->Shape(dim1_, dim2_);
+
+  // do not evaluate if element is collapsed
+  if (arterymat_->IsCollapsed()) return;
 
   // this is the integrated diameter over the entire element (all segments)
   const double arterydiam = arterymat_->Diam();
@@ -1482,8 +1487,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // reference diameter is constant
   std::vector<std::pair<std::string, double>> constants;
-  constants.reserve(1);
+  constants.reserve(2);
   constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));
+  constants.push_back(std::pair<std::string, double>("Dprev", arterymat_->DiamPreviousTimeStep()));
 
   // set fluid values as variables
   SetFluidValuesAsVariables(variables, artpressnpAtGP);
@@ -1908,9 +1914,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       std::vector<std::pair<std::string, double>> variables;
       variables.reserve(numfluidphases_ + numfluidphases_ + 1 + numvolfrac_ + numvolfrac_ + 1 + 1);
 
-      // scalar variables are constants (plus reference artery diameter)
+      // scalar variables are constants (plus reference artery diameter and diameter of previous
+      // time step)
       std::vector<std::pair<std::string, double>> constants;
-      constants.reserve(numscalcont_ + numscalart_ + 1);
+      constants.reserve(numscalcont_ + numscalart_ + 2);
 
       SetScalarValuesAsConstants(constants, artscalarnpAtGP, scalarnpAtGP);
 
@@ -1918,6 +1925,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
       // set reference artery diameter as constant
       constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));
+
+      // set artery diameter of previous time step as constant
+      constants.push_back(
+          std::pair<std::string, double>("Dprev", arterymat_->DiamPreviousTimeStep()));
 
       // set artery diameter as variable
       variables.push_back(std::pair<std::string, double>("D", arterydiamAtGP_));
@@ -1940,7 +1951,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       // fluid variables are constants
       std::vector<std::pair<std::string, double>> constants;
       constants.reserve(
-          numfluidphases_ + numfluidphases_ + 1 + numvolfrac_ + numvolfrac_ + 1 + 1 + 1);
+          numfluidphases_ + numfluidphases_ + 1 + numvolfrac_ + numvolfrac_ + 1 + 1 + 1 + 1);
 
       SetScalarValuesAsVariables(variables, artscalarnpAtGP, scalarnpAtGP);
 
@@ -2058,6 +2069,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
   // set reference artery diameter as constant
   constants.push_back(std::pair<std::string, double>("D0", arterydiamref_));
+
+  // set artery diameter of previous time step as constant
+  constants.push_back(std::pair<std::string, double>("Dprev", arterymat_->DiamPreviousTimeStep()));
 
   return;
 }
@@ -3197,6 +3211,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   if (not funct->IsVariable(0, "D")) funct->AddVariable(0, "D", 0.0);
   // add reference diameter
   if (not funct->IsVariable(0, "D0")) funct->AddVariable(0, "D0", 0.0);
+  // add diameter of previous time step
+  if (not funct->IsVariable(0, "Dprev")) funct->AddVariable(0, "Dprev", 0.0);
 
   return;
 }

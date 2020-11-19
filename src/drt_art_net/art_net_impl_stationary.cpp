@@ -13,6 +13,7 @@
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_print.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
@@ -361,6 +362,27 @@ void ART::ArtNetImplStationary::ApplyDirichletBC()
 }
 
 /*----------------------------------------------------------------------*
+ | reset artery diameter of previous time step         kremheller 11/20 |
+ *----------------------------------------------------------------------*/
+void ART::ArtNetImplStationary::ResetArteryDiamPreviousTimeStep()
+{
+  // set the diameter in material
+  for (int i = 0; i < discret_->NumMyColElements(); ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = discret_->lColElement(i);
+
+    // get the artery-material
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    const double diam = arterymat->Diam();
+    arterymat->SetDiamPreviousTimeStep(&diam);
+  }
+}
+
+/*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void ART::ArtNetImplStationary::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads)
@@ -400,7 +422,8 @@ void ART::ArtNetImplStationary::AddNeumannToResidual()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetImplStationary::TimeUpdate()
 {
-  // do nothing: stationary
+  // reset the artery diameter of the previous time step
+  ResetArteryDiamPreviousTimeStep();
 
   if (solvescatra_)
   {
@@ -428,6 +451,8 @@ void ART::ArtNetImplStationary::PrepareTimeLoop()
   // provide information about initial field (do not do for restarts!)
   if (step_ == 0)
   {
+    // set artery diameter of previous time step to intial artery diameter
+    ResetArteryDiamPreviousTimeStep();
     // write out initial state
     Output(false, Teuchos::null);
   }
@@ -600,6 +625,33 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
   step_ = reader.ReadInt("step");
 
   reader.ReadVector(pressurenp_, "one_d_artery_pressure");
+
+  // read restart for diameter of previous time step
+  reader.ReadVector(ele_radius_, "ele_radius");
+  Teuchos::RCP<Epetra_Vector> ele_radius_col =
+      LINALG::CreateVector(*discret_->ElementColMap(), true);
+  LINALG::Export(*ele_radius_, *ele_radius_col);
+  const double zerodiam = 0.0;
+
+  // set the diameter in material
+  for (int i = 0; i < discret_->NumMyColElements(); ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = discret_->lColElement(i);
+
+    // get the artery-material
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    const double diam = 2.0 * (*ele_radius_col)[i];
+
+    // reset (if element is collapsed in previous step, set to zero)
+    arterymat->SetDiamPreviousTimeStep(&diam);
+    arterymat->SetDiam(&diam);
+    if (diam < arterymat->CollapseThreshold()) arterymat->SetDiam(&zerodiam);
+  }
+
   if (solvescatra_)
     // read restart data for scatra field
     scatra_->ScaTraField()->ReadRestart(step);

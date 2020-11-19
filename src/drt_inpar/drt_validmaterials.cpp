@@ -2103,6 +2103,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedString(m, "VARYING_DIAMETERLAW",
         "type of varying diameter law, CONSTANT (default) or by_function", "CONSTANT", true);
     AddNamedInt(m, "VARYING_DIAMETER_FUNCTION", "function for varying diameter law", -1, true);
+    AddNamedReal(m, "COLLAPSE_THRESHOLD",
+        "Collapse threshold for diameter (below this diameter element is assumed to be collapsed "
+        "with zero diameter and is not evaluated)",
+        -1.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }
