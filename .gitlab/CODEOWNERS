@@ -356,7 +356,7 @@ src/solver_nonlin_nox/             @baci/team_solvers
 /Input/particle_sph*               @baci/team_particle
 /Input/pasi*                       @baci/team_particle
 
-/Input/poro_*                      @baci/team_poro
+/Input/poro*                       @baci/team_poro
 
 /Input/prestress*                  @baci/team_structure
 
