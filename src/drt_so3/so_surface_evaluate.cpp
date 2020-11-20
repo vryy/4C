@@ -182,7 +182,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
       // which we want equilibrium. This true spatial configuration is the material configuration in
       // BACI
       // same holds for mulf
-      if (::UTILS::PRESTRESS::IsActive(time))
+      if (::UTILS::PRESTRESS::IsMulfActive(time) && ::UTILS::PRESTRESS::IsInverseDesignActive(time))
       {
         // no linearization needed for inverse design analysis and mulf
         loadlin = false;

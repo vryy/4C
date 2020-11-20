@@ -30,6 +30,10 @@ namespace STR
       void WriteRestart(
           IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
+      void UpdateStepState() override;
+
+      void UpdateStepElement() override;
+
       /*!
        * \brief During MULF and material iterative prestressing, the displacements resetted after
        * each timestep, which is done here.
@@ -49,6 +53,11 @@ namespace STR
       void PostTimeLoop() override;
 
      private:
+      /*!
+       * \brief Returns whether the material iterative prestress algorithm reached a converged state
+       */
+      bool IsMaterialIterativePrestressConverged() const;
+
       /// Absolute displacement norm used for the convergence check of the prestress state
       double absoluteDisplacementNorm_;
     };
