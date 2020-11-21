@@ -104,7 +104,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     rbuffer.resize(msgsizetorecv);
 
     // perform non-blocking receive operation
-    MPI_Irecv((void*)(&rbuffer[0]), msgsizetorecv, MPI_CHAR, msgsource, msgtag, mpicomm->Comm(),
+    MPI_Irecv((void*)(&rbuffer[0]), msgsizetorecv, MPI_CHAR, msgsource, 5678, mpicomm->Comm(),
         &recvrequest[rec]);
   }
 
@@ -128,7 +128,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
       std::vector<char>& sbuffer = sdata[torank];
 
       // perform non-blocking send operation
-      MPI_Isend((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 1234,
+      MPI_Isend((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 5678,
           mpicomm->Comm(), &sendrequest[index]);
 
       ++counter;
