@@ -85,6 +85,10 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "modified time step size for scatra-scatra interface coupling involving interface layer "
       "growth",
       &s2icoupling);
+
+  // meshtying including 3 entities
+  BoolParameter(
+      "MESHTYING_3_DOMAIN_INTERSECTION", "No", "Meshtying including three domains", &s2icoupling);
 }
 
 
