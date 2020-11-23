@@ -16,7 +16,6 @@
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret.H"
 
 #include <Epetra_IntVector.h>
 
@@ -172,15 +171,14 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
   std::vector<int> masternodes;
   std::vector<int> slavenodes;
 
-  for (unsigned int i = 0; i < masternodes1.size(); ++i)
+  for (int& i : masternodes1)
   {
-    if (masternodes2.find(masternodes1[i]) == masternodes2.end())
-      masternodes.push_back(masternodes1[i]);
+    if (masternodes2.find(i) == masternodes2.end()) masternodes.push_back(i);
   }
 
-  for (unsigned int i = 0; i < slavenodes1.size(); ++i)
+  for (int& i : slavenodes1)
   {
-    if (slavenodes2.find(slavenodes1[i]) == slavenodes2.end()) slavenodes.push_back(slavenodes1[i]);
+    if (slavenodes2.find(i) == slavenodes2.end()) slavenodes.push_back(i);
   }
 
   int localmastercount = static_cast<int>(masternodes.size());
@@ -325,10 +323,8 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   patchedmasternodes.reserve(coupling.size());
   permslavenodes.reserve(slavenodes.size());
 
-  for (unsigned i = 0; i < masternodes.size(); ++i)
+  for (int gid : masternodes)
   {
-    int gid = masternodes[i];
-
     // We allow to hand in master nodes that do not take part in the
     // coupling. If this is undesired behaviour the user has to make
     // sure all nodes were used.
@@ -459,10 +455,10 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
       // loop them and check, whether this is a pbc pure master node
       // for all previous conditions
       unsigned ntimesmaster = 0;
-      for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
+      for (auto& cond : thiscond)
       {
-        const std::string* mymasterslavetoggle =
-            thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
+        const auto* mymasterslavetoggle =
+            cond->Get<std::string>("Is slave periodic boundary condition");
 
         if (*mymasterslavetoggle == "Master")
         {

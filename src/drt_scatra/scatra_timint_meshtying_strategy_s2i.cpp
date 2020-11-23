@@ -3903,9 +3903,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, dis
   else
   {
     // loop over all existing instances
-    for (typename std::map<std::string, MortarCellCalc<distypeS, distypeM>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
     {
       // check whether current instance should be deleted
       if (i->second == delete_me)
