@@ -300,6 +300,46 @@ void ADAPTER::Coupling::SetupCoupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const std::vector<std::vector<int>>& masternodes_vec,
+    const std::vector<std::vector<int>>& slavenodes_vec, const int numdof, const bool matchall,
+    const double tolerance, const int nds_master, const int nds_slave)
+{
+  // vectors with master and slave node maps (from input) for every coupling condition
+  // Permuted slave node map for each coupling conditions from MatchNodes()
+  std::vector<Teuchos::RCP<const Epetra_Map>> masternodemap_cond;
+  std::vector<Teuchos::RCP<const Epetra_Map>> slavenodemap_cond;
+  std::vector<Teuchos::RCP<const Epetra_Map>> permslavenodemap_cond;
+
+  for (unsigned i = 0; i < masternodes_vec.size(); ++i)
+  {
+    std::vector<int> masternodes = masternodes_vec.at(i);
+    std::vector<int> slavenodes = slavenodes_vec.at(i);
+
+    std::vector<int> permslavenodes;
+
+    MatchNodes(masterdis, slavedis, masternodes, permslavenodes, slavenodes, matchall, tolerance);
+
+    masternodemap_cond.push_back(Teuchos::rcp(
+        new const Epetra_Map(-1, masternodes.size(), &masternodes[0], 0, masterdis.Comm())));
+    slavenodemap_cond.push_back(Teuchos::rcp(
+        new const Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm())));
+    permslavenodemap_cond.push_back(Teuchos::rcp(
+        new const Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm())));
+  }
+
+  // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
+  // master map)
+  auto masternodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(masternodemap_cond);
+  auto slavenodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(slavenodemap_cond);
+  auto permslavenodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(permslavenodemap_cond);
+
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
+      BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, std::vector<int>& masternodes,
     std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
