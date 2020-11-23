@@ -249,6 +249,7 @@ namespace DRT
       SSICouplingSolidToScatra,
       SSICouplingScatraToSolid,
       SSIInterfaceMeshtying,
+      SSIMeshtying3DomainIntersection,
       SSTIInterfaceMeshtying,
       RedAirwayVentilatorCond,
       RedAirwayTissue,

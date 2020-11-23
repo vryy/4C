@@ -68,6 +68,9 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "TransportThermoConvections", "TransportThermoConvections"));
 
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("SSITriplePointMeshtying", "TriplePointMeshtying"));
+
   return conditions_to_copy;
 }
 
