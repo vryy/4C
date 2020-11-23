@@ -81,7 +81,7 @@ void STR::IMPLICIT::PreStress::PostUpdate()
   }
   else if (::UTILS::PRESTRESS::IsMaterialIterativeActive(GlobalState().GetTimeN()))
   {
-    // Compute norm of the displacements
+    // Print prestress status update
     if (GlobalState().GetMyRank() == 0)
     {
       IO::cout << "====== Iterative Prestress Status" << IO::endl;
