@@ -447,7 +447,7 @@ double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateCurrentDepositionStretc
 
 void MIXTURE::MixtureConstituent_RemodelFiber::UpdateSigHAtAllGaussPoints(const int eleGID)
 {
-  for (int gp = 0; gp < sig_h_.size(); ++gp)
+  for (size_t gp = 0; gp < sig_h_.size(); ++gp)
   {
     UpdateSigH(gp, eleGID);
   }
