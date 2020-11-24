@@ -762,7 +762,7 @@ void SSI::SSIMono::SetupSystem()
 
   // initialize object, that performs evaluations of OD coupling
   scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-      MapsStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+      MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
       MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
       InterfaceCouplingAdapterStructure(), interface_map_scatra, meshtying_strategy_s2i_,
       ScaTraBaseAlgorithm(), StructureField()));
