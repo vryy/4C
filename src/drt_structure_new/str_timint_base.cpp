@@ -561,7 +561,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output stress, strain and optional quantity
-  if ((forced_writerestart or dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN())) and
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
@@ -1169,6 +1169,8 @@ void STR::TIMINT::Base::OutputErrorNorms()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
+
+void STR::TIMINT::Base::PostTimeLoop() { int_ptr_->PostTimeLoop(); }
 
 bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
 {

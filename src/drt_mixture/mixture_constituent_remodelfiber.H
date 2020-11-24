@@ -148,16 +148,20 @@ namespace MIXTURE
      */
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
+    void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
+        const int eleGID) override;
+
+    void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
+        const int gp, const int eleGID) override;
+
     /*!
-     * \brief Extended update method.
+     * \brief Update the prestress if it is time dependent
      *
-     * \param F Deformation gradient
-     * \param params Container for additional information
+     * \param params Container for additional information holding the total time
      * \param gp Gauss point
      * \param eleGID Global element id
      */
-    void Update(
-        LINALG::Matrix<3, 3> const& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
+    void UpdateFiberPrestress(Teuchos::ParameterList& params, int gp, int eleGID);
 
     /*!
      * @brief Evaluates the elastic part of the fiber
@@ -337,9 +341,15 @@ namespace MIXTURE
     double EvaluateCurrentDepositionStretch(double current_time) const;
 
     /*!
+     * \brief Computes the homeostatic stress and stores it as the internal state at every
+     * Gausspoint
+     */
+    void UpdateSigHAtAllGaussPoints(int eleGID);
+
+    /*!
      * \brief Computes the homeostatic stress and stores it as the internal state
      */
-    void UpdateSigH(int eleGID);
+    void UpdateSigH(int gp, int eleGID);
 
    private:
     /// Strain energy summand of the fiber

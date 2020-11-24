@@ -26,13 +26,10 @@ SOLVER                          Superlu
 -------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics
-PRESTRESS                       material_iterative
-PRESTRESSTIME                   100
-PRESTRESSTOLDISP                1e-9
 RESULTSEVRY                     5
 RESTARTEVRY                     5
 TIMESTEP                        0.1
-NUMSTEP                         1000
+NUMSTEP                         50
 MAXTIME                         100
 TOLDISP                         1e-9
 TOLRES                          1e-9
@@ -47,7 +44,7 @@ Outer Iteration StatusTest      = No
 MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 14 MASSFRAC 0.1 0.9 MATIDMIXTURERULE 10 DENS 1.0
 MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_TYPE 0
 
-MAT 11 MIX_Constituent_ExplicitRemodelFiber MATID 110 DECAY_TIME 1.0 GROWTH_CONSTANT 1.0 DEPOSITION_STRETCH 0 DEPOSITION_STRETCH_TIMEFUNCT 1 GROWTH_ENABLED false
+MAT 11 MIX_Constituent_ExplicitRemodelFiber MATID 110 DECAY_TIME 1.0 GROWTH_CONSTANT 1.0 DEPOSITION_STRETCH 1.13 DEPOSITION_STRETCH_TIMEFUNCT 0 GROWTH_ENABLED false
 MAT 110 ELAST_CoupAnisoExpo K1 10 K2 30 GAMMA 0.0 K1COMP 0.0 K2COMP 1.0 ADAPT_ANGLE No INIT 3 STR_TENS_ID 1000 FIBER_ID 1
 
 MAT 14 MIX_Constituent_ElastHyper NUMMAT 2 MATIDS 141 143 PRESTRESS_STRATEGY 149
@@ -56,18 +53,12 @@ MAT 143 ELAST_VolSussmanBathe KAPPA 100
 MAT 149 MIX_Prestress_Strategy_Iterative
 
 MAT 1000 ELAST_StructuralTensor STRATEGY Standard
--------------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 9999999999.0 VALUES 1.0 1.13 1.13
--------------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.0 9999999999.0 VALUES 0 1 1
 ---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 3 ONOFF 1 1 1 STIFF 10 10.0 10.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION xyz COUPLING none
 -------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
-E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 0.0 FUNCT 2 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 100.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ------------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0 TOLERANCE 1e-6
