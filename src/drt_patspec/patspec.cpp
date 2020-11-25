@@ -334,12 +334,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(
   }
   else
   {
-    if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
-      dserror(
-          "UQ requires accurate computation of max ILT thickness, Set CALC_ACCURATE_MAX_ILT_THICK "
-          "to yes");
-    else
-      iltthick->MaxValue(&maxiltthick);
+    iltthick->MaxValue(&maxiltthick);
     maxiltthick -= 1.0;  // subtract an approximate arterial wall thickness
     if (!dis->Comm().MyPID())
     {

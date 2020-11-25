@@ -27,9 +27,7 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
-#include "../drt_inpar/inpar_mlmc.H"
 #include "stru_resulttest.H"
-#include "str_invanalysis.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"

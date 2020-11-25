@@ -872,22 +872,10 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
   CheckInitSetup();
 
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
-  // for multilevel monte carlo we do not need to write mesh in every run
-  if (dataio_->GetWriteReducedRestartEveryNStep() > 0)
-  {
-    // write restart output, please
-    NewIOStep(datawritten);
-    output_ptr->WriteVector("displacement", dataglobalstate_->GetDisN());
-    output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
-    output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());
-  }
-  else
-  {
-    // write restart output, please
-    if (dataglobalstate_->GetStepN() != 0)
-      output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
-    NewIOStep(datawritten);
-  }
+  // write restart output, please
+  if (dataglobalstate_->GetStepN() != 0)
+    output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
+  NewIOStep(datawritten);
 
   output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
   output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());

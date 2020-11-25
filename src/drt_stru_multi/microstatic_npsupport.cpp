@@ -18,7 +18,6 @@ analysis for supporting processors
 #include "../drt_lib/drt_container.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../drt_inv_analysis/gen_inv_analysis.H"
 
 #include <hdf5.h>
 
@@ -166,31 +165,6 @@ void STRUMULTI::np_support_drt()
         const bool eleowner = owner;
         // dummy material is used initialize the inverse analysis on the micro material
         dummymaterials[eleID]->InvAnaInit(eleowner, eleID);
-        break;
-      }
-      // this case is used when gen_inv_analysis is used with multi scale
-      case 6:  // replaces old case 6 of lung-inv_analysis with multi-scale (birzle 12/2016)
-      {
-        // receive data from the master proc for inverse analysis
-        // Note: task[1] does not contain an element id in this case,
-        // it's the length of the vector that will be broadcast
-        int np = task[1];
-        Epetra_SerialDenseVector p_cur(np);
-        // receive the parameter vector
-        subcomm->Broadcast(&p_cur[0], np, 0);
-
-        // loop over all problem instances and set parameters accordingly
-        // Further work has to be done for parameter fitting on micro and macro scale
-        // due to the layout of p_cur
-        for (unsigned prob = 0; prob < DRT::Problem::NumInstances(); ++prob)
-        {
-          std::set<int> mymatset;
-          // broadcast sets within micro scale once per problem instance
-          LINALG::GatherAll<int>(mymatset, *subcomm);
-
-          // material parameters are set for the current problem instance
-          STR::SetMaterialParameters(prob, p_cur, mymatset);
-        }
         break;
       }
       case 9:

@@ -267,13 +267,6 @@ namespace STR
         return writerestartevery_;
       };
 
-      /// Write reduced Restart Data i.e no mesh for mlmc purposes
-      const int& GetWriteReducedRestartEveryNStep() const
-      {
-        CheckInitSetup();
-        return writereducedrestart_;
-      };
-
       /// write state/stress/strain every given step
       const int& GetWriteResultsEveryNStep() const
       {
@@ -415,9 +408,6 @@ namespace STR
 
       /// write restart every given step. if 0, restart is not written
       int writerestartevery_;
-
-      /// Write reduced Restart Data i.e no mesh for mlmc purposes
-      int writereducedrestart_;
 
       /// write state/stress/strain every given step
       int writeresultsevery_;
