@@ -763,7 +763,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_loca_continuation.cpp
   src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_binningstrategy.cpp
-  src/drt_inpar/inpar_mlmc.cpp
   src/drt_inpar/inpar_mor.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
@@ -1624,8 +1623,6 @@ set(OBJS_POST_DRT_VTK
   src/post_vtk/post_drt_vtk_writer.cpp
 )
 set(OBJS_INV_ANALYSIS
-  src/drt_inv_analysis/gen_inv_analysis.cpp
-  src/drt_structure/str_invanalysis.cpp
   src/drt_inv_analysis/invana_cal_drt.cpp
 )
 set(OBJS_STATINV_ANALYSIS
@@ -1668,18 +1665,6 @@ set(OBJS_STATINV_ANALYSIS
 )
 set(OBJS_STATINV_ANALYSIS_LIB
   src/drt_inv_analysis/particle_data.cpp
-)
-set(OBJS_MLMC
-	src/drt_mlmc/drt_uq_redairways.cpp
-	src/drt_mlmc/drt_uq_dyn.cpp
-  src/drt_mlmc/mlmc.cpp
-  src/drt_mlmc/mc_utils.cpp
-  src/drt_mlmc/mc_mat_par_manager.cpp
-  src/drt_mlmc/mc_var_thickness_manager.cpp
-  src/drt_mlmc/randomfield.cpp
-  src/drt_mlmc/randomfield_fourier.cpp
-  src/drt_mlmc/randomfield_spectral.cpp
-  src/drt_mlmc/randomvariable.cpp
 )
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp
@@ -2769,9 +2754,7 @@ add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
 add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
-add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
-add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
@@ -2802,9 +2785,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_scatra
   alg_structure
   alg_xstructure
-  alg_invanalysis
   alg_statinvanalysis
-  alg_mlmc
   alg_thermo
   alg_contact
   alg_contact_aug

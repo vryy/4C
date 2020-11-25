@@ -1,5 +1,18 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Levenberg-Marquardt module (gen_inv_analysis) in drt_inv_analysis (by several authors)
+- removed in commit 53b0da7adcab7abe99edae174d78e2d440fd5936
+- reasons: This part of BACI is now available in a more robust way in QUEENS
+           The implementation in BACI was scattered over many modules with several code dublicates
+           The BACI version of Levenberg-Marquardt was not robust enough for large scale applications
+           Nested parallelity made problems in the application as well as in the testing framework
+- removed by Jonas Nitzler
+
+MLMC / UQ module (by Jonas Biehler)
+- removed in commit 53b0da7adcab7abe99edae174d78e2d440fd5936
+- reasons: The framework is now coverd in a more flexible way in QUEENS
+- removed by Jonas Nitzler
+
 Immersed boundary method implementation for membrane finite elements (by Sebastian Fuchs)
 - removed in commit f1582bd7c7d3a0bc3b2b2137e04dbbccc287ffb3 on 2020-04-14
   and 872a53eacca5739d00c653bab918561741bb5db3 on 2020-04-30

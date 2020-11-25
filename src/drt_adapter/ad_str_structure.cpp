@@ -144,11 +144,6 @@ void ADAPTER::StructureBaseAlgorithm::CreateTimInt(const Teuchos::ParameterList&
   xparams->set<FILE*>("err file", problem->ErrorFile()->Handle());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
-  // Parameter to determine if MLMC is on/off
-  Teuchos::RCP<Teuchos::ParameterList> mlmcp =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->MultiLevelMonteCarloParams()));
-  // Needed for reduced restart output
-  xparams->set<int>("REDUCED_OUTPUT", Teuchos::getIntegralValue<int>((*mlmcp), "REDUCED_OUTPUT"));
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
