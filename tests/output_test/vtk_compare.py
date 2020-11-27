@@ -8,6 +8,9 @@ from vtk import vtkXMLPUnstructuredGridReader
 from vtk import vtkXMLGenericDataObjectReader
 from vtk.util import numpy_support as VN
 
+# Import pure vtk data comparison.
+from vtk_data_compare import compare_vtk_data
+
 # we expect the following input:
 # link_to_python link_to_this_script input_pvd_file reference_pvd_file tolerance_for_data_comparison number_of_timesteps[optional] list_of_points_in_time[optional]
 # /home/user/anaconda3/envs/vtk-test/bin/python /home/user/sim/vtk-tests/python/vtk_compare.py /home/user/sim/vtk-tests/sohex8/xxx-structure.pvd /home/user/sim/vtk-tests/sohex8/sohex8fbar_cooks_nl_new_struc-structure.pvd 1e-8 3 10.0 35.0 100.0
@@ -154,54 +157,6 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
 
         return filearray
 
-    def compare_arrays(array1, array2, name=None):
-        """
-        Compare two vtk arrays.
-        """
-
-        # if you want to check independently of number of processors
-        #        if name in 'element_owner' 'owner':
-        #            return
-
-        # In some cases (e.g. vtp files) it is possible that we get empty
-        # arrays here. Therefore, if both arrays have no entries we consider
-        # them equal here.
-        if (VN.vtk_to_numpy(array1).size == 0
-                and VN.vtk_to_numpy(array2).size == 0):
-            return
-
-        # actual tolerance based comparison
-        diff = (VN.vtk_to_numpy(array1) - VN.vtk_to_numpy(array2))
-        if not (np.max(np.abs(diff)) < tol_float):
-            error_string = 'VTK array comparison failed!'
-            if name is not None:
-                error_string += ' Name of the array: {}'.format(name)
-            raise ValueError(error_string)
-
-    def compare_data_sets(data1, data2, name):
-        """
-        Compare data sets obtained from vtk objects.
-        """
-
-        # Both data sets need to have the same number of arrays.
-        if not data1.GetNumberOfArrays() == data2.GetNumberOfArrays():
-            data1_names = [data1.GetArrayName(i)
-                for i in range(data1.GetNumberOfArrays())]
-            data2_names = [data2.GetArrayName(i)
-                for i in range(data2.GetNumberOfArrays())]
-            raise ValueError('Length of vtk data objects for {} does not '
-                'match!\nNames in data1: {}\nNames in data2: {}'.format(
-                    name, data1_names, data2_names))
-
-        # Compare each array.
-        for i in range(data1.GetNumberOfArrays()):
-
-            # Get the arrays with the same name.
-            name = data1.GetArrayName(i)
-            array1 = data1.GetArray(name)
-            array2 = data2.GetArray(name)
-            compare_arrays(array1, array2, name=name)
-
     # Perform all checks, catch errors.
     try:
         # compare content of .pvd files excluding filepaths
@@ -230,38 +185,7 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
             data2array.append(merge_vtk(os.path.join(dir2,iter[1])))
 
         for i in range(0, len(data1array)):
-
-            # Check points first, for conclusive error messages. Data looks wrong, if not checked for the same points.
-            # Compare the point positions.
-            compare_arrays(
-                data1array[i].GetPoints().GetData(),
-                data2array[i].GetPoints().GetData(),
-                name='point_positions'
-            )
-
-            # Compare the cell types and connectivity. - Only if Cells exist
-            if data1array[i].GetDataObjectType() != 0:
-                compare_arrays(
-                    data1array[i].GetCells().GetData(),
-                    data2array[i].GetCells().GetData(),
-                    name='cell_connectivity')
-
-                compare_arrays(
-                    data1array[i].GetCellTypesArray(),
-                    data2array[i].GetCellTypesArray(),
-                    name='cell_type')
-
-
-            # Compare the cell and point data of the array.
-
-            # Compare Cells only if they exist.
-            if data1array[i].GetDataObjectType() != 0:
-                compare_data_sets(data1array[i].GetCellData(),
-                    data2array[i].GetCellData(), 'cell data')
-            compare_data_sets(data1array[i].GetPointData(),
-                data2array[i].GetPointData(), 'point data')
-            compare_data_sets(data1array[i].GetFieldData(),
-                data2array[i].GetFieldData(), 'field data')
+            compare_vtk_data(data1array[i], data2array[i], tol_float=tol_float)
 
     except Exception as error:
         if raise_error:
