@@ -161,6 +161,9 @@ namespace PARTICLEINTERACTION
     //! time step size
     double dt_;
 
+    //! tension cutoff of normal contact force
+    const bool tension_cutoff_;
+
     //! write particle-wall interaction output
     const bool writeparticlewallinteraction_;
   };

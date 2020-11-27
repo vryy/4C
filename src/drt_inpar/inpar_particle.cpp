@@ -402,7 +402,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("DAMP_REG_FAC", -1.0,
       "linearly regularized damping normal force in the interval |g| < (DAMP_REG_FAC * r_min)",
       &particledyndem);
-  BoolParameter("TENSION_CUTOFF", "no", "switch on/off tension cutoff", &particledyndem);
+  BoolParameter(
+      "TENSION_CUTOFF", "yes", "evaluate tension cutoff of normal contact force", &particledyndem);
 
   DoubleParameter("POISSON_RATIO", -1.0, "poisson ratio", &particledyndem);
   DoubleParameter("YOUNG_MODULUS", -1.0, "young's modulus", &particledyndem);

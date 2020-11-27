@@ -144,10 +144,8 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("COEFF_RESTITUTION", e_);
     params_dem.set("DAMP_REG_FAC", -1.0);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(
@@ -333,9 +331,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("NORMAL_DAMP", d_normal_);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann>(
@@ -410,9 +406,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("NORMAL_DAMP", d_normal_);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono>(
@@ -487,9 +481,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("NORMAL_DAMP", d_normal_);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalTsuji>(

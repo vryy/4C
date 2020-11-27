@@ -44,6 +44,7 @@
 PARTICLEINTERACTION::DEMContact::DEMContact(const Teuchos::ParameterList& params)
     : params_dem_(params),
       dt_(0.0),
+      tension_cutoff_(DRT::INPUT::IntegralValue<int>(params_dem_, "TENSION_CUTOFF")),
       writeparticlewallinteraction_(
           DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
@@ -453,6 +454,9 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
     contactnormal_->NormalContactForce(
         particlepair.gap_, rad_i, rad_j, vel_rel_normal, particlepair.m_eff_, normalcontactforce);
 
+    // evaluate tension cutoff of normal contact force
+    if (tension_cutoff_) normalcontactforce = std::min(normalcontactforce, 0.0);
+
     // add normal contact force contribution
     UTILS::vec_addscale(force_i, normalcontactforce, particlepair.e_ji_);
     if (status_j == PARTICLEENGINE::Owned)
@@ -712,6 +716,9 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     double normalcontactforce(0.0);
     contactnormal_->NormalContactForce(
         particlewallpair.gap_, rad_i, &rad_j, vel_rel_normal, mass_i[0], normalcontactforce);
+
+    // evaluate tension cutoff of normal contact force
+    if (tension_cutoff_) normalcontactforce = std::min(normalcontactforce, 0.0);
 
     // add normal contact force contribution
     UTILS::vec_addscale(force_i, normalcontactforce, particlewallpair.e_ji_);

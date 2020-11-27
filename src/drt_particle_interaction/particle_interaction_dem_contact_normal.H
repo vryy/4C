@@ -115,9 +115,6 @@ namespace PARTICLEINTERACTION
     //! parameter for regularization of damping contact force
     const double damp_reg_fac_;
 
-    //! tension cutoff
-    const bool tension_cutoff_;
-
     //! normal contact damping factor
     double d_normal_fac_;
   };
@@ -178,9 +175,6 @@ namespace PARTICLEINTERACTION
    protected:
     //! normal contact damping parameter
     const double d_normal_;
-
-    //! tension cutoff
-    const bool tension_cutoff_;
   };
 
   class DEMContactNormalLeeHerrmann : public DEMContactNormalNonlinearDampBase
