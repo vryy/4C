@@ -301,7 +301,7 @@ baci_test(beam3eb_static_contact_penalty_linposquadpen_beamrotatingoverarc 2 150
 baci_test(beam3eb_static_contact_penalty_linposquadpen_beamslidingoverarc 2 "")
 baci_test(beam3eb_static_endmoment_quartercircle 2 "")
 baci_test(beam3r_herm2line2_static_test1 2 "")
-vtk_test(beam3r_herm2line2_static_test1_vtk 1 xxx-structure-beams.pvd ref/beam3r_herm2line2_static_test1-structure-beams.pvd 1e-08)
+vtk_test(beam3r_herm2line2_static_test1_vtk 1 xxx-structure-beams.pvd ref/beam3r_herm2line2_static_test1-structure-beams.pvd 1e-06)
 baci_test(beam3r_herm2line3_backweuler_browndyn_vanderWaals_doublelengthspec_smallsepapprox_regularization_constextpol_twocrossedbeams 2 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_vanderWaals_doublelengthspec_smallsepapprox_regularization_linextpol_twocrossedbeams 2 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_vanderWaals_doublelengthspec_smallsepapprox_twocrossedbeams 2 "")
