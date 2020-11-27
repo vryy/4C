@@ -134,6 +134,10 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+
+    setStringToIntegralParameter<int>("UNIQUE_IDS", "No",
+        "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
+        yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
   }
 
   // Beam to solid surface mesh tying parameters.
@@ -221,6 +225,10 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
+        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+
+    setStringToIntegralParameter<int>("UNIQUE_IDS", "No",
+        "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
         yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
   }
 }
