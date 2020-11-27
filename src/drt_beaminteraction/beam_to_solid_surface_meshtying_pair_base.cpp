@@ -13,6 +13,7 @@
 #include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_surface_vtk_output_params.H"
 #include "beaminteraction_calc_utils.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
@@ -84,7 +85,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
     for (const auto& segment : this->line_to_3D_segments_)
       for (const auto& segmentation_point : {segment.GetStartPoint(), segment.GetEndPoint()})
         points.push_back(segmentation_point);
-    AddVisualizationIntegrationPoints(visualization_segmentation, points);
+    AddVisualizationIntegrationPoints(visualization_segmentation, points, visualization_params);
   }
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
@@ -96,7 +97,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
     for (const auto& segment : this->line_to_3D_segments_)
       for (const auto& segmentation_point : (segment.GetProjectionPoints()))
         points.push_back(segmentation_point);
-    AddVisualizationIntegrationPoints(visualization_integration_points, points);
+    AddVisualizationIntegrationPoints(
+        visualization_integration_points, points, visualization_params);
   }
 }
 
@@ -108,7 +110,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
     AddVisualizationIntegrationPoints(
         const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
             visualization_writer,
-        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points) const
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
+        const Teuchos::ParameterList& visualization_params) const
 {
   // Setup variables.
   LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
@@ -119,6 +122,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
       visualization_writer->GetMutablePointDataVector("displacement");
   std::vector<double>& projection_direction =
       visualization_writer->GetMutablePointDataVector("projection_direction");
+
+  const Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
+          "btssc-output_params_ptr");
+  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+  std::vector<double>* pair_beam_id = nullptr;
+  std::vector<double>* pair_solid_id = nullptr;
+  if (write_unique_ids)
+  {
+    pair_beam_id = &(visualization_writer->GetMutablePointDataVector("uid_0_pair_beam_id"));
+    pair_solid_id = &(visualization_writer->GetMutablePointDataVector("uid_1_pair_solid_id"));
+  }
+
   for (const auto& point : points)
   {
     GEOMETRYPAIR::EvaluatePosition<beam>(
@@ -137,6 +153,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
       point_coordinates.push_back(FADUTILS::CastToDouble(X_beam(dim)));
       displacement.push_back(FADUTILS::CastToDouble(u_beam(dim)));
       projection_direction.push_back(FADUTILS::CastToDouble(projection_dir(dim)));
+    }
+
+    if (write_unique_ids)
+    {
+      pair_beam_id->push_back(this->Element1()->Id());
+      pair_solid_id->push_back(this->Element2()->Id());
     }
   }
 }
