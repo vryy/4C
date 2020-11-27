@@ -11,6 +11,7 @@
       <PDataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="force_beam" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="force_solid" NumberOfComponents="3" format="ascii"/>
+      <PDataArray type="Float64" Name="uid_0_node_id" format="ascii"/>
     </PPointData>
     <Piece Source="beam-to-solid-surface-nodal-forces-0000010001-0.vtu"/>
   </PUnstructuredGrid>
