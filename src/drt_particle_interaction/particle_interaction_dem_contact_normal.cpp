@@ -25,7 +25,8 @@ PARTICLEINTERACTION::DEMContactNormalBase::DEMContactNormalBase(
       r_max_(params_dem_.get<double>("MAX_RADIUS")),
       v_max_(params_dem_.get<double>("MAX_VELOCITY")),
       c_(params_dem_.get<double>("REL_PENETRATION")),
-      k_normal_(params_dem_.get<double>("NORMAL_STIFF"))
+      k_normal_(params_dem_.get<double>("NORMAL_STIFF")),
+      k_normal_crit_(0.0)
 {
   // empty constructor
 }
@@ -58,6 +59,9 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpring::Setup(const double& dens
   // calculate normal stiffness from relative penetration and other input parameters
   if (c_ > 0.0)
     k_normal_ = 2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
+
+  // set critical normal contact stiffness to linear normal contact stiffness
+  k_normal_crit_ = k_normal_;
 }
 
 void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalContactForce(const double& gap,
@@ -131,7 +135,7 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::NormalContactForce(c
 
 PARTICLEINTERACTION::DEMContactNormalNonlinearBase::DEMContactNormalNonlinearBase(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMContactNormalBase(params), k_tcrit_(0.0)
+    : PARTICLEINTERACTION::DEMContactNormalBase(params)
 {
   // empty constructor
 }
@@ -146,12 +150,13 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& den
     k_normal_ = 10.0 / 3.0 * M_PI * dens_max * UTILS::pow<2>(v_max_) * std::sqrt(r_max_) /
                 std::sqrt(UTILS::pow<5>(2.0 * c_));
 
-  // calculate normal stiffness from relative penetration and other input parameters if necessary
+  // set critical normal contact stiffness to linear normal contact stiffness
   if (c_ > 0.0)
-    k_tcrit_ = 2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
+    k_normal_crit_ =
+        2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
   else
-    k_tcrit_ = std::pow(2048.0 / 1875.0 * dens_max * UTILS::pow<2>(v_max_) * M_PI *
-                            UTILS::pow<3>(r_max_) * UTILS::pow<4>(k_normal_),
+    k_normal_crit_ = std::pow(2048.0 / 1875.0 * dens_max * UTILS::pow<2>(v_max_) * M_PI *
+                                  UTILS::pow<3>(r_max_) * UTILS::pow<4>(k_normal_),
         0.2);
 }
 

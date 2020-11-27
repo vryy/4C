@@ -176,13 +176,13 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
   // currently no particles in simulation domain
   if (minmass == 0.0) return;
 
-  // get time critical contact stiffness
-  const double k_tcrit = contactnormal_->GetTimeCriticalStiffness();
+  // get critical normal contact stiffness
+  const double k_normal_crit = contactnormal_->GetCriticalNormalContactStiffness();
 
   // critical time step size based on particle-particle contact
   const double safety = 0.75;
   const double factor = contacttangential_ ? 0.22 : 0.34;
-  const double dt_crit = safety * factor * std::sqrt(minmass / k_tcrit);
+  const double dt_crit = safety * factor * std::sqrt(minmass / k_normal_crit);
 
   // checks time step
   if (dt_ > dt_crit) dserror("time step %f larger than critical time step %f!", dt_, dt_crit);

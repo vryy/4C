@@ -39,10 +39,10 @@ namespace PARTICLEINTERACTION
     virtual void Setup(const double& dens_max);
 
     //! get normal contact stiffness
-    virtual double GetNormalContactStiffness() const = 0;
+    virtual double GetNormalContactStiffness() const final { return k_normal_; };
 
-    //! get time critical contact stiffness
-    virtual double GetTimeCriticalStiffness() const = 0;
+    //! get critical normal contact stiffness
+    virtual double GetCriticalNormalContactStiffness() const final { return k_normal_crit_; };
 
     //! evaluate normal contact force
     virtual void NormalContactForce(const double& gap, const double* radius_i,
@@ -67,6 +67,9 @@ namespace PARTICLEINTERACTION
 
     //! normal contact stiffness
     double k_normal_;
+
+    //! critical normal contact stiffness
+    double k_normal_crit_;
   };
 
   class DEMContactNormalLinearSpring : public DEMContactNormalBase
@@ -77,12 +80,6 @@ namespace PARTICLEINTERACTION
 
     //! setup normal contact handler
     void Setup(const double& dens_max) override;
-
-    //! get normal contact stiffness
-    double GetNormalContactStiffness() const override { return k_normal_; };
-
-    //! get time critical contact stiffness
-    double GetTimeCriticalStiffness() const override { return k_normal_; };
 
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
@@ -128,12 +125,6 @@ namespace PARTICLEINTERACTION
     //! setup normal contact handler
     void Setup(const double& dens_max) override;
 
-    //! get normal contact stiffness
-    double GetNormalContactStiffness() const override { return k_normal_; };
-
-    //! get time critical contact stiffness
-    double GetTimeCriticalStiffness() const override { return k_tcrit_; };
-
     //! evaluate normal contact force
     void NormalContactForce(const double& gap, const double* radius_i, const double* radius_j,
         const double& v_rel_normal, const double& m_eff,
@@ -141,10 +132,6 @@ namespace PARTICLEINTERACTION
 
     //! evaluate normal potential energy
     void NormalPotentialEnergy(const double& gap, double& normalpotentialenergy) const override;
-
-   private:
-    //! time step critical contact stiffness
-    double k_tcrit_;
   };
 
   class DEMContactNormalHertz : public DEMContactNormalNonlinearBase
