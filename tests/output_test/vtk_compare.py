@@ -277,7 +277,7 @@ if __name__ == '__main__':
     try:
         tolerance = float(sys.argv[3])
     except ValueError:
-        print "Given tolerance is no float! Check your arguments!"
+        print('Given tolerance is no float! Check your arguments!')
     tolerance = float(sys.argv[3])
 
     points_in_time=[]

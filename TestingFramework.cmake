@@ -249,7 +249,7 @@ macro(vtk_test name nproc pvd_resultfilename pvd_referencefilename tolerance)
         list(GET extra_macro_args 0 optional_arg)
     endif ()
   # add test to testing framework
-  add_test(NAME ${name}-p${nproc} COMMAND python2 ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${PROJECT_BINARY_DIR}/${pvd_resultfilename} ${PROJECT_SOURCE_DIR}/Input/${pvd_referencefilename} ${tolerance} ${num_extra_args} ${extra_macro_args})
+  add_test(NAME ${name}-p${nproc} COMMAND ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${PROJECT_BINARY_DIR}/${pvd_resultfilename} ${PROJECT_SOURCE_DIR}/Input/${pvd_referencefilename} ${tolerance} ${num_extra_args} ${extra_macro_args})
 
   # set maximum test runtime
   set_tests_properties(${name}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
