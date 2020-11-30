@@ -222,7 +222,7 @@ endmacro(muelu_agg2vtk)
 macro(result_file arg nproc filetag resultfilename referencefilename tolerance)
 
   # add test to testing framework
-  add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND python2 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance} ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename})
+  add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance} ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename})
 
   # set maximum test runtime
   set_tests_properties(${arg}-p${nproc}-${filetag} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
