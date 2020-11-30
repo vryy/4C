@@ -772,6 +772,12 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
   if ((not validownedparticles_) or (not validghostedparticles_))
     dserror("invalid relation of particles to bins!");
 
+#ifdef DEBUG
+  // bin size safety check
+  if (radius > minbinsize_)
+    dserror("the given radius is larger than the minimal bin size (%f > %f)!", radius, minbinsize_);
+#endif
+
   // get global id of bin
   const int gidofbin = binstrategy_->ConvertPosToGid(position);
 

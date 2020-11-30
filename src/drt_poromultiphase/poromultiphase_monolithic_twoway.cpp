@@ -135,8 +135,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystem()
   k_fs_ = Teuchos::rcp(new LINALG::SparseMatrix(*(FluidDofRowMap()), 81, true, true));
 
   // instantiate appropriate equilibration class
+  auto equilibration_method =
+      Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_));
   equilibration_ =
-      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method_, fullmap_);
+      LINALG::BuildEquilibration(LINALG::MatrixType::block_field, equilibration_method, fullmap_);
 
   // StructureField: check whether we have locsys BCs, i.e. inclined structural
   //  Dirichlet BC

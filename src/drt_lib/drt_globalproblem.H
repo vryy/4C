@@ -216,7 +216,6 @@ namespace DRT
     void SetInputControlFile(Teuchos::RCP<IO::InputControl>& input) { inputcontrol_ = input; }
 
     /// manipulate problem type
-    // needed for forward problem calculations in inverse analysis
     void SetProblemType(ProblemType targettype);
 
     //@}
@@ -339,17 +338,9 @@ namespace DRT
     {
       return getParameterList()->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING");
     }
-    const Teuchos::ParameterList& InverseAnalysisParams() const
-    {
-      return getParameterList()->sublist("INVERSE ANALYSIS");
-    }
     const Teuchos::ParameterList& StatInverseAnalysisParams() const
     {
       return getParameterList()->sublist("STAT INVERSE ANALYSIS");
-    }
-    const Teuchos::ParameterList& MultiLevelMonteCarloParams() const
-    {
-      return getParameterList()->sublist("MULTI LEVEL MONTE CARLO");
     }
     const Teuchos::ParameterList& MortarCouplingParams() const
     {

@@ -111,7 +111,6 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
       outputeveryiter_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_EVERY_ITER")),
       oei_filecounter_(ioparams.get<int>("OEI_FILE_COUNTER")),
       writerestartevery_(timeparams.get<int>("RESTARTEVRY")),
-      writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
       writeele_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_ELE")),
       writestate_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP")),
       writevelacc_((bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC")),
@@ -2260,28 +2259,17 @@ void STR::TimInt::OutputRestart(bool& datawritten)
 {
   // Yes, we are going to write...
   datawritten = true;
-  // for multilevel monte carlo we do not need to write mesh in every run
-  if (writereducedrestart_ == true)
-  {
-    // write restart output, please
-    output_->NewStep(step_, (*time_)[0]);
-    output_->WriteVector("displacement", (*dis_)(0));
-    output_->WriteElementData(firstoutputofrun_);
-    output_->WriteNodeData(firstoutputofrun_);
-  }
-  else
-  {
-    // write restart output, please
-    if (step_ != 0) output_->WriteMesh(step_, (*time_)[0]);
-    output_->NewStep(step_, (*time_)[0]);
-    output_->WriteVector("displacement", (*dis_)(0));
-    if (dismat_ != Teuchos::null) output_->WriteVector("material_displacement", (*dismat_)(0));
-    output_->WriteVector("velocity", (*vel_)(0));
-    output_->WriteVector("acceleration", (*acc_)(0));
-    output_->WriteElementData(firstoutputofrun_);
-    output_->WriteNodeData(firstoutputofrun_);
-    WriteRestartForce(output_);
-  }
+
+  // write restart output, please
+  if (step_ != 0) output_->WriteMesh(step_, (*time_)[0]);
+  output_->NewStep(step_, (*time_)[0]);
+  output_->WriteVector("displacement", (*dis_)(0));
+  if (dismat_ != Teuchos::null) output_->WriteVector("material_displacement", (*dismat_)(0));
+  output_->WriteVector("velocity", (*vel_)(0));
+  output_->WriteVector("acceleration", (*acc_)(0));
+  output_->WriteElementData(firstoutputofrun_);
+  output_->WriteNodeData(firstoutputofrun_);
+  WriteRestartForce(output_);
   // owner of elements is just written once because it does not change during simulation (so far)
   firstoutputofrun_ = false;
 

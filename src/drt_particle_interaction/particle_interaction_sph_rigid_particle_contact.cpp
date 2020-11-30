@@ -139,11 +139,11 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
           UTILS::vec_dot(vel_i, particlepair.e_ij_) - UTILS::vec_dot(vel_j, particlepair.e_ij_);
 
       // magnitude of rigid particle contact force
-      const double fac = -(stiff_ * gap + damp_ * gapdot);
+      const double fac = std::min(0.0, (stiff_ * gap + damp_ * gapdot));
 
       // add contributions
-      if (force_i) UTILS::vec_addscale(force_i, fac, particlepair.e_ij_);
-      if (force_j) UTILS::vec_addscale(force_j, -fac, particlepair.e_ij_);
+      if (force_i) UTILS::vec_addscale(force_i, -fac, particlepair.e_ij_);
+      if (force_j) UTILS::vec_addscale(force_j, fac, particlepair.e_ij_);
     }
   }
 }

@@ -56,7 +56,6 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_mlmc.H"
 #include "../drt_inpar/inpar_invanalysis.H"
 
 /*----------------------------------------------------------------------*/
@@ -228,9 +227,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GEMM", *list);
-  reader.ReadGidSection("--INVERSE ANALYSIS", *list);
   reader.ReadGidSection("--STAT INVERSE ANALYSIS", *list);
-  reader.ReadGidSection("--MULTI LEVEL MONTE CARLO", *list);
   reader.ReadGidSection("--MORTAR COUPLING", *list);
   reader.ReadGidSection("--MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC", *list);
@@ -438,27 +435,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
   reader.ReadGidSection("--UMFPACK SOLVER", *list);
 
-  // read in random field sections
-  // Note: the maximum number of random fields in dat files is hardwired here.
-  // If you change this do not forget to edit the corresponding parts in
-  // drt_validparameters.cpp, too!
-  for (int i = 1; i < 4; i++)
-  {
-    std::stringstream ss;
-    ss << "--RANDOM FIELD " << i;
-    reader.ReadGidSection(ss.str(), *list);
-  }
-
-  // read in random variable sections
-  // Note: the maximum number of random variable in dat files is hardwired here.
-  // If you change this do not forget to edit the corresponding parts in
-  // drt_validparameters.cpp, too!
-  for (int i = 1; i < 4; i++)
-  {
-    std::stringstream ss;
-    ss << "--RANDOM VARIABLE " << i;
-    reader.ReadGidSection(ss.str(), *list);
-  }
 
   // read in STRUCT NOX/Status Test and modify the xml file name, if there
   // is one.
@@ -551,23 +527,6 @@ const Teuchos::ParameterList& DRT::Problem::SolverParams(int solverNr) const
   return getParameterList()->sublist(ss.str());
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& DRT::Problem::RandomFieldParams(int randomfieldNr) const
-{
-  std::stringstream ss;
-  ss << "RANDOM FIELD " << randomfieldNr;
-  return getParameterList()->sublist(ss.str());
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-const Teuchos::ParameterList& DRT::Problem::RandomVariableParams(int randomvariableNr) const
-{
-  std::stringstream ss;
-  ss << "RANDOM VARIABLE " << randomvariableNr;
-  return getParameterList()->sublist(ss.str());
-}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 const Teuchos::ParameterList& DRT::Problem::UMFPACKSolverParams()
@@ -1595,6 +1554,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
 
     case prb_structure:
+    case prb_invana:
     {
       switch (distype)
       {
@@ -1618,22 +1578,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
           DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
 
-      break;
-    }
-
-    case prb_invana:
-    {
-      // for multifield inverse analysis there must be more than the structure discretization
-      if (DRT::INPUT::IntegralValue<INPAR::STR::InvAnalysisType>(
-              InverseAnalysisParams(), "INV_ANALYSIS") != INPAR::STR::inv_none)
-        SetProblemType(
-            DRT::INPUT::IntegralValue<ProblemType>(InverseAnalysisParams(), "FORWARD_PROBLEMTYP"));
-      else
-        SetProblemType(prb_structure);
-
-      ReadFields(reader);
-
-      SetProblemType(prb_invana);
       break;
     }
 
@@ -2244,59 +2188,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddElementReader(Teuchos::rcp(
           new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
-    }
-    break;
-    case prb_uq:
-    {
-      // tiny bit brutal
-      // get list for multi level monte carlo
-      const Teuchos::ParameterList& mlmcp = this->MultiLevelMonteCarloParams();
-      INPAR::MLMC::FWDProblem fwdprb =
-          DRT::INPUT::IntegralValue<INPAR::MLMC::FWDProblem>(mlmcp, "FWDPROBLEM");
-
-      // quick check whether to read in structure or airways
-      if (fwdprb == INPAR::MLMC::structure)
-      {
-        switch (distype)
-        {
-          case ShapeFunctionType::shapefunction_nurbs:
-          {
-            dserror("nurbs discretization not implemented, yet.");
-            break;
-          }
-          default:
-          {
-            structdis = Teuchos::rcp(new DRT::Discretization("structure", reader.Comm()));
-            break;
-          }
-        }
-
-        // create discretization writer - in constructor set into and owned by corresponding discret
-        structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
-
-        AddDis("structure", structdis);
-
-        nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-            DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
-            0);
-      }
-      else if (fwdprb == INPAR::MLMC::red_airways)
-      {
-        // create empty discretizations
-        airwaydis = Teuchos::rcp(new DRT::Discretization("red_airway", reader.Comm()));
-
-        // create discretization writer - in constructor set into and owned by corresponding discret
-        airwaydis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(airwaydis)));
-
-        AddDis("red_airway", airwaydis);
-
-        nodereader.AddElementReader(Teuchos::rcp(
-            new DRT::INPUT::ElementReader(airwaydis, reader, "--REDUCED D AIRWAYS ELEMENTS")));
-      }
-      else
-      {
-        dserror("Uncertainty quantification is only implemented for structure or airways ");
-      }
     }
     break;
     case prb_tutorial:

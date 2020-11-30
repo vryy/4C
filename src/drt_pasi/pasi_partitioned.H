@@ -125,6 +125,13 @@ namespace PASI
     void PrepareTimeStep(bool printheader = true);
 
     /*!
+     * \brief pre evaluate time step
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     */
+    void PreEvaluateTimeStep();
+
+    /*!
      * \brief structural time step
      *
      * \author Sebastian Fuchs \date 02/2017

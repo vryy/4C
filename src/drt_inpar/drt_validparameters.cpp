@@ -42,7 +42,6 @@
 #include "inpar_statinvanalysis.H"
 #include "inpar_searchtree.H"
 #include "inpar_xfem.H"
-#include "inpar_mlmc.H"
 #include "inpar_poroelast.H"
 #include "inpar_poroscatra.H"
 #include "inpar_poromultiphase.H"
@@ -427,7 +426,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::IO_RUNTIME_VTK::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTP_STRUCTURE::SetValidParameters(list);
   INPAR::INVANA::SetValidParameters(list);
-  INPAR::MLMC::SetValidParameters(list);
   INPAR::MORTAR::SetValidParameters(list);
   INPAR::CONTACT::SetValidParameters(list);
   INPAR::XCONTACT::SetValidParameters(list);

@@ -109,6 +109,9 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // consider rigid body motion
   BoolParameter("RIGID_BODY_MOTION", "no", "consider rigid body motion", &particledyn);
 
+  DoubleParameter("RIGID_BODY_PHASECHANGE_RADIUS", -1.0,
+      "search radius for neighboring rigid bodies in case of phase change", &particledyn);
+
   /*-------------------------------------------------------------------------*
    | control parameters for initial/boundary conditions                      |
    *-------------------------------------------------------------------------*/

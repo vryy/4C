@@ -139,6 +139,13 @@ namespace PARTICLEALGORITHM
     void PrepareTimeStep(bool print_header = true);
 
     /*!
+     * \brief pre evaluate time step
+     *
+     * \author Sebastian Fuchs \date 11/2020
+     */
+    void PreEvaluateTimeStep();
+
+    /*!
      * \brief integrate time step
      *
      * \author Sebastian Fuchs \date 04/2018

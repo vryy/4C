@@ -57,11 +57,18 @@ namespace DRT
         return output_element_owner_;
       };
 
-      /// whether to write the id of elements
+      /// whether to write the GIDs of elements
       bool OutputElementGID() const
       {
         CheckInitSetup();
         return output_element_gid_;
+      };
+
+      /// whether to write the GIDs of the nodes
+      bool OutputNodeGID() const
+      {
+        CheckInitSetup();
+        return output_node_gid_;
       };
 
       /// whether to write stress and / or strain data
@@ -102,6 +109,9 @@ namespace DRT
 
       /// whether to write the element GIDs
       bool output_element_gid_;
+
+      /// whether to write the node GIDs
+      bool output_node_gid_;
 
       /// whether to write stress and / or strain data
       bool output_stress_strain_;

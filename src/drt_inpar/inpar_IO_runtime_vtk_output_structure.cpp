@@ -53,8 +53,12 @@ namespace INPAR
         setStringToIntegralParameter<int>("ELEMENT_OWNER", "No", "write element owner", yesnotuple,
             yesnovalue, &sublist_IO_VTK_structure);
 
-        // whether to write element GID
+        // whether to write element GIDs
         setStringToIntegralParameter<int>("ELEMENT_GID", "No", "write baci internal element GIDs",
+            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+
+        // whether to write node GIDs
+        setStringToIntegralParameter<int>("NODE_GID", "No", "write baci internal node GIDs",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
         // whether to write stress and / or strain data

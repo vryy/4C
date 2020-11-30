@@ -126,7 +126,8 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() const
+void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -182,28 +183,31 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange() cons
       if (havephasechange)
       {
         int globalid(0);
-        PARTICLEENGINE::ParticleStates particleStates;
-        container->GetParticle(index, globalid, particleStates);
+        PARTICLEENGINE::ParticleStates particlestates;
+        container->GetParticle(index, globalid, particlestates);
 
         // add density and pressure state for boundary or rigid particles
         if (isboundaryrigid_source and (not isboundaryrigid_target))
         {
-          particleStates[PARTICLEENGINE::Density].resize(1, material_source->initDensity_);
+          particlestates[PARTICLEENGINE::Density].resize(1, material_source->initDensity_);
 
           const double press = equationofstate_target->DensityToPressure(
               material_source->initDensity_, material_target->initDensity_);
 
-          particleStates[PARTICLEENGINE::Pressure].resize(1, press);
+          particlestates[PARTICLEENGINE::Pressure].resize(1, press);
         }
 
         PARTICLEENGINE::ParticleObjShrdPtr particleobject =
-            std::make_shared<PARTICLEENGINE::ParticleObject>(type_target, globalid, particleStates);
+            std::make_shared<PARTICLEENGINE::ParticleObject>(type_target, globalid, particlestates);
 
         // append particle to be insert
         particlestoinsert[type_target].push_back(std::make_pair(-1, particleobject));
 
         // store index of particle to be removed from containers
         particlestoremove[type_source].insert(index);
+
+        // append source and target type together with global id of particle
+        particlesfromphasetophase.push_back(std::make_tuple(type_source, type_target, globalid));
       }
     }
   }

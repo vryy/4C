@@ -51,7 +51,6 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       printscreen_(-1),
       outputcounter_(-1),
       writerestartevery_(-1),
-      writereducedrestart_(-1),
       writeresultsevery_(-1),
       writeenergyevery_(-1),
       writestress_(INPAR::STR::stress_none),
@@ -90,7 +89,6 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
     outputeveryiter_ = DRT::INPUT::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writeinitialstate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "WRITE_INITIAL_STATE");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
-    writereducedrestart_ = xparams.get<int>("REDUCED_OUTPUT");
     writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
     writejac2matlab_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");

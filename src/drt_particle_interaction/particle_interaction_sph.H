@@ -86,14 +86,15 @@ namespace PARTICLEINTERACTION
     //! set initial states
     void SetInitialStates() override;
 
-    //! prepare time step
-    void PrepareTimeStep() override;
+    //! pre evaluate time step
+    void PreEvaluateTimeStep() override;
 
     //! evaluate particle interactions
     void EvaluateInteractions() override;
 
     //! post evaluate time step
-    void PostEvaluateTimeStep() override;
+    void PostEvaluateTimeStep(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) override;
 
     //! maximum interaction distance (on this processor)
     double MaxInteractionDistance() const override;

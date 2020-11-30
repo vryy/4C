@@ -561,7 +561,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output stress, strain and optional quantity
-  if ((forced_writerestart or dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN())) and
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
@@ -872,22 +872,10 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
   CheckInitSetup();
 
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
-  // for multilevel monte carlo we do not need to write mesh in every run
-  if (dataio_->GetWriteReducedRestartEveryNStep() > 0)
-  {
-    // write restart output, please
-    NewIOStep(datawritten);
-    output_ptr->WriteVector("displacement", dataglobalstate_->GetDisN());
-    output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
-    output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());
-  }
-  else
-  {
-    // write restart output, please
-    if (dataglobalstate_->GetStepN() != 0)
-      output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
-    NewIOStep(datawritten);
-  }
+  // write restart output, please
+  if (dataglobalstate_->GetStepN() != 0)
+    output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
+  NewIOStep(datawritten);
 
   output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
   output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());
@@ -1169,6 +1157,8 @@ void STR::TIMINT::Base::OutputErrorNorms()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
+
+void STR::TIMINT::Base::PostTimeLoop() { int_ptr_->PostTimeLoop(); }
 
 bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
 {
