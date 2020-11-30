@@ -15,6 +15,7 @@
 #include "../linalg/linalg_utils_densematrix_inverse.H"
 #include "beam_to_solid_vtu_output_writer_base.H"
 #include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
@@ -148,10 +149,20 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
   // Get visualization of base class.
   base_class::GetPairVisualization(visualization_writer, visualization_params);
 
-  // If a writer exists for segmentation point data, add the segmentation point data.
+  // Get the writers.
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
       visualization_segmentation =
           visualization_writer->GetVisualizationWriter("btsvc-segmentation");
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
+      visualization_integration_points =
+          visualization_writer->GetVisualizationWriter("btsvc-integration-points");
+  if (visualization_segmentation.is_null() and visualization_integration_points.is_null()) return;
+
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+          "btsvc-output_params_ptr");
+  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+
   if (visualization_segmentation != Teuchos::null)
   {
     // Setup variables.
@@ -164,6 +175,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         visualization_segmentation->GetMutablePointCoordinateVector();
     std::vector<double>& displacement =
         visualization_segmentation->GetMutablePointDataVector("displacement");
+
+    std::vector<double>* pair_beam_id = nullptr;
+    std::vector<double>* pair_solid_id = nullptr;
+    if (write_unique_ids)
+    {
+      pair_beam_id = &(visualization_segmentation->GetMutablePointDataVector("uid_0_pair_beam_id"));
+      pair_solid_id =
+          &(visualization_segmentation->GetMutablePointDataVector("uid_1_pair_solid_id"));
+    }
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
@@ -182,14 +202,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
           point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
           displacement.push_back(FADUTILS::CastToDouble(u(dim)));
         }
+
+        if (write_unique_ids)
+        {
+          pair_beam_id->push_back(this->Element1()->Id());
+          pair_solid_id->push_back(this->Element2()->Id());
+        }
       }
     }
   }
 
   // If a writer exists for integration point data, add the integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>
-      visualization_integration_points =
-          visualization_writer->GetVisualizationWriter("btsvc-integration-points");
   if (visualization_integration_points != Teuchos::null)
   {
     // Setup variables.
@@ -206,6 +229,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
         visualization_integration_points->GetMutablePointDataVector("displacement");
     std::vector<double>& force =
         visualization_integration_points->GetMutablePointDataVector("force");
+
+    std::vector<double>* pair_beam_id = nullptr;
+    std::vector<double>* pair_solid_id = nullptr;
+    if (write_unique_ids)
+    {
+      pair_beam_id =
+          &(visualization_integration_points->GetMutablePointDataVector("uid_0_pair_beam_id"));
+      pair_solid_id =
+          &(visualization_integration_points->GetMutablePointDataVector("uid_1_pair_solid_id"));
+    }
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
@@ -225,6 +258,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
           point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
           displacement.push_back(FADUTILS::CastToDouble(u(dim)));
           force.push_back(FADUTILS::CastToDouble(force_integration_point(dim)));
+        }
+
+        if (write_unique_ids)
+        {
+          pair_beam_id->push_back(this->Element1()->Id());
+          pair_solid_id->push_back(this->Element2()->Id());
         }
       }
     }

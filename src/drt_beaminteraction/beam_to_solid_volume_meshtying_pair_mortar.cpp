@@ -183,11 +183,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVisualization(
       visualization_writer, visualization_params);
 
-
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_discret =
       visualization_writer->GetVisualizationWriter("btsvc-mortar");
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_continuous =
       visualization_writer->GetVisualizationWriter("btsvc-mortar-continuous");
+  if (visualization_discret.is_null() and visualization_continuous.is_null()) return;
+
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>& output_params_ptr =
+      visualization_params.get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVtkOutputParams>>(
+          "btsvc-output_params_ptr");
+  const bool write_unique_ids = output_params_ptr->GetWriteUniqueIDsFlag();
+
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
@@ -237,6 +243,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         std::vector<double>& lambda_vis =
             visualization_discret->GetMutablePointDataVector("lambda");
 
+        std::vector<double>* pair_beam_id = nullptr;
+        std::vector<double>* pair_solid_id = nullptr;
+        if (write_unique_ids)
+        {
+          pair_beam_id = &(visualization_discret->GetMutablePointDataVector("uid_0_pair_beam_id"));
+          pair_solid_id =
+              &(visualization_discret->GetMutablePointDataVector("uid_1_pair_solid_id"));
+        }
+
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
@@ -259,6 +274,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
             point_coordinates.push_back(FADUTILS::CastToDouble(X(dim)));
             displacement.push_back(FADUTILS::CastToDouble(u(dim)));
             lambda_vis.push_back(FADUTILS::CastToDouble(lambda_discret(dim)));
+          }
+
+          if (write_unique_ids)
+          {
+            pair_beam_id->push_back(this->Element1()->Id());
+            pair_solid_id->push_back(this->Element2()->Id());
           }
         }
       }
@@ -283,6 +304,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
           "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
       std::vector<uint8_t>& cell_type = visualization_continuous->GetMutableCellTypeVector();
       std::vector<int32_t>& cell_offset = visualization_continuous->GetMutableCellOffsetVector();
+
+      std::vector<double>* pair_point_beam_id = nullptr;
+      std::vector<double>* pair_point_solid_id = nullptr;
+      std::vector<double>* pair_cell_beam_id = nullptr;
+      std::vector<double>* pair_cell_solid_id = nullptr;
+      if (write_unique_ids)
+      {
+        pair_point_beam_id =
+            &(visualization_continuous->GetMutablePointDataVector("uid_0_pair_beam_id"));
+        pair_point_solid_id =
+            &(visualization_continuous->GetMutablePointDataVector("uid_1_pair_solid_id"));
+        pair_cell_beam_id =
+            &(visualization_continuous->GetMutableCellDataVector("uid_0_pair_beam_id"));
+        pair_cell_solid_id =
+            &(visualization_continuous->GetMutableCellDataVector("uid_1_pair_solid_id"));
+      }
 
       for (const auto& segment : this->line_to_3D_segments_)
       {
@@ -310,6 +347,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
         // Add the cell for this segment (poly line).
         cell_type.push_back(4);
         cell_offset.push_back(point_coordinates.size() / 3);
+
+        if (write_unique_ids)
+        {
+          pair_cell_beam_id->push_back(this->Element1()->Id());
+          pair_cell_solid_id->push_back(this->Element2()->Id());
+          for (unsigned int i_curve_segment = 0; i_curve_segment <= mortar_segments;
+               i_curve_segment++)
+          {
+            pair_point_beam_id->push_back(this->Element1()->Id());
+            pair_point_solid_id->push_back(this->Element2()->Id());
+          }
+        }
       }
     }
   }
