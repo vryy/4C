@@ -2,3 +2,4 @@
 clang-format==6.0.1
 numpy==1.18.5
 vtk==9.0.1
+lxml
