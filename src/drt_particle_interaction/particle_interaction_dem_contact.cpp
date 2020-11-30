@@ -35,6 +35,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 #include "../drt_io/runtime_vtp_writer.H"
+#include "../drt_io/io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -44,6 +45,7 @@
 PARTICLEINTERACTION::DEMContact::DEMContact(const Teuchos::ParameterList& params)
     : params_dem_(params),
       dt_(0.0),
+      tension_cutoff_(DRT::INPUT::IntegralValue<int>(params_dem_, "TENSION_CUTOFF")),
       writeparticlewallinteraction_(
           DRT::INPUT::IntegralValue<int>(params_dem_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
@@ -157,7 +159,7 @@ double PARTICLEINTERACTION::DEMContact::GetNormalContactStiffness() const
 void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
 {
   // init value of minimum mass
-  double minmass = 0.0;
+  double minmass = std::numeric_limits<double>::max();
 
   // iterate over particle types
   for (const auto& type_i : particlecontainerbundle_->GetParticleTypes())
@@ -166,25 +168,31 @@ void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
     PARTICLEENGINE::ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
+    // get number of particles stored in container
+    const int particlestored = container->ParticlesStored();
+
+    // no owned particles of current particle type
+    if (particlestored <= 0) continue;
+
     // get minimum stored value of state
     double currminmass = container->GetMinValueOfState(PARTICLEENGINE::Mass);
 
-    if ((not(minmass > 0.0)) or (currminmass < minmass)) minmass = currminmass;
+    // update value of minimum mass
+    minmass = std::min(minmass, currminmass);
   }
 
-  // currently no particles in simulation domain
-  if (minmass == 0.0) return;
-
-  // get time critical contact stiffness
-  const double k_tcrit = contactnormal_->GetTimeCriticalStiffness();
+  // get critical normal contact stiffness
+  const double k_normal_crit = contactnormal_->GetCriticalNormalContactStiffness();
 
   // critical time step size based on particle-particle contact
   const double safety = 0.75;
   const double factor = contacttangential_ ? 0.22 : 0.34;
-  const double dt_crit = safety * factor * std::sqrt(minmass / k_tcrit);
+  const double dt_crit = safety * factor * std::sqrt(minmass / k_normal_crit);
 
   // checks time step
-  if (dt_ > dt_crit) dserror("time step %f larger than critical time step %f!", dt_, dt_crit);
+  if (dt_ > dt_crit)
+    IO::cout << "Warning: time step " << dt_ << " larger than critical time step " << dt_crit << "!"
+             << IO::endl;
 }
 
 void PARTICLEINTERACTION::DEMContact::AddForceAndMomentContribution()
@@ -453,6 +461,9 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
     contactnormal_->NormalContactForce(
         particlepair.gap_, rad_i, rad_j, vel_rel_normal, particlepair.m_eff_, normalcontactforce);
 
+    // evaluate tension cutoff of normal contact force
+    if (tension_cutoff_) normalcontactforce = std::min(normalcontactforce, 0.0);
+
     // add normal contact force contribution
     UTILS::vec_addscale(force_i, normalcontactforce, particlepair.e_ji_);
     if (status_j == PARTICLEENGINE::Owned)
@@ -712,6 +723,9 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     double normalcontactforce(0.0);
     contactnormal_->NormalContactForce(
         particlewallpair.gap_, rad_i, &rad_j, vel_rel_normal, mass_i[0], normalcontactforce);
+
+    // evaluate tension cutoff of normal contact force
+    if (tension_cutoff_) normalcontactforce = std::min(normalcontactforce, 0.0);
 
     // add normal contact force contribution
     UTILS::vec_addscale(force_i, normalcontactforce, particlewallpair.e_ji_);
