@@ -369,18 +369,16 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
             ? container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_j)
             : nullptr;
 
-    const double fac =
-        (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) *
-        (dens_i[0] * temp_j[0] + dens_j[0] * temp_i[0]) / (dens_i[0] + dens_j[0]);
+    const double temp_ji = temp_j[0] - temp_i[0];
 
     // sum contribution of neighboring particle j
     if (tempgrad_i)
       UTILS::vec_addscale(
-          tempgrad_i, (dens_i[0] / mass_i[0]) * fac * particlepair.dWdrij_, particlepair.e_ij_);
+          tempgrad_i, (mass_j[0] / dens_j[0]) * temp_ji * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (tempgrad_j and status_j == PARTICLEENGINE::Owned)
       UTILS::vec_addscale(
-          tempgrad_j, -(dens_j[0] / mass_j[0]) * fac * particlepair.dWdrji_, particlepair.e_ij_);
+          tempgrad_j, (mass_i[0] / dens_i[0]) * temp_ji * particlepair.dWdrji_, particlepair.e_ij_);
   }
 }
