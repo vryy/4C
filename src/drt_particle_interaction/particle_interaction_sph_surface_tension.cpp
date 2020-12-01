@@ -129,24 +129,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
   // call base class setup
   SPHSurfaceTensionBase::Setup(particleengineinterface, kernel, particlematerial, neighborpairs);
 
-  // setup colorfield gradient and wall distance of ghosted particles to refresh
+  // setup interface normal of ghosted particles to refresh
   {
-    std::vector<PARTICLEENGINE::StateEnum> states{
-        PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::WallDistance};
+    std::vector<PARTICLEENGINE::StateEnum> states{PARTICLEENGINE::InterfaceNormal};
 
     // iterate over fluid particle types
     for (const auto& type_i : fluidtypes_)
-      cfgwalldisttorefresh_.push_back(std::make_pair(type_i, states));
-  }
-
-  // setup colorfield gradient and interface normal of ghosted particles to refresh
-  {
-    std::vector<PARTICLEENGINE::StateEnum> states{
-        PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal};
-
-    // iterate over fluid particle types
-    for (const auto& type_i : fluidtypes_)
-      cfgintnormtorefresh_.push_back(std::make_pair(type_i, states));
+      intnormtorefresh_.push_back(std::make_pair(type_i, states));
   }
 
   // determine size of vectors indexed by particle types
@@ -200,6 +189,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   // compute colorfield gradient
   ComputeColorfieldGradient();
 
+  // compute interface normal
+  ComputeInterfaceNormal();
+
   if (not boundarytypes_.empty())
   {
     // compute unit wall normal
@@ -208,27 +200,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
     // compute wall distance
     ComputeWallDistance();
 
-    // refresh colorfield gradient and wall distance
-    particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgwalldisttorefresh_);
-
-    // compute wall correction factor
-    ComputeWallCorrectionFactor();
-
-    // extrapolate colorfield gradient at triple point
-    ExtrapolateColorfieldGradientAtTriplePoint();
-  }
-
-  // compute interface normal
-  ComputeInterfaceNormal();
-
-  if (not boundarytypes_.empty())
-  {
     // correct normal vector of particles close to triple point
     CorrectTriplePointNormal();
   }
 
-  // refresh colorfield gradient and interface normal
-  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(cfgintnormtorefresh_);
+  // refresh interface normal
+  particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(intnormtorefresh_);
 
   // compute surface tension contribution
   ComputeSurfaceTensionContribution();
@@ -304,6 +281,38 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     if (status_j == PARTICLEENGINE::Owned)
       UTILS::vec_addscale(colorfieldgrad_j,
           -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * particlepair.dWdrji_, particlepair.e_ij_);
+  }
+}
+
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceNormal() const
+{
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // clear interface normal state
+    container_i->ClearState(PARTICLEENGINE::InterfaceNormal);
+
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    {
+      // get pointer to particle states
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      const double* colorfieldgrad_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+      double* interfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
+
+      // norm of colorfield gradient
+      const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
+
+      // scale colorfield gradient
+      if (colorfieldgrad_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(interfacenormal_i, 1.0 / colorfieldgrad_i_norm, colorfieldgrad_i);
+    }
   }
 }
 
@@ -512,229 +521,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallCorrectionFactor()
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTriplePointNormal() const
 {
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
 
-  // iterate over fluid particle types
-  for (const auto& type_i : fluidtypes_)
-  {
-    // iterate over particle statuses
-    for (auto& status_i : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
-    {
-      // get container of particles of current particle type and status
-      PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
-
-      // get number of particles stored in container
-      const int particlestored = container_i->ParticlesStored();
-
-      // allocate memory
-      f_i_[type_i][status_i].assign(particlestored, 0.0);
-
-      // iterate over particles in container
-      for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
-      {
-        // get pointer to particle states
-        const double* rad_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-        const double* walldistance_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
-
-        // corrected wall distance and maximum correction distance
-        const double dw_i = walldistance_i[0] - initialparticlespacing;
-        const double dmax_i = kernel_->SmoothingLength(rad_i[0]);
-
-        // determine correction factor
-        double& f_i = f_i_[type_i][status_i][particle_i];
-        f_i = 1.0;
-        if (dw_i < 0.0)
-          f_i = 0.0;
-        else if (dw_i < dmax_i)
-          f_i = dw_i / dmax_i;
-      }
-    }
-  }
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    ExtrapolateColorfieldGradientAtTriplePoint() const
-{
-  // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
-
-  std::vector<std::vector<double>> sumj_fj_Vj_Wij(typevectorsize);
-  std::vector<std::vector<std::vector<double>>> sumj_fj_Vj_Wij_CFGj(typevectorsize);
-
-  // iterate over fluid particle types
-  for (const auto& type_i : fluidtypes_)
-  {
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    // get number of particles stored in container
-    const int particlestored = container_i->ParticlesStored();
-
-    // allocate memory
-    sumj_fj_Vj_Wij[type_i].assign(particlestored, 0.0);
-    sumj_fj_Vj_Wij_CFGj[type_i].assign(particlestored, std::vector<double>(3, 0.0));
-  }
-
-  // get relevant particle pair indices
-  std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForEqualCombination(fluidtypes_, relindices);
-
-  // iterate over relevant particle pairs
-  for (const int particlepairindex : relindices)
-  {
-    const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
-
-    // access values of local index tuples of particle i and j
-    PARTICLEENGINE::TypeEnum type_i;
-    PARTICLEENGINE::StatusEnum status_i;
-    int particle_i;
-    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
-
-    PARTICLEENGINE::TypeEnum type_j;
-    PARTICLEENGINE::StatusEnum status_j;
-    int particle_j;
-    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
-
-    // get corresponding particle containers
-    PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
-
-    PARTICLEENGINE::ParticleContainer* container_j =
-        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
-    // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    const double* colorfieldgrad_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    const double* walldistance_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
-
-    // get pointer to particle states
-    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-    const double* colorfieldgrad_j =
-        container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
-    const double* walldistance_j =
-        container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
-
-    // change sign of colorfield gradient for different particle types
-    double signfac = (type_i == type_j) ? 1.0 : -1.0;
-
-    // get reference to correction factor
-    const double& f_i = f_i_[type_i][status_i][particle_i];
-    const double& f_j = f_i_[type_j][status_j][particle_j];
-
-    // evaluate contribution of neighboring particle j
-    if (walldistance_i[0] < rad_i[0] and f_i < 1.0 and f_j > 0.0 and
-        UTILS::vec_norm2(colorfieldgrad_i) > 0.0)
-    {
-      const double fac = f_j * mass_j[0] / dens_j[0] * particlepair.Wij_;
-
-      // initial estimate
-      UTILS::vec_addscale(
-          &sumj_fj_Vj_Wij_CFGj[type_i][particle_i][0], signfac * fac, colorfieldgrad_j);
-
-      // correction factor
-      sumj_fj_Vj_Wij[type_i][particle_i] += fac;
-    }
-
-    // evaluate contribution of neighboring particle i
-    if (walldistance_j[0] < rad_j[0] and f_j < 1.0 and f_i > 0.0 and
-        status_j == PARTICLEENGINE::Owned and UTILS::vec_norm2(colorfieldgrad_j) > 0.0)
-    {
-      const double fac = f_i * mass_i[0] / dens_i[0] * particlepair.Wji_;
-
-      // initial estimate
-      UTILS::vec_addscale(
-          &sumj_fj_Vj_Wij_CFGj[type_j][particle_j][0], signfac * fac, colorfieldgrad_i);
-
-      // correction factor
-      sumj_fj_Vj_Wij[type_j][particle_j] += fac;
-    }
-  }
-
-  // iterate over fluid particle types
-  for (const auto& type_i : fluidtypes_)
-  {
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    // iterate over particles in container
-    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
-    {
-      // evaluation only for particles with contributions from neighboring particles
-      if (not(sumj_fj_Vj_Wij[type_i][particle_i] > 0.0) or
-          not(UTILS::vec_norm2(&sumj_fj_Vj_Wij_CFGj[type_i][particle_i][0]) > 0.0))
-        continue;
-
-      // get pointer to particle states
-      double* colorfieldgrad_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-
-      // norm of colorfield gradient
-      const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
-
-      // get reference to correction factor
-      const double& f_i = f_i_[type_i][PARTICLEENGINE::Owned][particle_i];
-
-      // determine modified colorfield gradient
-      UTILS::vec_setscale(colorfieldgrad_i, f_i, colorfieldgrad_i);
-      const double fac = (1.0 - f_i) / sumj_fj_Vj_Wij[type_i][particle_i];
-      UTILS::vec_addscale(colorfieldgrad_i, fac, &sumj_fj_Vj_Wij_CFGj[type_i][particle_i][0]);
-
-      // scale modified colorfield gradient to magnitude of original colorfield gradient
-      UTILS::vec_setscale(colorfieldgrad_i,
-          colorfieldgrad_i_norm / UTILS::vec_norm2(colorfieldgrad_i), colorfieldgrad_i);
-    }
-  }
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceNormal() const
-{
-  // iterate over fluid particle types
-  for (const auto& type_i : fluidtypes_)
-  {
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    // clear interface normal state
-    container_i->ClearState(PARTICLEENGINE::InterfaceNormal);
-
-    // iterate over particles in container
-    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
-    {
-      // get pointer to particle states
-      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      const double* colorfieldgrad_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      double* interfacenormal_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
-
-      // norm of colorfield gradient
-      const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
-
-      // scale colorfield gradient
-      if (colorfieldgrad_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(interfacenormal_i, 1.0 / colorfieldgrad_i_norm, colorfieldgrad_i);
-    }
-  }
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTriplePointNormal() const
-{
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
@@ -760,8 +551,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
 
-      // get reference to correction factor
-      const double& f_i = f_i_[type_i][PARTICLEENGINE::Owned][particle_i];
+      // corrected wall distance and maximum correction distance
+      const double dw_i = walldistance_i[0] - initialparticlespacing;
+      const double dmax_i = kernel_->SmoothingLength(rad_i[0]);
+
+      // determine correction factor
+      double f_i = 1.0;
+      if (dw_i < 0.0)
+        f_i = 0.0;
+      else if (dw_i < dmax_i)
+        f_i = dw_i / dmax_i;
 
       // no correction for current particle i
       if (f_i == 1.0) continue;

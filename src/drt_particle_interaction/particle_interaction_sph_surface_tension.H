@@ -130,20 +130,14 @@ namespace PARTICLEINTERACTION
     //! compute colorfield gradient
     void ComputeColorfieldGradient() const;
 
+    //! compute interface normal
+    void ComputeInterfaceNormal() const;
+
     //! compute unit wall normal
     void ComputeUnitWallNormal() const;
 
     //! compute wall distance
     void ComputeWallDistance() const;
-
-    //! compute wall correction factor
-    void ComputeWallCorrectionFactor();
-
-    //! extrapolate colorfield gradient at triple point
-    void ExtrapolateColorfieldGradientAtTriplePoint() const;
-
-    //! compute interface normal
-    void ComputeInterfaceNormal() const;
 
     //! correct normal vector of particles close to triple point
     void CorrectTriplePointNormal() const;
@@ -154,11 +148,8 @@ namespace PARTICLEINTERACTION
     //! compute temperature gradient driven contribution
     void ComputeTempGradDrivenContribution() const;
 
-    //! colorfield gradient and wall distance of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh cfgwalldisttorefresh_;
-
-    //! colorfield gradient and interface normal of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh cfgintnormtorefresh_;
+    //! interface normal of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh intnormtorefresh_;
 
     //! constant part of surface tension coefficient
     const double alpha0_;
