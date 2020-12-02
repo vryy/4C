@@ -275,10 +275,12 @@ namespace BEAMINTERACTION
      * @param discret (in) Pointer to the discretization.
      * @param force_vector (in / out) Global force vector.
      * @param stiffness_matrix (in / out) Global stiffness matrix.
+     * @param displacement_vector (in) Global displacement vector.
      */
     virtual void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix){};
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

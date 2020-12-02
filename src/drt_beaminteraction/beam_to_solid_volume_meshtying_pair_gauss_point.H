@@ -58,6 +58,17 @@ namespace BEAMINTERACTION
     bool Evaluate(LINALG::SerialDenseVector* forcevec1, LINALG::SerialDenseVector* forcevec2,
         LINALG::SerialDenseMatrix* stiffmat11, LINALG::SerialDenseMatrix* stiffmat12,
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22) override;
+
+    /**
+     * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
+     * matrix (derived).
+     *
+     * Rotational coupling contributions will be added in this method.
+     */
+    void EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const Teuchos::RCP<Epetra_FEVector>& force_vector,
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
   };
 }  // namespace BEAMINTERACTION
 
