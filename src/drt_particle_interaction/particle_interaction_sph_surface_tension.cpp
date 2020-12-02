@@ -269,18 +269,43 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
     double* colorfieldgrad_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
 
-    const double fac =
-        (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) /
-        (dens_i[0] + dens_j[0]);
+    // (current) volume of particle i and j
+    const double V_i = mass_i[0] / dens_i[0];
+    const double V_j = mass_j[0] / dens_j[0];
+
+    const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (dens_i[0] + dens_j[0]);
 
     // sum contribution of neighboring particle j
-    UTILS::vec_addscale(colorfieldgrad_i,
-        fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * particlepair.dWdrij_, particlepair.e_ij_);
+    UTILS::vec_addscale(
+        colorfieldgrad_i, dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(colorfieldgrad_j,
-          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * particlepair.dWdrji_, particlepair.e_ij_);
+      UTILS::vec_addscale(
+          colorfieldgrad_j, -dens_j[0] / V_j * fac * particlepair.dWdrji_, particlepair.e_ij_);
+  }
+
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    {
+      // get pointer to particle state
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+      double* colorfieldgrad_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+
+      // norm of colorfield gradient
+      const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
+
+      // clear colorfield gradient
+      if (not(colorfieldgrad_i_norm > (1.0e-10 * rad_i[0]))) UTILS::vec_clear(colorfieldgrad_i);
+    }
   }
 }
 
@@ -309,7 +334,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
       // norm of colorfield gradient
       const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
 
-      // scale colorfield gradient
+      // set interface normal
       if (colorfieldgrad_i_norm > (1.0e-10 * rad_i[0]))
         UTILS::vec_setscale(interfacenormal_i, 1.0 / colorfieldgrad_i_norm, colorfieldgrad_i);
     }
