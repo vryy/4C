@@ -67,6 +67,7 @@ namespace PARTICLEENGINE
     Colorfield,           //!< colorfield
     ColorfieldGradient,   //!< colorfield gradient
     InterfaceNormal,      //!< interface normal
+    Curvature,            //!< curvature
     UnitWallNormal,       //!< unit wall normal
     WallDistance,         //!< wall distance
     TemperatureGradient,  //!< temperature gradient

@@ -142,6 +142,9 @@ namespace PARTICLEINTERACTION
     //! correct normal vector of particles close to triple point
     void CorrectTriplePointNormal() const;
 
+    //! compute curvature
+    void ComputeCurvature() const;
+
     //! compute surface tension contribution
     void ComputeSurfaceTensionContribution() const;
 

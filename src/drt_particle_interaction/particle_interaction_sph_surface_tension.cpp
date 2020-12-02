@@ -174,7 +174,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     if (not fluidtypes_.count(type)) continue;
 
     // states for surface tension evaluation scheme
-    particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal});
+    particlestates.insert({PARTICLEENGINE::ColorfieldGradient, PARTICLEENGINE::InterfaceNormal,
+        PARTICLEENGINE::Curvature});
 
     if (haveboundarytypes)
       particlestates.insert({PARTICLEENGINE::UnitWallNormal, PARTICLEENGINE::WallDistance});
@@ -206,6 +207,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
 
   // refresh interface normal
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(intnormtorefresh_);
+
+  // compute curvature
+  ComputeCurvature();
 
   // compute surface tension contribution
   ComputeSurfaceTensionContribution();
@@ -637,13 +641,11 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    ComputeSurfaceTensionContribution() const
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeCurvature() const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
 
-  std::vector<std::vector<double>> interfacenormal_i_norm(typevectorsize);
   std::vector<std::vector<double>> sumj_nij_Vj_eij_dWij(typevectorsize);
   std::vector<std::vector<double>> sumj_Vj_Wij(typevectorsize);
 
@@ -654,11 +656,13 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
+    // clear curvature state
+    container_i->ClearState(PARTICLEENGINE::Curvature);
+
     // get number of particles stored in container
     const int particlestored = container_i->ParticlesStored();
 
     // allocate memory
-    interfacenormal_i_norm[type_i].assign(particlestored, 0.0);
     sumj_nij_Vj_eij_dWij[type_i].assign(particlestored, 0.0);
     sumj_Vj_Wij[type_i].assign(particlestored, 0.0);
 
@@ -673,11 +677,8 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
       const double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
-      // compute norm of interface normal
-      interfacenormal_i_norm[type_i][particle_i] = UTILS::vec_norm2(interfacenormal_i);
-
       // evaluation only for non-zero interface normal
-      if (not(interfacenormal_i_norm[type_i][particle_i] > 0.0)) continue;
+      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
 
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
@@ -726,12 +727,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     const double* interfacenormal_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_j);
 
-    // evaluation only for non-zero interface normal
-    if (not(interfacenormal_i_norm[type_i][particle_i] > 0.0)) continue;
-
-    if (not((status_j == PARTICLEENGINE::Owned and
-                interfacenormal_i_norm[type_j][particle_j] > 0.0) or
-            UTILS::vec_norm2(interfacenormal_j) > 0.0))
+    // evaluation only for non-zero interface normals
+    if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0) or
+        not(UTILS::vec_norm2(interfacenormal_j) > 0.0))
       continue;
 
     // change sign of interface normal for different particle types
@@ -756,6 +754,34 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     }
   }
 
+  // iterate over fluid particle types
+  for (const auto& type_i : fluidtypes_)
+  {
+    // get container of owned particles of current particle type
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
+
+    // iterate over particles in container
+    for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
+    {
+      // get pointer to particle states
+      const double* interfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
+      double* curvature_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
+
+      // evaluation only for non-zero interface normal
+      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+
+      // compute curvature
+      curvature_i[0] = -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
+    }
+  }
+}
+
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
+    ComputeSurfaceTensionContribution() const
+{
   // evaluate surface tension ramp function
   double timefac = 1.0;
   if (surfacetensionrampfctnumber_ > 0)
@@ -772,9 +798,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
       const double* dens_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
+      const double* curvature_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
       const double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
@@ -783,24 +810,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
                                                     PARTICLEENGINE::Temperature, particle_i)
                                               : nullptr;
 
-      // only add meaningful contributions
-      if (std::abs(sumj_Vj_Wij[type_i][particle_i]) > (1.0e-10 * rad_i[0]))
+      // evaluate surface tension coefficient
+      double alpha = alpha0_;
+      if (alphaT_ != 0.0)
       {
-        // compute curvature
-        const double curvature_i =
-            -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
-
-        // evaluate surface tension coefficient
-        double alpha = alpha0_;
-        if (alphaT_ != 0.0)
-        {
-          alpha += alphaT_ * (temp_i[0] - reftemp_);
-          alpha = std::max(alpha, alphamin_);
-        }
-
-        // add contribution to acceleration
-        UTILS::vec_addscale(acc_i, -timefac * alpha * curvature_i / dens_i[0], colorfieldgrad_i);
+        alpha += alphaT_ * (temp_i[0] - reftemp_);
+        alpha = std::max(alpha, alphamin_);
       }
+
+      // add contribution to acceleration
+      UTILS::vec_addscale(acc_i, -timefac * alpha * curvature_i[0] / dens_i[0], colorfieldgrad_i);
     }
   }
 }
