@@ -376,16 +376,19 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     int particle_j;
     std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
 
+    // get corresponding particle containers
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+    PARTICLEENGINE::ParticleContainer* container_j =
+        particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
+
     // evaluate contribution of neighboring boundary particle j
     if (fluidtypes_.count(type_i))
     {
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
-
       // get material for current particle type
-      const MAT::PAR::ParticleMaterialBase* material_i =
-          particlematerial_->GetPtrToParticleMatParameter(type_i);
+      const MAT::PAR::ParticleMaterialBase* material_j =
+          particlematerial_->GetPtrToParticleMatParameter(type_j);
 
       // get pointer to particle states
       const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
@@ -394,27 +397,28 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
       double* wallnormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
 
-      // (current) inverse volume of particle i
-      const double inv_V_i = dens_i[0] / mass_i[0];
+      const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+
+      // (current) volume of particle i
+      const double V_i = mass_i[0] / dens_i[0];
 
       // (initial) volume of boundary particle j
-      const double V_j = mass_i[0] / material_i->initDensity_;
+      const double V_j = mass_j[0] / material_j->initDensity_;
+
+      const double fac =
+          (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (dens_i[0] + material_j->initDensity_);
 
       // sum contribution of neighboring boundary particle j
       UTILS::vec_addscale(
-          wallnormal_i, UTILS::pow<2>(V_j) * inv_V_i * particlepair.dWdrij_, particlepair.e_ij_);
+          wallnormal_i, dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring boundary particle i
     if (fluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_j =
-          particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
       // get material for current particle type
-      const MAT::PAR::ParticleMaterialBase* material_j =
-          particlematerial_->GetPtrToParticleMatParameter(type_j);
+      const MAT::PAR::ParticleMaterialBase* material_i =
+          particlematerial_->GetPtrToParticleMatParameter(type_i);
 
       // get pointer to particle states
       const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
@@ -423,15 +427,20 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
       double* wallnormal_j =
           container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
 
-      // (current) inverse volume of particle j
-      const double inv_V_j = dens_j[0] / mass_j[0];
+      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
       // (initial) volume of boundary particle i
-      const double V_i = mass_j[0] / material_j->initDensity_;
+      const double V_i = mass_i[0] / material_i->initDensity_;
+
+      // (current) volume of particle j
+      const double V_j = mass_j[0] / dens_j[0];
+
+      const double fac =
+          (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (material_i->initDensity_ + dens_j[0]);
 
       // sum contribution of neighboring boundary particle i
       UTILS::vec_addscale(
-          wallnormal_j, -UTILS::pow<2>(V_i) * inv_V_j * particlepair.dWdrji_, particlepair.e_ij_);
+          wallnormal_j, -dens_j[0] / V_j * fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
   }
 
@@ -446,17 +455,18 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle state
+      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
       double* wallnormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
 
       // norm of wall normal
       const double wallnormal_i_norm = UTILS::vec_norm2(wallnormal_i);
 
-      // no interacting boundary particle
-      if (not(wallnormal_i_norm > 0.0)) continue;
-
-      // scale unit wall normal
-      UTILS::vec_setscale(wallnormal_i, 1.0 / wallnormal_i_norm, wallnormal_i);
+      // scale or clear unit wall normal
+      if (wallnormal_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(wallnormal_i, 1.0 / wallnormal_i_norm, wallnormal_i);
+      else
+        UTILS::vec_clear(wallnormal_i);
     }
   }
 }
