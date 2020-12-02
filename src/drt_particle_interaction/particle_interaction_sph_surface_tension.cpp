@@ -634,6 +634,15 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
       UTILS::vec_setscale(correctednormal_i, f_i, interfacenormal_i);
       UTILS::vec_addscale(correctednormal_i, (1.0 - f_i), triplepointnormal_i);
 
+      // norm of corrected normal
+      const double correctednormal_i_norm = UTILS::vec_norm2(correctednormal_i);
+
+      // scale or clear interface normal
+      if (correctednormal_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(interfacenormal_i, 1.0 / correctednormal_i_norm, correctednormal_i);
+      else
+        UTILS::vec_clear(interfacenormal_i);
+
       // overwrite interface normal with scaled corrected normal
       UTILS::vec_setscale(
           interfacenormal_i, 1.0 / UTILS::vec_norm2(correctednormal_i), correctednormal_i);
