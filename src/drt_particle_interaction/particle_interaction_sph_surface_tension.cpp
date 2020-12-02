@@ -606,9 +606,14 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
       UTILS::vec_addscale(
           walltangential_i, -UTILS::vec_dot(interfacenormal_i, wallnormal_i), wallnormal_i);
 
-      // scale unit wall tangential
-      UTILS::vec_setscale(
-          walltangential_i, 1.0 / UTILS::vec_norm2(walltangential_i), walltangential_i);
+      // norm of wall tangential
+      const double walltangential_i_norm = UTILS::vec_norm2(walltangential_i);
+
+      // scale or clear unit wall tangential
+      if (walltangential_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(walltangential_i, 1.0 / walltangential_i_norm, walltangential_i);
+      else
+        UTILS::vec_clear(walltangential_i);
 
       // convert static contact angle in radians
       const double theta_0 = (type_i == PARTICLEENGINE::Phase1)
