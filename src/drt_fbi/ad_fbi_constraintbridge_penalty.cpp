@@ -55,6 +55,8 @@ void ADAPTER::FBIConstraintBridgePenalty::ResetBridge()
   fs_->PutScalar(0.0);
   Cff_->Reset();
   ff_->PutScalar(0.0);
+  fluid_scaled_ = false;
+  structure_scaled_ = false;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -73,15 +75,23 @@ void ADAPTER::FBIConstraintBridgePenalty::UnsetWeakDirichletFlag()
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyStructureContributions()
 {
-  if (fs_->Scale(GetParams()->GetPenaltyParameter()))
-    dserror("Scaling of the penalty force was unsuccessful!\n");
+  if (!structure_scaled_)
+  {
+    if (fs_->Scale(GetParams()->GetPenaltyParameter()))
+      dserror("Scaling of the penalty force was unsuccessful!\n");
+    structure_scaled_ = true;
+  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridgePenalty::ScalePenaltyFluidContributions()
 {
-  if (Cff_->Scale(GetParams()->GetPenaltyParameter()) ||
-      ff_->Scale(GetParams()->GetPenaltyParameter()))
-    dserror("Scaling of the penalty force was unsuccessful!\n");
+  if (!fluid_scaled_)
+  {
+    if (Cff_->Scale(GetParams()->GetPenaltyParameter()) ||
+        ff_->Scale(GetParams()->GetPenaltyParameter()))
+      dserror("Scaling of the penalty force was unsuccessful!\n");
+    fluid_scaled_ = true;
+  }
 }
