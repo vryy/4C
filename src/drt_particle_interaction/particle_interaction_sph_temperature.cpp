@@ -14,6 +14,7 @@
 #include "particle_interaction_material_handler.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
 #include "particle_interaction_sph_heatsource.H"
+#include "particle_interaction_sph_heatloss_evaporation.H"
 
 #include "particle_interaction_utils.H"
 
@@ -42,6 +43,9 @@ void PARTICLEINTERACTION::SPHTemperature::Init()
 {
   // init heat source handler
   InitHeatSourceHandler();
+
+  // init evaporation induced heat loss handler
+  InitHeatLossEvaporationHandler();
 
   // init with potential integrated thermo particle types
   intthermotypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
@@ -98,6 +102,9 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
 
   // setup heat source handler
   if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial, neighborpairs);
+
+  // setup evaporation induced heat loss handler
+  if (heatlossevaporation_) heatlossevaporation_->Setup(particleengineinterface, particlematerial);
 }
 
 void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
@@ -146,6 +153,9 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
 
   // evaluate heat source
   if (heatsource_) heatsource_->EvaluateHeatSource(time_);
+
+  // evaluate evaporation induced heat loss
+  if (heatlossevaporation_) heatlossevaporation_->EvaluateEvaporationInducedHeatLoss();
 
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
@@ -200,6 +210,16 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
 
   // init heat source handler
   if (heatsource_) heatsource_->Init();
+}
+
+void PARTICLEINTERACTION::SPHTemperature::InitHeatLossEvaporationHandler()
+{
+  if (DRT::INPUT::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
+    heatlossevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation>(
+        new PARTICLEINTERACTION::SPHHeatLossEvaporation(params_sph_));
+
+  // init evaporation induced heat loss handler
+  if (heatlossevaporation_) heatlossevaporation_->Init();
 }
 
 void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const

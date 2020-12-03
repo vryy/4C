@@ -1,4 +1,3 @@
-
 # Build system for baci and support tools.
 # Including nightly test definitions.
 #
@@ -1866,6 +1865,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_density.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
+  src/drt_particle_interaction/particle_interaction_sph_heatloss_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
