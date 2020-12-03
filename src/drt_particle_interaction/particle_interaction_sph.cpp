@@ -26,6 +26,7 @@
 #include "particle_interaction_sph_open_boundary.H"
 #include "particle_interaction_sph_virtual_wall_particle.H"
 #include "particle_interaction_sph_phase_change.H"
+#include "particle_interaction_sph_recoilpressure_evaporation.H"
 #include "particle_interaction_sph_rigid_particle_contact.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
@@ -93,6 +94,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Init()
   // init phase change handler
   InitPhaseChangeHandler();
 
+  // init evaporation induced recoil pressure handler
+  InitRecoilPressureEvaporationHandler();
+
   // init rigid particle contact handler
   InitRigidParticleContactHandler();
 
@@ -156,6 +160,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
   // setup phase change handler
   if (phasechange_)
     phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
+
+  // setup evaporation induced recoil pressure handler
+  if (recoilpressureevaporation_) recoilpressureevaporation_->Setup(particleengineinterface);
 
   // setup rigid particle contact handler
   if (rigidparticlecontact_) rigidparticlecontact_->Setup(particleengineinterface, neighborpairs_);
@@ -379,6 +386,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // add surface tension contribution to acceleration field
   if (surfacetension_) surfacetension_->AddAccelerationContribution();
+
+  // add evaporation induced recoil pressure contribution to acceleration field
+  if (recoilpressureevaporation_) recoilpressureevaporation_->AddAccelerationContribution();
 
   // add rigid particle contact contribution to force field
   if (rigidparticlecontact_) rigidparticlecontact_->AddForceContribution();
@@ -777,6 +787,16 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
 
   // init phase change handler
   if (phasechange_) phasechange_->Init();
+}
+
+void PARTICLEINTERACTION::ParticleInteractionSPH::InitRecoilPressureEvaporationHandler()
+{
+  if (DRT::INPUT::IntegralValue<int>(params_sph_, "VAPOR_RECOIL"))
+    recoilpressureevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation>(
+        new PARTICLEINTERACTION::SPHRecoilPressureEvaporation(params_sph_));
+
+  // init evaporation induced recoil pressure handler
+  if (recoilpressureevaporation_) recoilpressureevaporation_->Init();
 }
 
 void PARTICLEINTERACTION::ParticleInteractionSPH::InitRigidParticleContactHandler()

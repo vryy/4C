@@ -259,6 +259,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "VAPOR_HEATLOSS_TFAC", 0.0, "temperature factor in heat loss formula", &particledynsph);
 
   // evaporation induced recoil pressure
+  BoolParameter(
+      "VAPOR_RECOIL", "no", "evaluate evaporation induced recoil pressure", &particledynsph);
   DoubleParameter("VAPOR_RECOIL_BOILINGTEMPERATURE", 0.0,
       "boiling temperature in recoil pressure formula", &particledynsph);
   DoubleParameter(

@@ -1874,6 +1874,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_open_boundary.cpp
   src/drt_particle_interaction/particle_interaction_sph_phase_change.cpp
   src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
+  src/drt_particle_interaction/particle_interaction_sph_recoilpressure_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_rigid_particle_contact.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
   src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
