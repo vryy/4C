@@ -30,25 +30,45 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEINTERACTION::SPHSurfaceTensionBase::SPHSurfaceTensionBase(
-    const Teuchos::ParameterList& params)
+PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::ParameterList& params)
     : params_sph_(params),
       time_(0.0),
-      surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT"))
+      surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
+      alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
+      alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
+      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
+      alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
+      reftemp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
 {
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionBase::Init()
+void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 {
   // init with potential fluid particle types
   fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
 
   // init with potential boundary particle types
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
+
+  // safety check
+  if (not(alpha0_ > 0.0)) dserror("constant factor of surface tension coefficient not positive!");
+
+  if (not(alpha0_ > alphamin_))
+    dserror("constant part smaller than minimum surface tension coefficient!");
+
+  if (alphaT_ != 0.0)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+      dserror("temperature evaluation needed for temperature dependent surface tension!");
+
+    if (DRT::INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
+      dserror("temperature gradient evaluation needed for temperature dependent surface tension!");
+  }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
+void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
@@ -79,55 +99,6 @@ void PARTICLEINTERACTION::SPHSurfaceTensionBase::Setup(
   for (const auto& type_i : boundarytypes)
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       boundarytypes_.erase(type_i);
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionBase::SetCurrentTime(const double currenttime)
-{
-  time_ = currenttime;
-}
-
-PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::SPHSurfaceTensionContinuumSurfaceForce(
-    const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::SPHSurfaceTensionBase(params),
-      alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
-      alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
-      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
-      alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
-      reftemp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
-{
-  // empty constructor
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Init()
-{
-  // call base class init
-  SPHSurfaceTensionBase::Init();
-
-  // safety check
-  if (not(alpha0_ > 0.0)) dserror("constant factor of surface tension coefficient not positive!");
-
-  if (not(alpha0_ > alphamin_))
-    dserror("constant part smaller than minimum surface tension coefficient!");
-
-  if (alphaT_ != 0.0)
-  {
-    if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
-            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
-      dserror("temperature evaluation needed for temperature dependent surface tension!");
-
-    if (DRT::INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
-      dserror("temperature gradient evaluation needed for temperature dependent surface tension!");
-  }
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
-{
-  // call base class setup
-  SPHSurfaceTensionBase::Setup(particleengineinterface, kernel, particlematerial, neighborpairs);
 
   // setup interface normal of ghosted particles to refresh
   {
@@ -137,18 +108,16 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::Setup(
     for (const auto& type_i : fluidtypes_)
       intnormtorefresh_.push_back(std::make_pair(type_i, states));
   }
-
-  // determine size of vectors indexed by particle types
-  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
-
-  // allocate memory to hold particle types
-  f_i_.resize(typevectorsize, std::vector<std::vector<double>>(2));
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes)
+void PARTICLEINTERACTION::SPHSurfaceTension::SetCurrentTime(const double currenttime)
+{
+  time_ = currenttime;
+}
+
+void PARTICLEINTERACTION::SPHSurfaceTension::InsertParticleStatesOfParticleTypes(
+    std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)
+    const
 {
   bool haveboundarytypes = false;
 
@@ -182,10 +151,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceQuantities()
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceQuantities()
 {
-  TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceQuantities");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceQuantities");
 
   // compute colorfield gradient
   ComputeColorfieldGradient();
@@ -209,10 +177,9 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(intnormtorefresh_);
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution()
+void PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution()
 {
-  TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution");
 
   // compute curvature
   ComputeCurvature();
@@ -224,7 +191,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
   if (alphaT_ != 0.0) ComputeTempGradDrivenContribution();
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfieldGradient() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -319,7 +286,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeColorfi
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceNormal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -351,7 +318,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfa
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWallNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -481,7 +448,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeUnitWal
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDistance() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallDistance() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -566,7 +533,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeWallDis
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTriplePointNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
 {
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
@@ -656,7 +623,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::CorrectTripleP
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeCurvature() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 {
   // determine size of vectors indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
@@ -794,8 +761,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeCurvatu
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    ComputeSurfaceTensionContribution() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution() const
 {
   // evaluate surface tension ramp function
   double timefac = 1.0;
@@ -839,8 +805,7 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
-    ComputeTempGradDrivenContribution() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution() const
 {
   // evaluate surface tension ramp function
   double timefac = 1.0;

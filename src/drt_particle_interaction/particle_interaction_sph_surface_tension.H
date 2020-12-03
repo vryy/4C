@@ -40,97 +40,38 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHSurfaceTensionBase
+  class SPHSurfaceTension
   {
    public:
     //! constructor
-    explicit SPHSurfaceTensionBase(const Teuchos::ParameterList& params);
+    explicit SPHSurfaceTension(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHSurfaceTensionBase() = default;
-
-    //! init surface tension handler
-    virtual void Init();
-
-    //! setup surface tension handler
-    virtual void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
-
-    //! set current time
-    virtual void SetCurrentTime(const double currenttime);
-
-    //! insert surface tension evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) = 0;
-
-    //! compute interface quantities
-    virtual void ComputeInterfaceQuantities() = 0;
-
-    //! add surface tension contribution to acceleration field
-    virtual void AddAccelerationContribution() = 0;
-
-   protected:
-    //! smoothed particle hydrodynamics specific parameter list
-    const Teuchos::ParameterList& params_sph_;
-
-    //! interface to particle engine
-    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
-
-    //! particle container bundle
-    PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
-
-    //! kernel handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
-
-    //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
-
-    //! neighbor pair handler
-    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
-
-    //! current time
-    double time_;
-
-    //! surface tension ramp function number
-    const int surfacetensionrampfctnumber_;
-
-    //! set of fluid particle types
-    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
-
-    //! set of boundary particle types
-    std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
-  };
-
-  class SPHSurfaceTensionContinuumSurfaceForce : public SPHSurfaceTensionBase
-  {
-   public:
-    //! constructor
-    explicit SPHSurfaceTensionContinuumSurfaceForce(const Teuchos::ParameterList& params);
+    //! destructor
+    ~SPHSurfaceTension() = default;
 
     //! init surface tension handler
-    void Init() override;
+    void Init();
 
     //! setup surface tension handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
+
+    //! set current time
+    void SetCurrentTime(const double currenttime);
 
     //! insert surface tension evaluation dependent states
     void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) override;
+            particlestatestotypes) const;
 
     //! compute interface quantities
-    void ComputeInterfaceQuantities() override;
+    void ComputeInterfaceQuantities();
 
     //! add surface tension contribution to acceleration field
-    void AddAccelerationContribution() override;
+    void AddAccelerationContribution();
 
    private:
     //! compute colorfield gradient
@@ -157,8 +98,38 @@ namespace PARTICLEINTERACTION
     //! compute temperature gradient driven contribution
     void ComputeTempGradDrivenContribution() const;
 
+    //! smoothed particle hydrodynamics specific parameter list
+    const Teuchos::ParameterList& params_sph_;
+
+    //! interface to particle engine
+    std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface_;
+
+    //! particle container bundle
+    PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
+
+    //! kernel handler
+    std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
+
+    //! particle material handler
+    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+
+    //! neighbor pair handler
+    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! set of fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
+
+    //! set of boundary particle types
+    std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
+
     //! interface normal of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh intnormtorefresh_;
+
+    //! current time
+    double time_;
+
+    //! surface tension ramp function number
+    const int surfacetensionrampfctnumber_;
 
     //! constant part of surface tension coefficient
     const double alpha0_;
@@ -174,9 +145,6 @@ namespace PARTICLEINTERACTION
 
     //! reference temperature for surface tension coefficient
     const double reftemp_;
-
-    //! wall correction factor
-    std::vector<std::vector<std::vector<double>>> f_i_;
   };
 
 }  // namespace PARTICLEINTERACTION

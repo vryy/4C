@@ -600,14 +600,13 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
   {
     case INPAR::PARTICLE::NoSurfaceTension:
     {
-      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionBase>(nullptr);
+      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(nullptr);
       break;
     }
     case INPAR::PARTICLE::ContinuumSurfaceForce:
     {
-      surfacetension_ =
-          std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce>(
-              new PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce(params_sph_));
+      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(
+          new PARTICLEINTERACTION::SPHSurfaceTension(params_sph_));
       break;
     }
     default:
