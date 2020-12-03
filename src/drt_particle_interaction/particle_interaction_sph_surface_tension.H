@@ -67,6 +67,9 @@ namespace PARTICLEINTERACTION
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) = 0;
 
+    //! compute interface quantities
+    virtual void ComputeInterfaceQuantities() = 0;
+
     //! add surface tension contribution to acceleration field
     virtual void AddAccelerationContribution() = 0;
 
@@ -122,6 +125,9 @@ namespace PARTICLEINTERACTION
     void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
             particlestatestotypes) override;
+
+    //! compute interface quantities
+    void ComputeInterfaceQuantities() override;
 
     //! add surface tension contribution to acceleration field
     void AddAccelerationContribution() override;

@@ -182,10 +182,10 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution()
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceQuantities()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution");
+      "PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::ComputeInterfaceQuantities");
 
   // compute colorfield gradient
   ComputeColorfieldGradient();
@@ -207,6 +207,12 @@ void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAcceleratio
 
   // refresh interface normal
   particleengineinterface_->RefreshParticlesOfSpecificStatesAndTypes(intnormtorefresh_);
+}
+
+void PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution()
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce::AddAccelerationContribution");
 
   // compute curvature
   ComputeCurvature();

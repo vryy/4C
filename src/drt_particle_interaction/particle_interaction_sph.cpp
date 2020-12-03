@@ -356,6 +356,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   // compute pressure using equation of state and density
   pressure_->ComputePressure();
 
+  // compute interface quantities
+  if (surfacetension_) surfacetension_->ComputeInterfaceQuantities();
+
   // compute temperature field
   if (temperature_) temperature_->ComputeTemperature();
 
