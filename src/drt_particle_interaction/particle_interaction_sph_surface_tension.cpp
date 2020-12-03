@@ -785,11 +785,16 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
           container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
       const double* colorfieldgrad_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+      const double* interfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
       double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
       const double* temp_i = (alphaT_ != 0.0) ? container_i->GetPtrToParticleState(
                                                     PARTICLEENGINE::Temperature, particle_i)
                                               : nullptr;
+
+      // evaluation only for non-zero interface normal
+      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
 
       // evaluate surface tension coefficient
       double alpha = alpha0_;
