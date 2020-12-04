@@ -30,7 +30,7 @@ namespace PARTICLEINTERACTION
   class SPHPressure;
   class SPHTemperature;
   class SPHMomentum;
-  class SPHSurfaceTensionBase;
+  class SPHSurfaceTension;
   class SPHBoundaryParticleBase;
   class SPHOpenBoundaryBase;
   class SPHVirtualWallParticle;
@@ -179,7 +179,7 @@ namespace PARTICLEINTERACTION
     std::unique_ptr<PARTICLEINTERACTION::SPHMomentum> momentum_;
 
     //! surface tension handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionBase> surfacetension_;
+    std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension> surfacetension_;
 
     //! boundary particle handler
     std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase> boundaryparticle_;

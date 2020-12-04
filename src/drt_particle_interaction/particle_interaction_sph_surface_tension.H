@@ -40,37 +40,64 @@ namespace PARTICLEINTERACTION
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHSurfaceTensionBase
+  class SPHSurfaceTension
   {
    public:
     //! constructor
-    explicit SPHSurfaceTensionBase(const Teuchos::ParameterList& params);
+    explicit SPHSurfaceTension(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    virtual ~SPHSurfaceTensionBase() = default;
+    //! destructor
+    ~SPHSurfaceTension() = default;
 
     //! init surface tension handler
-    virtual void Init();
+    void Init();
 
     //! setup surface tension handler
-    virtual void Setup(
+    void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
         const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! set current time
-    virtual void SetCurrentTime(const double currenttime);
+    void SetCurrentTime(const double currenttime);
 
     //! insert surface tension evaluation dependent states
-    virtual void InsertParticleStatesOfParticleTypes(
+    void InsertParticleStatesOfParticleTypes(
         std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) = 0;
+            particlestatestotypes) const;
+
+    //! compute interface quantities
+    void ComputeInterfaceQuantities();
 
     //! add surface tension contribution to acceleration field
-    virtual void AddAccelerationContribution() = 0;
+    void AddAccelerationContribution();
 
-   protected:
+   private:
+    //! compute colorfield gradient
+    void ComputeColorfieldGradient() const;
+
+    //! compute interface normal
+    void ComputeInterfaceNormal() const;
+
+    //! compute unit wall normal
+    void ComputeUnitWallNormal() const;
+
+    //! compute wall distance
+    void ComputeWallDistance() const;
+
+    //! correct normal vector of particles close to triple point
+    void CorrectTriplePointNormal() const;
+
+    //! compute curvature
+    void ComputeCurvature() const;
+
+    //! compute surface tension contribution
+    void ComputeSurfaceTensionContribution() const;
+
+    //! compute temperature gradient driven contribution
+    void ComputeTempGradDrivenContribution() const;
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -89,76 +116,20 @@ namespace PARTICLEINTERACTION
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
-    //! current time
-    double time_;
-
-    //! surface tension ramp function number
-    const int surfacetensionrampfctnumber_;
-
     //! set of fluid particle types
     std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
 
     //! set of boundary particle types
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
-  };
 
-  class SPHSurfaceTensionContinuumSurfaceForce : public SPHSurfaceTensionBase
-  {
-   public:
-    //! constructor
-    explicit SPHSurfaceTensionContinuumSurfaceForce(const Teuchos::ParameterList& params);
+    //! interface normal of ghosted particles to refresh
+    PARTICLEENGINE::StatesOfTypesToRefresh intnormtorefresh_;
 
-    //! init surface tension handler
-    void Init() override;
+    //! current time
+    double time_;
 
-    //! setup surface tension handler
-    void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
-
-    //! insert surface tension evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) override;
-
-    //! add surface tension contribution to acceleration field
-    void AddAccelerationContribution() override;
-
-   private:
-    //! compute colorfield gradient
-    void ComputeColorfieldGradient() const;
-
-    //! compute unit wall normal
-    void ComputeUnitWallNormal() const;
-
-    //! compute wall distance
-    void ComputeWallDistance() const;
-
-    //! compute wall correction factor
-    void ComputeWallCorrectionFactor();
-
-    //! extrapolate colorfield gradient at triple point
-    void ExtrapolateColorfieldGradientAtTriplePoint() const;
-
-    //! compute interface normal
-    void ComputeInterfaceNormal() const;
-
-    //! correct normal vector of particles close to triple point
-    void CorrectTriplePointNormal() const;
-
-    //! compute surface tension contribution
-    void ComputeSurfaceTensionContribution() const;
-
-    //! compute temperature gradient driven contribution
-    void ComputeTempGradDrivenContribution() const;
-
-    //! colorfield gradient and wall distance of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh cfgwalldisttorefresh_;
-
-    //! colorfield gradient and interface normal of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh cfgintnormtorefresh_;
+    //! surface tension ramp function number
+    const int surfacetensionrampfctnumber_;
 
     //! constant part of surface tension coefficient
     const double alpha0_;
@@ -174,9 +145,6 @@ namespace PARTICLEINTERACTION
 
     //! reference temperature for surface tension coefficient
     const double reftemp_;
-
-    //! wall correction factor
-    std::vector<std::vector<std::vector<double>>> f_i_;
   };
 
 }  // namespace PARTICLEINTERACTION
