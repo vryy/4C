@@ -266,7 +266,7 @@ namespace POROMULTIPHASESCATRA
         LINALG::SerialDenseMatrix* stiffmat21, LINALG::SerialDenseMatrix* stiffmat22);
 
     /**
-     * evaluate divergence of solid velocity term (only porofluid has this term)
+     * evaluate derivative of 1D shape function times solid velocity (only porofluid has this term)
      * @param eta [in]: GP coordinates in artery element parameter space
      * @param xi [in]: GP coordinates in porofluid element parameter space
      * @param segmentlengths [in]: length of all segments of this artery element
@@ -274,7 +274,7 @@ namespace POROMULTIPHASESCATRA
      * @param etaA [in]: beginning of segment in artery element parameter space
      * @param etaB [in]: end of segment in artery element parameter space
      */
-    void EvaluateDivSolidVel(const std::vector<double>& eta,
+    void EvaluatedNdsSolidVel(const std::vector<double>& eta,
         const std::vector<std::vector<double>>& xi, const std::vector<double>& segmentlengths,
         LINALG::SerialDenseVector& forcevec1, const double& etaA, const double& etaB);
 
