@@ -17,7 +17,8 @@
 namespace ADAPTER
 {
   class Coupling;
-}
+  class CouplingSlaveConverter;
+}  // namespace ADAPTER
 
 namespace DRT
 {
@@ -39,9 +40,9 @@ namespace SSI
 
   namespace UTILS
   {
-    /// Function for checking that the different time steps are a
-    /// multiplicative of each other
-    int CheckTimeStepping(double dt1, double dt2);
+    //! build vector with gids on this proc
+    void BuildNodeGidVector(Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>* nodegids,
+        std::vector<int>& nodegidvec);
 
     //! Modification of time parameter list for problem with different time step size
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
@@ -52,9 +53,27 @@ namespace SSI
         const std::vector<DRT::Condition*>& conditionsToBeTested,
         Teuchos::RCP<DRT::Discretization>& structdis);
 
-    //! setup coupling adapter for structure interfaces from s2i condition
+    /// Function for checking that the different time steps are a
+    /// multiplicative of each other
+    int CheckTimeStepping(double dt1, double dt2);
+
+    // remove gids of nodegidstoremove from nodegidvec when they occur
+    void RemoveNodesGidVector(Teuchos::RCP<DRT::Discretization> dis,
+        const std::vector<int>* nodegidstoremove, std::vector<int>& nodegidvec);
+
+    //! setup coupling adapter for structure interfaces from ssi condition for line coupling
+    Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure3DomainIntersection(
+        Teuchos::RCP<DRT::Discretization> structdis,
+        const std::string& conditionname_3_domain_intersection);
+
+    //! setup coupling adapter for structure interfaces from ssi condition for surface coupling
     Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure(
-        Teuchos::RCP<DRT::Discretization> structdis);
+        Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_condition_wise,
+        const std::string& conditionname_coupling,
+        const std::string& conditionname_3_domain_intersection);
+
+    //! sort gids and remove duplicates
+    void SortAndEraseNodeGidVector(std::vector<int>& nodegidvec);
 
     /*---------------------------------------------------------------------------------*
      *---------------------------------------------------------------------------------*/
@@ -98,6 +117,35 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
       Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
       //@}
+    };
+
+    class SSISlaveSideConverter
+    {
+     public:
+      SSISlaveSideConverter(Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
+          Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection,
+          bool meshtying_3_domain_intersection);
+
+      //! Slave structure converter for structure coupling
+      ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const
+      {
+        return *icoup_structure_slave_converter_;
+      }
+
+      //! Slave structure converter for structure coupling with 3 domain intersection
+      ADAPTER::CouplingSlaveConverter&
+      InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const
+      {
+        return *icoup_structure_slave_converter_3_domain_intersetion_;
+      }
+
+     private:
+      //! Slave structure converter for structure coupling
+      Teuchos::RCP<ADAPTER::CouplingSlaveConverter> icoup_structure_slave_converter_;
+
+      //! Slave structure converter for structure coupling with 3 domain intersection
+      Teuchos::RCP<ADAPTER::CouplingSlaveConverter>
+          icoup_structure_slave_converter_3_domain_intersetion_;
     };
 
   }  // namespace UTILS

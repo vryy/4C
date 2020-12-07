@@ -36,16 +36,17 @@ namespace SSI
   class ScatraStructureOffDiagCoupling
   {
    public:
-    //! constructor
     explicit ScatraStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure,
+        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
+        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
+        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
+        bool meshtying_3_domain_intersection);
 
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateOffDiagBlockScatraStructureDomain(
@@ -79,7 +80,10 @@ namespace SSI
     const Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
     //! scatra-scatra interface coupling adapter for structure field
-    const Teuchos::RCP<const ADAPTER::Coupling> interface_coupling_structure_;
+    const Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_;
+
+    //! scatra-scatra interface coupling adapter for structure field with 3 intersection domains
+    const Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
 
     //! map associated with all degrees of freedom on scatra interface
     const Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
@@ -92,6 +96,9 @@ namespace SSI
 
     //! structure problem
     const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+
+    //! indicates, if meshtying includes three entities
+    bool meshtying_3_domain_intersection_;
   };
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H
