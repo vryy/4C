@@ -40,10 +40,6 @@ namespace SSI
 
   namespace UTILS
   {
-    //! build vector with gids on this proc
-    void BuildNodeGidVector(Teuchos::RCP<DRT::Discretization> dis, const std::vector<int>* nodegids,
-        std::vector<int>& nodegidvec);
-
     //! Modification of time parameter list for problem with different time step size
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
@@ -57,10 +53,6 @@ namespace SSI
     /// multiplicative of each other
     int CheckTimeStepping(double dt1, double dt2);
 
-    // remove gids of nodegidstoremove from nodegidvec when they occur
-    void RemoveNodesGidVector(Teuchos::RCP<DRT::Discretization> dis,
-        const std::vector<int>* nodegidstoremove, std::vector<int>& nodegidvec);
-
     //! setup coupling adapter for structure interfaces from ssi condition for line coupling
     Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure3DomainIntersection(
         Teuchos::RCP<DRT::Discretization> structdis,
@@ -71,9 +63,6 @@ namespace SSI
         Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_3_domain_intersection,
         const std::string& conditionname_coupling,
         const std::string& conditionname_3_domain_intersection);
-
-    //! sort gids and remove duplicates
-    void SortAndEraseNodeGidVector(std::vector<int>& nodegidvec);
 
     /*---------------------------------------------------------------------------------*
      *---------------------------------------------------------------------------------*/
