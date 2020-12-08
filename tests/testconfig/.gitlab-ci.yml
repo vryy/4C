@@ -465,7 +465,7 @@ imcs-buildtest_interactive:
     tags:
         - imcs-interactive
     rules:
-        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs_ubuntu20"'
           when: always
 
 imcs-buildtest_interactive_ubuntu20:
