@@ -41,13 +41,18 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       icoup_structure_(Teuchos::null),
-      icoup_structure_slave_converter_(Teuchos::null),
+      icoup_structure_3_domain_intersection_(Teuchos::null),
       isinit_(false),
       issetup_(false),
       iter_(0),
-      maps_structure_(Teuchos::null),
+      maps_coup_struct_(Teuchos::null),
+      maps_coup_struct_3_domain_intersection_(Teuchos::null),
       map_structure_condensed_(Teuchos::null),
+      meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
+          DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
+          "MESHTYING_3_DOMAIN_INTERSECTION")),
       scatra_base_algorithm_(Teuchos::null),
+      slave_side_converter_(Teuchos::null),
       ssicoupling_(Teuchos::null),
       ssiinterfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
@@ -280,26 +285,58 @@ void SSI::SSIBase::Setup()
     SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssiconditions, structdis);
 
     // set up scatra-scatra interface coupling adapter for structure field
+    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis,
+        Meshtying3DomainIntersection(), "SSIInterfaceMeshtying", "SSIMeshtying3DomainIntersection");
 
-    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis);
+    if (!Meshtying3DomainIntersection())
+    {
+      // set up map for interior and master-side structural degrees of freedom
+      map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),
+          *InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    }
+    else
+    {
+      icoup_structure_3_domain_intersection_ =
+          SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
+              structdis, "SSIMeshtying3DomainIntersection");
 
-    // setup the scatra-scatra interface coupling slave converter for structure field
-    icoup_structure_slave_converter_ =
-        Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*icoup_structure_));
+      auto map1 =
+          Teuchos::rcp(new const Epetra_Map(*InterfaceCouplingAdapterStructure()->SlaveDofMap()));
+      auto map2 = Teuchos::rcp(new const Epetra_Map(
+          *InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap()));
+      auto map3 = LINALG::MultiMapExtractor::MergeMaps({map1, map2});
 
-    // set up map for interior and master-side structural degrees of freedom
-    map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),
-        *InterfaceCouplingAdapterStructure()->SlaveDofMap());
+      // set up map for interior and master-side structural degrees of freedom
+      map_structure_condensed_ =
+          LINALG::SplitMap(*structure_->Discretization()->DofRowMap(), *map3);
+    }
+
+    slave_side_converter_ = Teuchos::rcp(new SSI::UTILS::SSISlaveSideConverter(
+        icoup_structure_, icoup_structure_3_domain_intersection_, Meshtying3DomainIntersection()));
 
     // set up structural map extractor holding interior and interface maps of degrees of freedom
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
-    maps.emplace_back(LINALG::SplitMap(
+    std::vector<Teuchos::RCP<const Epetra_Map>> maps_surf(0, Teuchos::null);
+    maps_surf.emplace_back(LINALG::SplitMap(
         *map_structure_condensed_, *InterfaceCouplingAdapterStructure()->MasterDofMap()));
-    maps.emplace_back(InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    maps.emplace_back(InterfaceCouplingAdapterStructure()->MasterDofMap());
-    maps_structure_ = Teuchos::rcp(
-        new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps));
-    maps_structure_->CheckForValidMapExtractor();
+    maps_surf.emplace_back(InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    maps_surf.emplace_back(InterfaceCouplingAdapterStructure()->MasterDofMap());
+    maps_coup_struct_ = Teuchos::rcp(
+        new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps_surf));
+    maps_coup_struct_->CheckForValidMapExtractor();
+
+    if (Meshtying3DomainIntersection())
+    {
+      std::vector<Teuchos::RCP<const Epetra_Map>> maps_line(0, Teuchos::null);
+      maps_line.emplace_back(
+          LINALG::SplitMap(*InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap(),
+              *InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap()));
+      maps_line.emplace_back(InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap());
+      maps_line.emplace_back(
+          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap());
+      maps_coup_struct_3_domain_intersection_ = Teuchos::rcp(
+          new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps_line));
+      maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
+    }
   }
 
   // set flag

@@ -292,4 +292,27 @@ void INPAR::SSI::SetValidConditions(
 
   condlist.push_back(linessiinterfacemeshtying);
   condlist.push_back(surfssiinterfacemeshtying);
+
+  // -------------------------------------------------------------------------------
+  Teuchos::RCP<ConditionDefinition> ssiinterfacemeshtying3domainintersection =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS",
+          "SSIMeshtying3DomainIntersection", "SSI line where 3 domains intersect",
+          DRT::Condition::SSIMeshtying3DomainIntersection, true, DRT::Condition::Line));
+
+  std::vector<Teuchos::RCP<ConditionComponent>> ssitriplepointmeshtying;
+  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(
+      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
+          Teuchos::tuple<std::string>("Master", "Slave"))));
+  ssitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("SSISurfSlaveID")));
+  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("SSISurfSlaveID")));
+  ssitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("SSISurfMasterID")));
+  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("SSISurfMasterID")));
+
+  for (auto& conditioncomponent : ssitriplepointmeshtying)
+    ssiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
+
+  condlist.push_back(ssiinterfacemeshtying3domainintersection);
 }
