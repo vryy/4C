@@ -32,19 +32,17 @@
 
 int SSI::UTILS::CheckTimeStepping(double dt1, double dt2)
 {
-  double workdt1 = std::min(dt1, dt2);
-  double workdt2 = std::max(dt1, dt2);
-  double t1 = 0.0;
+  const double workdt1 = std::min(dt1, dt2);
+  const double workdt2 = std::max(dt1, dt2);
   int i = 0;
 
   while (true)
   {
     i++;
-    t1 = i * workdt1;
+    const double t1 = i * workdt1;
 
     if (std::abs(t1 - workdt2) < 10E-10)
       break;
-
     else if (t1 > workdt2)
       dserror("Chosen time steps %f and %f are not a multiplicative of each other", dt1, dt2);
   }
