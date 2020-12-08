@@ -2027,25 +2027,23 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           islavenodegidvec.erase(
               unique(islavenodegidvec.begin(), islavenodegidvec.end()), islavenodegidvec.end());
 
-          for (auto& mastercondition : masterconditions)
+          auto mastercondition = masterconditions.find(slavecondition.first);
+          if (mastercondition != masterconditions.end())
           {
-            if (slavecondition.first == mastercondition.first)
-            {
-              const std::vector<int>* imasternodegids = mastercondition.second->Nodes();
+            const std::vector<int>* imasternodegids = mastercondition->second->Nodes();
 
-              for (int imasternodegid : *imasternodegids)
-              {
-                // insert global id of current node into associated vector only if node is owned by
-                // current processor need to make sure that node is stored on current processor,
-                // otherwise cannot resolve "->Owner()"
-                if (scatratimint_->Discretization()->HaveGlobalNode(imasternodegid) and
-                    scatratimint_->Discretization()->gNode(imasternodegid)->Owner() ==
-                        scatratimint_->Discretization()->Comm().MyPID())
-                  imasternodegidvec.push_back(imasternodegid);
-              }
-              break;
+            for (int imasternodegid : *imasternodegids)
+            {
+              // insert global id of current node into associated vector only if node is owned by
+              // current processor need to make sure that node is stored on current processor,
+              // otherwise cannot resolve "->Owner()"
+              if (scatratimint_->Discretization()->HaveGlobalNode(imasternodegid) and
+                  scatratimint_->Discretization()->gNode(imasternodegid)->Owner() ==
+                      scatratimint_->Discretization()->Comm().MyPID())
+                imasternodegidvec.push_back(imasternodegid);
             }
           }
+
           std::sort(imasternodegidvec.begin(), imasternodegidvec.end());
           imasternodegidvec.erase(
               unique(imasternodegidvec.begin(), imasternodegidvec.end()), imasternodegidvec.end());

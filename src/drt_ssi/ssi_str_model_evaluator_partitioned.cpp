@@ -50,7 +50,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying())
   {
-    const bool meshtying_condition_wise = ssi_part_->Meshtying3DomainIntersection();
+    const bool meshtying_3_domain_intersection = ssi_part_->Meshtying3DomainIntersection();
 
     // cast old Jacobian
     auto& jac_sparse = dynamic_cast<LINALG::SparseMatrix&>(jac);
@@ -83,7 +83,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
         &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
         jac_new, true, true);
 
-    if (meshtying_condition_wise)
+    if (meshtying_3_domain_intersection)
     {
       // transform and assemble slave-side rows of original Jacobian into new Jacobian
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
@@ -132,7 +132,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     // meshtying
     jac_new.Complete();
     jac_new.ApplyDirichlet(*ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    if (meshtying_condition_wise)
+    if (meshtying_3_domain_intersection)
       jac_new.ApplyDirichlet(
           *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap());
 

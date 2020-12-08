@@ -295,8 +295,8 @@ void INPAR::SSI::SetValidConditions(
 
   // -------------------------------------------------------------------------------
   Teuchos::RCP<ConditionDefinition> ssiinterfacemeshtying3domainintersection =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSI TRIPLE MESHTYING LINE CONDITIONS",
-          "SSIMeshtying3DomainIntersection", "SSI Triple Meshtying",
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS",
+          "SSIMeshtying3DomainIntersection", "SSI line where 3 domains intersect",
           DRT::Condition::SSIMeshtying3DomainIntersection, true, DRT::Condition::Line));
 
   std::vector<Teuchos::RCP<ConditionComponent>> ssitriplepointmeshtying;

@@ -228,7 +228,7 @@ void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructure(
-    Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_condition_wise,
+    Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_3_domain_intersection,
     const std::string& conditionname_coupling,
     const std::string& conditionname_3_domain_intersection)
 {
@@ -270,7 +270,7 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
   }
 
   // Setup coupling adapter from ssi conditions
-  if (meshtying_condition_wise)
+  if (meshtying_3_domain_intersection)
   {
     // vectors for global ids of slave and master interface nodes for each condition
     std::vector<std::vector<int>> islavenodegidvec_cond;
@@ -287,24 +287,27 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
       BuildNodeGidVector(structdis, slavecondition.second->Nodes(), islavenodegidvec);
       SortAndEraseNodeGidVector(islavenodegidvec);
 
-      for (auto& mastercondition : masterconditions)
+      auto mastercondition = masterconditions.find(slavecondition.first);
+      if (mastercondition != masterconditions.end())
       {
-        if (slavecondition.first == mastercondition.first)
-          BuildNodeGidVector(structdis, mastercondition.second->Nodes(), imasternodegidvec);
+        BuildNodeGidVector(structdis, mastercondition->second->Nodes(), imasternodegidvec);
       }
       SortAndEraseNodeGidVector(imasternodegidvec);
 
       // remove nodes from slave side line condition to avoid non-unique slave-master relation
-      std::vector<DRT::Condition*> conditionstriplepoint(0, nullptr);
-      structdis->GetCondition(conditionname_3_domain_intersection, conditionstriplepoint);
+      std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
+      structdis->GetCondition(
+          conditionname_3_domain_intersection, conditions_3_domain_intersection);
 
-      for (const auto& conditiontriplepoint : conditionstriplepoint)
+      for (const auto& condition_3_domain_intersection : conditions_3_domain_intersection)
       {
-        if (slavecondition.first != conditiontriplepoint->GetInt("SSISurfMasterID") and
-            conditiontriplepoint->GType() == DRT::Condition::Line)
+        if (slavecondition.first != condition_3_domain_intersection->GetInt("SSISurfMasterID") and
+            condition_3_domain_intersection->GType() == DRT::Condition::Line)
         {
-          RemoveNodesGidVector(structdis, conditiontriplepoint->Nodes(), islavenodegidvec);
-          RemoveNodesGidVector(structdis, conditiontriplepoint->Nodes(), imasternodegidvec);
+          RemoveNodesGidVector(
+              structdis, condition_3_domain_intersection->Nodes(), islavenodegidvec);
+          RemoveNodesGidVector(
+              structdis, condition_3_domain_intersection->Nodes(), imasternodegidvec);
         }
       }
 
@@ -567,7 +570,7 @@ SSI::UTILS::SSISlaveSideConverter::SSISlaveSideConverter(
     bool meshtying_3_domain_intersection)
     : icoup_structure_slave_converter_(
           Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*icoup_structure))),
-      icoup_structure_slave_converter_3_domain_intersetion_(
+      icoup_structure_slave_converter_3_domain_intersection_(
           meshtying_3_domain_intersection ? Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(
                                                 *icoup_structure_3_domain_intersection))
                                           : Teuchos::null)

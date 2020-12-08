@@ -68,7 +68,7 @@ namespace SSI
 
     //! setup coupling adapter for structure interfaces from ssi condition for surface coupling
     Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure(
-        Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_condition_wise,
+        Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_3_domain_intersection,
         const std::string& conditionname_coupling,
         const std::string& conditionname_3_domain_intersection);
 
@@ -136,7 +136,7 @@ namespace SSI
       ADAPTER::CouplingSlaveConverter&
       InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const
       {
-        return *icoup_structure_slave_converter_3_domain_intersetion_;
+        return *icoup_structure_slave_converter_3_domain_intersection_;
       }
 
      private:
@@ -145,7 +145,7 @@ namespace SSI
 
       //! Slave structure converter for structure coupling with 3 domain intersection
       Teuchos::RCP<ADAPTER::CouplingSlaveConverter>
-          icoup_structure_slave_converter_3_domain_intersetion_;
+          icoup_structure_slave_converter_3_domain_intersection_;
     };
 
   }  // namespace UTILS

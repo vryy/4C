@@ -171,14 +171,14 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
   std::vector<int> masternodes;
   std::vector<int> slavenodes;
 
-  for (int& i : masternodes1)
+  for (int& masternode1 : masternodes1)
   {
-    if (masternodes2.find(i) == masternodes2.end()) masternodes.push_back(i);
+    if (masternodes2.find(masternode1) == masternodes2.end()) masternodes.push_back(masternode1);
   }
 
-  for (int& i : slavenodes1)
+  for (int& slavenode1 : slavenodes1)
   {
-    if (slavenodes2.find(i) == slavenodes2.end()) slavenodes.push_back(i);
+    if (slavenodes2.find(slavenode1) == slavenodes2.end()) slavenodes.push_back(slavenode1);
   }
 
   int localmastercount = static_cast<int>(masternodes.size());

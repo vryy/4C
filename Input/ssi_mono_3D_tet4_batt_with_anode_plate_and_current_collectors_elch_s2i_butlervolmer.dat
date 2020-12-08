@@ -248,7 +248,7 @@ E 9 - 3 Slave S2ICouplingID 3
 E 10 - 4 Master S2ICouplingID 4
 // cc-side_(sl)_of_sol-el-comp_cat-
 E 11 - 4 Slave S2ICouplingID 4
------------------------DESIGN SSI TRIPLE MESHTYING LINE CONDITIONS
+-----------------------DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS
 DLINE  2
 // line_triple_point_cc_side
 E 4 - 0 Slave SSISurfSlaveID 4 SSISurfMasterID 2
