@@ -35,6 +35,7 @@ namespace PARTICLEINTERACTION
   class SPHOpenBoundaryBase;
   class SPHVirtualWallParticle;
   class SPHPhaseChangeBase;
+  class SPHRecoilPressureEvaporation;
   class SPHRigidParticleContactBase;
 }  // namespace PARTICLEINTERACTION
 
@@ -151,6 +152,9 @@ namespace PARTICLEINTERACTION
     //! init phase change handler
     void InitPhaseChangeHandler();
 
+    //! init evaporation induced recoil pressure handler
+    void InitRecoilPressureEvaporationHandler();
+
     //! init rigid particle contact handler
     void InitRigidParticleContactHandler();
 
@@ -195,6 +199,9 @@ namespace PARTICLEINTERACTION
 
     //! phase change handler
     std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase> phasechange_;
+
+    //! evaporation induced recoil pressure handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation> recoilpressureevaporation_;
 
     //! rigid particle contact handler
     std::unique_ptr<PARTICLEINTERACTION::SPHRigidParticleContactBase> rigidparticlecontact_;

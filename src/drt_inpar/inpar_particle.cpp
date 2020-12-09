@@ -247,6 +247,27 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   StringParameter(
       "HEATSOURCE_DIRECTION", "0.0 0.0 0.0", "direction of surface heat source", &particledynsph);
 
+  // evaporation induced heat loss
+  BoolParameter("VAPOR_HEATLOSS", "no", "evaluate evaporation induced heat loss", &particledynsph);
+  DoubleParameter(
+      "VAPOR_HEATLOSS_LATENTHEAT", 0.0, "latent heat in heat loss formula", &particledynsph);
+  DoubleParameter("VAPOR_HEATLOSS_ENTHALPY_REFTEMP", 0.0,
+      "enthalpy reference temperature in heat loss formula", &particledynsph);
+  DoubleParameter(
+      "VAPOR_HEATLOSS_PFAC", 0.0, "pressure factor in heat loss formula", &particledynsph);
+  DoubleParameter(
+      "VAPOR_HEATLOSS_TFAC", 0.0, "temperature factor in heat loss formula", &particledynsph);
+
+  // evaporation induced recoil pressure
+  BoolParameter(
+      "VAPOR_RECOIL", "no", "evaluate evaporation induced recoil pressure", &particledynsph);
+  DoubleParameter("VAPOR_RECOIL_BOILINGTEMPERATURE", 0.0,
+      "boiling temperature in recoil pressure formula", &particledynsph);
+  DoubleParameter(
+      "VAPOR_RECOIL_PFAC", 0.0, "pressure factor in recoil pressure formula", &particledynsph);
+  DoubleParameter(
+      "VAPOR_RECOIL_TFAC", 0.0, "temperature factor in recoil pressure formula", &particledynsph);
+
   // type of surface tension formulation
   setStringToIntegralParameter<int>("SURFACETENSIONFORMULATION", "NoSurfaceTension",
       "type of surface tension formulation",
