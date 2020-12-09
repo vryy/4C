@@ -164,7 +164,32 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
  * through core-dumps from MPI_Abort() (e.g. OpenMPI does whereas
  * Intel MPI doesn't).
  */
-void sigfpe_handler(int sig) { dserror("Baci produced a floating point exception."); }
+void sigfpe_handler(int sig)
+{
+  std::string exception_string;
+  switch (sig)
+  {
+    case FE_INVALID:
+      exception_string = "FE_INVALID";
+      break;
+    case FE_DIVBYZERO:
+      exception_string = "FE_DIVBYZERO";
+      break;
+    case FE_OVERFLOW:
+      exception_string = "FE_OVERFLOW";
+      break;
+    case FE_UNDERFLOW:
+      exception_string = "FE_UNDERFLOW";
+      break;
+    case FE_INEXACT:
+      exception_string = "FE_INEXACT";
+      break;
+    default:
+      dserror("Baci produced an unknown floating point exception.");
+      break;
+  }
+  dserror("Baci produced a %s floating point exception.", exception_string.c_str());
+}
 
 
 /*----------------------------------------------------------------------*
