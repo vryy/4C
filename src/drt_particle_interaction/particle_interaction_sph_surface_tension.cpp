@@ -32,6 +32,8 @@
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::ParameterList& params)
     : params_sph_(params),
+      liquidtype_(PARTICLEENGINE::Phase1),
+      gastype_(PARTICLEENGINE::Phase2),
       time_(0.0),
       surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
       alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
@@ -45,8 +47,8 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
 
 void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 {
-  // init with potential fluid particle types
-  fluidtypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2};
+  // init fluid particle types
+  fluidtypes_ = {liquidtype_, gastype_};
 
   // init with potential boundary particle types
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
@@ -89,10 +91,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
 
-  // update with actual fluid particle types
-  const auto fluidtypes = fluidtypes_;
-  for (const auto& type_i : fluidtypes)
-    if (not particlecontainerbundle_->GetParticleTypes().count(type_i)) fluidtypes_.erase(type_i);
+  // safety check
+  for (const auto& type_i : fluidtypes_)
+    if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
+      dserror("no particle container for particle type '%s' found!",
+          PARTICLEENGINE::EnumToTypeName(type_i).c_str());
 
   // update with actual boundary particle types
   const auto boundarytypes = boundarytypes_;
@@ -541,6 +544,13 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
+    // static contact angle with respect to liquid particle type
+    const double staticcontactangle =
+        (type_i == liquidtype_) ? staticcontactangle_ : (180 - staticcontactangle_);
+
+    // convert static contact angle in radians
+    const double theta_0 = staticcontactangle * M_PI / 180.0;
+
     // get container of owned particles of current particle type
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
@@ -591,11 +601,6 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
         UTILS::vec_setscale(walltangential_i, 1.0 / walltangential_i_norm, walltangential_i);
       else
         UTILS::vec_clear(walltangential_i);
-
-      // convert static contact angle in radians
-      const double theta_0 = (type_i == PARTICLEENGINE::Phase1)
-                                 ? staticcontactangle_ * M_PI / 180.0
-                                 : (180 - staticcontactangle_) * M_PI / 180.0;
 
       // determine triple point normal
       double triplepointnormal_i[3];
