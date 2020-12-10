@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_RECOILPRESSURE_EVAPORATION_H
-#define PARTICLE_INTERACTION_SPH_RECOILPRESSURE_EVAPORATION_H
+#ifndef PARTICLE_INTERACTION_SPH_SURFACE_TENSION_RECOILPRESSURE_EVAPORATION_H
+#define PARTICLE_INTERACTION_SPH_SURFACE_TENSION_RECOILPRESSURE_EVAPORATION_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
