@@ -26,6 +26,8 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_vector.H"
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -1953,42 +1955,17 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         for (auto& slavecondition : slaveconditions_)
         {
-          const std::vector<int>* islavenodegids = slavecondition.second->Nodes();
-
-          for (int islavenodegid : *islavenodegids)
-          {
-            // insert global id of current node into associated vector only if node is owned by
-            // current processor need to make sure that node is stored on current processor,
-            // otherwise cannot resolve "->Owner()"
-            if (scatratimint_->Discretization()->HaveGlobalNode(islavenodegid) and
-                scatratimint_->Discretization()->gNode(islavenodegid)->Owner() ==
-                    scatratimint_->Discretization()->Comm().MyPID())
-              islavenodegidvec.push_back(islavenodegid);
-          }
+          DRT::UTILS::AddOwnedNodeGIDVector(
+              scatratimint_->Discretization(), *slavecondition.second->Nodes(), islavenodegidvec);
         }
         for (auto& mastercondition : masterconditions)
         {
-          const std::vector<int>* imasternodegids = mastercondition.second->Nodes();
-
-          for (int imasternodegid : *imasternodegids)
-          {
-            // insert global id of current node into associated vector only if node is owned by
-            // current processor need to make sure that node is stored on current processor,
-            // otherwise cannot resolve "->Owner()"
-            if (scatratimint_->Discretization()->HaveGlobalNode(imasternodegid) and
-                scatratimint_->Discretization()->gNode(imasternodegid)->Owner() ==
-                    scatratimint_->Discretization()->Comm().MyPID())
-              imasternodegidvec.push_back(imasternodegid);
-          }
+          DRT::UTILS::AddOwnedNodeGIDVector(
+              scatratimint_->Discretization(), *mastercondition.second->Nodes(), imasternodegidvec);
         }
 
-        // remove potential duplicates from vectors
-        std::sort(islavenodegidvec.begin(), islavenodegidvec.end());
-        islavenodegidvec.erase(
-            unique(islavenodegidvec.begin(), islavenodegidvec.end()), islavenodegidvec.end());
-        std::sort(imasternodegidvec.begin(), imasternodegidvec.end());
-        imasternodegidvec.erase(
-            unique(imasternodegidvec.begin(), imasternodegidvec.end()), imasternodegidvec.end());
+        DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
+        DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,
@@ -2009,44 +1986,19 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           std::vector<int> islavenodegidvec;
           std::vector<int> imasternodegidvec;
 
-          const std::vector<int>* islavenodegids = slavecondition.second->Nodes();
+          DRT::UTILS::AddOwnedNodeGIDVector(
+              scatratimint_->Discretization(), *slavecondition.second->Nodes(), islavenodegidvec);
 
-          for (int islavenodegid : *islavenodegids)
-          {
-            // insert global id of current node into associated vector only if node is owned by
-            // current processor need to make sure that node is stored on current processor,
-            // otherwise cannot resolve "->Owner()"
-            if (scatratimint_->Discretization()->HaveGlobalNode(islavenodegid) and
-                scatratimint_->Discretization()->gNode(islavenodegid)->Owner() ==
-                    scatratimint_->Discretization()->Comm().MyPID())
-              islavenodegidvec.push_back(islavenodegid);
-          }
-
-          // remove potential duplicates from vectors
-          std::sort(islavenodegidvec.begin(), islavenodegidvec.end());
-          islavenodegidvec.erase(
-              unique(islavenodegidvec.begin(), islavenodegidvec.end()), islavenodegidvec.end());
+          DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
 
           auto mastercondition = masterconditions.find(slavecondition.first);
           if (mastercondition != masterconditions.end())
           {
-            const std::vector<int>* imasternodegids = mastercondition->second->Nodes();
-
-            for (int imasternodegid : *imasternodegids)
-            {
-              // insert global id of current node into associated vector only if node is owned by
-              // current processor need to make sure that node is stored on current processor,
-              // otherwise cannot resolve "->Owner()"
-              if (scatratimint_->Discretization()->HaveGlobalNode(imasternodegid) and
-                  scatratimint_->Discretization()->gNode(imasternodegid)->Owner() ==
-                      scatratimint_->Discretization()->Comm().MyPID())
-                imasternodegidvec.push_back(imasternodegid);
-            }
+            DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+                *mastercondition->second->Nodes(), imasternodegidvec);
           }
 
-          std::sort(imasternodegidvec.begin(), imasternodegidvec.end());
-          imasternodegidvec.erase(
-              unique(imasternodegidvec.begin(), imasternodegidvec.end()), imasternodegidvec.end());
+          DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
           // remove nodes from slave side line condition to avoid non-unique slave-master relation
           std::vector<DRT::Condition*> conditionstriplemeshtying(0, nullptr);
@@ -2066,47 +2018,16 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
                 dserror("Triple meshtying in S2I coupling only for 'NoInterfaceFlux' so far");
 
-              // nodes on slave side of line
-              const std::vector<int>* const inodegids = conditiontriplemeshtying->Nodes();
-
               // compare node gids and remove if they are equal and on this proc
               if (isslave)
               {
-                for (int h = static_cast<int>(islavenodegidvec.size()) - 1; h >= 0; --h)
-                {
-                  for (int inodegid : *inodegids)
-                  {
-                    if (islavenodegidvec.at(h) == inodegid)
-                    {
-                      if (!scatratimint_->Discretization()->HaveGlobalNode(inodegid) or
-                          scatratimint_->Discretization()->gNode(inodegid)->Owner() !=
-                              scatratimint_->Discretization()->Comm().MyPID())
-                        continue;
-
-                      islavenodegidvec.erase(islavenodegidvec.begin() + h);
-                      break;
-                    }
-                  }
-                }
+                DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
+                    *conditiontriplemeshtying->Nodes(), islavenodegidvec);
               }
               else
               {
-                for (int h = static_cast<int>(imasternodegidvec.size()) - 1; h >= 0; --h)
-                {
-                  for (int inodegid : *inodegids)
-                  {
-                    if (imasternodegidvec.at(h) == inodegid)
-                    {
-                      if (!scatratimint_->Discretization()->HaveGlobalNode(inodegid) or
-                          scatratimint_->Discretization()->gNode(inodegid)->Owner() !=
-                              scatratimint_->Discretization()->Comm().MyPID())
-                        continue;
-
-                      imasternodegidvec.erase(imasternodegidvec.begin() + h);
-                      break;
-                    }
-                  }
-                }
+                DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
+                    *conditiontriplemeshtying->Nodes(), imasternodegidvec);
               }
             }
           }

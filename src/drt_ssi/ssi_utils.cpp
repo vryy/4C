@@ -14,7 +14,10 @@
 #include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_inpar/inpar_s2i.H"
+
 #include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_vector.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
@@ -29,19 +32,17 @@
 
 int SSI::UTILS::CheckTimeStepping(double dt1, double dt2)
 {
-  double workdt1 = std::min(dt1, dt2);
-  double workdt2 = std::max(dt1, dt2);
-  double t1 = 0.0;
+  const double workdt1 = std::min(dt1, dt2);
+  const double workdt2 = std::max(dt1, dt2);
   int i = 0;
 
   while (true)
   {
     i++;
-    t1 = i * workdt1;
+    const double t1 = i * workdt1;
 
     if (std::abs(t1 - workdt2) < 10E-10)
       break;
-
     else if (t1 > workdt2)
       dserror("Chosen time steps %f and %f are not a multiplicative of each other", dt1, dt2);
   }
@@ -284,15 +285,17 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
       std::vector<int> imasternodegidvec;
 
       // Build GID vector of nodes on this proc, sort, and remove duplicates
-      BuildNodeGidVector(structdis, slavecondition.second->Nodes(), islavenodegidvec);
-      SortAndEraseNodeGidVector(islavenodegidvec);
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          structdis, *slavecondition.second->Nodes(), islavenodegidvec);
+      DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
 
       auto mastercondition = masterconditions.find(slavecondition.first);
       if (mastercondition != masterconditions.end())
       {
-        BuildNodeGidVector(structdis, mastercondition->second->Nodes(), imasternodegidvec);
+        DRT::UTILS::AddOwnedNodeGIDVector(
+            structdis, *mastercondition->second->Nodes(), imasternodegidvec);
       }
-      SortAndEraseNodeGidVector(imasternodegidvec);
+      DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
       // remove nodes from slave side line condition to avoid non-unique slave-master relation
       std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
@@ -304,10 +307,10 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
         if (slavecondition.first != condition_3_domain_intersection->GetInt("SSISurfMasterID") and
             condition_3_domain_intersection->GType() == DRT::Condition::Line)
         {
-          RemoveNodesGidVector(
-              structdis, condition_3_domain_intersection->Nodes(), islavenodegidvec);
-          RemoveNodesGidVector(
-              structdis, condition_3_domain_intersection->Nodes(), imasternodegidvec);
+          DRT::UTILS::RemoveNodeGIDsFromVector(
+              structdis, *condition_3_domain_intersection->Nodes(), islavenodegidvec);
+          DRT::UTILS::RemoveNodeGIDsFromVector(
+              structdis, *condition_3_domain_intersection->Nodes(), imasternodegidvec);
         }
       }
 
@@ -326,12 +329,14 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
 
     // Build GID vector of nodes on this proc, sort, and remove duplicates
     for (const auto& slavecondition : slaveconditions)
-      BuildNodeGidVector(structdis, slavecondition.second->Nodes(), inodegidvec_slave);
-    SortAndEraseNodeGidVector(inodegidvec_slave);
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          structdis, *slavecondition.second->Nodes(), inodegidvec_slave);
+    DRT::UTILS::SortAndRemoveDuplicateVectorElements(inodegidvec_slave);
 
     for (const auto& mastercondition : masterconditions)
-      BuildNodeGidVector(structdis, mastercondition.second->Nodes(), inodegidvec_master);
-    SortAndEraseNodeGidVector(inodegidvec_master);
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          structdis, *mastercondition.second->Nodes(), inodegidvec_master);
+    DRT::UTILS::SortAndRemoveDuplicateVectorElements(inodegidvec_master);
 
 
     interfacecouplingadapter->SetupCoupling(*structdis, *structdis, inodegidvec_master,
@@ -358,66 +363,21 @@ SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
   for (const auto& condition : conditionsssi)
   {
     if (condition->GType() != DRT::Condition::Line) dserror("only line allowed");
-    const std::vector<int>* const inodegids = condition->Nodes();
 
     if (*condition->Get<std::string>("Side") == "Slave")
-      BuildNodeGidVector(structdis, inodegids, ilinenodegidvec_slave);
+      DRT::UTILS::AddOwnedNodeGIDVector(structdis, *condition->Nodes(), ilinenodegidvec_slave);
     else
-      BuildNodeGidVector(structdis, inodegids, ilinenodegidvec_master);
+      DRT::UTILS::AddOwnedNodeGIDVector(structdis, *condition->Nodes(), ilinenodegidvec_master);
   }
 
-  SortAndEraseNodeGidVector(ilinenodegidvec_master);
-  SortAndEraseNodeGidVector(ilinenodegidvec_slave);
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(ilinenodegidvec_master);
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(ilinenodegidvec_slave);
 
   auto coupling_line_structure = Teuchos::rcp(new ADAPTER::Coupling());
   coupling_line_structure->SetupCoupling(*structdis, *structdis, ilinenodegidvec_master,
       ilinenodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
 
   return coupling_line_structure;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::UTILS::SortAndEraseNodeGidVector(std::vector<int>& nodegidvec)
-{
-  std::sort(nodegidvec.begin(), nodegidvec.end());
-  nodegidvec.erase(unique(nodegidvec.begin(), nodegidvec.end()), nodegidvec.end());
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::UTILS::BuildNodeGidVector(Teuchos::RCP<DRT::Discretization> dis,
-    const std::vector<int>* nodegids, std::vector<int>& nodegidvec)
-{
-  for (const int nodegid : *nodegids)
-  {
-    // insert global ID of current node into associated vector only if node is owned by current
-    // processor need to make sure that node is stored on current processor, otherwise cannot
-    // resolve "->Owner()"
-    if (dis->HaveGlobalNode(nodegid) and dis->gNode(nodegid)->Owner() == dis->Comm().MyPID())
-      nodegidvec.push_back(nodegid);
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::UTILS::RemoveNodesGidVector(Teuchos::RCP<DRT::Discretization> dis,
-    const std::vector<int>* nodegidstoremove, std::vector<int>& nodegidvec)
-{
-  for (int h = static_cast<int>(nodegidvec.size()) - 1; h >= 0; --h)
-  {
-    for (int nodegid : *nodegidstoremove)
-    {
-      if (nodegidvec.at(h) == nodegid)
-      {
-        if (!dis->HaveGlobalNode(nodegid) or dis->gNode(nodegid)->Owner() != dis->Comm().MyPID())
-          continue;
-
-        nodegidvec.erase(nodegidvec.begin() + h);
-        break;
-      }
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*/
