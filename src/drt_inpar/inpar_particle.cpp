@@ -290,6 +290,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("SURFACETENSIONREFTEMP", 0.0,
       "reference temperature for surface tension coefficient", &particledynsph);
 
+  // interface viscosity
+  BoolParameter("INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
+  DoubleParameter("INTERFACE_VISCOSITY_VALUE", 0.0, "interface viscosity value", &particledynsph);
+
   // type of dirichlet open boundary
   setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",
       "type of dirichlet open boundary",

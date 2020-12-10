@@ -1878,6 +1878,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_recoilpressure_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_rigid_particle_contact.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_interface_viscosity.cpp
   src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
   src/drt_particle_interaction/particle_interaction_sph_virtual_wall_particle.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp
