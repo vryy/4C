@@ -149,7 +149,7 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(const SSI::SSIMono& s
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (ssi_mono.IterationCount() == itermax_)
+  if (ssi_mono.IterationCount() == itermax_ and !exit)
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
@@ -324,7 +324,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
 
-  if (ssi_mono.IterationCount() == itermax_)
+  if (ssi_mono.IterationCount() == itermax_ and !exit)
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
