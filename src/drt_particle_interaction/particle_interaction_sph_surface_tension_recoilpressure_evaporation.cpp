@@ -36,10 +36,7 @@ PARTICLEINTERACTION::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
 
 void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Init()
 {
-  // safety check
-  if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionFormulation>(
-          params_sph_, "SURFACETENSIONFORMULATION") == INPAR::PARTICLE::NoSurfaceTension)
-    dserror("surface tension evaluation needed for evaporation induced recoil pressure!");
+  // nothing to do
 }
 
 void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
