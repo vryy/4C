@@ -34,8 +34,7 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
     Teuchos::RCP<const DRT::Discretization> discretization2,
     Teuchos::RCP<const Epetra_Vector> fluid_vel, Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
-  // Create assembly manager.. todo this will have to change as soon as we add mortar pairs.. hand
-  // in by dependency injection?
+  // Create assembly manager..
   Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
       assembly_manager = BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
           discretization1, discretization2, *(GetPairs()), GetParams());
