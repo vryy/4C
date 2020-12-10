@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief surface tension handler for smoothed particle hydrodynamics (SPH) interactions
+\brief interface viscosity handler for smoothed particle hydrodynamics (SPH) interactions
 \level 3
 */
 /*---------------------------------------------------------------------------*/
@@ -8,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_SURFACE_TENSION_H
-#define PARTICLE_INTERACTION_SPH_SURFACE_TENSION_H
+#ifndef PARTICLE_INTERACTION_SPH_SURFACE_TENSION_INTERFACE_VISCOSITY_H
+#define PARTICLE_INTERACTION_SPH_SURFACE_TENSION_INTERFACE_VISCOSITY_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
@@ -34,19 +34,27 @@ namespace PARTICLEINTERACTION
   class MaterialHandler;
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
-  class SPHInterfaceViscosity;
+  class SPHArtificialViscosity;
 }  // namespace PARTICLEINTERACTION
+
+namespace MAT
+{
+  namespace PAR
+  {
+    class ParticleMaterialSPHFluid;
+  }
+}  // namespace MAT
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHSurfaceTension
+  class SPHInterfaceViscosity
   {
    public:
     //! constructor
-    explicit SPHSurfaceTension(const Teuchos::ParameterList& params);
+    explicit SPHInterfaceViscosity(const Teuchos::ParameterList& params);
 
     /*!
      * \brief destructor
@@ -56,12 +64,12 @@ namespace PARTICLEINTERACTION
      * \note At compile-time a complete type of class T as used in class member
      *       std::unique_ptr<T> ptr_T_ is required
      */
-    ~SPHSurfaceTension();
+    ~SPHInterfaceViscosity();
 
-    //! init surface tension handler
+    //! init interface viscosity handler
     void Init();
 
-    //! setup surface tension handler
+    //! setup interface viscosity handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
         const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
@@ -69,47 +77,18 @@ namespace PARTICLEINTERACTION
         const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! set current time
-    void SetCurrentTime(const double currenttime);
-
-    //! insert surface tension evaluation dependent states
-    void InsertParticleStatesOfParticleTypes(
-        std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>&
-            particlestatestotypes) const;
-
-    //! compute interface quantities
-    void ComputeInterfaceQuantities();
-
-    //! add surface tension contribution to acceleration field
-    void AddAccelerationContribution();
+    //! compute interface viscosity contribution
+    void ComputeInterfaceViscosityContribution() const;
 
    private:
-    //! init interface viscosity handler
-    void InitInterfaceViscosityHandler();
+    //! init artificial viscosity handler
+    void InitArtificialViscosityHandler();
 
-    //! compute colorfield gradient
-    void ComputeColorfieldGradient() const;
+    //! compute interface viscosity contribution (particle contribution)
+    void ComputeInterfaceViscosityParticleContribution() const;
 
-    //! compute interface normal
-    void ComputeInterfaceNormal() const;
-
-    //! compute unit wall normal
-    void ComputeUnitWallNormal() const;
-
-    //! compute wall distance
-    void ComputeWallDistance() const;
-
-    //! correct normal vector of particles close to triple point
-    void CorrectTriplePointNormal() const;
-
-    //! compute curvature
-    void ComputeCurvature() const;
-
-    //! compute surface tension contribution
-    void ComputeSurfaceTensionContribution() const;
-
-    //! compute temperature gradient driven contribution
-    void ComputeTempGradDrivenContribution() const;
+    //! compute interface viscosity contribution (particle-boundary contribution)
+    void ComputeInterfaceViscosityParticleBoundaryContribution() const;
 
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
@@ -123,14 +102,17 @@ namespace PARTICLEINTERACTION
     //! kernel handler
     std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel_;
 
-    //! particle material handler
-    std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial_;
+    //! equation of state bundle
+    std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
 
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
-    //! interface viscosity handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHInterfaceViscosity> interfaceviscosity_;
+    //! artificial viscosity handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
+
+    //! pointer to fluid material of particle types
+    std::vector<const MAT::PAR::ParticleMaterialSPHFluid*> fluidmaterial_;
 
     //! liquid particle type
     PARTICLEENGINE::TypeEnum liquidtype_;
@@ -144,29 +126,8 @@ namespace PARTICLEINTERACTION
     //! set of boundary particle types
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
 
-    //! interface normal of ghosted particles to refresh
-    PARTICLEENGINE::StatesOfTypesToRefresh intnormtorefresh_;
-
-    //! current time
-    double time_;
-
-    //! surface tension ramp function number
-    const int surfacetensionrampfctnumber_;
-
-    //! constant part of surface tension coefficient
-    const double alpha0_;
-
-    //! minimum surface tension coefficient in case of temperature dependence
-    const double alphamin_;
-
-    //! static contact angle
-    const double staticcontactangle_;
-
-    //! factor of dependence of surface tension coefficient on temperature
-    const double alphaT_;
-
-    //! reference temperature for surface tension coefficient
-    const double reftemp_;
+    //! artificial viscosity on interface
+    const double artviscinterface_;
   };
 
 }  // namespace PARTICLEINTERACTION

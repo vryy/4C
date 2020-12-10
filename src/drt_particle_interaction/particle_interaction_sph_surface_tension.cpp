@@ -15,6 +15,7 @@
 #include "particle_interaction_sph_equationofstate.H"
 #include "particle_interaction_sph_equationofstate_bundle.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
+#include "particle_interaction_sph_surface_tension_interface_viscosity.H"
 
 #include "particle_interaction_utils.H"
 
@@ -45,8 +46,13 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
   // empty constructor
 }
 
+PARTICLEINTERACTION::SPHSurfaceTension::~SPHSurfaceTension() = default;
+
 void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 {
+  // init interface viscosity handler
+  InitInterfaceViscosityHandler();
+
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
 
@@ -74,6 +80,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::SPHKernelBase> kernel,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
+    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
@@ -90,6 +97,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
+
+  // setup interface viscosity handler
+  if (interfaceviscosity_)
+    interfaceviscosity_->Setup(
+        particleengineinterface, kernel, particlematerial, equationofstatebundle, neighborpairs);
 
   // safety check
   for (const auto& type_i : fluidtypes_)
@@ -192,6 +204,20 @@ void PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution()
 
   // compute temperature gradient driven contribution
   if (alphaT_ != 0.0) ComputeTempGradDrivenContribution();
+
+  // compute interface viscosity contribution
+  if (interfaceviscosity_) interfaceviscosity_->ComputeInterfaceViscosityContribution();
+}
+
+void PARTICLEINTERACTION::SPHSurfaceTension::InitInterfaceViscosityHandler()
+{
+  // create interface viscosity handler
+  if (DRT::INPUT::IntegralValue<int>(params_sph_, "INTERFACE_VISCOSITY"))
+    interfaceviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHInterfaceViscosity>(
+        new PARTICLEINTERACTION::SPHInterfaceViscosity(params_sph_));
+
+  // init interface viscosity handler
+  if (interfaceviscosity_) interfaceviscosity_->Init();
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
