@@ -11,14 +11,10 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_surface_tension_recoilpressure_evaporation.H"
 
-#include "particle_interaction_material_handler.H"
-
 #include "particle_interaction_utils.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
-
-#include "../drt_lib/drt_dserror.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
