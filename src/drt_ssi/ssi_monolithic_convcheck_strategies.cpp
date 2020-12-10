@@ -40,43 +40,42 @@ SSI::SSIMono::ConvCheckStrategyBase::ConvCheckStrategyBase(
 /*-----------------------------------------------------------------------*
  | check termination criterion for Newton-Raphson iteration   fang 11/17 |
  *-----------------------------------------------------------------------*/
-bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
-    const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
-    ) const
+bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const
 {
   // initialize exit flag
   bool exit(false);
 
   //! compute L2 norm of scalar transport state vector
   double scatradofnorm(0.);
-  timint.ScaTraField()->Phinp()->Norm2(&scatradofnorm);
+  ssi_mono.ScaTraField()->Phinp()->Norm2(&scatradofnorm);
 
   //! compute L2 norm of scalar transport increment vector
   double scatraincnorm(0.);
-  timint.MapsSubProblems()
-      ->ExtractVector(timint.increment_, timint.GetProblemPosition(Subproblem::scalar_transport))
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(
+          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
       ->Norm2(&scatraincnorm);
 
   //! compute L2 norm of scalar transport residual vector
   double scatraresnorm(0.);
-  timint.MapsSubProblems()
-      ->ExtractVector(timint.residual_, timint.GetProblemPosition(Subproblem::scalar_transport))
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
       ->Norm2(&scatraresnorm);
 
   //! compute L2 norm of structural state vector
   double structuredofnorm(0.);
-  timint.StructureField()->Dispnp()->Norm2(&structuredofnorm);
+  ssi_mono.StructureField()->Dispnp()->Norm2(&structuredofnorm);
 
   //! compute L2 norm of structural residual vector
   double structureresnorm(0.);
-  timint.MapsSubProblems()
-      ->ExtractVector(timint.residual_, timint.GetProblemPosition(Subproblem::structure))
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureresnorm);
 
   //! compute L2 norm of structural increment vector
   double structureincnorm(0.);
-  timint.MapsSubProblems()
-      ->ExtractVector(timint.increment_, timint.GetProblemPosition(Subproblem::structure))
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureincnorm);
 
   // safety checks
@@ -92,9 +91,9 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
   if (structuredofnorm < 1.e-10) structuredofnorm = 1.e-10;
 
   // first Newton-Raphson iteration
-  if (timint.IterationCount() == 1)
+  if (ssi_mono.IterationCount() == 1)
   {
-    if (timint.Comm().MyPID() == 0)
+    if (ssi_mono.Comm().MyPID() == 0)
     {
       // print header of convergence table to screen
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -106,14 +105,14 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
       // print first line of convergence table to screen
       // solution increment not yet available during first Newton-Raphson iteration
-      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << scatraresnorm << "   |      --      | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << structureresnorm
                 << "   |      --      | "
                 << "(       --      , te = " << std::setw(10) << std::setprecision(3)
-                << timint.dtele_ << ")" << std::endl;
+                << ssi_mono.dtele_ << ")" << std::endl;
     }
   }
 
@@ -121,9 +120,9 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
   else
   {
     // print current line of convergence table to screen
-    if (timint.Comm().MyPID() == 0)
+    if (ssi_mono.Comm().MyPID() == 0)
     {
-      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << scatraresnorm << "   | " << std::setw(10)
@@ -131,8 +130,8 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
                 << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << structureresnorm << "   | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << structureincnorm / structuredofnorm
-                << "   | (ts = " << std::setw(10) << std::setprecision(3) << timint.dtsolve_
-                << ", te = " << std::setw(10) << std::setprecision(3) << timint.dtele_ << ")"
+                << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtsolve_
+                << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtele_ << ")"
                 << std::endl;
     }
 
@@ -150,9 +149,9 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (timint.IterationCount() == itermax_)
+  if (ssi_mono.IterationCount() == itermax_)
   {
-    if (timint.Comm().MyPID() == 0)
+    if (ssi_mono.Comm().MyPID() == 0)
     {
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
                    "--------------+"
@@ -166,7 +165,7 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
   }
 
   // print finish line of convergence table to screen
-  if (exit and timint.Comm().MyPID() == 0)
+  if (exit and ssi_mono.Comm().MyPID() == 0)
   {
     std::cout << "+------------+-------------------+--------------+--------------+--------------+--"
                  "------------+"
@@ -174,77 +173,77 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(
   }
 
   return exit;
-}  // SSI::SSI_Mono::ConvCheckStrategyStd::ExitNewtonRaphson
+}
 
 
 /*----------------------------------------------------------------------*
  | perform convergence check for Newton-Raphson iteration    fang 11/17 |
  *----------------------------------------------------------------------*/
-bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& timint) const
+bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const
 {
   // initialize exit flag
   bool exit(false);
 
   //! compute L2 norm of concentration state vector
   double concdofnorm(0.);
-  timint.ScaTraField()
+  ssi_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.ScaTraField()->Phinp())
+      ->ExtractOtherVector(ssi_mono.ScaTraField()->Phinp())
       ->Norm2(&concdofnorm);
 
   //! compute L2 norm of concentration increment vector
   double concincnorm(0.);
-  timint.ScaTraField()
+  ssi_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(
-          timint.increment_, timint.GetProblemPosition(Subproblem::scalar_transport)))
+      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concincnorm);
 
   //! compute L2 norm of concentration residual vector
   double concresnorm(0.);
-  timint.ScaTraField()
+  ssi_mono.ScaTraField()
       ->Splitter()
-      ->ExtractOtherVector(timint.MapsSubProblems()->ExtractVector(
-          timint.residual_, timint.GetProblemPosition(Subproblem::scalar_transport)))
+      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&concresnorm);
 
   //! compute L2 norm of potential state vector
   double potdofnorm(0.);
-  timint.ScaTraField()
+  ssi_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.ScaTraField()->Phinp())
+      ->ExtractCondVector(ssi_mono.ScaTraField()->Phinp())
       ->Norm2(&potdofnorm);
 
   //! compute L2 norm of potential increment vector
   double potincnorm(0.);
-  timint.ScaTraField()
+  ssi_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(
-          timint.increment_, timint.GetProblemPosition(Subproblem::scalar_transport)))
+      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potincnorm);
 
   //! compute L2 norm of potential residual vector
   double potresnorm(0.);
-  timint.ScaTraField()
+  ssi_mono.ScaTraField()
       ->Splitter()
-      ->ExtractCondVector(timint.MapsSubProblems()->ExtractVector(
-          timint.residual_, timint.GetProblemPosition(Subproblem::scalar_transport)))
+      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&potresnorm);
 
   //! compute L2 norm of structural state vector
   double structuredofnorm(0.);
-  timint.StructureField()->Dispnp()->Norm2(&structuredofnorm);
+  ssi_mono.StructureField()->Dispnp()->Norm2(&structuredofnorm);
 
   //! compute L2 norm of structural residual vector
   double structureresnorm(0.);
-  timint.MapsSubProblems()
-      ->ExtractVector(timint.residual_, timint.GetProblemPosition(Subproblem::structure))
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureresnorm);
 
   //! compute L2 norm of structural increment vector
   double structureincnorm(0.);
-  timint.MapsSubProblems()
-      ->ExtractVector(timint.increment_, timint.GetProblemPosition(Subproblem::structure))
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::structure))
       ->Norm2(&structureincnorm);
 
   // safety checks
@@ -263,9 +262,9 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
   if (structuredofnorm < 1.e-10) structuredofnorm = 1.e-10;
 
   // first Newton-Raphson iteration
-  if (timint.IterationCount() == 1)
+  if (ssi_mono.IterationCount() == 1)
   {
-    if (timint.Comm().MyPID() == 0)
+    if (ssi_mono.Comm().MyPID() == 0)
     {
       // print header of convergence table to screen
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
@@ -277,7 +276,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
 
       // print first line of convergence table to screen
       // solution increment not yet available during first Newton-Raphson iteration
-      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << concresnorm << "   |      --      | " << std::setw(10)
@@ -285,7 +284,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
                 << std::setw(10) << std::setprecision(3) << std::scientific << structureresnorm
                 << "   |      --      | "
                 << "(       --      , te = " << std::setw(10) << std::setprecision(3)
-                << timint.dtele_ << ")" << std::endl;
+                << ssi_mono.dtele_ << ")" << std::endl;
     }
   }
 
@@ -293,9 +292,9 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
   else
   {
     // print current line of convergence table to screen
-    if (timint.Comm().MyPID() == 0)
+    if (ssi_mono.Comm().MyPID() == 0)
     {
-      std::cout << "|  " << std::setw(3) << timint.IterationCount() << "/" << std::setw(3)
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << concresnorm << "   | " << std::setw(10)
@@ -305,8 +304,8 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
                 << potincnorm / potdofnorm << "   | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << structureresnorm << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << structureincnorm / structuredofnorm
-                << "   | (ts = " << std::setw(10) << std::setprecision(3) << timint.dtsolve_
-                << ", te = " << std::setw(10) << std::setprecision(3) << timint.dtele_ << ")"
+                << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtsolve_
+                << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtele_ << ")"
                 << std::endl;
     }
 
@@ -324,9 +323,10 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (timint.IterationCount() == itermax_)
+
+  if (ssi_mono.IterationCount() == itermax_)
   {
-    if (timint.Comm().MyPID() == 0)
+    if (ssi_mono.Comm().MyPID() == 0)
     {
       std::cout << "+------------+-------------------+--------------+--------------+--------------+"
                    "--------------+--------------+--------------+"
@@ -341,7 +341,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
   }
 
   // print finish line of convergence table to screen
-  if (exit and timint.Comm().MyPID() == 0)
+  if (exit and ssi_mono.Comm().MyPID() == 0)
   {
     std::cout << "+------------+-------------------+--------------+--------------+--------------+--"
                  "------------+--------------+--------------+"
@@ -349,4 +349,4 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
   }
 
   return exit;
-}  // SSI::SSI_Mono::ConvCheckStrategyElch::ExitNewtonRaphson
+}
