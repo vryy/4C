@@ -50,8 +50,8 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
-    //! add evaporation induced recoil pressure contribution to acceleration field
-    void AddAccelerationContribution() const;
+    //! compute evaporation induced recoil pressure contribution
+    void ComputeRecoilPressureContribution() const;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list

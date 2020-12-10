@@ -35,6 +35,7 @@ namespace PARTICLEINTERACTION
   class SPHEquationOfStateBundle;
   class SPHNeighborPairs;
   class SPHInterfaceViscosity;
+  class SPHRecoilPressureEvaporation;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -87,6 +88,9 @@ namespace PARTICLEINTERACTION
     //! init interface viscosity handler
     void InitInterfaceViscosityHandler();
 
+    //! init evaporation induced recoil pressure handler
+    void InitRecoilPressureEvaporationHandler();
+
     //! compute colorfield gradient
     void ComputeColorfieldGradient() const;
 
@@ -131,6 +135,9 @@ namespace PARTICLEINTERACTION
 
     //! interface viscosity handler
     std::unique_ptr<PARTICLEINTERACTION::SPHInterfaceViscosity> interfaceviscosity_;
+
+    //! evaporation induced recoil pressure handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation> recoilpressureevaporation_;
 
     //! liquid particle type
     PARTICLEENGINE::TypeEnum liquidtype_;

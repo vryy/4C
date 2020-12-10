@@ -9,7 +9,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_sph_recoilpressure_evaporation.H"
+#include "particle_interaction_sph_surface_tension_recoilpressure_evaporation.H"
 
 #include "particle_interaction_material_handler.H"
 
@@ -19,8 +19,6 @@
 #include "../drt_particle_engine/particle_container.H"
 
 #include "../drt_lib/drt_dserror.H"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -54,11 +52,8 @@ void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
 }
 
-void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::AddAccelerationContribution() const
+void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::ComputeRecoilPressureContribution() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHRecoilPressureEvaporation::AddAccelerationContribution");
-
   // get container of owned particles of evaporating phase
   PARTICLEENGINE::ParticleContainer* container_i =
       particlecontainerbundle_->GetSpecificContainer(evaporatingphase_, PARTICLEENGINE::Owned);
