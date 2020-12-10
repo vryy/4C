@@ -36,6 +36,7 @@ namespace PARTICLEINTERACTION
   class SPHNeighborPairs;
   class SPHInterfaceViscosity;
   class SPHRecoilPressureEvaporation;
+  class SPHBarrierForce;
 }  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
@@ -91,6 +92,9 @@ namespace PARTICLEINTERACTION
     //! init evaporation induced recoil pressure handler
     void InitRecoilPressureEvaporationHandler();
 
+    //! init barrier force handler
+    void InitBarrierForceHandler();
+
     //! compute colorfield gradient
     void ComputeColorfieldGradient() const;
 
@@ -138,6 +142,9 @@ namespace PARTICLEINTERACTION
 
     //! evaporation induced recoil pressure handler
     std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation> recoilpressureevaporation_;
+
+    //! barrier force handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHBarrierForce> barrierforce_;
 
     //! liquid particle type
     PARTICLEENGINE::TypeEnum liquidtype_;

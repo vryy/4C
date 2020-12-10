@@ -294,6 +294,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   BoolParameter("INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
   DoubleParameter("INTERFACE_VISCOSITY_VALUE", 0.0, "interface viscosity value", &particledynsph);
 
+  // barrier force
+  BoolParameter("BARRIER_FORCE", "no", "evaluate barrier force", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_DISTANCE", 0.0, "barrier force distance", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_STIFF", -1.0, "barrier force stiffness", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_DAMP", 0.0, "barrier force damping parameter", &particledynsph);
+
   // type of dirichlet open boundary
   setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",
       "type of dirichlet open boundary",
