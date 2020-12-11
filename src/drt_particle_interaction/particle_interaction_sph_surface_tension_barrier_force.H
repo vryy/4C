@@ -44,7 +44,7 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHBarrierForce(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHBarrierForce() = default;
 
     //! init barrier force handler

@@ -40,7 +40,7 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHRecoilPressureEvaporation(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
+    //! destructor
     ~SPHRecoilPressureEvaporation() = default;
 
     //! init evaporation induced recoil pressure handler
