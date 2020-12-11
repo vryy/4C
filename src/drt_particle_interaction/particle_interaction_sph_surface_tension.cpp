@@ -17,6 +17,7 @@
 #include "particle_interaction_sph_neighbor_pairs.H"
 #include "particle_interaction_sph_surface_tension_interface_viscosity.H"
 #include "particle_interaction_sph_surface_tension_recoilpressure_evaporation.H"
+#include "particle_interaction_sph_surface_tension_barrier_force.H"
 
 #include "particle_interaction_utils.H"
 
@@ -56,6 +57,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 
   // init evaporation induced recoil pressure handler
   InitRecoilPressureEvaporationHandler();
+
+  // init barrier force handler
+  InitBarrierForceHandler();
 
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
@@ -109,6 +113,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Setup(
 
   // setup evaporation induced recoil pressure handler
   if (recoilpressureevaporation_) recoilpressureevaporation_->Setup(particleengineinterface);
+
+  // setup barrier force handler
+  if (barrierforce_) barrierforce_->Setup(particleengineinterface, neighborpairs);
 
   // safety check
   for (const auto& type_i : fluidtypes_)
@@ -217,6 +224,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::AddAccelerationContribution()
 
   // compute evaporation induced recoil pressure contribution
   if (recoilpressureevaporation_) recoilpressureevaporation_->ComputeRecoilPressureContribution();
+
+  // compute barrier force contribution
+  if (barrierforce_) barrierforce_->ComputeBarrierForceContribution();
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTension::InitInterfaceViscosityHandler()
@@ -232,12 +242,24 @@ void PARTICLEINTERACTION::SPHSurfaceTension::InitInterfaceViscosityHandler()
 
 void PARTICLEINTERACTION::SPHSurfaceTension::InitRecoilPressureEvaporationHandler()
 {
+  // create evaporation induced recoil pressure handler
   if (DRT::INPUT::IntegralValue<int>(params_sph_, "VAPOR_RECOIL"))
     recoilpressureevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHRecoilPressureEvaporation>(
         new PARTICLEINTERACTION::SPHRecoilPressureEvaporation(params_sph_));
 
   // init evaporation induced recoil pressure handler
   if (recoilpressureevaporation_) recoilpressureevaporation_->Init();
+}
+
+void PARTICLEINTERACTION::SPHSurfaceTension::InitBarrierForceHandler()
+{
+  // create barrier force handler
+  if (DRT::INPUT::IntegralValue<int>(params_sph_, "BARRIER_FORCE"))
+    barrierforce_ = std::unique_ptr<PARTICLEINTERACTION::SPHBarrierForce>(
+        new PARTICLEINTERACTION::SPHBarrierForce(params_sph_));
+
+  // init barrier force handler
+  if (barrierforce_) barrierforce_->Init();
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const

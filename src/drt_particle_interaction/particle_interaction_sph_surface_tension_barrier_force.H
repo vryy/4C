@@ -1,7 +1,6 @@
 /*---------------------------------------------------------------------------*/
 /*! \file
-\brief evaporation induced recoil pressure handler for smoothed particle hydrodynamics (SPH)
-       interactions
+\brief barrier force handler for smoothed particle hydrodynamics (SPH) interactions
 \level 3
 */
 /*---------------------------------------------------------------------------*/
@@ -9,8 +8,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_SURFACE_TENSION_RECOILPRESSURE_EVAPORATION_H
-#define PARTICLE_INTERACTION_SPH_SURFACE_TENSION_RECOILPRESSURE_EVAPORATION_H
+#ifndef PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_H
+#define PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
@@ -29,31 +28,43 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
+namespace PARTICLEINTERACTION
+{
+  class SPHNeighborPairs;
+}
+
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
 namespace PARTICLEINTERACTION
 {
-  class SPHRecoilPressureEvaporation
+  class SPHBarrierForce
   {
    public:
     //! constructor
-    explicit SPHRecoilPressureEvaporation(const Teuchos::ParameterList& params);
+    explicit SPHBarrierForce(const Teuchos::ParameterList& params);
 
     //! destructor
-    ~SPHRecoilPressureEvaporation() = default;
+    ~SPHBarrierForce() = default;
 
-    //! init evaporation induced recoil pressure handler
+    //! init barrier force handler
     void Init();
 
-    //! setup evaporation induced recoil pressure handler
+    //! setup barrier force handler
     void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
+        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
-    //! compute evaporation induced recoil pressure contribution
-    void ComputeRecoilPressureContribution() const;
+    //! compute barrier force contribution
+    void ComputeBarrierForceContribution() const;
 
    protected:
+    //! compute barrier force contribution (particle contribution)
+    void ComputeBarrierForceParticleContribution() const;
+
+    //! compute barrier force contribution (particle-boundary contribution)
+    void ComputeBarrierForceParticleBoundaryContribution() const;
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
@@ -63,17 +74,29 @@ namespace PARTICLEINTERACTION
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
-    //! evaporating phase
-    PARTICLEENGINE::TypeEnum evaporatingphase_;
+    //! neighbor pair handler
+    std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
 
-    //! boiling temperature in recoil pressure formula
-    double recoilboilingtemp_;
+    //! liquid particle type
+    PARTICLEENGINE::TypeEnum liquidtype_;
 
-    //! pressure factor in recoil pressure formula
-    double recoil_pfac_;
+    //! gas particle type
+    PARTICLEENGINE::TypeEnum gastype_;
 
-    //! temperature factor in recoil pressure formula
-    double recoil_tfac_;
+    //! set of fluid particle types
+    std::set<PARTICLEENGINE::TypeEnum> fluidtypes_;
+
+    //! set of boundary particle types
+    std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
+
+    //! barrier force distance
+    const double dist_;
+
+    //! barrier force stiffness
+    const double stiff_;
+
+    //! barrier force damping parameter
+    const double damp_;
   };
 
 }  // namespace PARTICLEINTERACTION
