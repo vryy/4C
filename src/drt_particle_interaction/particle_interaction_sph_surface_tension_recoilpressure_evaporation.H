@@ -9,8 +9,8 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-#ifndef PARTICLE_INTERACTION_SPH_RECOILPRESSURE_EVAPORATION_H
-#define PARTICLE_INTERACTION_SPH_RECOILPRESSURE_EVAPORATION_H
+#ifndef PARTICLE_INTERACTION_SPH_SURFACE_TENSION_RECOILPRESSURE_EVAPORATION_H
+#define PARTICLE_INTERACTION_SPH_SURFACE_TENSION_RECOILPRESSURE_EVAPORATION_H
 
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
@@ -50,8 +50,8 @@ namespace PARTICLEINTERACTION
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface);
 
-    //! add evaporation induced recoil pressure contribution to acceleration field
-    void AddAccelerationContribution() const;
+    //! compute evaporation induced recoil pressure contribution
+    void ComputeRecoilPressureContribution() const;
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list

@@ -9,18 +9,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "particle_interaction_sph_recoilpressure_evaporation.H"
-
-#include "particle_interaction_material_handler.H"
+#include "particle_interaction_sph_surface_tension_recoilpressure_evaporation.H"
 
 #include "particle_interaction_utils.H"
 
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
-
-#include "../drt_lib/drt_dserror.H"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
@@ -38,10 +32,7 @@ PARTICLEINTERACTION::SPHRecoilPressureEvaporation::SPHRecoilPressureEvaporation(
 
 void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Init()
 {
-  // safety check
-  if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::SurfaceTensionFormulation>(
-          params_sph_, "SURFACETENSIONFORMULATION") == INPAR::PARTICLE::NoSurfaceTension)
-    dserror("surface tension evaluation needed for evaporation induced recoil pressure!");
+  // nothing to do
 }
 
 void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
@@ -54,11 +45,8 @@ void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::Setup(
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
 }
 
-void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::AddAccelerationContribution() const
+void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::ComputeRecoilPressureContribution() const
 {
-  TEUCHOS_FUNC_TIME_MONITOR(
-      "PARTICLEINTERACTION::SPHRecoilPressureEvaporation::AddAccelerationContribution");
-
   // get container of owned particles of evaporating phase
   PARTICLEENGINE::ParticleContainer* container_i =
       particlecontainerbundle_->GetSpecificContainer(evaporatingphase_, PARTICLEENGINE::Owned);
