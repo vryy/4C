@@ -187,6 +187,12 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(n_ref[1], n[1], 1.0e-14);
     TS_ASSERT_DELTA(n_ref[2], n[2], 1.0e-14);
   }
+
+  void test_lintrans_lower() { TS_ASSERT_DELTA(UTILS::lintrans(0.5, 1.2, 3.8), 0.0, 1.0e-14); }
+
+  void test_lintrans_in() { TS_ASSERT_DELTA(UTILS::lintrans(2.24, 1.2, 3.8), 0.4, 1.0e-14); }
+
+  void test_lintrans_upper() { TS_ASSERT_DELTA(UTILS::lintrans(4.0, 1.2, 3.8), 1.0, 1.0e-14); }
 };
 
 /*---------------------------------------------------------------------------*/
