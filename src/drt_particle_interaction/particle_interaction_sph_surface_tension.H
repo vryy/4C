@@ -101,11 +101,8 @@ namespace PARTICLEINTERACTION
     //! compute interface normal
     void ComputeInterfaceNormal() const;
 
-    //! compute unit wall normal
-    void ComputeUnitWallNormal() const;
-
-    //! compute wall distance
-    void ComputeWallDistance() const;
+    //! compute wall colorfield and wall interface normal
+    void ComputeWallColorfieldAndWallInterfaceNormal() const;
 
     //! correct normal vector of particles close to triple point
     void CorrectTriplePointNormal() const;

@@ -217,6 +217,33 @@ namespace PARTICLEINTERACTION
 
     //@}
 
+    //! @name methods for linear transition in a given interval
+    //@{
+
+    /**
+     *  \brief linear transition function
+     */
+    inline double lintrans(const double x, const double x1, const double x2)
+    {
+#ifdef DEBUG
+      if (not(std::abs(x2 - x1) > 1.0e-14)) dserror("danger of division by zero!");
+#endif
+
+      if (x < x1) return 0.0;
+      if (x > x2) return 1.0;
+      return (x - x1) / (x2 - x1);
+    }
+
+    /**
+     *  \brief complementary linear transition function
+     */
+    inline double complintrans(const double x, const double x1, const double x2)
+    {
+      return 1.0 - lintrans(x, x1, x2);
+    }
+
+    //@}
+
   }  // namespace UTILS
 
 }  // namespace PARTICLEINTERACTION

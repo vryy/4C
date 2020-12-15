@@ -33,7 +33,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::BoundaryPressure:
     case PARTICLEENGINE::Colorfield:
     case PARTICLEENGINE::Curvature:
-    case PARTICLEENGINE::WallDistance:
+    case PARTICLEENGINE::WallColorfield:
       dim = 1;
       break;
 
@@ -50,7 +50,7 @@ int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& sta
     case PARTICLEENGINE::BoundaryVelocity:
     case PARTICLEENGINE::ColorfieldGradient:
     case PARTICLEENGINE::InterfaceNormal:
-    case PARTICLEENGINE::UnitWallNormal:
+    case PARTICLEENGINE::WallInterfaceNormal:
     case PARTICLEENGINE::TemperatureGradient:
     case PARTICLEENGINE::AngularVelocity:
     case PARTICLEENGINE::AngularAcceleration:
@@ -162,14 +162,14 @@ std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleS
     case PARTICLEENGINE::InterfaceNormal:
       name = "interface normal";
       break;
-    case PARTICLEENGINE::UnitWallNormal:
-      name = "unit wall normal";
-      break;
     case PARTICLEENGINE::Curvature:
       name = "curvature";
       break;
-    case PARTICLEENGINE::WallDistance:
-      name = "wall distance";
+    case PARTICLEENGINE::WallColorfield:
+      name = "wall colorfield";
+      break;
+    case PARTICLEENGINE::WallInterfaceNormal:
+      name = "wall interface normal";
       break;
     case PARTICLEENGINE::TemperatureGradient:
       name = "temperature gradient";
