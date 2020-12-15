@@ -306,12 +306,12 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    double* colorfieldgrad_i =
+    double* cfg_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
 
     const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
     const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-    double* colorfieldgrad_j =
+    double* cfg_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
 
     // (current) volume of particle i and j
@@ -321,13 +321,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
     const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (dens_i[0] + dens_j[0]);
 
     // sum contribution of neighboring particle j
-    UTILS::vec_addscale(
-        colorfieldgrad_i, dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
+    UTILS::vec_addscale(cfg_i, dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(
-          colorfieldgrad_j, -dens_j[0] / V_j * fac * particlepair.dWdrji_, particlepair.e_ij_);
+      UTILS::vec_addscale(cfg_j, -dens_j[0] / V_j * fac * particlepair.dWdrji_, particlepair.e_ij_);
   }
 
   // iterate over fluid particle types
@@ -342,14 +340,14 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeColorfieldGradient() const
     {
       // get pointer to particle state
       const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      double* colorfieldgrad_i =
+      double* cfg_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
 
       // norm of colorfield gradient
-      const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
+      const double cfg_i_norm = UTILS::vec_norm2(cfg_i);
 
       // clear colorfield gradient
-      if (not(colorfieldgrad_i_norm > (1.0e-10 * rad_i[0]))) UTILS::vec_clear(colorfieldgrad_i);
+      if (not(cfg_i_norm > (1.0e-10 * rad_i[0]))) UTILS::vec_clear(cfg_i);
     }
   }
 }
@@ -371,17 +369,16 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceNormal() const
     {
       // get pointer to particle states
       const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      const double* colorfieldgrad_i =
+      const double* cfg_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      double* interfacenormal_i =
+      double* ifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
       // norm of colorfield gradient
-      const double colorfieldgrad_i_norm = UTILS::vec_norm2(colorfieldgrad_i);
+      const double cfg_i_norm = UTILS::vec_norm2(cfg_i);
 
       // set interface normal
-      if (colorfieldgrad_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(interfacenormal_i, 1.0 / colorfieldgrad_i_norm, colorfieldgrad_i);
+      if (cfg_i_norm > (1.0e-10 * rad_i[0])) UTILS::vec_setscale(ifn_i, 1.0 / cfg_i_norm, cfg_i);
     }
   }
 }
@@ -442,9 +439,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
       const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
       const double* dens_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      double* wallcolorfield_i =
+      double* wallcf_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::WallColorfield, particle_i);
-      double* wallinterfacenormal_i =
+      double* wallifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
 
       const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
@@ -459,8 +456,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
                          (V_i * (dens_i[0] + material_j->initDensity_));
 
       // sum contribution of neighboring boundary particle j
-      wallcolorfield_i[0] += fac * particlepair.Wij_;
-      UTILS::vec_addscale(wallinterfacenormal_i, fac * particlepair.dWdrij_, particlepair.e_ij_);
+      wallcf_i[0] += fac * particlepair.Wij_;
+      UTILS::vec_addscale(wallifn_i, fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring boundary particle i
@@ -474,9 +471,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
       const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
       const double* dens_j =
           container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      double* wallcolorfield_j =
+      double* wallcf_j =
           container_j->GetPtrToParticleState(PARTICLEENGINE::WallColorfield, particle_j);
-      double* wallinterfacenormal_j =
+      double* wallifn_j =
           container_j->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_j);
 
       const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
@@ -491,8 +488,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
                          (V_j * (material_i->initDensity_ + dens_j[0]));
 
       // sum contribution of neighboring boundary particle i
-      wallcolorfield_j[0] += fac * particlepair.Wji_;
-      UTILS::vec_addscale(wallinterfacenormal_j, -fac * particlepair.dWdrji_, particlepair.e_ij_);
+      wallcf_j[0] += fac * particlepair.Wji_;
+      UTILS::vec_addscale(wallifn_j, -fac * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
@@ -508,17 +505,17 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
     {
       // get pointer to particle state
       const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      double* wallinterfacenormal_i =
+      double* wallifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
 
       // norm of wall interface normal
-      const double wallnormal_i_norm = UTILS::vec_norm2(wallinterfacenormal_i);
+      const double wallifn_i_norm = UTILS::vec_norm2(wallifn_i);
 
       // scale or clear wall interface normal
-      if (wallnormal_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(wallinterfacenormal_i, 1.0 / wallnormal_i_norm, wallinterfacenormal_i);
+      if (wallifn_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(wallifn_i, 1.0 / wallifn_i_norm, wallifn_i);
       else
-        UTILS::vec_clear(wallinterfacenormal_i);
+        UTILS::vec_clear(wallifn_i);
     }
   }
 }
@@ -544,56 +541,54 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
     {
       // get pointer to particle states
       const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      const double* wallinterfacenormal_i =
+      const double* wallifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
-      const double* wallcolorfield_i =
+      const double* wallcf_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::WallColorfield, particle_i);
-      double* interfacenormal_i =
+      double* ifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
       // evaluation only for non-zero wall interface normal
-      if (not(UTILS::vec_norm2(wallinterfacenormal_i) > 0.0)) continue;
+      if (not(UTILS::vec_norm2(wallifn_i) > 0.0)) continue;
 
       // evaluation only for non-zero interface normal
-      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+      if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // determine correction factor
-      double f_i = UTILS::complintrans(wallcolorfield_i[0], 0.0, 0.2);
+      double f_i = UTILS::complintrans(wallcf_i[0], 0.0, 0.2);
 
       // determine wall interface tangential
-      double wallinterfacetangential_i[3];
-      UTILS::vec_set(wallinterfacetangential_i, interfacenormal_i);
-      UTILS::vec_addscale(wallinterfacetangential_i,
-          -UTILS::vec_dot(interfacenormal_i, wallinterfacenormal_i), wallinterfacenormal_i);
+      double wallift_i[3];
+      UTILS::vec_set(wallift_i, ifn_i);
+      UTILS::vec_addscale(wallift_i, -UTILS::vec_dot(ifn_i, wallifn_i), wallifn_i);
 
       // norm of wall interface tangential
-      const double walltangential_i_norm = UTILS::vec_norm2(wallinterfacetangential_i);
+      const double wallift_i_norm = UTILS::vec_norm2(wallift_i);
 
       // scale or clear wall interface tangential
-      if (walltangential_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(
-            wallinterfacetangential_i, 1.0 / walltangential_i_norm, wallinterfacetangential_i);
+      if (wallift_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(wallift_i, 1.0 / wallift_i_norm, wallift_i);
       else
-        UTILS::vec_clear(wallinterfacetangential_i);
+        UTILS::vec_clear(wallift_i);
 
       // determine triple point normal
-      double triplepointnormal_i[3];
-      UTILS::vec_setscale(triplepointnormal_i, std::sin(theta_0), wallinterfacetangential_i);
-      UTILS::vec_addscale(triplepointnormal_i, -std::cos(theta_0), wallinterfacenormal_i);
+      double tpn_i[3];
+      UTILS::vec_setscale(tpn_i, std::sin(theta_0), wallift_i);
+      UTILS::vec_addscale(tpn_i, -std::cos(theta_0), wallifn_i);
 
-      // determine corrected normal
-      double correctednormal_i[3];
-      UTILS::vec_setscale(correctednormal_i, f_i, interfacenormal_i);
-      UTILS::vec_addscale(correctednormal_i, (1.0 - f_i), triplepointnormal_i);
+      // determine corrected interface normal
+      double corifn_i[3];
+      UTILS::vec_setscale(corifn_i, f_i, ifn_i);
+      UTILS::vec_addscale(corifn_i, (1.0 - f_i), tpn_i);
 
-      // norm of corrected normal
-      const double correctednormal_i_norm = UTILS::vec_norm2(correctednormal_i);
+      // norm of corrected interface normal
+      const double corifn_i_norm = UTILS::vec_norm2(corifn_i);
 
       // scale or clear interface normal
-      if (correctednormal_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(interfacenormal_i, 1.0 / correctednormal_i_norm, correctednormal_i);
+      if (corifn_i_norm > (1.0e-10 * rad_i[0]))
+        UTILS::vec_setscale(ifn_i, 1.0 / corifn_i_norm, corifn_i);
       else
-        UTILS::vec_clear(interfacenormal_i);
+        UTILS::vec_clear(ifn_i);
     }
   }
 }
@@ -631,11 +626,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
       const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
       const double* dens_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      const double* interfacenormal_i =
+      const double* ifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
       // evaluation only for non-zero interface normal
-      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+      if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
@@ -676,25 +671,23 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    const double* interfacenormal_i =
+    const double* ifn_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
     const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
     const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-    const double* interfacenormal_j =
+    const double* ifn_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_j);
 
     // evaluation only for non-zero interface normals
-    if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0) or
-        not(UTILS::vec_norm2(interfacenormal_j) > 0.0))
-      continue;
+    if (not(UTILS::vec_norm2(ifn_i) > 0.0) or not(UTILS::vec_norm2(ifn_j) > 0.0)) continue;
 
     // change sign of interface normal for different particle types
     double signfac = (type_i == type_j) ? 1.0 : -1.0;
 
     double n_ij[3];
-    UTILS::vec_set(n_ij, interfacenormal_i);
-    UTILS::vec_addscale(n_ij, -signfac, interfacenormal_j);
+    UTILS::vec_set(n_ij, ifn_i);
+    UTILS::vec_addscale(n_ij, -signfac, ifn_j);
 
     const double fac = UTILS::vec_dot(n_ij, particlepair.e_ij_);
 
@@ -722,16 +715,15 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* interfacenormal_i =
+      const double* ifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
-      double* curvature_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
+      double* curv_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
 
       // evaluation only for non-zero interface normal
-      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+      if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // compute curvature
-      curvature_i[0] = -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
+      curv_i[0] = -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
     }
   }
 }
@@ -756,11 +748,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
       // get pointer to particle states
       const double* dens_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      const double* curvature_i =
+      const double* curv_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Curvature, particle_i);
-      const double* colorfieldgrad_i =
+      const double* cfg_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      const double* interfacenormal_i =
+      const double* ifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
       double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
@@ -769,7 +761,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
                                               : nullptr;
 
       // evaluation only for non-zero interface normal
-      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+      if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // evaluate surface tension coefficient
       double alpha = alpha0_;
@@ -780,7 +772,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
       }
 
       // add contribution to acceleration
-      UTILS::vec_addscale(acc_i, -timefac * alpha * curvature_i[0] / dens_i[0], colorfieldgrad_i);
+      UTILS::vec_addscale(acc_i, -timefac * alpha * curv_i[0] / dens_i[0], cfg_i);
     }
   }
 }
@@ -808,9 +800,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
       // get pointer to particle states
       const double* dens_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      const double* colorfieldgrad_i =
+      const double* cfg_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-      const double* interfacenormal_i =
+      const double* ifn_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
       const double* temp_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
@@ -819,7 +811,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
       double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
       // evaluation only for non-zero interface normal
-      if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+      if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // no evaluation in the regime of constant surface tension coefficient
       if (temp_i[0] > transitiontemp) continue;
@@ -827,12 +819,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
       // projection of temperature gradient onto tangential plane defined by interface normal
       double tempgrad_i_proj[3];
       UTILS::vec_set(tempgrad_i_proj, tempgrad_i);
-      UTILS::vec_addscale(
-          tempgrad_i_proj, -UTILS::vec_dot(tempgrad_i, interfacenormal_i), interfacenormal_i);
+      UTILS::vec_addscale(tempgrad_i_proj, -UTILS::vec_dot(tempgrad_i, ifn_i), ifn_i);
 
       // add contribution to acceleration
-      UTILS::vec_addscale(acc_i, timefac * alphaT_ * UTILS::vec_norm2(colorfieldgrad_i) / dens_i[0],
-          tempgrad_i_proj);
+      UTILS::vec_addscale(
+          acc_i, timefac * alphaT_ * UTILS::vec_norm2(cfg_i) / dens_i[0], tempgrad_i_proj);
     }
   }
 }

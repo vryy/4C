@@ -89,15 +89,15 @@ void PARTICLEINTERACTION::SPHHeatLossEvaporation::EvaluateEvaporationInducedHeat
     const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
     const double* temp_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
-    const double* colorfieldgrad_i =
+    const double* cfg_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    const double* interfacenormal_i =
+    const double* ifn_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
     double* tempdot_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
 
     // evaluation only for non-zero interface normal
-    if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
+    if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
     // heat loss contribution only for temperature above boiling temperature
     if (not(temp_i[0] > recoilboilingtemp_)) continue;
@@ -114,8 +114,7 @@ void PARTICLEINTERACTION::SPHHeatLossEvaporation::EvaluateEvaporationInducedHeat
         thermomaterial_i->thermalCapacity_ * (temp_i[0] - enthalpyreftemp_);
 
     // add contribution of heat loss
-    tempdot_i[0] -= UTILS::vec_norm2(colorfieldgrad_i) * m_dot_i *
-                    (latentheat_ + specificenthalpy_i) * thermomaterial_i->invThermalCapacity_ /
-                    dens_i[0];
+    tempdot_i[0] -= UTILS::vec_norm2(cfg_i) * m_dot_i * (latentheat_ + specificenthalpy_i) *
+                    thermomaterial_i->invThermalCapacity_ / dens_i[0];
   }
 }
