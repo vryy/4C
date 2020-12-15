@@ -176,7 +176,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::InsertParticleStatesOfParticleTypes
         PARTICLEENGINE::Curvature});
 
     if (haveboundarytypes)
-      particlestates.insert({PARTICLEENGINE::UnitWallNormal, PARTICLEENGINE::WallDistance});
+      particlestates.insert({PARTICLEENGINE::WallColorfield, PARTICLEENGINE::WallInterfaceNormal});
   }
 }
 
@@ -192,11 +192,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceQuantities()
 
   if (not boundarytypes_.empty())
   {
-    // compute unit wall normal
-    ComputeUnitWallNormal();
-
-    // compute wall distance
-    ComputeWallDistance();
+    // compute wall colorfield and wall interface normal
+    ComputeWallColorfieldAndWallInterfaceNormal();
 
     // correct normal vector of particles close to triple point
     CorrectTriplePointNormal();
@@ -389,7 +386,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeInterfaceNormal() const
   }
 }
 
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
+void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfaceNormal() const
 {
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -398,8 +395,11 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
     PARTICLEENGINE::ParticleContainer* container_i =
         particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
 
-    // clear unit wall normal state
-    container_i->ClearState(PARTICLEENGINE::UnitWallNormal);
+    // clear wall colorfield state
+    container_i->ClearState(PARTICLEENGINE::WallColorfield);
+
+    // clear wall interface normal state
+    container_i->ClearState(PARTICLEENGINE::WallInterfaceNormal);
   }
 
   // get relevant particle pair indices
@@ -442,8 +442,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
       const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
       const double* dens_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      double* wallnormal_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
+      double* wallcolorfield_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallColorfield, particle_i);
+      double* wallinterfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
 
       const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
 
@@ -453,12 +455,12 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
       // (initial) volume of boundary particle j
       const double V_j = mass_j[0] / material_j->initDensity_;
 
-      const double fac =
-          (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (dens_i[0] + material_j->initDensity_);
+      const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) * dens_i[0] /
+                         (V_i * (dens_i[0] + material_j->initDensity_));
 
       // sum contribution of neighboring boundary particle j
-      UTILS::vec_addscale(
-          wallnormal_i, dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
+      wallcolorfield_i[0] += fac * particlepair.Wij_;
+      UTILS::vec_addscale(wallinterfacenormal_i, fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring boundary particle i
@@ -472,8 +474,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
       const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
       const double* dens_j =
           container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      double* wallnormal_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
+      double* wallcolorfield_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::WallColorfield, particle_j);
+      double* wallinterfacenormal_j =
+          container_j->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_j);
 
       const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
 
@@ -483,12 +487,12 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
       // (current) volume of particle j
       const double V_j = mass_j[0] / dens_j[0];
 
-      const double fac =
-          (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (material_i->initDensity_ + dens_j[0]);
+      const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) * dens_j[0] /
+                         (V_j * (material_i->initDensity_ + dens_j[0]));
 
       // sum contribution of neighboring boundary particle i
-      UTILS::vec_addscale(
-          wallnormal_j, -dens_j[0] / V_j * fac * particlepair.dWdrij_, particlepair.e_ij_);
+      wallcolorfield_j[0] += fac * particlepair.Wji_;
+      UTILS::vec_addscale(wallinterfacenormal_j, -fac * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
@@ -504,111 +508,23 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeUnitWallNormal() const
     {
       // get pointer to particle state
       const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      double* wallnormal_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
+      double* wallinterfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
 
-      // norm of wall normal
-      const double wallnormal_i_norm = UTILS::vec_norm2(wallnormal_i);
+      // norm of wall interface normal
+      const double wallnormal_i_norm = UTILS::vec_norm2(wallinterfacenormal_i);
 
-      // scale or clear unit wall normal
+      // scale or clear wall interface normal
       if (wallnormal_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(wallnormal_i, 1.0 / wallnormal_i_norm, wallnormal_i);
+        UTILS::vec_setscale(wallinterfacenormal_i, 1.0 / wallnormal_i_norm, wallinterfacenormal_i);
       else
-        UTILS::vec_clear(wallnormal_i);
-    }
-  }
-}
-
-void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallDistance() const
-{
-  // iterate over fluid particle types
-  for (const auto& type_i : fluidtypes_)
-  {
-    // get container of owned particles of current particle type
-    PARTICLEENGINE::ParticleContainer* container_i =
-        particlecontainerbundle_->GetSpecificContainer(type_i, PARTICLEENGINE::Owned);
-
-    // set support radius of particles as initial wall distance
-    container_i->UpdateState(0.0, PARTICLEENGINE::WallDistance, 1.0, PARTICLEENGINE::Radius);
-  }
-
-  // get relevant particle pair indices
-  std::vector<int> relindices;
-  neighborpairs_->GetRelevantParticlePairIndicesForDisjointCombination(
-      boundarytypes_, fluidtypes_, relindices);
-
-  // iterate over relevant particle pairs
-  for (const int particlepairindex : relindices)
-  {
-    const SPHParticlePair& particlepair =
-        neighborpairs_->GetRefToParticlePairData()[particlepairindex];
-
-    // access values of local index tuples of particle i and j
-    PARTICLEENGINE::TypeEnum type_i;
-    PARTICLEENGINE::StatusEnum status_i;
-    int particle_i;
-    std::tie(type_i, status_i, particle_i) = particlepair.tuple_i_;
-
-    PARTICLEENGINE::TypeEnum type_j;
-    PARTICLEENGINE::StatusEnum status_j;
-    int particle_j;
-    std::tie(type_j, status_j, particle_j) = particlepair.tuple_j_;
-
-    // evaluate distance to neighboring boundary particle j
-    if (fluidtypes_.count(type_i))
-    {
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_i =
-          particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
-
-      // get pointer to particle states
-      const double* wallnormal_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
-      double* walldistance_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
-
-      // no interacting boundary particle
-      if (not(UTILS::vec_norm2(wallnormal_i) > 0.0)) continue;
-
-      // distance of particle i to neighboring boundary particle j
-      const double currentwalldistance =
-          -particlepair.absdist_ * UTILS::vec_dot(wallnormal_i, particlepair.e_ij_);
-
-      // update wall distance of particle i
-      walldistance_i[0] = std::min(walldistance_i[0], currentwalldistance);
-    }
-
-    // evaluate distance to neighboring boundary particle i
-    if (fluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
-    {
-      // get container of owned particles of current particle type
-      PARTICLEENGINE::ParticleContainer* container_j =
-          particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
-
-      // get pointer to particle states
-      const double* wallnormal_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_j);
-      double* walldistance_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_j);
-
-      // no interacting boundary particle
-      if (not(UTILS::vec_norm2(wallnormal_j) > 0.0)) continue;
-
-      // distance of particle j to neighboring boundary particle i
-      const double currentwalldistance =
-          particlepair.absdist_ * UTILS::vec_dot(wallnormal_j, particlepair.e_ij_);
-
-      // update wall distance of particle j
-      walldistance_j[0] = std::min(walldistance_j[0], currentwalldistance);
+        UTILS::vec_clear(wallinterfacenormal_i);
     }
   }
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
 {
-  // get initial particle spacing
-  const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
-
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
   {
@@ -628,52 +544,42 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
     {
       // get pointer to particle states
       const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      const double* wallnormal_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::UnitWallNormal, particle_i);
-      const double* walldistance_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::WallDistance, particle_i);
+      const double* wallinterfacenormal_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
+      const double* wallcolorfield_i =
+          container_i->GetPtrToParticleState(PARTICLEENGINE::WallColorfield, particle_i);
       double* interfacenormal_i =
           container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
 
-      // evaluation only for particles close to boundary
-      if (not(walldistance_i[0] < rad_i[0])) continue;
+      // evaluation only for non-zero wall interface normal
+      if (not(UTILS::vec_norm2(wallinterfacenormal_i) > 0.0)) continue;
 
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(interfacenormal_i) > 0.0)) continue;
 
-      // corrected wall distance and maximum correction distance
-      const double dw_i = walldistance_i[0] - initialparticlespacing;
-      const double dmax_i = kernel_->SmoothingLength(rad_i[0]);
-
       // determine correction factor
-      double f_i = 1.0;
-      if (dw_i < 0.0)
-        f_i = 0.0;
-      else if (dw_i < dmax_i)
-        f_i = dw_i / dmax_i;
+      double f_i = UTILS::complintrans(wallcolorfield_i[0], 0.0, 0.2);
 
-      // no correction for current particle i
-      if (f_i == 1.0) continue;
+      // determine wall interface tangential
+      double wallinterfacetangential_i[3];
+      UTILS::vec_set(wallinterfacetangential_i, interfacenormal_i);
+      UTILS::vec_addscale(wallinterfacetangential_i,
+          -UTILS::vec_dot(interfacenormal_i, wallinterfacenormal_i), wallinterfacenormal_i);
 
-      // determine wall tangential
-      double walltangential_i[3];
-      UTILS::vec_set(walltangential_i, interfacenormal_i);
-      UTILS::vec_addscale(
-          walltangential_i, -UTILS::vec_dot(interfacenormal_i, wallnormal_i), wallnormal_i);
+      // norm of wall interface tangential
+      const double walltangential_i_norm = UTILS::vec_norm2(wallinterfacetangential_i);
 
-      // norm of wall tangential
-      const double walltangential_i_norm = UTILS::vec_norm2(walltangential_i);
-
-      // scale or clear unit wall tangential
+      // scale or clear wall interface tangential
       if (walltangential_i_norm > (1.0e-10 * rad_i[0]))
-        UTILS::vec_setscale(walltangential_i, 1.0 / walltangential_i_norm, walltangential_i);
+        UTILS::vec_setscale(
+            wallinterfacetangential_i, 1.0 / walltangential_i_norm, wallinterfacetangential_i);
       else
-        UTILS::vec_clear(walltangential_i);
+        UTILS::vec_clear(wallinterfacetangential_i);
 
       // determine triple point normal
       double triplepointnormal_i[3];
-      UTILS::vec_setscale(triplepointnormal_i, std::sin(theta_0), walltangential_i);
-      UTILS::vec_addscale(triplepointnormal_i, -std::cos(theta_0), wallnormal_i);
+      UTILS::vec_setscale(triplepointnormal_i, std::sin(theta_0), wallinterfacetangential_i);
+      UTILS::vec_addscale(triplepointnormal_i, -std::cos(theta_0), wallinterfacenormal_i);
 
       // determine corrected normal
       double correctednormal_i[3];
@@ -688,10 +594,6 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
         UTILS::vec_setscale(interfacenormal_i, 1.0 / correctednormal_i_norm, correctednormal_i);
       else
         UTILS::vec_clear(interfacenormal_i);
-
-      // overwrite interface normal with scaled corrected normal
-      UTILS::vec_setscale(
-          interfacenormal_i, 1.0 / UTILS::vec_norm2(correctednormal_i), correctednormal_i);
     }
   }
 }

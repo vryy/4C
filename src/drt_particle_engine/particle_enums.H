@@ -68,8 +68,8 @@ namespace PARTICLEENGINE
     ColorfieldGradient,   //!< colorfield gradient
     InterfaceNormal,      //!< interface normal
     Curvature,            //!< curvature
-    UnitWallNormal,       //!< unit wall normal
-    WallDistance,         //!< wall distance
+    WallColorfield,       //!< wall colorfield
+    WallInterfaceNormal,  //!< wall interface normal
     TemperatureGradient,  //!< temperature gradient
     /*---------------------------------------------------------------------------*/
     // particle states for DEM interaction

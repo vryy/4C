@@ -38,8 +38,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
   blackliststates_.insert(
       {PARTICLEENGINE::LastTransferPosition, PARTICLEENGINE::ReferencePosition});
   blackliststates_.insert({PARTICLEENGINE::ModifiedVelocity, PARTICLEENGINE::ModifiedAcceleration});
-  blackliststates_.insert({PARTICLEENGINE::InterfaceNormal, PARTICLEENGINE::UnitWallNormal,
-      PARTICLEENGINE::Curvature, PARTICLEENGINE::WallDistance});
+  blackliststates_.insert({PARTICLEENGINE::InterfaceNormal, PARTICLEENGINE::Curvature,
+      PARTICLEENGINE::WallColorfield, PARTICLEENGINE::WallInterfaceNormal});
   blackliststates_.insert({PARTICLEENGINE::LastIterPosition, PARTICLEENGINE::LastIterVelocity,
       PARTICLEENGINE::LastIterAcceleration, PARTICLEENGINE::LastIterAngularVelocity,
       PARTICLEENGINE::LastIterAngularAcceleration, PARTICLEENGINE::LastIterModifiedAcceleration,
