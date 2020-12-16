@@ -159,7 +159,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
     const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    const double* colorfieldgrad_i =
+    const double* cfg_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
     double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
 
@@ -167,7 +167,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
     const double* dens_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
     const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-    const double* colorfieldgrad_j =
+    const double* cfg_j =
         container_j->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_j);
     double* acc_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_j);
 
@@ -176,8 +176,8 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     const double h_j = (rad_i[0] == rad_j[0]) ? h_i : kernel_->SmoothingLength(rad_j[0]);
 
     // compute scaled artificial viscosity
-    double artvisc_i = UTILS::vec_norm2(colorfieldgrad_i) / h_i * artviscinterface_;
-    double artvisc_j = UTILS::vec_norm2(colorfieldgrad_j) / h_j * artviscinterface_;
+    double artvisc_i = UTILS::vec_norm2(cfg_i) / h_i * artviscinterface_;
+    double artvisc_j = UTILS::vec_norm2(cfg_j) / h_j * artviscinterface_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0 or artvisc_j > 0.0)
@@ -266,7 +266,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
     const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
     const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    const double* colorfieldgrad_i =
+    const double* cfg_i =
         container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
 
     double* acc_i = nullptr;
@@ -288,7 +288,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
     const double h_i = kernel_->SmoothingLength(rad_i[0]);
 
     // compute scaled artificial viscosity
-    double artvisc_i = UTILS::vec_norm2(colorfieldgrad_i) / h_i * artviscinterface_;
+    double artvisc_i = UTILS::vec_norm2(cfg_i) / h_i * artviscinterface_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0)
