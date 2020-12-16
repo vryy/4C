@@ -213,6 +213,9 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
   static LINALG::Matrix<3, 3> iFinM(true);
   inelastic_->EvaluateInverseInelasticDefGrad(defgrad, iFinM);
 
+  // determinante of inelastic deformation gradient
+  const double detFin = 1.0 / iFinM.Determinant();
+
   // static variables of kinetic quantities
   static LINALG::Matrix<6, 1> iCV(true);
   static LINALG::Matrix<6, 1> iCinV(true);
@@ -240,7 +243,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
 
   // evaluate dSdiFin
   EvaluatedSdiFin(gamma, delta, iFinM, iCinCM, iCinV, CiFin9x1, CiFinCe9x1, iCinCiCinV, CiFiniCe9x1,
-      iCV, iFinCeM, dSdiFin);
+      iCV, iFinCeM, detFin, dSdiFin);
 
   // if cmat != NULL, we are evaluating the structural residual and linearizations, so we need to
   // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
@@ -250,7 +253,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
   {
     // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
     // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
-    EvaluateStressCmatIso(iCV, iCinV, iCinCiCinV, gamma, delta, *stress, cmatiso);
+    EvaluateStressCmatIso(iCV, iCinV, iCinCiCinV, gamma, delta, detFin, *stress, cmatiso);
     cmat->Update(1.0, cmatiso, 0.0);
 
     // evaluate additional terms for the elasticity tensor
@@ -289,6 +292,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
     const LINALG::Matrix<6, 1>& iCinCiCinV,  ///< C_{in}^{-1} * C * C_{in}^{-1}
     const LINALG::Matrix<3, 1>& gamma,       ///< Factors for stress calculation
     const LINALG::Matrix<8, 1>& delta,       ///< Factors for elasticity tensor calculation
+    const double detFin,                     ///< determinant of inelastic deformation gradient
     LINALG::Matrix<6, 1>& stress,            ///< Isotropic stress tensor
     LINALG::Matrix<6, 6>& cmatiso) const     ///< Isotropic stiffness matrix
 {
@@ -300,6 +304,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
   stress.Update(gamma(0), iCinV, 1.0);
   stress.Update(gamma(1), iCinCiCinV, 1.0);
   stress.Update(gamma(2), iCV, 1.0);
+  stress.Scale(detFin);
 
   // constitutive tensor
   cmatiso.MultiplyNT(delta(0), iCinV, iCinV, 1.);
@@ -313,6 +318,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
   cmatiso.MultiplyNT(delta(5), iCV, iCV, 1.);
   AddtoCmatHolzapfelProduct(cmatiso, iCV, delta(6));
   AddtoCmatHolzapfelProduct(cmatiso, iCinV, delta(7));
+  cmatiso.Scale(detFin);
 
   return;
 }
@@ -428,8 +434,9 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
     const LINALG::Matrix<9, 1>& CiFiniCe9x1,  ///< C * F_{in}^{-1} * C_e^{-1}
     const LINALG::Matrix<6, 1>& iCV,          ///< Inverse right Cauchy-Green tensor
     const LINALG::Matrix<3, 3>& iFinCeM,      ///< F_{in}^{-1} * C_e
+    const double detFin,                      ///< determinant of inelastic deformation gradient
     LINALG::Matrix<6, 9>& dSdiFin) const      ///< derivative of 2nd Piola Kirchhoff stresses w.r.t.
-                                              ///< inverse inelastic right Cauchy-Green tensor
+                                              ///< inverse inelastic deformation gradient
 {
   // clear variable
   dSdiFin.Clear();
@@ -439,6 +446,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
   // derivative of second Piola Kirchhoff stresses w.r.t. inverse growth deformation gradient
+  // (contribution from iFin)
   MAT::AddRightNonSymmetricHolzapfelProduct(dSdiFin, id, iFinM, gamma(0));
   MAT::AddRightNonSymmetricHolzapfelProduct(dSdiFin, iCinCM, iFinM, gamma(1));
   dSdiFin.MultiplyNT(delta(0), iCinV, CiFin9x1, 1.);
@@ -451,6 +459,27 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
   dSdiFin.MultiplyNT(delta(4), iCV, CiFinCe9x1, 1.);
   dSdiFin.MultiplyNT(delta(5), iCV, CiFiniCe9x1, 1.);
   MAT::AddRightNonSymmetricHolzapfelProduct(dSdiFin, id, iFinCeM, gamma(1));
+  dSdiFin.Scale(detFin);
+
+  // derivative of second Piola Kirchhoff stresses w.r.t. inverse growth deformation gradient
+  // (contribution from det(Fin))
+
+  // dS/d(det(Fin))
+  LINALG::Matrix<6, 1> dSddetFin(true);
+  dSddetFin.Update(gamma(0), iCinV, 0.0);
+  dSddetFin.Update(gamma(1), iCinCiCinV, 1.0);
+  dSddetFin.Update(gamma(2), iCV, 1.0);
+
+  // d(det(Fin))/diFin
+  LINALG::Matrix<9, 1> ddetFindiFinV(true);
+  LINALG::Matrix<3, 3> ddetFindiFinM(true);
+  LINALG::Matrix<3, 3> FinM(true);
+  FinM.Invert(iFinM);
+  ddetFindiFinM.UpdateT((-1.0) * detFin, FinM);
+  UTILS::VOIGT::Matrix3x3to9x1(ddetFindiFinM, ddetFindiFinV);
+
+  // chain rule to get dS/d(det(Fin)) * d(det(Fin))/diFin
+  dSdiFin.MultiplyNT(1.0, dSddetFin, ddetFindiFinV, 1.0);
 
   return;
 }
@@ -462,9 +491,9 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
     const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
     const LINALG::Matrix<6, 1>& iCV,            ///< Inverse right Cauchy-Green tensor
-    const LINALG::Matrix<6, 9>& dSdiFin,  ///< Derivative of 2nd Piola Kirchhoff stresses w.r.t.
-                                          ///< the inverse inelastic deformation gradient
-    LINALG::Matrix<6, 6>& cmatadd)        ///< Additional elasticity tensor
+    const LINALG::Matrix<6, 9>& dSdiFin,        ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
+                                                ///< the inverse inelastic deformation gradient
+    LINALG::Matrix<6, 6>& cmatadd)              ///< Additional elasticity tensor
 {
   // clear variable
   cmatadd.Clear();
@@ -579,7 +608,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
   // clear variable
   dstressdx.Clear();
 
-  // References to vetor of inelastic contributions and inelastic deformation gradients
+  // References to vector of inelastic contributions and inelastic deformation gradients
   const std::vector<std::pair<PAR::InelasticSource, Teuchos::RCP<MAT::InelasticDefgradFactors>>>&
       facdefgradin = inelastic_->FacDefGradIn();
   const std::vector<std::pair<PAR::InelasticSource, LINALG::Matrix<3, 3>>>& iFinjM =

@@ -237,8 +237,8 @@ namespace MAT
     /*! \brief Evaluate additional terms of the elasticity tensor
      *
      * \f[
-     *   cmatadd = \frac{\partial\bold{S}}{\partial \bold{F}_{in}^{-1}}
-     *             :\frac{\partial\bold{F}_{in}^{-1}}{\partial \bold{C}})
+     *   cmat_{add} = \frac{\partial\bold{S}}{\partial \bold{F}_{in}^{-1}}
+     *             :\frac{\partial\bold{F}_{in}^{-1}}{\partial \bold{C}}
      * \f]
      */
     void EvaluateAdditionalCmat(
@@ -261,14 +261,15 @@ namespace MAT
         const LINALG::Matrix<9, 1>& CiFiniCe9x1,  ///< C * F_{in}^{-1} * C_e^{-1}
         const LINALG::Matrix<6, 1>& iCV,          ///< Inverse right Cauchy-Green tensor
         const LINALG::Matrix<3, 3>& iFinCeM,      ///< F_{in}^{-1} * C_e
-        LINALG::Matrix<6, 9>& dSdiFin)
-        const;  ///< derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic right
-                ///< Cauchy-Green tensor
+        const double detFin,                      ///< determinant of inelastic deformation gradient
+        LINALG::Matrix<6, 9>& dSdiFin)  ///< derivative of 2nd Piola Kirchhoff stresses w.r.t.
+                                        ///< inverse inelastic right Cauchy-Green tensor)
+        const;
 
     /*! \brief Evaluates stress and cmat
      *
      * \f[
-     *   cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}})
+     *   cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}}
      * \f]
      *
      *  cf. Holzapfel [1], p. 216 (6.32) and p. 248
@@ -276,17 +277,14 @@ namespace MAT
      *  with \f$\bold{C}_{in} = \bold{F}_{in}^T \bold{F}_{in}\f$
      *  and \f$\bold{F}_{in}\f$ detoting the inelastic deformation gradient
      * \f[
-     *   \bold{S} = 2 \bold{F}_{in}^{-1} \frac{\partial \Psi_e}{\partial \bold{C}_e}
-     *   \bold{F}_{in}^{-T}
-     * \f]
-     * \f[
-     *   \bold{S} = \gamma_1 \ \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} .
-     *   \bold{C}_{in}^{-1} + \gamma_3 \ \bold{C}^{-1}
-     * \f]
-     * with \f$\gamma_i\f$ as defined in MAT::CalculateGammaDelta()
+     *   \bold{S} = 2 det(\bold{F}_{in}) \bold{F}_{in}^{-1} \frac{\partial \Psi_e}{\partial
+     * \bold{C}_e} \bold{F}_{in}^{-T} \f] \f[ \bold{S} = det(\bold{F}_{in}) \left(\gamma_1 \
+     * \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} . \bold{C}_{in}^{-1} + \gamma_3
+     * \ \bold{C}^{-1} \right) \f] with \f$\gamma_i\f$ as defined in MAT::CalculateGammaDelta()
      *
      * \f[
-     *   \mathbb{C} = \delta_1 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \right)
+     *   \mathbb{C} = det(\bold{F}_{in}) \left( \delta_1 \left( \bold{C}_{in}^{-1} \otimes
+     * \bold{C}_{in}^{-1} \right)
      *              + \delta_2 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \bold{C}
      *              \bold{C}_{in}^{-1}  + \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
      *              \bold{C}_{in}^{-1} \right)
@@ -299,7 +297,7 @@ namespace MAT
      *              \bold{C}_{in}^{-1} \right)
      *              + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
      *              + \delta_7 \left( \bold{C}^{-1} \odot \bold{C}^{-1} \right)
-     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right)
+     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right) \right
      * \f]
      *
      * \f$\odot\f$ is defined as follows:
@@ -314,6 +312,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>& iCinCiCinV,  ///< C_{in}^{-1} * C * C_{in}^{-1}
         const LINALG::Matrix<3, 1>& gamma,       ///< Factors for stress calculation
         const LINALG::Matrix<8, 1>& delta,       ///< Factors for elasticity tensor calculation
+        const double detFin,                     ///< determinant of inelastic deformation gradient
         LINALG::Matrix<6, 1>& stress,            ///< Isotropic stress tensor
         LINALG::Matrix<6, 6>& cmatiso) const;    ///< Isotropic stiffness matrix
 
