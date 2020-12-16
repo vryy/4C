@@ -42,9 +42,9 @@ void DRT::INPUT::PrintEmptyMaterialDefinitions(std::ostream& stream,
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
   stream << greenlight << sectionname << endcolor << '\n';
 
-  for (unsigned i = 0; i < matlist.size(); ++i)
+  for (auto& i : matlist)
   {
-    matlist[i]->Print(stream, NULL, color);
+    i->Print(stream, nullptr, color);
   }
 }
 
