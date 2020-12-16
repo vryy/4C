@@ -13,7 +13,6 @@ multiplicatively into elastic and inelastic parts
 #include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "anisotropy.H"
 
 /*----------------------------------------------------------------------*/
 /*! \class MultiplicativeSplitDefgrad_ElastHyper
@@ -32,6 +31,7 @@ multiplicatively into elastic and inelastic parts
 // forward declaration
 namespace MAT
 {
+  class Anisotropy;
   class InelasticDefgradFactors;
 
   namespace ELASTIC
@@ -55,10 +55,10 @@ namespace MAT
       MultiplicativeSplitDefgrad_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~MultiplicativeSplitDefgrad_ElastHyper() { ; }
+      ~MultiplicativeSplitDefgrad_ElastHyper() override = default;
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// length of elastic material list
       const int nummat_elast_;
@@ -83,11 +83,11 @@ namespace MAT
   class MultiplicativeSplitDefgrad_ElastHyperType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
+    std::string Name() const override { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
 
     static MultiplicativeSplitDefgrad_ElastHyperType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MultiplicativeSplitDefgrad_ElastHyperType instance_;
@@ -159,7 +159,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return MultiplicativeSplitDefgrad_ElastHyperType::Instance().UniqueParObjectId();
     }
@@ -172,7 +172,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -184,32 +184,32 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+      if (kinem != INPAR::STR::kinem_nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_multiplicative_split_defgrad_elasthyper;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new MultiplicativeSplitDefgrad_ElastHyper(*this));
     }
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate stress response and elasticity tensor
     void Evaluate(const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient

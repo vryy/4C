@@ -11,15 +11,14 @@ multiplicatively into elastic and inelastic parts
 /* headers */
 #include "multiplicative_split_defgrad_elasthyper.H"
 
+#include "anisotropy.H"
 #include "elasthyper_service.H"
 #include "inelastic_defgrad_factors.H"
-#include "multiplicative_split_defgrad_elasthyper_service.H"
 #include "material_service.H"
 #include "matpar_bundle.H"
+#include "multiplicative_split_defgrad_elasthyper_service.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/voigt_notation.H"
-#include "../drt_matelast/elast_summand.H"
 #include "../drt_structure_new/str_enum_lists.H"
 
 
@@ -41,10 +40,12 @@ MAT::PAR::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_Elas
         nummat_elast_, matids_elast_->size());
 
   if (numfac_inel_ != static_cast<int>(inel_defgradfacids_->size()))
+  {
     dserror(
         "number of inelastic deformation gradient factors %d does not fit to size of inelastic "
         "deformation gradient ID vector %d",
         numfac_inel_, inel_defgradfacids_->size());
+  }
 }
 
 
@@ -61,8 +62,7 @@ MAT::MultiplicativeSplitDefgrad_ElastHyperType
 DRT::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
     const std::vector<char>& data)
 {
-  MAT::MultiplicativeSplitDefgrad_ElastHyper* splitdefgrad_elhy =
-      new MAT::MultiplicativeSplitDefgrad_ElastHyper();
+  auto* splitdefgrad_elhy = new MAT::MultiplicativeSplitDefgrad_ElastHyper();
   splitdefgrad_elhy->Unpack(data);
 
   return splitdefgrad_elhy;
@@ -75,7 +75,7 @@ DRT::ParObject* MAT::MultiplicativeSplitDefgrad_ElastHyperType::Create(
 MAT::MultiplicativeSplitDefgrad_ElastHyper::MultiplicativeSplitDefgrad_ElastHyper()
     : anisotropy_(Teuchos::rcp(new MAT::Anisotropy())),
       inelastic_(Teuchos::rcp(new MAT::InelasticFactorsHandler())),
-      params_(NULL),
+      params_(nullptr),
       potsumel_(0)
 {
 }
@@ -120,15 +120,15 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) con
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   anisotropy_->PackAnisotropy(data);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
-    for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->PackSummand(data);
+    for (const auto& p : potsumel_) p->PackSummand(data);
   }
 }
 
@@ -139,7 +139,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Pack(DRT::PackBuffer& data) con
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  params_ = NULL;
+  params_ = nullptr;
   potsumel_.clear();
 
   std::vector<char>::size_type position = 0;
@@ -155,7 +155,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
   {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
-      const unsigned int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
+      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
       MAT::PAR::Parameter* mat =
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
@@ -168,7 +168,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
 
   anisotropy_->UnpackAnisotropy(data, position);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     std::vector<int>::const_iterator m;
 
@@ -181,10 +181,10 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
       potsumel_.push_back(sum);
     }
     // loop map of associated potential summands
-    for (auto& p : potsumel_)
+    for (auto& summand : potsumel_)
     {
-      p->UnpackSummand(data, position);
-      p->RegisterAnisotropyExtensions(*anisotropy_);
+      summand->UnpackSummand(data, position);
+      summand->RegisterAnisotropyExtensions(*anisotropy_);
     }
 
     // inelastic deformation gradient factors
@@ -249,7 +249,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
   // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
   // monolithic system (structural residual w.r.t. dofs of another field), you need to pass NULL as
   // the cmat when you call Evaluate() in the element
-  if (cmat != NULL)
+  if (cmat != nullptr)
   {
     // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
     // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
@@ -274,12 +274,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
     else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
       source = PAR::InelasticSource::inelastic_temperature;
     else
+    {
+      source = PAR::InelasticSource::inelastic_none;
       dserror("unknown scalaratype");
+    }
 
     EvaluateODStiffMat(source, defgrad, dSdiFin, *stress);
   }
-
-  return;
 }
 
 
@@ -319,8 +320,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
   AddtoCmatHolzapfelProduct(cmatiso, iCV, delta(6));
   AddtoCmatHolzapfelProduct(cmatiso, iCinV, delta(7));
   cmatiso.Scale(detFin);
-
-  return;
 }
 
 
@@ -392,8 +391,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
   tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
   CiFiniCeM.MultiplyNN(1.0, tmp, iCeM, 0.0);
   UTILS::VOIGT::Matrix3x3to9x1(CiFiniCeM, CiFiniCe9x1);
-
-  return;
 }
 
 /*--------------------------------------------------------------------*
@@ -409,12 +406,10 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
 
   // loop over map of associated potential summands
   // derivatives of strain energy function w.r.t. principal invariants
-  for (unsigned p = 0; p < potsumel_.size(); ++p)
+  for (const auto& p : potsumel_)
   {
-    potsumel_[p]->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
+    p->AddDerivativesPrincipal(dPI, ddPII, prinv, gp, eleGID);
   }
-
-  return;
 }
 
 
@@ -480,8 +475,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
 
   // chain rule to get dS/d(det(Fin)) * d(det(Fin))/diFin
   dSdiFin.MultiplyNT(1.0, dSddetFin, ddetFindiFinV, 1.0);
-
-  return;
 }
 
 
@@ -509,9 +502,10 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
   // check amount of factors the inelastic deformation gradient consists of and choose
   // implementation accordingly
   if (num_contributions == 1)
+  {
     facdefgradin[0].second->EvaluateAdditionalCmat(
         defgrad, iFinjM[0].second, iCV, dSdiFin, cmatadd);
-
+  }
   else if (num_contributions > 1)
   {
     // static variables
@@ -550,11 +544,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
       // multiply all inelastic deformation gradients except for range between last and current
       productb = id;
       if (i > 0)
+      {
         for (int j = i - 1; j >= 0; --j)
         {
           productb_temp.Multiply(1.0, productb, iFinjM[j].second, 0.0);
           productb.Update(1.0, productb_temp, 0.0);
         }
+      }
 
       // evaluate additional contribution to C by applying chain rule
       AddNonSymmetricProduct(1.0, producta, productb, diFindiFinj);
@@ -565,8 +561,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
   }
   else
     dserror("You should not be here");
-
-  return;
 }
 
 
@@ -581,7 +575,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
   anisotropy_->ReadAnisotropyFromElement(linedef);
 
   // elastic materials
-  for (auto& p : potsumel_) p->Setup(numgp, linedef);
+  for (auto& summand : potsumel_) summand->Setup(numgp, linedef);
 }
 
 
@@ -591,9 +585,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Setup(
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::Update()
 {
   // loop map of associated potential summands
-  for (unsigned int p = 0; p < potsumel_.size(); ++p) potsumel_[p]->Update();
-
-  return;
+  for (auto& summand : potsumel_) summand->Update();
 }
 
 
@@ -665,11 +657,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
         // multiply all inelastic deformation gradients except for range between last and current
         productb = id;
         if (i > 0)
+        {
           for (int j = i - 1; j >= 0; --j)
           {
             productb_temp.Multiply(1.0, productb, iFinjM[j].second, 0.0);
             productb.Update(1.0, productb_temp, 0.0);
           }
+        }
 
         // evaluate additional contribution to OD block by applying chain rule
         AddNonSymmetricProduct(1.0, producta, productb, diFindiFinj);
@@ -680,8 +674,6 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
   }
   else
     dserror("You should not be here");
-
-  return;
 }
 
 
@@ -694,14 +686,12 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(Teuchos::ParameterL
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
     inelastic_->FacDefGradIn()[p].second->PreEvaluate(params, gp);
-
-  return;
 }
 
 /*--------------------------------------------------------------------*
  | InelasticFactorsHandler                                            |
  *--------------------------------------------------------------------*/
-MAT::InelasticFactorsHandler::InelasticFactorsHandler() : facdefgradin_(), iFinj_() { return; };
+MAT::InelasticFactorsHandler::InelasticFactorsHandler() : facdefgradin_(), iFinj_() {}
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
@@ -730,24 +720,24 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
   if (DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
       INPAR::SSI::ssi_Monolithic)
   {
-    for (unsigned p = 0; p < facdefgradin_.size(); ++p)
+    for (auto& inelfac : facdefgradin_)
     {
-      const INPAR::MAT::MaterialType materialtype = facdefgradin_[p].second->MaterialType();
+      const INPAR::MAT::MaterialType materialtype = inelfac.second->MaterialType();
       if ((materialtype != INPAR::MAT::mfi_lin_scalar_aniso) and
           (materialtype != INPAR::MAT::mfi_lin_scalar_iso) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_aniso) and
           (materialtype != INPAR::MAT::mfi_poly_intercal_frac_iso) and
           (materialtype != INPAR::MAT::mfi_lin_temp_iso))
+      {
         dserror(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you "
             "need to use the material 'MAT_InelasticDefgradLinScalarAniso' "
             "'MAT_InelasticDefgradLinScalarIso', 'MAT_InelasticDefgradPolyScalarIso' or "
             "'MAT_InelasticDefgradPolyScalarAniso'!"
             " If you want to use a different material, feel free to implement it! ;-)");
+      }
     }
   }
-
-  return;
 }
 
 /*--------------------------------------------------------------------*
@@ -782,6 +772,4 @@ void MAT::InelasticFactorsHandler::EvaluateInverseInelasticDefGrad(
     // store result for next evaluation
     iFin_init_store.Update(1.0, iFinM, 0.0);
   }
-
-  return;
 }
