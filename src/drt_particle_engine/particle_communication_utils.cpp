@@ -56,6 +56,10 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
 
     int msgsizetosend = static_cast<int>((p.second).size());
 
+    // check sending size of message
+    if (not(msgsizetosend > 0))
+      dserror("sending non-positive message size %i to proc %i!", msgsizetosend, torank);
+
     // perform non-blocking send operation
     MPI_Isend(&msgsizetosend, 1, MPI_INT, torank, 1234, mpicomm->Comm(), &sizerequest[counter]);
 
@@ -75,13 +79,13 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
     int const msgsource = status.MPI_SOURCE;
     int const msgtag = status.MPI_TAG;
 
-    // get message size
-    int msgsize = -1;
-    MPI_Get_count(&status, MPI_INT, &msgsize);
-
     // check message tag
     if (msgtag != 1234)
       dserror("received data on proc %i with wrong tag from proc %i", myrank, msgsource);
+
+    // get message size
+    int msgsize = -1;
+    MPI_Get_count(&status, MPI_INT, &msgsize);
 
     // check size of message
     if (msgsize != 1) dserror("message size not correct (one int expected)!");
@@ -92,14 +96,15 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
         &msgsizetorecv, msgsize, MPI_INT, msgsource, msgtag, mpicomm->Comm(), MPI_STATUS_IGNORE);
 
     // check received size of message
-    if (msgsizetorecv < 0) dserror("received message size is negative!");
+    if (not(msgsizetorecv > 0))
+      dserror("received non-positive message size %i from proc %i!", msgsizetorecv, msgsource);
 
     // resize receiving buffer to received size
     std::vector<char>& rbuffer = rdata[msgsource];
     rbuffer.resize(msgsizetorecv);
 
     // perform non-blocking receive operation
-    MPI_Irecv((void*)(&rbuffer[0]), msgsizetorecv, MPI_CHAR, msgsource, msgtag, mpicomm->Comm(),
+    MPI_Irecv((void*)(&rbuffer[0]), msgsizetorecv, MPI_CHAR, msgsource, 5678, mpicomm->Comm(),
         &recvrequest[rec]);
   }
 
@@ -123,7 +128,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
       std::vector<char>& sbuffer = sdata[torank];
 
       // perform non-blocking send operation
-      MPI_Isend((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 1234,
+      MPI_Isend((void*)(&(sbuffer[0])), static_cast<int>(sbuffer.size()), MPI_CHAR, torank, 5678,
           mpicomm->Comm(), &sendrequest[index]);
 
       ++counter;
