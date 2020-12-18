@@ -198,8 +198,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Unpack(const std::vector<char>&
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrad,
     const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp,
-    const int eleGID)  ///< Element ID
+    LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // do all stuff that only has to be done once per Evaluate() call
   PreEvaluate(params, gp);
@@ -288,14 +287,10 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
  | evaluate stress and cmat                             schmidt 03/18 |
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
-    const LINALG::Matrix<6, 1>& iCV,         ///< Inverse right Cauchy-Green tensor
-    const LINALG::Matrix<6, 1>& iCinV,       ///< Inverse inelastic right Cauchy-Green tensor
-    const LINALG::Matrix<6, 1>& iCinCiCinV,  ///< C_{in}^{-1} * C * C_{in}^{-1}
-    const LINALG::Matrix<3, 1>& gamma,       ///< Factors for stress calculation
-    const LINALG::Matrix<8, 1>& delta,       ///< Factors for elasticity tensor calculation
-    const double detFin,                     ///< determinant of inelastic deformation gradient
-    LINALG::Matrix<6, 1>& stress,            ///< Isotropic stress tensor
-    LINALG::Matrix<6, 6>& cmatiso) const     ///< Isotropic stiffness matrix
+    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 1>& iCinV,
+    const LINALG::Matrix<6, 1>& iCinCiCinV, const LINALG::Matrix<3, 1>& gamma,
+    const LINALG::Matrix<8, 1>& delta, const double detFin, LINALG::Matrix<6, 1>& stress,
+    LINALG::Matrix<6, 6>& cmatiso) const
 {
   // clear variables
   stress.Clear();
@@ -327,18 +322,11 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
  | evaluate kinetic quantities                          schmidt 03/18 |
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
-    const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-    const LINALG::Matrix<3, 3>& iFinM,          ///< Inverse inelastic deformation gradient
-    LINALG::Matrix<6, 1>& iCinV,                ///< Inverse inelastic right Cauchy-Green tensor
-    LINALG::Matrix<6, 1>& iCinCiCinV,           ///< C_{in}^{-1} * C * C_{in}^{-1}
-    LINALG::Matrix<6, 1>& iCV,                  ///< Inverse right Cauchy-Green tensor
-    LINALG::Matrix<3, 3>& iCinCM,               ///< C_{in}^{-1} * C
-    LINALG::Matrix<3, 3>& iFinCeM,              ///< F_{in}^{-1} * C_e
-    LINALG::Matrix<9, 1>& CiFin9x1,             ///< C * F_{in}^{-1}
-    LINALG::Matrix<9, 1>& CiFinCe9x1,           ///< C * F_{in}^{-1} * C_e
-    LINALG::Matrix<9, 1>& CiFiniCe9x1,          ///< C * F_{in}^{-1} * C_e^{-1}
-    LINALG::Matrix<3, 1>& prinv)
-    const  ///< Principal invariants of elastic right Cauchy-Green tensor
+    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<3, 3>& iFinM,
+    LINALG::Matrix<6, 1>& iCinV, LINALG::Matrix<6, 1>& iCinCiCinV, LINALG::Matrix<6, 1>& iCV,
+    LINALG::Matrix<3, 3>& iCinCM, LINALG::Matrix<3, 3>& iFinCeM, LINALG::Matrix<9, 1>& CiFin9x1,
+    LINALG::Matrix<9, 1>& CiFinCe9x1, LINALG::Matrix<9, 1>& CiFiniCe9x1,
+    LINALG::Matrix<3, 1>& prinv) const
 {
   // inverse inelastic right Cauchy-Green
   static LINALG::Matrix<3, 3> iCinM(true);
@@ -398,7 +386,7 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateKinQuantElast(
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
     const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID, LINALG::Matrix<3, 1>& dPI,
-    LINALG::Matrix<6, 1>& ddPII) const  ///< Second derivative with respect to invariants
+    LINALG::Matrix<6, 1>& ddPII) const
 {
   // clear variables
   dPI.Clear();
@@ -417,21 +405,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateInvariantDerivatives(
  | evaluate derivative of stress w.r.t. inelastic                     |
  | deformation gradient                                 schmidt 03/18 |
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
-    const LINALG::Matrix<3, 1>& gamma,        ///< Factors for stress calculation
-    const LINALG::Matrix<8, 1>& delta,        ///< Factors for elasticity tensor calculation
-    const LINALG::Matrix<3, 3>& iFinM,        ///< Inverse inelastic deformation gradient
-    const LINALG::Matrix<3, 3>& iCinCM,       ///< C_{in}^{-1} * C
-    const LINALG::Matrix<6, 1>& iCinV,        ///< Inverse inelastic right Cauchy-Green tensor
-    const LINALG::Matrix<9, 1>& CiFin9x1,     ///< C * F_{in}^{-1}
-    const LINALG::Matrix<9, 1>& CiFinCe9x1,   ///< C * F_{in}^{-1} * C_e
-    const LINALG::Matrix<6, 1>& iCinCiCinV,   ///< C_{in}^{-1} * C * C_{in}^{-1}
-    const LINALG::Matrix<9, 1>& CiFiniCe9x1,  ///< C * F_{in}^{-1} * C_e^{-1}
-    const LINALG::Matrix<6, 1>& iCV,          ///< Inverse right Cauchy-Green tensor
-    const LINALG::Matrix<3, 3>& iFinCeM,      ///< F_{in}^{-1} * C_e
-    const double detFin,                      ///< determinant of inelastic deformation gradient
-    LINALG::Matrix<6, 9>& dSdiFin) const      ///< derivative of 2nd Piola Kirchhoff stresses w.r.t.
-                                              ///< inverse inelastic deformation gradient
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(const LINALG::Matrix<3, 1>& gamma,
+    const LINALG::Matrix<8, 1>& delta, const LINALG::Matrix<3, 3>& iFinM,
+    const LINALG::Matrix<3, 3>& iCinCM, const LINALG::Matrix<6, 1>& iCinV,
+    const LINALG::Matrix<9, 1>& CiFin9x1, const LINALG::Matrix<9, 1>& CiFinCe9x1,
+    const LINALG::Matrix<6, 1>& iCinCiCinV, const LINALG::Matrix<9, 1>& CiFiniCe9x1,
+    const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<3, 3>& iFinCeM, const double detFin,
+    LINALG::Matrix<6, 9>& dSdiFin) const
 {
   // clear variable
   dSdiFin.Clear();
@@ -482,11 +462,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluatedSdiFin(
  | evaluate additional contribution to cmat             schmidt 03/18 |
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateAdditionalCmat(
-    const LINALG::Matrix<3, 3>* const defgrad,  ///< Deformation gradient
-    const LINALG::Matrix<6, 1>& iCV,            ///< Inverse right Cauchy-Green tensor
-    const LINALG::Matrix<6, 9>& dSdiFin,        ///< Derivative of 2nd Piola Kirchhoff stress w.r.t.
-                                                ///< the inverse inelastic deformation gradient
-    LINALG::Matrix<6, 6>& cmatadd)              ///< Additional elasticity tensor
+    const LINALG::Matrix<3, 3>* const defgrad, const LINALG::Matrix<6, 1>& iCV,
+    const LINALG::Matrix<6, 9>& dSdiFin, LINALG::Matrix<6, 6>& cmatadd)
 {
   // clear variable
   cmatadd.Clear();
@@ -680,8 +657,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateODStiffMat(PAR::Inelast
 /*--------------------------------------------------------------------*
  | pre evaluate                                         schmidt 03/18 |
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(Teuchos::ParameterList& params,
-    const int gp) const  ///< parameter list as handed in from the element
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(
+    Teuchos::ParameterList& params, const int gp) const
 {
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)

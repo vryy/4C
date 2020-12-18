@@ -263,7 +263,7 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinCeM,      ///< F_{in}^{-1} * C_e
         const double detFin,                      ///< determinant of inelastic deformation gradient
         LINALG::Matrix<6, 9>& dSdiFin)  ///< derivative of 2nd Piola Kirchhoff stresses w.r.t.
-                                        ///< inverse inelastic right Cauchy-Green tensor)
+                                        ///< inverse inelastic deformation gradient
         const;
 
     /*! \brief Evaluates stress and cmat
@@ -297,7 +297,7 @@ namespace MAT
      *              \bold{C}_{in}^{-1} \right)
      *              + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
      *              + \delta_7 \left( \bold{C}^{-1} \odot \bold{C}^{-1} \right)
-     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right) \right
+     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right) \right)
      * \f]
      *
      * \f$\odot\f$ is defined as follows:
