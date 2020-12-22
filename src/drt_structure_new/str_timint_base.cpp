@@ -455,6 +455,11 @@ void STR::TIMINT::Base::PrepareOutput()
       int_ptr_->EvalData().SetElementVolumeData(elevolumes);
     }
   }
+  if (dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepNp()) or
+      dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepNp()))
+  {
+    int_ptr_->RuntimePreOutputStepState();
+  }
   // --- energy calculation ---------------------------------------------------
   if (dataio_->GetWriteEnergyEveryNStep() and
       (dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0))
@@ -541,14 +546,8 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output results during runtime ( not used for restart so far )
-  if ((dataio_->GetRuntimeVtkOutputParams() != Teuchos::null and
-          dataglobalstate_->GetStepN() %
-                  dataio_->GetRuntimeVtkOutputParams()->OutputIntervalInSteps() ==
-              0) or
-      (dataio_->GetRuntimeVtpOutputParams() != Teuchos::null and
-          dataglobalstate_->GetStepN() %
-                  dataio_->GetRuntimeVtpOutputParams()->OutputIntervalInSteps() ==
-              0))
+  if (dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepN()) or
+      dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepN()))
   {
     RuntimeOutputState();
   }
@@ -664,7 +663,6 @@ void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool wri
 void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
-  int_ptr_->RuntimePreOutputStepState();
   int_ptr_->RuntimeOutputStepState();
 }
 

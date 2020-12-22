@@ -219,6 +219,25 @@ bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
           GetInitialStateIsToBeWritten());
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
+{
+  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  return (GetRuntimeVtkOutputParams() != Teuchos::null and
+          step % GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) const
+{
+  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  return (GetRuntimeVtpOutputParams() != Teuchos::null and
+          step % GetRuntimeVtpOutputParams()->OutputIntervalInSteps() == 0);
+}
+
+
 bool STR::TIMINT::BaseDataIO::ShouldWriteRestartForStep(const int step) const
 {
   return GetWriteRestartEveryNStep() && (step % GetWriteRestartEveryNStep() == 0) && step != 0;

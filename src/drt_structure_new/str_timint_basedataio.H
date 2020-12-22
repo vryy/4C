@@ -119,6 +119,12 @@ namespace STR
       /// \brief return TRUE if the results shall be written for this load/time \c step
       bool WriteResultsForThisStep(const int step) const;
 
+      /// \brief return TRUE if runtime vtk results shall be written for this load/time \c step
+      bool WriteRuntimeVtkResultsForThisStep(const int step) const;
+
+      /// \brief return TRUE if runtime vtp results shall be written for this load/time \c step
+      bool WriteRuntimeVtpResultsForThisStep(const int step) const;
+
       /// \brief return TRUE if the restart state shall be written for this load/time step
       bool ShouldWriteRestartForStep(int step) const;
 
