@@ -17,7 +17,6 @@
 
 #include "../drt_io/every_iteration_writer.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_linesearch_generic.H"
@@ -36,7 +35,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       params_runtime_vtp_output_(Teuchos::null),
       params_monitor_dbc_(Teuchos::null),
       energyfile_(Teuchos::null),
-      errfile_(NULL),
+      errfile_(nullptr),
       gmsh_out_(false),
       printlogo_(false),
       printerrfile_(false),
@@ -79,10 +78,10 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
   {
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
-    printlogo_ = (printscreen_ > 0 ? true : false);
+    printlogo_ = printscreen_ > 0;
     errfile_ = xparams.get<FILE*>("err file");
     gmsh_out_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
-    printerrfile_ = (true and errfile_);
+    printerrfile_ = errfile_ != nullptr;
     printiter_ = true;
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
@@ -134,8 +133,6 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
   }
 
   isinit_ = true;
-
-  return;
 }
 
 
@@ -149,9 +146,6 @@ void STR::TIMINT::BaseDataIO::Setup()
   if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new IO::EveryIterationWriter());
 
   issetup_ = true;
-
-  // Good bye
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -159,8 +153,6 @@ void STR::TIMINT::BaseDataIO::Setup()
 void STR::TIMINT::BaseDataIO::CheckInitSetup() const
 {
   if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

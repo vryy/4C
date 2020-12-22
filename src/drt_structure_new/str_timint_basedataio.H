@@ -61,7 +61,7 @@ namespace STR
       BaseDataIO();
 
       /// destructor
-      virtual ~BaseDataIO(){};
+      virtual ~BaseDataIO() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
@@ -200,7 +200,6 @@ namespace STR
       {
         CheckInitSetup();
         writeinitialstate_ = initialstateistobewritten;
-        return;
       };
 
       /// Shall we write surfactant output?
@@ -474,17 +473,17 @@ namespace NOX
             WriteOutputEveryIteration(IO::EveryIterationWriter& every_iter_writer);
 
             /// destructor
-            virtual ~WriteOutputEveryIteration(){};
+            ~WriteOutputEveryIteration() override = default;
 
             /// called at the very beginning of a Newton loop
-            virtual void runPreSolve(const NOX::Solver::Generic& solver);
+            void runPreSolve(const NOX::Solver::Generic& solver) override;
 
             /// called in the end of each Newton step
-            virtual void runPostIterate(const NOX::Solver::Generic& solver);
+            void runPostIterate(const NOX::Solver::Generic& solver) override;
 
             /// called before the step is reduced in a line search routine
-            virtual void runPreModifyStepLength(
-                const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch);
+            void runPreModifyStepLength(const NOX::Solver::Generic& solver,
+                const NOX::LineSearch::Generic& linesearch) override;
 
            private:
             IO::EveryIterationWriter& every_iter_writer_;
