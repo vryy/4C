@@ -42,6 +42,9 @@ PARTICLEINTERACTION::SPHInterfaceViscosity::~SPHInterfaceViscosity() = default;
 
 void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
 {
+  // init artificial viscosity handler
+  InitArtificialViscosityHandler();
+
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
 
