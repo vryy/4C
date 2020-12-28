@@ -284,27 +284,27 @@ LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateDeviatoricTrialS
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateUpdatedInverseViscousDefgrad(
-    const LINALG::Matrix<3, 3>& last_iFv, const LINALG::Matrix<3, 3>& Eigenvectors,
-    const LINALG::Matrix<3, 1>& Eigenvalues, const double eta) const
+    const LINALG::Matrix<3, 3>& last_iFv, const LINALG::Matrix<3, 3>& eigen_vectors,
+    const LINALG::Matrix<3, 1>& eigen_values, const double eta) const
 {
   static LINALG::Matrix<3, 3> scaledEigenvalues(true);
 
   // cubic root of determinant
   const double cubicRoot_stretchTensorTrial_determinant =
-      std::cbrt(Eigenvalues(0) * Eigenvalues(1) * Eigenvalues(2));
+      std::cbrt(eigen_values(0) * eigen_values(1) * eigen_values(2));
 
   for (unsigned i = 0; i < 3; ++i)
   {
     scaledEigenvalues(i, i) =
-        std::pow((Eigenvalues(i) / cubicRoot_stretchTensorTrial_determinant), (eta - 1.0));
+        std::pow((eigen_values(i) / cubicRoot_stretchTensorTrial_determinant), (eta - 1.0));
   }
 
   static LINALG::Matrix<3, 3> tmp3x3;
   static LINALG::Matrix<3, 3> scaled_iUeTrialDeviatoric;
   static LINALG::Matrix<3, 3> current_iFv;
   // calculate inverse scaled trial stretch tensor
-  tmp3x3.MultiplyNN(Eigenvectors, scaledEigenvalues);
-  scaled_iUeTrialDeviatoric.MultiplyNT(tmp3x3, Eigenvectors);
+  tmp3x3.MultiplyNN(eigen_vectors, scaledEigenvalues);
+  scaled_iUeTrialDeviatoric.MultiplyNT(tmp3x3, eigen_vectors);
   current_iFv.MultiplyNN(last_iFv, scaled_iUeTrialDeviatoric);
 
   return current_iFv;
@@ -332,8 +332,8 @@ double MAT::ViscoPlasticNoYieldSurface::CalculateTrialEquivalentStress(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticDefgradEigenvaluesAndEigenvectors(
-    const LINALG::Matrix<3, 3>& Fe_trial, LINALG::Matrix<3, 1>& Eigenvalues,
-    LINALG::Matrix<3, 3>& Eigenvectors) const
+    const LINALG::Matrix<3, 3>& Fe_trial, LINALG::Matrix<3, 1>& eigen_values,
+    LINALG::Matrix<3, 3>& eigen_vectors) const
 {
   // as we only have a method to calculate the eigenvalues and eigenvectors from symmetric matrices,
   // we calculate the right Cauchy-Green tensor first and then make use of the fact that we get the
@@ -346,12 +346,12 @@ void MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticDefgradEigenvaluesAnd
   // squared principal stretches
   static LINALG::Matrix<3, 3> SquaredEigenvalues;
   // eigenvalue analysis of trial deformation
-  LINALG::SYEV(Ce_trial, SquaredEigenvalues, Eigenvectors);
+  LINALG::SYEV(Ce_trial, SquaredEigenvalues, eigen_vectors);
 
   // principal stretches
   for (unsigned i = 0; i < 3; ++i)
   {
-    Eigenvalues(i) = std::sqrt(SquaredEigenvalues(i, i));
+    eigen_values(i) = std::sqrt(SquaredEigenvalues(i, i));
   }
 }
 
@@ -359,7 +359,7 @@ void MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticDefgradEigenvaluesAnd
  *----------------------------------------------------------------------*/
 LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
 MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
-    const LINALG::Matrix<3, 3>& EigenVectors, const LINALG::Matrix<3, 1>& EigenValues) const
+    const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const
 {
   // init and clear elastic stiffness matrix
   static LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> Ce;
@@ -379,11 +379,11 @@ MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
   std::vector<LINALG::Matrix<3, 1>> EigenVectorsVec;
   for (unsigned i = 0; i < 3; ++i)
   {
-    LogEigenValues(i) = std::log(EigenValues(i));
-    SquaredEigenValues(i) = std::pow(EigenValues(i), 2.0);
+    LogEigenValues(i) = std::log(eigen_values(i));
+    SquaredEigenValues(i) = std::pow(eigen_values(i), 2.0);
 
     // extract ith-eigenvector and add it to the vector
-    for (unsigned j = 0; j < 3; ++j) ithEigenVector(j) = EigenVectors(j, i);
+    for (unsigned j = 0; j < 3; ++j) ithEigenVector(j) = eigen_vectors(j, i);
     EigenVectorsVec.push_back(ithEigenVector);
   }
 
@@ -456,7 +456,7 @@ MAT::ViscoPlasticNoYieldSurface::CalculateElasticStiffness(
  *----------------------------------------------------------------------*/
 LINALG::Matrix<6, 1>&
 MAT::ViscoPlasticNoYieldSurface::CalculateLogElasticStrainInStrainLikeVoigtNotation(
-    const LINALG::Matrix<3, 3>& EigenVectors, const LINALG::Matrix<3, 1>& EigenValues) const
+    const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const
 {
   // trial elastic material logarithmic strains
   static LINALG::Matrix<3, 3> Ee_trial;
@@ -466,11 +466,11 @@ MAT::ViscoPlasticNoYieldSurface::CalculateLogElasticStrainInStrainLikeVoigtNotat
 
   for (unsigned i = 0; i < 3; ++i)
   {
-    logEigenValues(i, i) = std::log(EigenValues(i));
+    logEigenValues(i, i) = std::log(eigen_values(i));
   }
 
-  tmp3x3.MultiplyNN(EigenVectors, logEigenValues);
-  Ee_trial.MultiplyNT(tmp3x3, EigenVectors);
+  tmp3x3.MultiplyNN(eigen_vectors, logEigenValues);
+  Ee_trial.MultiplyNT(tmp3x3, eigen_vectors);
 
   // transform to strain-like Voigt notation of logarithmic elastic strain
   UTILS::VOIGT::Strains::MatrixToVector(Ee_trial, Ee_trial_Vstrain);
@@ -481,8 +481,8 @@ MAT::ViscoPlasticNoYieldSurface::CalculateLogElasticStrainInStrainLikeVoigtNotat
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticRotation(
-    const LINALG::Matrix<3, 3>& Fe_trial, const LINALG::Matrix<3, 3>& EigenVectors,
-    const LINALG::Matrix<3, 1>& EigenValues) const
+    const LINALG::Matrix<3, 3>& Fe_trial, const LINALG::Matrix<3, 3>& eigen_vectors,
+    const LINALG::Matrix<3, 1>& eigen_values) const
 {
   static LINALG::Matrix<3, 3> Re_trial;
   static LINALG::Matrix<3, 3> tmp3x3;
@@ -490,14 +490,14 @@ LINALG::Matrix<3, 3>& MAT::ViscoPlasticNoYieldSurface::CalculateTrialElasticRota
 
   for (unsigned i = 0; i < 3; ++i)
   {
-    invEigenValues(i, i) = 1.0 / EigenValues(i);
+    invEigenValues(i, i) = 1.0 / eigen_values(i);
   }
 
   // trial elastic rotation tensor (F = R * U --> R = F * U^(-1))
-  tmp3x3.MultiplyNN(EigenVectors, invEigenValues);
+  tmp3x3.MultiplyNN(eigen_vectors, invEigenValues);
   // inverse trial stretch
   static LINALG::Matrix<3, 3> iUe_trial;
-  iUe_trial.MultiplyNT(tmp3x3, EigenVectors);
+  iUe_trial.MultiplyNT(tmp3x3, eigen_vectors);
   Re_trial.MultiplyNN(Fe_trial, iUe_trial);
 
   return Re_trial;

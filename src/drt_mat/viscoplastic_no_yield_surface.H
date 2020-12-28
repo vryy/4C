@@ -1,16 +1,6 @@
 /*--------------------------------------------------------------------------*/
 /*! \file
-\brief An elastic visco-plastic finite strain material law without yield surface based on [1]
-
-\note [1]: L. Anand et al., An Elastic-Viscoplastic Model for Lithium", Journal of The
-           Electrochemical Society, 2019
-      [2]: G. Weber et al., Finite deformation constitutive equations and a time integration
-           procedure for isotropic, hyperelastic-viscoplastic solids.", Computer Methods in Applied
-           Mechanics and Engineering, 1990.
-      [3]: Details on the implementation in master's thesis of Philipp Bofinger, Supervisor:
-           Christoph Schmidt
-
-  The time integration is a backward one-step time integration algorithm
+\brief An elastic visco-plastic finite strain material law without yield surface.
 
 \level 2
 *--------------------------------------------------------------------------*/
@@ -111,7 +101,7 @@ namespace MAT
   class ViscoPlasticNoYieldSurfaceType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const override { return "AnandType"; }
+    std::string Name() const override { return "ViscoPlasticNoYieldSurfaceType"; }
 
     static ViscoPlasticNoYieldSurfaceType& Instance() { return instance_; };
 
@@ -125,7 +115,22 @@ namespace MAT
   // forward declaration
   struct PreCalculatedTerms;
 
-  //! implementation of visco-plastic finite strain material with no yield surface
+  /*!
+   * \brief Implementation of a visco-plastic finite strain material with no yield surface.
+   *
+   * This class implements the visco-plastic finite strain material with no yield surface based on
+   * the following papers / student work:
+   *   -# L. Anand et al., An Elastic-Viscoplastic Model for Lithium", Journal of The
+   *      Electrochemical Society, 2019.
+   *   -# G. Weber et al., Finite deformation constitutive equations and a time integration
+   *      procedure for isotropic, hyperelastic-viscoplastic solids.", Computer Methods in Applied
+   *      Mechanics and Engineering, 1990.
+   *   -# Details on the implementation in master's thesis of Philipp Bofinger, Supervisor:
+   *      Christoph Schmidt.
+   *
+   * \note The time integration of the internal evolution equations is a backward one-step time
+   *       integration algorithm.
+   */
   class ViscoPlasticNoYieldSurface : public So3Material
   {
    public:
@@ -175,15 +180,15 @@ namespace MAT
     /*!
      * @brief elastic stiffness tensor in intermediate configuration is calculated
      *
-     * @param[in] EigenVectors  eigenvectors of \f$ F^{*}_\text{e} \f$
-     * @param[in] EigenValues   eigenvalues of \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return elastic stiffness tensor in intermediate configuration
      */
     LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& CalculateElasticStiffness(
-        const LINALG::Matrix<3, 3>& EigenVectors, const LINALG::Matrix<3, 1>& EigenValues) const;
+        const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const;
 
     /*!
-     * @brief calculate linearization for local newton loop
+     * @brief calculate linearization for local newton loop of internal evolution equations
      *
      * @param[in] equ_tens_stress_np  current equivalent tensile stress
      * @param[in] flow_resistance_np  current flow resistance
@@ -194,7 +199,8 @@ namespace MAT
         const double flow_resistance_np, const MAT::PreCalculatedTerms& terms);
 
     /*!
-     * @brief calculate the residual for the equations solved within the local newton loop
+     * @brief calculate the residual for the equations solved within the local newton loop of
+     * internal evolution equations
      *
      * @param[in] equ_tens_stress_np     current equivalent tensile stress
      * @param[in] equ_tens_trial_stress  last converged equivalent tensile stress
@@ -217,30 +223,30 @@ namespace MAT
         const LINALG::Matrix<3, 3>& Re_trial, const LINALG::Matrix<3, 3>& Me) const;
 
     /*!
-     * @param[in] Fe_trial      trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
-     * @param[out] Eigenvalues  eigenvalues of \f$ F^{*}_\text{e} \f$
-     * @param[out] Eigenvectors eigenvectors of \f$ F^{*}_\text{e} \f$
+     * @param[in] Fe_trial        trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
+     * @param[out] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
+     * @param[out] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
      */
     void CalculateTrialElasticDefgradEigenvaluesAndEigenvectors(
-        const LINALG::Matrix<3, 3>& Fe_trial, LINALG::Matrix<3, 1>& Eigenvalues,
-        LINALG::Matrix<3, 3>& Eigenvectors) const;
+        const LINALG::Matrix<3, 3>& Fe_trial, LINALG::Matrix<3, 1>& eigen_values,
+        LINALG::Matrix<3, 3>& eigen_vectors) const;
 
     /*!
-     * @param[in] Fe_trial      trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
-     * @param[in] EigenVectors  eigenvectors of \f$ F^{*}_\text{e} \f$
-     * @param[in] EigenValues   eigenvalues of \f$ F^{*}_\text{e} \f$
+     * @param[in] Fe_trial       trial elastic deformation gradient \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return trial elastic rotation tensor \f$ R^{*}_\text{e} \f$
      */
     LINALG::Matrix<3, 3>& CalculateTrialElasticRotation(const LINALG::Matrix<3, 3>& Fe_trial,
-        const LINALG::Matrix<3, 3>& EigenVectors, const LINALG::Matrix<3, 1>& EigenValues) const;
+        const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const;
 
     /*!
-     * @param[in] EigenVectors  eigenvectors of \f$ F^{*}_\text{e} \f$
-     * @param[in] EigenValues   eigenvalues of \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
      * @return logarithmic elastic strains in strain-like Voigt notation
      */
     LINALG::Matrix<6, 1>& CalculateLogElasticStrainInStrainLikeVoigtNotation(
-        const LINALG::Matrix<3, 3>& EigenVectors, const LINALG::Matrix<3, 1>& EigenValues) const;
+        const LINALG::Matrix<3, 3>& eigen_vectors, const LINALG::Matrix<3, 1>& eigen_values) const;
 
     /*!
      * @param[in] Me_trial_dev  deviatoric part of trial elastic stresses
@@ -251,22 +257,22 @@ namespace MAT
     /*!
      * @brief inverse viscous deformation gradient is updated and returned
      *
-     * @param[in] last_iFv      last converged inverse viscous deformation gradient
-     * @param[in] EigenVectors  eigenvectors of \f$ F^{*}_\text{e} \f$
-     * @param[in] EigenValues   eigenvalues of \f$ F^{*}_\text{e} \f$
-     * @param[in] eta           deviatoric elastic deformation share
+     * @param[in] last_iFv       last converged inverse viscous deformation gradient
+     * @param[in] eigen_vectors  eigenvectors of \f$ F^{*}_\text{e} \f$
+     * @param[in] eigen_values   eigenvalues of \f$ F^{*}_\text{e} \f$
+     * @param[in] eta            deviatoric elastic deformation share
      * @return inverse viscous deformation gradient
      */
     LINALG::Matrix<3, 3>& CalculateUpdatedInverseViscousDefgrad(
-        const LINALG::Matrix<3, 3>& last_iFv, const LINALG::Matrix<3, 3>& Eigenvectors,
-        const LINALG::Matrix<3, 1>& Eigenvalues, const double eta) const;
+        const LINALG::Matrix<3, 3>& last_iFv, const LINALG::Matrix<3, 3>& eigen_vectors,
+        const LINALG::Matrix<3, 1>& eigen_values, const double eta) const;
 
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
         int gp, int eleGID) override;
 
     /*!
-     * @brief Local Newton-loop of the return mapping
+     * @brief Local Newton-loop to solve for the internal evolution equations
      *
      * @param[in/out] x  solution vector
      * @param[in]     dt time step
