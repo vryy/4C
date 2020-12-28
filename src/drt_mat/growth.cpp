@@ -571,7 +571,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = PullBack4Tensor(F_ginv, cmatdach);
+    cmatelast = PullBackFourTensor(F_ginv, cmatdach);
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain
@@ -657,7 +657,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = PullBack4Tensor(F_ginv, cmatdach);
+    cmatelast = PullBackFourTensor(F_ginv, cmatdach);
 
     *cmat = cmatelast;
   }
@@ -826,7 +826,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
  | notation) via the 2th order deformation gradient (also in matrix     |
  | notation)                                                  thon 01/15|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBack4Tensor(
+LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBackFourTensor(
     const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat)
 {
   FourTensor CMAT = {{{{0.0}}}};
@@ -835,42 +835,42 @@ LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBack4Tensor(
   // We can use the fact that CResult(i,j,k,l)=CResult(k,l,i,j) if we have a hyper-elastic material
   LINALG::Matrix<6, 6> CResult(true);
 
-  CResult(0, 0) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 0, 0);
-  CResult(0, 1) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 1, 1);
-  CResult(0, 2) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 2, 2);
-  CResult(0, 3) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 0, 1);
-  CResult(0, 4) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 1, 2);
-  CResult(0, 5) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 0, 2);
+  CResult(0, 0) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 0);
+  CResult(0, 1) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 1);
+  CResult(0, 2) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 2, 2);
+  CResult(0, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 1);
+  CResult(0, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 2);
+  CResult(0, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 2);
   CResult(1, 0) = CResult(0, 1);
-  CResult(1, 1) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 1, 1);
-  CResult(1, 2) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 2, 2);
-  CResult(1, 3) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 0, 1);
-  CResult(1, 4) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 1, 2);
-  CResult(1, 5) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 0, 2);
+  CResult(1, 1) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 1);
+  CResult(1, 2) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 2, 2);
+  CResult(1, 3) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 1);
+  CResult(1, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 2);
+  CResult(1, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 2);
   CResult(2, 0) = CResult(0, 2);
   CResult(2, 1) = CResult(1, 2);
-  CResult(2, 2) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 2, 2);
-  CResult(2, 3) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 0, 1);
-  CResult(2, 4) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 1, 2);
-  CResult(2, 5) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 0, 2);
+  CResult(2, 2) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 2, 2);
+  CResult(2, 3) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 1);
+  CResult(2, 4) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 1, 2);
+  CResult(2, 5) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 2);
   CResult(3, 0) = CResult(0, 3);
   CResult(3, 1) = CResult(1, 3);
   CResult(3, 2) = CResult(2, 3);
-  CResult(3, 3) = PullBack4Tensorijkl(defgr, CMAT, 0, 1, 0, 1);
-  CResult(3, 4) = PullBack4Tensorijkl(defgr, CMAT, 0, 1, 1, 2);
-  CResult(3, 5) = PullBack4Tensorijkl(defgr, CMAT, 0, 1, 0, 2);
+  CResult(3, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 1);
+  CResult(3, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 1, 2);
+  CResult(3, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 2);
   CResult(4, 0) = CResult(0, 4);
   CResult(4, 1) = CResult(1, 4);
   CResult(4, 2) = CResult(2, 4);
   CResult(4, 3) = CResult(3, 4);
-  CResult(4, 4) = PullBack4Tensorijkl(defgr, CMAT, 1, 2, 1, 2);
-  CResult(4, 5) = PullBack4Tensorijkl(defgr, CMAT, 1, 2, 0, 2);
+  CResult(4, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 1, 2);
+  CResult(4, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 0, 2);
   CResult(5, 0) = CResult(0, 5);
   CResult(5, 1) = CResult(1, 5);
   CResult(5, 2) = CResult(2, 5);
   CResult(5, 3) = CResult(3, 5);
   CResult(5, 4) = CResult(4, 5);
-  CResult(5, 5) = PullBack4Tensorijkl(defgr, CMAT, 0, 2, 0, 2);
+  CResult(5, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 2, 0, 2);
 
   return CResult;
 }
@@ -880,8 +880,8 @@ LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBack4Tensor(
  | tensor (in matrix/voigt notation) /// via the 2th order deformation                 |
  | gradient (also in matrix notation)                                      Thon  01/15 |
  *-------------------------------------------------------------------------------------*/
-double MAT::GrowthVolumetric::PullBack4Tensorijkl(const LINALG::Matrix<3, 3>& defgr,
-    FourTensor& FourTensor, const int i, const int j, const int k, const int l)
+double MAT::GrowthVolumetric::PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr,
+    const FourTensor& FourTensor, const int i, const int j, const int k, const int l)
 {
   double CResult_ijkl(0.0);
 

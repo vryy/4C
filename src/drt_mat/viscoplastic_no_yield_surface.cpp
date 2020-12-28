@@ -261,7 +261,7 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const LINALG::Matrix<3, 3>* defgr
   UTILS::VOIGT::Stresses::MatrixToVector(PK2, *stress);
 
   auto cmatel = CalculateElasticStiffness(EigenvectorsFe_trial, EigenvaluesFe_trial);
-  *cmat = MAT::GrowthVolumetric::PullBack4Tensor(current_iFv, cmatel);
+  *cmat = MAT::GrowthVolumetric::PullBackFourTensor(current_iFv, cmatel);
 }
 
 /*----------------------------------------------------------------------*
