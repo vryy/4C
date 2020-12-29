@@ -26,7 +26,7 @@ void PARTICLEENGINE::ParticleContainerBundle::Init()
 }
 
 void PARTICLEENGINE::ParticleContainerBundle::Setup(
-    const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
+    const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes)
 {
   std::shared_ptr<ParticleContainer> container;
 
@@ -40,16 +40,16 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
   for (auto& typeIt : particlestatestotypes)
   {
     // get particle type
-    TypeEnum typeEnum = typeIt.first;
+    ParticleType type = typeIt.first;
 
     // insert particle type into set of stored containers
-    storedtypes_.insert(typeEnum);
+    storedtypes_.insert(type);
 
     // allocate memory for container of owned and ghosted particles
-    (containers_[typeEnum]).resize(2);
+    (containers_[type]).resize(2);
 
     // set of particle state enums of current particle type (equal for owned and ghosted particles)
-    const std::set<StateEnum>& stateEnumSet = typeIt.second;
+    const std::set<ParticleState>& stateset = typeIt.second;
 
     // initial size of particle container
     int initialsize = 1;
@@ -58,17 +58,17 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
     container = std::make_shared<ParticleContainer>();
     container->Init();
     // setup container of owned particles
-    container->Setup(initialsize, stateEnumSet);
+    container->Setup(initialsize, stateset);
     // set container of owned particles
-    (containers_[typeEnum])[Owned] = container;
+    (containers_[type])[Owned] = container;
 
     // create and init container of ghosted particles
     container = std::make_shared<ParticleContainer>();
     container->Init();
     // setup container of ghosted particles
-    container->Setup(initialsize, stateEnumSet);
+    container->Setup(initialsize, stateset);
     // set container of ghosted particles
-    (containers_[typeEnum])[Ghosted] = container;
+    (containers_[type])[Ghosted] = container;
   }
 }
 
@@ -76,20 +76,19 @@ void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllConta
     std::shared_ptr<std::vector<char>>& particlebuffer) const
 {
   // iterate over particle types
-  for (auto& typeEnum : storedtypes_)
+  for (auto& type : storedtypes_)
   {
     // get container of owned particles
-    ParticleContainer* container = (containers_[typeEnum])[Owned].get();
+    ParticleContainer* container = (containers_[type])[Owned].get();
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
     {
       int globalid(0);
-      ParticleStates particleStates;
-      container->GetParticle(index, globalid, particleStates);
+      ParticleStates states;
+      container->GetParticle(index, globalid, states);
 
-      ParticleObjShrdPtr particleobject =
-          std::make_shared<ParticleObject>(typeEnum, globalid, particleStates);
+      ParticleObjShrdPtr particleobject = std::make_shared<ParticleObject>(type, globalid, states);
 
       // pack data for writing
       DRT::PackBuffer data;
@@ -105,20 +104,19 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
     std::vector<ParticleObjShrdPtr>& particlesstored) const
 {
   // iterate over particle types
-  for (auto& typeEnum : storedtypes_)
+  for (auto& type : storedtypes_)
   {
     // get container of owned particles
-    ParticleContainer* container = (containers_[typeEnum])[Owned].get();
+    ParticleContainer* container = (containers_[type])[Owned].get();
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
     {
       int globalid(0);
-      ParticleStates particleStates;
-      container->GetParticle(index, globalid, particleStates);
+      ParticleStates states;
+      container->GetParticle(index, globalid, states);
 
-      particlesstored.emplace_back(
-          std::make_shared<ParticleObject>(typeEnum, globalid, particleStates));
+      particlesstored.emplace_back(std::make_shared<ParticleObject>(type, globalid, states));
     }
   }
 }

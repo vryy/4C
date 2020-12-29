@@ -96,7 +96,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
-    void Setup(const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
+    void Setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
 
     /*!
      * \brief write restart of particle engine
@@ -435,7 +435,7 @@ namespace PARTICLEENGINE
 
     int GetNumberOfParticles() const override;
 
-    int GetNumberOfParticlesOfSpecificType(const TypeEnum typeEnum) const override;
+    int GetNumberOfParticlesOfSpecificType(const ParticleType type) const override;
 
     /*!
      * \brief write binning discretization output
@@ -490,7 +490,7 @@ namespace PARTICLEENGINE
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
     void SetupParticleContainerBundle(
-        const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes) const;
+        const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes) const;
 
     /*!
      * \brief init particle unique global identifier handler
@@ -513,7 +513,8 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding particle states
      */
-    void SetupDataStorage(const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
+    void SetupDataStorage(
+        const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
 
     /*!
      * \brief init particle runtime vtp writer
@@ -691,7 +692,7 @@ namespace PARTICLEENGINE
      * \param[in] directghosting direct ghosting information
      */
     void CommunicateDirectGhostingMap(
-        std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting);
+        std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
 
     /*!
      * \brief insert owned particles received from other processors
@@ -713,7 +714,7 @@ namespace PARTICLEENGINE
      */
     void InsertGhostedParticles(
         std::vector<std::vector<std::pair<int, ParticleObjShrdPtr>>>& particlestoinsert,
-        std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>>& directghosting);
+        std::map<int, std::map<ParticleType, std::map<int, std::pair<int, int>>>>& directghosting);
 
     /*!
      * \brief insert refreshed particles received from other processors

@@ -13,11 +13,11 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& stateEnum)
+int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& state)
 {
   int dim = 0;
 
-  switch (stateEnum)
+  switch (state)
   {
     // scalar states
     case Radius:
@@ -66,17 +66,17 @@ int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& stateEnum)
       break;
 
     default:
-      dserror("particle state enum unknown!");
+      dserror("particle state unknown!");
   }
 
   return dim;
 }
 
-std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& stateEnum)
+std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& state)
 {
   std::string name;
 
-  switch (stateEnum)
+  switch (state)
   {
     case Radius:
       name = "radius";
@@ -193,33 +193,33 @@ std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& stateEnum)
       name = "modified acceleration last iteration";
       break;
     default:
-      dserror("particle state enum unknown!");
+      dserror("particle state unknown!");
   }
 
   return name;
 }
 
-enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& stateName)
+enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& name)
 {
   enum ParticleState state;
 
-  if (stateName == "density")
+  if (name == "density")
     state = Density;
-  else if (stateName == "pressure")
+  else if (name == "pressure")
     state = Pressure;
-  else if (stateName == "temperature")
+  else if (name == "temperature")
     state = Temperature;
   else
-    dserror("particle state '%s' unknown!", stateName.c_str());
+    dserror("particle state '%s' unknown!", name.c_str());
 
   return state;
 }
 
-std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& typeEnum)
+std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& type)
 {
   std::string name;
 
-  switch (typeEnum)
+  switch (type)
   {
     case Phase1:
       name = "phase1";
@@ -240,39 +240,39 @@ std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& typeEnum)
       name = "neumannphase";
       break;
     default:
-      dserror("particle type enum unknown!");
+      dserror("particle type unknown!");
   }
 
   return name;
 }
 
-enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::string& typeName)
+enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::string& name)
 {
   enum ParticleType type;
 
-  if (typeName == "phase1")
+  if (name == "phase1")
     type = Phase1;
-  else if (typeName == "phase2")
+  else if (name == "phase2")
     type = Phase2;
-  else if (typeName == "boundaryphase")
+  else if (name == "boundaryphase")
     type = BoundaryPhase;
-  else if (typeName == "rigidphase")
+  else if (name == "rigidphase")
     type = RigidPhase;
-  else if (typeName == "dirichletphase")
+  else if (name == "dirichletphase")
     type = DirichletPhase;
-  else if (typeName == "neumannphase")
+  else if (name == "neumannphase")
     type = NeumannPhase;
   else
-    dserror("particle type '%s' unknown!", typeName.c_str());
+    dserror("particle type '%s' unknown!", name.c_str());
 
   return type;
 }
 
-std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& statusEnum)
+std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& status)
 {
   std::string name;
 
-  switch (statusEnum)
+  switch (status)
   {
     case Owned:
       name = "owned";
@@ -281,7 +281,7 @@ std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& statusEn
       name = "ghosted";
       break;
     default:
-      dserror("particle status enum unknown!");
+      dserror("particle status unknown!");
   }
 
   return name;

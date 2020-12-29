@@ -64,7 +64,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particlestatestotypes particle types and corresponding states
      */
-    void Setup(const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes);
+    void Setup(const std::map<ParticleType, std::set<ParticleState>>& particlestatestotypes);
 
     /*!
      * \brief get particle types of stored containers
@@ -73,26 +73,26 @@ namespace PARTICLEENGINE
      *
      * \return reference to particle types of stored containers
      */
-    inline const std::set<TypeEnum>& GetParticleTypes() const { return storedtypes_; };
+    inline const std::set<ParticleType>& GetParticleTypes() const { return storedtypes_; };
 
     /*!
      * \brief get specific particle container
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] typeEnum   particle type enum
-     * \param[in] statusEnum particle status enum
+     * \param[in] type   particle type
+     * \param[in] status particle status
      *
      * @return pointer to particle container
      */
-    inline ParticleContainer* GetSpecificContainer(TypeEnum typeEnum, StatusEnum statusEnum) const
+    inline ParticleContainer* GetSpecificContainer(ParticleType type, ParticleStatus status) const
     {
 #ifdef DEBUG
-      if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
+      if (not storedtypes_.count(type))
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      return (containers_[typeEnum])[statusEnum].get();
+      return (containers_[type])[status].get();
     };
 
     //! \name manipulate particle states of owned particles of specific type
@@ -104,18 +104,18 @@ namespace PARTICLEENGINE
      * \author Sebastian Fuchs \date 05/2018
      *
      * \param[in] fac       scale factor
-     * \param[in] stateEnum particle state enum
-     * \param[in] typeEnum  particle type enum
+     * \param[in] state particle state
+     * \param[in] type  particle type
      */
     inline void ScaleStateSpecificContainer(
-        double fac, StateEnum stateEnum, TypeEnum typeEnum) const
+        double fac, ParticleState state, ParticleType type) const
     {
 #ifdef DEBUG
-      if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
+      if (not storedtypes_.count(type))
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[typeEnum])[Owned])->ScaleState(fac, stateEnum);
+      ((containers_[type])[Owned])->ScaleState(fac, state);
     };
 
     /*!
@@ -124,21 +124,21 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] facA       first scale factor
-     * \param[in] stateEnumA first particle state enum
-     * \param[in] facB       second scale factor
-     * \param[in] stateEnumB second particle state enum
-     * \param[in] typeEnum   particle type enum
+     * \param[in] facA   first scale factor
+     * \param[in] stateA first particle state
+     * \param[in] facB   second scale factor
+     * \param[in] stateB second particle state
+     * \param[in] type   particle type
      */
-    inline void UpdateStateSpecificContainer(double facA, StateEnum stateEnumA, double facB,
-        StateEnum stateEnumB, TypeEnum typeEnum) const
+    inline void UpdateStateSpecificContainer(double facA, ParticleState stateA, double facB,
+        ParticleState stateB, ParticleType type) const
     {
 #ifdef DEBUG
-      if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
+      if (not storedtypes_.count(type))
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[typeEnum])[Owned])->UpdateState(facA, stateEnumA, facB, stateEnumB);
+      ((containers_[type])[Owned])->UpdateState(facA, stateA, facB, stateB);
     };
 
     /*!
@@ -146,19 +146,19 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] val       particle state
-     * \param[in] stateEnum particle state enum
-     * \param[in] typeEnum  particle type enum
+     * \param[in] val   particle state value
+     * \param[in] state particle state
+     * \param[in] type  particle type
      */
     inline void SetStateSpecificContainer(
-        std::vector<double> val, StateEnum stateEnum, TypeEnum typeEnum) const
+        std::vector<double> val, ParticleState state, ParticleType type) const
     {
 #ifdef DEBUG
-      if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
+      if (not storedtypes_.count(type))
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[typeEnum])[Owned])->SetState(val, stateEnum);
+      ((containers_[type])[Owned])->SetState(val, state);
     };
 
     /*!
@@ -166,17 +166,17 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] stateEnum particle state enum
-     * \param[in] typeEnum  particle type enum
+     * \param[in] state particle state
+     * \param[in] type  particle type
      */
-    inline void ClearStateSpecificContainer(StateEnum stateEnum, TypeEnum typeEnum) const
+    inline void ClearStateSpecificContainer(ParticleState state, ParticleType type) const
     {
 #ifdef DEBUG
-      if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
+      if (not storedtypes_.count(type))
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(type).c_str());
 #endif
 
-      ((containers_[typeEnum])[Owned])->ClearState(stateEnum);
+      ((containers_[type])[Owned])->ClearState(state);
     };
 
     //! @}
@@ -189,13 +189,12 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] fac       scale factor
-     * \param[in] stateEnum particle state enum
+     * \param[in] fac   scale factor
+     * \param[in] state particle state
      */
-    inline void ScaleStateAllContainers(double fac, StateEnum stateEnum) const
+    inline void ScaleStateAllContainers(double fac, ParticleState state) const
     {
-      for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[Owned])->ScaleState(fac, stateEnum);
+      for (auto& type : storedtypes_) ((containers_[type])[Owned])->ScaleState(fac, state);
     };
 
     /*!
@@ -204,16 +203,16 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] facA       first scale factor
-     * \param[in] stateEnumA first particle state enum
-     * \param[in] facB       second scale factor
-     * \param[in] stateEnumB second particle state enum
+     * \param[in] facA   first scale factor
+     * \param[in] stateA first particle state
+     * \param[in] facB   second scale factor
+     * \param[in] stateB second particle state
      */
     inline void UpdateStateAllContainers(
-        double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB) const
+        double facA, ParticleState stateA, double facB, ParticleState stateB) const
     {
-      for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[Owned])->UpdateState(facA, stateEnumA, facB, stateEnumB);
+      for (auto& type : storedtypes_)
+        ((containers_[type])[Owned])->UpdateState(facA, stateA, facB, stateB);
     };
 
     /*!
@@ -221,13 +220,12 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] val       particle state
-     * \param[in] stateEnum particle state enum
+     * \param[in] val   particle state value
+     * \param[in] state particle state
      */
-    inline void SetStateAllContainers(std::vector<double> val, StateEnum stateEnum) const
+    inline void SetStateAllContainers(std::vector<double> val, ParticleState state) const
     {
-      for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[Owned])->SetState(val, stateEnum);
+      for (auto& type : storedtypes_) ((containers_[type])[Owned])->SetState(val, state);
     };
 
     /*!
@@ -235,11 +233,11 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] stateEnum particle state enum
+     * \param[in] state particle state
      */
-    inline void ClearStateAllContainers(StateEnum stateEnum) const
+    inline void ClearStateAllContainers(ParticleState state) const
     {
-      for (auto& typeEnum : storedtypes_) ((containers_[typeEnum])[Owned])->ClearState(stateEnum);
+      for (auto& type : storedtypes_) ((containers_[type])[Owned])->ClearState(state);
     };
 
     //! @}
@@ -252,12 +250,12 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 07/2019
      *
-     * \param[in] statusEnum particle status enum
+     * \param[in] status particle status
      */
-    inline void CheckAndDecreaseSizeAllContainersOfSpecificStatus(StatusEnum statusEnum) const
+    inline void CheckAndDecreaseSizeAllContainersOfSpecificStatus(ParticleStatus status) const
     {
-      for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[statusEnum])->CheckAndDecreaseContainerSize();
+      for (auto& type : storedtypes_)
+        ((containers_[type])[status])->CheckAndDecreaseContainerSize();
     }
 
     /*!
@@ -265,11 +263,11 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 05/2018
      *
-     * \param[in] statusEnum particle status enum
+     * \param[in] status particle status
      */
-    inline void ClearAllContainersOfSpecificStatus(StatusEnum statusEnum) const
+    inline void ClearAllContainersOfSpecificStatus(ParticleStatus status) const
     {
-      for (auto& typeEnum : storedtypes_) ((containers_[typeEnum])[statusEnum])->ClearContainer();
+      for (auto& type : storedtypes_) ((containers_[type])[status])->ClearContainer();
     };
 
     //! @}
@@ -301,7 +299,7 @@ namespace PARTICLEENGINE
 
    private:
     //! set of particle types of stored containers
-    std::set<TypeEnum> storedtypes_;
+    std::set<ParticleType> storedtypes_;
 
     //! collection of particle containers indexed by particle type enum and particle status enum
     TypeStatusContainers containers_;

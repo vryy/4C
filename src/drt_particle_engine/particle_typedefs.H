@@ -69,7 +69,7 @@ namespace PARTICLEENGINE
    * Local index tuple of a particle consisting of particle type enum, particle status enum, and
    * index of particle in container.
    */
-  using LocalIndexTuple = std::tuple<TypeEnum, StatusEnum, int>;
+  using LocalIndexTuple = std::tuple<ParticleType, ParticleStatus, int>;
 
   //! shared pointer to local index tuple of a particle
   using LocalIndexTupleShrdPtr = std::shared_ptr<LocalIndexTuple>;
@@ -84,13 +84,13 @@ namespace PARTICLEENGINE
    * \note The information of the particle status (owned or ghosted) can be deduced directly from
    *       the status of the bin.
    */
-  using ParticlesToBins = std::vector<std::vector<std::pair<TypeEnum, int>>>;
+  using ParticlesToBins = std::vector<std::vector<std::pair<ParticleType, int>>>;
 
   //! potential particle neighbor pairs
   using PotentialParticleNeighbors = std::vector<std::pair<LocalIndexTuple, LocalIndexTuple>>;
 
   //! relate particle type enums and particle state enums to be refreshed
-  using StatesOfTypesToRefresh = std::vector<std::pair<TypeEnum, std::vector<StateEnum>>>;
+  using StatesOfTypesToRefresh = std::vector<std::pair<ParticleType, std::vector<ParticleState>>>;
 
   /*!
    * \brief relate range of owned bins to corresponding column wall element
@@ -104,7 +104,7 @@ namespace PARTICLEENGINE
   using PotentialWallNeighbors = std::vector<std::pair<LocalIndexTuple, DRT::Element*>>;
 
   //! relate particle source to target type after phase change
-  using ParticleTypeToType = std::tuple<TypeEnum, TypeEnum, int>;
+  using ParticleTypeToType = std::tuple<ParticleType, ParticleType, int>;
 
 }  // namespace PARTICLEENGINE
 

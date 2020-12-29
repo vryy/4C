@@ -260,11 +260,11 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 07/2018
      *
-     * \param[in] particleType particle type enum
+     * \param[in] type particle type
      *
      * \return number of particles on this processors
      */
-    virtual int GetNumberOfParticlesOfSpecificType(const TypeEnum particleType) const = 0;
+    virtual int GetNumberOfParticlesOfSpecificType(const ParticleType type) const = 0;
   };
 
 }  // namespace PARTICLEENGINE
