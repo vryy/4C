@@ -194,6 +194,12 @@ namespace PARTICLEENGINE
     /*!
      * \brief get pointer to state of a particle at index
      *
+     * This is the default method to be used to get a pointer to the state of a particle at a
+     * certain index.
+     *
+     * \note Throws an error in the debug version in case the requested state is not stored in the
+     *       particle container.
+     *
      * \author Sebastian Fuchs \date 03/2018
      *
      * \param[in] stateEnum particle state enum
@@ -213,6 +219,36 @@ namespace PARTICLEENGINE
 #endif
 
       return &((states_[stateEnum])[index * statedim_[stateEnum]]);
+    };
+
+    /*!
+     * \brief conditionally get pointer to state of a particle at index
+     *
+     * This method to get a pointer to the state of a particle at a certain index is used in cases
+     * when a state may not be stored in the particle container. Conditionally, a pointer is
+     * returned in case the state is stored in the particle container, otherwise, a nullptr is
+     * returned.
+     *
+     * \note The returned pointer may not be used to access memory without checking for a nullptr.
+     *
+     * \author Sebastian Fuchs \date 12/2020
+     *
+     * \param[in] stateEnum particle state enum
+     * \param[in] index     index of particle in container
+     *
+     * \return pointer to particle state or nullptr
+     */
+    inline double* CondGetPtrToState(StateEnum stateEnum, int index)
+    {
+#ifdef DEBUG
+      if (index < 0 or index > (particlestored_ - 1))
+        dserror("can not return pointer to state of particle as index %d out of bounds!", index);
+#endif
+
+      if (storedstates_.count(stateEnum))
+        return &((states_[stateEnum])[index * statedim_[stateEnum]]);
+
+      return nullptr;
     };
 
     /*!
