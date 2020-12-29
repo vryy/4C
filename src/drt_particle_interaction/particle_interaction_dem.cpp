@@ -525,15 +525,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
     const double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
     const double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
     const double* force = container->GetPtrToState(PARTICLEENGINE::Force, 0);
+    const double* moment = container->CondGetPtrToState(PARTICLEENGINE::Moment, 0);
     double* acc = container->GetPtrToState(PARTICLEENGINE::Acceleration, 0);
-
-    const double* moment = container->HaveStoredState(PARTICLEENGINE::Moment)
-                               ? container->GetPtrToState(PARTICLEENGINE::Moment, 0)
-                               : nullptr;
-
-    double* angacc = container->HaveStoredState(PARTICLEENGINE::AngularAcceleration)
-                         ? container->GetPtrToState(PARTICLEENGINE::AngularAcceleration, 0)
-                         : nullptr;
+    double* angacc = container->CondGetPtrToState(PARTICLEENGINE::AngularAcceleration, 0);
 
     // compute acceleration
     for (int i = 0; i < particlestored; ++i)
@@ -541,9 +535,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 
     // compute angular acceleration
     if (angacc and moment)
+    {
       for (int i = 0; i < particlestored; ++i)
         UTILS::vec_addscale(&angacc[statedim * i],
             (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);
+    }
   }
 }
 
@@ -611,10 +607,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
     const double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
     const double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
     const double* vel = container->GetPtrToState(PARTICLEENGINE::Velocity, 0);
-
-    double* angvel = container->HaveStoredState(PARTICLEENGINE::AngularVelocity)
-                         ? container->GetPtrToState(PARTICLEENGINE::AngularVelocity, 0)
-                         : nullptr;
+    double* angvel = container->CondGetPtrToState(PARTICLEENGINE::AngularVelocity, 0);
 
     // add translational kinetic energy contribution
     for (int i = 0; i < particlestored; ++i)
@@ -622,9 +615,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
 
     // add rotational kinetic energy contribution
     if (angvel)
+    {
       for (int i = 0; i < particlestored; ++i)
         kineticenergy += 0.5 * (0.4 * mass[i] * UTILS::pow<2>(radius[i])) *
                          UTILS::vec_dot(&angvel[statedim * i], &angvel[statedim * i]);
+    }
   }
 }
 

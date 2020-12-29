@@ -1706,9 +1706,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
     const double* relpos_i =
         container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
     double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-    double* angvel_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::AngularVelocity))
-      angvel_i = container_i->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
+    double* angvel_i = container_i->CondGetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
 
     // set velocities of particle i
     PARTICLEINTERACTION::UTILS::vec_set(vel_i, vel_k);
@@ -1762,9 +1760,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
     const double* relpos_i =
         container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
     double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
-    double* angacc_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
-      angacc_i = container_i->GetPtrToState(PARTICLEENGINE::AngularAcceleration, particle_i);
+    double* angacc_i =
+        container_i->CondGetPtrToState(PARTICLEENGINE::AngularAcceleration, particle_i);
 
     // evaluate relative velocity of particle i
     double relvel_i[3];

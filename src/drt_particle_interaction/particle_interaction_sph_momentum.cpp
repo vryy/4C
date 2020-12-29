@@ -293,13 +293,10 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
     if (intfluidtypes_.count(type_i))
       acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
-    const double* mod_vel_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
-      mod_vel_i = container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i);
-
-    double* mod_acc_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration))
-      mod_acc_i = container_i->GetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
+    const double* mod_vel_i =
+        container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i);
+    double* mod_acc_i =
+        container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
 
     // get pointer to particle states
     const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
@@ -312,14 +309,12 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() co
     if (intfluidtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
       acc_j = container_j->GetPtrToState(PARTICLEENGINE::Acceleration, particle_j);
 
-    const double* mod_vel_j = nullptr;
-    if (container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
-      mod_vel_j = container_j->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_j);
+    const double* mod_vel_j =
+        container_j->CondGetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_j);
 
     double* mod_acc_j = nullptr;
-    if (container_j->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration) and
-        status_j == PARTICLEENGINE::Owned)
-      mod_acc_j = container_j->GetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_j);
+    if (status_j == PARTICLEENGINE::Owned)
+      mod_acc_j = container_j->CondGetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_j);
 
     // evaluate specific coefficient
     double speccoeff_ij(0.0);
@@ -484,14 +479,12 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
     if (status_i == PARTICLEENGINE::Owned)
       acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
-    const double* mod_vel_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity))
-      mod_vel_i = container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i);
+    const double* mod_vel_i =
+        container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i);
 
     double* mod_acc_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration) and
-        status_i == PARTICLEENGINE::Owned)
-      mod_acc_i = container_i->GetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
+    if (status_i == PARTICLEENGINE::Owned)
+      mod_acc_i = container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
 
     // get pointer to boundary particle states
     const double* mass_j = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -504,8 +497,8 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleBoundaryContribut
     const double* dens_j = &temp_dens;
 
     double* force_j = nullptr;
-    if (container_j->HaveStoredState(PARTICLEENGINE::Force) and status_j == PARTICLEENGINE::Owned)
-      force_j = container_j->GetPtrToState(PARTICLEENGINE::Force, particle_j);
+    if (status_j == PARTICLEENGINE::Owned)
+      force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
 
     // contribution from neighboring boundary particle j
     double acc_ij[3] = {0.0};
@@ -677,14 +670,9 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
     double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
     const double* mod_vel_i =
-        container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-            : nullptr;
-
+        container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i);
     double* mod_acc_i =
-        container_i->HaveStoredState(PARTICLEENGINE::ModifiedAcceleration)
-            ? container_i->GetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i)
-            : nullptr;
+        container_i->CondGetPtrToState(PARTICLEENGINE::ModifiedAcceleration, particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;

@@ -186,16 +186,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution() 
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
-
-    double* denssum_i = container_i->HaveStoredState(PARTICLEENGINE::DensitySum)
-                            ? container_i->GetPtrToState(PARTICLEENGINE::DensitySum, particle_i)
-                            : nullptr;
+    double* denssum_i = container_i->CondGetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
 
     const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
-
-    double* denssum_j = container_j->HaveStoredState(PARTICLEENGINE::DensitySum)
-                            ? container_j->GetPtrToState(PARTICLEENGINE::DensitySum, particle_j)
-                            : nullptr;
+    double* denssum_j = container_j->CondGetPtrToState(PARTICLEENGINE::DensitySum, particle_j);
 
     // sum contribution of neighboring particle j
     if (denssum_i) denssum_i[0] += particlepair.Wij_ * mass_i[0];
@@ -370,9 +364,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() co
                                ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
                                : &(material_j->initDensity_);
 
-    double* colorfield_i = container_i->HaveStoredState(PARTICLEENGINE::Colorfield)
-                               ? container_i->GetPtrToState(PARTICLEENGINE::Colorfield, particle_i)
-                               : nullptr;
+    double* colorfield_i = container_i->CondGetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
 
     const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
@@ -380,9 +372,7 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() co
                                ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
                                : &(material_i->initDensity_);
 
-    double* colorfield_j = container_j->HaveStoredState(PARTICLEENGINE::Colorfield)
-                               ? container_j->GetPtrToState(PARTICLEENGINE::Colorfield, particle_j)
-                               : nullptr;
+    double* colorfield_j = container_j->CondGetPtrToState(PARTICLEENGINE::Colorfield, particle_j);
 
     // sum contribution of neighboring particle j
     if (colorfield_i) colorfield_i[0] += (particlepair.Wij_ / dens_j[0]) * mass_j[0];
@@ -540,9 +530,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
                                ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
                                : &(material_j->initDensity_);
 
-    double* densdot_i = container_i->HaveStoredState(PARTICLEENGINE::DensityDot)
-                            ? container_i->GetPtrToState(PARTICLEENGINE::DensityDot, particle_i)
-                            : nullptr;
+    double* densdot_i = container_i->CondGetPtrToState(PARTICLEENGINE::DensityDot, particle_i);
 
     const double* vel_j =
         container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
@@ -555,9 +543,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
                                ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
                                : &(material_i->initDensity_);
 
-    double* densdot_j = container_j->HaveStoredState(PARTICLEENGINE::DensityDot)
-                            ? container_j->GetPtrToState(PARTICLEENGINE::DensityDot, particle_j)
-                            : nullptr;
+    double* densdot_j = container_j->CondGetPtrToState(PARTICLEENGINE::DensityDot, particle_j);
 
     // relative velocity (use modified velocities in case of transport velocity formulation)
     double vel_ij[3];

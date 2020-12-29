@@ -120,17 +120,14 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
 
     // get pointer to particle states
     const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
-
-    double* force_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::Force))
-      force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
+    double* force_i = container_i->CondGetPtrToState(PARTICLEENGINE::Force, particle_i);
 
     // get pointer to particle states
     const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
 
     double* force_j = nullptr;
-    if (container_j->HaveStoredState(PARTICLEENGINE::Force) and status_j == PARTICLEENGINE::Owned)
-      force_j = container_j->GetPtrToState(PARTICLEENGINE::Force, particle_j);
+    if (status_j == PARTICLEENGINE::Owned)
+      force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
 
     if (particlepair.absdist_ < initialparticlespacing)
     {

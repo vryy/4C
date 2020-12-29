@@ -273,10 +273,7 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
                                : &(basematerial_i->initDensity_);
 
     const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
-
-    double* tempdot_i = container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot)
-                            ? container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i)
-                            : nullptr;
+    double* tempdot_i = container_i->CondGetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
     const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
@@ -285,10 +282,7 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
                                : &(basematerial_j->initDensity_);
 
     const double* temp_j = container_j->GetPtrToState(PARTICLEENGINE::Temperature, particle_j);
-
-    double* tempdot_j = container_j->HaveStoredState(PARTICLEENGINE::TemperatureDot)
-                            ? container_j->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_j)
-                            : nullptr;
+    double* tempdot_j = container_j->CondGetPtrToState(PARTICLEENGINE::TemperatureDot, particle_j);
 
     // thermal conductivities
     const double& k_i = thermomaterial_i->thermalConductivity_;
@@ -360,11 +354,8 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
                                : &(basematerial_i->initDensity_);
 
     const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
-
     double* tempgrad_i =
-        container_i->HaveStoredState(PARTICLEENGINE::TemperatureGradient)
-            ? container_i->GetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_i)
-            : nullptr;
+        container_i->CondGetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_i);
 
     const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
@@ -373,11 +364,8 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
                                : &(basematerial_j->initDensity_);
 
     const double* temp_j = container_j->GetPtrToState(PARTICLEENGINE::Temperature, particle_j);
-
     double* tempgrad_j =
-        container_j->HaveStoredState(PARTICLEENGINE::TemperatureGradient)
-            ? container_j->GetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_j)
-            : nullptr;
+        container_j->CondGetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_j);
 
     const double temp_ji = temp_j[0] - temp_i[0];
 
