@@ -17,13 +17,13 @@ PARTICLEENGINE::ParticleObjectType PARTICLEENGINE::ParticleObjectType::instance_
 
 DRT::ParObject* PARTICLEENGINE::ParticleObjectType::Create(const std::vector<char>& data)
 {
-  PARTICLEENGINE::ParticleObject* my_particleobject = new PARTICLEENGINE::ParticleObject();
+  ParticleObject* my_particleobject = new ParticleObject();
   my_particleobject->Unpack(data);
   return my_particleobject;
 }
 
 PARTICLEENGINE::ParticleObject::ParticleObject()
-    : particletype_(PARTICLEENGINE::Phase1), particleglobalid_(0), bingid_(-1), containerindex_(-1)
+    : particletype_(Phase1), particleglobalid_(0), bingid_(-1), containerindex_(-1)
 {
   // empty constructor
 }

@@ -28,7 +28,7 @@ void PARTICLEENGINE::ParticleContainerBundle::Init()
 void PARTICLEENGINE::ParticleContainerBundle::Setup(
     const std::map<TypeEnum, std::set<StateEnum>>& particlestatestotypes)
 {
-  std::shared_ptr<PARTICLEENGINE::ParticleContainer> container;
+  std::shared_ptr<ParticleContainer> container;
 
   // determine necessary size of vector for particle types
   const int typevectorsize = ((--particlestatestotypes.end())->first) + 1;
@@ -55,20 +55,20 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
     int initialsize = 1;
 
     // create and init container of owned particles
-    container = std::make_shared<PARTICLEENGINE::ParticleContainer>();
+    container = std::make_shared<ParticleContainer>();
     container->Init();
     // setup container of owned particles
     container->Setup(initialsize, stateEnumSet);
     // set container of owned particles
-    (containers_[typeEnum])[PARTICLEENGINE::Owned] = container;
+    (containers_[typeEnum])[Owned] = container;
 
     // create and init container of ghosted particles
-    container = std::make_shared<PARTICLEENGINE::ParticleContainer>();
+    container = std::make_shared<ParticleContainer>();
     container->Init();
     // setup container of ghosted particles
     container->Setup(initialsize, stateEnumSet);
     // set container of ghosted particles
-    (containers_[typeEnum])[PARTICLEENGINE::Ghosted] = container;
+    (containers_[typeEnum])[Ghosted] = container;
   }
 }
 
@@ -79,8 +79,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllConta
   for (auto& typeEnum : storedtypes_)
   {
     // get container of owned particles
-    PARTICLEENGINE::ParticleContainer* container =
-        (containers_[typeEnum])[PARTICLEENGINE::Owned].get();
+    ParticleContainer* container = (containers_[typeEnum])[Owned].get();
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
@@ -90,7 +89,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllConta
       container->GetParticle(index, globalid, particleStates);
 
       ParticleObjShrdPtr particleobject =
-          std::make_shared<PARTICLEENGINE::ParticleObject>(typeEnum, globalid, particleStates);
+          std::make_shared<ParticleObject>(typeEnum, globalid, particleStates);
 
       // pack data for writing
       DRT::PackBuffer data;
@@ -109,8 +108,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
   for (auto& typeEnum : storedtypes_)
   {
     // get container of owned particles
-    PARTICLEENGINE::ParticleContainer* container =
-        (containers_[typeEnum])[PARTICLEENGINE::Owned].get();
+    ParticleContainer* container = (containers_[typeEnum])[Owned].get();
 
     // loop over particles in container
     for (int index = 0; index < container->ParticlesStored(); ++index)
@@ -120,7 +118,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
       container->GetParticle(index, globalid, particleStates);
 
       particlesstored.emplace_back(
-          std::make_shared<PARTICLEENGINE::ParticleObject>(typeEnum, globalid, particleStates));
+          std::make_shared<ParticleObject>(typeEnum, globalid, particleStates));
     }
   }
 }

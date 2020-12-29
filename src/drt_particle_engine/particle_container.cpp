@@ -123,7 +123,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
 #ifdef DEBUG
       if (static_cast<int>(particle[stateEnum].size()) != statedim_[stateEnum])
         dserror("can not add particle: dimensions of state '%s' do not match!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+            EnumToStateName(stateEnum).c_str());
 #endif
 
       // store state in container
@@ -165,7 +165,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
 #ifdef DEBUG
       if (static_cast<int>(particle[stateEnum].size()) != statedim_[stateEnum])
         dserror("can not replace particle: dimensions of state '%s' do not match!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+            EnumToStateName(stateEnum).c_str());
 #endif
 
       // replace state in container
@@ -227,8 +227,7 @@ double PARTICLEENGINE::ParticleContainer::GetMinValueOfState(StateEnum stateEnum
 {
 #ifdef DEBUG
   if (not storedstates_.count(stateEnum))
-    dserror("particle state '%s' not stored in container!",
-        PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+    dserror("particle state '%s' not stored in container!", EnumToStateName(stateEnum).c_str());
 #endif
 
   if (particlestored_ <= 0) return 0.0;
@@ -245,8 +244,7 @@ double PARTICLEENGINE::ParticleContainer::GetMaxValueOfState(StateEnum stateEnum
 {
 #ifdef DEBUG
   if (not storedstates_.count(stateEnum))
-    dserror("particle state '%s' not stored in container!",
-        PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+    dserror("particle state '%s' not stored in container!", EnumToStateName(stateEnum).c_str());
 #endif
 
   if (particlestored_ <= 0) return 0.0;

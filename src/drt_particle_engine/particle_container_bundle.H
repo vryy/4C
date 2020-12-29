@@ -89,8 +89,7 @@ namespace PARTICLEENGINE
     {
 #ifdef DEBUG
       if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' is not stored!",
-            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
 #endif
 
       return (containers_[typeEnum])[statusEnum].get();
@@ -113,11 +112,10 @@ namespace PARTICLEENGINE
     {
 #ifdef DEBUG
       if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' is not stored!",
-            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
 #endif
 
-      ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ScaleState(fac, stateEnum);
+      ((containers_[typeEnum])[Owned])->ScaleState(fac, stateEnum);
     };
 
     /*!
@@ -137,12 +135,10 @@ namespace PARTICLEENGINE
     {
 #ifdef DEBUG
       if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' is not stored!",
-            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
 #endif
 
-      ((containers_[typeEnum])[PARTICLEENGINE::Owned])
-          ->UpdateState(facA, stateEnumA, facB, stateEnumB);
+      ((containers_[typeEnum])[Owned])->UpdateState(facA, stateEnumA, facB, stateEnumB);
     };
 
     /*!
@@ -159,11 +155,10 @@ namespace PARTICLEENGINE
     {
 #ifdef DEBUG
       if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' is not stored!",
-            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
 #endif
 
-      ((containers_[typeEnum])[PARTICLEENGINE::Owned])->SetState(val, stateEnum);
+      ((containers_[typeEnum])[Owned])->SetState(val, stateEnum);
     };
 
     /*!
@@ -178,11 +173,10 @@ namespace PARTICLEENGINE
     {
 #ifdef DEBUG
       if (not storedtypes_.count(typeEnum))
-        dserror("container for particle type '%s' is not stored!",
-            PARTICLEENGINE::EnumToTypeName(typeEnum).c_str());
+        dserror("container for particle type '%s' not stored!", EnumToTypeName(typeEnum).c_str());
 #endif
 
-      ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ClearState(stateEnum);
+      ((containers_[typeEnum])[Owned])->ClearState(stateEnum);
     };
 
     //! @}
@@ -201,7 +195,7 @@ namespace PARTICLEENGINE
     inline void ScaleStateAllContainers(double fac, StateEnum stateEnum) const
     {
       for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ScaleState(fac, stateEnum);
+        ((containers_[typeEnum])[Owned])->ScaleState(fac, stateEnum);
     };
 
     /*!
@@ -219,8 +213,7 @@ namespace PARTICLEENGINE
         double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB) const
     {
       for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[PARTICLEENGINE::Owned])
-            ->UpdateState(facA, stateEnumA, facB, stateEnumB);
+        ((containers_[typeEnum])[Owned])->UpdateState(facA, stateEnumA, facB, stateEnumB);
     };
 
     /*!
@@ -234,7 +227,7 @@ namespace PARTICLEENGINE
     inline void SetStateAllContainers(std::vector<double> val, StateEnum stateEnum) const
     {
       for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[PARTICLEENGINE::Owned])->SetState(val, stateEnum);
+        ((containers_[typeEnum])[Owned])->SetState(val, stateEnum);
     };
 
     /*!
@@ -246,8 +239,7 @@ namespace PARTICLEENGINE
      */
     inline void ClearStateAllContainers(StateEnum stateEnum) const
     {
-      for (auto& typeEnum : storedtypes_)
-        ((containers_[typeEnum])[PARTICLEENGINE::Owned])->ClearState(stateEnum);
+      for (auto& typeEnum : storedtypes_) ((containers_[typeEnum])[Owned])->ClearState(stateEnum);
     };
 
     //! @}

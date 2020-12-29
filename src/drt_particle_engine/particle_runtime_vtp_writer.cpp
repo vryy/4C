@@ -33,17 +33,14 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
   particlecontainerbundle_ = particlecontainerbundle;
 
   // insert specific particle states in black list
-  blackliststates_.insert({PARTICLEENGINE::DensitySum, PARTICLEENGINE::DensityDot});
-  blackliststates_.insert(PARTICLEENGINE::TemperatureDot);
-  blackliststates_.insert(
-      {PARTICLEENGINE::LastTransferPosition, PARTICLEENGINE::ReferencePosition});
-  blackliststates_.insert({PARTICLEENGINE::ModifiedVelocity, PARTICLEENGINE::ModifiedAcceleration});
-  blackliststates_.insert({PARTICLEENGINE::InterfaceNormal, PARTICLEENGINE::Curvature,
-      PARTICLEENGINE::WallColorfield, PARTICLEENGINE::WallInterfaceNormal});
-  blackliststates_.insert({PARTICLEENGINE::LastIterPosition, PARTICLEENGINE::LastIterVelocity,
-      PARTICLEENGINE::LastIterAcceleration, PARTICLEENGINE::LastIterAngularVelocity,
-      PARTICLEENGINE::LastIterAngularAcceleration, PARTICLEENGINE::LastIterModifiedAcceleration,
-      PARTICLEENGINE::LastIterDensity, PARTICLEENGINE::LastIterTemperature});
+  blackliststates_.insert({DensitySum, DensityDot});
+  blackliststates_.insert(TemperatureDot);
+  blackliststates_.insert({LastTransferPosition, ReferencePosition});
+  blackliststates_.insert({ModifiedVelocity, ModifiedAcceleration});
+  blackliststates_.insert({InterfaceNormal, Curvature, WallColorfield, WallInterfaceNormal});
+  blackliststates_.insert({LastIterPosition, LastIterVelocity, LastIterAcceleration,
+      LastIterAngularVelocity, LastIterAngularAcceleration, LastIterModifiedAcceleration,
+      LastIterDensity, LastIterTemperature});
 }
 
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
@@ -78,16 +75,15 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
     (runtime_vtpwriters_[typeEnum]).resize(2);
 
     // iterate over particle statuses
-    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
+    for (auto& statusEnum : {Owned, Ghosted})
     {
-      if (statusEnum == PARTICLEENGINE::Ghosted and write_ghosted_particles == false) continue;
+      if (statusEnum == Ghosted and write_ghosted_particles == false) continue;
 
       // construct vtp writer object for current particle type and status
       runtime_vtpwriter = std::make_shared<RuntimeVtpWriter>();
 
       std::ostringstream fieldname;
-      fieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeEnum) << "-"
-                << PARTICLEENGINE::EnumToStatusName(statusEnum);
+      fieldname << "particle-" << EnumToTypeName(typeEnum) << "-" << EnumToStatusName(statusEnum);
 
       // initialize the writer object
       runtime_vtpwriter->Initialize(comm_.MyPID(), comm_.NumProc(),
@@ -116,15 +112,15 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::ResetTimeAndTimeStep(
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
+    for (auto& statusEnum : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[typeEnum])[statusEnum]) continue;
 
       // particle field name
       std::ostringstream particlefieldname;
-      particlefieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeEnum) << "-"
-                        << PARTICLEENGINE::EnumToStatusName(statusEnum);
+      particlefieldname << "particle-" << EnumToTypeName(typeEnum) << "-"
+                        << EnumToStatusName(statusEnum);
 
       (runtime_vtpwriters_[typeEnum])[statusEnum]->SetupForNewTimeStepAndGeometry(
           time, timestep, particlefieldname.str());
@@ -138,7 +134,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
+    for (auto& statusEnum : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[typeEnum])[statusEnum]) continue;
@@ -155,9 +151,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
 #ifdef DEBUG
       // safety check
-      if (not container->HaveStoredState(PARTICLEENGINE::Position))
-        dserror("particle state '%s' not found!",
-            PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+      if (not container->HaveStoredState(Position))
+        dserror("particle state '%s' not found!", EnumToStateName(Position).c_str());
 #endif
 
       // iterate over particle states
@@ -167,13 +162,13 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
         int statedim = container->GetStateDim(particleState);
 
         // get name of particle state
-        std::string statename = PARTICLEENGINE::EnumToStateName(particleState);
+        std::string statename = EnumToStateName(particleState);
 
         // get pointer to particle state
         const double* state_ptr =
             (particlestored > 0) ? container->GetPtrToState(particleState, 0) : nullptr;
 
-        if (particleState == PARTICLEENGINE::Position)
+        if (particleState == Position)
         {
           // get and prepare storage for position data
           std::vector<double>& positiondata =
@@ -237,7 +232,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
+    for (auto& statusEnum : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[typeEnum])[statusEnum]) continue;
@@ -253,15 +248,15 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFi
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
+    for (auto& statusEnum : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[typeEnum])[statusEnum]) continue;
 
       // particle field name
       std::ostringstream particlefieldname;
-      particlefieldname << "particle-" << PARTICLEENGINE::EnumToTypeName(typeEnum) << "-"
-                        << PARTICLEENGINE::EnumToStatusName(statusEnum);
+      particlefieldname << "particle-" << EnumToTypeName(typeEnum) << "-"
+                        << EnumToStatusName(statusEnum);
 
       (runtime_vtpwriters_[typeEnum])[statusEnum]->WriteCollectionFileOfAllWrittenFiles(
           DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +

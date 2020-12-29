@@ -43,26 +43,25 @@ namespace DRT
 namespace PARTICLEENGINE
 {
   //! particle type enum
-  using TypeEnum = PARTICLEENGINE::ParticleType;
+  using TypeEnum = ParticleType;
 
   //! particle status enum
-  using StatusEnum = PARTICLEENGINE::ParticleStatus;
+  using StatusEnum = ParticleStatus;
 
   //! particle state enum
-  using StateEnum = PARTICLEENGINE::ParticleState;
+  using StateEnum = ParticleState;
 
   //! states of particle indexed by particle state enum
   using ParticleStates = std::vector<std::vector<double>>;
 
   //! shared pointer to particle object
-  using ParticleObjShrdPtr = std::shared_ptr<PARTICLEENGINE::ParticleObject>;
+  using ParticleObjShrdPtr = std::shared_ptr<ParticleObject>;
 
   //! collection of particle containers indexed by particle type enum and particle status enum
-  using TypeStatusContainers =
-      std::vector<std::vector<std::shared_ptr<PARTICLEENGINE::ParticleContainer>>>;
+  using TypeStatusContainers = std::vector<std::vector<std::shared_ptr<ParticleContainer>>>;
 
   //! shared pointer to particle container bundle
-  using ParticleContainerBundleShrdPtr = std::shared_ptr<PARTICLEENGINE::ParticleContainerBundle>;
+  using ParticleContainerBundleShrdPtr = std::shared_ptr<ParticleContainerBundle>;
 
   /*!
    * \brief local index tuple of a particle
@@ -105,7 +104,7 @@ namespace PARTICLEENGINE
   using PotentialWallNeighbors = std::vector<std::pair<LocalIndexTuple, DRT::Element*>>;
 
   //! relate particle source to target type after phase change
-  using ParticleTypeToType = std::tuple<PARTICLEENGINE::TypeEnum, PARTICLEENGINE::TypeEnum, int>;
+  using ParticleTypeToType = std::tuple<TypeEnum, TypeEnum, int>;
 
 }  // namespace PARTICLEENGINE
 

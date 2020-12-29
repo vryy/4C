@@ -128,8 +128,7 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
 
     // this std::shared_ptr holds the memory
     std::shared_ptr<DRT::ParObject> object(DRT::UTILS::Factory(data));
-    ParticleObjShrdPtr particleobject =
-        std::dynamic_pointer_cast<PARTICLEENGINE::ParticleObject>(object);
+    ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
     if (particleobject == nullptr) dserror("received object is not a particle object!");
 
     // store read particle
@@ -224,19 +223,17 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     const ParticleStates& particleStates = particlestocheck[i]->ReturnParticleStates();
 
     // get position of particle
-    const std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
+    const std::vector<double>& pos = particleStates[Position];
 
 #ifdef DEBUG
     // get type of particles
     TypeEnum typeEnum = particlestocheck[i]->ReturnParticleType();
 
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
-    if (static_cast<int>(pos.size()) != container->GetStateDim(PARTICLEENGINE::Position))
-      dserror("dimension of particle state '%s' not valid!",
-          PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+    if (static_cast<int>(pos.size()) != container->GetStateDim(Position))
+      dserror("dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
 #endif
 
     // check particle location with respect to bounding box in each spatial directions
@@ -348,8 +345,7 @@ void PARTICLEENGINE::ParticleEngine::TransferParticles()
   RelateOwnedParticlesToBins();
 
   // check and decrease the size of all containers of owned particles
-  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
-      PARTICLEENGINE::Owned);
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(Owned);
 }
 
 void PARTICLEENGINE::ParticleEngine::GhostParticles()
@@ -361,7 +357,7 @@ void PARTICLEENGINE::ParticleEngine::GhostParticles()
   std::map<int, std::map<TypeEnum, std::map<int, std::pair<int, int>>>> directghosting;
 
   // clear all containers of ghosted particles
-  particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Ghosted);
+  particlecontainerbundle_->ClearAllContainersOfSpecificStatus(Ghosted);
 
   // determine particles that need to be ghosted
   DetermineParticlesToBeGhosted(particlestosend);
@@ -376,8 +372,7 @@ void PARTICLEENGINE::ParticleEngine::GhostParticles()
   CommunicateDirectGhostingMap(directghosting);
 
   // check and decrease the size of all containers of ghosted particles
-  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
-      PARTICLEENGINE::Ghosted);
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(Ghosted);
 }
 
 void PARTICLEENGINE::ParticleEngine::RefreshParticles() const
@@ -447,7 +442,7 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
   particlecontainerbundle_->GetVectorOfParticleObjectsOfAllContainers(particlestodistribute);
 
   // clear all containers of owned particles
-  particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Owned);
+  particlecontainerbundle_->ClearAllContainersOfSpecificStatus(Owned);
 
   // invalidate particle safety flags
   InvalidateParticleSafetyFlags();
@@ -459,8 +454,7 @@ void PARTICLEENGINE::ParticleEngine::DynamicLoadBalancing()
   DistributeParticles(particlestodistribute);
 
   // check and decrease the size of all containers of owned particles
-  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
-      PARTICLEENGINE::Owned);
+  particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(Owned);
 }
 
 void PARTICLEENGINE::ParticleEngine::HandOverParticlesToBeRemoved(
@@ -478,8 +472,7 @@ void PARTICLEENGINE::ParticleEngine::HandOverParticlesToBeRemoved(
     RemoveParticlesFromContainers(particlestoremove);
 
     // check and decrease the size of all containers of owned particles
-    particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(
-        PARTICLEENGINE::Owned);
+    particlecontainerbundle_->CheckAndDecreaseSizeAllContainersOfSpecificStatus(Owned);
   }
 }
 
@@ -539,13 +532,13 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 
       // get container of owned particles of current particle type
       ParticleContainer* container =
-          particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+          particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
       // get global id of particle
       const int* currglobalid = container->GetPtrToGlobalID(ownedindex);
 
       // get position of particle
-      const double* currpos = container->GetPtrToState(PARTICLEENGINE::Position, ownedindex);
+      const double* currpos = container->GetPtrToState(Position, ownedindex);
 
       // iterate over neighboring bins (including current bin)
       for (int gidofneighborbin : halfneighboringbinstobins_[rowlidofbin])
@@ -557,9 +550,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
         if (particlestobins_[collidofneighboringbin].empty()) continue;
 
         // get status of neighboring particles
-        StatusEnum neighborStatusEnum = (binrowmap_->LID(gidofneighborbin) < 0)
-                                            ? PARTICLEENGINE::Ghosted
-                                            : PARTICLEENGINE::Owned;
+        StatusEnum neighborStatusEnum = (binrowmap_->LID(gidofneighborbin) < 0) ? Ghosted : Owned;
 
         // iterate over particles in current neighboring bin
         for (auto& neighborParticleIt : particlestobins_[collidofneighboringbin])
@@ -581,8 +572,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           if (gidofbin == gidofneighborbin and neighborglobalid[0] <= currglobalid[0]) continue;
 
           // get position of neighboring particle
-          const double* neighborpos =
-              neighborcontainer->GetPtrToState(PARTICLEENGINE::Position, neighborindex);
+          const double* neighborpos = neighborcontainer->GetPtrToState(Position, neighborindex);
 
           // distance vector from owned particle to neighboring particle
           double dist[3];
@@ -597,7 +587,7 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
 
           // append potential particle neighbor pair
           potentialparticleneighbors_.push_back(
-              std::make_pair(std::make_tuple(typeEnum, PARTICLEENGINE::Owned, ownedindex),
+              std::make_pair(std::make_tuple(typeEnum, Owned, ownedindex),
                   std::make_tuple(neighborTypeEnum, neighborStatusEnum, neighborindex)));
         }
       }
@@ -622,7 +612,7 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& statusEnum : {PARTICLEENGINE::Owned, PARTICLEENGINE::Ghosted})
+    for (auto& statusEnum : {Owned, Ghosted})
     {
       // get container of current particle type and current status
       ParticleContainer* container =
@@ -724,8 +714,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -806,8 +795,7 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
     if (particlestobins_[collidofneighboringbin].empty()) continue;
 
     // get status of neighboring particles
-    StatusEnum neighborStatusEnum =
-        (binrowmap_->LID(gidofneighborbin) < 0) ? PARTICLEENGINE::Ghosted : PARTICLEENGINE::Owned;
+    StatusEnum neighborStatusEnum = (binrowmap_->LID(gidofneighborbin) < 0) ? Ghosted : Owned;
 
     // iterate over particles in current neighboring bin
     for (auto& neighborParticleIt : particlestobins_[collidofneighboringbin])
@@ -823,8 +811,7 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
           particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
 
       // get position of neighboring particle
-      const double* neighborpos =
-          neighborcontainer->GetPtrToState(PARTICLEENGINE::Position, neighborindex);
+      const double* neighborpos = neighborcontainer->GetPtrToState(Position, neighborindex);
 
       // distance vector from position to neighboring particle
       double dist[3];
@@ -906,8 +893,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticles() const
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // add number of particles stored in container
     numberofparticles += container->ParticlesStored();
@@ -922,8 +908,7 @@ int PARTICLEENGINE::ParticleEngine::GetNumberOfParticlesOfSpecificType(
   if (not particlecontainerbundle_->GetParticleTypes().count(typeEnum)) return 0;
 
   // get container of owned particles of specific particle type
-  ParticleContainer* container =
-      particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+  ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
   return container->ParticlesStored();
 }
@@ -1036,7 +1021,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
 void PARTICLEENGINE::ParticleEngine::InitParticleContainerBundle()
 {
   // create and init particle container bundle
-  particlecontainerbundle_ = std::make_shared<PARTICLEENGINE::ParticleContainerBundle>();
+  particlecontainerbundle_ = std::make_shared<ParticleContainerBundle>();
   particlecontainerbundle_->Init();
 }
 
@@ -1050,8 +1035,8 @@ void PARTICLEENGINE::ParticleEngine::SetupParticleContainerBundle(
 void PARTICLEENGINE::ParticleEngine::InitParticleUniqueGlobalIdHandler()
 {
   // create and init unique global identifier handler
-  particleuniqueglobalidhandler_ = std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler>(
-      new PARTICLEENGINE::UniqueGlobalIdHandler(comm_, "particle"));
+  particleuniqueglobalidhandler_ =
+      std::unique_ptr<UniqueGlobalIdHandler>(new UniqueGlobalIdHandler(comm_, "particle"));
   particleuniqueglobalidhandler_->Init();
 }
 
@@ -1077,8 +1062,8 @@ void PARTICLEENGINE::ParticleEngine::SetupDataStorage(
 void PARTICLEENGINE::ParticleEngine::InitParticleVtpWriter()
 {
   // construct and init particle runtime vtp writer
-  particlevtpwriter_ = std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter>(
-      new PARTICLEENGINE::ParticleRuntimeVtpWriter(comm_));
+  particlevtpwriter_ =
+      std::unique_ptr<ParticleRuntimeVtpWriter>(new ParticleRuntimeVtpWriter(comm_));
   particlevtpwriter_->Init(particlecontainerbundle_);
 }
 
@@ -1101,7 +1086,7 @@ void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()
   typeweights_.resize(typevectorsize_);
 
   // init map relating particle types to dynamic load balance factor
-  std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
+  std::map<TypeEnum, double> typetodynloadbal;
 
   // read parameters relating particle types to values
   PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(
@@ -1219,7 +1204,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineGhostingDependentMapsAndSets()
   }
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
   // init receiving vector
   std::vector<int> receivedbins;
@@ -1338,10 +1323,10 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
 
       // get container of owned particle of current particle type
       ParticleContainer* container =
-          particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+          particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
       // get position of particle
-      double* currpos = container->GetPtrToState(PARTICLEENGINE::Position, ownedindex);
+      double* currpos = container->GetPtrToState(Position, ownedindex);
 
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
@@ -1414,19 +1399,17 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     const ParticleStates& particleStates = particlestodistribute[i]->ReturnParticleStates();
 
     // get position of particle
-    const std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
+    const std::vector<double>& pos = particleStates[Position];
 
 #ifdef DEBUG
     // get type of particles
     TypeEnum typeEnum = particlestodistribute[i]->ReturnParticleType();
 
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
-    if (static_cast<int>(pos.size()) != container->GetStateDim(PARTICLEENGINE::Position))
-      dserror("dimension of particle state '%s' not valid!",
-          PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+    if (static_cast<int>(pos.size()) != container->GetStateDim(Position))
+      dserror("dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
 #endif
 
     // get global id of bin
@@ -1537,10 +1520,10 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
 
       // get container of owned particle of current particle type
       ParticleContainer* container =
-          particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+          particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
       // get position of particle
-      const double* currpos = container->GetPtrToState(PARTICLEENGINE::Position, ownedindex);
+      const double* currpos = container->GetPtrToState(Position, ownedindex);
 
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
@@ -1571,8 +1554,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
       container->GetParticle(ownedindex, globalid, particleStates);
 
       // append particle to be send
-      particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
-          typeEnum, globalid, particleStates, gidofbin));
+      particlestosend[sendtoproc].emplace_back(
+          std::make_shared<ParticleObject>(typeEnum, globalid, particleStates, gidofbin));
 
       // store index of particle to be removed from containers after particle transfer
       (particlestoremove[typeEnum]).insert(ownedindex);
@@ -1612,7 +1595,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
 
       // get container of owned particle of current particle type
       ParticleContainer* container =
-          particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+          particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
       int globalid(0);
       ParticleStates particleStates;
@@ -1622,7 +1605,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeGhosted(
       for (int sendtoproc : targetIt.second)
       {
         // append particle to be send
-        particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
+        particlestosend[sendtoproc].emplace_back(std::make_shared<ParticleObject>(
             typeEnum, globalid, particleStates, ghostedbin, ownedindex));
       }
     }
@@ -1642,8 +1625,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
     if (directghostingtargets_[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // iterate over owned particles of current type
     for (auto& indexIt : directghostingtargets_[typeEnum])
@@ -1661,8 +1643,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeRefreshed(
         int ghostedindex = targetIt.second;
 
         // append particle to be send
-        particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
-            typeEnum, -1, particleStates, -1, ghostedindex));
+        particlestosend[sendtoproc].emplace_back(
+            std::make_shared<ParticleObject>(typeEnum, -1, particleStates, -1, ghostedindex));
       }
     }
   }
@@ -1688,8 +1670,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
     int statesvectorsize = *std::max_element(typeIt.second.begin(), typeIt.second.end()) + 1;
 
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // iterate over owned particles of current type
     for (auto& indexIt : directghostingtargets_[typeEnum])
@@ -1720,8 +1701,8 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
         int ghostedindex = targetIt.second;
 
         // append particle to be send
-        particlestosend[sendtoproc].emplace_back(std::make_shared<PARTICLEENGINE::ParticleObject>(
-            typeEnum, -1, particleStates, -1, ghostedindex));
+        particlestosend[sendtoproc].emplace_back(
+            std::make_shared<ParticleObject>(typeEnum, -1, particleStates, -1, ghostedindex));
       }
     }
   }
@@ -1754,7 +1735,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
   particlestosend.clear();
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
   // unpack and store received data
   for (auto& p : rdata)
@@ -1771,8 +1752,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateParticles(
 
       // this std::shared_ptr holds the memory
       std::shared_ptr<DRT::ParObject> object(DRT::UTILS::Factory(data));
-      ParticleObjShrdPtr particleobject =
-          std::dynamic_pointer_cast<PARTICLEENGINE::ParticleObject>(object);
+      ParticleObjShrdPtr particleobject = std::dynamic_pointer_cast<ParticleObject>(object);
       if (particleobject == nullptr) dserror("received object is not a particle object!");
 
       // store received particle
@@ -1813,7 +1793,7 @@ void PARTICLEENGINE::ParticleEngine::CommunicateDirectGhostingMap(
   directghosting.clear();
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
   // init receiving map
   std::map<TypeEnum, std::map<int, std::pair<int, int>>> receiveddirectghosting;
@@ -1864,8 +1844,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
     if (particlestoinsert[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // iterate over particle objects pairs
     for (auto& objectpair : particlestoinsert[typeEnum])
@@ -1889,18 +1868,17 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
       if (gidofbin < 0)
       {
         // get position of particle
-        const std::vector<double>& pos = particleStates[PARTICLEENGINE::Position];
+        const std::vector<double>& pos = particleStates[Position];
 
         // get type of particles
         TypeEnum typeEnum = particleobject->ReturnParticleType();
 
         // get container of owned particles of current particle type
         ParticleContainer* container =
-            particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+            particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
-        if (static_cast<int>(pos.size()) != container->GetStateDim(PARTICLEENGINE::Position))
-          dserror("dimension of particle state '%s' not valid!",
-              PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
+        if (static_cast<int>(pos.size()) != container->GetStateDim(Position))
+          dserror("dimension of particle state '%s' not valid!", EnumToStateName(Position).c_str());
 
         // get global id of bin
         gidofbin = binstrategy_->ConvertPosToGid(pos.data());
@@ -1935,7 +1913,7 @@ void PARTICLEENGINE::ParticleEngine::InsertGhostedParticles(
 
     // get container of ghosted particles of current particle type
     ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, Ghosted);
 
     // iterate over particle objects pairs
     for (auto& objectpair : particlestoinsert[typeEnum])
@@ -1996,7 +1974,7 @@ void PARTICLEENGINE::ParticleEngine::InsertRefreshedParticles(
 
     // get container of ghosted particles of current particle type
     ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Ghosted);
+        particlecontainerbundle_->GetSpecificContainer(typeEnum, Ghosted);
 
     // iterate over particle objects pairs
     for (auto& objectpair : particlestoinsert[typeEnum])
@@ -2029,8 +2007,7 @@ void PARTICLEENGINE::ParticleEngine::RemoveParticlesFromContainers(
     if (particlestoremove[typeEnum].empty()) continue;
 
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // iterate in reversed order over particles to be removed
     std::set<int>::reverse_iterator rit;
@@ -2052,8 +2029,7 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -2062,11 +2038,11 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
     if (particlestored == 0) continue;
 
     // get pointer to particle states
-    const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
-    double* lasttransferpos = container->GetPtrToState(PARTICLEENGINE::LastTransferPosition, 0);
+    const double* pos = container->GetPtrToState(Position, 0);
+    double* lasttransferpos = container->GetPtrToState(LastTransferPosition, 0);
 
     // get particle state dimension
-    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(Position);
 
     // copy particle position data
     for (int i = 0; i < (statedim * particlestored); ++i) lasttransferpos[i] = pos[i];
@@ -2086,8 +2062,7 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
   for (auto& typeEnum : particlecontainerbundle_->GetParticleTypes())
   {
     // get container of owned particles of current particle type
-    ParticleContainer* container =
-        particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
+    ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(typeEnum, Owned);
 
     // get number of particles stored in container
     const int particlestored = container->ParticlesStored();
@@ -2096,11 +2071,10 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
     if (particlestored <= 0) continue;
 
     // get pointer to position of particle after last transfer
-    const double* lasttransferpos =
-        container->GetPtrToState(PARTICLEENGINE::LastTransferPosition, 0);
+    const double* lasttransferpos = container->GetPtrToState(LastTransferPosition, 0);
 
     // get particle state dimension
-    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(Position);
 
     // loop over particles in container
     for (int index = 0; index < particlestored; ++index)

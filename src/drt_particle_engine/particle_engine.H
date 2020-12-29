@@ -806,10 +806,10 @@ namespace PARTICLEENGINE
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
     //! particle unique global identifier handler
-    std::unique_ptr<PARTICLEENGINE::UniqueGlobalIdHandler> particleuniqueglobalidhandler_;
+    std::unique_ptr<UniqueGlobalIdHandler> particleuniqueglobalidhandler_;
 
     //! particle runtime vtp writer
-    std::unique_ptr<PARTICLEENGINE::ParticleRuntimeVtpWriter> particlevtpwriter_;
+    std::unique_ptr<ParticleRuntimeVtpWriter> particlevtpwriter_;
 
     //! relate (owned and ghosted) particles to bins
     ParticlesToBins particlestobins_;

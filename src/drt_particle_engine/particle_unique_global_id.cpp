@@ -143,7 +143,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
   }
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
 #ifdef DEBUG
   if (myrank_ != masterrank_)
@@ -303,7 +303,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
   }
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
 #ifdef DEBUG
   for (auto& p : rdata)
