@@ -326,14 +326,14 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_GetParticleStateDim()
+  void test_GetStateDim()
   {
-    TS_ASSERT_EQUALS(container_->GetParticleStateDim(PARTICLEENGINE::Position), 3);
-    TS_ASSERT_EQUALS(container_->GetParticleStateDim(PARTICLEENGINE::Velocity), 3);
-    TS_ASSERT_EQUALS(container_->GetParticleStateDim(PARTICLEENGINE::Mass), 1);
+    TS_ASSERT_EQUALS(container_->GetStateDim(PARTICLEENGINE::Position), 3);
+    TS_ASSERT_EQUALS(container_->GetStateDim(PARTICLEENGINE::Velocity), 3);
+    TS_ASSERT_EQUALS(container_->GetStateDim(PARTICLEENGINE::Mass), 1);
   }
 
-  void test_GetPtrToParticleState()
+  void test_GetPtrToState()
   {
     std::vector<double> pos(3);
     std::vector<double> vel(3);
@@ -372,18 +372,18 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
         mass[0] = 0.5;
       }
 
-      double* currpos = container_->GetPtrToParticleState(PARTICLEENGINE::Position, index);
+      double* currpos = container_->GetPtrToState(PARTICLEENGINE::Position, index);
       for (int i = 0; i < (int)pos.size(); ++i) TS_ASSERT_DELTA(currpos[i], pos[i], 1e-14);
 
-      double* currvel = container_->GetPtrToParticleState(PARTICLEENGINE::Velocity, index);
+      double* currvel = container_->GetPtrToState(PARTICLEENGINE::Velocity, index);
       for (int i = 0; i < (int)pos.size(); ++i) TS_ASSERT_DELTA(currvel[i], vel[i], 1e-14);
 
-      double* currmass = container_->GetPtrToParticleState(PARTICLEENGINE::Mass, index);
+      double* currmass = container_->GetPtrToState(PARTICLEENGINE::Mass, index);
       TS_ASSERT_DELTA(currmass[0], mass[0], 1e-14);
     }
   }
 
-  void test_GetPtrToParticleGlobalID()
+  void test_GetPtrToGlobalID()
   {
     int globalid_reference(0);
 
@@ -396,7 +396,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
       else if (index == 2)
         globalid_reference = 3;
 
-      int* globalid = container_->GetPtrToParticleGlobalID(index);
+      int* globalid = container_->GetPtrToGlobalID(index);
       TS_ASSERT_EQUALS(globalid[0], globalid_reference);
     }
   }

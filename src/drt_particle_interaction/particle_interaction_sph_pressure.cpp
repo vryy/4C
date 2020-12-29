@@ -84,8 +84,8 @@ void PARTICLEINTERACTION::SPHPressure::ComputePressure() const
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    const double* dens = container->GetPtrToParticleState(PARTICLEENGINE::Density, 0);
-    double* press = container->GetPtrToParticleState(PARTICLEENGINE::Pressure, 0);
+    const double* dens = container->GetPtrToState(PARTICLEENGINE::Density, 0);
+    double* press = container->GetPtrToState(PARTICLEENGINE::Pressure, 0);
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =

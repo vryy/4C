@@ -185,11 +185,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     // get pointer to particle states
     const double* rigidbodycolor_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RigidBodyColor, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RigidBodyColor, particle_i);
 
     // get global id of affiliated rigid body k
     const int rigidbody_k = std::round(rigidbodycolor_i[0]);
@@ -826,7 +826,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -844,8 +844,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
     double* pos_k = &rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k][0];
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
 
     // sum contribution of particle i
     mass_k[0] += mass_i[0];
@@ -871,7 +871,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -889,10 +889,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
     double* inertia_k = &rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k][0];
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    const double* inertia_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::Inertia, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+    const double* inertia_i = container_i->GetPtrToState(PARTICLEENGINE::Inertia, particle_i);
 
     double r_ki[3];
     PARTICLEINTERACTION::UTILS::vec_set(r_ki, pos_k);
@@ -1119,7 +1118,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -1138,8 +1137,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
 
     // get pointer to particle states
     const double* relpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
-    const double* force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
+    const double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
 
     // sum contribution of particle i
     PARTICLEINTERACTION::UTILS::vec_add(force_k, force_i);
@@ -1538,7 +1537,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -1555,9 +1554,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
     const double* pos_k = &rigidbodydatastate_->GetRefPosition()[rigidbody_k][0];
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
     double* relposbody_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
 
     PARTICLEINTERACTION::UTILS::vec_set(relposbody_i, pos_i);
     PARTICLEINTERACTION::UTILS::vec_sub(relposbody_i, pos_k);
@@ -1587,7 +1586,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -1605,9 +1604,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
 
     // get pointer to particle states
     const double* relposbody_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
-    double* relpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
+    double* relpos_i = container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
 
     // update relative position of particle i
     UTILS::quaternion_rotate_vector(relpos_i, rot_k, relposbody_i);
@@ -1637,7 +1635,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -1655,8 +1653,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
 
     // get pointer to particle states
     const double* relpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
-    double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
+    double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
 
     // set position of particle i
     PARTICLEINTERACTION::UTILS::vec_set(pos_i, pos_k);
@@ -1687,7 +1685,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -1706,11 +1704,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
 
     // get pointer to particle states
     const double* relpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
-    double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
+    double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
     double* angvel_i = nullptr;
     if (container_i->HaveStoredState(PARTICLEENGINE::AngularVelocity))
-      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
+      angvel_i = container_i->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
 
     // set velocities of particle i
     PARTICLEINTERACTION::UTILS::vec_set(vel_i, vel_k);
@@ -1742,7 +1740,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
     // get global id of particle i
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     auto it = affiliationpairdata.find(globalid_i[0]);
 
@@ -1762,12 +1760,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
 
     // get pointer to particle states
     const double* relpos_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::RelativePosition, particle_i);
-    double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
+    double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
     double* angacc_i = nullptr;
     if (container_i->HaveStoredState(PARTICLEENGINE::AngularAcceleration))
-      angacc_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::AngularAcceleration, particle_i);
+      angacc_i = container_i->GetPtrToState(PARTICLEENGINE::AngularAcceleration, particle_i);
 
     // evaluate relative velocity of particle i
     double relvel_i[3];
@@ -1865,10 +1862,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
       std::tie(std::ignore, std::ignore, particle_i) = *localindextuple;
 
       // get pointer to particle states
-      const double* pos_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+      const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
       double* rigidbodycolor_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::RigidBodyColor, particle_i);
+          container_i->GetPtrToState(PARTICLEENGINE::RigidBodyColor, particle_i);
 
       // get particles within radius
       std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
@@ -1894,10 +1890,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
             particlecontainerbundle->GetSpecificContainer(type_j, status_j);
 
         // get pointer to particle states
-        const double* pos_j =
-            container_j->GetPtrToParticleState(PARTICLEENGINE::Position, particle_j);
+        const double* pos_j = container_j->GetPtrToState(PARTICLEENGINE::Position, particle_j);
         const double* rigidbodycolor_j =
-            container_j->GetPtrToParticleState(PARTICLEENGINE::RigidBodyColor, particle_j);
+            container_j->GetPtrToState(PARTICLEENGINE::RigidBodyColor, particle_j);
 
         // vector from particle i to j
         double r_ji[3];

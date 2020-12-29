@@ -407,32 +407,32 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleContact()
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get global ids of particle
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
-    const int* globalid_j = container_j->GetPtrToParticleGlobalID(particle_j);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_j = container_j->GetPtrToGlobalID(particle_j);
 
     // get pointer to particle states
-    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    double* force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
 
     const double* angvel_i = nullptr;
     double* moment_i = nullptr;
     if (contacttangential_ or contactrolling_)
     {
-      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
-      moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
+      angvel_i = container_i->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
+      moment_i = container_i->GetPtrToState(PARTICLEENGINE::Moment, particle_i);
     }
 
-    const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-    const double* rad_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_j);
-    double* force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
+    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
+    const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
+    double* force_j = container_j->GetPtrToState(PARTICLEENGINE::Force, particle_j);
 
     const double* angvel_j = nullptr;
     double* moment_j = nullptr;
     if (contacttangential_ or contactrolling_)
     {
-      angvel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_j);
-      moment_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_j);
+      angvel_j = container_j->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_j);
+      moment_j = container_j->GetPtrToState(PARTICLEENGINE::Moment, particle_j);
     }
 
     // compute vectors from particle i and j to contact point c
@@ -627,21 +627,21 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
     // get global id of particle
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    double* force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
 
     const double* angvel_i = nullptr;
     double* moment_i = nullptr;
     if (contacttangential_ or contactrolling_)
     {
-      angvel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, particle_i);
-      moment_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Moment, particle_i);
+      angvel_i = container_i->GetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
+      moment_i = container_i->GetPtrToState(PARTICLEENGINE::Moment, particle_i);
     }
 
     // get pointer to column wall element
@@ -890,8 +890,8 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleElasticPotentialEnergy(
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get global ids of particle
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
-    const int* globalid_j = container_j->GetPtrToParticleGlobalID(particle_j);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
+    const int* globalid_j = container_j->GetPtrToGlobalID(particle_j);
 
     // calculate normal potential energy
     double normalpotentialenergy(0.0);
@@ -971,7 +971,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallElasticPotentialEnergy
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
     // get global id of particle
-    const int* globalid_i = container_i->GetPtrToParticleGlobalID(particle_i);
+    const int* globalid_i = container_i->GetPtrToGlobalID(particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;

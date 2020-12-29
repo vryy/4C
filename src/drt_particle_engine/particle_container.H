@@ -177,7 +177,7 @@ namespace PARTICLEENGINE
      *
      * \return dimension of particle state
      */
-    inline int GetParticleStateDim(StateEnum stateEnum)
+    inline int GetStateDim(StateEnum stateEnum)
     {
 #ifdef DEBUG
       if (not storedstates_.count(stateEnum))
@@ -201,7 +201,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to particle state
      */
-    inline double* GetPtrToParticleState(StateEnum stateEnum, int index)
+    inline double* GetPtrToState(StateEnum stateEnum, int index)
     {
 #ifdef DEBUG
       if (not storedstates_.count(stateEnum))
@@ -224,7 +224,7 @@ namespace PARTICLEENGINE
      *
      * \return pointer to global id
      */
-    inline int* GetPtrToParticleGlobalID(int index)
+    inline int* GetPtrToGlobalID(int index)
     {
 #ifdef DEBUG
       if (index < 0 or index > (particlestored_ - 1))

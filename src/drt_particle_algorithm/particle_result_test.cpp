@@ -195,10 +195,10 @@ void PARTICLEALGORITHM::ParticleResultTest::TestSpecial(
             PARTICLEENGINE::EnumToStateName(particleState).c_str());
 
       // get pointer to particle state
-      const double* state = container->GetPtrToParticleState(particleState, 0);
+      const double* state = container->GetPtrToState(particleState, 0);
 
       // get particle state dimension
-      int statedim = container->GetParticleStateDim(particleState);
+      int statedim = container->GetStateDim(particleState);
 
       // get actual result
       actresult = state[statedim * index + dim];
