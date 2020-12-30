@@ -166,10 +166,10 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
     // get pointer to particle states
-    const double* pos_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
+    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
 
     // get pointer to wall contact point states
-    const double* rad_j = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
+    const double* rad_j = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;
@@ -250,14 +250,10 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
           particlecontainerbundle_->GetSpecificContainer(type_k, status_k);
 
       // get pointer to particle states
-      const double* pos_k =
-          container_k->GetPtrToParticleState(PARTICLEENGINE::Position, particle_k);
-      const double* vel_k =
-          container_k->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_k);
-      const double* dens_k =
-          container_k->GetPtrToParticleState(PARTICLEENGINE::Density, particle_k);
-      const double* press_k =
-          container_k->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_k);
+      const double* pos_k = container_k->GetPtrToState(PARTICLEENGINE::Position, particle_k);
+      const double* vel_k = container_k->GetPtrToState(PARTICLEENGINE::Velocity, particle_k);
+      const double* dens_k = container_k->GetPtrToState(PARTICLEENGINE::Density, particle_k);
+      const double* press_k = container_k->GetPtrToState(PARTICLEENGINE::Pressure, particle_k);
 
       // vector from particle k to wall contact point j
       double r_jk[3];

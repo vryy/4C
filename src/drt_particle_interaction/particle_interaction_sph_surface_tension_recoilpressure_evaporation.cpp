@@ -54,14 +54,12 @@ void PARTICLEINTERACTION::SPHRecoilPressureEvaporation::ComputeRecoilPressureCon
   // iterate over particles in container
   for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
   {
-    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    const double* temp_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
+    const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
     const double* cfg_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::ColorfieldGradient, particle_i);
-    const double* ifn_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::InterfaceNormal, particle_i);
-    double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+        container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+    const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
+    double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
     // evaluation only for non-zero interface normal
     if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;

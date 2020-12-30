@@ -113,13 +113,13 @@ void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleContributi
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-    double* acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-    const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-    double* acc_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_j);
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
+    double* acc_j = container_j->GetPtrToState(PARTICLEENGINE::Acceleration, particle_j);
 
     if (particlepair.absdist_ < dist_)
     {
@@ -188,15 +188,15 @@ void PARTICLEINTERACTION::SPHBarrierForce::ComputeBarrierForceParticleBoundaryCo
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
 
     double* acc_i = nullptr;
     if (status_i == PARTICLEENGINE::Owned)
-      acc_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+      acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
     // get pointer to boundary particle states
-    const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
 
     if (absdist < dist_)
     {

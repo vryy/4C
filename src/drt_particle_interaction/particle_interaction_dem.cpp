@@ -388,7 +388,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialRadius()
             particlematerial_->GetPtrToParticleMatParameter(type_i);
 
         // get pointer to particle state
-        double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
+        double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
 
         // determine mu of random particle radius distribution
         const double mu = (radiusdistributiontype == INPAR::PARTICLE::NormalRadiusDistribution)
@@ -446,8 +446,8 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // get pointer to particle states
-    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-    double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    const double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
+    double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
 
     // compute mass via particle volume and initial density
     const double fac = material->initDensity_ * 4.0 / 3.0 * M_PI;
@@ -474,9 +474,9 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialInertia()
     if (not container->HaveStoredState(PARTICLEENGINE::Inertia)) continue;
 
     // get pointer to particle states
-    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
-    double* inertia = container->GetPtrToParticleState(PARTICLEENGINE::Inertia, 0);
+    const double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
+    const double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
+    double* inertia = container->GetPtrToState(PARTICLEENGINE::Inertia, 0);
 
     // compute mass via particle volume and initial density
     for (int i = 0; i < particlestored; ++i) inertia[i] = 0.4 * mass[i] * UTILS::pow<2>(radius[i]);
@@ -519,21 +519,15 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
     if (particlestored <= 0) continue;
 
     // get particle state dimension
-    const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Acceleration);
+    const int statedim = container->GetStateDim(PARTICLEENGINE::Acceleration);
 
     // get pointer to particle states
-    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
-    const double* force = container->GetPtrToParticleState(PARTICLEENGINE::Force, 0);
-    double* acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
-
-    const double* moment = container->HaveStoredState(PARTICLEENGINE::Moment)
-                               ? container->GetPtrToParticleState(PARTICLEENGINE::Moment, 0)
-                               : nullptr;
-
-    double* angacc = container->HaveStoredState(PARTICLEENGINE::AngularAcceleration)
-                         ? container->GetPtrToParticleState(PARTICLEENGINE::AngularAcceleration, 0)
-                         : nullptr;
+    const double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
+    const double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
+    const double* force = container->GetPtrToState(PARTICLEENGINE::Force, 0);
+    const double* moment = container->CondGetPtrToState(PARTICLEENGINE::Moment, 0);
+    double* acc = container->GetPtrToState(PARTICLEENGINE::Acceleration, 0);
+    double* angacc = container->CondGetPtrToState(PARTICLEENGINE::AngularAcceleration, 0);
 
     // compute acceleration
     for (int i = 0; i < particlestored; ++i)
@@ -541,9 +535,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 
     // compute angular acceleration
     if (angacc and moment)
+    {
       for (int i = 0; i < particlestored; ++i)
         UTILS::vec_addscale(&angacc[statedim * i],
             (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);
+    }
   }
 }
 
@@ -605,16 +601,13 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
     if (particlestored <= 0) continue;
 
     // get particle state dimension
-    const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    const int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // get pointer to particle states
-    const double* radius = container->GetPtrToParticleState(PARTICLEENGINE::Radius, 0);
-    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
-    const double* vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
-
-    double* angvel = container->HaveStoredState(PARTICLEENGINE::AngularVelocity)
-                         ? container->GetPtrToParticleState(PARTICLEENGINE::AngularVelocity, 0)
-                         : nullptr;
+    const double* radius = container->GetPtrToState(PARTICLEENGINE::Radius, 0);
+    const double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
+    const double* vel = container->GetPtrToState(PARTICLEENGINE::Velocity, 0);
+    double* angvel = container->CondGetPtrToState(PARTICLEENGINE::AngularVelocity, 0);
 
     // add translational kinetic energy contribution
     for (int i = 0; i < particlestored; ++i)
@@ -622,9 +615,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
 
     // add rotational kinetic energy contribution
     if (angvel)
+    {
       for (int i = 0; i < particlestored; ++i)
         kineticenergy += 0.5 * (0.4 * mass[i] * UTILS::pow<2>(radius[i])) *
                          UTILS::vec_dot(&angvel[statedim * i], &angvel[statedim * i]);
+    }
   }
 }
 
@@ -648,11 +643,11 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalP
     if (particlestored <= 0) continue;
 
     // get particle state dimension
-    const int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    const int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // get pointer to particle states
-    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-    const double* mass = container->GetPtrToParticleState(PARTICLEENGINE::Mass, 0);
+    const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
+    const double* mass = container->GetPtrToState(PARTICLEENGINE::Mass, 0);
 
     // add gravitational potential energy contribution
     for (int i = 0; i < particlestored; ++i)

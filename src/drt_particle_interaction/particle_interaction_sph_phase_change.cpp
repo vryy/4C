@@ -159,7 +159,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    const double* state = container->GetPtrToParticleState(transitionstate_, 0);
+    const double* state = container->GetPtrToState(transitionstate_, 0);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_source =

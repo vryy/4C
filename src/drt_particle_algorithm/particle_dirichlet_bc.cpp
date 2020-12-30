@@ -126,13 +126,13 @@ void PARTICLEALGORITHM::DirichletBoundaryConditionHandler::EvaluateDirichletBoun
     DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
 
     // get pointer to particle states
-    const double* refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
-    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-    double* vel = container->GetPtrToParticleState(PARTICLEENGINE::Velocity, 0);
-    double* acc = container->GetPtrToParticleState(PARTICLEENGINE::Acceleration, 0);
+    const double* refpos = container->GetPtrToState(PARTICLEENGINE::ReferencePosition, 0);
+    double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
+    double* vel = container->GetPtrToState(PARTICLEENGINE::Velocity, 0);
+    double* acc = container->GetPtrToState(PARTICLEENGINE::Acceleration, 0);
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // safety check
     if (statedim != function.NumberComponents())

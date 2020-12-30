@@ -164,14 +164,14 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       for (auto& particleState : particlestates)
       {
         // get particle state dimension
-        int statedim = container->GetParticleStateDim(particleState);
+        int statedim = container->GetStateDim(particleState);
 
         // get name of particle state
         std::string statename = PARTICLEENGINE::EnumToStateName(particleState);
 
         // get pointer to particle state
         const double* state_ptr =
-            (particlestored > 0) ? container->GetPtrToParticleState(particleState, 0) : nullptr;
+            (particlestored > 0) ? container->GetPtrToState(particleState, 0) : nullptr;
 
         if (particleState == PARTICLEENGINE::Position)
         {
@@ -208,8 +208,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       }
 
       // get pointer to global id of particles
-      const int* globalids =
-          (particlestored > 0) ? container->GetPtrToParticleGlobalID(0) : nullptr;
+      const int* globalids = (particlestored > 0) ? container->GetPtrToGlobalID(0) : nullptr;
 
       // prepare particle global id data
       std::vector<double> globaliddata;

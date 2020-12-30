@@ -234,7 +234,7 @@ void PARTICLEENGINE::ParticleEngine::EraseParticlesOutsideBoundingBox(
     ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-    if (static_cast<int>(pos.size()) != container->GetParticleStateDim(PARTICLEENGINE::Position))
+    if (static_cast<int>(pos.size()) != container->GetStateDim(PARTICLEENGINE::Position))
       dserror("dimension of particle state '%s' not valid!",
           PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
 #endif
@@ -542,11 +542,10 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get global id of particle
-      const int* currglobalid = container->GetPtrToParticleGlobalID(ownedindex);
+      const int* currglobalid = container->GetPtrToGlobalID(ownedindex);
 
       // get position of particle
-      const double* currpos =
-          container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      const double* currpos = container->GetPtrToState(PARTICLEENGINE::Position, ownedindex);
 
       // iterate over neighboring bins (including current bin)
       for (int gidofneighborbin : halfneighboringbinstobins_[rowlidofbin])
@@ -576,14 +575,14 @@ void PARTICLEENGINE::ParticleEngine::BuildParticleToParticleNeighbors()
               particlecontainerbundle_->GetSpecificContainer(neighborTypeEnum, neighborStatusEnum);
 
           // get global id of neighboring particle
-          const int* neighborglobalid = neighborcontainer->GetPtrToParticleGlobalID(neighborindex);
+          const int* neighborglobalid = neighborcontainer->GetPtrToGlobalID(neighborindex);
 
           // avoid duplicate neighbor pairs and self-neighboring
           if (gidofbin == gidofneighborbin and neighborglobalid[0] <= currglobalid[0]) continue;
 
           // get position of neighboring particle
           const double* neighborpos =
-              neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex);
+              neighborcontainer->GetPtrToState(PARTICLEENGINE::Position, neighborindex);
 
           // distance vector from owned particle to neighboring particle
           double dist[3];
@@ -636,7 +635,7 @@ void PARTICLEENGINE::ParticleEngine::BuildGlobalIDToLocalIndexMap()
       if (particlestored <= 0) continue;
 
       // get pointer to global id of particles
-      int* globalids = container->GetPtrToParticleGlobalID(0);
+      int* globalids = container->GetPtrToGlobalID(0);
 
       // loop over particles in container
       for (int index = 0; index < particlestored; ++index)
@@ -735,7 +734,7 @@ void PARTICLEENGINE::ParticleEngine::RelateAllParticlesToAllProcs(
     if (particlestored <= 0) continue;
 
     // get pointer to global id of particles
-    int* globalids = container->GetPtrToParticleGlobalID(0);
+    int* globalids = container->GetPtrToGlobalID(0);
 
     // insert global id of particles
     thisprocglobalids.insert(thisprocglobalids.end(), globalids, globalids + particlestored);
@@ -825,7 +824,7 @@ void PARTICLEENGINE::ParticleEngine::GetParticlesWithinRadius(const double* posi
 
       // get position of neighboring particle
       const double* neighborpos =
-          neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex);
+          neighborcontainer->GetPtrToState(PARTICLEENGINE::Position, neighborindex);
 
       // distance vector from position to neighboring particle
       double dist[3];
@@ -1342,7 +1341,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
-      double* currpos = container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      double* currpos = container->GetPtrToState(PARTICLEENGINE::Position, ownedindex);
 
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
@@ -1353,7 +1352,7 @@ void PARTICLEENGINE::ParticleEngine::CheckParticlesAtBoundaries(
         (particlestoremove[typeEnum]).insert(ownedindex);
 
         // get global id of particle
-        const int* currglobalid = container->GetPtrToParticleGlobalID(ownedindex);
+        const int* currglobalid = container->GetPtrToGlobalID(ownedindex);
 
 #ifdef DEBUG
         if (currglobalid[0] < 0) dserror("no global id assigned to particle!");
@@ -1425,7 +1424,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     ParticleContainer* container =
         particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-    if (static_cast<int>(pos.size()) != container->GetParticleStateDim(PARTICLEENGINE::Position))
+    if (static_cast<int>(pos.size()) != container->GetStateDim(PARTICLEENGINE::Position))
       dserror("dimension of particle state '%s' not valid!",
           PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
 #endif
@@ -1541,8 +1540,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeTransfered(
           particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
       // get position of particle
-      const double* currpos =
-          container->GetPtrToParticleState(PARTICLEENGINE::Position, ownedindex);
+      const double* currpos = container->GetPtrToState(PARTICLEENGINE::Position, ownedindex);
 
       // get global id of bin
       const int gidofbin = binstrategy_->ConvertPosToGid(currpos);
@@ -1706,10 +1704,10 @@ void PARTICLEENGINE::ParticleEngine::DetermineSpecificStatesOfParticlesOfSpecifi
       for (auto& stateEnum : typeIt.second)
       {
         // get particle state dimension
-        int statedim = container->GetParticleStateDim(stateEnum);
+        int statedim = container->GetStateDim(stateEnum);
 
         // get pointer to particle state
-        const double* state_ptr = container->GetPtrToParticleState(stateEnum, ownedindex);
+        const double* state_ptr = container->GetPtrToState(stateEnum, ownedindex);
 
         // fill particle state
         particleStates[stateEnum].assign(state_ptr, state_ptr + statedim);
@@ -1900,8 +1898,7 @@ void PARTICLEENGINE::ParticleEngine::InsertOwnedParticles(
         ParticleContainer* container =
             particlecontainerbundle_->GetSpecificContainer(typeEnum, PARTICLEENGINE::Owned);
 
-        if (static_cast<int>(pos.size()) !=
-            container->GetParticleStateDim(PARTICLEENGINE::Position))
+        if (static_cast<int>(pos.size()) != container->GetStateDim(PARTICLEENGINE::Position))
           dserror("dimension of particle state '%s' not valid!",
               PARTICLEENGINE::EnumToStateName(PARTICLEENGINE::Position).c_str());
 
@@ -2065,12 +2062,11 @@ void PARTICLEENGINE::ParticleEngine::StorePositionsAfterParticleTransfer()
     if (particlestored == 0) continue;
 
     // get pointer to particle states
-    const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-    double* lasttransferpos =
-        container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
+    const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
+    double* lasttransferpos = container->GetPtrToState(PARTICLEENGINE::LastTransferPosition, 0);
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // copy particle position data
     for (int i = 0; i < (statedim * particlestored); ++i) lasttransferpos[i] = pos[i];
@@ -2101,10 +2097,10 @@ void PARTICLEENGINE::ParticleEngine::RelateOwnedParticlesToBins()
 
     // get pointer to position of particle after last transfer
     const double* lasttransferpos =
-        container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, 0);
+        container->GetPtrToState(PARTICLEENGINE::LastTransferPosition, 0);
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // loop over particles in container
     for (int index = 0; index < particlestored; ++index)

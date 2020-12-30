@@ -111,11 +111,11 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::EvaluateTemperature
     DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
 
     // get pointer to particle states
-    const double* refpos = container->GetPtrToParticleState(PARTICLEENGINE::ReferencePosition, 0);
-    double* temp = container->GetPtrToParticleState(PARTICLEENGINE::Temperature, 0);
+    const double* refpos = container->GetPtrToState(PARTICLEENGINE::ReferencePosition, 0);
+    double* temp = container->GetPtrToState(PARTICLEENGINE::Temperature, 0);
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // safety check
     if (function.NumberComponents() != 1)
