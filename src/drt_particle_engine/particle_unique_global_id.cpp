@@ -143,15 +143,15 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
   }
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
 #ifdef DEBUG
   if (myrank_ != masterrank_)
   {
-    for (auto& p : rdata)
+    for (const auto& p : rdata)
     {
-      int msgsource = p.first;
-      std::vector<char>& rmsg = p.second;
+      const int msgsource = p.first;
+      const std::vector<char>& rmsg = p.second;
 
       if (rmsg.size() != 0)
         dserror("not expected to received reusable global ids on processor %d from processor %d!",
@@ -166,9 +166,9 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::GatherReusableGlobalIdsFromAllProcsO
     std::vector<int> receivedreusableglobalids;
 
     // unpack and store received data
-    for (auto& p : rdata)
+    for (const auto& p : rdata)
     {
-      std::vector<char>& rmsg = p.second;
+      const std::vector<char>& rmsg = p.second;
 
       std::vector<char>::size_type position = 0;
 
@@ -210,7 +210,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::PrepareRequestedGlobalIdsForAllProcs
   {
     // get total number of requested global ids over all processors
     int totalnumberofrequestedgids = 0;
-    for (auto& n : numberofrequestedgidsofallprocs) totalnumberofrequestedgids += n;
+    for (const auto& n : numberofrequestedgidsofallprocs) totalnumberofrequestedgids += n;
 
     // prepare all requested global ids
     std::vector<int> allrequestedglobalids;
@@ -303,13 +303,13 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::DistributeRequestedGlobalIdsFromMast
   }
 
   // communicate data via non-buffered send from proc to proc
-  PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
+  COMMUNICATION::ImmediateRecvBlockingSend(comm_, sdata, rdata);
 
 #ifdef DEBUG
-  for (auto& p : rdata)
+  for (const auto& p : rdata)
   {
-    int msgsource = p.first;
-    std::vector<char>& rmsg = p.second;
+    const int msgsource = p.first;
+    const std::vector<char>& rmsg = p.second;
 
     if (msgsource != masterrank_ and rmsg.size() != 0)
       dserror("not expected to received global ids on processor %d from processor %d!", myrank_,

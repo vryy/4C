@@ -35,7 +35,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   std::vector<int> targetprocs(numproc, 0);
   std::vector<int> summedtargets(numproc, 0);
 
-  for (auto& p : sdata) targetprocs[p.first] = 1;
+  for (const auto& p : sdata) targetprocs[p.first] = 1;
 
   comm.SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
@@ -46,7 +46,7 @@ void PARTICLEENGINE::COMMUNICATION::ImmediateRecvBlockingSend(const Epetra_Comm&
   std::vector<MPI_Request> sizerequest(numsendtoprocs);
   std::vector<int> sizetargets(numsendtoprocs);
   int counter = 0;
-  for (auto& p : sdata)
+  for (const auto& p : sdata)
   {
     int const torank = p.first;
     if (myrank == torank) dserror("processor should not send messages to itself!");

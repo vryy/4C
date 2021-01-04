@@ -52,10 +52,10 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] numContainerSize size of particle container
-     * \param[in] stateEnumSet     set of particle states to be stored
+     * \param[in] containersize size of particle container
+     * \param[in] stateset      set of particle states to be stored
      */
-    void Setup(int numContainerSize, const std::set<StateEnum>& stateEnumSet);
+    void Setup(int containersize, const std::set<ParticleState>& stateset);
 
     //! \name manipulate container size
     //! @{
@@ -121,9 +121,9 @@ namespace PARTICLEENGINE
      *
      * \param[out] index    index of particle in container
      * \param[in]  globalid global id of particle
-     * \param[in]  particle states of particle
+     * \param[in]  states   states of particle
      */
-    void AddParticle(int& index, int globalid, const ParticleStates& particle);
+    void AddParticle(int& index, int globalid, const ParticleStates& states);
 
     /*!
      * \brief replace particle in particle container at given index
@@ -136,9 +136,9 @@ namespace PARTICLEENGINE
      *
      * \param[in] index    index of particle in container
      * \param[in] globalid global id of particle
-     * \param[in] particle states of particle
+     * \param[in] states   states of particle
      */
-    void ReplaceParticle(int index, int globalid, const ParticleStates& particle);
+    void ReplaceParticle(int index, int globalid, const ParticleStates& states);
 
     /*!
      * \brief get particle at index from particle container
@@ -149,9 +149,9 @@ namespace PARTICLEENGINE
      *
      * \param[in]  index    index of particle in container
      * \param[out] globalid global id of particle
-     * \param[out] particle states of particle
+     * \param[out] states   states of particle
      */
-    void GetParticle(int index, int& globalid, ParticleStates& particle) const;
+    void GetParticle(int index, int& globalid, ParticleStates& states) const;
 
     /*!
      * \brief remove particle from particle container
@@ -173,19 +173,18 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] stateEnum particle state enum
+     * \param[in] state particle state
      *
      * \return dimension of particle state
      */
-    inline int GetStateDim(StateEnum stateEnum)
+    inline int GetStateDim(ParticleState state)
     {
 #ifdef DEBUG
-      if (not storedstates_.count(stateEnum))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+      if (not storedstates_.count(state))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
-      return statedim_[stateEnum];
+      return statedim_[state];
     };
 
     //! \name access global id and particle states
@@ -202,23 +201,22 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] stateEnum particle state enum
-     * \param[in] index     index of particle in container
+     * \param[in] state particle state
+     * \param[in] index index of particle in container
      *
      * \return pointer to particle state
      */
-    inline double* GetPtrToState(StateEnum stateEnum, int index)
+    inline double* GetPtrToState(ParticleState state, int index)
     {
 #ifdef DEBUG
-      if (not storedstates_.count(stateEnum))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+      if (not storedstates_.count(state))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 
       if (index < 0 or index > (particlestored_ - 1))
         dserror("can not return pointer to state of particle as index %d out of bounds!", index);
 #endif
 
-      return &((states_[stateEnum])[index * statedim_[stateEnum]]);
+      return &((states_[state])[index * statedim_[state]]);
     };
 
     /*!
@@ -233,20 +231,19 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 12/2020
      *
-     * \param[in] stateEnum particle state enum
-     * \param[in] index     index of particle in container
+     * \param[in] state particle state
+     * \param[in] index index of particle in container
      *
      * \return pointer to particle state or nullptr
      */
-    inline double* CondGetPtrToState(StateEnum stateEnum, int index)
+    inline double* CondGetPtrToState(ParticleState state, int index)
     {
 #ifdef DEBUG
       if (index < 0 or index > (particlestored_ - 1))
         dserror("can not return pointer to state of particle as index %d out of bounds!", index);
 #endif
 
-      if (storedstates_.count(stateEnum))
-        return &((states_[stateEnum])[index * statedim_[stateEnum]]);
+      if (storedstates_.count(state)) return &((states_[state])[index * statedim_[state]]);
 
       return nullptr;
     };
@@ -281,19 +278,17 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] fac       scale factor
-     * \param[in] stateEnum particle state enum
+     * \param[in] fac   scale factor
+     * \param[in] state particle state
      */
-    inline void ScaleState(double fac, StateEnum stateEnum)
+    inline void ScaleState(double fac, ParticleState state)
     {
 #ifdef DEBUG
-      if (not storedstates_.count(stateEnum))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+      if (not storedstates_.count(state))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
-      for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
-        (states_[stateEnum])[i] *= fac;
+      for (int i = 0; i < (particlestored_ * statedim_[state]); ++i) (states_[state])[i] *= fac;
     };
 
     /*!
@@ -301,29 +296,25 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] facA       first scale factor
-     * \param[in] stateEnumA first particle state enum
-     * \param[in] facB       second scale factor
-     * \param[in] stateEnumB second particle state enum
+     * \param[in] facA   first scale factor
+     * \param[in] stateA first particle state
+     * \param[in] facB   second scale factor
+     * \param[in] stateB second particle state
      */
-    inline void UpdateState(double facA, StateEnum stateEnumA, double facB, StateEnum stateEnumB)
+    inline void UpdateState(double facA, ParticleState stateA, double facB, ParticleState stateB)
     {
 #ifdef DEBUG
-      if (not storedstates_.count(stateEnumA))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnumA).c_str());
+      if (not storedstates_.count(stateA))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(stateA).c_str());
 
-      if (not storedstates_.count(stateEnumB))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnumB).c_str());
+      if (not storedstates_.count(stateB))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(stateB).c_str());
 
-      if (statedim_[stateEnumA] != statedim_[stateEnumB])
-        dserror("dimensions of states do not match!");
+      if (statedim_[stateA] != statedim_[stateB]) dserror("dimensions of states do not match!");
 #endif
 
-      for (int i = 0; i < (particlestored_ * statedim_[stateEnumA]); ++i)
-        (states_[stateEnumA])[i] =
-            facA * (states_[stateEnumA])[i] + facB * (states_[stateEnumB])[i];
+      for (int i = 0; i < (particlestored_ * statedim_[stateA]); ++i)
+        (states_[stateA])[i] = facA * (states_[stateA])[i] + facB * (states_[stateB])[i];
     };
 
     /*!
@@ -331,23 +322,22 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] val       particle state
-     * \param[in] stateEnum particle state enum
+     * \param[in] val   particle state
+     * \param[in] state particle state
      */
-    inline void SetState(std::vector<double> val, StateEnum stateEnum)
+    inline void SetState(std::vector<double> val, ParticleState state)
     {
 #ifdef DEBUG
-      if (not storedstates_.count(stateEnum))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+      if (not storedstates_.count(state))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 
-      if (statedim_[stateEnum] != static_cast<int>(val.size()))
+      if (statedim_[state] != static_cast<int>(val.size()))
         dserror("dimensions of states do not match!");
 #endif
 
       for (int i = 0; i < particlestored_; ++i)
-        for (int dim = 0; dim < statedim_[stateEnum]; ++dim)
-          (states_[stateEnum])[i * statedim_[stateEnum] + dim] = val[dim];
+        for (int dim = 0; dim < statedim_[state]; ++dim)
+          (states_[state])[i * statedim_[state] + dim] = val[dim];
     };
 
     /*!
@@ -355,18 +345,16 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] stateEnum particle state enum
+     * \param[in] state particle state
      */
-    inline void ClearState(StateEnum stateEnum)
+    inline void ClearState(ParticleState state)
     {
 #ifdef DEBUG
-      if (not storedstates_.count(stateEnum))
-        dserror("particle state '%s' not stored in container!",
-            PARTICLEENGINE::EnumToStateName(stateEnum).c_str());
+      if (not storedstates_.count(state))
+        dserror("particle state '%s' not stored in container!", EnumToStateName(state).c_str());
 #endif
 
-      for (int i = 0; i < (particlestored_ * statedim_[stateEnum]); ++i)
-        (states_[stateEnum])[i] = 0.0;
+      for (int i = 0; i < (particlestored_ * statedim_[state]); ++i) (states_[state])[i] = 0.0;
     };
 
     //! @}
@@ -376,9 +364,9 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \return stored particle state enums
+     * \return stored particle states
      */
-    inline const std::set<StateEnum>& GetStoredStates() const { return storedstates_; };
+    inline const std::set<ParticleState>& GetStoredStates() const { return storedstates_; };
 
     /*!
      * \brief get flag indicating stored state
@@ -387,14 +375,11 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2019
      *
-     * \param[in] stateEnum particle state enum
+     * \param[in] state particle state
      *
      * \return flag indicating stored state
      */
-    inline bool HaveStoredState(StateEnum stateEnum) const
-    {
-      return storedstates_.count(stateEnum);
-    };
+    inline bool HaveStoredState(ParticleState state) const { return storedstates_.count(state); };
 
     /*!
      * \brief get size of particle container
@@ -419,22 +404,22 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2018
      *
-     * \param[in] stateEnum particle state enum
+     * \param[in] state particle state
      *
      * \return minimum stored value of state in container
      */
-    double GetMinValueOfState(StateEnum stateEnum) const;
+    double GetMinValueOfState(ParticleState state) const;
 
     /*!
      * \brief get maximum stored value of state in container
      *
      * \author Sebastian Fuchs \date 11/2018
      *
-     * \param[in] stateEnum particle state enum
+     * \param[in] state particle state
      *
      * \return maximum stored value of state in container
      */
-    double GetMaxValueOfState(StateEnum stateEnum) const;
+    double GetMaxValueOfState(ParticleState state) const;
 
    private:
     //! size of particles container
@@ -444,7 +429,7 @@ namespace PARTICLEENGINE
     int particlestored_;
 
     //! set of stored particle states
-    std::set<StateEnum> storedstates_;
+    std::set<ParticleState> storedstates_;
 
     //! size of vector for states
     int statesvectorsize_;

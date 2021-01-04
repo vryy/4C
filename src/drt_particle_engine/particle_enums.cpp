@@ -13,275 +13,275 @@
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-int PARTICLEENGINE::EnumToStateDim(const enum PARTICLEENGINE::ParticleState& stateEnum)
+int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& state)
 {
   int dim = 0;
 
-  switch (stateEnum)
+  switch (state)
   {
     // scalar states
-    case PARTICLEENGINE::Radius:
-    case PARTICLEENGINE::Mass:
-    case PARTICLEENGINE::Density:
-    case PARTICLEENGINE::Pressure:
-    case PARTICLEENGINE::Temperature:
-    case PARTICLEENGINE::RigidBodyColor:
-    case PARTICLEENGINE::Inertia:
-    case PARTICLEENGINE::DensitySum:
-    case PARTICLEENGINE::DensityDot:
-    case PARTICLEENGINE::TemperatureDot:
-    case PARTICLEENGINE::BoundaryPressure:
-    case PARTICLEENGINE::Colorfield:
-    case PARTICLEENGINE::Curvature:
-    case PARTICLEENGINE::WallColorfield:
+    case Radius:
+    case Mass:
+    case Density:
+    case Pressure:
+    case Temperature:
+    case RigidBodyColor:
+    case Inertia:
+    case DensitySum:
+    case DensityDot:
+    case TemperatureDot:
+    case BoundaryPressure:
+    case Colorfield:
+    case Curvature:
+    case WallColorfield:
       dim = 1;
       break;
 
     // vectorial states
-    case PARTICLEENGINE::Position:
-    case PARTICLEENGINE::Velocity:
-    case PARTICLEENGINE::Acceleration:
-    case PARTICLEENGINE::LastTransferPosition:
-    case PARTICLEENGINE::ModifiedVelocity:
-    case PARTICLEENGINE::ModifiedAcceleration:
-    case PARTICLEENGINE::ReferencePosition:
-    case PARTICLEENGINE::RelativePosition:
-    case PARTICLEENGINE::RelativePositionBodyFrame:
-    case PARTICLEENGINE::BoundaryVelocity:
-    case PARTICLEENGINE::ColorfieldGradient:
-    case PARTICLEENGINE::InterfaceNormal:
-    case PARTICLEENGINE::WallInterfaceNormal:
-    case PARTICLEENGINE::TemperatureGradient:
-    case PARTICLEENGINE::AngularVelocity:
-    case PARTICLEENGINE::AngularAcceleration:
-    case PARTICLEENGINE::Force:
-    case PARTICLEENGINE::Moment:
-    case PARTICLEENGINE::LastIterPosition:
-    case PARTICLEENGINE::LastIterVelocity:
-    case PARTICLEENGINE::LastIterAcceleration:
-    case PARTICLEENGINE::LastIterAngularVelocity:
-    case PARTICLEENGINE::LastIterAngularAcceleration:
-    case PARTICLEENGINE::LastIterModifiedAcceleration:
+    case Position:
+    case Velocity:
+    case Acceleration:
+    case LastTransferPosition:
+    case ModifiedVelocity:
+    case ModifiedAcceleration:
+    case ReferencePosition:
+    case RelativePosition:
+    case RelativePositionBodyFrame:
+    case BoundaryVelocity:
+    case ColorfieldGradient:
+    case InterfaceNormal:
+    case WallInterfaceNormal:
+    case TemperatureGradient:
+    case AngularVelocity:
+    case AngularAcceleration:
+    case Force:
+    case Moment:
+    case LastIterPosition:
+    case LastIterVelocity:
+    case LastIterAcceleration:
+    case LastIterAngularVelocity:
+    case LastIterAngularAcceleration:
+    case LastIterModifiedAcceleration:
       dim = 3;
       break;
 
     default:
-      dserror("particle state enum unknown!");
+      dserror("particle state unknown!");
   }
 
   return dim;
 }
 
-std::string PARTICLEENGINE::EnumToStateName(const enum PARTICLEENGINE::ParticleState& stateEnum)
+std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& state)
 {
   std::string name;
 
-  switch (stateEnum)
+  switch (state)
   {
-    case PARTICLEENGINE::Radius:
+    case Radius:
       name = "radius";
       break;
-    case PARTICLEENGINE::Mass:
+    case Mass:
       name = "mass";
       break;
-    case PARTICLEENGINE::Density:
+    case Density:
       name = "density";
       break;
-    case PARTICLEENGINE::DensitySum:
+    case DensitySum:
       name = "density sum";
       break;
-    case PARTICLEENGINE::DensityDot:
+    case DensityDot:
       name = "density dot";
       break;
-    case PARTICLEENGINE::Pressure:
+    case Pressure:
       name = "pressure";
       break;
-    case PARTICLEENGINE::Temperature:
+    case Temperature:
       name = "temperature";
       break;
-    case PARTICLEENGINE::RigidBodyColor:
+    case RigidBodyColor:
       name = "rigid body color";
       break;
-    case PARTICLEENGINE::Inertia:
+    case Inertia:
       name = "inertia";
       break;
-    case PARTICLEENGINE::TemperatureDot:
+    case TemperatureDot:
       name = "temperature dot";
       break;
-    case PARTICLEENGINE::Position:
+    case Position:
       name = "position";
       break;
-    case PARTICLEENGINE::Velocity:
+    case Velocity:
       name = "velocity";
       break;
-    case PARTICLEENGINE::Acceleration:
+    case Acceleration:
       name = "acceleration";
       break;
-    case PARTICLEENGINE::AngularVelocity:
+    case AngularVelocity:
       name = "angular velocity";
       break;
-    case PARTICLEENGINE::AngularAcceleration:
+    case AngularAcceleration:
       name = "angular acceleration";
       break;
-    case PARTICLEENGINE::Force:
+    case Force:
       name = "force";
       break;
-    case PARTICLEENGINE::Moment:
+    case Moment:
       name = "moment";
       break;
-    case PARTICLEENGINE::LastTransferPosition:
+    case LastTransferPosition:
       name = "position last transfer";
       break;
-    case PARTICLEENGINE::ReferencePosition:
+    case ReferencePosition:
       name = "reference position";
       break;
-    case PARTICLEENGINE::RelativePosition:
+    case RelativePosition:
       name = "relative position";
       break;
-    case PARTICLEENGINE::RelativePositionBodyFrame:
+    case RelativePositionBodyFrame:
       name = "body frame relative position";
       break;
-    case PARTICLEENGINE::ModifiedVelocity:
+    case ModifiedVelocity:
       name = "modified velocity";
       break;
-    case PARTICLEENGINE::ModifiedAcceleration:
+    case ModifiedAcceleration:
       name = "modified acceleration";
       break;
-    case PARTICLEENGINE::BoundaryPressure:
+    case BoundaryPressure:
       name = "boundary pressure";
       break;
-    case PARTICLEENGINE::BoundaryVelocity:
+    case BoundaryVelocity:
       name = "boundary velocity";
       break;
-    case PARTICLEENGINE::Colorfield:
+    case Colorfield:
       name = "colorfield";
       break;
-    case PARTICLEENGINE::ColorfieldGradient:
+    case ColorfieldGradient:
       name = "colorfield gradient";
       break;
-    case PARTICLEENGINE::InterfaceNormal:
+    case InterfaceNormal:
       name = "interface normal";
       break;
-    case PARTICLEENGINE::Curvature:
+    case Curvature:
       name = "curvature";
       break;
-    case PARTICLEENGINE::WallColorfield:
+    case WallColorfield:
       name = "wall colorfield";
       break;
-    case PARTICLEENGINE::WallInterfaceNormal:
+    case WallInterfaceNormal:
       name = "wall interface normal";
       break;
-    case PARTICLEENGINE::TemperatureGradient:
+    case TemperatureGradient:
       name = "temperature gradient";
       break;
-    case PARTICLEENGINE::LastIterPosition:
+    case LastIterPosition:
       name = "position last iteration";
       break;
-    case PARTICLEENGINE::LastIterVelocity:
+    case LastIterVelocity:
       name = "velocity last iteration";
       break;
-    case PARTICLEENGINE::LastIterAcceleration:
+    case LastIterAcceleration:
       name = "acceleration last iteration";
       break;
-    case PARTICLEENGINE::LastIterAngularVelocity:
+    case LastIterAngularVelocity:
       name = "angular velocity last iteration";
       break;
-    case PARTICLEENGINE::LastIterAngularAcceleration:
+    case LastIterAngularAcceleration:
       name = "angular acceleration last iteration";
       break;
-    case PARTICLEENGINE::LastIterModifiedAcceleration:
+    case LastIterModifiedAcceleration:
       name = "modified acceleration last iteration";
       break;
     default:
-      dserror("particle state enum unknown!");
+      dserror("particle state unknown!");
   }
 
   return name;
 }
 
-enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& stateName)
+enum PARTICLEENGINE::ParticleState PARTICLEENGINE::EnumFromStateName(const std::string& name)
 {
-  enum PARTICLEENGINE::ParticleState state;
+  enum ParticleState state;
 
-  if (stateName == "density")
-    state = PARTICLEENGINE::Density;
-  else if (stateName == "pressure")
-    state = PARTICLEENGINE::Pressure;
-  else if (stateName == "temperature")
-    state = PARTICLEENGINE::Temperature;
+  if (name == "density")
+    state = Density;
+  else if (name == "pressure")
+    state = Pressure;
+  else if (name == "temperature")
+    state = Temperature;
   else
-    dserror("particle state '%s' unknown!", stateName.c_str());
+    dserror("particle state '%s' unknown!", name.c_str());
 
   return state;
 }
 
-std::string PARTICLEENGINE::EnumToTypeName(const enum PARTICLEENGINE::ParticleType& typeEnum)
+std::string PARTICLEENGINE::EnumToTypeName(const enum ParticleType& type)
 {
   std::string name;
 
-  switch (typeEnum)
+  switch (type)
   {
-    case PARTICLEENGINE::Phase1:
+    case Phase1:
       name = "phase1";
       break;
-    case PARTICLEENGINE::Phase2:
+    case Phase2:
       name = "phase2";
       break;
-    case PARTICLEENGINE::BoundaryPhase:
+    case BoundaryPhase:
       name = "boundaryphase";
       break;
-    case PARTICLEENGINE::RigidPhase:
+    case RigidPhase:
       name = "rigidphase";
       break;
-    case PARTICLEENGINE::DirichletPhase:
+    case DirichletPhase:
       name = "dirichletphase";
       break;
-    case PARTICLEENGINE::NeumannPhase:
+    case NeumannPhase:
       name = "neumannphase";
       break;
     default:
-      dserror("particle type enum unknown!");
+      dserror("particle type unknown!");
   }
 
   return name;
 }
 
-enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::string& typeName)
+enum PARTICLEENGINE::ParticleType PARTICLEENGINE::EnumFromTypeName(const std::string& name)
 {
-  enum PARTICLEENGINE::ParticleType type;
+  enum ParticleType type;
 
-  if (typeName == "phase1")
-    type = PARTICLEENGINE::Phase1;
-  else if (typeName == "phase2")
-    type = PARTICLEENGINE::Phase2;
-  else if (typeName == "boundaryphase")
-    type = PARTICLEENGINE::BoundaryPhase;
-  else if (typeName == "rigidphase")
-    type = PARTICLEENGINE::RigidPhase;
-  else if (typeName == "dirichletphase")
-    type = PARTICLEENGINE::DirichletPhase;
-  else if (typeName == "neumannphase")
-    type = PARTICLEENGINE::NeumannPhase;
+  if (name == "phase1")
+    type = Phase1;
+  else if (name == "phase2")
+    type = Phase2;
+  else if (name == "boundaryphase")
+    type = BoundaryPhase;
+  else if (name == "rigidphase")
+    type = RigidPhase;
+  else if (name == "dirichletphase")
+    type = DirichletPhase;
+  else if (name == "neumannphase")
+    type = NeumannPhase;
   else
-    dserror("particle type '%s' unknown!", typeName.c_str());
+    dserror("particle type '%s' unknown!", name.c_str());
 
   return type;
 }
 
-std::string PARTICLEENGINE::EnumToStatusName(const enum PARTICLEENGINE::ParticleStatus& statusEnum)
+std::string PARTICLEENGINE::EnumToStatusName(const enum ParticleStatus& status)
 {
   std::string name;
 
-  switch (statusEnum)
+  switch (status)
   {
-    case PARTICLEENGINE::Owned:
+    case Owned:
       name = "owned";
       break;
-    case PARTICLEENGINE::Ghosted:
+    case Ghosted:
       name = "ghosted";
       break;
     default:
-      dserror("particle status enum unknown!");
+      dserror("particle status unknown!");
   }
 
   return name;

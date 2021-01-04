@@ -97,22 +97,22 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    *
-   * \param[in] stateEnum particle state enum
+   * \param[in] state particle state
    *
    * \return particle state dimension
    */
-  int EnumToStateDim(const enum PARTICLEENGINE::ParticleState& stateEnum);
+  int EnumToStateDim(const enum ParticleState& state);
 
   /*!
    * \brief convert particle state enum to name
    *
    * \author Sebastian Fuchs \date 03/2018
    *
-   * \param[in] stateEnum particle state enum
+   * \param[in] state particle state
    *
    * \return particle state name
    */
-  std::string EnumToStateName(const enum PARTICLEENGINE::ParticleState& stateEnum);
+  std::string EnumToStateName(const enum ParticleState& state);
 
   /*!
    * \brief convert particle state name to enum
@@ -125,11 +125,11 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    *
-   * \param[in] stateName particle state name
+   * \param[in] name particle state name
    *
-   * \return particle state enum
+   * \return particle state
    */
-  enum PARTICLEENGINE::ParticleState EnumFromStateName(const std::string& stateName);
+  enum ParticleState EnumFromStateName(const std::string& name);
 
   //! @}
 
@@ -163,11 +163,11 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    *
-   * \param[in] typeEnum particle type enum
+   * \param[in] type particle type
    *
    * \return particle type name
    */
-  std::string EnumToTypeName(const enum PARTICLEENGINE::ParticleType& typeEnum);
+  std::string EnumToTypeName(const enum ParticleType& type);
 
   /*!
    * \brief convert particle type name to enum
@@ -177,11 +177,11 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    *
-   * \param[in] typeName particle type name
+   * \param[in] name particle type name
    *
-   * \return particle type enum
+   * \return particle type
    */
-  enum PARTICLEENGINE::ParticleType EnumFromTypeName(const std::string& typeName);
+  enum ParticleType EnumFromTypeName(const std::string& name);
 
   //! @}
 
@@ -207,11 +207,11 @@ namespace PARTICLEENGINE
    *
    * \author Sebastian Fuchs \date 03/2018
    *
-   * \param[in] statusEnum particle status enum
+   * \param[in] status particle status
    *
    * \return particle status name
    */
-  std::string EnumToStatusName(const enum PARTICLEENGINE::ParticleStatus& statusEnum);
+  std::string EnumToStatusName(const enum ParticleStatus& status);
 
   //! @}
 

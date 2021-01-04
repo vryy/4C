@@ -141,7 +141,7 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 11/2018
      */
-    std::set<StateEnum> blackliststates_;
+    std::set<ParticleState> blackliststates_;
   };
 
 }  // namespace PARTICLEENGINE
