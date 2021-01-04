@@ -69,13 +69,13 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
   std::shared_ptr<RuntimeVtpWriter> runtime_vtpwriter;
 
   // iterate over particle types
-  for (auto& type : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
   {
     // allocate memory for vtp writer objects of owned and ghosted states
     (runtime_vtpwriters_[type]).resize(2);
 
     // iterate over particle statuses
-    for (auto& status : {Owned, Ghosted})
+    for (const auto& status : {Owned, Ghosted})
     {
       if (status == Ghosted and write_ghosted_particles == false) continue;
 
@@ -109,10 +109,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::ResetTimeAndTimeStep(
     double time, unsigned int timestep)
 {
   // iterate over particle types
-  for (auto& type : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& status : {Owned, Ghosted})
+    for (const auto& status : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[type])[status]) continue;
@@ -130,10 +130,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::ResetTimeAndTimeStep(
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 {
   // iterate over particle types
-  for (auto& type : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& status : {Owned, Ghosted})
+    for (const auto& status : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[type])[status]) continue;
@@ -154,7 +154,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 #endif
 
       // iterate over particle states
-      for (auto& state : states)
+      for (const auto& state : states)
       {
         // get particle state dimension
         int statedim = container->GetStateDim(state);
@@ -227,10 +227,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
 {
   // iterate over particle types
-  for (auto& type : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& status : {Owned, Ghosted})
+    for (const auto& status : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[type])[status]) continue;
@@ -243,10 +243,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles()
 {
   // iterate over particle types
-  for (auto& type : particlecontainerbundle_->GetParticleTypes())
+  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
   {
     // iterate over particle statuses
-    for (auto& status : {Owned, Ghosted})
+    for (const auto& status : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
       if (not(runtime_vtpwriters_[type])[status]) continue;

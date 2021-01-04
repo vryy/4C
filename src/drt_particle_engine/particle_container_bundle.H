@@ -194,7 +194,7 @@ namespace PARTICLEENGINE
      */
     inline void ScaleStateAllContainers(double fac, ParticleState state) const
     {
-      for (auto& type : storedtypes_) ((containers_[type])[Owned])->ScaleState(fac, state);
+      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->ScaleState(fac, state);
     };
 
     /*!
@@ -211,7 +211,7 @@ namespace PARTICLEENGINE
     inline void UpdateStateAllContainers(
         double facA, ParticleState stateA, double facB, ParticleState stateB) const
     {
-      for (auto& type : storedtypes_)
+      for (const auto& type : storedtypes_)
         ((containers_[type])[Owned])->UpdateState(facA, stateA, facB, stateB);
     };
 
@@ -225,7 +225,7 @@ namespace PARTICLEENGINE
      */
     inline void SetStateAllContainers(std::vector<double> val, ParticleState state) const
     {
-      for (auto& type : storedtypes_) ((containers_[type])[Owned])->SetState(val, state);
+      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->SetState(val, state);
     };
 
     /*!
@@ -237,7 +237,7 @@ namespace PARTICLEENGINE
      */
     inline void ClearStateAllContainers(ParticleState state) const
     {
-      for (auto& type : storedtypes_) ((containers_[type])[Owned])->ClearState(state);
+      for (const auto& type : storedtypes_) ((containers_[type])[Owned])->ClearState(state);
     };
 
     //! @}
@@ -254,7 +254,7 @@ namespace PARTICLEENGINE
      */
     inline void CheckAndDecreaseSizeAllContainersOfSpecificStatus(ParticleStatus status) const
     {
-      for (auto& type : storedtypes_)
+      for (const auto& type : storedtypes_)
         ((containers_[type])[status])->CheckAndDecreaseContainerSize();
     }
 
@@ -267,7 +267,7 @@ namespace PARTICLEENGINE
      */
     inline void ClearAllContainersOfSpecificStatus(ParticleStatus status) const
     {
-      for (auto& type : storedtypes_) ((containers_[type])[status])->ClearContainer();
+      for (const auto& type : storedtypes_) ((containers_[type])[status])->ClearContainer();
     };
 
     //! @}

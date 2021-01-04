@@ -37,7 +37,7 @@ void PARTICLEENGINE::ParticleContainerBundle::Setup(
   containers_.resize(typevectorsize);
 
   // iterate over particle types
-  for (auto& typeIt : particlestatestotypes)
+  for (const auto& typeIt : particlestatestotypes)
   {
     // get particle type
     ParticleType type = typeIt.first;
@@ -76,7 +76,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetPackedParticleObjectsOfAllConta
     std::shared_ptr<std::vector<char>>& particlebuffer) const
 {
   // iterate over particle types
-  for (auto& type : storedtypes_)
+  for (const auto& type : storedtypes_)
   {
     // get container of owned particles
     ParticleContainer* container = (containers_[type])[Owned].get();
@@ -104,7 +104,7 @@ void PARTICLEENGINE::ParticleContainerBundle::GetVectorOfParticleObjectsOfAllCon
     std::vector<ParticleObjShrdPtr>& particlesstored) const
 {
   // iterate over particle types
-  for (auto& type : storedtypes_)
+  for (const auto& type : storedtypes_)
   {
     // get container of owned particles
     ParticleContainer* container = (containers_[type])[Owned].get();

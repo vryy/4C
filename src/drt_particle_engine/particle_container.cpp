@@ -46,7 +46,7 @@ void PARTICLEENGINE::ParticleContainer::Setup(
   statedim_.resize(statesvectorsize_);
 
   // iterate over states to be stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // set particle state dimension for current state
     statedim_[state] = EnumToStateDim(state);
@@ -65,7 +65,7 @@ void PARTICLEENGINE::ParticleContainer::IncreaseContainerSize()
   globalids_.resize(containersize_);
 
   // iterate over states stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // resize vector of current state
     states_[state].resize(containersize_ * statedim_[state]);
@@ -91,7 +91,7 @@ void PARTICLEENGINE::ParticleContainer::DecreaseContainerSize()
   globalids_.resize(containersize_);
 
   // iterate over states stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // resize vector of current state
     states_[state].resize(containersize_ * statedim_[state]);
@@ -108,7 +108,7 @@ void PARTICLEENGINE::ParticleContainer::AddParticle(
   globalids_[particlestored_] = globalid;
 
   // iterate over states stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // state not handed over
     if (states.size() <= state or states[state].empty())
@@ -151,7 +151,7 @@ void PARTICLEENGINE::ParticleContainer::ReplaceParticle(
   if (globalid >= 0) globalids_[index] = globalid;
 
   // iterate over states stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // state not handed over
     if (states.size() <= state or states[state].empty())
@@ -189,7 +189,7 @@ void PARTICLEENGINE::ParticleContainer::GetParticle(
   states.assign(statesvectorsize_, std::vector<double>(0));
 
   // iterate over states stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // get pointer to particle state
     const double* state_ptr = &((states_[state])[index * statedim_[state]]);
@@ -213,7 +213,7 @@ void PARTICLEENGINE::ParticleContainer::RemoveParticle(int index)
   globalids_[index] = globalids_[particlestored_];
 
   // iterate over states stored in container
-  for (auto& state : storedstates_)
+  for (const auto& state : storedstates_)
   {
     // overwrite state in container
     for (int dim = 0; dim < statedim_[state]; ++dim)
