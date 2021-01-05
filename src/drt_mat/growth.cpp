@@ -8,6 +8,8 @@ growth laws.
  *----------------------------------------------------------------------*/
 
 
+#include <utility>
+
 #include "growth.H"
 
 #include "growth_law.H"
@@ -42,79 +44,72 @@ MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)
   {
     case INPAR::MAT::m_growth_aniso_strain:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStrain(curmat));
-      MAT::PAR::GrowthLawAnisoStrain* params =
-          static_cast<MAT::PAR::GrowthLawAnisoStrain*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrain*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_aniso_stress:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStress(curmat));
-      MAT::PAR::GrowthLawAnisoStress* params =
-          static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStress*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_aniso_strain_const_trig:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStrainConstTrig(curmat));
-      MAT::PAR::GrowthLawAnisoStrainConstTrig* params =
-          static_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStrainConstTrig*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_aniso_stress_const_trig:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawAnisoStressConstTrig(curmat));
-      MAT::PAR::GrowthLawAnisoStressConstTrig* params =
-          static_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawAnisoStressConstTrig*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_iso_stress:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawIsoStress(curmat));
-      MAT::PAR::GrowthLawIsoStress* params =
-          static_cast<MAT::PAR::GrowthLawIsoStress*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawIsoStress*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_ac:
     {
-      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::GrowthLawAC(curmat));
-      MAT::PAR::GrowthLawAC* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat->Parameter());
+      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::GrowthLawAC(curmat));
+      auto* params = static_cast<MAT::PAR::GrowthLawAC*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_ac_radial:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawACRadial(curmat));
-      MAT::PAR::GrowthLawACRadial* params =
-          static_cast<MAT::PAR::GrowthLawACRadial*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawACRadial*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_ac_radial_refconc:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::GrowthLawACRadialRefConc(curmat));
-      MAT::PAR::GrowthLawACRadialRefConc* params =
-          static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::GrowthLawACRadialRefConc*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
     case INPAR::MAT::m_growth_const:
     {
-      if (curmat->Parameter() == NULL) curmat->SetParameter(new MAT::PAR::GrowthLawConst(curmat));
-      MAT::PAR::GrowthLawConst* params =
-          static_cast<MAT::PAR::GrowthLawConst*>(curmat->Parameter());
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::GrowthLawConst(curmat));
+      auto* params = static_cast<MAT::PAR::GrowthLawConst*>(curmat->Parameter());
       growthlaw_ = params->CreateGrowthLaw();
       break;
     }
@@ -160,7 +155,7 @@ Teuchos::RCP<MAT::Material> MAT::PAR::Growth::CreateMaterial()
 MAT::Growth::Growth()
     : theta_(Teuchos::null),
       isinit_(false),
-      params_(NULL),
+      params_(nullptr),
       matelastic_(Teuchos::null),
       thetaold_(Teuchos::null),
       histdata_()
@@ -189,7 +184,7 @@ void MAT::Growth::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   int numgp;
@@ -216,8 +211,6 @@ void MAT::Growth::Pack(DRT::PackBuffer& data) const
   {
     matelastic_->Pack(data);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -234,8 +227,9 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
 
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -247,6 +241,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+  }
 
   int numgp;
   ExtractfromPack(position, data, numgp);
@@ -280,16 +275,14 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   if (dataelastic.size() > 0)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
-    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == NULL) dserror("failed to unpack elastic material");
+    auto* matel = dynamic_cast<MAT::So3Material*>(o);
+    if (matel == nullptr) dserror("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
   }
   else
     matelastic_ = Teuchos::null;
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -316,7 +309,6 @@ void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   histdata_.Add("thetaold", data);
 
   isinit_ = true;
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -472,7 +464,7 @@ MAT::GrowthVolumetricType MAT::GrowthVolumetricType::instance_;
 /*----------------------------------------------------------------------------*/
 DRT::ParObject* MAT::GrowthVolumetricType::Create(const std::vector<char>& data)
 {
-  MAT::GrowthVolumetric* grow = new MAT::GrowthVolumetric();
+  auto* grow = new MAT::GrowthVolumetric();
   grow->Unpack(data);
   return grow;
 }
@@ -483,7 +475,7 @@ MAT::GrowthVolumetric::GrowthVolumetric()
       tr_mandel_e_(Teuchos::null),
       lambda_fib_e_(Teuchos::null),
       growthtrig_const_(0.0),
-      paramsVolumetric_(NULL),
+      paramsVolumetric_(nullptr),
       refdir_(true),
       curdir_(Teuchos::null),
       curdir_for_update_(Teuchos::null),
@@ -579,7 +571,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = PullBack4Tensor(F_ginv, cmatdach);
+    cmatelast = PullBackFourTensor(F_ginv, cmatdach);
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain
@@ -631,7 +623,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
       stress->Update(1.0, cmatelasC, 2.0);
       double dthetadp;
       Parameter()->growthlaw_->EvaluatePDeriv(
-          &dthetadp, ThetaOld_atgp(gp), Matelastic(), defgrd, glstrain, params, eleGID);
+          &dthetadp, ThetaOldAtGp(gp), Matelastic(), defgrd, glstrain, params, eleGID);
       stress->Scale(-dthetadp / theta);
 
     }  // END stuff needed for const growth law in combination with parameter estimation
@@ -657,7 +649,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
     LINALG::Matrix<3, 3> F_g(true);
 
     Parameter()->growthlaw_->CalcFg(
-        theta, ThetaOld_atgp(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
+        theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
 
     // calculate F_g^(-1)
     LINALG::Matrix<3, 3> F_ginv(true);
@@ -665,7 +657,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = PullBack4Tensor(F_ginv, cmatdach);
+    cmatelast = PullBackFourTensor(F_ginv, cmatdach);
 
     *cmat = cmatelast;
   }
@@ -704,7 +696,7 @@ void MAT::GrowthVolumetric::EvaluateGrowth(double* theta, LINALG::Matrix<6, 1>* 
   // get gauss point number
   if (gp == -1) dserror("No Gauss point number provided in material.");
 
-  double thetaold = ThetaOld_atgp(gp);
+  double thetaold = ThetaOldAtGp(gp);
 
   MAT::Growth* matgrowth = this;
   Parameter()->growthlaw_->Evaluate(theta, thetaold, dthetadC, *matgrowth, defgrd, glstrain,
@@ -770,7 +762,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
   // calculate growth part F_g of the deformation gradient F
   LINALG::Matrix<3, 3> F_g(true);
   Parameter()->growthlaw_->CalcFg(
-      theta, ThetaOld_atgp(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
+      theta, ThetaOldAtGp(gp), gp, defgrd, refdir_, curdir_, F_g_hist_, F_g);
 
   // calculate F_g^(-1)
   LINALG::Matrix<3, 3> F_ginv(true);
@@ -819,7 +811,6 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
   tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1) +
                          Cdachvec(2) * Sdachvec(2) + Cdachvec(3) * Sdachvec(3) +
                          Cdachvec(4) * Sdachvec(4) + Cdachvec(5) * Sdachvec(5);
-  ;
 
   // elastic fiber stretch lambda = \sqrt(f_0 \cdot Cdach f_0)
   LINALG::Matrix<3, 1> CdachDir(true);
@@ -835,71 +826,51 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
  | notation) via the 2th order deformation gradient (also in matrix     |
  | notation)                                                  thon 01/15|
  *----------------------------------------------------------------------*/
-LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBack4Tensor(
+LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBackFourTensor(
     const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat)
 {
-  double CMAT[3][3][3][3] = {{{{0.0}}}};
+  FourTensor CMAT = {{{{0.0}}}};
   Setup4Tensor(CMAT, Cmat);
-  //  PrintFourTensor(CMAT);
 
-  // This would be the long way....
-  //
-  //  double tmp[3][3][3][3] = {{{{0.0}}}};
-  //  for(int i=0;i<3;++i)
-  //    for(int j=0;j<3;++j)
-  //      for(int k=0;k<3;++k)
-  //        for(int l=0;l<3;++l)
-  //          for(int A=0;A<3;++A)
-  //            for(int B=0;B<3;++B)
-  //              for(int C=0;C<3;++C)
-  //                for(int D=0;D<3;++D)
-  //                  tmp[i][j][k][l] +=
-  //                  defgr(i,A)*defgr(j,B)*defgr(k,C)*defgr(l,D)*CMAT[A][B][C][D];
-  //        }
-  //  PrintFourTensor(tmp);
-  //  LINALG::Matrix<6,6> CResult1(true);
-  //  Setup6x6VoigtMatrix(CResult1,tmp1);
-
-  // But we can use the fact that CResult(i,j,k,l)=CResult(k,l,i,j) iff we have a hyperelatic
-  // material
+  // We can use the fact that CResult(i,j,k,l)=CResult(k,l,i,j) if we have a hyper-elastic material
   LINALG::Matrix<6, 6> CResult(true);
 
-  CResult(0, 0) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 0, 0);
-  CResult(0, 1) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 1, 1);
-  CResult(0, 2) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 2, 2);
-  CResult(0, 3) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 0, 1);
-  CResult(0, 4) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 1, 2);
-  CResult(0, 5) = PullBack4Tensorijkl(defgr, CMAT, 0, 0, 0, 2);
+  CResult(0, 0) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 0);
+  CResult(0, 1) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 1);
+  CResult(0, 2) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 2, 2);
+  CResult(0, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 1);
+  CResult(0, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 2);
+  CResult(0, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 2);
   CResult(1, 0) = CResult(0, 1);
-  CResult(1, 1) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 1, 1);
-  CResult(1, 2) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 2, 2);
-  CResult(1, 3) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 0, 1);
-  CResult(1, 4) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 1, 2);
-  CResult(1, 5) = PullBack4Tensorijkl(defgr, CMAT, 1, 1, 0, 2);
+  CResult(1, 1) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 1);
+  CResult(1, 2) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 2, 2);
+  CResult(1, 3) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 1);
+  CResult(1, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 2);
+  CResult(1, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 2);
   CResult(2, 0) = CResult(0, 2);
   CResult(2, 1) = CResult(1, 2);
-  CResult(2, 2) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 2, 2);
-  CResult(2, 3) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 0, 1);
-  CResult(2, 4) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 1, 2);
-  CResult(2, 5) = PullBack4Tensorijkl(defgr, CMAT, 2, 2, 0, 2);
+  CResult(2, 2) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 2, 2);
+  CResult(2, 3) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 1);
+  CResult(2, 4) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 1, 2);
+  CResult(2, 5) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 2);
   CResult(3, 0) = CResult(0, 3);
   CResult(3, 1) = CResult(1, 3);
   CResult(3, 2) = CResult(2, 3);
-  CResult(3, 3) = PullBack4Tensorijkl(defgr, CMAT, 0, 1, 0, 1);
-  CResult(3, 4) = PullBack4Tensorijkl(defgr, CMAT, 0, 1, 1, 2);
-  CResult(3, 5) = PullBack4Tensorijkl(defgr, CMAT, 0, 1, 0, 2);
+  CResult(3, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 1);
+  CResult(3, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 1, 2);
+  CResult(3, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 2);
   CResult(4, 0) = CResult(0, 4);
   CResult(4, 1) = CResult(1, 4);
   CResult(4, 2) = CResult(2, 4);
   CResult(4, 3) = CResult(3, 4);
-  CResult(4, 4) = PullBack4Tensorijkl(defgr, CMAT, 1, 2, 1, 2);
-  CResult(4, 5) = PullBack4Tensorijkl(defgr, CMAT, 1, 2, 0, 2);
+  CResult(4, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 1, 2);
+  CResult(4, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 0, 2);
   CResult(5, 0) = CResult(0, 5);
   CResult(5, 1) = CResult(1, 5);
   CResult(5, 2) = CResult(2, 5);
   CResult(5, 3) = CResult(3, 5);
   CResult(5, 4) = CResult(4, 5);
-  CResult(5, 5) = PullBack4Tensorijkl(defgr, CMAT, 0, 2, 0, 2);
+  CResult(5, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 2, 0, 2);
 
   return CResult;
 }
@@ -909,18 +880,23 @@ LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBack4Tensor(
  | tensor (in matrix/voigt notation) /// via the 2th order deformation                 |
  | gradient (also in matrix notation)                                      Thon  01/15 |
  *-------------------------------------------------------------------------------------*/
-double MAT::GrowthVolumetric::PullBack4Tensorijkl(const LINALG::Matrix<3, 3>& defgr,
-    const double (&FourTensor)[3][3][3][3], const double& i, const double& j, const double& k,
-    const double& l)
+double MAT::GrowthVolumetric::PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr,
+    const FourTensor& FourTensor, const int i, const int j, const int k, const int l)
 {
-  double CResult_ijkl = 0;
+  double CResult_ijkl(0.0);
 
   for (int A = 0; A < 3; ++A)
+  {
     for (int B = 0; B < 3; ++B)
+    {
       for (int C = 0; C < 3; ++C)
+      {
         for (int D = 0; D < 3; ++D)
           CResult_ijkl +=
               defgr(i, A) * defgr(j, B) * defgr(k, C) * defgr(l, D) * FourTensor[A][B][C][D];
+      }
+    }
+  }
 
   return CResult_ijkl;
 }
@@ -929,7 +905,7 @@ double MAT::GrowthVolumetric::PullBack4Tensorijkl(const LINALG::Matrix<3, 3>& de
  |  Setup 4-Tensor from 6x6 Voigt notation                                 thon  01/15 |
  *-------------------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::Setup4Tensor(
-    double (&FourTensor)[3][3][3][3], const LINALG::Matrix<6, 6>& VoigtMatrix)
+    FourTensor& FourTensor, const LINALG::Matrix<6, 6>& VoigtMatrix)
 {
   // Clear4Tensor(FourTensor);
   // Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor with at
@@ -1023,99 +999,6 @@ void MAT::GrowthVolumetric::Setup4Tensor(
 
 }  // Setup4Tensor()
 
-
-///*------------------------------------------------------------------------------------------*
-// |  Setup 6x6 matrix in Voigt notation from 4-Tensor                            thon  01/15 |
-// *------------------------------------------------------------------------------------------*/
-// void MAT::GrowthScdACRadial::Setup6x6VoigtMatrix(
-//    LINALG::Matrix<6,6>& VoigtMatrix,
-//    const double (&FourTensor)[3][3][3][3]
-//)
-//{
-/////*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)
-/// 0.5*(C1123+C1132)                0.5*(C1113+C1131)      ] /    [      C2211 C2222 C2233
-/// 0.5*(C2212+C2221)               0.5*(C2223+C2232) 0.5*(C2213+C2231)      ] /    [      C3311
-/// C3322                C3333                0.5*(C3312+C3321) 0.5*(C3323+C3332) 0.5*(C3313+C3331)
-/// ] /    [0.5*(C1211+C2111) 0.5*(C1222+C2122)    0.5*(C1233+C2133) 0.5*(C1212+C2112+C1221+C2121)
-/// 0.5*(C1223+C2123+C1232+C2132)    0.5*(C1213+C2113+C1231+C2131)] /    [0.5*(C2311+C3211)
-/// 0.5*(C2322+C3222)    0.5*(C2333+C3233)    0.5*(C2312+C3212+C2321+C3221)
-/// 0.5*(C2323+C3223+C2332+C3232)    0.5*(C2313+C3213+C2331+C3231)] /    [0.5*(C1322+C3122)
-/// 0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)
-/// 0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
-//
-//  // Setup 4-Tensor from 6x6 Voigt matrix
-//  VoigtMatrix(0,0) = FourTensor[0][0][0][0]; //C1111
-//  VoigtMatrix(0,1) = FourTensor[0][0][1][1]; //C1122
-//  VoigtMatrix(0,2) = FourTensor[0][0][2][2]; //C1133
-//  VoigtMatrix(0,3) = 0.5 * (FourTensor[0][0][0][1] + FourTensor[0][0][1][0]); //0.5*(C1112+C1121)
-//  VoigtMatrix(0,4) = 0.5 * (FourTensor[0][0][1][2] + FourTensor[0][0][2][1]); //0.5*(C1123+C1132)
-//  VoigtMatrix(0,5) = 0.5 * (FourTensor[0][0][0][2] + FourTensor[0][0][2][0]); //0.5*(C1113+C1131)
-//
-//  VoigtMatrix(1,0) = FourTensor[1][1][0][0]; //C2211
-//  VoigtMatrix(1,1) = FourTensor[1][1][1][1]; //C2222
-//  VoigtMatrix(1,2) = FourTensor[1][1][2][2]; //C2233
-//  VoigtMatrix(1,3) = 0.5 * (FourTensor[1][1][0][1] + FourTensor[1][1][1][0]); //0.5*(C2212+C2221)
-//  VoigtMatrix(1,4) = 0.5 * (FourTensor[1][1][1][2] + FourTensor[1][1][2][1]); //0.5*(C2223+C2232)
-//  VoigtMatrix(1,5) = 0.5 * (FourTensor[1][1][0][2] + FourTensor[1][1][2][0]); //0.5*(C2213+C2231)
-//
-//  VoigtMatrix(2,0) = FourTensor[2][2][0][0]; //C3311
-//  VoigtMatrix(2,1) = FourTensor[2][2][1][1]; //C3322
-//  VoigtMatrix(2,2) = FourTensor[2][2][2][2]; //C3333
-//  VoigtMatrix(2,3) = 0.5 * (FourTensor[2][2][0][1] + FourTensor[2][2][1][0]); //0.5*(C3312+C3321)
-//  VoigtMatrix(2,4) = 0.5 * (FourTensor[2][2][1][2] + FourTensor[2][2][2][1]); //0.5*(C3323+C3332)
-//  VoigtMatrix(2,5) = 0.5 * (FourTensor[2][2][0][2] + FourTensor[2][2][2][0]); //0.5*(C3313+C3331)
-//
-//  VoigtMatrix(3,0) = 0.5 * (FourTensor[0][1][0][0] + FourTensor[1][0][0][0]); //0.5*(C1211+C2111)
-//  VoigtMatrix(3,1) = 0.5 * (FourTensor[0][1][1][1] + FourTensor[1][0][1][1]); //0.5*(C1222+C2122)
-//  VoigtMatrix(3,2) = 0.5 * (FourTensor[0][1][2][2] + FourTensor[1][0][2][2]); //0.5*(C1233+C2133)
-//  VoigtMatrix(3,3) = 0.25 * (FourTensor[0][1][0][1] + FourTensor[1][0][0][1] +
-//  FourTensor[0][1][1][0] + FourTensor[1][0][1][0]); //0.5*(C1212+C2112+C1221+C2121)
-//  VoigtMatrix(3,4) = 0.25 * (FourTensor[0][1][1][2] + FourTensor[1][0][1][2] +
-//  FourTensor[0][1][2][1] + FourTensor[1][0][2][1]); //0.5*(C1223+C2123+C1232+C2132)
-//  VoigtMatrix(3,5) = 0.25 * (FourTensor[0][1][0][2] + FourTensor[1][0][0][2] +
-//  FourTensor[0][1][2][0] + FourTensor[1][0][2][0]); //0.5*(C1213+C2113+C1231+C2131)
-//
-//  VoigtMatrix(4,0) = 0.5 * (FourTensor[1][2][0][0] + FourTensor[2][1][0][0]); //0.5*(C2311+C3211)
-//  VoigtMatrix(4,1) = 0.5 * (FourTensor[1][2][1][1] + FourTensor[2][1][1][1]); //0.5*(C2322+C3222)
-//  VoigtMatrix(4,2) = 0.5 * (FourTensor[1][2][2][2] + FourTensor[2][1][2][2]); //0.5*(C2333+C3233)
-//  VoigtMatrix(4,3) = 0.25 * (FourTensor[1][2][0][1] + FourTensor[2][1][0][1] +
-//  FourTensor[1][2][1][0] + FourTensor[2][1][1][0]); //0.5*(C2312+C3212+C2321+C3221)
-//  VoigtMatrix(4,4) = 0.25 * (FourTensor[1][2][1][2] + FourTensor[2][1][1][2] +
-//  FourTensor[1][2][2][1] + FourTensor[2][1][2][1]); //0.5*(C2323+C3223+C2332+C3232)
-//  VoigtMatrix(4,5) = 0.25 * (FourTensor[1][2][0][2] + FourTensor[2][1][0][2] +
-//  FourTensor[1][2][2][0] + FourTensor[2][1][2][0]); //0.5*(C2313+C3213+C2331+C3231)
-//
-//  VoigtMatrix(5,0) = 0.5 * (FourTensor[0][2][0][0] + FourTensor[2][0][0][0]); //0.5*(C1311+C3111)
-//  VoigtMatrix(5,1) = 0.5 * (FourTensor[0][2][1][1] + FourTensor[2][0][1][1]); //0.5*(C1322+C3122)
-//  VoigtMatrix(5,2) = 0.5 * (FourTensor[0][2][2][2] + FourTensor[2][0][2][2]); //0.5*(C1333+C3133)
-//  VoigtMatrix(5,3) = 0.25 * (FourTensor[0][2][0][1] + FourTensor[2][0][0][1] +
-//  FourTensor[0][2][1][0] + FourTensor[2][0][1][0]); //0.5*(C1312+C3112+C1321+C3121)
-//  VoigtMatrix(5,4) = 0.25 * (FourTensor[0][2][1][2] + FourTensor[2][0][1][2] +
-//  FourTensor[0][2][2][1] + FourTensor[2][0][2][1]); //0.5*(C1323+C3123+C1332+C3132)
-//  VoigtMatrix(5,5) = 0.25 * (FourTensor[0][2][0][2] + FourTensor[2][0][0][2] +
-//  FourTensor[0][2][2][0] + FourTensor[2][0][2][0]); //0.5*(C1313+C3113+C1331+C3131)
-//
-//}  // Setup6x6VoigtMatrix()
-
-/*------------------------------------------------------------------------------------------*
- |  Print Four Tensor                                                           thon  01/15 |
- *------------------------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::PrintFourTensor(double (&FourTensor)[3][3][3][3])
-{
-  std::cout << "-----------------Print Four Tensor--------------" << std::endl;
-
-  for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 3; ++j)
-      for (int k = 0; k < 3; ++k)
-        for (int l = 0; l < 3; ++l)
-          std::cout << "ELEMENT " << i << j << k << l << " : " << FourTensor[i][j][k][l]
-                    << std::endl;
-
-  std::cout << "------------------------------------------------" << std::endl;
-  return;
-}
-
-
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
 {
@@ -1129,7 +1012,7 @@ void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
   // matid
   int matid = -1;
   MAT::PAR::Growth* params = Parameter();
-  if (params != NULL) matid = params->Id();  // in case we are in post-process mode
+  if (params != nullptr) matid = params->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   int numgp = 0;
@@ -1161,8 +1044,7 @@ void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
   // int numgp=0;
   if (isinit_)
   {
-    numgp = theta_->size();
-    ;  // size is number of Fauss points
+    numgp = theta_->size();  // size is number of Fauss points
   }
   AddtoPack(data, numgp);
 
@@ -1185,8 +1067,6 @@ void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
 
   // Pack base class material
   Growth::Pack(data);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1204,8 +1084,9 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position, data, matid);
 
-  paramsVolumetric_ = NULL;
+  paramsVolumetric_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -1217,6 +1098,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+  }
 
   int numgp;
   ExtractfromPack(position, data, numgp);
@@ -1260,7 +1142,7 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
 
   // int numgp;
   ExtractfromPack(position, data, numgp);
-  if (not(numgp == 0))
+  if (numgp != 0)
   {
     F_g_hist_ = std::vector<LINALG::Matrix<3, 3>>(numgp, LINALG::Matrix<3, 3>(true));
     curdir_ = std::vector<LINALG::Matrix<3, 1>>(numgp, LINALG::Matrix<3, 1>(true));
@@ -1300,8 +1182,6 @@ void MAT::GrowthVolumetric::Unpack(const std::vector<char>& data)
   Growth::Unpack(basedata);
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1323,9 +1203,11 @@ void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
     {
       // CIR-AXI-RAD nomenclature
       if (not(linedef->HaveNamed("RAD")))
+      {
         dserror(
             "If you want growth into the radial direction you need to specify RAD in your input "
             "file!");
+      }
 
       ReadFiber(linedef, "RAD", refdir_);
       curdir_ = std::vector<LINALG::Matrix<3, 1>>(numgp, refdir_);
@@ -1391,8 +1273,6 @@ void MAT::GrowthVolumetric::Setup(int numgp, DRT::INPUT::LineDefinition* linedef
 
   // setup base class
   Growth::Setup(numgp, linedef);
-
-  return;
 }
 
 
@@ -1429,8 +1309,6 @@ void MAT::GrowthVolumetric::Update()
 
   // update base class
   Growth::Update();
-
-  return;
 }
 
 
@@ -1442,7 +1320,7 @@ void MAT::GrowthVolumetric::ReadFiber(
     DRT::INPUT::LineDefinition* linedef, std::string specifier, LINALG::Matrix<3, 1>& fiber_vector)
 {
   std::vector<double> fiber1;
-  linedef->ExtractDoubleVector(specifier, fiber1);
+  linedef->ExtractDoubleVector(std::move(specifier), fiber1);
   double f1norm = 0.;
   // normalization
   for (int i = 0; i < 3; ++i)
