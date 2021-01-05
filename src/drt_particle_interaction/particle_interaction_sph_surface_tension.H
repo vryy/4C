@@ -170,14 +170,20 @@ namespace PARTICLEINTERACTION
     //! minimum surface tension coefficient in case of temperature dependence
     const double alphamin_;
 
-    //! static contact angle
-    const double staticcontactangle_;
-
     //! factor of dependence of surface tension coefficient on temperature
     const double alphaT_;
 
     //! surface tension coefficient reference temperature
     const double surf_ref_temp_;
+
+    //! static contact angle
+    const double staticcontactangle_;
+
+    //! triple point normal correction wall color field low
+    const double tpn_corr_cf_low_;
+
+    //! triple point normal correction wall color field up
+    const double tpn_corr_cf_up_;
 
     //! transition reference temperature
     const double trans_ref_temp_;

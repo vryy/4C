@@ -41,9 +41,11 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
       timerampfct_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
       alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
       alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
-      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
       alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
       surf_ref_temp_(params_sph_.get<double>("SURFACETENSIONREFTEMP")),
+      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
+      tpn_corr_cf_low_(params_sph_.get<double>("TRIPLEPOINTNORMAL_CORR_CF_LOW")),
+      tpn_corr_cf_up_(params_sph_.get<double>("TRIPLEPOINTNORMAL_CORR_CF_UP")),
       trans_ref_temp_(params_sph_.get<double>("TRANS_REF_TEMPERATURE")),
       trans_dT_surf_(params_sph_.get<double>("TRANS_DT_SURFACETENSION")),
       trans_dT_mara_(params_sph_.get<double>("TRANS_DT_MARANGONI")),
@@ -573,7 +575,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
       if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // determine correction factor
-      double f_i = UTILS::complintrans(wallcf_i[0], 0.0, 0.2);
+      double f_i = UTILS::complintrans(wallcf_i[0], tpn_corr_cf_low_, tpn_corr_cf_up_);
 
       // determine wall interface tangential
       double wallift_i[3];

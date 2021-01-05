@@ -32,13 +32,15 @@ DENSITYEVALUATION               DensitySummation
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     FreeSlipBoundaryParticle
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
+TEMPERATUREEVALUATION           TemperatureIntegration
+TEMPERATUREGRADIENT             yes
 SURFACETENSIONFORMULATION       ContinuumSurfaceForce
 SURFACETENSIONCOEFFICIENT       1.0
 SURFACETENSIONTEMPFAC           -0.1
 SURFACETENSIONREFTEMP           1.0
-TEMPERATUREEVALUATION           TemperatureIntegration
-TEMPERATUREGRADIENT             yes
 STATICCONTACTANGLE              90
+TRIPLEPOINTNORMAL_CORR_CF_LOW   0.0
+TRIPLEPOINTNORMAL_CORR_CF_UP    0.2
 PHASECHANGETYPE                 TwoWayScalarPhaseChange
 PHASECHANGEDEFINITION           rigidphase phase1 temperature 0.5
 HEATSOURCETYPE                  SurfaceHeatSource

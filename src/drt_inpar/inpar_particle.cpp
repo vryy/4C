@@ -282,13 +282,18 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledynsph);
   DoubleParameter("SURFACETENSIONMINIMUM", 0.0,
       "minimum surface tension coefficient in case of temperature dependence", &particledynsph);
-  DoubleParameter("STATICCONTACTANGLE", 0.0,
-      "static contact angle in degree in continuum surface force formulation with wetting effects",
-      &particledynsph);
   DoubleParameter("SURFACETENSIONTEMPFAC", 0.0,
       "factor of dependence of surface tension coefficient on temperature", &particledynsph);
   DoubleParameter("SURFACETENSIONREFTEMP", 0.0,
       "reference temperature for surface tension coefficient", &particledynsph);
+
+  // wetting
+  DoubleParameter("STATICCONTACTANGLE", 0.0, "static contact angle in degree with wetting effects",
+      &particledynsph);
+  DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_LOW", 0.0,
+      "triple point normal correction wall color field low", &particledynsph);
+  DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_UP", 0.0,
+      "triple point normal correction wall color field up", &particledynsph);
 
   // interface viscosity
   BoolParameter("INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
