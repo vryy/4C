@@ -176,8 +176,8 @@ namespace PARTICLEINTERACTION
     //! factor of dependence of surface tension coefficient on temperature
     const double alphaT_;
 
-    //! reference temperature for surface tension coefficient
-    const double reftemp_;
+    //! surface tension coefficient reference temperature
+    const double surf_ref_temp_;
   };
 
 }  // namespace PARTICLEINTERACTION

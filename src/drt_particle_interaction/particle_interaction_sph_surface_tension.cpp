@@ -43,7 +43,7 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
       alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
       staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
       alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
-      reftemp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
+      surf_ref_temp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
 {
   // empty constructor
 }
@@ -750,7 +750,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
       double alpha = alpha0_;
       if (alphaT_ != 0.0)
       {
-        alpha += alphaT_ * (temp_i[0] - reftemp_);
+        alpha += alphaT_ * (temp_i[0] - surf_ref_temp_);
         alpha = std::max(alpha, alphamin_);
       }
 
@@ -768,7 +768,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
     timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
-  const double transitiontemp = reftemp_ + (alphamin_ - alpha0_) / alphaT_;
+  const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alphaT_;
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
