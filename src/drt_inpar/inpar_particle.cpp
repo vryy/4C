@@ -300,6 +300,18 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   DoubleParameter("BARRIER_FORCE_STIFF", -1.0, "barrier force stiffness", &particledynsph);
   DoubleParameter("BARRIER_FORCE_DAMP", 0.0, "barrier force damping parameter", &particledynsph);
 
+  // linear transition in surface tension evaluation
+  DoubleParameter(
+      "TRANS_REF_TEMPERATURE", 0.0, "transition reference temperature", &particledynsph);
+  DoubleParameter("TRANS_DT_SURFACETENSION", 0.0,
+      "transition temperature difference for surface tension evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_MARANGONI", 0.0,
+      "transition temperature difference for marangoni evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_CURVATURE", 0.0,
+      "transition temperature difference for curvature evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_WETTING", 0.0,
+      "transition temperature difference for wetting evaluation", &particledynsph);
+
   // type of dirichlet open boundary
   setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",
       "type of dirichlet open boundary",

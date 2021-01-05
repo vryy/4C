@@ -178,6 +178,21 @@ namespace PARTICLEINTERACTION
 
     //! surface tension coefficient reference temperature
     const double surf_ref_temp_;
+
+    //! transition reference temperature
+    const double trans_ref_temp_;
+
+    //! transition temperature difference for surface tension evaluation
+    const double trans_dT_surf_;
+
+    //! transition temperature difference for marangoni evaluation
+    const double trans_dT_mara_;
+
+    //! transition temperature difference for curvature evaluation
+    const double trans_dT_curv_;
+
+    //! transition temperature difference for wetting evaluation
+    const double trans_dT_wet_;
   };
 
 }  // namespace PARTICLEINTERACTION
