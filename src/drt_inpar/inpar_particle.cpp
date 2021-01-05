@@ -297,7 +297,10 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // interface viscosity
   BoolParameter("INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
-  DoubleParameter("INTERFACE_VISCOSITY_VALUE", 0.0, "interface viscosity value", &particledynsph);
+  DoubleParameter("INTERFACE_VISCOSITY_LIQUIDGAS", 0.0,
+      "artificial viscosity on liquid-gas interface", &particledynsph);
+  DoubleParameter("INTERFACE_VISCOSITY_SOLIDLIQUID", 0.0,
+      "artificial viscosity on solid-liquid interface", &particledynsph);
 
   // barrier force
   BoolParameter("BARRIER_FORCE", "no", "evaluate barrier force", &particledynsph);
@@ -316,6 +319,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "transition temperature difference for curvature evaluation", &particledynsph);
   DoubleParameter("TRANS_DT_WETTING", 0.0,
       "transition temperature difference for wetting evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_INTVISC", 0.0,
+      "transition temperature difference for interface viscosity evaluation", &particledynsph);
 
   // type of dirichlet open boundary
   setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",

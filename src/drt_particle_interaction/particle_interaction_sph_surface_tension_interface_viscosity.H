@@ -126,8 +126,17 @@ namespace PARTICLEINTERACTION
     //! set of boundary particle types
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
 
-    //! artificial viscosity on interface
-    const double artviscinterface_;
+    //! artificial viscosity on liquid-gas interface
+    const double artvisc_lg_int_;
+
+    //! artificial viscosity on solid-liquid interface
+    const double artvisc_sl_int_;
+
+    //! transition reference temperature
+    const double trans_ref_temp_;
+
+    //! transition temperature difference for interface viscosity evaluation
+    const double trans_dT_intvisc_;
   };
 
 }  // namespace PARTICLEINTERACTION
