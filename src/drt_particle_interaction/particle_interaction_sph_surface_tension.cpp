@@ -38,7 +38,7 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
       liquidtype_(PARTICLEENGINE::Phase1),
       gastype_(PARTICLEENGINE::Phase2),
       time_(0.0),
-      surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
+      timerampfct_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
       alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
       alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
       staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
@@ -716,10 +716,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
 void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution() const
 {
-  // evaluate surface tension ramp function
+  // evaluate surface tension time ramp function
   double timefac = 1.0;
-  if (surfacetensionrampfctnumber_ > 0)
-    timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
+  if (timerampfct_ > 0)
+    timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -762,10 +762,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
 
 void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution() const
 {
-  // evaluate surface tension ramp function
+  // evaluate surface tension time ramp function
   double timefac = 1.0;
-  if (surfacetensionrampfctnumber_ > 0)
-    timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
+  if (timerampfct_ > 0)
+    timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
   const double transitiontemp = reftemp_ + (alphamin_ - alpha0_) / alphaT_;

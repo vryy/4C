@@ -161,8 +161,8 @@ namespace PARTICLEINTERACTION
     //! current time
     double time_;
 
-    //! surface tension ramp function number
-    const int surfacetensionrampfctnumber_;
+    //! surface tension time ramp function
+    const int timerampfct_;
 
     //! constant part of surface tension coefficient
     const double alpha0_;
