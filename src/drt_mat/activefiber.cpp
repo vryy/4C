@@ -31,17 +31,18 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 *----------------------------------------------------------------------*/
 
 #include "activefiber.H"
+
+#include "material_service.H"
+#include "matpar_bundle.H"
+
+#include "../drt_fem_general/drt_utils_integration.H"
+
+#include "../drt_io/io_control.H"
+
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_utils_densematrix_svd.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_io/io_control.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_so3/so3_defines.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -57,11 +58,9 @@ MAT::PAR::ActiveFiber::ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata)
       sigmamax_(matdata->GetDouble("SIGMAX")),
       epsilonnull_(matdata->GetDouble("EPSNULL"))
 {
-  if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->StructuralDynamicParams(), "MATERIALTANGENT"))
-    analyticalmaterialtangent_ = false;
-  else
-    analyticalmaterialtangent_ = true;
+  analyticalmaterialtangent_ =
+      DRT::INPUT::IntegralValue<int>(
+          DRT::Problem::Instance()->StructuralDynamicParams(), "MATERIALTANGENT") == 0;
 }
 
 
@@ -82,7 +81,7 @@ MAT::ActiveFiberType MAT::ActiveFiberType::instance_;
  *----------------------------------------------------------------------*/
 DRT::ParObject* MAT::ActiveFiberType::Create(const std::vector<char>& data)
 {
-  MAT::ActiveFiber* actfiber = new MAT::ActiveFiber();
+  auto* actfiber = new MAT::ActiveFiber();
   actfiber->Unpack(data);
   return actfiber;
 }
@@ -91,7 +90,7 @@ DRT::ParObject* MAT::ActiveFiberType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Constructor                                             rauch  07/14|
  *----------------------------------------------------------------------*/
-MAT::ActiveFiber::ActiveFiber() : params_(NULL) {}
+MAT::ActiveFiber::ActiveFiber() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -117,7 +116,7 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // pack history data
@@ -157,9 +156,6 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
   {
     matpassive_->Pack(data);
   }
-
-  return;
-
 }  // Pack()
 
 
@@ -180,8 +176,9 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -193,6 +190,7 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+  }
 
   // history data
   int histsize;
@@ -282,8 +280,8 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   if (dataelastic.size() > 0)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
-    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == NULL) dserror("failed to unpack passive material");
+    auto* matel = dynamic_cast<MAT::So3Material*>(o);
+    if (matel == nullptr) dserror("failed to unpack passive material");
     matpassive_ = Teuchos::rcp(matel);
   }
   else
@@ -291,8 +289,6 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
 
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 
 }  // Unpack()
 
@@ -380,7 +376,6 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   matpassive_->Setup(numgp, linedef);
 
   isinit_ = true;
-  return;
 
 }  // Setup()
 
@@ -457,7 +452,6 @@ void MAT::ActiveFiber::ResetAll(const int numgp)
   matpassive_->ResetAll(numgp);
 
   isinit_ = true;
-  return;
 
 }  // ResetAll()
 
@@ -497,8 +491,6 @@ void MAT::ActiveFiber::Update()
   }
 
   matpassive_->Update();
-
-  return;
 
 }  // Update()
 
@@ -544,7 +536,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatpassive(true);
   LINALG::Matrix<NUM_STRESS_3D, 1> Spassive(true);
 
-  if (cmat != NULL)
+  if (cmat != nullptr)
   {
     // Evaluate passive PK2 stress Spassive and passive elasticity tensor cmatpassive
     matpassive_->Evaluate(defgrd, glstrain, params, &Spassive, &cmatpassive, gp, eleGID);
@@ -739,9 +731,11 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
         else if (exponent > 31.0)
           inc = residual / (1.0 - (sigmamax * deta_dsigma));
         else
+        {
           inc = residual / (1.0 - ((denom * sigmamax) - (1.0 / etanew(i, j) * sigmamax * efunct *
                                                             aa * epsomegaphi(i, j))) *
                                       deta_dsigma * onebydenom * onebydenom);
+        }
 
         // increment stress
         sigmaomegaphinew(i, j) = sigmaomegaphinew(i, j) - inc;
@@ -857,7 +851,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
 
 #ifndef MATERIALFDCHECK
-  if (cmat != NULL and analyticalmaterialtangent)
+  if (cmat != nullptr and analyticalmaterialtangent)
   {
     // Setup active elasticity tensor cmatactive
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);
@@ -888,10 +882,10 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  | rotation rate (finite difference scheme)                            rauch  07/14 |
  *----------------------------------------------------------------------------------*/
 // see also: viscoelasthyper.cpp line 781 ff
-void MAT::ActiveFiber::SetupRates(LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3> invdefgrd,
-    Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R,
-    LINALG::Matrix<6, 1>& strainrate, LINALG::Matrix<3, 3>& rotationrate, const int& gp,
-    const double& dt)
+void MAT::ActiveFiber::SetupRates(const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 3>& invdefgrd, Teuchos::ParameterList& params,
+    LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R, LINALG::Matrix<6, 1>& strainrate,
+    LINALG::Matrix<3, 3>& rotationrate, const int& gp, const double& dt)
 {
   // Read history
   LINALG::Matrix<3, 3> defgrdlast = histdefgrdlast_->at(gp);
@@ -974,8 +968,8 @@ void MAT::ActiveFiber::CalcActivationSignal(
  | pull back of spatial stresses                           rauch  07/14 |
  *----------------------------------------------------------------------*/
 void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
-    LINALG::Matrix<3, 3>& cauchystress, LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3> invdefgrd,
-    LINALG::Matrix<6, 1> sigma)
+    LINALG::Matrix<3, 3>& cauchystress, const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 3>& invdefgrd, LINALG::Matrix<6, 1> sigma)
 {
   // calculate the Jacobi-determinant
   const double detF = defgrd.Determinant();  // const???
@@ -1079,15 +1073,13 @@ void MAT::ActiveFiber::MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut)
     MatrixInOut.MultiplyNN(EV, temp);
   }
 
-  return;
-
 }  // MatrixRoot3x3()
 
 /*-------------------------------------------------------------------------------------*
  |  matrix root derivative of a symmetric 3x3 matrix                       rauch  07/14|
  *-------------------------------------------------------------------------------------*/
 void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
-    const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv)
+    const LINALG::Matrix<3, 3>& MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv)
 {
   double Norm = MatrixIn.Norm2();
 
@@ -1240,17 +1232,18 @@ void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
       dserror("you should not end up here.");
   }
 
-  return;
 }  // MatrixRootDerivativeSym3x3()
 
 /*-------------------------------------------------------------------------------------------*
  |  Computes active elasticity tensor in 6x6-Voigt notation                      rauch  07/14|
  *-------------------------------------------------------------------------------------------*/
 void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
-    LINALG::Matrix<3, 3> rotationrate, LINALG::Matrix<6, 1> strainrate, LINALG::Matrix<3, 3> defgrd,
-    LINALG::Matrix<3, 3> defgrdrate, LINALG::Matrix<3, 3> R, LINALG::Matrix<3, 3> invdefgrd,
-    LINALG::Matrix<numbgp, twice> etanew, LINALG::Matrix<numbgp, twice> sigmaomegaphicurr,
-    LINALG::Matrix<3, 3> cauchystress, Teuchos::ParameterList& params, double theta, double Csignal)
+    const LINALG::Matrix<3, 3>& rotationrate, LINALG::Matrix<6, 1> strainrate,
+    const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 3>& defgrdrate,
+    const LINALG::Matrix<3, 3>& R, const LINALG::Matrix<3, 3>& invdefgrd,
+    LINALG::Matrix<numbgp, twice> etanew, const LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
+    const LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params, double theta,
+    double Csignal)
 {
   // Parameters of constitutive law
   double kforwards = params_->kforwards_;
@@ -1407,11 +1400,17 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   MAT::MultiplyMatrixFourTensor(temptens5, tempmat1, temptens10, false);
 
   for (int i = 0; i < 3; i++)
+  {
     for (int j = 0; j < 3; j++)
+    {
       for (int k = 0; k < 3; k++)
+      {
         for (int l = 0; l < 3; l++)  // T12                                         // T12
           temptens8[i][j][k][l] = temptens7[j][i][k][l] + temptens5[i][j][k][l] +
                                   temptens5[j][i][k][l] + temptens7[i][j][k][l];
+      }
+    }
+  }
 
 
   double onebyeps0 = 1. / epsilonnull;
@@ -1486,13 +1485,23 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
 
       // Gauss quadrature
       for (int mm = 0; mm < 3; mm++)
+      {
         for (int n = 0; n < 3; n++)
+        {
           for (int o = 0; o < 3; o++)
+          {
             for (int p = 0; p < 3; p++)
+            {
               for (int q = 0; q < 3; q++)
+              {
                 for (int r = 0; r < 3; r++)
                   temptensgauss[mm][n][o][p] += temptens8[q][r][o][p] * m(q) * m(r) * factor *
                                                 gausspoints.qwgt[i] * m(mm) * m(n);
+              }
+            }
+          }
+        }
+      }
 
     }  // loop over i
   }    // loop over j
@@ -1505,11 +1514,17 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
 
   // Put together active constitutive tensor
   for (int i = 0; i < 3; i++)
+  {
     for (int j = 0; j < 3; j++)
+    {
       for (int k = 0; k < 3; k++)
+      {
         for (int l = 0; l < 3; l++)  // T12                                           // T12
           temptens5[i][j][k][l] = temptens1[i][j][k][l] + temptens1[j][i][k][l] +
                                   temptens3[i][j][k][l] + temptens4[j][i][k][l];
+      }
+    }
+  }
 
   MAT::Setup6x6VoigtMatrix(cmatactive, temptens5);
   cmatactive.Scale(2.0 * detF);

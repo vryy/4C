@@ -7,21 +7,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-
-//#include "../drt_lib/drt_globalproblem.H"
 #include "material_service.H"
-#include "matpar_parameter.H"
+
 #include "matpar_bundle.H"
-#include "../linalg/linalg_utils_densematrix_eigen.H"
-#include "matpar_parameter.H"
+
 #include "../drt_mixture/mixture_prestress_strategy_isocyl.H"
 #include "../drt_mixture/mixture_prestress_strategy_iterative.H"
 #include "../drt_mixture/mixture_rule_growthremodel.H"
-#include "../drt_mixture/mixture_rule.H"
+
+#include "../linalg/linalg_utils_densematrix_eigen.H"
 
 #include <Sacado.hpp>
 
-typedef Sacado::Fad::DFad<double> FAD;
+using FAD = Sacado::Fad::DFad<double>;
 
 
 /*----------------------------------------------------------------------*
@@ -99,8 +97,6 @@ void MAT::AddtoCmatHolzapfelProduct(
   cmat(5, 3) += scalar * 0.5 * (invc(0) * invc(4) + invc(5) * invc(3));
   cmat(5, 4) += scalar * 0.5 * (invc(3) * invc(2) + invc(4) * invc(5));
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -181,8 +177,6 @@ void MAT::AddtoCmatHolzapfelProduct(
   cmat(5, 3) += scalar * 0.5 * (invc(0) * invc(4) + invc(5) * invc(3));
   cmat(5, 4) += scalar * 0.5 * (invc(3) * invc(2) + invc(4) * invc(5));
   cmat(5, 5) += scalar * 0.5 * (invc(0) * invc(2) + invc(5) * invc(5));
-
-  return;
 }
 
 
@@ -227,51 +221,6 @@ void MAT::ElastSymTensorMultiply(Epetra_SerialDenseMatrix& C, const double Scala
   BVoigt(5, 0) = B(2, 0);
 
   C.Multiply('N', 'T', ScalarAB, AVoigt, BVoigt, ScalarThis);
-
-  // this is explicitly what the former .Multiply does:
-  //  C(0,0)= ScalarThis*C(0,0) + ScalarAB * A(0,0)*B(0,0);
-  //  C(0,1)= ScalarThis*C(0,1) + ScalarAB * A(0,0)*B(1,1);
-  //  C(0,2)= ScalarThis*C(0,2) + ScalarAB * A(0,0)*B(2,2);
-  //  C(0,3)= ScalarThis*C(0,3) + ScalarAB * A(0,0)*B(1,0);
-  //  C(0,4)= ScalarThis*C(0,4) + ScalarAB * A(0,0)*B(2,1);
-  //  C(0,5)= ScalarThis*C(0,5) + ScalarAB * A(0,0)*B(2,0);
-  //
-  //  C(1,0)= ScalarThis*C(1,0) + ScalarAB * A(1,1)*B(0,0);
-  //  C(1,1)= ScalarThis*C(1,1) + ScalarAB * A(1,1)*B(1,1);
-  //  C(1,2)= ScalarThis*C(1,2) + ScalarAB * A(1,1)*B(2,2);
-  //  C(1,3)= ScalarThis*C(1,3) + ScalarAB * A(1,1)*B(1,0);
-  //  C(1,4)= ScalarThis*C(1,4) + ScalarAB * A(1,1)*B(2,1);
-  //  C(1,5)= ScalarThis*C(1,5) + ScalarAB * A(1,1)*B(2,0);
-  //
-  //  C(2,0)= ScalarThis*C(2,0) + ScalarAB * A(2,2)*B(0,0);
-  //  C(2,1)= ScalarThis*C(2,1) + ScalarAB * A(2,2)*B(1,1);
-  //  C(2,2)= ScalarThis*C(2,2) + ScalarAB * A(2,2)*B(2,2);
-  //  C(2,3)= ScalarThis*C(2,3) + ScalarAB * A(2,2)*B(1,0);
-  //  C(2,4)= ScalarThis*C(2,4) + ScalarAB * A(2,2)*B(2,1);
-  //  C(2,5)= ScalarThis*C(2,5) + ScalarAB * A(2,2)*B(2,0);
-  //
-  //  C(3,0)= ScalarThis*C(3,0) + ScalarAB * A(1,0)*B(0,0);
-  //  C(3,1)= ScalarThis*C(3,1) + ScalarAB * A(1,0)*B(1,1);
-  //  C(3,2)= ScalarThis*C(3,2) + ScalarAB * A(1,0)*B(2,2);
-  //  C(3,3)= ScalarThis*C(3,3) + ScalarAB * A(1,0)*B(1,0);
-  //  C(3,4)= ScalarThis*C(3,4) + ScalarAB * A(1,0)*B(2,1);
-  //  C(3,5)= ScalarThis*C(3,5) + ScalarAB * A(1,0)*B(2,0);
-  //
-  //  C(4,0)= ScalarThis*C(4,0) + ScalarAB * A(2,1)*B(0,0);
-  //  C(4,1)= ScalarThis*C(4,1) + ScalarAB * A(2,1)*B(1,1);
-  //  C(4,2)= ScalarThis*C(4,2) + ScalarAB * A(2,1)*B(2,2);
-  //  C(4,3)= ScalarThis*C(4,3) + ScalarAB * A(2,1)*B(1,0);
-  //  C(4,4)= ScalarThis*C(4,4) + ScalarAB * A(2,1)*B(2,1);
-  //  C(4,5)= ScalarThis*C(4,5) + ScalarAB * A(2,1)*B(2,0);
-  //
-  //  C(5,0)= ScalarThis*C(5,0) + ScalarAB * A(2,0)*B(0,0);
-  //  C(5,1)= ScalarThis*C(5,1) + ScalarAB * A(2,0)*B(1,1);
-  //  C(5,2)= ScalarThis*C(5,2) + ScalarAB * A(2,0)*B(2,2);
-  //  C(5,3)= ScalarThis*C(5,3) + ScalarAB * A(2,0)*B(1,0);
-  //  C(5,4)= ScalarThis*C(5,4) + ScalarAB * A(2,0)*B(2,1);
-  //  C(5,5)= ScalarThis*C(5,5) + ScalarAB * A(2,0)*B(2,0);
-
-  return;
 }
 
 
@@ -307,8 +256,6 @@ void MAT::ElastSymTensorMultiply(LINALG::Matrix<6, 6>& C, const double ScalarAB,
   BVoigt(5, 0) = B(2, 0);
 
   C.MultiplyNT(ScalarAB, AVoigt, BVoigt, ScalarThis);
-
-  return;
 }
 
 
@@ -354,51 +301,6 @@ void MAT::ElastSymTensorMultiplyAddSym(Epetra_SerialDenseMatrix& C, const double
 
   C.Multiply('N', 'T', ScalarAB, AVoigt, BVoigt, ScalarThis);
   C.Multiply('N', 'T', ScalarAB, BVoigt, AVoigt, 1.0);
-
-  // this is explicitly what the former .Multiplies do:
-  //  C(0,0)= ScalarThis*C(0,0) + ScalarAB * (A(0,0)*B(0,0) + B(0,0)*A(0,0));
-  //  C(0,1)= ScalarThis*C(0,1) + ScalarAB * (A(0,0)*B(1,1) + B(0,0)*A(1,1));
-  //  C(0,2)= ScalarThis*C(0,2) + ScalarAB * (A(0,0)*B(2,2) + B(0,0)*A(2,2));
-  //  C(0,3)= ScalarThis*C(0,3) + ScalarAB * (A(0,0)*B(1,0) + B(0,0)*A(1,0));
-  //  C(0,4)= ScalarThis*C(0,4) + ScalarAB * (A(0,0)*B(2,1) + B(0,0)*A(2,1));
-  //  C(0,5)= ScalarThis*C(0,5) + ScalarAB * (A(0,0)*B(2,0) + B(0,0)*A(2,0));
-  //
-  //  C(1,0)= ScalarThis*C(1,0) + ScalarAB * (A(1,1)*B(0,0) + B(1,1)*A(0,0));
-  //  C(1,1)= ScalarThis*C(1,1) + ScalarAB * (A(1,1)*B(1,1) + B(1,1)*A(1,1));
-  //  C(1,2)= ScalarThis*C(1,2) + ScalarAB * (A(1,1)*B(2,2) + B(1,1)*A(2,2));
-  //  C(1,3)= ScalarThis*C(1,3) + ScalarAB * (A(1,1)*B(1,0) + B(1,1)*A(1,0));
-  //  C(1,4)= ScalarThis*C(1,4) + ScalarAB * (A(1,1)*B(2,1) + B(1,1)*A(2,1));
-  //  C(1,5)= ScalarThis*C(1,5) + ScalarAB * (A(1,1)*B(2,0) + B(1,1)*A(2,0));
-  //
-  //  C(2,0)= ScalarThis*C(2,0) + ScalarAB * (A(2,2)*B(0,0) + B(2,2)*A(0,0));
-  //  C(2,1)= ScalarThis*C(2,1) + ScalarAB * (A(2,2)*B(1,1) + B(2,2)*A(1,1));
-  //  C(2,2)= ScalarThis*C(2,2) + ScalarAB * (A(2,2)*B(2,2) + B(2,2)*A(2,2));
-  //  C(2,3)= ScalarThis*C(2,3) + ScalarAB * (A(2,2)*B(1,0) + B(2,2)*A(1,0));
-  //  C(2,4)= ScalarThis*C(2,4) + ScalarAB * (A(2,2)*B(2,1) + B(2,2)*A(2,1));
-  //  C(2,5)= ScalarThis*C(2,5) + ScalarAB * (A(2,2)*B(2,0) + B(2,2)*A(2,0));
-  //
-  //  C(3,0)= ScalarThis*C(3,0) + ScalarAB * (A(1,0)*B(0,0) + B(1,0)*A(0,0));
-  //  C(3,1)= ScalarThis*C(3,1) + ScalarAB * (A(1,0)*B(1,1) + B(1,0)*A(1,1));
-  //  C(3,2)= ScalarThis*C(3,2) + ScalarAB * (A(1,0)*B(2,2) + B(1,0)*A(2,2));
-  //  C(3,3)= ScalarThis*C(3,3) + ScalarAB * (A(1,0)*B(1,0) + B(1,0)*A(1,0));
-  //  C(3,4)= ScalarThis*C(3,4) + ScalarAB * (A(1,0)*B(2,1) + B(1,0)*A(2,1));
-  //  C(3,5)= ScalarThis*C(3,5) + ScalarAB * (A(1,0)*B(2,0) + B(1,0)*A(2,0));
-  //
-  //  C(4,0)= ScalarThis*C(4,0) + ScalarAB * (A(2,1)*B(0,0) + B(2,1)*A(0,0));
-  //  C(4,1)= ScalarThis*C(4,1) + ScalarAB * (A(2,1)*B(1,1) + B(2,1)*A(1,1));
-  //  C(4,2)= ScalarThis*C(4,2) + ScalarAB * (A(2,1)*B(2,2) + B(2,1)*A(2,2));
-  //  C(4,3)= ScalarThis*C(4,3) + ScalarAB * (A(2,1)*B(1,0) + B(2,1)*A(1,0));
-  //  C(4,4)= ScalarThis*C(4,4) + ScalarAB * (A(2,1)*B(2,1) + B(2,1)*A(2,1));
-  //  C(4,5)= ScalarThis*C(4,5) + ScalarAB * (A(2,1)*B(2,0) + B(2,1)*A(2,0));
-  //
-  //  C(5,0)= ScalarThis*C(5,0) + ScalarAB * (A(2,0)*B(0,0) + B(2,0)*A(0,0));
-  //  C(5,1)= ScalarThis*C(5,1) + ScalarAB * (A(2,0)*B(1,1) + B(2,0)*A(1,1));
-  //  C(5,2)= ScalarThis*C(5,2) + ScalarAB * (A(2,0)*B(2,2) + B(2,0)*A(2,2));
-  //  C(5,3)= ScalarThis*C(5,3) + ScalarAB * (A(2,0)*B(1,0) + B(2,0)*A(1,0));
-  //  C(5,4)= ScalarThis*C(5,4) + ScalarAB * (A(2,0)*B(2,1) + B(2,0)*A(2,1));
-  //  C(5,5)= ScalarThis*C(5,5) + ScalarAB * (A(2,0)*B(2,0) + B(2,0)*A(2,0));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -444,8 +346,6 @@ void MAT::ElastSymTensorMultiplyAddSym(LINALG::Matrix<6, 6>& C, const double Sca
 
   C.MultiplyNT(ScalarAB, AVoigt, BVoigt, ScalarThis);
   C.MultiplyNT(ScalarAB, BVoigt, AVoigt, 1.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -614,8 +514,6 @@ void MAT::ElastSymTensor_o_Multiply(Epetra_SerialDenseMatrix& C, const double Sc
       ScalarThis * C(5, 4) + ScalarAB * 0.5 * (A(0, 1) * B(2, 2) + A(0, 2) * B(2, 1));  // C1323
   C(5, 5) =
       ScalarThis * C(5, 5) + ScalarAB * 0.5 * (A(0, 0) * B(2, 2) + A(0, 2) * B(2, 0));  // C1313
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -675,8 +573,6 @@ void MAT::ElastSymTensor_o_Multiply(LINALG::Matrix<6, 6>& C, const double Scalar
   C(5, 3) = ScalarThis * C(5, 3) + ScalarABhalf * (A(0, 0) * B(2, 1) + A(0, 1) * B(2, 0));  // C1312
   C(5, 4) = ScalarThis * C(5, 4) + ScalarABhalf * (A(0, 1) * B(2, 2) + A(0, 2) * B(2, 1));  // C1323
   C(5, 5) = ScalarThis * C(5, 5) + ScalarABhalf * (A(0, 0) * B(2, 2) + A(0, 2) * B(2, 0));  // C1313
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -721,12 +617,12 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6, 1>* pk2vol, LINALG::Matrix<
   {
     // volumetric 2nd Piola--Kirchhoff stress
     LINALG::Matrix<6, 1> pk2vol_(false);
-    if (pk2vol != NULL) pk2vol_.SetView(*pk2vol);
+    if (pk2vol != nullptr) pk2vol_.SetView(*pk2vol);
     pk2vol_.Update(pk2rcg / 3.0, icg);
 
     // isochoric 2nd Piola--Kirchhoff stress
     // S^{AB}_iso = S^{AB} - S^{AB}_{vol}
-    if (pk2iso != NULL) pk2iso->Update(1.0, pk2, -1.0, pk2vol_);
+    if (pk2iso != nullptr) pk2iso->Update(1.0, pk2, -1.0, pk2vol_);
   }
 
   // elasticity tensor splitting
@@ -742,17 +638,14 @@ void MAT::VolumetrifyAndIsochorify(LINALG::Matrix<6, 1>* pk2vol, LINALG::Matrix<
     //                (C^{-1})^{AC} (C^{-1})^{BD} + (C^{-1})^{AD} (C^{-1})^{BC}
     //              ) )
     LINALG::Matrix<6, 6> cvol_(false);
-    if (cvol != NULL) cvol_.SetView(*cvol);
+    if (cvol != nullptr) cvol_.SetView(*cvol);
     cvol_.MultiplyNT(2.0 / 3.0, icg, pk2lin);
     AddtoCmatHolzapfelProduct(cvol_, icg, -2.0 / 3.0 * pk2rcg);
 
     // isochoric part of constitutive tensor
     // C^{ABCD}_iso = C^{ABCD} - C^{ABCD}_vol
-    if (ciso != NULL) ciso->Update(1.0, cmat, -1.0, cvol_);
+    if (ciso != nullptr) ciso->Update(1.0, cmat, -1.0, cvol_);
   }
-
-  //
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -802,8 +695,6 @@ void MAT::AddToCmatDerivTensorSquare(
   C(5, 3) = ScalarThis * C(5, 3) + ScalarDX2 * 0.5 * X(1, 2);              // C1312
   C(5, 4) = ScalarThis * C(5, 4) + ScalarDX2 * 0.5 * X(0, 1);              // C1323
   C(5, 5) = ScalarThis * C(5, 5) + ScalarDX2 * 0.5 * (X(2, 2) + X(0, 0));  // C1313
-
-  return;
 }
 
 
@@ -854,8 +745,6 @@ void MAT::AddSymmetricHolzapfelProduct(LINALG::Matrix<6, 6>& X, const LINALG::Ma
   X(2, 1) += 4 * fac * A(1, 2) * B(1, 2);
   X(2, 4) += fac * (2 * A(1, 2) * B(2, 2) + 2 * A(2, 2) * B(1, 2));
   X(2, 2) += 4 * fac * A(2, 2) * B(2, 2);
-
-  return;
 }
 
 
@@ -924,8 +813,6 @@ void MAT::AddRightNonSymmetricHolzapfelProduct(LINALG::Matrix<6, 9, T>& out,
   out(5, 8) += fac * (A(0, 2) * B(2, 0) + A(2, 2) * B(0, 0));
   out(5, 7) += fac * (A(0, 2) * B(2, 1) + A(2, 2) * B(0, 1));
   out(5, 2) += fac * (A(0, 2) * B(2, 2) + A(2, 2) * B(0, 2));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -993,8 +880,6 @@ void MAT::AddRightNonSymmetricHolzapfelProductStrainLike(LINALG::Matrix<6, 9, T>
   out(5, 8) += 2 * fac * (A(0, 2) * B(2, 0) + A(2, 2) * B(0, 0));
   out(5, 7) += 2 * fac * (A(0, 2) * B(2, 1) + A(2, 2) * B(0, 1));
   out(5, 2) += 2 * fac * (A(0, 2) * B(2, 2) + A(2, 2) * B(0, 2));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1064,8 +949,6 @@ void MAT::AddLeftNonSymmetricHolzapfelProduct(LINALG::Matrix<9, 6>& out,
   out(2, 1) += fac * 2 * A(2, 1) * B(2, 1);
   out(2, 4) += fac * (A(2, 1) * B(2, 2) + A(2, 2) * B(2, 1));
   out(2, 2) += fac * 2 * A(2, 2) * B(2, 2);
-
-  return;
 }
 
 
@@ -1163,8 +1046,6 @@ void MAT::AddNonSymmetricProduct(double const& fac, LINALG::Matrix<3, 3> const& 
   out(2, 8) += fac * A(2, 2) * B(0, 2);
   out(2, 7) += fac * A(2, 2) * B(1, 2);
   out(2, 2) += fac * A(2, 2) * B(2, 2);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1177,8 +1058,6 @@ void MAT::InvariantsModified(LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<
   modinv(1) = prinv(1) * std::pow(prinv(2), -2. / 3.);
   // J
   modinv(2) = std::pow(prinv(2), 1. / 2.);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1201,9 +1080,6 @@ void MAT::StretchesPrincipal(
 
   // THE principal stretches
   for (int al = 0; al < 3; ++al) prstr(al) = std::sqrt(prstr2(al, al));
-
-  // bye
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1215,8 +1091,6 @@ void MAT::StretchesModified(LINALG::Matrix<3, 1>& modstr, const LINALG::Matrix<3
 
   // determine modified principal stretches
   modstr.Update(std::pow(detdefgrad, -1.0 / 3.0), prstr);
-
-  return;
 }
 
 template <class T>
