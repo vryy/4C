@@ -161,8 +161,8 @@ namespace PARTICLEINTERACTION
     //! current time
     double time_;
 
-    //! surface tension ramp function number
-    const int surfacetensionrampfctnumber_;
+    //! surface tension time ramp function
+    const int timerampfct_;
 
     //! constant part of surface tension coefficient
     const double alpha0_;
@@ -170,14 +170,35 @@ namespace PARTICLEINTERACTION
     //! minimum surface tension coefficient in case of temperature dependence
     const double alphamin_;
 
-    //! static contact angle
-    const double staticcontactangle_;
-
     //! factor of dependence of surface tension coefficient on temperature
     const double alphaT_;
 
-    //! reference temperature for surface tension coefficient
-    const double reftemp_;
+    //! surface tension coefficient reference temperature
+    const double surf_ref_temp_;
+
+    //! static contact angle
+    const double staticcontactangle_;
+
+    //! triple point normal correction wall color field low
+    const double tpn_corr_cf_low_;
+
+    //! triple point normal correction wall color field up
+    const double tpn_corr_cf_up_;
+
+    //! transition reference temperature
+    const double trans_ref_temp_;
+
+    //! transition temperature difference for surface tension evaluation
+    const double trans_dT_surf_;
+
+    //! transition temperature difference for marangoni evaluation
+    const double trans_dT_mara_;
+
+    //! transition temperature difference for curvature evaluation
+    const double trans_dT_curv_;
+
+    //! transition temperature difference for wetting evaluation
+    const double trans_dT_wet_;
   };
 
 }  // namespace PARTICLEINTERACTION

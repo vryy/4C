@@ -33,7 +33,10 @@ PARTICLEINTERACTION::SPHInterfaceViscosity::SPHInterfaceViscosity(
     : params_sph_(params),
       liquidtype_(PARTICLEENGINE::Phase1),
       gastype_(PARTICLEENGINE::Phase2),
-      artviscinterface_(params_sph_.get<double>("INTERFACE_VISCOSITY_VALUE"))
+      artvisc_lg_int_(params_sph_.get<double>("INTERFACE_VISCOSITY_LIQUIDGAS")),
+      artvisc_sl_int_(params_sph_.get<double>("INTERFACE_VISCOSITY_SOLIDLIQUID")),
+      trans_ref_temp_(params_sph_.get<double>("TRANS_REF_TEMPERATURE")),
+      trans_dT_intvisc_(params_sph_.get<double>("TRANS_DT_INTVISC"))
 {
   // empty constructor
 }
@@ -42,11 +45,22 @@ PARTICLEINTERACTION::SPHInterfaceViscosity::~SPHInterfaceViscosity() = default;
 
 void PARTICLEINTERACTION::SPHInterfaceViscosity::Init()
 {
+  // init artificial viscosity handler
+  InitArtificialViscosityHandler();
+
   // init fluid particle types
   fluidtypes_ = {liquidtype_, gastype_};
 
   // init with potential boundary particle types
   boundarytypes_ = {PARTICLEENGINE::BoundaryPhase, PARTICLEENGINE::RigidPhase};
+
+  // safety check
+  if (trans_dT_intvisc_ > 0.0)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+      dserror("temperature evaluation needed for linear transition of interface viscosity!");
+  }
 }
 
 void PARTICLEINTERACTION::SPHInterfaceViscosity::Setup(
@@ -161,6 +175,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
     const double* cfg_i =
         container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
     double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
     const double* rad_j = container_j->GetPtrToState(PARTICLEENGINE::Radius, particle_j);
@@ -169,15 +184,29 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
     const double* cfg_j =
         container_j->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_j);
+    const double* temp_j = container_j->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_j);
     double* acc_j = container_j->GetPtrToState(PARTICLEENGINE::Acceleration, particle_j);
 
     // get smoothing length
     const double h_i = kernel_->SmoothingLength(rad_i[0]);
     const double h_j = (rad_i[0] == rad_j[0]) ? h_i : kernel_->SmoothingLength(rad_j[0]);
 
-    // compute scaled artificial viscosity
-    double artvisc_i = UTILS::vec_norm2(cfg_i) / h_i * artviscinterface_;
-    double artvisc_j = UTILS::vec_norm2(cfg_j) / h_j * artviscinterface_;
+    // evaluate transition factor above reference temperature
+    double tempfac_i = 1.0;
+    double tempfac_j = 1.0;
+    if (trans_dT_intvisc_ > 0.0)
+    {
+      tempfac_i =
+          UTILS::complintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+      tempfac_j =
+          UTILS::complintrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+    }
+
+    // compute artificial viscosity
+    const double artvisc_i =
+        UTILS::vec_norm2(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
+    const double artvisc_j =
+        UTILS::vec_norm2(cfg_j) / h_j * artvisc_lg_int_ + tempfac_j * artvisc_sl_int_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0 or artvisc_j > 0.0)
@@ -268,6 +297,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
     const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
     const double* cfg_i =
         container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
+    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
 
     double* acc_i = nullptr;
     if (status_i == PARTICLEENGINE::Owned)
@@ -286,8 +316,15 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
     // get smoothing length
     const double h_i = kernel_->SmoothingLength(rad_i[0]);
 
-    // compute scaled artificial viscosity
-    double artvisc_i = UTILS::vec_norm2(cfg_i) / h_i * artviscinterface_;
+    // evaluate transition factor above reference temperature
+    double tempfac_i = 1.0;
+    if (trans_dT_intvisc_ > 0.0)
+      tempfac_i =
+          UTILS::complintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+
+    // compute artificial viscosity
+    const double artvisc_i =
+        UTILS::vec_norm2(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0)

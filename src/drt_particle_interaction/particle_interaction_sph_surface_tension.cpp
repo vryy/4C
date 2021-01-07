@@ -38,12 +38,19 @@ PARTICLEINTERACTION::SPHSurfaceTension::SPHSurfaceTension(const Teuchos::Paramet
       liquidtype_(PARTICLEENGINE::Phase1),
       gastype_(PARTICLEENGINE::Phase2),
       time_(0.0),
-      surfacetensionrampfctnumber_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
+      timerampfct_(params.get<int>("SURFACETENSION_RAMP_FUNCT")),
       alpha0_(params_sph_.get<double>("SURFACETENSIONCOEFFICIENT")),
       alphamin_(params_sph_.get<double>("SURFACETENSIONMINIMUM")),
-      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
       alphaT_(params_sph_.get<double>("SURFACETENSIONTEMPFAC")),
-      reftemp_(params_sph_.get<double>("SURFACETENSIONREFTEMP"))
+      surf_ref_temp_(params_sph_.get<double>("SURFACETENSIONREFTEMP")),
+      staticcontactangle_(params_sph_.get<double>("STATICCONTACTANGLE")),
+      tpn_corr_cf_low_(params_sph_.get<double>("TRIPLEPOINTNORMAL_CORR_CF_LOW")),
+      tpn_corr_cf_up_(params_sph_.get<double>("TRIPLEPOINTNORMAL_CORR_CF_UP")),
+      trans_ref_temp_(params_sph_.get<double>("TRANS_REF_TEMPERATURE")),
+      trans_dT_surf_(params_sph_.get<double>("TRANS_DT_SURFACETENSION")),
+      trans_dT_mara_(params_sph_.get<double>("TRANS_DT_MARANGONI")),
+      trans_dT_curv_(params_sph_.get<double>("TRANS_DT_CURVATURE")),
+      trans_dT_wet_(params_sph_.get<double>("TRANS_DT_WETTING"))
 {
   // empty constructor
 }
@@ -81,6 +88,13 @@ void PARTICLEINTERACTION::SPHSurfaceTension::Init()
 
     if (DRT::INPUT::IntegralValue<int>(params_sph_, "TEMPERATUREGRADIENT") == false)
       dserror("temperature gradient evaluation needed for temperature dependent surface tension!");
+  }
+
+  if (trans_dT_surf_ > 0.0 or trans_dT_mara_ > 0.0 or trans_dT_curv_ > 0.0 or trans_dT_wet_ > 0.0)
+  {
+    if (DRT::INPUT::IntegralValue<INPAR::PARTICLE::TemperatureEvaluationScheme>(
+            params_sph_, "TEMPERATUREEVALUATION") == INPAR::PARTICLE::NoTemperatureEvaluation)
+      dserror("temperature evaluation needed for linear transition of surface tension!");
   }
 }
 
@@ -439,6 +453,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
           container_i->GetPtrToState(PARTICLEENGINE::WallInterfaceNormal, particle_i);
 
       const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+      const double* temp_j =
+          container_j->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_j);
 
       // (current) volume of particle i
       const double V_i = mass_i[0] / dens_i[0];
@@ -449,9 +465,15 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
       const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) * dens_i[0] /
                          (V_i * (dens_i[0] + material_j->initDensity_));
 
+
+      // evaluate transition factor below reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_wet_ > 0.0)
+        tempfac = UTILS::complintrans(temp_j[0], trans_ref_temp_ - trans_dT_wet_, trans_ref_temp_);
+
       // sum contribution of neighboring boundary particle j
-      wallcf_i[0] += fac * particlepair.Wij_;
-      UTILS::vec_addscale(wallifn_i, fac * particlepair.dWdrij_, particlepair.e_ij_);
+      wallcf_i[0] += tempfac * fac * particlepair.Wij_;
+      UTILS::vec_addscale(wallifn_i, tempfac * fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring boundary particle i
@@ -469,6 +491,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
           container_j->GetPtrToState(PARTICLEENGINE::WallInterfaceNormal, particle_j);
 
       const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+      const double* temp_i =
+          container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
 
       // (initial) volume of boundary particle i
       const double V_i = mass_i[0] / material_i->initDensity_;
@@ -479,9 +503,14 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeWallColorfieldAndWallInterfa
       const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) * dens_j[0] /
                          (V_j * (material_i->initDensity_ + dens_j[0]));
 
+      // evaluate transition factor below reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_wet_ > 0.0)
+        tempfac = UTILS::complintrans(temp_i[0], trans_ref_temp_ - trans_dT_wet_, trans_ref_temp_);
+
       // sum contribution of neighboring boundary particle i
-      wallcf_j[0] += fac * particlepair.Wji_;
-      UTILS::vec_addscale(wallifn_j, -fac * particlepair.dWdrji_, particlepair.e_ij_);
+      wallcf_j[0] += tempfac * fac * particlepair.Wji_;
+      UTILS::vec_addscale(wallifn_j, -tempfac * fac * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
@@ -546,7 +575,7 @@ void PARTICLEINTERACTION::SPHSurfaceTension::CorrectTriplePointNormal() const
       if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
 
       // determine correction factor
-      double f_i = UTILS::complintrans(wallcf_i[0], 0.0, 0.2);
+      double f_i = UTILS::complintrans(wallcf_i[0], tpn_corr_cf_low_, tpn_corr_cf_up_);
 
       // determine wall interface tangential
       double wallift_i[3];
@@ -617,6 +646,8 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
       const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
       const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
       const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
+      const double* temp_i =
+          container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
 
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
@@ -624,8 +655,16 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
 
+      // (current) volume of particle i
+      const double V_i = mass_i[0] / dens_i[0];
+
+      // evaluate transition factor above reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_curv_ > 0.0)
+        tempfac = UTILS::lintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_curv_);
+
       // add self-interaction
-      sumj_Vj_Wij[type_i][particle_i] += Wii * mass_i[0] / dens_i[0];
+      sumj_Vj_Wij[type_i][particle_i] += tempfac * V_i * Wii;
     }
   }
 
@@ -661,10 +700,12 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
     const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
+    const double* temp_i = container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
 
     const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
     const double* dens_j = container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j);
     const double* ifn_j = container_j->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_j);
+    const double* temp_j = container_j->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_j);
 
     // evaluation only for non-zero interface normals
     if (not(UTILS::vec_norm2(ifn_i) > 0.0) or not(UTILS::vec_norm2(ifn_j) > 0.0)) continue;
@@ -676,18 +717,38 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
     UTILS::vec_set(n_ij, ifn_i);
     UTILS::vec_addscale(n_ij, -signfac, ifn_j);
 
-    const double fac = UTILS::vec_dot(n_ij, particlepair.e_ij_);
+    const double nij_eij = UTILS::vec_dot(n_ij, particlepair.e_ij_);
 
-    // initial curvature estimate and correction factor
-    const double V_j = mass_j[0] / dens_j[0];
-    sumj_nij_Vj_eij_dWij[type_i][particle_i] += fac * V_j * particlepair.dWdrij_;
-    sumj_Vj_Wij[type_i][particle_i] += V_j * particlepair.Wij_;
+    // evaluate contribution of neighboring particle j
+    {
+      // (current) volume of particle j
+      const double V_j = mass_j[0] / dens_j[0];
 
+      // evaluate transition factor above reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_curv_ > 0.0)
+        tempfac = UTILS::lintrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_curv_);
+
+      // sum contribution of neighboring particle j
+      sumj_nij_Vj_eij_dWij[type_i][particle_i] += tempfac * V_j * nij_eij * particlepair.dWdrij_;
+      sumj_Vj_Wij[type_i][particle_i] += tempfac * V_j * particlepair.Wij_;
+    }
+
+    // evaluate contribution of neighboring particle i
     if (status_j == PARTICLEENGINE::Owned)
     {
+      // (current) volume of particle i
       const double V_i = mass_i[0] / dens_i[0];
-      sumj_nij_Vj_eij_dWij[type_j][particle_j] += signfac * fac * V_i * particlepair.dWdrji_;
-      sumj_Vj_Wij[type_j][particle_j] += V_i * particlepair.Wji_;
+
+      // evaluate transition factor above reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_curv_ > 0.0)
+        tempfac = UTILS::lintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_curv_);
+
+      // sum contribution of neighboring particle i
+      sumj_nij_Vj_eij_dWij[type_j][particle_j] +=
+          signfac * tempfac * V_i * nij_eij * particlepair.dWdrji_;
+      sumj_Vj_Wij[type_j][particle_j] += tempfac * V_i * particlepair.Wji_;
     }
   }
 
@@ -716,10 +777,10 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
 
 void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution() const
 {
-  // evaluate surface tension ramp function
+  // evaluate surface tension time ramp function
   double timefac = 1.0;
-  if (surfacetensionrampfctnumber_ > 0)
-    timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
+  if (timerampfct_ > 0)
+    timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -737,11 +798,9 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
       const double* cfg_i =
           container_i->GetPtrToState(PARTICLEENGINE::ColorfieldGradient, particle_i);
       const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
-      double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
-
       const double* temp_i =
-          (alphaT_ != 0.0) ? container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i)
-                           : nullptr;
+          container_i->CondGetPtrToState(PARTICLEENGINE::Temperature, particle_i);
+      double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
 
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
@@ -750,25 +809,30 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeSurfaceTensionContribution()
       double alpha = alpha0_;
       if (alphaT_ != 0.0)
       {
-        alpha += alphaT_ * (temp_i[0] - reftemp_);
+        alpha += alphaT_ * (temp_i[0] - surf_ref_temp_);
         alpha = std::max(alpha, alphamin_);
       }
 
+      // evaluate transition factor above reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_surf_ > 0.0)
+        tempfac = UTILS::lintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_surf_);
+
       // add contribution to acceleration
-      UTILS::vec_addscale(acc_i, -timefac * alpha * curv_i[0] / dens_i[0], cfg_i);
+      UTILS::vec_addscale(acc_i, -timefac * tempfac * alpha * curv_i[0] / dens_i[0], cfg_i);
     }
   }
 }
 
 void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution() const
 {
-  // evaluate surface tension ramp function
+  // evaluate surface tension time ramp function
   double timefac = 1.0;
-  if (surfacetensionrampfctnumber_ > 0)
-    timefac = DRT::Problem::Instance()->Funct(surfacetensionrampfctnumber_ - 1).EvaluateTime(time_);
+  if (timerampfct_ > 0)
+    timefac = DRT::Problem::Instance()->Funct(timerampfct_ - 1).EvaluateTime(time_);
 
   // temperature in transition from linear to constant regime of surface tension coefficient
-  const double transitiontemp = reftemp_ + (alphamin_ - alpha0_) / alphaT_;
+  const double transitiontemp = surf_ref_temp_ + (alphamin_ - alpha0_) / alphaT_;
 
   // iterate over fluid particle types
   for (const auto& type_i : fluidtypes_)
@@ -801,9 +865,14 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeTempGradDrivenContribution()
       UTILS::vec_set(tempgrad_i_proj, tempgrad_i);
       UTILS::vec_addscale(tempgrad_i_proj, -UTILS::vec_dot(tempgrad_i, ifn_i), ifn_i);
 
+      // evaluate transition factor above reference temperature
+      double tempfac = 1.0;
+      if (trans_dT_mara_ > 0.0)
+        tempfac = UTILS::lintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_mara_);
+
       // add contribution to acceleration
-      UTILS::vec_addscale(
-          acc_i, timefac * alphaT_ * UTILS::vec_norm2(cfg_i) / dens_i[0], tempgrad_i_proj);
+      UTILS::vec_addscale(acc_i, timefac * tempfac * alphaT_ * UTILS::vec_norm2(cfg_i) / dens_i[0],
+          tempgrad_i_proj);
     }
   }
 }

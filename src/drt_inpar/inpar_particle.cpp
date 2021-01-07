@@ -282,23 +282,55 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       &particledynsph);
   DoubleParameter("SURFACETENSIONMINIMUM", 0.0,
       "minimum surface tension coefficient in case of temperature dependence", &particledynsph);
-  DoubleParameter("STATICCONTACTANGLE", 0.0,
-      "static contact angle in degree in continuum surface force formulation with wetting effects",
-      &particledynsph);
   DoubleParameter("SURFACETENSIONTEMPFAC", 0.0,
       "factor of dependence of surface tension coefficient on temperature", &particledynsph);
   DoubleParameter("SURFACETENSIONREFTEMP", 0.0,
       "reference temperature for surface tension coefficient", &particledynsph);
 
+  // wetting
+  DoubleParameter("STATICCONTACTANGLE", 0.0, "static contact angle in degree with wetting effects",
+      &particledynsph);
+  DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_LOW", 0.0,
+      "triple point normal correction wall color field low", &particledynsph);
+  DoubleParameter("TRIPLEPOINTNORMAL_CORR_CF_UP", 0.0,
+      "triple point normal correction wall color field up", &particledynsph);
+
   // interface viscosity
   BoolParameter("INTERFACE_VISCOSITY", "no", "evaluate interface viscosity", &particledynsph);
-  DoubleParameter("INTERFACE_VISCOSITY_VALUE", 0.0, "interface viscosity value", &particledynsph);
+  DoubleParameter("INTERFACE_VISCOSITY_LIQUIDGAS", 0.0,
+      "artificial viscosity on liquid-gas interface", &particledynsph);
+  DoubleParameter("INTERFACE_VISCOSITY_SOLIDLIQUID", 0.0,
+      "artificial viscosity on solid-liquid interface", &particledynsph);
 
   // barrier force
   BoolParameter("BARRIER_FORCE", "no", "evaluate barrier force", &particledynsph);
   DoubleParameter("BARRIER_FORCE_DISTANCE", 0.0, "barrier force distance", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_STIFF", -1.0, "barrier force stiffness", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_DAMP", 0.0, "barrier force damping parameter", &particledynsph);
+  DoubleParameter(
+      "BARRIER_FORCE_TEMPSCALE", 0.0, "barrier force temperature scaling", &particledynsph);
+  DoubleParameter(
+      "BARRIER_FORCE_STIFF_HEAVY", -1.0, "barrier force stiffness of heavy phase", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_DAMP_HEAVY", 0.0, "barrier force damping parameter of heavy phase",
+      &particledynsph);
+  DoubleParameter(
+      "BARRIER_FORCE_STIFF_GAS", -1.0, "barrier force stiffness of gas phase", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_DAMP_GAS", 0.0, "barrier force damping parameter of gas phase",
+      &particledynsph);
+
+  // linear transition in surface tension evaluation
+  DoubleParameter(
+      "TRANS_REF_TEMPERATURE", 0.0, "transition reference temperature", &particledynsph);
+  DoubleParameter("TRANS_DT_SURFACETENSION", 0.0,
+      "transition temperature difference for surface tension evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_MARANGONI", 0.0,
+      "transition temperature difference for marangoni evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_CURVATURE", 0.0,
+      "transition temperature difference for curvature evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_WETTING", 0.0,
+      "transition temperature difference for wetting evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_INTVISC", 0.0,
+      "transition temperature difference for interface viscosity evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_BARRIER", 0.0,
+      "transition temperature difference for barrier force evaluation", &particledynsph);
 
   // type of dirichlet open boundary
   setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",

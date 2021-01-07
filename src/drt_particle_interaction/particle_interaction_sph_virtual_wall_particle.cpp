@@ -276,7 +276,7 @@ void PARTICLEINTERACTION::SPHVirtualWallParticle::InitStatesAtWallContactPoints(
     }
 
 #ifdef DEBUG
-    if (not(sumk_Wjk > 0))
+    if (sumk_Wjk < (1.0e-10 * rad_j[0]))
       dserror("expected at least one neighboring particle for wall contact point!");
 #endif
 
