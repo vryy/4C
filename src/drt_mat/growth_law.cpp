@@ -15,6 +15,8 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #include "growth.H"
 #include "growth_law.H"
 #include "matpar_material.H"
+#include "material_service.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_comm/comm_utils.H"
@@ -188,7 +190,7 @@ void MAT::GrowthLawDyn::Evaluate(double* thetainit, const double& thetaold,
 
   // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
   LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
-  cmatelastic = GrowthVolumetric::PullBackFourTensor(F_ginv, cmatdach);
+  cmatelastic = MAT::PullBackFourTensor(F_ginv, cmatdach);
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   LINALG::Matrix<3, 3> Sdach(true);

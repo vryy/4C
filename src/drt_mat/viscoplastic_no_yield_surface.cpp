@@ -8,7 +8,6 @@
 #include "viscoplastic_no_yield_surface.H"
 
 #include <vector>
-#include "growth.H"
 #include "material_service.H"
 #include "matpar_bundle.H"
 
@@ -261,7 +260,7 @@ void MAT::ViscoPlasticNoYieldSurface::Evaluate(const LINALG::Matrix<3, 3>* defgr
   UTILS::VOIGT::Stresses::MatrixToVector(PK2, *stress);
 
   auto cmatel = CalculateElasticStiffness(EigenvectorsFe_trial, EigenvaluesFe_trial);
-  *cmat = MAT::GrowthVolumetric::PullBackFourTensor(current_iFv, cmatel);
+  *cmat = MAT::PullBackFourTensor(current_iFv, cmatel);
 }
 
 /*----------------------------------------------------------------------*

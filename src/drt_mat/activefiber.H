@@ -293,24 +293,6 @@ namespace MAT
     void GLtoEA(LINALG::Matrix<6, 1> glstrain, LINALG::Matrix<3, 3> invdefgrd,
         LINALG::Matrix<3, 3>& eastrain);
 
-
-    /// Setup 4-Tensor from 6x6 Voigt notation
-    void Setup4Tensor(double FourTensor[3][3][3][3], LINALG::Matrix<6, 6> VoigtMatrix);
-
-    /// Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
-    void Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& VoigtMatrix, double FourTensor[3][3][3][3]);
-
-    /// Multiply 4-Tensor*Matrix
-    void MultFourTensorMatrix(double FourTensorResult[3][3][3][3], double FourTensor[3][3][3][3],
-        LINALG::Matrix<3, 3> Matrix, bool clearresulttensor = true);
-
-    /// Multiply Matrix*4-Tensor
-    void MultMatrixFourTensor(double FourTensorResult[3][3][3][3], LINALG::Matrix<3, 3> Matrix,
-        double FourTensor[3][3][3][3], bool clearresulttensor = true);
-
-    /// Set every tensor value to zero
-    void Clear4Tensor(double FourTensor[3][3][3][3]);
-
     /// Transformation of strain rate tensor in (omega,phi) direction
     void TransformStrainRate(
         LINALG::Matrix<6, 1> strainrate,  ///< strain rate tensor epsilonpunkt_ij at every point in
@@ -332,12 +314,6 @@ namespace MAT
     /// Calculate derivative of the root of a symmetric 3x3 matrix
     void MatrixRootDerivativeSym3x3(
         const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv);
-
-    /// Transpose four tensor wrt to basis vectors 1 and 2
-    void TransposeFourTensor12(double ResultTensor[3][3][3][3], double FourTensor[3][3][3][3]);
-
-    /// print four tensor
-    void PrintFourTensor(double FourTensor[3][3][3][3]);
 
   };  // class ActiveFiber
 

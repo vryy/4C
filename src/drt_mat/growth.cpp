@@ -13,6 +13,8 @@ growth laws.
 #include "growth.H"
 
 #include "growth_law.H"
+#include "material_service.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_factory.H"
@@ -571,7 +573,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = PullBackFourTensor(F_ginv, cmatdach);
+    cmatelast = MAT::PullBackFourTensor(F_ginv, cmatdach);
 
     //--------------------------------------------------------------------------------------
     // call material law with elastic part of defgr and elastic part of glstrain
@@ -657,7 +659,7 @@ void MAT::GrowthVolumetric::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
-    cmatelast = PullBackFourTensor(F_ginv, cmatdach);
+    cmatelast = MAT::PullBackFourTensor(F_ginv, cmatdach);
 
     *cmat = cmatelast;
   }
@@ -818,186 +820,6 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta, const LINALG::Ma
   lambda_fib_e_->at(gp) =
       sqrt(CdachDir(0) * refdir_(0) + CdachDir(1) * refdir_(1) + CdachDir(2) * refdir_(2));
 }
-
-
-
-/*----------------------------------------------------------------------*
- | pull back of a symmertic elastic 4th order tensor (in matrix/voigt   |
- | notation) via the 2th order deformation gradient (also in matrix     |
- | notation)                                                  thon 01/15|
- *----------------------------------------------------------------------*/
-LINALG::Matrix<6, 6> MAT::GrowthVolumetric::PullBackFourTensor(
-    const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat)
-{
-  FourTensor CMAT = {{{{0.0}}}};
-  Setup4Tensor(CMAT, Cmat);
-
-  // We can use the fact that CResult(i,j,k,l)=CResult(k,l,i,j) if we have a hyper-elastic material
-  LINALG::Matrix<6, 6> CResult(true);
-
-  CResult(0, 0) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 0);
-  CResult(0, 1) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 1);
-  CResult(0, 2) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 2, 2);
-  CResult(0, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 1);
-  CResult(0, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 2);
-  CResult(0, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 2);
-  CResult(1, 0) = CResult(0, 1);
-  CResult(1, 1) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 1);
-  CResult(1, 2) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 2, 2);
-  CResult(1, 3) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 1);
-  CResult(1, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 2);
-  CResult(1, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 2);
-  CResult(2, 0) = CResult(0, 2);
-  CResult(2, 1) = CResult(1, 2);
-  CResult(2, 2) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 2, 2);
-  CResult(2, 3) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 1);
-  CResult(2, 4) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 1, 2);
-  CResult(2, 5) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 2);
-  CResult(3, 0) = CResult(0, 3);
-  CResult(3, 1) = CResult(1, 3);
-  CResult(3, 2) = CResult(2, 3);
-  CResult(3, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 1);
-  CResult(3, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 1, 2);
-  CResult(3, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 2);
-  CResult(4, 0) = CResult(0, 4);
-  CResult(4, 1) = CResult(1, 4);
-  CResult(4, 2) = CResult(2, 4);
-  CResult(4, 3) = CResult(3, 4);
-  CResult(4, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 1, 2);
-  CResult(4, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 0, 2);
-  CResult(5, 0) = CResult(0, 5);
-  CResult(5, 1) = CResult(1, 5);
-  CResult(5, 2) = CResult(2, 5);
-  CResult(5, 3) = CResult(3, 5);
-  CResult(5, 4) = CResult(4, 5);
-  CResult(5, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 2, 0, 2);
-
-  return CResult;
-}
-
-/*-------------------------------------------------------------------------------------*
- | pull back the ijkl-th entry of a symmetric elastic 4th order                        |
- | tensor (in matrix/voigt notation) /// via the 2th order deformation                 |
- | gradient (also in matrix notation)                                      Thon  01/15 |
- *-------------------------------------------------------------------------------------*/
-double MAT::GrowthVolumetric::PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr,
-    const FourTensor& FourTensor, const int i, const int j, const int k, const int l)
-{
-  double CResult_ijkl(0.0);
-
-  for (int A = 0; A < 3; ++A)
-  {
-    for (int B = 0; B < 3; ++B)
-    {
-      for (int C = 0; C < 3; ++C)
-      {
-        for (int D = 0; D < 3; ++D)
-          CResult_ijkl +=
-              defgr(i, A) * defgr(j, B) * defgr(k, C) * defgr(l, D) * FourTensor[A][B][C][D];
-      }
-    }
-  }
-
-  return CResult_ijkl;
-}
-
-/*-------------------------------------------------------------------------------------*
- |  Setup 4-Tensor from 6x6 Voigt notation                                 thon  01/15 |
- *-------------------------------------------------------------------------------------*/
-void MAT::GrowthVolumetric::Setup4Tensor(
-    FourTensor& FourTensor, const LINALG::Matrix<6, 6>& VoigtMatrix)
-{
-  // Clear4Tensor(FourTensor);
-  // Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor with at
-  // least minor symmetries)
-  FourTensor[0][0][0][0] = VoigtMatrix(0, 0);  // C1111
-  FourTensor[0][0][1][1] = VoigtMatrix(0, 1);  // C1122
-  FourTensor[0][0][2][2] = VoigtMatrix(0, 2);  // C1133
-  FourTensor[0][0][0][1] = VoigtMatrix(0, 3);  // C1112
-  FourTensor[0][0][1][0] = VoigtMatrix(0, 3);  // C1121
-  FourTensor[0][0][1][2] = VoigtMatrix(0, 4);  // C1123
-  FourTensor[0][0][2][1] = VoigtMatrix(0, 4);  // C1132
-  FourTensor[0][0][0][2] = VoigtMatrix(0, 5);  // C1113
-  FourTensor[0][0][2][0] = VoigtMatrix(0, 5);  // C1131
-
-  FourTensor[1][1][0][0] = VoigtMatrix(1, 0);  // C2211
-  FourTensor[1][1][1][1] = VoigtMatrix(1, 1);  // C2222
-  FourTensor[1][1][2][2] = VoigtMatrix(1, 2);  // C2233
-  FourTensor[1][1][0][1] = VoigtMatrix(1, 3);  // C2212
-  FourTensor[1][1][1][0] = VoigtMatrix(1, 3);  // C2221
-  FourTensor[1][1][1][2] = VoigtMatrix(1, 4);  // C2223
-  FourTensor[1][1][2][1] = VoigtMatrix(1, 4);  // C2232
-  FourTensor[1][1][0][2] = VoigtMatrix(1, 5);  // C2213
-  FourTensor[1][1][2][0] = VoigtMatrix(1, 5);  // C2231
-
-  FourTensor[2][2][0][0] = VoigtMatrix(2, 0);  // C3311
-  FourTensor[2][2][1][1] = VoigtMatrix(2, 1);  // C3322
-  FourTensor[2][2][2][2] = VoigtMatrix(2, 2);  // C3333
-  FourTensor[2][2][0][1] = VoigtMatrix(2, 3);  // C3312
-  FourTensor[2][2][1][0] = VoigtMatrix(2, 3);  // C3321
-  FourTensor[2][2][1][2] = VoigtMatrix(2, 4);  // C3323
-  FourTensor[2][2][2][1] = VoigtMatrix(2, 4);  // C3332
-  FourTensor[2][2][0][2] = VoigtMatrix(2, 5);  // C3313
-  FourTensor[2][2][2][0] = VoigtMatrix(2, 5);  // C3331
-
-  FourTensor[0][1][0][0] = VoigtMatrix(3, 0);
-  FourTensor[1][0][0][0] = VoigtMatrix(3, 0);  // C1211 = C2111
-  FourTensor[0][1][1][1] = VoigtMatrix(3, 1);
-  FourTensor[1][0][1][1] = VoigtMatrix(3, 1);  // C1222 = C2122
-  FourTensor[0][1][2][2] = VoigtMatrix(3, 2);
-  FourTensor[1][0][2][2] = VoigtMatrix(3, 2);  // C1233 = C2133
-  FourTensor[0][1][0][1] = VoigtMatrix(3, 3);
-  FourTensor[1][0][0][1] = VoigtMatrix(3, 3);  // C1212 = C2112
-  FourTensor[0][1][1][0] = VoigtMatrix(3, 3);
-  FourTensor[1][0][1][0] = VoigtMatrix(3, 3);  // C1221 = C2121
-  FourTensor[0][1][1][2] = VoigtMatrix(3, 4);
-  FourTensor[1][0][1][2] = VoigtMatrix(3, 4);  // C1223 = C2123
-  FourTensor[0][1][2][1] = VoigtMatrix(3, 4);
-  FourTensor[1][0][2][1] = VoigtMatrix(3, 4);  // C1232 = C2132
-  FourTensor[0][1][0][2] = VoigtMatrix(3, 5);
-  FourTensor[1][0][0][2] = VoigtMatrix(3, 5);  // C1213 = C2113
-  FourTensor[0][1][2][0] = VoigtMatrix(3, 5);
-  FourTensor[1][0][2][0] = VoigtMatrix(3, 5);  // C1231 = C2131
-
-  FourTensor[1][2][0][0] = VoigtMatrix(4, 0);
-  FourTensor[2][1][0][0] = VoigtMatrix(4, 0);  // C2311 = C3211
-  FourTensor[1][2][1][1] = VoigtMatrix(4, 1);
-  FourTensor[2][1][1][1] = VoigtMatrix(4, 1);  // C2322 = C3222
-  FourTensor[1][2][2][2] = VoigtMatrix(4, 2);
-  FourTensor[2][1][2][2] = VoigtMatrix(4, 2);  // C2333 = C3233
-  FourTensor[1][2][0][1] = VoigtMatrix(4, 3);
-  FourTensor[2][1][0][1] = VoigtMatrix(4, 3);  // C2312 = C3212
-  FourTensor[1][2][1][0] = VoigtMatrix(4, 3);
-  FourTensor[2][1][1][0] = VoigtMatrix(4, 3);  // C2321 = C3221
-  FourTensor[1][2][1][2] = VoigtMatrix(4, 4);
-  FourTensor[2][1][1][2] = VoigtMatrix(4, 4);  // C2323 = C3223
-  FourTensor[1][2][2][1] = VoigtMatrix(4, 4);
-  FourTensor[2][1][2][1] = VoigtMatrix(4, 4);  // C2332 = C3232
-  FourTensor[1][2][0][2] = VoigtMatrix(4, 5);
-  FourTensor[2][1][0][2] = VoigtMatrix(4, 5);  // C2313 = C3213
-  FourTensor[1][2][2][0] = VoigtMatrix(4, 5);
-  FourTensor[2][1][2][0] = VoigtMatrix(4, 5);  // C2331 = C3231
-
-  FourTensor[0][2][0][0] = VoigtMatrix(5, 0);
-  FourTensor[2][0][0][0] = VoigtMatrix(5, 0);  // C1311 = C3111
-  FourTensor[0][2][1][1] = VoigtMatrix(5, 1);
-  FourTensor[2][0][1][1] = VoigtMatrix(5, 1);  // C1322 = C3122
-  FourTensor[0][2][2][2] = VoigtMatrix(5, 2);
-  FourTensor[2][0][2][2] = VoigtMatrix(5, 2);  // C1333 = C3133
-  FourTensor[0][2][0][1] = VoigtMatrix(5, 3);
-  FourTensor[2][0][0][1] = VoigtMatrix(5, 3);  // C1312 = C3112
-  FourTensor[0][2][1][0] = VoigtMatrix(5, 3);
-  FourTensor[2][0][1][0] = VoigtMatrix(5, 3);  // C1321 = C3121
-  FourTensor[0][2][1][2] = VoigtMatrix(5, 4);
-  FourTensor[2][0][1][2] = VoigtMatrix(5, 4);  // C1323 = C3123
-  FourTensor[0][2][2][1] = VoigtMatrix(5, 4);
-  FourTensor[2][0][2][1] = VoigtMatrix(5, 4);  // C1332 = C3132
-  FourTensor[0][2][0][2] = VoigtMatrix(5, 5);
-  FourTensor[2][0][0][2] = VoigtMatrix(5, 5);  // C1313 = C3113
-  FourTensor[0][2][2][0] = VoigtMatrix(5, 5);
-  FourTensor[2][0][2][0] = VoigtMatrix(5, 5);  // C1331 = C3131
-
-}  // Setup4Tensor()
 
 /*----------------------------------------------------------------------------*/
 void MAT::GrowthVolumetric::Pack(DRT::PackBuffer& data) const
