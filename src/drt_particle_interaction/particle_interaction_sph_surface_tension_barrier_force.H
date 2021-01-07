@@ -92,11 +92,26 @@ namespace PARTICLEINTERACTION
     //! barrier force distance
     const double dist_;
 
-    //! barrier force stiffness
-    const double stiff_;
+    //! barrier force temperature scaling
+    const double cr_;
 
-    //! barrier force damping parameter
-    const double damp_;
+    //! transition reference temperature
+    const double trans_ref_temp_;
+
+    //! transition temperature difference for barrier force evaluation
+    const double trans_dT_barrier_;
+
+    //! barrier force stiffness of heavy phase
+    const double stiff_h_;
+
+    //! barrier force damping parameter of heavy phase
+    const double damp_h_;
+
+    //! barrier force stiffness of gas phase
+    const double stiff_g_;
+
+    //! barrier force damping parameter of gas phase
+    const double damp_g_;
   };
 
 }  // namespace PARTICLEINTERACTION

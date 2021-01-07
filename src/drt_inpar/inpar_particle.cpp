@@ -305,8 +305,16 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
   // barrier force
   BoolParameter("BARRIER_FORCE", "no", "evaluate barrier force", &particledynsph);
   DoubleParameter("BARRIER_FORCE_DISTANCE", 0.0, "barrier force distance", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_STIFF", -1.0, "barrier force stiffness", &particledynsph);
-  DoubleParameter("BARRIER_FORCE_DAMP", 0.0, "barrier force damping parameter", &particledynsph);
+  DoubleParameter(
+      "BARRIER_FORCE_TEMPSCALE", 0.0, "barrier force temperature scaling", &particledynsph);
+  DoubleParameter(
+      "BARRIER_FORCE_STIFF_HEAVY", -1.0, "barrier force stiffness of heavy phase", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_DAMP_HEAVY", 0.0, "barrier force damping parameter of heavy phase",
+      &particledynsph);
+  DoubleParameter(
+      "BARRIER_FORCE_STIFF_GAS", -1.0, "barrier force stiffness of gas phase", &particledynsph);
+  DoubleParameter("BARRIER_FORCE_DAMP_GAS", 0.0, "barrier force damping parameter of gas phase",
+      &particledynsph);
 
   // linear transition in surface tension evaluation
   DoubleParameter(
@@ -321,6 +329,8 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "transition temperature difference for wetting evaluation", &particledynsph);
   DoubleParameter("TRANS_DT_INTVISC", 0.0,
       "transition temperature difference for interface viscosity evaluation", &particledynsph);
+  DoubleParameter("TRANS_DT_BARRIER", 0.0,
+      "transition temperature difference for barrier force evaluation", &particledynsph);
 
   // type of dirichlet open boundary
   setStringToIntegralParameter<int>("DIRICHLETBOUNDARYTYPE", "NoDirichletOpenBoundary",
