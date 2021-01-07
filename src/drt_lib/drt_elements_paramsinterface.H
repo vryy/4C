@@ -52,9 +52,12 @@ namespace DRT
       struct_calc_reset_all,  //!< reset elementwise internal variables to state in the beginning of
                               //!< the computation
       struct_calc_energy,     //!< compute internal energy
-      struct_calc_errornorms,        //!< compute error norms (L2,H1,energy)
-      struct_postprocess_stress,     //!< postprocess stresses
-      struct_postprocess_thickness,  //!< postprocess thickness of membrane finite elements
+      struct_calc_errornorms,               //!< compute error norms (L2,H1,energy)
+      struct_postprocess_stress,            //!< postprocess stresses
+      struct_postprocess_thickness,         //!< postprocess thickness of membrane finite elements
+      struct_init_gauss_point_data_output,  //!< initialize quantities for output of gauss point
+                                            //!< data
+      struct_gauss_point_data_output,       //!< collect material data for vtk runtime output
       struct_update_prestress,
       analyse_jacobian_determinant,  //!< analyze the Jacobian determinant of the element
       inversedesign_update,
@@ -137,6 +140,10 @@ namespace DRT
         return multi_calc_dens;
       else if (action == "postprocess_stress")
         return struct_postprocess_stress;
+      else if (action == "struct_init_gauss_point_data_output")
+        return struct_init_gauss_point_data_output;
+      else if (action == "struct_gauss_point_data_output")
+        return struct_gauss_point_data_output;
       else if (action == "calc_struct_prestress_update")
         return struct_update_prestress;
       else if (action == "calc_struct_inversedesign_update")
@@ -209,6 +216,10 @@ namespace DRT
           return "struct_postprocess_stress";
         case struct_postprocess_thickness:
           return "struct_postprocess_thickness";
+        case struct_init_gauss_point_data_output:
+          return "struct_init_gauss_point_data_output";
+        case struct_gauss_point_data_output:
+          return "struct_gauss_point_data_output";
         case struct_update_prestress:
           return "struct_update_prestress";
         case analyse_jacobian_determinant:

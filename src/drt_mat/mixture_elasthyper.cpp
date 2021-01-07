@@ -324,26 +324,24 @@ void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   mixture_rule_->Evaluate(*defgrd, *glstrain, params, *stress, *cmat, gp, eleGID);
 }
 
-// Returns the names of the quantities written during post-processing
-void MAT::Mixture_ElastHyper::VisNames(std::map<std::string, int>& names)
+void MAT::Mixture_ElastHyper::RegisterVtkOutputDataNames(
+    std::unordered_map<std::string, int>& names_and_size) const
 {
-  mixture_rule_->VisNames(names);
+  mixture_rule_->RegisterVtkOutputDataNames(names_and_size);
   for (auto const& constituent : *constituents_)
   {
-    constituent->VisNames(names);
+    constituent->RegisterVtkOutputDataNames(names_and_size);
   }
 }
 
-// Returns the names of the quantities written during post-processing
-bool MAT::Mixture_ElastHyper::VisData(
-    const std::string& name, std::vector<double>& data, int numgp, int eleGID)
+bool MAT::Mixture_ElastHyper::EvaluateVtkOutputData(
+    const std::string& name, Epetra_SerialDenseMatrix& data) const
 {
-  bool vis = mixture_rule_->VisData(name, data, numgp, eleGID);
-  if (vis) return true;
+  bool out = mixture_rule_->EvaluateVtkOutputData(name, data);
   for (auto const& constituent : *constituents_)
   {
-    vis = constituent->VisData(name, data, numgp, eleGID);
-    if (vis) return true;
+    out = out || constituent->EvaluateVtkOutputData(name, data);
   }
-  return false;
+
+  return out;
 }

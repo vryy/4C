@@ -627,6 +627,18 @@ namespace DRT
       void soh8_expol(LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>& stresses,  ///< gp stresses
           Epetra_MultiVector& expolstresses);  ///< nodal stresses
 
+      /*!
+       * \brief Extrapolate a quantity from the Gauss points to the nodes and assemble it into a
+       * Epetra_MultiVector
+       *
+       * \param gp_quantity Quantity defined on the Gauss points (NUMGPxn)-Matrix
+       * \param global_quantity Distributed vector holding the nodal values of the whole domain
+       * \param nodal_average Whether or not incooperate the contribution of neighboring elements by
+       * scaling with the inverse number elements that share the node
+       */
+      void ExtrapolateGPQuantityToNodesAndAssemble(const LINALG::SerialDenseMatrix& gp_quantity,
+          Epetra_MultiVector& global_quantity, bool nodal_average);
+
       //! Evaluate Hex8 Shapefcts to keep them static
       const std::vector<LINALG::Matrix<NUMNOD_SOH8, 1>> soh8_shapefcts() const;
       //! Evaluate Hex8 Derivs to keep them static
@@ -784,6 +796,71 @@ namespace DRT
        *
        *  \author hiermeier \date 12/17 */
       void soh8_recover_from_eas_backup_state();
+
+      /*!
+       * \brief Returns s const reference to the extrapolation matrix to project quantities that
+       * live on Gauss points to the nodes
+       *
+       * \return const LINALG::SerialDenseMatrix&
+       */
+      static inline const LINALG::SerialDenseMatrix& GaussPointsToNodesExtrapolation()
+      {
+        // static variables, that are the same for every element
+        static LINALG::SerialDenseMatrix expol(NUMNOD_SOH8, NUMGPT_SOH8);
+        static bool isfilled = false;
+
+        if (isfilled == false)
+        {
+          double sq3 = sqrt(3.0);
+          expol(0, 0) = 1.25 + 0.75 * sq3;
+          expol(0, 1) = -0.25 - 0.25 * sq3;
+          expol(0, 2) = -0.25 + 0.25 * sq3;
+          expol(0, 3) = -0.25 - 0.25 * sq3;
+          expol(0, 4) = -0.25 - 0.25 * sq3;
+          expol(0, 5) = -0.25 + 0.25 * sq3;
+          expol(0, 6) = 1.25 - 0.75 * sq3;
+          expol(0, 7) = -0.25 + 0.25 * sq3;
+          expol(1, 1) = 1.25 + 0.75 * sq3;
+          expol(1, 2) = -0.25 - 0.25 * sq3;
+          expol(1, 3) = -0.25 + 0.25 * sq3;
+          expol(1, 4) = -0.25 + 0.25 * sq3;
+          expol(1, 5) = -0.25 - 0.25 * sq3;
+          expol(1, 6) = -0.25 + 0.25 * sq3;
+          expol(1, 7) = 1.25 - 0.75 * sq3;
+          expol(2, 2) = 1.25 + 0.75 * sq3;
+          expol(2, 3) = -0.25 - 0.25 * sq3;
+          expol(2, 4) = 1.25 - 0.75 * sq3;
+          expol(2, 5) = -0.25 + 0.25 * sq3;
+          expol(2, 6) = -0.25 - 0.25 * sq3;
+          expol(2, 7) = -0.25 + 0.25 * sq3;
+          expol(3, 3) = 1.25 + 0.75 * sq3;
+          expol(3, 4) = -0.25 + 0.25 * sq3;
+          expol(3, 5) = 1.25 - 0.75 * sq3;
+          expol(3, 6) = -0.25 + 0.25 * sq3;
+          expol(3, 7) = -0.25 - 0.25 * sq3;
+          expol(4, 4) = 1.25 + 0.75 * sq3;
+          expol(4, 5) = -0.25 - 0.25 * sq3;
+          expol(4, 6) = -0.25 + 0.25 * sq3;
+          expol(4, 7) = -0.25 - 0.25 * sq3;
+          expol(5, 5) = 1.25 + 0.75 * sq3;
+          expol(5, 6) = -0.25 - 0.25 * sq3;
+          expol(5, 7) = -0.25 + 0.25 * sq3;
+          expol(6, 6) = 1.25 + 0.75 * sq3;
+          expol(6, 7) = -0.25 - 0.25 * sq3;
+          expol(7, 7) = 1.25 + 0.75 * sq3;
+
+          for (int i = 0; i < NUMNOD_SOH8; ++i)
+          {
+            for (int j = 0; j < i; ++j)
+            {
+              expol(i, j) = expol(j, i);
+            }
+          }
+          isfilled = true;
+        }
+
+        return expol;
+      }
 
      private:
       static const DRT::UTILS::IntPointsAndWeights<NUMDIM_SOH8> gp_rule_;

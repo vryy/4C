@@ -9,6 +9,8 @@
 *----------------------------------------------------------------------*/
 
 #include "so_hex8.H"
+#include <Epetra_SerialDenseMatrix.h>
+#include "so_element_service.H"
 #include "so_hex8fbar.H"
 #include "so_surface.H"
 #include "so_line.H"
@@ -360,76 +362,29 @@ void DRT::ELEMENTS::So_hex8::Print(std::ostream& os) const
 void DRT::ELEMENTS::So_hex8::soh8_expol(
     LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
 {
-  // static variables, that are the same for every element
-  static LINALG::Matrix<NUMNOD_SOH8, NUMGPT_SOH8> expol;
-  static bool isfilled;
-
-  if (isfilled == false)
-  {
-    double sq3 = sqrt(3.0);
-    expol(0, 0) = 1.25 + 0.75 * sq3;
-    expol(0, 1) = -0.25 - 0.25 * sq3;
-    expol(0, 2) = -0.25 + 0.25 * sq3;
-    expol(0, 3) = -0.25 - 0.25 * sq3;
-    expol(0, 4) = -0.25 - 0.25 * sq3;
-    expol(0, 5) = -0.25 + 0.25 * sq3;
-    expol(0, 6) = 1.25 - 0.75 * sq3;
-    expol(0, 7) = -0.25 + 0.25 * sq3;
-    expol(1, 1) = 1.25 + 0.75 * sq3;
-    expol(1, 2) = -0.25 - 0.25 * sq3;
-    expol(1, 3) = -0.25 + 0.25 * sq3;
-    expol(1, 4) = -0.25 + 0.25 * sq3;
-    expol(1, 5) = -0.25 - 0.25 * sq3;
-    expol(1, 6) = -0.25 + 0.25 * sq3;
-    expol(1, 7) = 1.25 - 0.75 * sq3;
-    expol(2, 2) = 1.25 + 0.75 * sq3;
-    expol(2, 3) = -0.25 - 0.25 * sq3;
-    expol(2, 4) = 1.25 - 0.75 * sq3;
-    expol(2, 5) = -0.25 + 0.25 * sq3;
-    expol(2, 6) = -0.25 - 0.25 * sq3;
-    expol(2, 7) = -0.25 + 0.25 * sq3;
-    expol(3, 3) = 1.25 + 0.75 * sq3;
-    expol(3, 4) = -0.25 + 0.25 * sq3;
-    expol(3, 5) = 1.25 - 0.75 * sq3;
-    expol(3, 6) = -0.25 + 0.25 * sq3;
-    expol(3, 7) = -0.25 - 0.25 * sq3;
-    expol(4, 4) = 1.25 + 0.75 * sq3;
-    expol(4, 5) = -0.25 - 0.25 * sq3;
-    expol(4, 6) = -0.25 + 0.25 * sq3;
-    expol(4, 7) = -0.25 - 0.25 * sq3;
-    expol(5, 5) = 1.25 + 0.75 * sq3;
-    expol(5, 6) = -0.25 - 0.25 * sq3;
-    expol(5, 7) = -0.25 + 0.25 * sq3;
-    expol(6, 6) = 1.25 + 0.75 * sq3;
-    expol(6, 7) = -0.25 - 0.25 * sq3;
-    expol(7, 7) = 1.25 + 0.75 * sq3;
-
-    for (int i = 0; i < NUMNOD_SOH8; ++i)
-    {
-      for (int j = 0; j < i; ++j)
-      {
-        expol(i, j) = expol(j, i);
-      }
-    }
-    isfilled = true;
-  }
-
   LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D> nodalstresses;
-  nodalstresses.Multiply(expol, stresses);
+  static LINALG::Matrix<NUMNOD_SOH8, NUMGPT_SOH8> extrapolationMatrix(
+      GaussPointsToNodesExtrapolation());
+  nodalstresses.Multiply(extrapolationMatrix, stresses);
 
-  // "assembly" of extrapolated nodal stresses
-  for (int i = 0; i < NUMNOD_SOH8; ++i)
-  {
-    const int lid = expolstresses.Map().LID(NodeIds()[i]);
-    if (lid >= 0)  // rownode
-    {
-      const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
-      for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
-        (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
-    }
-  }
-  return;
+  DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>>(
+      expolstresses, nodalstresses, this);
 }
+
+void DRT::ELEMENTS::So_hex8::ExtrapolateGPQuantityToNodesAndAssemble(
+    const LINALG::SerialDenseMatrix& gp_quantity, Epetra_MultiVector& global_quantity,
+    bool nodal_average)
+{
+  LINALG::SerialDenseMatrix nodal_quantity(NUMNOD_SOH8, gp_quantity.N());
+  // static const LINALG::SerialDenseMatrix extrapolation_matrix(Epetra_DataAccess::View,
+  //    GaussPointsToNodesExtrapolation().A(), NUMNOD_SOH8, NUMNOD_SOH8, NUMGPT_SOH8);
+
+  nodal_quantity.Multiply('N', 'N', 1.0, GaussPointsToNodesExtrapolation(), gp_quantity, 0.0);
+
+  DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::SerialDenseMatrix>(
+      global_quantity, nodal_quantity, this, nodal_average);
+}
+
 
 /*====================================================================*/
 /* 8-node hexhedra node topology*/

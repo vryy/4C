@@ -229,29 +229,6 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
   for (auto& summand : potsum_membrane_) summand->Update();
 }
 
-// Add names for each summand for the quantities for post processing
-void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::VisNames(
-    std::map<std::string, int>& names)
-{
-  MixtureConstituent_ElastHyperBase::VisNames(names);
-
-  // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_) summand->VisNames(names);
-}
-
-// Add values for each summand of the quantities for post processing
-bool MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::VisData(
-    const std::string& name, std::vector<double>& data, int numgp, int eleGID)
-{
-  // loop map of associated potential summands
-  for (auto& summand : potsum_membrane_)
-  {
-    bool vis = summand->VisData(name, data, numgp, eleGID);
-    if (vis) return true;
-  }
-  return MixtureConstituent_ElastHyperBase::VisData(name, data, numgp, eleGID);
-}
-
 // Returns the reference mass fraction of the constituent
 double MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::CurrentRefDensity(int gp) const
 {
