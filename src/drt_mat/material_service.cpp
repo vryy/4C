@@ -1106,7 +1106,7 @@ T* MAT::CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ClearFourTensor(FourTensor& FourTensor)
+void MAT::ClearFourTensor(FourTensor& fourTensor)
 {
   for (int i = 0; i < 3; ++i)
   {
@@ -1116,7 +1116,7 @@ void MAT::ClearFourTensor(FourTensor& FourTensor)
       {
         for (int l = 0; l < 3; ++l)
         {
-          FourTensor[i][j][k][l] = 0.0;
+          fourTensor[i][j][k][l] = 0.0;
         }
       }
     }
@@ -1125,10 +1125,10 @@ void MAT::ClearFourTensor(FourTensor& FourTensor)
 
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void MAT::MultiplyFourTensorMatrix(FourTensor& FourTensorResult, const FourTensor& FourTensor,
-    const LINALG::Matrix<3, 3>& Matrix, const bool clearresulttensor)
+void MAT::MultiplyFourTensorMatrix(FourTensor& fourTensorResult, const FourTensor& fourTensor,
+    const LINALG::Matrix<3, 3>& matrix, const bool clearResultTensor)
 {
-  if (clearresulttensor) ClearFourTensor(FourTensorResult);
+  if (clearResultTensor) ClearFourTensor(fourTensorResult);
   for (int i = 0; i < 3; ++i)
   {
     for (int j = 0; j < 3; ++j)
@@ -1139,7 +1139,7 @@ void MAT::MultiplyFourTensorMatrix(FourTensor& FourTensorResult, const FourTenso
         {
           for (int m = 0; m < 3; ++m)
           {  // C^ijkl = A^ijkm * B_m^l
-            FourTensorResult[i][j][k][l] += FourTensor[i][j][k][m] * Matrix(m, l);
+            fourTensorResult[i][j][k][l] += fourTensor[i][j][k][m] * matrix(m, l);
           }
         }
       }
@@ -1149,10 +1149,10 @@ void MAT::MultiplyFourTensorMatrix(FourTensor& FourTensorResult, const FourTenso
 
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void MAT::MultiplyMatrixFourTensor(FourTensor& FourTensorResult, const LINALG::Matrix<3, 3>& Matrix,
-    const FourTensor& FourTensor, const bool clearresulttensor)
+void MAT::MultiplyMatrixFourTensor(FourTensor& fourTensorResult, const LINALG::Matrix<3, 3>& matrix,
+    const FourTensor& fourTensor, const bool clearResultTensor)
 {
-  if (clearresulttensor) ClearFourTensor(FourTensorResult);
+  if (clearResultTensor) ClearFourTensor(fourTensorResult);
   for (int i = 0; i < 3; ++i)
   {
     for (int j = 0; j < 3; ++j)
@@ -1164,7 +1164,7 @@ void MAT::MultiplyMatrixFourTensor(FourTensor& FourTensorResult, const LINALG::M
           for (int m = 0; m < 3; ++m)
           {
             // C^ijkl = B^i_m * A^mjkl
-            FourTensorResult[i][j][k][l] += Matrix(i, m) * FourTensor[m][j][k][l];
+            fourTensorResult[i][j][k][l] += matrix(i, m) * fourTensor[m][j][k][l];
           }
         }
       }
@@ -1175,60 +1175,61 @@ void MAT::MultiplyMatrixFourTensor(FourTensor& FourTensorResult, const LINALG::M
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::Matrix<6, 6> MAT::PullBackFourTensor(
-    const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat)
+    const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt)
 {
-  FourTensor CMAT = {{{{0.0}}}};
-  SetupFourTensor(CMAT, Cmat);
+  FourTensor cMatTensor = {{{{0.0}}}};
+  SetupFourTensor(cMatTensor, cMatVoigt);
 
-  // We can use the fact that CResult(i,j,k,l)=CResult(k,l,i,j) if we have a hyper-elastic material
-  LINALG::Matrix<6, 6> CResult(true);
+  // We can use the fact that cMatResultVoigt(i,j,k,l)=cMatResultVoigt(k,l,i,j) if we have a
+  // hyper-elastic material
+  LINALG::Matrix<6, 6> cMatResultVoigt(true);
 
-  CResult(0, 0) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 0);
-  CResult(0, 1) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 1);
-  CResult(0, 2) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 2, 2);
-  CResult(0, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 1);
-  CResult(0, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 1, 2);
-  CResult(0, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 0, 0, 2);
-  CResult(1, 0) = CResult(0, 1);
-  CResult(1, 1) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 1);
-  CResult(1, 2) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 2, 2);
-  CResult(1, 3) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 1);
-  CResult(1, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 1, 2);
-  CResult(1, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 1, 0, 2);
-  CResult(2, 0) = CResult(0, 2);
-  CResult(2, 1) = CResult(1, 2);
-  CResult(2, 2) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 2, 2);
-  CResult(2, 3) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 1);
-  CResult(2, 4) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 1, 2);
-  CResult(2, 5) = PullBackFourTensorijkl(defgr, CMAT, 2, 2, 0, 2);
-  CResult(3, 0) = CResult(0, 3);
-  CResult(3, 1) = CResult(1, 3);
-  CResult(3, 2) = CResult(2, 3);
-  CResult(3, 3) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 1);
-  CResult(3, 4) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 1, 2);
-  CResult(3, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 1, 0, 2);
-  CResult(4, 0) = CResult(0, 4);
-  CResult(4, 1) = CResult(1, 4);
-  CResult(4, 2) = CResult(2, 4);
-  CResult(4, 3) = CResult(3, 4);
-  CResult(4, 4) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 1, 2);
-  CResult(4, 5) = PullBackFourTensorijkl(defgr, CMAT, 1, 2, 0, 2);
-  CResult(5, 0) = CResult(0, 5);
-  CResult(5, 1) = CResult(1, 5);
-  CResult(5, 2) = CResult(2, 5);
-  CResult(5, 3) = CResult(3, 5);
-  CResult(5, 4) = CResult(4, 5);
-  CResult(5, 5) = PullBackFourTensorijkl(defgr, CMAT, 0, 2, 0, 2);
+  cMatResultVoigt(0, 0) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 0, 0, 0);
+  cMatResultVoigt(0, 1) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 0, 1, 1);
+  cMatResultVoigt(0, 2) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 0, 2, 2);
+  cMatResultVoigt(0, 3) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 0, 0, 1);
+  cMatResultVoigt(0, 4) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 0, 1, 2);
+  cMatResultVoigt(0, 5) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 0, 0, 2);
+  cMatResultVoigt(1, 0) = cMatResultVoigt(0, 1);
+  cMatResultVoigt(1, 1) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 1, 1, 1);
+  cMatResultVoigt(1, 2) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 1, 2, 2);
+  cMatResultVoigt(1, 3) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 1, 0, 1);
+  cMatResultVoigt(1, 4) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 1, 1, 2);
+  cMatResultVoigt(1, 5) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 1, 0, 2);
+  cMatResultVoigt(2, 0) = cMatResultVoigt(0, 2);
+  cMatResultVoigt(2, 1) = cMatResultVoigt(1, 2);
+  cMatResultVoigt(2, 2) = PullBackFourTensorijkl(defgr, cMatTensor, 2, 2, 2, 2);
+  cMatResultVoigt(2, 3) = PullBackFourTensorijkl(defgr, cMatTensor, 2, 2, 0, 1);
+  cMatResultVoigt(2, 4) = PullBackFourTensorijkl(defgr, cMatTensor, 2, 2, 1, 2);
+  cMatResultVoigt(2, 5) = PullBackFourTensorijkl(defgr, cMatTensor, 2, 2, 0, 2);
+  cMatResultVoigt(3, 0) = cMatResultVoigt(0, 3);
+  cMatResultVoigt(3, 1) = cMatResultVoigt(1, 3);
+  cMatResultVoigt(3, 2) = cMatResultVoigt(2, 3);
+  cMatResultVoigt(3, 3) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 1, 0, 1);
+  cMatResultVoigt(3, 4) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 1, 1, 2);
+  cMatResultVoigt(3, 5) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 1, 0, 2);
+  cMatResultVoigt(4, 0) = cMatResultVoigt(0, 4);
+  cMatResultVoigt(4, 1) = cMatResultVoigt(1, 4);
+  cMatResultVoigt(4, 2) = cMatResultVoigt(2, 4);
+  cMatResultVoigt(4, 3) = cMatResultVoigt(3, 4);
+  cMatResultVoigt(4, 4) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 2, 1, 2);
+  cMatResultVoigt(4, 5) = PullBackFourTensorijkl(defgr, cMatTensor, 1, 2, 0, 2);
+  cMatResultVoigt(5, 0) = cMatResultVoigt(0, 5);
+  cMatResultVoigt(5, 1) = cMatResultVoigt(1, 5);
+  cMatResultVoigt(5, 2) = cMatResultVoigt(2, 5);
+  cMatResultVoigt(5, 3) = cMatResultVoigt(3, 5);
+  cMatResultVoigt(5, 4) = cMatResultVoigt(4, 5);
+  cMatResultVoigt(5, 5) = PullBackFourTensorijkl(defgr, cMatTensor, 0, 2, 0, 2);
 
-  return CResult;
+  return cMatResultVoigt;
 }
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-double MAT::PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr, const FourTensor& FourTensor,
+double MAT::PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr, const FourTensor& fourTensor,
     const int i, const int j, const int k, const int l)
 {
-  double CResult_ijkl(0.0);
+  double cMatResult_ijkl(0.0);
 
   for (int A = 0; A < 3; ++A)
   {
@@ -1238,113 +1239,113 @@ double MAT::PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr, const Four
       {
         for (int D = 0; D < 3; ++D)
         {
-          CResult_ijkl +=
-              defgr(i, A) * defgr(j, B) * defgr(k, C) * defgr(l, D) * FourTensor[A][B][C][D];
+          cMatResult_ijkl +=
+              defgr(i, A) * defgr(j, B) * defgr(k, C) * defgr(l, D) * fourTensor[A][B][C][D];
         }
       }
     }
   }
 
-  return CResult_ijkl;
+  return cMatResult_ijkl;
 }
 
 /*-------------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------------*/
-void MAT::SetupFourTensor(FourTensor& FourTensor, const LINALG::Matrix<6, 6>& VoigtMatrix)
+void MAT::SetupFourTensor(FourTensor& fourTensor, const LINALG::Matrix<6, 6>& matrixVoigt)
 {
   // Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor with at
   // least minor symmetries)
-  FourTensor[0][0][0][0] = VoigtMatrix(0, 0);  // C1111
-  FourTensor[0][0][1][1] = VoigtMatrix(0, 1);  // C1122
-  FourTensor[0][0][2][2] = VoigtMatrix(0, 2);  // C1133
-  FourTensor[0][0][0][1] = VoigtMatrix(0, 3);  // C1112
-  FourTensor[0][0][1][0] = VoigtMatrix(0, 3);  // C1121
-  FourTensor[0][0][1][2] = VoigtMatrix(0, 4);  // C1123
-  FourTensor[0][0][2][1] = VoigtMatrix(0, 4);  // C1132
-  FourTensor[0][0][0][2] = VoigtMatrix(0, 5);  // C1113
-  FourTensor[0][0][2][0] = VoigtMatrix(0, 5);  // C1131
+  fourTensor[0][0][0][0] = matrixVoigt(0, 0);  // C1111
+  fourTensor[0][0][1][1] = matrixVoigt(0, 1);  // C1122
+  fourTensor[0][0][2][2] = matrixVoigt(0, 2);  // C1133
+  fourTensor[0][0][0][1] = matrixVoigt(0, 3);  // C1112
+  fourTensor[0][0][1][0] = matrixVoigt(0, 3);  // C1121
+  fourTensor[0][0][1][2] = matrixVoigt(0, 4);  // C1123
+  fourTensor[0][0][2][1] = matrixVoigt(0, 4);  // C1132
+  fourTensor[0][0][0][2] = matrixVoigt(0, 5);  // C1113
+  fourTensor[0][0][2][0] = matrixVoigt(0, 5);  // C1131
 
-  FourTensor[1][1][0][0] = VoigtMatrix(1, 0);  // C2211
-  FourTensor[1][1][1][1] = VoigtMatrix(1, 1);  // C2222
-  FourTensor[1][1][2][2] = VoigtMatrix(1, 2);  // C2233
-  FourTensor[1][1][0][1] = VoigtMatrix(1, 3);  // C2212
-  FourTensor[1][1][1][0] = VoigtMatrix(1, 3);  // C2221
-  FourTensor[1][1][1][2] = VoigtMatrix(1, 4);  // C2223
-  FourTensor[1][1][2][1] = VoigtMatrix(1, 4);  // C2232
-  FourTensor[1][1][0][2] = VoigtMatrix(1, 5);  // C2213
-  FourTensor[1][1][2][0] = VoigtMatrix(1, 5);  // C2231
+  fourTensor[1][1][0][0] = matrixVoigt(1, 0);  // C2211
+  fourTensor[1][1][1][1] = matrixVoigt(1, 1);  // C2222
+  fourTensor[1][1][2][2] = matrixVoigt(1, 2);  // C2233
+  fourTensor[1][1][0][1] = matrixVoigt(1, 3);  // C2212
+  fourTensor[1][1][1][0] = matrixVoigt(1, 3);  // C2221
+  fourTensor[1][1][1][2] = matrixVoigt(1, 4);  // C2223
+  fourTensor[1][1][2][1] = matrixVoigt(1, 4);  // C2232
+  fourTensor[1][1][0][2] = matrixVoigt(1, 5);  // C2213
+  fourTensor[1][1][2][0] = matrixVoigt(1, 5);  // C2231
 
-  FourTensor[2][2][0][0] = VoigtMatrix(2, 0);  // C3311
-  FourTensor[2][2][1][1] = VoigtMatrix(2, 1);  // C3322
-  FourTensor[2][2][2][2] = VoigtMatrix(2, 2);  // C3333
-  FourTensor[2][2][0][1] = VoigtMatrix(2, 3);  // C3312
-  FourTensor[2][2][1][0] = VoigtMatrix(2, 3);  // C3321
-  FourTensor[2][2][1][2] = VoigtMatrix(2, 4);  // C3323
-  FourTensor[2][2][2][1] = VoigtMatrix(2, 4);  // C3332
-  FourTensor[2][2][0][2] = VoigtMatrix(2, 5);  // C3313
-  FourTensor[2][2][2][0] = VoigtMatrix(2, 5);  // C3331
+  fourTensor[2][2][0][0] = matrixVoigt(2, 0);  // C3311
+  fourTensor[2][2][1][1] = matrixVoigt(2, 1);  // C3322
+  fourTensor[2][2][2][2] = matrixVoigt(2, 2);  // C3333
+  fourTensor[2][2][0][1] = matrixVoigt(2, 3);  // C3312
+  fourTensor[2][2][1][0] = matrixVoigt(2, 3);  // C3321
+  fourTensor[2][2][1][2] = matrixVoigt(2, 4);  // C3323
+  fourTensor[2][2][2][1] = matrixVoigt(2, 4);  // C3332
+  fourTensor[2][2][0][2] = matrixVoigt(2, 5);  // C3313
+  fourTensor[2][2][2][0] = matrixVoigt(2, 5);  // C3331
 
-  FourTensor[0][1][0][0] = VoigtMatrix(3, 0);
-  FourTensor[1][0][0][0] = VoigtMatrix(3, 0);  // C1211 = C2111
-  FourTensor[0][1][1][1] = VoigtMatrix(3, 1);
-  FourTensor[1][0][1][1] = VoigtMatrix(3, 1);  // C1222 = C2122
-  FourTensor[0][1][2][2] = VoigtMatrix(3, 2);
-  FourTensor[1][0][2][2] = VoigtMatrix(3, 2);  // C1233 = C2133
-  FourTensor[0][1][0][1] = VoigtMatrix(3, 3);
-  FourTensor[1][0][0][1] = VoigtMatrix(3, 3);  // C1212 = C2112
-  FourTensor[0][1][1][0] = VoigtMatrix(3, 3);
-  FourTensor[1][0][1][0] = VoigtMatrix(3, 3);  // C1221 = C2121
-  FourTensor[0][1][1][2] = VoigtMatrix(3, 4);
-  FourTensor[1][0][1][2] = VoigtMatrix(3, 4);  // C1223 = C2123
-  FourTensor[0][1][2][1] = VoigtMatrix(3, 4);
-  FourTensor[1][0][2][1] = VoigtMatrix(3, 4);  // C1232 = C2132
-  FourTensor[0][1][0][2] = VoigtMatrix(3, 5);
-  FourTensor[1][0][0][2] = VoigtMatrix(3, 5);  // C1213 = C2113
-  FourTensor[0][1][2][0] = VoigtMatrix(3, 5);
-  FourTensor[1][0][2][0] = VoigtMatrix(3, 5);  // C1231 = C2131
+  fourTensor[0][1][0][0] = matrixVoigt(3, 0);
+  fourTensor[1][0][0][0] = matrixVoigt(3, 0);  // C1211 = C2111
+  fourTensor[0][1][1][1] = matrixVoigt(3, 1);
+  fourTensor[1][0][1][1] = matrixVoigt(3, 1);  // C1222 = C2122
+  fourTensor[0][1][2][2] = matrixVoigt(3, 2);
+  fourTensor[1][0][2][2] = matrixVoigt(3, 2);  // C1233 = C2133
+  fourTensor[0][1][0][1] = matrixVoigt(3, 3);
+  fourTensor[1][0][0][1] = matrixVoigt(3, 3);  // C1212 = C2112
+  fourTensor[0][1][1][0] = matrixVoigt(3, 3);
+  fourTensor[1][0][1][0] = matrixVoigt(3, 3);  // C1221 = C2121
+  fourTensor[0][1][1][2] = matrixVoigt(3, 4);
+  fourTensor[1][0][1][2] = matrixVoigt(3, 4);  // C1223 = C2123
+  fourTensor[0][1][2][1] = matrixVoigt(3, 4);
+  fourTensor[1][0][2][1] = matrixVoigt(3, 4);  // C1232 = C2132
+  fourTensor[0][1][0][2] = matrixVoigt(3, 5);
+  fourTensor[1][0][0][2] = matrixVoigt(3, 5);  // C1213 = C2113
+  fourTensor[0][1][2][0] = matrixVoigt(3, 5);
+  fourTensor[1][0][2][0] = matrixVoigt(3, 5);  // C1231 = C2131
 
-  FourTensor[1][2][0][0] = VoigtMatrix(4, 0);
-  FourTensor[2][1][0][0] = VoigtMatrix(4, 0);  // C2311 = C3211
-  FourTensor[1][2][1][1] = VoigtMatrix(4, 1);
-  FourTensor[2][1][1][1] = VoigtMatrix(4, 1);  // C2322 = C3222
-  FourTensor[1][2][2][2] = VoigtMatrix(4, 2);
-  FourTensor[2][1][2][2] = VoigtMatrix(4, 2);  // C2333 = C3233
-  FourTensor[1][2][0][1] = VoigtMatrix(4, 3);
-  FourTensor[2][1][0][1] = VoigtMatrix(4, 3);  // C2312 = C3212
-  FourTensor[1][2][1][0] = VoigtMatrix(4, 3);
-  FourTensor[2][1][1][0] = VoigtMatrix(4, 3);  // C2321 = C3221
-  FourTensor[1][2][1][2] = VoigtMatrix(4, 4);
-  FourTensor[2][1][1][2] = VoigtMatrix(4, 4);  // C2323 = C3223
-  FourTensor[1][2][2][1] = VoigtMatrix(4, 4);
-  FourTensor[2][1][2][1] = VoigtMatrix(4, 4);  // C2332 = C3232
-  FourTensor[1][2][0][2] = VoigtMatrix(4, 5);
-  FourTensor[2][1][0][2] = VoigtMatrix(4, 5);  // C2313 = C3213
-  FourTensor[1][2][2][0] = VoigtMatrix(4, 5);
-  FourTensor[2][1][2][0] = VoigtMatrix(4, 5);  // C2331 = C3231
+  fourTensor[1][2][0][0] = matrixVoigt(4, 0);
+  fourTensor[2][1][0][0] = matrixVoigt(4, 0);  // C2311 = C3211
+  fourTensor[1][2][1][1] = matrixVoigt(4, 1);
+  fourTensor[2][1][1][1] = matrixVoigt(4, 1);  // C2322 = C3222
+  fourTensor[1][2][2][2] = matrixVoigt(4, 2);
+  fourTensor[2][1][2][2] = matrixVoigt(4, 2);  // C2333 = C3233
+  fourTensor[1][2][0][1] = matrixVoigt(4, 3);
+  fourTensor[2][1][0][1] = matrixVoigt(4, 3);  // C2312 = C3212
+  fourTensor[1][2][1][0] = matrixVoigt(4, 3);
+  fourTensor[2][1][1][0] = matrixVoigt(4, 3);  // C2321 = C3221
+  fourTensor[1][2][1][2] = matrixVoigt(4, 4);
+  fourTensor[2][1][1][2] = matrixVoigt(4, 4);  // C2323 = C3223
+  fourTensor[1][2][2][1] = matrixVoigt(4, 4);
+  fourTensor[2][1][2][1] = matrixVoigt(4, 4);  // C2332 = C3232
+  fourTensor[1][2][0][2] = matrixVoigt(4, 5);
+  fourTensor[2][1][0][2] = matrixVoigt(4, 5);  // C2313 = C3213
+  fourTensor[1][2][2][0] = matrixVoigt(4, 5);
+  fourTensor[2][1][2][0] = matrixVoigt(4, 5);  // C2331 = C3231
 
-  FourTensor[0][2][0][0] = VoigtMatrix(5, 0);
-  FourTensor[2][0][0][0] = VoigtMatrix(5, 0);  // C1311 = C3111
-  FourTensor[0][2][1][1] = VoigtMatrix(5, 1);
-  FourTensor[2][0][1][1] = VoigtMatrix(5, 1);  // C1322 = C3122
-  FourTensor[0][2][2][2] = VoigtMatrix(5, 2);
-  FourTensor[2][0][2][2] = VoigtMatrix(5, 2);  // C1333 = C3133
-  FourTensor[0][2][0][1] = VoigtMatrix(5, 3);
-  FourTensor[2][0][0][1] = VoigtMatrix(5, 3);  // C1312 = C3112
-  FourTensor[0][2][1][0] = VoigtMatrix(5, 3);
-  FourTensor[2][0][1][0] = VoigtMatrix(5, 3);  // C1321 = C3121
-  FourTensor[0][2][1][2] = VoigtMatrix(5, 4);
-  FourTensor[2][0][1][2] = VoigtMatrix(5, 4);  // C1323 = C3123
-  FourTensor[0][2][2][1] = VoigtMatrix(5, 4);
-  FourTensor[2][0][2][1] = VoigtMatrix(5, 4);  // C1332 = C3132
-  FourTensor[0][2][0][2] = VoigtMatrix(5, 5);
-  FourTensor[2][0][0][2] = VoigtMatrix(5, 5);  // C1313 = C3113
-  FourTensor[0][2][2][0] = VoigtMatrix(5, 5);
-  FourTensor[2][0][2][0] = VoigtMatrix(5, 5);  // C1331 = C3131
+  fourTensor[0][2][0][0] = matrixVoigt(5, 0);
+  fourTensor[2][0][0][0] = matrixVoigt(5, 0);  // C1311 = C3111
+  fourTensor[0][2][1][1] = matrixVoigt(5, 1);
+  fourTensor[2][0][1][1] = matrixVoigt(5, 1);  // C1322 = C3122
+  fourTensor[0][2][2][2] = matrixVoigt(5, 2);
+  fourTensor[2][0][2][2] = matrixVoigt(5, 2);  // C1333 = C3133
+  fourTensor[0][2][0][1] = matrixVoigt(5, 3);
+  fourTensor[2][0][0][1] = matrixVoigt(5, 3);  // C1312 = C3112
+  fourTensor[0][2][1][0] = matrixVoigt(5, 3);
+  fourTensor[2][0][1][0] = matrixVoigt(5, 3);  // C1321 = C3121
+  fourTensor[0][2][1][2] = matrixVoigt(5, 4);
+  fourTensor[2][0][1][2] = matrixVoigt(5, 4);  // C1323 = C3123
+  fourTensor[0][2][2][1] = matrixVoigt(5, 4);
+  fourTensor[2][0][2][1] = matrixVoigt(5, 4);  // C1332 = C3132
+  fourTensor[0][2][0][2] = matrixVoigt(5, 5);
+  fourTensor[2][0][0][2] = matrixVoigt(5, 5);  // C1313 = C3113
+  fourTensor[0][2][2][0] = matrixVoigt(5, 5);
+  fourTensor[2][0][2][0] = matrixVoigt(5, 5);  // C1331 = C3131
 }
 
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
-void MAT::Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& VoigtMatrix, const FourTensor& FourTensor)
+void MAT::Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& matrixVoigt, const FourTensor& fourTensor)
 {
   ///*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)
   /// 0.5*(C1123+C1132)                0.5*(C1113+C1131)      ]
@@ -1358,71 +1359,71 @@ void MAT::Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& VoigtMatrix, const FourTenso
   //    0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)
   //    0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
 
-  // Setup 4-Tensor from 6x6 Voigt matrix
-  VoigtMatrix(0, 0) = FourTensor[0][0][0][0];                                   // C1111
-  VoigtMatrix(0, 1) = FourTensor[0][0][1][1];                                   // C1122
-  VoigtMatrix(0, 2) = FourTensor[0][0][2][2];                                   // C1133
-  VoigtMatrix(0, 3) = 0.5 * (FourTensor[0][0][0][1] + FourTensor[0][0][1][0]);  // 0.5*(C1112+C1121)
-  VoigtMatrix(0, 4) = 0.5 * (FourTensor[0][0][1][2] + FourTensor[0][0][2][1]);  // 0.5*(C1123+C1132)
-  VoigtMatrix(0, 5) = 0.5 * (FourTensor[0][0][0][2] + FourTensor[0][0][2][0]);  // 0.5*(C1113+C1131)
+  // Setup 6x6 Voigt matrix from 4-Tensor
+  matrixVoigt(0, 0) = fourTensor[0][0][0][0];                                   // C1111
+  matrixVoigt(0, 1) = fourTensor[0][0][1][1];                                   // C1122
+  matrixVoigt(0, 2) = fourTensor[0][0][2][2];                                   // C1133
+  matrixVoigt(0, 3) = 0.5 * (fourTensor[0][0][0][1] + fourTensor[0][0][1][0]);  // 0.5*(C1112+C1121)
+  matrixVoigt(0, 4) = 0.5 * (fourTensor[0][0][1][2] + fourTensor[0][0][2][1]);  // 0.5*(C1123+C1132)
+  matrixVoigt(0, 5) = 0.5 * (fourTensor[0][0][0][2] + fourTensor[0][0][2][0]);  // 0.5*(C1113+C1131)
 
-  VoigtMatrix(1, 0) = FourTensor[1][1][0][0];                                   // C2211
-  VoigtMatrix(1, 1) = FourTensor[1][1][1][1];                                   // C2222
-  VoigtMatrix(1, 2) = FourTensor[1][1][2][2];                                   // C2233
-  VoigtMatrix(1, 3) = 0.5 * (FourTensor[1][1][0][1] + FourTensor[1][1][1][0]);  // 0.5*(C2212+C2221)
-  VoigtMatrix(1, 4) = 0.5 * (FourTensor[1][1][1][2] + FourTensor[1][1][2][1]);  // 0.5*(C2223+C2232)
-  VoigtMatrix(1, 5) = 0.5 * (FourTensor[1][1][0][2] + FourTensor[1][1][2][0]);  // 0.5*(C2213+C2231)
+  matrixVoigt(1, 0) = fourTensor[1][1][0][0];                                   // C2211
+  matrixVoigt(1, 1) = fourTensor[1][1][1][1];                                   // C2222
+  matrixVoigt(1, 2) = fourTensor[1][1][2][2];                                   // C2233
+  matrixVoigt(1, 3) = 0.5 * (fourTensor[1][1][0][1] + fourTensor[1][1][1][0]);  // 0.5*(C2212+C2221)
+  matrixVoigt(1, 4) = 0.5 * (fourTensor[1][1][1][2] + fourTensor[1][1][2][1]);  // 0.5*(C2223+C2232)
+  matrixVoigt(1, 5) = 0.5 * (fourTensor[1][1][0][2] + fourTensor[1][1][2][0]);  // 0.5*(C2213+C2231)
 
-  VoigtMatrix(2, 0) = FourTensor[2][2][0][0];                                   // C3311
-  VoigtMatrix(2, 1) = FourTensor[2][2][1][1];                                   // C3322
-  VoigtMatrix(2, 2) = FourTensor[2][2][2][2];                                   // C3333
-  VoigtMatrix(2, 3) = 0.5 * (FourTensor[2][2][0][1] + FourTensor[2][2][1][0]);  // 0.5*(C3312+C3321)
-  VoigtMatrix(2, 4) = 0.5 * (FourTensor[2][2][1][2] + FourTensor[2][2][2][1]);  // 0.5*(C3323+C3332)
-  VoigtMatrix(2, 5) = 0.5 * (FourTensor[2][2][0][2] + FourTensor[2][2][2][0]);  // 0.5*(C3313+C3331)
+  matrixVoigt(2, 0) = fourTensor[2][2][0][0];                                   // C3311
+  matrixVoigt(2, 1) = fourTensor[2][2][1][1];                                   // C3322
+  matrixVoigt(2, 2) = fourTensor[2][2][2][2];                                   // C3333
+  matrixVoigt(2, 3) = 0.5 * (fourTensor[2][2][0][1] + fourTensor[2][2][1][0]);  // 0.5*(C3312+C3321)
+  matrixVoigt(2, 4) = 0.5 * (fourTensor[2][2][1][2] + fourTensor[2][2][2][1]);  // 0.5*(C3323+C3332)
+  matrixVoigt(2, 5) = 0.5 * (fourTensor[2][2][0][2] + fourTensor[2][2][2][0]);  // 0.5*(C3313+C3331)
 
-  VoigtMatrix(3, 0) = 0.5 * (FourTensor[0][1][0][0] + FourTensor[1][0][0][0]);  // 0.5*(C1211+C2111)
-  VoigtMatrix(3, 1) = 0.5 * (FourTensor[0][1][1][1] + FourTensor[1][0][1][1]);  // 0.5*(C1222+C2122)
-  VoigtMatrix(3, 2) = 0.5 * (FourTensor[0][1][2][2] + FourTensor[1][0][2][2]);  // 0.5*(C1233+C2133)
-  VoigtMatrix(3, 3) =
-      0.25 * (FourTensor[0][1][0][1] + FourTensor[1][0][0][1] + FourTensor[0][1][1][0] +
-                 FourTensor[1][0][1][0]);  // 0.5*(C1212+C2112+C1221+C2121)
-  VoigtMatrix(3, 4) =
-      0.25 * (FourTensor[0][1][1][2] + FourTensor[1][0][1][2] + FourTensor[0][1][2][1] +
-                 FourTensor[1][0][2][1]);  // 0.5*(C1223+C2123+C1232+C2132)
-  VoigtMatrix(3, 5) =
-      0.25 * (FourTensor[0][1][0][2] + FourTensor[1][0][0][2] + FourTensor[0][1][2][0] +
-                 FourTensor[1][0][2][0]);  // 0.5*(C1213+C2113+C1231+C2131)
+  matrixVoigt(3, 0) = 0.5 * (fourTensor[0][1][0][0] + fourTensor[1][0][0][0]);  // 0.5*(C1211+C2111)
+  matrixVoigt(3, 1) = 0.5 * (fourTensor[0][1][1][1] + fourTensor[1][0][1][1]);  // 0.5*(C1222+C2122)
+  matrixVoigt(3, 2) = 0.5 * (fourTensor[0][1][2][2] + fourTensor[1][0][2][2]);  // 0.5*(C1233+C2133)
+  matrixVoigt(3, 3) =
+      0.25 * (fourTensor[0][1][0][1] + fourTensor[1][0][0][1] + fourTensor[0][1][1][0] +
+                 fourTensor[1][0][1][0]);  // 0.5*(C1212+C2112+C1221+C2121)
+  matrixVoigt(3, 4) =
+      0.25 * (fourTensor[0][1][1][2] + fourTensor[1][0][1][2] + fourTensor[0][1][2][1] +
+                 fourTensor[1][0][2][1]);  // 0.5*(C1223+C2123+C1232+C2132)
+  matrixVoigt(3, 5) =
+      0.25 * (fourTensor[0][1][0][2] + fourTensor[1][0][0][2] + fourTensor[0][1][2][0] +
+                 fourTensor[1][0][2][0]);  // 0.5*(C1213+C2113+C1231+C2131)
 
-  VoigtMatrix(4, 0) = 0.5 * (FourTensor[1][2][0][0] + FourTensor[2][1][0][0]);  // 0.5*(C2311+C3211)
-  VoigtMatrix(4, 1) = 0.5 * (FourTensor[1][2][1][1] + FourTensor[2][1][1][1]);  // 0.5*(C2322+C3222)
-  VoigtMatrix(4, 2) = 0.5 * (FourTensor[1][2][2][2] + FourTensor[2][1][2][2]);  // 0.5*(C2333+C3233)
-  VoigtMatrix(4, 3) =
-      0.25 * (FourTensor[1][2][0][1] + FourTensor[2][1][0][1] + FourTensor[1][2][1][0] +
-                 FourTensor[2][1][1][0]);  // 0.5*(C2312+C3212+C2321+C3221)
-  VoigtMatrix(4, 4) =
-      0.25 * (FourTensor[1][2][1][2] + FourTensor[2][1][1][2] + FourTensor[1][2][2][1] +
-                 FourTensor[2][1][2][1]);  // 0.5*(C2323+C3223+C2332+C3232)
-  VoigtMatrix(4, 5) =
-      0.25 * (FourTensor[1][2][0][2] + FourTensor[2][1][0][2] + FourTensor[1][2][2][0] +
-                 FourTensor[2][1][2][0]);  // 0.5*(C2313+C3213+C2331+C3231)
+  matrixVoigt(4, 0) = 0.5 * (fourTensor[1][2][0][0] + fourTensor[2][1][0][0]);  // 0.5*(C2311+C3211)
+  matrixVoigt(4, 1) = 0.5 * (fourTensor[1][2][1][1] + fourTensor[2][1][1][1]);  // 0.5*(C2322+C3222)
+  matrixVoigt(4, 2) = 0.5 * (fourTensor[1][2][2][2] + fourTensor[2][1][2][2]);  // 0.5*(C2333+C3233)
+  matrixVoigt(4, 3) =
+      0.25 * (fourTensor[1][2][0][1] + fourTensor[2][1][0][1] + fourTensor[1][2][1][0] +
+                 fourTensor[2][1][1][0]);  // 0.5*(C2312+C3212+C2321+C3221)
+  matrixVoigt(4, 4) =
+      0.25 * (fourTensor[1][2][1][2] + fourTensor[2][1][1][2] + fourTensor[1][2][2][1] +
+                 fourTensor[2][1][2][1]);  // 0.5*(C2323+C3223+C2332+C3232)
+  matrixVoigt(4, 5) =
+      0.25 * (fourTensor[1][2][0][2] + fourTensor[2][1][0][2] + fourTensor[1][2][2][0] +
+                 fourTensor[2][1][2][0]);  // 0.5*(C2313+C3213+C2331+C3231)
 
-  VoigtMatrix(5, 0) = 0.5 * (FourTensor[0][2][0][0] + FourTensor[2][0][0][0]);  // 0.5*(C1311+C3111)
-  VoigtMatrix(5, 1) = 0.5 * (FourTensor[0][2][1][1] + FourTensor[2][0][1][1]);  // 0.5*(C1322+C3122)
-  VoigtMatrix(5, 2) = 0.5 * (FourTensor[0][2][2][2] + FourTensor[2][0][2][2]);  // 0.5*(C1333+C3133)
-  VoigtMatrix(5, 3) =
-      0.25 * (FourTensor[0][2][0][1] + FourTensor[2][0][0][1] + FourTensor[0][2][1][0] +
-                 FourTensor[2][0][1][0]);  // 0.5*(C1312+C3112+C1321+C3121)
-  VoigtMatrix(5, 4) =
-      0.25 * (FourTensor[0][2][1][2] + FourTensor[2][0][1][2] + FourTensor[0][2][2][1] +
-                 FourTensor[2][0][2][1]);  // 0.5*(C1323+C3123+C1332+C3132)
-  VoigtMatrix(5, 5) =
-      0.25 * (FourTensor[0][2][0][2] + FourTensor[2][0][0][2] + FourTensor[0][2][2][0] +
-                 FourTensor[2][0][2][0]);  // 0.5*(C1313+C3113+C1331+C3131)
+  matrixVoigt(5, 0) = 0.5 * (fourTensor[0][2][0][0] + fourTensor[2][0][0][0]);  // 0.5*(C1311+C3111)
+  matrixVoigt(5, 1) = 0.5 * (fourTensor[0][2][1][1] + fourTensor[2][0][1][1]);  // 0.5*(C1322+C3122)
+  matrixVoigt(5, 2) = 0.5 * (fourTensor[0][2][2][2] + fourTensor[2][0][2][2]);  // 0.5*(C1333+C3133)
+  matrixVoigt(5, 3) =
+      0.25 * (fourTensor[0][2][0][1] + fourTensor[2][0][0][1] + fourTensor[0][2][1][0] +
+                 fourTensor[2][0][1][0]);  // 0.5*(C1312+C3112+C1321+C3121)
+  matrixVoigt(5, 4) =
+      0.25 * (fourTensor[0][2][1][2] + fourTensor[2][0][1][2] + fourTensor[0][2][2][1] +
+                 fourTensor[2][0][2][1]);  // 0.5*(C1323+C3123+C1332+C3132)
+  matrixVoigt(5, 5) =
+      0.25 * (fourTensor[0][2][0][2] + fourTensor[2][0][0][2] + fourTensor[0][2][2][0] +
+                 fourTensor[2][0][2][0]);  // 0.5*(C1313+C3113+C1331+C3131)
 }
 
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
-void MAT::TransposeFourTensor12(FourTensor& ResultTensor, const FourTensor& FourTensor)
+void MAT::TransposeFourTensor12(FourTensor& resultTensor, const FourTensor& inputTensor)
 {
   for (int i = 0; i < 3; ++i)
   {
@@ -1432,7 +1433,7 @@ void MAT::TransposeFourTensor12(FourTensor& ResultTensor, const FourTensor& Four
       {
         for (int l = 0; l < 3; ++l)
         {
-          ResultTensor[i][j][k][l] = FourTensor[j][i][k][l];
+          resultTensor[i][j][k][l] = inputTensor[j][i][k][l];
         }
       }
     }
@@ -1441,7 +1442,7 @@ void MAT::TransposeFourTensor12(FourTensor& ResultTensor, const FourTensor& Four
 
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
-void MAT::PrintFourTensor(const FourTensor& FourTensor)
+void MAT::PrintFourTensor(const FourTensor& fourTensor)
 {
   for (int i = 0; i < 3; ++i)
   {
@@ -1450,7 +1451,7 @@ void MAT::PrintFourTensor(const FourTensor& FourTensor)
       for (int k = 0; k < 3; ++k)
       {
         for (int l = 0; l < 3; ++l)
-          std::cout << "ELEMENT " << i << j << k << l << " : " << FourTensor[i][j][k][l]
+          std::cout << "ELEMENT " << i << j << k << l << " : " << fourTensor[i][j][k][l]
                     << std::endl;
       }
     }

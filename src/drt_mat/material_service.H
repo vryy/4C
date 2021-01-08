@@ -481,53 +481,67 @@ namespace MAT
 
 
   /// Set every tensor value to zero
-  void ClearFourTensor(FourTensor& FourTensor);
+  void ClearFourTensor(FourTensor& fourTensor);
 
   /*!
    * @brief Multiply 4-Tensor*Matrix
    *
-   * @param[in,out] FourTensorResult   result of 4-Tensor matrix multiplication C^ijkl += A^ijkm *
-   *                                  B_m^l
-   * @param[in] FourTensor             4-tensor A^ijkm
-   * @param[in] Matrix                 2-tensor B_m^l
-   * @param[in] clearresulttensor      if true: C^ijkl is cleared when method is called
+   * @param[in,out] fourTensorResult   result of 4-Tensor matrix multiplication C^ijkl += A^ijkm *
+   *                                   B_m^l
+   * @param[in] fourTensor             4-tensor A^ijkm
+   * @param[in] matrix                 2-tensor B_m^l
+   * @param[in] clearResultTensor      if true: C^ijkl is cleared when method is called
    */
-  void MultiplyFourTensorMatrix(FourTensor& FourTensorResult, const FourTensor& FourTensor,
-      const LINALG::Matrix<3, 3>& Matrix, const bool clearresulttensor = true);
+  void MultiplyFourTensorMatrix(FourTensor& fourTensorResult, const FourTensor& fourTensor,
+      const LINALG::Matrix<3, 3>& matrix, const bool clearResultTensor = true);
 
   /*!
    * @brief Multiply Matrix*4-Tensor
    *
-   * @param[in,out] FourTensorResult   result of 4-Tensor matrix multiplication C^ijkl += B^i_m *
+   * @param[in,out] fourTensorResult   result of 4-Tensor matrix multiplication C^ijkl += B^i_m *
    *                                   A^mjkl
-   * @param[in] Matrix                 2-tensor B^i_m
-   * @param[in] FourTensor             4-tensor A^mjkl
-   * @param[in] clearresulttensor      if true: C^ijkl is cleared when method is called
+   * @param[in] matrix                 2-tensor B^i_m
+   * @param[in] fourTensor             4-tensor A^mjkl
+   * @param[in] clearResultTensor      if true: C^ijkl is cleared when method is called
    */
-  void MultiplyMatrixFourTensor(FourTensor& FourTensorResult, const LINALG::Matrix<3, 3>& Matrix,
-      const FourTensor& FourTensor, const bool clearresulttensor = true);
+  void MultiplyMatrixFourTensor(FourTensor& fourTensorResult, const LINALG::Matrix<3, 3>& matrix,
+      const FourTensor& fourTensor, const bool clearResultTensor = true);
 
   /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
   /// via the 2th order deformation gradient (also in matrix notation)
   LINALG::Matrix<6, 6> PullBackFourTensor(
-      const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat);
+      const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt);
 
   /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
   /// notation) via the 2th order deformation gradient (also in matrix notation)
-  double PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr, const FourTensor& FourTensor,
+  double PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr, const FourTensor& fourTensor,
       const int i, const int j, const int k, const int l);
 
-  // Setup 4-Tensor from 6x6 Voigt notation
-  void SetupFourTensor(FourTensor& FourTensor, const LINALG::Matrix<6, 6>& VoigtMatrix);
+  //
+  /*!
+   * @brief Setup 4-Tensor from 6x6 Voigt notation
+   *
+   * @note Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor
+   * with at least minor symmetries)
+   *
+   * @param[out] fourTensor   4-Tensor that is set up based on matrixVoigt
+   * @param[in]  matrixVoigt  4-Tensor in Voigt notation with at least minor symmetries
+   */
+  void SetupFourTensor(FourTensor& fourTensor, const LINALG::Matrix<6, 6>& matrixVoigt);
 
-  /// Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
-  void Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& VoigtMatrix, const FourTensor& FourTensor);
+  /*!
+   * @brief Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
+   *
+   * @param[out] matrixVoigt  6x6 Voigt matrix that is set up based on fourTensor
+   * @param[in]  fourTensor   4-tensor with minor symmetries
+   */
+  void Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& matrixVoigt, const FourTensor& fourTensor);
 
   /// Transpose four tensor wrt to basis vectors 1 and 2
-  void TransposeFourTensor12(FourTensor& ResultTensor, const FourTensor& FourTensor);
+  void TransposeFourTensor12(FourTensor& resultTensor, const FourTensor& inputTensor);
 
   /// print four tensor
-  void PrintFourTensor(const FourTensor& FourTensor);
+  void PrintFourTensor(const FourTensor& fourTensor);
 
 }  // namespace MAT
 
