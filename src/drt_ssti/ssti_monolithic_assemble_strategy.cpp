@@ -23,17 +23,15 @@
 /*----------------------------------------------------------------------*
  |                                                         constructors |
  *----------------------------------------------------------------------*/
-SSTI::AssembleStrategyBase::AssembleStrategyBase(
-    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter)
-    : converter_(std::move(converter)), ssti_mono_(std::move(ssti_mono))
+SSTI::AssembleStrategyBase::AssembleStrategyBase(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono)
+    : ssti_mono_(std::move(ssti_mono))
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSTI::AssembleStrategyBlock::AssembleStrategyBlock(
-    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter)
-    : AssembleStrategyBase(std::move(ssti_mono), std::move(converter)),
+SSTI::AssembleStrategyBlock::AssembleStrategyBlock(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono)
+    : AssembleStrategyBase(std::move(ssti_mono)),
       block_position_scatra_(Teuchos::null),
       block_position_thermo_(Teuchos::null),
       position_structure_(-1)
@@ -50,24 +48,23 @@ SSTI::AssembleStrategyBlock::AssembleStrategyBlock(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
-    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter)
-    : AssembleStrategyBlock(std::move(ssti_mono), std::move(converter))
+    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono)
+    : AssembleStrategyBlock(std::move(ssti_mono))
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(
-    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter)
-    : AssembleStrategyBlock(std::move(ssti_mono), std::move(converter))
+    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono)
+    : AssembleStrategyBlock(std::move(ssti_mono))
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSTI::AssembleStrategySparse::AssembleStrategySparse(
-    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter)
-    : AssembleStrategyBase(std::move(ssti_mono), std::move(converter))
+SSTI::AssembleStrategySparse::AssembleStrategySparse(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono)
+    : AssembleStrategyBase(std::move(ssti_mono))
 {
 }
 
@@ -208,10 +205,11 @@ void SSTI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain, bool zero)
 {
   // map for interior and master-side structural degrees of freedom
-  const auto& mapstructurecondensed = ssti_mono_->AllMaps()->MapStructureCondensed();
+  const auto& mapstructurecondensed = ssti_mono_->StructuralMeshtying()->MapStructureCondensed();
 
   // map for slave side structural degrees of freedom
-  const auto& mapstructureslave = ssti_mono_->AllMaps()->MapsInterfaceStructure()->Map(0);
+  const auto& mapstructureslave =
+      ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
 
   // assemble interior and master-side rows and columns of structural system matrix into
   // global system matrix
@@ -221,18 +219,23 @@ void SSTI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
   // transform and assemble slave-side rows of structural system matrix into global system
   // matrix
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *mapstructureslave,
-      *ssti_mono_->AllMaps()->MapStructureCondensed(), 1.0, &converter_, nullptr,
-      systemmatrix_structure, true, true);
+      *ssti_mono_->StructuralMeshtying()->MapStructureCondensed(), 1.0,
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      nullptr, systemmatrix_structure, true, true);
 
   // transform and assemble slave-side columns of structural system matrix into global
   // system matrix
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *mapstructurecondensed,
-      *mapstructureslave, 1.0, nullptr, &converter_, systemmatrix_structure, true, true);
+      *mapstructureslave, 1.0, nullptr,
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      systemmatrix_structure, true, true);
 
   // transform and assemble slave-side rows and columns of structural system matrix into
   // global system matrix
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *mapstructureslave, *mapstructureslave,
-      1.0, &converter_, &converter_, systemmatrix_structure, true, true);
+      1.0, &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      systemmatrix_structure, true, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -390,10 +393,11 @@ void SSTI::AssembleStrategyBase::AssembleScatraStructureDomainMeshtying(
     const LINALG::SparseMatrix& scatrastructuredomain, bool zero)
 {
   // map for interior and master-side structural degrees of freedom
-  const auto& mapstructurecondensed = ssti_mono_->AllMaps()->MapStructureCondensed();
+  const auto& mapstructurecondensed = ssti_mono_->StructuralMeshtying()->MapStructureCondensed();
 
   // map for slave side structural degrees of freedom
-  const auto& mapstructureslave = ssti_mono_->AllMaps()->MapsInterfaceStructure()->Map(0);
+  const auto& mapstructureslave =
+      ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
 
   // assemble interior and master-side columns of scatra-structure block into global
   // system matrix
@@ -403,7 +407,9 @@ void SSTI::AssembleStrategyBase::AssembleScatraStructureDomainMeshtying(
   // transform and assemble slave-side columns of scatra-structure block into global
   // system matrix
   LINALG::MatrixLogicalSplitAndTransform()(scatrastructuredomain, scatrastructuredomain.RangeMap(),
-      *mapstructureslave, 1.0, nullptr, &converter_, systemmatrix_scatra_structure, true, true);
+      *mapstructureslave, 1.0, nullptr,
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      systemmatrix_scatra_structure, true, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -690,10 +696,11 @@ void SSTI::AssembleStrategyBase::AssembleStructureScatraDomainMeshtying(
     const LINALG::SparseMatrix& structurescatradomain, bool zero)
 {
   // map for interior and master-side structural degrees of freedom
-  const auto& mapstructurecondensed = ssti_mono_->AllMaps()->MapStructureCondensed();
+  const auto& mapstructurecondensed = ssti_mono_->StructuralMeshtying()->MapStructureCondensed();
 
   // map for slave side structural degrees of freedom
-  const auto& mapstructureslave = ssti_mono_->AllMaps()->MapsInterfaceStructure()->Map(0);
+  const auto& mapstructureslave =
+      ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
 
   // assemble interior and master - side rows of structure - scatra block into global system
   // matrix
@@ -704,8 +711,9 @@ void SSTI::AssembleStrategyBase::AssembleStructureScatraDomainMeshtying(
   // transform and assemble slave-side rows of structure-scatra block into global system
   // matrix
   LINALG::MatrixLogicalSplitAndTransform()(structurescatradomain, *mapstructureslave,
-      structurescatradomain.DomainMap(), 1.0, &converter_, nullptr, systemmatrix_structure_scatra,
-      true, true);
+      structurescatradomain.DomainMap(), 1.0,
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      nullptr, systemmatrix_structure_scatra, true, true);
 }
 /*----------------------------------------------------------------------*
  |                     assemble thermo-scatra domain into system matrix |
@@ -1002,10 +1010,11 @@ void SSTI::AssembleStrategyBase::AssembleThermoStructureDomainMeshtying(
     const LINALG::SparseMatrix& thermostructuredomain, bool zero)
 {
   // map for interior and master-side structural degrees of freedom
-  const auto& mapstructurecondensed = ssti_mono_->AllMaps()->MapStructureCondensed();
+  const auto& mapstructurecondensed = ssti_mono_->StructuralMeshtying()->MapStructureCondensed();
 
   // map for slave side structural degrees of freedom
-  const auto& mapstructureslave = ssti_mono_->AllMaps()->MapsInterfaceStructure()->Map(0);
+  const auto& mapstructureslave =
+      ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
 
   // assemble interior and master-side columns of scatra-structure block into global
   // system matrix
@@ -1015,7 +1024,9 @@ void SSTI::AssembleStrategyBase::AssembleThermoStructureDomainMeshtying(
   // transform and assemble slave-side columns of scatra-structure block into global
   // system matrix
   LINALG::MatrixLogicalSplitAndTransform()(thermostructuredomain, thermostructuredomain.RangeMap(),
-      *mapstructureslave, 1.0, nullptr, &converter_, systemmatrix_thermo_structure, true, true);
+      *mapstructureslave, 1.0, nullptr,
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      systemmatrix_thermo_structure, true, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -1170,10 +1181,11 @@ void SSTI::AssembleStrategyBase::AssembleStructureThermoDomainMeshtying(
     const LINALG::SparseMatrix& structurethermodomain, bool zero)
 {
   // map for interior and master-side structural degrees of freedom
-  const auto& mapstructurecondensed = ssti_mono_->AllMaps()->MapStructureCondensed();
+  const auto& mapstructurecondensed = ssti_mono_->StructuralMeshtying()->MapStructureCondensed();
 
   // map for slave side structural degrees of freedom
-  const auto& mapstructureslave = ssti_mono_->AllMaps()->MapsInterfaceStructure()->Map(0);
+  const auto& mapstructureslave =
+      ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
 
   // assemble interior and master - side rows of structure - scatra block into global system
   // matrix
@@ -1184,8 +1196,9 @@ void SSTI::AssembleStrategyBase::AssembleStructureThermoDomainMeshtying(
   // transform and assemble slave-side rows of structure-scatra block into global system
   // matrix
   LINALG::MatrixLogicalSplitAndTransform()(structurethermodomain, *mapstructureslave,
-      structurethermodomain.DomainMap(), 1.0, &converter_, nullptr, systemmatrix_structure_thermo,
-      true, true);
+      structurethermodomain.DomainMap(), 1.0,
+      &(*ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      nullptr, systemmatrix_structure_thermo, true, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -1239,7 +1252,8 @@ void SSTI::AssembleStrategySparse::ApplyMeshtyingSystemMatrix(
 void SSTI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& systemmatrix_structure)
 {
   // map for slave side structural degrees of freedom
-  const auto& mapstructureslave = ssti_mono_->AllMaps()->MapsInterfaceStructure()->Map(0);
+  const auto& mapstructureslave =
+      ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
 
   // subject slave-side rows of structural system matrix to pseudo Dirichlet conditions to
   // finalize structural meshtying
@@ -1374,9 +1388,9 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
     // transform slave-side part of structural right-hand side vector to master side
     Teuchos::RCP<Epetra_Vector> slavetomaster =
-        ssti_mono_->AllMaps()->MapsInterfaceStructure()->InsertVector(
-            ssti_mono_->CouplingAdapterStructure()->SlaveToMaster(
-                ssti_mono_->AllMaps()->MapsInterfaceStructure()->ExtractVector(
+        ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->InsertVector(
+            ssti_mono_->StructuralMeshtying()->InterfaceCouplingAdapterStructure()->SlaveToMaster(
+                ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->ExtractVector(
                     residual_structure, 0)),
             1);
 
@@ -1398,7 +1412,8 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     residual_structure.Update(1.0, *slavetomaster, 1.0);
 
     // zero out slave-side part of structural right-hand side vector
-    ssti_mono_->AllMaps()->MapsInterfaceStructure()->PutScalar(residual_structure, 0, 0.0);
+    ssti_mono_->StructuralMeshtying()->MapsInterfaceStructure()->PutScalar(
+        residual_structure, 0, 0.0);
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     ssti_mono_->AllMaps()->MapsSubproblems()->AddVector(
@@ -1409,8 +1424,8 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
-    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, const ADAPTER::CouplingSlaveConverter& converter,
-    LINALG::MatrixType matrixtype_ssti, LINALG::MatrixType matrixtype_scatra)
+    Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, LINALG::MatrixType matrixtype_ssti,
+    LINALG::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSTI::AssembleStrategyBase> assemblestrategy = Teuchos::null;
 
@@ -1422,14 +1437,12 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
       {
         case LINALG::MatrixType::block_condition:
         {
-          assemblestrategy =
-              Teuchos::rcp(new SSTI::AssembleStrategyBlockBlock(ssti_mono, converter));
+          assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategyBlockBlock(ssti_mono));
           break;
         }
         case LINALG::MatrixType::sparse:
         {
-          assemblestrategy =
-              Teuchos::rcp(new SSTI::AssembleStrategyBlockSparse(ssti_mono, converter));
+          assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategyBlockSparse(ssti_mono));
           break;
         }
         default:
@@ -1442,7 +1455,7 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::BuildAssembleStrategy(
     }
     case LINALG::MatrixType::sparse:
     {
-      assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategySparse(ssti_mono, converter));
+      assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategySparse(ssti_mono));
       break;
     }
     default:

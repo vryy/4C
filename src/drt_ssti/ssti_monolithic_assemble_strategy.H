@@ -43,8 +43,7 @@ namespace SSTI
   {
    public:
     //! constructor
-    AssembleStrategyBase(
-        Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter);
+    AssembleStrategyBase(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! destructor
     virtual ~AssembleStrategyBase() = default;
@@ -130,9 +129,6 @@ namespace SSTI
     void AssembleThermoStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_structure,
         const LINALG::SparseMatrix& thermostructuredomain, bool zero);
 
-    //! structural coupling converter
-    ADAPTER::CouplingSlaveConverter converter_;
-
     //! monolithic algorithm for scalar-structure interaction
     const Teuchos::RCP<const SSTI::SSTIMono> ssti_mono_;
   };
@@ -143,8 +139,7 @@ namespace SSTI
   {
    public:
     //! constructor
-    AssembleStrategyBlock(
-        Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter);
+    AssembleStrategyBlock(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! destructor
     ~AssembleStrategyBlock() override = default;
@@ -227,8 +222,7 @@ namespace SSTI
   {
    public:
     //! constructor
-    AssembleStrategyBlockBlock(
-        Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter);
+    AssembleStrategyBlockBlock(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! destructor
     ~AssembleStrategyBlockBlock() override = default;
@@ -288,8 +282,7 @@ namespace SSTI
   {
    public:
     //! constructor
-    AssembleStrategyBlockSparse(
-        Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter);
+    AssembleStrategyBlockSparse(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! destructor
     ~AssembleStrategyBlockSparse() override = default;
@@ -348,8 +341,7 @@ namespace SSTI
   {
    public:
     //! constructor
-    AssembleStrategySparse(
-        Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, ADAPTER::CouplingSlaveConverter converter);
+    AssembleStrategySparse(Teuchos::RCP<const SSTI::SSTIMono> ssti_mono);
 
     //! destructor
     ~AssembleStrategySparse() override = default;
@@ -408,8 +400,7 @@ namespace SSTI
 
   //! build specifc assemble strategy
   Teuchos::RCP<SSTI::AssembleStrategyBase> BuildAssembleStrategy(
-      Teuchos::RCP<const SSTI::SSTIMono> ssti_mono,
-      const ADAPTER::CouplingSlaveConverter& converter, LINALG::MatrixType matrixtype_ssti,
+      Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, LINALG::MatrixType matrixtype_ssti,
       LINALG::MatrixType matrixtype_scatra);
 
 

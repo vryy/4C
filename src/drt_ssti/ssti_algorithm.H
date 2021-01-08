@@ -45,6 +45,8 @@ namespace SCATRA
 
 namespace SSTI
 {
+  class SSTIStructuralMeshtying;
+
   //! Base class of all solid-scatra algorithms
   class SSTIAlgorithm : public ADAPTER::AlgorithmBase
   {
@@ -68,10 +70,6 @@ namespace SSTI
 
     //! return coupling
     //@{
-    const Teuchos::RCP<ADAPTER::Coupling> CouplingAdapterStructure() const
-    {
-      return icoup_structure_;
-    };
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingScatra() const
     {
       return meshtying_strategy_scatra_;
@@ -80,6 +78,10 @@ namespace SSTI
     {
       return meshtying_strategy_thermo_;
     };
+    const Teuchos::RCP<SSTI::SSTIStructuralMeshtying> StructuralMeshtying() const
+    {
+      return structural_meshtying_;
+    }
     //@}
 
     //! return subproblems
@@ -145,9 +147,9 @@ namespace SSTI
 
     //! Pointers to coupling strategies
     //@{
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
+    Teuchos::RCP<SSTI::SSTIStructuralMeshtying> structural_meshtying_;
     //@}
 
     //! bool indicating if we have at least one ssi interface meshtying condition
