@@ -43,6 +43,7 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_utils_densematrix_svd.H"
+#include "../linalg/linalg_four_tensor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -1280,7 +1281,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   // Derivative of \sqrt{C} with respect to C: DerviC =  d sqrt(C) / d C
   // LINALG::Matrix<6,6> DerivC(true);// 6x6 Voigt matrix
   // MatrixRootDerivativeSym3x3(C,DerivC);
-  FourTensor TensorDerivC = {{{{0.0}}}};  // initialize 81 4-Tensor values
+  LINALG::FourTensor<3> TensorDerivC(true);  // initialize 81 4-Tensor values
   // Setup4Tensor(TensorDerivC,DerivC);// 3x3x3x3 Tensor
 
   // FDCHECK for d sqrt{C}/ d C
@@ -1289,7 +1290,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   LINALG::Matrix<3, 3> RootCcopy(true);
   LINALG::Matrix<3, 3> InvRootCcopy(true);
 
-  FourTensor RootCInvDerivCRootCInv = {{{{0.0}}}};
+  LINALG::FourTensor<3> RootCInvDerivCRootCInv(true);
   for (int k = 0; k < 3; ++k)
   {
     for (int l = 0; l < 3; ++l)
@@ -1312,8 +1313,8 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
       {
         for (int j = 0; j < 3; ++j)
         {
-          TensorDerivC[i][j][k][l] = RootCcopy(i, j);
-          RootCInvDerivCRootCInv[i][j][k][l] = InvRootCcopy(i, j);
+          TensorDerivC(i, j, k, l) = RootCcopy(i, j);
+          RootCInvDerivCRootCInv(i, j, k, l) = InvRootCcopy(i, j);
         }
       }
       // reset Ccopy
@@ -1343,14 +1344,14 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   invdefgrdtrans.UpdateT(invdefgrd);
 
   // 3x3x3x3 Tensor auxiliary variables
-  FourTensor temptens1 = {{{{0.0}}}};
-  FourTensor temptens3 = {{{{0.0}}}};
-  FourTensor temptens4 = {{{{0.0}}}};
-  FourTensor temptens5 = {{{{0.0}}}};
-  FourTensor temptens7 = {{{{0.0}}}};
-  FourTensor temptens8 = {{{{0.0}}}};
-  FourTensor temptens10 = {{{{0.0}}}};
-  FourTensor temptensgauss = {{{{0.0}}}};
+  LINALG::FourTensor<3> temptens1(true);
+  LINALG::FourTensor<3> temptens3(true);
+  LINALG::FourTensor<3> temptens4(true);
+  LINALG::FourTensor<3> temptens5(true);
+  LINALG::FourTensor<3> temptens7(true);
+  LINALG::FourTensor<3> temptens8(true);
+  LINALG::FourTensor<3> temptens10(true);
+  LINALG::FourTensor<3> temptensgauss(true);
   // 3x3 matrix auxiliary variables
   LINALG::Matrix<3, 3> tempmat1(true);
   LINALG::Matrix<3, 3> tempmat2(true);
@@ -1367,7 +1368,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   // (^T12 in assembly by switching i and j)
   tempmat1.MultiplyNN(invdefgrd, cauchystress);
   tempmat2.MultiplyNN(tempmat1, R);
-  MAT::MultiplyMatrixFourTensor(temptens1, tempmat2, RootCInvDerivCRootCInv, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens1, tempmat2, RootCInvDerivCRootCInv, false);
 
   //  // F^-1 * sigma * R * d sqrt(C)^-1/d C
   //  tempmat1.MultiplyNN(invdefgrd,cauchystress);
@@ -1389,15 +1390,15 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   // F^-T * [R * d sqrt(C)/d C]^T12
   tempmat1.Update(invdefgrdtrans);
   tempmat1.Scale(1. / (theta * dt));
-  MAT::MultiplyMatrixFourTensor(temptens8, R, TensorDerivC, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens8, R, TensorDerivC, false);
   TransposeFourTensor12(temptens10, temptens8);
-  MAT::MultiplyMatrixFourTensor(temptens7, tempmat1, temptens10, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens7, tempmat1, temptens10, false);
 
   // F^dot * [R * d sqrt(C)^-1 dC]^T12
   tempmat1.Update(defgrdrate);
-  MAT::MultiplyMatrixFourTensor(temptens8, R, RootCInvDerivCRootCInv, true);
+  MAT::MultiplyMatrixFourTensor<3>(temptens8, R, RootCInvDerivCRootCInv, true);
   TransposeFourTensor12(temptens10, temptens8);
-  MAT::MultiplyMatrixFourTensor(temptens5, tempmat1, temptens10, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens5, tempmat1, temptens10, false);
 
   for (int i = 0; i < 3; i++)
   {
@@ -1406,8 +1407,8 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
       for (int k = 0; k < 3; k++)
       {
         for (int l = 0; l < 3; l++)  // T12                                         // T12
-          temptens8[i][j][k][l] = temptens7[j][i][k][l] + temptens5[i][j][k][l] +
-                                  temptens5[j][i][k][l] + temptens7[i][j][k][l];
+          temptens8(i, j, k, l) = temptens7(j, i, k, l) + temptens5(i, j, k, l) +
+                                  temptens5(j, i, k, l) + temptens7(i, j, k, l);
       }
     }
   }
@@ -1495,7 +1496,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
               for (int q = 0; q < 3; q++)
               {
                 for (int r = 0; r < 3; r++)
-                  temptensgauss[mm][n][o][p] += temptens8[q][r][o][p] * m(q) * m(r) * factor *
+                  temptensgauss(mm, n, o, p) += temptens8(q, r, o, p) * m(q) * m(r) * factor *
                                                 gausspoints.qwgt[i] * m(mm) * m(n);
               }
             }
@@ -1507,9 +1508,9 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   }    // loop over j
 
   // F^⁻1 * [F^-1 * sigma]^T12
-  MAT::MultiplyMatrixFourTensor(temptens8, invdefgrd, temptensgauss, true);
+  MAT::MultiplyMatrixFourTensor<3>(temptens8, invdefgrd, temptensgauss, true);
   TransposeFourTensor12(temptensgauss, temptens8);
-  MAT::MultiplyMatrixFourTensor(temptens4, invdefgrd, temptensgauss, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens4, invdefgrd, temptensgauss, false);
 
 
   // Put together active constitutive tensor
@@ -1520,8 +1521,8 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
       for (int k = 0; k < 3; k++)
       {
         for (int l = 0; l < 3; l++)  // T12                                           // T12
-          temptens5[i][j][k][l] = temptens1[i][j][k][l] + temptens1[j][i][k][l] +
-                                  temptens3[i][j][k][l] + temptens4[j][i][k][l];
+          temptens5(i, j, k, l) = temptens1(i, j, k, l) + temptens1(j, i, k, l) +
+                                  temptens3(i, j, k, l) + temptens4(j, i, k, l);
       }
     }
   }

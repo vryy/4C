@@ -14,14 +14,21 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseVector.h>
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
+
+
+// forward declarations
+namespace LINALG
+{
+  template <int dim>
+  class FourTensor;
+}
 
 /// MAT: materials
 namespace MAT
 {
-  using FourTensor = std::array<std::array<std::array<std::array<double, 3>, 3>, 3>, 3>;
-
   namespace PAR
   {
     class Material;
@@ -479,9 +486,9 @@ namespace MAT
   template <class T>
   T* CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat);
 
-
   /// Set every tensor value to zero
-  void ClearFourTensor(FourTensor& fourTensor);
+  template <int dim>
+  void ClearFourTensor(LINALG::FourTensor<dim>& fourTensor);
 
   /*!
    * @brief Multiply 4-Tensor*Matrix
@@ -492,8 +499,10 @@ namespace MAT
    * @param[in] matrix                 2-tensor B_m^l
    * @param[in] clearResultTensor      if true: C^ijkl is cleared when method is called
    */
-  void MultiplyFourTensorMatrix(FourTensor& fourTensorResult, const FourTensor& fourTensor,
-      const LINALG::Matrix<3, 3>& matrix, const bool clearResultTensor = true);
+  template <int dim>
+  void MultiplyFourTensorMatrix(LINALG::FourTensor<dim>& fourTensorResult,
+      const LINALG::FourTensor<dim>& fourTensor, const LINALG::Matrix<dim, dim>& matrix,
+      const bool clearResultTensor = true);
 
   /*!
    * @brief Multiply Matrix*4-Tensor
@@ -504,18 +513,23 @@ namespace MAT
    * @param[in] fourTensor             4-tensor A^mjkl
    * @param[in] clearResultTensor      if true: C^ijkl is cleared when method is called
    */
-  void MultiplyMatrixFourTensor(FourTensor& fourTensorResult, const LINALG::Matrix<3, 3>& matrix,
-      const FourTensor& fourTensor, const bool clearResultTensor = true);
+  template <int dim>
+  void MultiplyMatrixFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
+      const LINALG::Matrix<dim, dim>& matrix, const LINALG::FourTensor<dim>& fourTensor,
+      const bool clearResultTensor = true);
 
   /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
   /// via the 2th order deformation gradient (also in matrix notation)
+  template <int dim>
   LINALG::Matrix<6, 6> PullBackFourTensor(
-      const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt);
+      const LINALG::Matrix<dim, dim>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt);
 
   /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
   /// notation) via the 2th order deformation gradient (also in matrix notation)
-  double PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr, const FourTensor& fourTensor,
-      const int i, const int j, const int k, const int l);
+  template <int dim>
+  double PullBackFourTensorijkl(const LINALG::Matrix<dim, dim>& defgr,
+      const LINALG::FourTensor<dim>& fourTensor, const int i, const int j, const int k,
+      const int l);
 
   //
   /*!
@@ -527,7 +541,9 @@ namespace MAT
    * @param[out] fourTensor   4-Tensor that is set up based on matrixVoigt
    * @param[in]  matrixVoigt  4-Tensor in Voigt notation with at least minor symmetries
    */
-  void SetupFourTensor(FourTensor& fourTensor, const LINALG::Matrix<6, 6>& matrixVoigt);
+  template <int dim>
+  void SetupFourTensor(
+      LINALG::FourTensor<dim>& fourTensor, const LINALG::Matrix<6, 6>& matrixVoigt);
 
   /*!
    * @brief Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
@@ -535,13 +551,18 @@ namespace MAT
    * @param[out] matrixVoigt  6x6 Voigt matrix that is set up based on fourTensor
    * @param[in]  fourTensor   4-tensor with minor symmetries
    */
-  void Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& matrixVoigt, const FourTensor& fourTensor);
+  template <int dim>
+  void Setup6x6VoigtMatrix(
+      LINALG::Matrix<6, 6>& matrixVoigt, const LINALG::FourTensor<dim>& fourTensor);
 
   /// Transpose four tensor wrt to basis vectors 1 and 2
-  void TransposeFourTensor12(FourTensor& resultTensor, const FourTensor& inputTensor);
+  template <int dim>
+  void TransposeFourTensor12(
+      LINALG::FourTensor<dim>& resultTensor, const LINALG::FourTensor<dim>& inputTensor);
 
   /// print four tensor
-  void PrintFourTensor(const FourTensor& fourTensor);
+  template <int dim>
+  void PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor);
 
 }  // namespace MAT
 
