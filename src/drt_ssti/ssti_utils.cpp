@@ -591,6 +591,22 @@ std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::Condi
       std::pair<std::string, std::string>("ThermoVolumeNeumann", "ThermoVolumeNeumann"));
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("ThermoInitfield", "ThermoInitfield"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "SSTIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
+
+  return conditions_to_copy;
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::ConditionsToCopy()
+{
+  // call base class
+  std::map<std::string, std::string> conditions_to_copy =
+      STI::ScatraThermoCloneStrategy::ConditionsToCopy();
+
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "Meshtying3DomainIntersection", "Meshtying3DomainIntersection"));
 
   return conditions_to_copy;
 }

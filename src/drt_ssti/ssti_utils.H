@@ -14,6 +14,7 @@
 #include <Teuchos_ParameterList.hpp>
 
 #include "../drt_ssi/ssi_clonestrategy.H"
+#include "../drt_sti/sti_clonestrategy.H"
 
 #include "../drt_adapter/adapter_coupling.H"
 
@@ -210,7 +211,16 @@ namespace SSTI
    protected:
     /// returns condition names to be copied (source and target name)
     std::map<std::string, std::string> ConditionsToCopy() override;
-  };  // class SSTIScatraCloneStrategy
+  };
+
+  /*---------------------------------------------------------------------------------*
+   *---------------------------------------------------------------------------------*/
+  class SSTIScatraThermoCloneStrategy : public STI::ScatraThermoCloneStrategy
+  {
+   protected:
+    /// returns condition names to be copied (source and target name)
+    std::map<std::string, std::string> ConditionsToCopy() override;
+  };
 
   /*---------------------------------------------------------------------------------*
    *---------------------------------------------------------------------------------*/

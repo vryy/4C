@@ -226,7 +226,7 @@ void SSTI::SSTIAlgorithm::CloneDiscretizations(const Epetra_Comm& comm)
   {
     DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraStructureCloneStrategy>(structdis, scatradis);
     scatradis->FillComplete();
-    DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis, thermodis);
+    DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraThermoCloneStrategy>(scatradis, thermodis);
     thermodis->FillComplete();
   }
   else

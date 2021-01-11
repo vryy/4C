@@ -304,7 +304,8 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
 
       for (const auto& condition_3_domain_intersection : conditions_3_domain_intersection)
       {
-        if (slavecondition.first != condition_3_domain_intersection->GetInt("SSISurfMasterID") and
+        if (slavecondition.first !=
+                condition_3_domain_intersection->GetInt("MeshtyingSurfMasterID") and
             condition_3_domain_intersection->GType() == DRT::Condition::Line)
         {
           DRT::UTILS::RemoveNodeGIDsFromVector(
