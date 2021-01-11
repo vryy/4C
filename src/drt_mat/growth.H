@@ -21,8 +21,6 @@ namespace MAT
 {
   class GrowthLaw;
 
-  using FourTensor = std::array<std::array<std::array<std::array<double, 3>, 3>, 3>, 3>;
-
   namespace PAR
   {
     /*----------------------------------------------------------------------*/
@@ -421,19 +419,6 @@ namespace MAT
     /// Function which reads in the given fiber value due to the FIBER1 nomenclature
     void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
         LINALG::Matrix<3, 1>& fiber_vector);
-
-    /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
-    /// via the 2th order deformation gradient (also in matrix notation)
-    static LINALG::Matrix<6, 6> PullBackFourTensor(
-        const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat);
-
-    /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
-    /// notation) via the 2th order deformation gradient (also in matrix notation)
-    static double PullBackFourTensorijkl(const LINALG::Matrix<3, 3>& defgr,
-        const FourTensor& FourTensor, const int i, const int j, const int k, const int l);
-
-    // Setup 4-Tensor from 6x6 Voigt notation
-    static void Setup4Tensor(FourTensor& FourTensor, const LINALG::Matrix<6, 6>& VoigtMatrix);
 
     /*! \brief Evaluate mass change
      *

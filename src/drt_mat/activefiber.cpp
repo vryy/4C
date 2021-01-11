@@ -31,17 +31,19 @@ SIGMAX 3.9E+03 EPSNULL 2.8E-04
 *----------------------------------------------------------------------*/
 
 #include "activefiber.H"
+
+#include "material_service.H"
+#include "matpar_bundle.H"
+
+#include "../drt_fem_general/drt_utils_integration.H"
+
+#include "../drt_io/io_control.H"
+
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_utils_densematrix_svd.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_lib/drt_utils_factory.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_io/io_control.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_so3/so3_defines.H"
+#include "../linalg/linalg_four_tensor.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -57,11 +59,9 @@ MAT::PAR::ActiveFiber::ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata)
       sigmamax_(matdata->GetDouble("SIGMAX")),
       epsilonnull_(matdata->GetDouble("EPSNULL"))
 {
-  if (DRT::INPUT::IntegralValue<int>(
-          DRT::Problem::Instance()->StructuralDynamicParams(), "MATERIALTANGENT"))
-    analyticalmaterialtangent_ = false;
-  else
-    analyticalmaterialtangent_ = true;
+  analyticalmaterialtangent_ =
+      DRT::INPUT::IntegralValue<int>(
+          DRT::Problem::Instance()->StructuralDynamicParams(), "MATERIALTANGENT") == 0;
 }
 
 
@@ -82,7 +82,7 @@ MAT::ActiveFiberType MAT::ActiveFiberType::instance_;
  *----------------------------------------------------------------------*/
 DRT::ParObject* MAT::ActiveFiberType::Create(const std::vector<char>& data)
 {
-  MAT::ActiveFiber* actfiber = new MAT::ActiveFiber();
+  auto* actfiber = new MAT::ActiveFiber();
   actfiber->Unpack(data);
   return actfiber;
 }
@@ -91,7 +91,7 @@ DRT::ParObject* MAT::ActiveFiberType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Constructor                                             rauch  07/14|
  *----------------------------------------------------------------------*/
-MAT::ActiveFiber::ActiveFiber() : params_(NULL) {}
+MAT::ActiveFiber::ActiveFiber() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -117,7 +117,7 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // pack history data
@@ -157,9 +157,6 @@ void MAT::ActiveFiber::Pack(DRT::PackBuffer& data) const
   {
     matpassive_->Pack(data);
   }
-
-  return;
-
 }  // Pack()
 
 
@@ -180,8 +177,9 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
+  {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
       const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -193,6 +191,7 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
     }
+  }
 
   // history data
   int histsize;
@@ -282,8 +281,8 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
   if (dataelastic.size() > 0)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
-    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == NULL) dserror("failed to unpack passive material");
+    auto* matel = dynamic_cast<MAT::So3Material*>(o);
+    if (matel == nullptr) dserror("failed to unpack passive material");
     matpassive_ = Teuchos::rcp(matel);
   }
   else
@@ -291,8 +290,6 @@ void MAT::ActiveFiber::Unpack(const std::vector<char>& data)
 
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-
-  return;
 
 }  // Unpack()
 
@@ -380,7 +377,6 @@ void MAT::ActiveFiber::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   matpassive_->Setup(numgp, linedef);
 
   isinit_ = true;
-  return;
 
 }  // Setup()
 
@@ -457,7 +453,6 @@ void MAT::ActiveFiber::ResetAll(const int numgp)
   matpassive_->ResetAll(numgp);
 
   isinit_ = true;
-  return;
 
 }  // ResetAll()
 
@@ -497,8 +492,6 @@ void MAT::ActiveFiber::Update()
   }
 
   matpassive_->Update();
-
-  return;
 
 }  // Update()
 
@@ -544,7 +537,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatpassive(true);
   LINALG::Matrix<NUM_STRESS_3D, 1> Spassive(true);
 
-  if (cmat != NULL)
+  if (cmat != nullptr)
   {
     // Evaluate passive PK2 stress Spassive and passive elasticity tensor cmatpassive
     matpassive_->Evaluate(defgrd, glstrain, params, &Spassive, &cmatpassive, gp, eleGID);
@@ -739,9 +732,11 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
         else if (exponent > 31.0)
           inc = residual / (1.0 - (sigmamax * deta_dsigma));
         else
+        {
           inc = residual / (1.0 - ((denom * sigmamax) - (1.0 / etanew(i, j) * sigmamax * efunct *
                                                             aa * epsomegaphi(i, j))) *
                                       deta_dsigma * onebydenom * onebydenom);
+        }
 
         // increment stress
         sigmaomegaphinew(i, j) = sigmaomegaphinew(i, j) - inc;
@@ -857,7 +852,7 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   }
 
 #ifndef MATERIALFDCHECK
-  if (cmat != NULL and analyticalmaterialtangent)
+  if (cmat != nullptr and analyticalmaterialtangent)
   {
     // Setup active elasticity tensor cmatactive
     LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);
@@ -888,10 +883,10 @@ void MAT::ActiveFiber::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
  | rotation rate (finite difference scheme)                            rauch  07/14 |
  *----------------------------------------------------------------------------------*/
 // see also: viscoelasthyper.cpp line 781 ff
-void MAT::ActiveFiber::SetupRates(LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3> invdefgrd,
-    Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R,
-    LINALG::Matrix<6, 1>& strainrate, LINALG::Matrix<3, 3>& rotationrate, const int& gp,
-    const double& dt)
+void MAT::ActiveFiber::SetupRates(const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 3>& invdefgrd, Teuchos::ParameterList& params,
+    LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R, LINALG::Matrix<6, 1>& strainrate,
+    LINALG::Matrix<3, 3>& rotationrate, const int& gp, const double& dt)
 {
   // Read history
   LINALG::Matrix<3, 3> defgrdlast = histdefgrdlast_->at(gp);
@@ -974,8 +969,8 @@ void MAT::ActiveFiber::CalcActivationSignal(
  | pull back of spatial stresses                           rauch  07/14 |
  *----------------------------------------------------------------------*/
 void MAT::ActiveFiber::CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,
-    LINALG::Matrix<3, 3>& cauchystress, LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3> invdefgrd,
-    LINALG::Matrix<6, 1> sigma)
+    LINALG::Matrix<3, 3>& cauchystress, const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 3>& invdefgrd, LINALG::Matrix<6, 1> sigma)
 {
   // calculate the Jacobi-determinant
   const double detF = defgrd.Determinant();  // const???
@@ -1079,15 +1074,13 @@ void MAT::ActiveFiber::MatrixRoot3x3(LINALG::Matrix<3, 3>& MatrixInOut)
     MatrixInOut.MultiplyNN(EV, temp);
   }
 
-  return;
-
 }  // MatrixRoot3x3()
 
 /*-------------------------------------------------------------------------------------*
  |  matrix root derivative of a symmetric 3x3 matrix                       rauch  07/14|
  *-------------------------------------------------------------------------------------*/
 void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
-    const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv)
+    const LINALG::Matrix<3, 3>& MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv)
 {
   double Norm = MatrixIn.Norm2();
 
@@ -1240,17 +1233,18 @@ void MAT::ActiveFiber::MatrixRootDerivativeSym3x3(
       dserror("you should not end up here.");
   }
 
-  return;
 }  // MatrixRootDerivativeSym3x3()
 
 /*-------------------------------------------------------------------------------------------*
  |  Computes active elasticity tensor in 6x6-Voigt notation                      rauch  07/14|
  *-------------------------------------------------------------------------------------------*/
 void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
-    LINALG::Matrix<3, 3> rotationrate, LINALG::Matrix<6, 1> strainrate, LINALG::Matrix<3, 3> defgrd,
-    LINALG::Matrix<3, 3> defgrdrate, LINALG::Matrix<3, 3> R, LINALG::Matrix<3, 3> invdefgrd,
-    LINALG::Matrix<numbgp, twice> etanew, LINALG::Matrix<numbgp, twice> sigmaomegaphicurr,
-    LINALG::Matrix<3, 3> cauchystress, Teuchos::ParameterList& params, double theta, double Csignal)
+    const LINALG::Matrix<3, 3>& rotationrate, LINALG::Matrix<6, 1> strainrate,
+    const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 3>& defgrdrate,
+    const LINALG::Matrix<3, 3>& R, const LINALG::Matrix<3, 3>& invdefgrd,
+    LINALG::Matrix<numbgp, twice> etanew, const LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
+    const LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params, double theta,
+    double Csignal)
 {
   // Parameters of constitutive law
   double kforwards = params_->kforwards_;
@@ -1287,7 +1281,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   // Derivative of \sqrt{C} with respect to C: DerviC =  d sqrt(C) / d C
   // LINALG::Matrix<6,6> DerivC(true);// 6x6 Voigt matrix
   // MatrixRootDerivativeSym3x3(C,DerivC);
-  double TensorDerivC[3][3][3][3] = {{{{0.}}}};  // initialize 81 4-Tensor values
+  LINALG::FourTensor<3> TensorDerivC(true);  // initialize 81 4-Tensor values
   // Setup4Tensor(TensorDerivC,DerivC);// 3x3x3x3 Tensor
 
   // FDCHECK for d sqrt{C}/ d C
@@ -1296,7 +1290,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   LINALG::Matrix<3, 3> RootCcopy(true);
   LINALG::Matrix<3, 3> InvRootCcopy(true);
 
-  double RootCInvDerivCRootCInv[3][3][3][3] = {{{{0.}}}};
+  LINALG::FourTensor<3> RootCInvDerivCRootCInv(true);
   for (int k = 0; k < 3; ++k)
   {
     for (int l = 0; l < 3; ++l)
@@ -1319,8 +1313,8 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
       {
         for (int j = 0; j < 3; ++j)
         {
-          TensorDerivC[i][j][k][l] = RootCcopy(i, j);
-          RootCInvDerivCRootCInv[i][j][k][l] = InvRootCcopy(i, j);
+          TensorDerivC(i, j, k, l) = RootCcopy(i, j);
+          RootCInvDerivCRootCInv(i, j, k, l) = InvRootCcopy(i, j);
         }
       }
       // reset Ccopy
@@ -1350,14 +1344,14 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   invdefgrdtrans.UpdateT(invdefgrd);
 
   // 3x3x3x3 Tensor auxiliary variables
-  double temptens1[3][3][3][3] = {{{{0.}}}};
-  double temptens3[3][3][3][3] = {{{{0.}}}};
-  double temptens4[3][3][3][3] = {{{{0.}}}};
-  double temptens5[3][3][3][3] = {{{{0.}}}};
-  double temptens7[3][3][3][3] = {{{{0.}}}};
-  double temptens8[3][3][3][3] = {{{{0.}}}};
-  double temptens10[3][3][3][3] = {{{{0.}}}};
-  double temptensgauss[3][3][3][3] = {{{{0.}}}};
+  LINALG::FourTensor<3> temptens1(true);
+  LINALG::FourTensor<3> temptens3(true);
+  LINALG::FourTensor<3> temptens4(true);
+  LINALG::FourTensor<3> temptens5(true);
+  LINALG::FourTensor<3> temptens7(true);
+  LINALG::FourTensor<3> temptens8(true);
+  LINALG::FourTensor<3> temptens10(true);
+  LINALG::FourTensor<3> temptensgauss(true);
   // 3x3 matrix auxiliary variables
   LINALG::Matrix<3, 3> tempmat1(true);
   LINALG::Matrix<3, 3> tempmat2(true);
@@ -1374,7 +1368,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   // (^T12 in assembly by switching i and j)
   tempmat1.MultiplyNN(invdefgrd, cauchystress);
   tempmat2.MultiplyNN(tempmat1, R);
-  MultMatrixFourTensor(temptens1, tempmat2, RootCInvDerivCRootCInv, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens1, tempmat2, RootCInvDerivCRootCInv, false);
 
   //  // F^-1 * sigma * R * d sqrt(C)^-1/d C
   //  tempmat1.MultiplyNN(invdefgrd,cauchystress);
@@ -1386,7 +1380,7 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   tempmat1.MultiplyNN(invdefgrd, cauchystress);
   tempmat2.MultiplyNT(tempmat1, invdefgrd);
   MAT::ElastSymTensorMultiply(tempvoigt1, 0.5, tempmat2, Cinv, 0.0);
-  Setup4Tensor(temptens3, tempvoigt1);
+  MAT::SetupFourTensor(temptens3, tempvoigt1);
 
   /////////////////////////////////////////////////////////////
   // velocity gradient with respect to right cauchy-green
@@ -1396,22 +1390,28 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
   // F^-T * [R * d sqrt(C)/d C]^T12
   tempmat1.Update(invdefgrdtrans);
   tempmat1.Scale(1. / (theta * dt));
-  MultMatrixFourTensor(temptens8, R, TensorDerivC, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens8, R, TensorDerivC, false);
   TransposeFourTensor12(temptens10, temptens8);
-  MultMatrixFourTensor(temptens7, tempmat1, temptens10, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens7, tempmat1, temptens10, false);
 
   // F^dot * [R * d sqrt(C)^-1 dC]^T12
   tempmat1.Update(defgrdrate);
-  MultMatrixFourTensor(temptens8, R, RootCInvDerivCRootCInv, true);
+  MAT::MultiplyMatrixFourTensor<3>(temptens8, R, RootCInvDerivCRootCInv, true);
   TransposeFourTensor12(temptens10, temptens8);
-  MultMatrixFourTensor(temptens5, tempmat1, temptens10, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens5, tempmat1, temptens10, false);
 
   for (int i = 0; i < 3; i++)
+  {
     for (int j = 0; j < 3; j++)
+    {
       for (int k = 0; k < 3; k++)
+      {
         for (int l = 0; l < 3; l++)  // T12                                         // T12
-          temptens8[i][j][k][l] = temptens7[j][i][k][l] + temptens5[i][j][k][l] +
-                                  temptens5[j][i][k][l] + temptens7[i][j][k][l];
+          temptens8(i, j, k, l) = temptens7(j, i, k, l) + temptens5(i, j, k, l) +
+                                  temptens5(j, i, k, l) + temptens7(i, j, k, l);
+      }
+    }
+  }
 
 
   double onebyeps0 = 1. / epsilonnull;
@@ -1486,266 +1486,51 @@ void MAT::ActiveFiber::SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive,
 
       // Gauss quadrature
       for (int mm = 0; mm < 3; mm++)
+      {
         for (int n = 0; n < 3; n++)
+        {
           for (int o = 0; o < 3; o++)
+          {
             for (int p = 0; p < 3; p++)
+            {
               for (int q = 0; q < 3; q++)
+              {
                 for (int r = 0; r < 3; r++)
-                  temptensgauss[mm][n][o][p] += temptens8[q][r][o][p] * m(q) * m(r) * factor *
+                  temptensgauss(mm, n, o, p) += temptens8(q, r, o, p) * m(q) * m(r) * factor *
                                                 gausspoints.qwgt[i] * m(mm) * m(n);
+              }
+            }
+          }
+        }
+      }
 
     }  // loop over i
   }    // loop over j
 
   // F^⁻1 * [F^-1 * sigma]^T12
-  MultMatrixFourTensor(temptens8, invdefgrd, temptensgauss, true);
+  MAT::MultiplyMatrixFourTensor<3>(temptens8, invdefgrd, temptensgauss, true);
   TransposeFourTensor12(temptensgauss, temptens8);
-  MultMatrixFourTensor(temptens4, invdefgrd, temptensgauss, false);
+  MAT::MultiplyMatrixFourTensor<3>(temptens4, invdefgrd, temptensgauss, false);
 
 
   // Put together active constitutive tensor
   for (int i = 0; i < 3; i++)
+  {
     for (int j = 0; j < 3; j++)
+    {
       for (int k = 0; k < 3; k++)
+      {
         for (int l = 0; l < 3; l++)  // T12                                           // T12
-          temptens5[i][j][k][l] = temptens1[i][j][k][l] + temptens1[j][i][k][l] +
-                                  temptens3[i][j][k][l] + temptens4[j][i][k][l];
+          temptens5(i, j, k, l) = temptens1(i, j, k, l) + temptens1(j, i, k, l) +
+                                  temptens3(i, j, k, l) + temptens4(j, i, k, l);
+      }
+    }
+  }
 
-  Setup6x6VoigtMatrix(cmatactive, temptens5);
+  MAT::Setup6x6VoigtMatrix(cmatactive, temptens5);
   cmatactive.Scale(2.0 * detF);
 
 }  // SetupCmatActive()
-
-/*-------------------------------------------------------------------------------------*
- |  Setup 4-Tensor from 6x6 Voigt notation                                 rauch  07/14|
- *-------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::Setup4Tensor(double FourTensor[3][3][3][3], LINALG::Matrix<6, 6> VoigtMatrix)
-{
-  Clear4Tensor(FourTensor);
-  // Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor with at
-  // least minor symmetries)
-  FourTensor[0][0][0][0] = VoigtMatrix(0, 0);  // C1111
-  FourTensor[0][0][1][1] = VoigtMatrix(0, 1);  // C1122
-  FourTensor[0][0][2][2] = VoigtMatrix(0, 2);  // C1133
-  FourTensor[0][0][0][1] = VoigtMatrix(0, 3);  // C1112
-  FourTensor[0][0][1][0] = VoigtMatrix(0, 3);  // C1121
-  FourTensor[0][0][1][2] = VoigtMatrix(0, 4);  // C1123
-  FourTensor[0][0][2][1] = VoigtMatrix(0, 4);  // C1132
-  FourTensor[0][0][0][2] = VoigtMatrix(0, 5);  // C1113
-  FourTensor[0][0][2][0] = VoigtMatrix(0, 5);  // C1131
-
-  FourTensor[1][1][0][0] = VoigtMatrix(1, 0);  // C2211
-  FourTensor[1][1][1][1] = VoigtMatrix(1, 1);  // C2222
-  FourTensor[1][1][2][2] = VoigtMatrix(1, 2);  // C2233
-  FourTensor[1][1][0][1] = VoigtMatrix(1, 3);  // C2212
-  FourTensor[1][1][1][0] = VoigtMatrix(1, 3);  // C2221
-  FourTensor[1][1][1][2] = VoigtMatrix(1, 4);  // C2223
-  FourTensor[1][1][2][1] = VoigtMatrix(1, 4);  // C2232
-  FourTensor[1][1][0][2] = VoigtMatrix(1, 5);  // C2213
-  FourTensor[1][1][2][0] = VoigtMatrix(1, 5);  // C2231
-
-  FourTensor[2][2][0][0] = VoigtMatrix(2, 0);  // C3311
-  FourTensor[2][2][1][1] = VoigtMatrix(2, 1);  // C3322
-  FourTensor[2][2][2][2] = VoigtMatrix(2, 2);  // C3333
-  FourTensor[2][2][0][1] = VoigtMatrix(2, 3);  // C3312
-  FourTensor[2][2][1][0] = VoigtMatrix(2, 3);  // C3321
-  FourTensor[2][2][1][2] = VoigtMatrix(2, 4);  // C3323
-  FourTensor[2][2][2][1] = VoigtMatrix(2, 4);  // C3332
-  FourTensor[2][2][0][2] = VoigtMatrix(2, 5);  // C3313
-  FourTensor[2][2][2][0] = VoigtMatrix(2, 5);  // C3331
-
-  FourTensor[0][1][0][0] = VoigtMatrix(3, 0);
-  FourTensor[1][0][0][0] = VoigtMatrix(3, 0);  // C1211 = C2111
-  FourTensor[0][1][1][1] = VoigtMatrix(3, 1);
-  FourTensor[1][0][1][1] = VoigtMatrix(3, 1);  // C1222 = C2122
-  FourTensor[0][1][2][2] = VoigtMatrix(3, 2);
-  FourTensor[1][0][2][2] = VoigtMatrix(3, 2);  // C1233 = C2133
-  FourTensor[0][1][0][1] = VoigtMatrix(3, 3);
-  FourTensor[1][0][0][1] = VoigtMatrix(3, 3);  // C1212 = C2112
-  FourTensor[0][1][1][0] = VoigtMatrix(3, 3);
-  FourTensor[1][0][1][0] = VoigtMatrix(3, 3);  // C1221 = C2121
-  FourTensor[0][1][1][2] = VoigtMatrix(3, 4);
-  FourTensor[1][0][1][2] = VoigtMatrix(3, 4);  // C1223 = C2123
-  FourTensor[0][1][2][1] = VoigtMatrix(3, 4);
-  FourTensor[1][0][2][1] = VoigtMatrix(3, 4);  // C1232 = C2132
-  FourTensor[0][1][0][2] = VoigtMatrix(3, 5);
-  FourTensor[1][0][0][2] = VoigtMatrix(3, 5);  // C1213 = C2113
-  FourTensor[0][1][2][0] = VoigtMatrix(3, 5);
-  FourTensor[1][0][2][0] = VoigtMatrix(3, 5);  // C1231 = C2131
-
-  FourTensor[1][2][0][0] = VoigtMatrix(4, 0);
-  FourTensor[2][1][0][0] = VoigtMatrix(4, 0);  // C2311 = C3211
-  FourTensor[1][2][1][1] = VoigtMatrix(4, 1);
-  FourTensor[2][1][1][1] = VoigtMatrix(4, 1);  // C2322 = C3222
-  FourTensor[1][2][2][2] = VoigtMatrix(4, 2);
-  FourTensor[2][1][2][2] = VoigtMatrix(4, 2);  // C2333 = C3233
-  FourTensor[1][2][0][1] = VoigtMatrix(4, 3);
-  FourTensor[2][1][0][1] = VoigtMatrix(4, 3);  // C2312 = C3212
-  FourTensor[1][2][1][0] = VoigtMatrix(4, 3);
-  FourTensor[2][1][1][0] = VoigtMatrix(4, 3);  // C2321 = C3221
-  FourTensor[1][2][1][2] = VoigtMatrix(4, 4);
-  FourTensor[2][1][1][2] = VoigtMatrix(4, 4);  // C2323 = C3223
-  FourTensor[1][2][2][1] = VoigtMatrix(4, 4);
-  FourTensor[2][1][2][1] = VoigtMatrix(4, 4);  // C2332 = C3232
-  FourTensor[1][2][0][2] = VoigtMatrix(4, 5);
-  FourTensor[2][1][0][2] = VoigtMatrix(4, 5);  // C2313 = C3213
-  FourTensor[1][2][2][0] = VoigtMatrix(4, 5);
-  FourTensor[2][1][2][0] = VoigtMatrix(4, 5);  // C2331 = C3231
-
-  FourTensor[0][2][0][0] = VoigtMatrix(5, 0);
-  FourTensor[2][0][0][0] = VoigtMatrix(5, 0);  // C1311 = C3111
-  FourTensor[0][2][1][1] = VoigtMatrix(5, 1);
-  FourTensor[2][0][1][1] = VoigtMatrix(5, 1);  // C1322 = C3122
-  FourTensor[0][2][2][2] = VoigtMatrix(5, 2);
-  FourTensor[2][0][2][2] = VoigtMatrix(5, 2);  // C1333 = C3133
-  FourTensor[0][2][0][1] = VoigtMatrix(5, 3);
-  FourTensor[2][0][0][1] = VoigtMatrix(5, 3);  // C1312 = C3112
-  FourTensor[0][2][1][0] = VoigtMatrix(5, 3);
-  FourTensor[2][0][1][0] = VoigtMatrix(5, 3);  // C1321 = C3121
-  FourTensor[0][2][1][2] = VoigtMatrix(5, 4);
-  FourTensor[2][0][1][2] = VoigtMatrix(5, 4);  // C1323 = C3123
-  FourTensor[0][2][2][1] = VoigtMatrix(5, 4);
-  FourTensor[2][0][2][1] = VoigtMatrix(5, 4);  // C1332 = C3132
-  FourTensor[0][2][0][2] = VoigtMatrix(5, 5);
-  FourTensor[2][0][0][2] = VoigtMatrix(5, 5);  // C1313 = C3113
-  FourTensor[0][2][2][0] = VoigtMatrix(5, 5);
-  FourTensor[2][0][2][0] = VoigtMatrix(5, 5);  // C1331 = C3131
-
-}  // Setup4Tensor()
-
-
-/*------------------------------------------------------------------------------------------*
- |  Setup 6x6 matrix in Voigt notation from 4-Tensor                            rauch  07/14|
- *------------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::Setup6x6VoigtMatrix(
-    LINALG::Matrix<6, 6>& VoigtMatrix, double FourTensor[3][3][3][3])
-{
-  ///*  [      C1111                 C1122                C1133                0.5*(C1112+C1121)
-  /// 0.5*(C1123+C1132)                0.5*(C1113+C1131)      ]
-  //    [      C2211                 C2222                C2233                0.5*(C2212+C2221)
-  //    0.5*(C2223+C2232)                0.5*(C2213+C2231)      ] [      C3311                 C3322
-  //    C3333                0.5*(C3312+C3321)               0.5*(C3323+C3332) 0.5*(C3313+C3331) ]
-  //    [0.5*(C1211+C2111)    0.5*(C1222+C2122)    0.5*(C1233+C2133) 0.5*(C1212+C2112+C1221+C2121)
-  //    0.5*(C1223+C2123+C1232+C2132)    0.5*(C1213+C2113+C1231+C2131)] [0.5*(C2311+C3211)
-  //    0.5*(C2322+C3222)    0.5*(C2333+C3233)    0.5*(C2312+C3212+C2321+C3221)
-  //    0.5*(C2323+C3223+C2332+C3232)    0.5*(C2313+C3213+C2331+C3231)] [0.5*(C1322+C3122)
-  //    0.5*(C1322+C3122)    0.5*(C1333+C3133)    0.5*(C1312+C3112+C1321+C3121)
-  //    0.5*(C1323+C3123+C1332+C3132)    0.5*(C1313+C3113+C1331+C3131)] */
-
-  // Setup 4-Tensor from 6x6 Voigt matrix
-  VoigtMatrix(0, 0) = FourTensor[0][0][0][0];                                   // C1111
-  VoigtMatrix(0, 1) = FourTensor[0][0][1][1];                                   // C1122
-  VoigtMatrix(0, 2) = FourTensor[0][0][2][2];                                   // C1133
-  VoigtMatrix(0, 3) = 0.5 * (FourTensor[0][0][0][1] + FourTensor[0][0][1][0]);  // 0.5*(C1112+C1121)
-  VoigtMatrix(0, 4) = 0.5 * (FourTensor[0][0][1][2] + FourTensor[0][0][2][1]);  // 0.5*(C1123+C1132)
-  VoigtMatrix(0, 5) = 0.5 * (FourTensor[0][0][0][2] + FourTensor[0][0][2][0]);  // 0.5*(C1113+C1131)
-
-  VoigtMatrix(1, 0) = FourTensor[1][1][0][0];                                   // C2211
-  VoigtMatrix(1, 1) = FourTensor[1][1][1][1];                                   // C2222
-  VoigtMatrix(1, 2) = FourTensor[1][1][2][2];                                   // C2233
-  VoigtMatrix(1, 3) = 0.5 * (FourTensor[1][1][0][1] + FourTensor[1][1][1][0]);  // 0.5*(C2212+C2221)
-  VoigtMatrix(1, 4) = 0.5 * (FourTensor[1][1][1][2] + FourTensor[1][1][2][1]);  // 0.5*(C2223+C2232)
-  VoigtMatrix(1, 5) = 0.5 * (FourTensor[1][1][0][2] + FourTensor[1][1][2][0]);  // 0.5*(C2213+C2231)
-
-  VoigtMatrix(2, 0) = FourTensor[2][2][0][0];                                   // C3311
-  VoigtMatrix(2, 1) = FourTensor[2][2][1][1];                                   // C3322
-  VoigtMatrix(2, 2) = FourTensor[2][2][2][2];                                   // C3333
-  VoigtMatrix(2, 3) = 0.5 * (FourTensor[2][2][0][1] + FourTensor[2][2][1][0]);  // 0.5*(C3312+C3321)
-  VoigtMatrix(2, 4) = 0.5 * (FourTensor[2][2][1][2] + FourTensor[2][2][2][1]);  // 0.5*(C3323+C3332)
-  VoigtMatrix(2, 5) = 0.5 * (FourTensor[2][2][0][2] + FourTensor[2][2][2][0]);  // 0.5*(C3313+C3331)
-
-  VoigtMatrix(3, 0) = 0.5 * (FourTensor[0][1][0][0] + FourTensor[1][0][0][0]);  // 0.5*(C1211+C2111)
-  VoigtMatrix(3, 1) = 0.5 * (FourTensor[0][1][1][1] + FourTensor[1][0][1][1]);  // 0.5*(C1222+C2122)
-  VoigtMatrix(3, 2) = 0.5 * (FourTensor[0][1][2][2] + FourTensor[1][0][2][2]);  // 0.5*(C1233+C2133)
-  VoigtMatrix(3, 3) =
-      0.25 * (FourTensor[0][1][0][1] + FourTensor[1][0][0][1] + FourTensor[0][1][1][0] +
-                 FourTensor[1][0][1][0]);  // 0.5*(C1212+C2112+C1221+C2121)
-  VoigtMatrix(3, 4) =
-      0.25 * (FourTensor[0][1][1][2] + FourTensor[1][0][1][2] + FourTensor[0][1][2][1] +
-                 FourTensor[1][0][2][1]);  // 0.5*(C1223+C2123+C1232+C2132)
-  VoigtMatrix(3, 5) =
-      0.25 * (FourTensor[0][1][0][2] + FourTensor[1][0][0][2] + FourTensor[0][1][2][0] +
-                 FourTensor[1][0][2][0]);  // 0.5*(C1213+C2113+C1231+C2131)
-
-  VoigtMatrix(4, 0) = 0.5 * (FourTensor[1][2][0][0] + FourTensor[2][1][0][0]);  // 0.5*(C2311+C3211)
-  VoigtMatrix(4, 1) = 0.5 * (FourTensor[1][2][1][1] + FourTensor[2][1][1][1]);  // 0.5*(C2322+C3222)
-  VoigtMatrix(4, 2) = 0.5 * (FourTensor[1][2][2][2] + FourTensor[2][1][2][2]);  // 0.5*(C2333+C3233)
-  VoigtMatrix(4, 3) =
-      0.25 * (FourTensor[1][2][0][1] + FourTensor[2][1][0][1] + FourTensor[1][2][1][0] +
-                 FourTensor[2][1][1][0]);  // 0.5*(C2312+C3212+C2321+C3221)
-  VoigtMatrix(4, 4) =
-      0.25 * (FourTensor[1][2][1][2] + FourTensor[2][1][1][2] + FourTensor[1][2][2][1] +
-                 FourTensor[2][1][2][1]);  // 0.5*(C2323+C3223+C2332+C3232)
-  VoigtMatrix(4, 5) =
-      0.25 * (FourTensor[1][2][0][2] + FourTensor[2][1][0][2] + FourTensor[1][2][2][0] +
-                 FourTensor[2][1][2][0]);  // 0.5*(C2313+C3213+C2331+C3231)
-
-  VoigtMatrix(5, 0) = 0.5 * (FourTensor[0][2][0][0] + FourTensor[2][0][0][0]);  // 0.5*(C1311+C3111)
-  VoigtMatrix(5, 1) = 0.5 * (FourTensor[0][2][1][1] + FourTensor[2][0][1][1]);  // 0.5*(C1322+C3122)
-  VoigtMatrix(5, 2) = 0.5 * (FourTensor[0][2][2][2] + FourTensor[2][0][2][2]);  // 0.5*(C1333+C3133)
-  VoigtMatrix(5, 3) =
-      0.25 * (FourTensor[0][2][0][1] + FourTensor[2][0][0][1] + FourTensor[0][2][1][0] +
-                 FourTensor[2][0][1][0]);  // 0.5*(C1312+C3112+C1321+C3121)
-  VoigtMatrix(5, 4) =
-      0.25 * (FourTensor[0][2][1][2] + FourTensor[2][0][1][2] + FourTensor[0][2][2][1] +
-                 FourTensor[2][0][2][1]);  // 0.5*(C1323+C3123+C1332+C3132)
-  VoigtMatrix(5, 5) =
-      0.25 * (FourTensor[0][2][0][2] + FourTensor[2][0][0][2] + FourTensor[0][2][2][0] +
-                 FourTensor[2][0][2][0]);  // 0.5*(C1313+C3113+C1331+C3131)
-
-}  // Setup6x6VoigtMatrix()
-
-/*------------------------------------------------------------------------------------*
- |  Multiply: 4-Tensor(3x3x3x3) * Matrix(3x3)                             rauch  07/14|
- *------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::MultFourTensorMatrix(double FourTensorResult[3][3][3][3],
-    double FourTensor[3][3][3][3],  // A^ijkm
-    LINALG::Matrix<3, 3> Matrix,    // B_m^l
-    bool clearresulttensor)
-{
-  if (clearresulttensor) Clear4Tensor(FourTensorResult);
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      for (int k = 0; k < 3; k++)
-        for (int l = 0; l < 3; l++)
-          for (int m = 0; m < 3; m++)
-            FourTensorResult[i][j][k][l] +=
-                FourTensor[i][j][k][m] * Matrix(m, l);  // C^ijkl = A^ijkm * B_m^l
-
-}  // MultFourTensorMatrix()
-
-/*------------------------------------------------------------------------------------*
- |  Multiply: Matrix(3x3) * 4-Tensor(3x3x3x3)                             rauch  07/14|
- *------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::MultMatrixFourTensor(
-    double FourTensorResult[3][3][3][3], LINALG::Matrix<3, 3> Matrix,  // B^i_m
-    double FourTensor[3][3][3][3],                                     // A^mjkl
-    bool clearresulttensor
-
-)
-{
-  if (clearresulttensor) Clear4Tensor(FourTensorResult);
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      for (int k = 0; k < 3; k++)
-        for (int l = 0; l < 3; l++)
-          for (int m = 0; m < 3; m++)
-            FourTensorResult[i][j][k][l] +=
-                Matrix(i, m) * FourTensor[m][j][k][l];  // C^ijkl = B^i_m * A^mjkl
-
-}  // MultMatrixFourTensor()
-
-/*------------------------------------------------------------------------------------*
- |  Set every value of 4-Tensor(3x3x3x3) to zero                          rauch  07/14|
- *------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::Clear4Tensor(double FourTensor[3][3][3][3])
-{
-  for (int i = 0; i < 3; i++)
-    for (int j = 0; j < 3; j++)
-      for (int k = 0; k < 3; k++)
-        for (int l = 0; l < 3; l++) FourTensor[i][j][k][l] = 0.0;
-
-}  // Clear4Tensor()
 
 /*----------------------------------------------------------------------*
  |  Names of gp data to be visualized                       rauch  07/14|
@@ -1869,34 +1654,4 @@ bool MAT::ActiveFiber::VisData(
     return matpassive_->VisData(name, data, numgp, eleID);
   }
   return true;
-}
-
-/*------------------------------------------------------------------------------------------*
- |  Transpose Four Tensor wrt base vector                                       rauch  07/14|
- *------------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::TransposeFourTensor12(
-    double ResultTensor[3][3][3][3], double FourTensor[3][3][3][3])
-{
-  for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 3; ++j)
-      for (int k = 0; k < 3; ++k)
-        for (int l = 0; l < 3; ++l)
-        {
-          ResultTensor[i][j][k][l] = FourTensor[j][i][k][l];
-        }
-  return;
-}
-
-/*------------------------------------------------------------------------------------------*
- |  Print Four Tensor                                                           rauch  07/14|
- *------------------------------------------------------------------------------------------*/
-void MAT::ActiveFiber::PrintFourTensor(double FourTensor[3][3][3][3])
-{
-  for (int i = 0; i < 3; ++i)
-    for (int j = 0; j < 3; ++j)
-      for (int k = 0; k < 3; ++k)
-        for (int l = 0; l < 3; ++l)
-          std::cout << "ELEMENT " << i << j << k << l << " : " << FourTensor[i][j][k][l]
-                    << std::endl;
-  return;
 }

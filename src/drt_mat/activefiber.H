@@ -50,7 +50,7 @@ namespace MAT
       ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ActiveFiber() { ; }
+      ~ActiveFiber() override = default;
 
       /// @name material parameters
       //@{
@@ -75,7 +75,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class ActiveFiber
 
@@ -84,11 +84,11 @@ namespace MAT
   class ActiveFiberType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ActiveFiberType"; }
+    std::string Name() const override { return "ActiveFiberType"; }
 
     static ActiveFiberType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ActiveFiberType instance_;
@@ -113,7 +113,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ActiveFiberType::Instance().UniqueParObjectId();
     }
@@ -129,7 +129,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -144,61 +144,61 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_activefiber; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_activefiber; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+      if (kinem != INPAR::STR::kinem_nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new ActiveFiber(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new ActiveFiber(*this)); }
 
     //! check if history variables are already initialized
     bool Initialized() const { return (isinit_ and (histdefgrdcurr_ != Teuchos::null)); }
 
     /// Setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse
     /// analysis)
-    virtual void ResetAll(int numgp);
+    void ResetAll(int numgp) override;
 
     /// Update
-    virtual void Update();
+    void Update() override;
 
     /// Reset time step
-    virtual void ResetStep();
+    void ResetStep() override;
 
     /// Evaluate material
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<6, 1>* glstrain,                          ///< green lagrange strain
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress,  ///< 2nd PK-stress
         LINALG::Matrix<6, 6>* cmat,  ///< material stiffness matrix
         int gp,                      ///< Gauss point
-        const int eleGID);
+        const int eleGID) override;
 
     /// Return density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// Return elastic material
     // Teuchos::RCP<MAT::Material> Matpassive() const { return matpassive_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Return parameter of this material
     MAT::PAR::ActiveFiber* GetMaterialParams() { return params_; };
@@ -240,7 +240,7 @@ namespace MAT
 
 
     /// Setup defgrd rate, rotation tensor, strain rate and rotation rate
-    void SetupRates(LINALG::Matrix<3, 3> defgrd, LINALG::Matrix<3, 3> invdefgrd,
+    void SetupRates(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 3>& invdefgrd,
         Teuchos::ParameterList& params, LINALG::Matrix<3, 3>& defgrdrate, LINALG::Matrix<3, 3>& R,
         LINALG::Matrix<6, 1>& strainrate, LINALG::Matrix<3, 3>& rotationrate, const int& gp,
         const double& dt);
@@ -251,41 +251,11 @@ namespace MAT
         double* Csignalold  ///< activation signal at last timestep
     );
 
-    /// Evaluate fiber formation law
-    void EvaluateFormationLaw(Teuchos::ParameterList& params,
-        double* etacurr,  ///< fiber activation level in (omega,phi) direction of iteration step i+1
-        double etalast,  ///< fiber activation level in (omega,phi) direction of old time step (last
-                         ///< converged step)
-        double Csignal,  ///< value of activation signal of new time step
-        double Csignalold,  ///< value of activation signal of old time step (last converged step)
-        double sigmaomegaphicurr,  ///< stress in (omega,phi) direction of iteration step i (i.e.
-                                   ///< from last iteration step)
-        double sigmaomegaphilast   ///< stress in (omega,phi) direction of old time step (last
-                                   ///< converged state)
-    );
-
-    /// Evaluate Hill stress law
-    void EvaluateHillStressLaw(
-        double* sigmaomegaphinew,  ///< value of stress in (omega,phi) direction of iteration step
-                                   ///< i+1 (i.e. newest iteration value)
-        double etacurr,  ///< fiber activation level of (omega,phi) direction of iteration step i+1
-        double epsomegaphi  ///< strain rate in (omega,phi) direction of iteration step i (i.e. from
-                            ///< last iteration step)
-    );
-
-    /// Numerical volume averaging of active stress by considering a finite number of stress fibers
-    void NumCalcInteg(
-        double sigmaomegaphinew,  ///< value of stress in (omega,phi) direction of iteration step
-                                  ///< i+1 (i.e. newest iteration value)
-        LINALG::Matrix<6, 1>&
-            sigma  ///< sigma stress in cartesian coordinates in iteration step i+1
-    );
-
     /// Convert spatial stress to material stress
     void CauchytoPK2(LINALG::Matrix<6, 1>& Sactive,  ///< active material stress
         LINALG::Matrix<3, 3>& cauchystress,          ///< cauchy stress in matrix notation
-        LINALG::Matrix<3, 3> defgrd,                 ///< deformation gradient
-        LINALG::Matrix<3, 3> invdefgrd,              ///< inverse deformation gradient
+        const LINALG::Matrix<3, 3>& defgrd,          ///< deformation gradient
+        const LINALG::Matrix<3, 3>& invdefgrd,       ///< inverse deformation gradient
         LINALG::Matrix<6, 1> sigma                   ///< active spatial stress
     );
 
@@ -293,37 +263,13 @@ namespace MAT
     void GLtoEA(LINALG::Matrix<6, 1> glstrain, LINALG::Matrix<3, 3> invdefgrd,
         LINALG::Matrix<3, 3>& eastrain);
 
-
-    /// Setup 4-Tensor from 6x6 Voigt notation
-    void Setup4Tensor(double FourTensor[3][3][3][3], LINALG::Matrix<6, 6> VoigtMatrix);
-
-    /// Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
-    void Setup6x6VoigtMatrix(LINALG::Matrix<6, 6>& VoigtMatrix, double FourTensor[3][3][3][3]);
-
-    /// Multiply 4-Tensor*Matrix
-    void MultFourTensorMatrix(double FourTensorResult[3][3][3][3], double FourTensor[3][3][3][3],
-        LINALG::Matrix<3, 3> Matrix, bool clearresulttensor = true);
-
-    /// Multiply Matrix*4-Tensor
-    void MultMatrixFourTensor(double FourTensorResult[3][3][3][3], LINALG::Matrix<3, 3> Matrix,
-        double FourTensor[3][3][3][3], bool clearresulttensor = true);
-
-    /// Set every tensor value to zero
-    void Clear4Tensor(double FourTensor[3][3][3][3]);
-
-    /// Transformation of strain rate tensor in (omega,phi) direction
-    void TransformStrainRate(
-        LINALG::Matrix<6, 1> strainrate,  ///< strain rate tensor epsilonpunkt_ij at every point in
-                                          ///< cartesian coordinates
-        double* epsomegaphi               ///< strain of fibers in (omega,phi) direction
-    );
-
     /// computes elasticity tensor for the active stress part in matrix notion for 3d
-    void SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive, LINALG::Matrix<3, 3> rotationrate,
-        LINALG::Matrix<6, 1> strainrate, LINALG::Matrix<3, 3> defgrd,
-        LINALG::Matrix<3, 3> defgrdrate, LINALG::Matrix<3, 3> R, LINALG::Matrix<3, 3> invdefgrd,
-        LINALG::Matrix<numbgp, twice> etanew, LINALG::Matrix<numbgp, twice> sigmaomegaphicurr,
-        LINALG::Matrix<3, 3> cauchystress, Teuchos::ParameterList& params, double theta,
+    void SetupCmatActive(LINALG::Matrix<6, 6>& cmatactive, const LINALG::Matrix<3, 3>& rotationrate,
+        LINALG::Matrix<6, 1> strainrate, const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 3>& defgrdrate, const LINALG::Matrix<3, 3>& R,
+        const LINALG::Matrix<3, 3>& invdefgrd, LINALG::Matrix<numbgp, twice> etanew,
+        const LINALG::Matrix<numbgp, twice>& sigmaomegaphicurr,
+        const LINALG::Matrix<3, 3>& cauchystress, Teuchos::ParameterList& params, double theta,
         double Csignal);
 
     /// Calculate root of a 3x3 matrix (symmetric or non-symmetric)
@@ -331,13 +277,7 @@ namespace MAT
 
     /// Calculate derivative of the root of a symmetric 3x3 matrix
     void MatrixRootDerivativeSym3x3(
-        const LINALG::Matrix<3, 3> MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv);
-
-    /// Transpose four tensor wrt to basis vectors 1 and 2
-    void TransposeFourTensor12(double ResultTensor[3][3][3][3], double FourTensor[3][3][3][3]);
-
-    /// print four tensor
-    void PrintFourTensor(double FourTensor[3][3][3][3]);
+        const LINALG::Matrix<3, 3>& MatrixIn, LINALG::Matrix<6, 6>& MatrixRootDeriv);
 
   };  // class ActiveFiber
 
