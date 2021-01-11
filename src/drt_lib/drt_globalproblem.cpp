@@ -399,35 +399,25 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
     // adapt path of XML file if necessary
     Teuchos::ParameterList& sublist = list->sublist(ss.str().substr(2));
+    std::vector<std::string> listOfFileNameParameters;
+    listOfFileNameParameters.push_back("AMGNXN_XML_FILE");
+    listOfFileNameParameters.push_back("STRATIMIKOS_XMLFILE");
 
-    std::string* stratimikos_xmlfile = sublist.getPtr<std::string>("STRATIMIKOS_XMLFILE");
-    if (stratimikos_xmlfile != NULL and *stratimikos_xmlfile != "none")
+    for (auto& filenameParameter : listOfFileNameParameters)
     {
-      // make path relative to input file path if it is not an absolute path
-      if ((*stratimikos_xmlfile)[0] != '/')
+      std::string* xml_filename = sublist.getPtr<std::string>(filenameParameter);
+      if (xml_filename != nullptr and *xml_filename != "none")
       {
-        std::string filename = reader.MyInputfileName();
-        std::string::size_type pos = filename.rfind('/');
-        if (pos != std::string::npos)
+        // make path relative to input file path if it is not an absolute path
+        if ((*xml_filename)[0] != '/')
         {
-          std::string tmp = filename.substr(0, pos + 1);
-          stratimikos_xmlfile->insert(stratimikos_xmlfile->begin(), tmp.begin(), tmp.end());
-        }
-      }
-    }
-
-    std::string* amgnxn_xmlfile = sublist.getPtr<std::string>("AMGNXN_XML_FILE");
-    if (amgnxn_xmlfile != NULL and *amgnxn_xmlfile != "none")
-    {
-      // make path relative to input file path if it is not an absolute path
-      if ((*amgnxn_xmlfile)[0] != '/')
-      {
-        std::string filename = reader.MyInputfileName();
-        std::string::size_type pos = filename.rfind('/');
-        if (pos != std::string::npos)
-        {
-          std::string tmp = filename.substr(0, pos + 1);
-          amgnxn_xmlfile->insert(amgnxn_xmlfile->begin(), tmp.begin(), tmp.end());
+          std::string filename = reader.MyInputfileName();
+          std::string::size_type pos = filename.rfind('/');
+          if (pos != std::string::npos)
+          {
+            std::string tmp = filename.substr(0, pos + 1);
+            xml_filename->insert(xml_filename->begin(), tmp.begin(), tmp.end());
+          }
         }
       }
     }
