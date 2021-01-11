@@ -18,7 +18,6 @@
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../linalg/linalg_matrixtransform.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 /*----------------------------------------------------------------------*
  |                                                         constructors |
@@ -179,32 +178,68 @@ void SSTI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
     LINALG::SparseMatrix& systemmatrix_structure,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain, bool zero)
 {
-  // assemble interior and master-side rows and columns of structural system matrix into
-  // global system matrix
+  /* Transform and assemble the structural matrix in the global system matrix block by block:
+   * S_m: structural interior and master side dofs
+   * S_ss: structural slave surface dofs
+   * S_sl: structural slave line dofs
+   *
+   *       S_m  S_ss  S_sl
+   *       --------------
+   * S_m  |  a |  b |  c |
+   * S_ss |  d |  e |  f |
+   * S_sl |  g |  h |  i |
+   *       --------------
+   */
+
+  // assemble derivs. of interior & master dofs w.r.t. interior & master dofs (block a)
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureCondensed(),
       *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_structure, true, zero);
 
-  // transform and assemble slave-side rows of structural system matrix into global system
-  // matrix
+  // assemble  derivs. of surface slave dofs w.r.t. master & interior dofs (block d)
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
-      *StructuralMeshtying()->MapStructureCondensed(), 1.0,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()), nullptr,
-      systemmatrix_structure, true, true);
+      *MapStructureCondensed(), 1.0, &(*StructureSlaveConverter()), nullptr, systemmatrix_structure,
+      true, true);
 
-  // transform and assemble slave-side columns of structural system matrix into global
-  // system matrix
+  // assemble derivs. of master & interior w.r.t. surface slave dofs (block b)
   LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureCondensed(),
-      *MapStructureSlave(), 1.0, nullptr,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      *MapStructureSlave(), 1.0, nullptr, &(*StructureSlaveConverter()), systemmatrix_structure,
+      true, true);
+
+  // assemble derivs. of surface slave dofs w.r.t. surface slave dofs (block e)
+  LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
+      *MapStructureSlave(), 1.0, &(*StructureSlaveConverter()), &(*StructureSlaveConverter()),
       systemmatrix_structure, true, true);
 
-  // transform and assemble slave-side rows and columns of structural system matrix into
-  // global system matrix
-  LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
-      *MapStructureSlave(), 1.0,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
-      systemmatrix_structure, true, true);
+  if (Meshtying3DomainIntersection())
+  {
+    // assemble derivs. of line slave dofs w.r.t. master & interior (block g)
+    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain,
+        *MapStructureSlave3DomainIntersection(), *MapStructureCondensed(), 1.0,
+        &(*StructureSlaveConverter3DomainIntersection()), nullptr, systemmatrix_structure, true,
+        true);
+
+    // assemble derivs. of master & interior w.r.t. line slave dofs (block c)
+    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureCondensed(),
+        *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
+        &(*StructureSlaveConverter3DomainIntersection()), systemmatrix_structure, true, true);
+
+    // assemble derivs. of line slave dof w.r.t. line slave dofs (block i)
+    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain,
+        *MapStructureSlave3DomainIntersection(), *MapStructureSlave3DomainIntersection(), 1.0,
+        &(*StructureSlaveConverter3DomainIntersection()),
+        &(*StructureSlaveConverter3DomainIntersection()), systemmatrix_structure, true, true);
+
+    // assemble derivs. of surface slave dofs w.r.t. line slave dofs (block f)
+    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
+        *MapStructureSlave3DomainIntersection(), 1.0, &(*StructureSlaveConverter()),
+        &(*StructureSlaveConverter3DomainIntersection()), systemmatrix_structure, true, true);
+
+    // assemble derivs. of line slave dofs w.r.t. surface slave dofs (block h)
+    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain,
+        *MapStructureSlave3DomainIntersection(), *MapStructureSlave(), 1.0,
+        &(*StructureSlaveConverter3DomainIntersection()), &(*StructureSlaveConverter()),
+        systemmatrix_structure, true, true);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -349,9 +384,17 @@ void SSTI::AssembleStrategyBase::AssembleScatraStructureDomainMeshtying(
   // transform and assemble slave-side columns of scatra-structure block into global
   // system matrix
   LINALG::MatrixLogicalSplitAndTransform()(scatrastructuredomain, scatrastructuredomain.RangeMap(),
-      *MapStructureSlave(), 1.0, nullptr,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      *MapStructureSlave(), 1.0, nullptr, &(*StructureSlaveConverter()),
       systemmatrix_scatra_structure, true, true);
+
+  if (Meshtying3DomainIntersection())
+  {
+    // assemble derivs. of scatra w.r.t. structural line slave dofs
+    LINALG::MatrixLogicalSplitAndTransform()(scatrastructuredomain,
+        scatrastructuredomain.RangeMap(), *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
+        &(*StructureSlaveConverter3DomainIntersection()), systemmatrix_scatra_structure, true,
+        true);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -625,9 +668,17 @@ void SSTI::AssembleStrategyBase::AssembleStructureScatraDomainMeshtying(
   // transform and assemble slave-side rows of structure-scatra block into global system
   // matrix
   LINALG::MatrixLogicalSplitAndTransform()(structurescatradomain, *MapStructureSlave(),
-      structurescatradomain.DomainMap(), 1.0,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()), nullptr,
+      structurescatradomain.DomainMap(), 1.0, &(*StructureSlaveConverter()), nullptr,
       systemmatrix_structure_scatra, true, true);
+
+  if (Meshtying3DomainIntersection())
+  {
+    // assemble derivs. of structural surface line dofs & interior dofs w.r.t. scatra dofs
+    LINALG::MatrixLogicalSplitAndTransform()(structurescatradomain,
+        *MapStructureSlave3DomainIntersection(), structurescatradomain.DomainMap(), 1.0,
+        &(*StructureSlaveConverter3DomainIntersection()), nullptr, systemmatrix_structure_scatra,
+        true, true);
+  }
 }
 /*----------------------------------------------------------------------*
  |                     assemble thermo-scatra domain into system matrix |
@@ -909,9 +960,17 @@ void SSTI::AssembleStrategyBase::AssembleThermoStructureDomainMeshtying(
   // transform and assemble slave-side columns of scatra-structure block into global
   // system matrix
   LINALG::MatrixLogicalSplitAndTransform()(thermostructuredomain, thermostructuredomain.RangeMap(),
-      *MapStructureSlave(), 1.0, nullptr,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()),
+      *MapStructureSlave(), 1.0, nullptr, &(*StructureSlaveConverter()),
       systemmatrix_thermo_structure, true, true);
+
+  if (Meshtying3DomainIntersection())
+  {
+    // assemble derivs. of scatra w.r.t. structural line slave dofs
+    LINALG::MatrixLogicalSplitAndTransform()(thermostructuredomain,
+        thermostructuredomain.RangeMap(), *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
+        &(*StructureSlaveConverter3DomainIntersection()), systemmatrix_thermo_structure, true,
+        true);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1063,9 +1122,17 @@ void SSTI::AssembleStrategyBase::AssembleStructureThermoDomainMeshtying(
   // transform and assemble slave-side rows of structure-scatra block into global system
   // matrix
   LINALG::MatrixLogicalSplitAndTransform()(structurethermodomain, *MapStructureSlave(),
-      structurethermodomain.DomainMap(), 1.0,
-      &(*StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter()), nullptr,
+      structurethermodomain.DomainMap(), 1.0, &(*StructureSlaveConverter()), nullptr,
       systemmatrix_structure_thermo, true, true);
+
+  if (Meshtying3DomainIntersection())
+  {
+    // assemble derivs. of structural surface line dofs & interior dofs w.r.t. scatra dofs
+    LINALG::MatrixLogicalSplitAndTransform()(structurethermodomain,
+        *MapStructureSlave3DomainIntersection(), structurethermodomain.DomainMap(), 1.0,
+        &(*StructureSlaveConverter3DomainIntersection()), nullptr, systemmatrix_structure_thermo,
+        true, true);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1114,13 +1181,23 @@ void SSTI::AssembleStrategySparse::ApplyMeshtyingSystemMatrix(
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& systemmatrix_structure)
 {
+  // map for slave side structural degrees of freedom
+  Teuchos::RCP<const Epetra_Map> slavemaps;
+  if (!Meshtying3DomainIntersection())
+    slavemaps = MapStructureSlave();
+  else
+  {
+    slavemaps = LINALG::MultiMapExtractor::MergeMaps(
+        {MapStructureSlave(), MapStructureSlave3DomainIntersection()});
+  }
+
   // subject slave-side rows of structural system matrix to pseudo Dirichlet conditions to
   // finalize structural meshtying
   const double one(1.0);
-  for (int doflid_slave = 0; doflid_slave < MapStructureSlave()->NumMyElements(); ++doflid_slave)
+  for (int doflid_slave = 0; doflid_slave < slavemaps->NumMyElements(); ++doflid_slave)
   {
     // extract global ID of current slave-side row
-    const int dofgid_slave = MapStructureSlave()->GID(doflid_slave);
+    const int dofgid_slave = slavemaps->GID(doflid_slave);
     if (dofgid_slave < 0) dserror("Local ID not found!");
 
     // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column
@@ -1249,6 +1326,19 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
                     residual_structure, 0)),
             1);
 
+    if (Meshtying3DomainIntersection())
+    {
+      slavetomaster->Update(1.0,
+          *(StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
+              StructuralMeshtying()
+                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
+                  ->SlaveToMaster(StructuralMeshtying()
+                                      ->MapsInterfaceStructure3DomainIntersection()
+                                      ->ExtractVector(residual_structure, 0)),
+              1)),
+          1.0);
+    }
+
     // locsys manager of strucutre
     const auto& locsysmanager_structure = ssti_mono_->StructureField()->LocsysManager();
 
@@ -1268,6 +1358,11 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
 
     // zero out slave-side part of structural right-hand side vector
     StructuralMeshtying()->MapsInterfaceStructure()->PutScalar(residual_structure, 0, 0.0);
+    if (Meshtying3DomainIntersection())
+    {
+      StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->PutScalar(
+          residual_structure, 0, 0.0);
+    }
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     AllMaps()->MapsSubproblems()->AddVector(

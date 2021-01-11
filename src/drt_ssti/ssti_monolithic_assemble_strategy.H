@@ -131,28 +131,23 @@ namespace SSTI
     void AssembleThermoStructureDomainMeshtying(LINALG::SparseMatrix& systemmatrix_thermo_structure,
         const LINALG::SparseMatrix& thermostructuredomain, bool zero);
 
-    const Teuchos::RCP<SSTI::SSTIStructuralMeshtying> StructuralMeshtying() const
-    {
-      return ssti_mono_->StructuralMeshtying();
-    }
 
-    bool InterfaceMeshtying() const { return ssti_mono_->InterfaceMeshtying(); }
-
-    bool Meshtying3DomainIntersection() const
-    {
-      return StructuralMeshtying()->Meshtying3DomainIntersection();
-    }
-
+    //! Meshtying adapters
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingThermo() const
     {
       return ssti_mono_->MeshtyingThermo();
     }
-
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingScatra() const
     {
       return ssti_mono_->MeshtyingScatra();
     }
+    const Teuchos::RCP<SSTI::SSTIStructuralMeshtying> StructuralMeshtying() const
+    {
+      return ssti_mono_->StructuralMeshtying();
+    }
+    //@}
 
+    //! SSTI mono maps
     const Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_mono_->AllMaps(); }
 
     const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> StructureField() const
@@ -160,14 +155,45 @@ namespace SSTI
       return ssti_mono_->StructureField();
     }
 
+    //! interior and master side dofs of structural meshtying
     Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const
     {
       return StructuralMeshtying()->MapStructureCondensed();
     }
+
+    //! Slave side dofs of structural meshtying
     Teuchos::RCP<const Epetra_Map> MapStructureSlave() const
     {
       return StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
     }
+    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const
+    {
+      return StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->Map(0);
+    }
+    //@}
+
+    //! Slave structure converter for structure coupling
+    //@{
+    const Teuchos::RCP<ADAPTER::CouplingSlaveConverter> StructureSlaveConverter() const
+    {
+      return StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter();
+    }
+    const Teuchos::RCP<ADAPTER::CouplingSlaveConverter> StructureSlaveConverter3DomainIntersection()
+        const
+    {
+      return StructuralMeshtying()
+          ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection();
+    }
+    //@}
+
+    //! flags indicating meshtying
+    //@{
+    bool InterfaceMeshtying() const { return ssti_mono_->InterfaceMeshtying(); }
+    bool Meshtying3DomainIntersection() const
+    {
+      return StructuralMeshtying()->Meshtying3DomainIntersection();
+    }
+    //@}
 
    private:
     //! monolithic algorithm for scalar-structure-thermo interaction

@@ -29,7 +29,6 @@
 #include "../drt_sti/sti_monolithic_evaluate_OffDiag.H"
 
 #include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_solver.H"
 
@@ -505,6 +504,28 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
             StructuralMeshtying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
                 StructuralMeshtying()->MapsInterfaceStructure()->ExtractVector(subincrement, 1)),
             0, subincrement);
+
+        if (StructuralMeshtying()->Meshtying3DomainIntersection())
+        {
+          // displacements
+          StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
+              StructuralMeshtying()
+                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
+                  ->MasterToSlave(StructuralMeshtying()
+                                      ->MapsInterfaceStructure3DomainIntersection()
+                                      ->ExtractVector(StructureField()->Dispnp(), 1)),
+              0, StructureField()->WriteAccessDispnp());
+          StructureField()->SetState(StructureField()->WriteAccessDispnp());
+
+          // increments
+          StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
+              StructuralMeshtying()
+                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
+                  ->MasterToSlave(StructuralMeshtying()
+                                      ->MapsInterfaceStructure3DomainIntersection()
+                                      ->ExtractVector(subincrement, 1)),
+              0, subincrement);
+        }
       }
       break;
     }
