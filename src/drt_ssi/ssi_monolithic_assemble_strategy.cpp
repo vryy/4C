@@ -713,10 +713,7 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     // zero out slave-side part of structural right-hand side vector
     ssi_mono_->MapsCoupStruct()->PutScalar(residual_structure, 1, 0.0);
     if (Meshtying3DomainIntersection())
-    {
-      ssi_mono_->MapsCoupStruct3DomainIntersection()->PutScalar(
-          residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), 0.0);
-    }
+      ssi_mono_->MapsCoupStruct3DomainIntersection()->PutScalar(residual_structure, 1, 0.0);
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     ssi_mono_->MapsSubProblems()->AddVector(
