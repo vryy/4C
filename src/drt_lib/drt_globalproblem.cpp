@@ -399,10 +399,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
     // adapt path of XML file if necessary
     Teuchos::ParameterList& sublist = list->sublist(ss.str().substr(2));
-    std::vector<std::string> listOfFileNameParameters;
-    listOfFileNameParameters.push_back("AMGNXN_XML_FILE");
-    listOfFileNameParameters.push_back("MUELU_XML_FILE");
-    listOfFileNameParameters.push_back("STRATIMIKOS_XMLFILE");
+    std::vector<std::string> listOfFileNameParameters = {
+        "AMGNXN_XML_FILE", "MUELU_XML_FILE", "STRATIMIKOS_XMLFILE"};
 
     for (auto& filenameParameter : listOfFileNameParameters)
     {
