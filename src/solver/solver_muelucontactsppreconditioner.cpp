@@ -308,10 +308,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     xCrsA22 = Teuchos::rcp(new EpetraCrsMatrix(Pmatrix_->Matrix(1, 1).EpetraMatrix()));
   }
 
-  // std::cout << __LINE__ << __FILE__ << std::endl;
-  // xCrsA22->describe(*Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)),
-  // Teuchos::VERB_EXTREME);
-
   /* Define strided maps
    *
    * We have 'numdf' Lagrange multipliers per node at the contact interface,
@@ -349,21 +345,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   stridedMaps.push_back(stridedRangeMapDual);
 
   RCP<const Map> stridedFullMap = MapUtils::concatenateMaps(stridedMaps);
-
-  // RCP<const StridedMap> stridedFullMap = Teuchos::null;
-  // {
-  //   std::vector<GlobalOrdinal> gids;
-  //   for (const auto& map : stridedMaps) {
-  //     Teuchos::ArrayView<const GlobalOrdinal> subMapGids = map->getNodeElementList();
-  //     gids.insert(gids.end(), subMapGids.begin(), subMapGids.end());
-  //   }
-
-  //   // Create the concatenated map object
-  //   const GlobalOrdinal INVALID = Teuchos::OrdinalTraits<Xpetra::global_size_t>::invalid();
-  //   Teuchos::ArrayView<GlobalOrdinal> gidsView(&gids[0], gids.size());
-  //   stridedFullMap = StridedMapFactory::Build(stridedMaps[0]->lib(), INVALID, gidsView,
-  //   stridedMaps[0]->getIndexBase(), stridingInfoPrimal, stridedMaps[0]->getComm(), -1, 0);
-  // }
 
   Teuchos::RCP<const ::MapExtractor> map_extractor =
       MapExtractorFactory::Build(stridedFullMap, stridedMaps);
@@ -413,22 +394,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::rcp_dynamic_cast<const StridedMap>(myA21->getRowMap("stridedMaps"), true);
     Teuchos::rcp_dynamic_cast<const StridedMap>(myA21->getColMap("stridedMaps"), true);
   }
-
-  //  xSlaveDofMap->describe(
-  //      *Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
-  //  Teuchos::RCP<const Xpetra::Map<int, int, Xpetra::EpetraNode>> xSlaveDofMapForOutput =
-  //      Xpetra::MapFactory<int, int, Xpetra::EpetraNode>::Build(*xSlaveDofMap);
-  //  xSlaveDofMapForOutput->describe(
-  //      *Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
-
-  //  Xpetra::IO<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Write(
-  //      "meshtying2D_interface_dof_map.mm", *xSlaveDofMap);
-
-  // epSlaveDofMap->Print(std::cout);
-  // EpetraExt::BlockMapToMatrixMarketFile("meshtying2D_interface_dof_row_map.mm", *epSlaveDofMap);
-
-  // std::cout << __LINE__ << __FILE__ << std::endl;
-  // exit(0);
 
   // Re-create or re-use the preconditioner?
   if (create)
@@ -985,30 +950,18 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     ParameterList mueluParams;
     Teuchos::updateParametersFromXmlFileAndBroadcast(
         xml_file, Teuchos::Ptr<ParameterList>(&mueluParams), *comm);
-    // ParameterList& userDataParams = mueluParams.sublist("user data");
 
-    // Pass nullspace of displacement block to MueLu
+    // Get/compute nullspace vectors
     RCP<MultiVector> nullspace11 = Teuchos::null;
     RCP<MultiVector> nullspace22 = Teuchos::null;
     {
       // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
       nullspace11 =
-          // LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(xCrsA11->getRowMap(),
-          // mllist_);
-          // LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(xA11->getRowMap("stridedMaps"),
-          // mllist_);
           LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(stridedRangeMapPrimal, mllist_);
-      // nullspace11->describe(*Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)),
-      // Teuchos::VERB_EXTREME);
-
-      // Xpetra::IO<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Write(
-      //     "meshtying2D_nullspace1.mm", *nullspace11);
 
       // Compute default nullspace for block (1,1)
       {
         const int dimNS2 = numdf;
-        // nullspace22 = MultiVectorFactory::Build(xCrsA22->getRowMap(), dimNS2);
-        // nullspace22 = MultiVectorFactory::Build(xA22->getRowMap("stridedMaps"), dimNS2);
         nullspace22 = MultiVectorFactory::Build(stridedRangeMapDual, dimNS2);
 
         for (int i = 0; i < dimNS2; ++i)
@@ -1021,26 +974,16 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
           }
         }
       }
-      // std::cout << "Nullspace2  with " << nullspace22->getNumVectors()
-      //           << " vectors and dim = " << nullspace22->getGlobalLength() << std::endl;
-      // nullspace22->describe(
-      //     *Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
-
-      // userDataParams.set<RCP<MultiVector>>("Nullspace1", nullspace11);
-      // userDataParams.set<RCP<MultiVector>>("Nullspace2", nullspace11);
     }
 
-    // bOp->describe(*Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout)), Teuchos::VERB_EXTREME);
-
-    /* ToDo (mayr.mt) Switch to CreateXpetraPreconditioner. Pass nullspace via user data and use
-     * xml-entry "Fine level nullspace" in NullspaceFactory.
+    /* ToDo (mayr.mt) Switch to CreateXpetraPreconditioner. Pass nullspace via "user data" sublist
+     * and use xml-entry "Fine level nullspace" in NullspaceFactory.
      */
 
     // ParameterListInterpreter mueLuFactory(xml_file, *comm);
     ParameterListInterpreter mueLuFactory(mueluParams, comm);
 
     RCP<Hierarchy> H = mueLuFactory.CreateHierarchy();
-    // H->SetDefaultVerbLevel(MueLu::Extreme);
     H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Matrix>(bOp));
     H->GetLevel(0)->Set("Nullspace1", nullspace11);
     H->GetLevel(0)->Set("Nullspace2", nullspace22);
