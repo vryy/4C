@@ -204,8 +204,10 @@ double StruResultTest::GetSpecialResultForTesting(const std::string& quantity)
   // initialize variable for result
   double result(0.);
 
-  if (quantity == "lin_iters")
+  if (quantity == "lin_iters")  // number of iterations in solid linear solver
     result = static_cast<double>(timeintegrator_->Solver()->getNumIters());
+  else if (quantity == "lin_iters_contact")  // number of iterations in contact linear solver
+    result = static_cast<double>(timeintegrator_->ContactSolver()->getNumIters());
   else  // Catch unknown quantity strings
     dserror("Quantity '%s' not supported in structure result test!", quantity.c_str());
 
