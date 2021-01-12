@@ -15,10 +15,12 @@
 #include "strtimint.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
+#include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(STR::TimInt& tintegrator) : DRT::ResultTest("STRUCTURE")
+StruResultTest::StruResultTest(STR::TimInt& tintegrator)
+    : DRT::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
 {
   dis_ = tintegrator.Dis();
   vel_ = tintegrator.Vel();
@@ -171,4 +173,41 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       test_count++;
     }
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void StruResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
+{
+  // extract name of quantity to be tested
+  std::string quantity;
+  res.ExtractString("QUANTITY", quantity);
+
+  // get result to be tested on all processors
+  const double result = GetSpecialResultForTesting(quantity);
+
+  // compare values on one processor only, as they are the same everywhere
+  if (strudisc_->Comm().MyPID() == 0)
+  {
+    const int err = CompareValues(result, "SPECIAL", res);
+    nerr += err;
+    test_count++;
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double StruResultTest::GetSpecialResultForTesting(const std::string& quantity)
+{
+  // initialize variable for result
+  double result(0.);
+
+  if (quantity == "lin_iters")
+    result = static_cast<double>(timeintegrator_->Solver()->getNumIters());
+  else  // Catch unknown quantity strings
+    dserror("Quantity '%s' not supported in structure result test!", quantity.c_str());
+
+  return result;
 }

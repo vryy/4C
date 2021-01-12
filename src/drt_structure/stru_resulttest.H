@@ -19,16 +19,6 @@ namespace DRT
   class Discretization;
 }
 
-namespace LINALG
-{
-  class Solver;
-}
-
-namespace IO
-{
-  class DiscretizationWriter;
-}
-
 namespace STR
 {
   class TimInt;
@@ -46,28 +36,50 @@ class StruResultTest : public DRT::ResultTest
   //! \author bborn \date 06/08
   StruResultTest(STR::TimInt& tintegrator);
 
-  //! \brief structure version of nodal value tests
-  //!
-  //! Possible position flags are "dispx", "dispy", "dispz",
-  //!                             "velx", "vely", "velz",
-  //!                             "accx", "accy", "accz"
+  /*!
+  \brief Test nodal values in solid/structure field and time integration
+
+  Possible position flags are
+  - displacements "dispx", "dispy", "dispz"
+  - velocitites "velx", "vely", "velz",
+  - accelerations "accx", "accy", "accz"
+  */
   virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
+  /*!
+  \brief Test special quantities of structure discretization / time integration
+
+  See GetSpecialResultForTesting() for a list and extraction mechanisms of special results to be
+  tested.
+  */
+  void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) final;
+
  private:
-  //! our discretisation
+  //! Extract specified quantity from the structure field
+  double GetSpecialResultForTesting(const std::string& quantity);
+
+  //! Structure time integrator
+  Teuchos::RCP<STR::TimInt> timeintegrator_;
+
+  //! Structure discretisation
   Teuchos::RCP<DRT::Discretization> strudisc_;
-  // our solution
+
+  //! @name Solution
+  //!@{
+
   //! global displacement DOFs
   Teuchos::RCP<const Epetra_Vector> dis_;
+
   //! global material displacement DOFs
   Teuchos::RCP<const Epetra_Vector> dism_;
+
   //! global velocity DOFs
   Teuchos::RCP<const Epetra_Vector> vel_;
+
   //! global acceleration DOFs
   Teuchos::RCP<const Epetra_Vector> acc_;
-  /* NOTE: these have to be present explicitly
-   * as they are not part of the problem instance like in fluid3
-   */
+
+  //!@}
 };
 
 #endif /* #ifndef STRURESULTTEST_H */
