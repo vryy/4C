@@ -334,10 +334,12 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   RCP<Matrix> xA21 = Teuchos::rcp(new CrsMatrixWrap(xCrsA21));
   RCP<Matrix> xA22 = Teuchos::rcp(new CrsMatrixWrap(xCrsA22));
 
+#ifdef TRILINOS_DEVELOP
   MatrixUtils::convertMatrixToStridedMaps(xA11, stridingInfoPrimal, stridingInfoPrimal);
   MatrixUtils::convertMatrixToStridedMaps(xA12, stridingInfoPrimal, stridingInfoDual);
   MatrixUtils::convertMatrixToStridedMaps(xA21, stridingInfoDual, stridingInfoPrimal);
   MatrixUtils::convertMatrixToStridedMaps(xA22, stridingInfoDual, stridingInfoDual);
+#endif
 
   // build map extractor
   std::vector<Teuchos::RCP<const Map>> stridedMaps;
