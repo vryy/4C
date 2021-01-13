@@ -92,7 +92,8 @@ namespace LINALG
   @param[in] filename Name of output file
   @param[in] matrix Matrix to be written
   */
-  void WriteEpetraCrsMatrixAsXpetra(std::string filename, Teuchos::RCP<Epetra_CrsMatrix> matrix);
+  void WriteEpetraCrsMatrixAsXpetra(
+      const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix);
 
   /*!
   \brief Write MultiVector to ASCII-file via Xpetra::IO
@@ -105,7 +106,8 @@ namespace LINALG
   @param[in] filename Name of output file
   @param[in] vec MultiVector to be written
   */
-  void WriteEpetraMultiVectorAsXpetra(std::string filename, Teuchos::RCP<Epetra_MultiVector> vec);
+  void WriteEpetraMultiVectorAsXpetra(
+      const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec);
 
 }  // namespace LINALG
 

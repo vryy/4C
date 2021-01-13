@@ -44,7 +44,7 @@ class StruResultTest : public DRT::ResultTest
   - velocitites "velx", "vely", "velz",
   - accelerations "accx", "accy", "accz"
   */
-  virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+  void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) final;
 
   /*!
   \brief Test special quantities of structure discretization / time integration

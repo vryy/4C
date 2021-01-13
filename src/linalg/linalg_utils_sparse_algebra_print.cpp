@@ -247,7 +247,7 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, co
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::WriteEpetraCrsMatrixAsXpetra(
-    std::string filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
+    const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
 {
 #include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace IO
   using Teuchos::rcp;
@@ -263,7 +263,7 @@ void LINALG::WriteEpetraCrsMatrixAsXpetra(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void LINALG::WriteEpetraMultiVectorAsXpetra(
-    std::string filename, Teuchos::RCP<Epetra_MultiVector> vec)
+    const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec)
 {
   Xpetra::IO<double, int, int, Node>::Write(filename, *Xpetra::toXpetra<int, Node>(vec));
 }

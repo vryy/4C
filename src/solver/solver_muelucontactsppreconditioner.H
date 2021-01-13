@@ -87,19 +87,19 @@ namespace LINALG
        * @param x Solution of the linear system
        * @param b Right-hand side of the linear system
        */
-      virtual void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b);
+      void Setup(
+          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
 
       //! Get the actual operator used for preconditioning
-      virtual Epetra_Operator* PrecOperator() const { return &*P_; }
+      Epetra_Operator* PrecOperator() const final { return &*P_; }
 
       //! Get the actual operator used for preconditioning
-      virtual Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const { return P_; }
+      Teuchos::RCP<Epetra_Operator> PrecOperatorRCP() const final { return P_; }
 
-      virtual void Print(std::ostream& stream) { stream << "MueLu"; }
+      void Print(std::ostream& stream) final { stream << "MueLu"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
-      virtual const std::string getParameterListName() const
+      const std::string getParameterListName() const final
       {
         return "MueLu (Contact) Parameters";
       }  // TODO check me

@@ -193,8 +193,6 @@ void StruResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int
     nerr += err;
     test_count++;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
