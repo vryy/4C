@@ -133,7 +133,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup surface tension handler
   if (surfacetension_)
-    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_, neighborpairs_);
+    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_,
+        equationofstatebundle_, neighborpairs_);
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
@@ -355,6 +356,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // compute pressure using equation of state and density
   pressure_->ComputePressure();
+
+  // compute interface quantities
+  if (surfacetension_) surfacetension_->ComputeInterfaceQuantities();
 
   // compute temperature field
   if (temperature_) temperature_->ComputeTemperature();
@@ -597,14 +601,13 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
   {
     case INPAR::PARTICLE::NoSurfaceTension:
     {
-      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionBase>(nullptr);
+      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(nullptr);
       break;
     }
     case INPAR::PARTICLE::ContinuumSurfaceForce:
     {
-      surfacetension_ =
-          std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce>(
-              new PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce(params_sph_));
+      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(
+          new PARTICLEINTERACTION::SPHSurfaceTension(params_sph_));
       break;
     }
     default:

@@ -86,9 +86,9 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    const double k_tcrit = k_normal;
+    const double k_normal_crit = k_normal;
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
+    TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -144,10 +144,8 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("COEFF_RESTITUTION", e_);
     params_dem.set("DAMP_REG_FAC", -1.0);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp>(
@@ -188,9 +186,9 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    const double k_tcrit = k_normal;
+    const double k_normal_crit = k_normal;
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
+    TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -274,10 +272,10 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
 
   void test_GetTimeCriticalStiffness()
   {
-    const double k_tcrit =
+    const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
+    TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -333,9 +331,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("NORMAL_DAMP", d_normal_);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann>(
@@ -363,10 +359,10 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
 
   void test_GetTimeCriticalStiffness()
   {
-    const double k_tcrit =
+    const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
+    TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -410,9 +406,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("NORMAL_DAMP", d_normal_);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono>(
@@ -440,10 +434,10 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
 
   void test_GetTimeCriticalStiffness()
   {
-    const double k_tcrit =
+    const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
+    TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
   void test_NormalContactForce()
@@ -487,9 +481,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     params_dem.set("MAX_VELOCITY", v_max_);
     params_dem.set("REL_PENETRATION", c_);
     params_dem.set("NORMAL_STIFF", -1.0);
-
     params_dem.set("NORMAL_DAMP", d_normal_);
-    DRT::INPUT::BoolParameter("TENSION_CUTOFF", "no", "dummy", &params_dem);
 
     // create normal contact handler
     contactnormal_ = std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalTsuji>(
@@ -517,10 +509,10 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
 
   void test_GetTimeCriticalStiffness()
   {
-    const double k_tcrit =
+    const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
 
-    TS_ASSERT_DELTA(contactnormal_->GetTimeCriticalStiffness(), k_tcrit, 1.0e-12);
+    TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
   void test_NormalContactForce()

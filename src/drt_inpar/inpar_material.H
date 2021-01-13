@@ -213,6 +213,7 @@ namespace INPAR
       m_viscoanisotropic,      ///< Viscous Anisotropic Fiber Material
       m_viscoelasthyper,       ///< viscohyperelastic material
       m_visconeohooke,         ///< Viscous NeoHookean Material
+      m_vp_no_yield_surface,   ///< visco-plastic finite strain material law without yield surface
       m_vp_robinson,           ///< Robinson's visco-plastic material
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and
                   ///< extended by an Arrhenius-type term to account for temperature dependence

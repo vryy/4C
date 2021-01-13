@@ -128,15 +128,12 @@ void PARTICLEINTERACTION::SPHHeatSourceVolume::EvaluateHeatSource(const double& 
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* dens_i =
-          (container_i->HaveStoredState(PARTICLEENGINE::Density))
-              ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-              : &(basematerial_i->initDensity_);
+      const double* dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
+                                 ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                                 : &(basematerial_i->initDensity_);
 
-      const double* pos_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-      double* tempdot_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+      const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+      double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
       funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);
@@ -242,19 +239,17 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i =
-        container_i->HaveStoredState(PARTICLEENGINE::Density)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-            : &(material_i->initDensity_);
+    const double* dens_i = container_i->HaveStoredState(PARTICLEENGINE::Density)
+                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                               : &(material_i->initDensity_);
 
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j =
-        container_j->HaveStoredState(PARTICLEENGINE::Density)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-            : &(material_j->initDensity_);
+    const double* dens_j = container_j->HaveStoredState(PARTICLEENGINE::Density)
+                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+                               : &(material_j->initDensity_);
 
     const double fac =
         (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) /
@@ -317,15 +312,12 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
       if (f_i_proj < 0.0) continue;
 
       // get pointer to particle states
-      const double* dens_i =
-          (container_i->HaveStoredState(PARTICLEENGINE::Density))
-              ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-              : &(basematerial_i->initDensity_);
+      const double* dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
+                                 ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                                 : &(basematerial_i->initDensity_);
 
-      const double* pos_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Position, particle_i);
-      double* tempdot_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i);
+      const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+      double* tempdot_i = container_i->GetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
       // evaluate function defining heat source
       funct = function.EvaluateTimeDerivative(0, &(pos_i[0]), evaltime, 0);

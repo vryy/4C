@@ -156,12 +156,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
           particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
       // get pointer to particle states
-      const double* vel_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
-      const double* dens_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j);
-      const double* press_j =
-          container_j->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_j);
+      const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
+      const double* dens_j = container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j);
+      const double* press_j = container_j->GetPtrToState(PARTICLEENGINE::Pressure, particle_j);
 
       // sum contribution of neighboring particle j
       sumj_Wij_[type_i][particle_i] += particlepair.Wij_;
@@ -181,12 +178,9 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
           particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
       // get pointer to particle states
-      const double* vel_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-      const double* dens_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      const double* press_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Pressure, particle_i);
+      const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+      const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
+      const double* press_i = container_i->GetPtrToState(PARTICLEENGINE::Pressure, particle_i);
 
       // sum contribution of neighboring particle i
       sumj_Wij_[type_j][particle_j] += particlepair.Wji_;
@@ -217,14 +211,12 @@ void PARTICLEINTERACTION::SPHBoundaryParticleAdami::InitBoundaryParticleStates(
       if (sumj_Wij_[type_i][particle_i] > 0.0)
       {
         // get pointer to particle states
-        const double* vel_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-        const double* acc_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::Acceleration, particle_i);
+        const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+        const double* acc_i = container_i->GetPtrToState(PARTICLEENGINE::Acceleration, particle_i);
         double* boundarypress_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryPressure, particle_i);
+            container_i->GetPtrToState(PARTICLEENGINE::BoundaryPressure, particle_i);
         double* boundaryvel_i =
-            container_i->GetPtrToParticleState(PARTICLEENGINE::BoundaryVelocity, particle_i);
+            container_i->GetPtrToState(PARTICLEENGINE::BoundaryVelocity, particle_i);
 
         // get relative acceleration of boundary particle
         double relacc[3];

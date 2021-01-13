@@ -26,6 +26,8 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_vector.H"
 
 #include "../drt_mat/material.H"
 #include "../drt_mat/matpar_parameter.H"
@@ -118,7 +120,9 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       growthgrowthblock_(Teuchos::null),
       equilibration_(Teuchos::null),
       slaveconditions_(),
-      slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY"))
+      slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
+      meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
+          parameters.sublist("S2I COUPLING"), "MESHTYING_3_DOMAIN_INTERSECTION"))
 {
   // empty constructor
 }  // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -1937,59 +1941,108 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       //       invalid (which should not be necessary, but conceptually possible)
       for (auto& mastercondition : masterconditions) mastercondition.second->Add("ConditionID", -1);
 
-      // initialize int vectors for global ids of slave and master interface nodes
-      std::vector<int> islavenodegidvec;
-      std::vector<int> imasternodegidvec;
-
-      // fill vectors
-      for (auto& slavecondition : slaveconditions_)
-      {
-        const std::vector<int>* islavenodegids = slavecondition.second->Nodes();
-
-        for (int islavenodegid : *islavenodegids)
-        {
-          // insert global id of current node into associated vector only if node is owned by
-          // current processor need to make sure that node is stored on current processor, otherwise
-          // cannot resolve "->Owner()"
-          if (scatratimint_->Discretization()->HaveGlobalNode(islavenodegid) and
-              scatratimint_->Discretization()->gNode(islavenodegid)->Owner() ==
-                  scatratimint_->Discretization()->Comm().MyPID())
-            islavenodegidvec.push_back(islavenodegid);
-        }
-      }
-      for (auto& mastercondition : masterconditions)
-      {
-        const std::vector<int>* imasternodegids = mastercondition.second->Nodes();
-
-        for (int imasternodegid : *imasternodegids)
-        {
-          // insert global id of current node into associated vector only if node is owned by
-          // current processor need to make sure that node is stored on current processor, otherwise
-          // cannot resolve "->Owner()"
-          if (scatratimint_->Discretization()->HaveGlobalNode(imasternodegid) and
-              scatratimint_->Discretization()->gNode(imasternodegid)->Owner() ==
-                  scatratimint_->Discretization()->Comm().MyPID())
-            imasternodegidvec.push_back(imasternodegid);
-        }
-      }
-
-      // remove potential duplicates from vectors
-      std::sort(islavenodegidvec.begin(), islavenodegidvec.end());
-      islavenodegidvec.erase(
-          unique(islavenodegidvec.begin(), islavenodegidvec.end()), islavenodegidvec.end());
-      std::sort(imasternodegidvec.begin(), imasternodegidvec.end());
-      imasternodegidvec.erase(
-          unique(imasternodegidvec.begin(), imasternodegidvec.end()), imasternodegidvec.end());
-
-      // initialize non-mortar coupling adapter
       if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
+
+      // construct new (empty coupling adapter)
       icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
-      icoup_->SetupCoupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
-          imasternodegidvec, islavenodegidvec, scatratimint_->NumDofPerNode(), true, 1.e-8);
+
+      // merge all s2i coupling conditions and build slave-master coupling
+      if (!meshtying_3_domain_intersection_)
+      {
+        // initialize int vectors for global ids of slave and master interface nodes
+        std::vector<int> islavenodegidvec;
+        std::vector<int> imasternodegidvec;
+
+        for (auto& slavecondition : slaveconditions_)
+        {
+          DRT::UTILS::AddOwnedNodeGIDVector(
+              scatratimint_->Discretization(), *slavecondition.second->Nodes(), islavenodegidvec);
+        }
+        for (auto& mastercondition : masterconditions)
+        {
+          DRT::UTILS::AddOwnedNodeGIDVector(
+              scatratimint_->Discretization(), *mastercondition.second->Nodes(), imasternodegidvec);
+        }
+
+        DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
+        DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+
+        icoup_->SetupCoupling(*(scatratimint_->Discretization()),
+            *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,
+            scatratimint_->NumDofPerNode(), true, 1.e-8);
+      }
+
+      // build slave master coupling for each s2i condition separately
+      else
+      {
+        // initialize int vectors for global ids of slave and master interface nodes
+        std::vector<std::vector<int>> islavenodegidvec_cond;
+        std::vector<std::vector<int>> imasternodegidvec_cond;
+
+        // loop over slave conditions and build vector of nodes for slave and master condition with
+        // same ID
+        for (auto& slavecondition : slaveconditions_)
+        {
+          std::vector<int> islavenodegidvec;
+          std::vector<int> imasternodegidvec;
+
+          DRT::UTILS::AddOwnedNodeGIDVector(
+              scatratimint_->Discretization(), *slavecondition.second->Nodes(), islavenodegidvec);
+
+          DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
+
+          auto mastercondition = masterconditions.find(slavecondition.first);
+          if (mastercondition != masterconditions.end())
+          {
+            DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+                *mastercondition->second->Nodes(), imasternodegidvec);
+          }
+
+          DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+
+          // remove nodes from slave side line condition to avoid non-unique slave-master relation
+          std::vector<DRT::Condition*> conditionstriplemeshtying(0, nullptr);
+          scatratimint_->Discretization()->GetCondition(
+              "Meshtying3DomainIntersection", conditionstriplemeshtying);
+
+          for (const auto& conditiontriplemeshtying : conditionstriplemeshtying)
+          {
+            const int surf_cond_id = conditiontriplemeshtying->GetInt("SSISurfSlaveID");
+            const auto* side = conditiontriplemeshtying->Get<std::string>("Side");
+            const bool isslave = (*side == "Slave");
+
+            if (conditiontriplemeshtying->GType() == DRT::Condition::Line and
+                surf_cond_id == slavecondition.first)
+            {
+              if (slavecondition.second->GetInt("kinetic model") !=
+                  static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+                dserror("Triple meshtying in S2I coupling only for 'NoInterfaceFlux' so far");
+
+              // compare node gids and remove if they are equal and on this proc
+              if (isslave)
+              {
+                DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
+                    *conditiontriplemeshtying->Nodes(), islavenodegidvec);
+              }
+              else
+              {
+                DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
+                    *conditiontriplemeshtying->Nodes(), imasternodegidvec);
+              }
+            }
+          }
+          islavenodegidvec_cond.push_back(islavenodegidvec);
+          imasternodegidvec_cond.push_back(imasternodegidvec);
+        }
+
+        // setup non-mortar coupling adapter
+        icoup_->SetupCoupling(*(scatratimint_->Discretization()),
+            *(scatratimint_->Discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
+            scatratimint_->NumDofPerNode(), true, 1.e-8);
+      }
 
       // generate interior and interface maps
-      Teuchos::RCP<Epetra_Map> ifullmap =
-          LINALG::MergeMap(icoup_->SlaveDofMap(), icoup_->MasterDofMap());
+      auto ifullmap = LINALG::MergeMap(icoup_->SlaveDofMap(), icoup_->MasterDofMap());
       std::vector<Teuchos::RCP<const Epetra_Map>> imaps;
       imaps.emplace_back(
           LINALG::SplitMap(*(scatratimint_->Discretization()->DofRowMap()), *ifullmap));
@@ -3903,9 +3956,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, dis
   else
   {
     // loop over all existing instances
-    for (typename std::map<std::string, MortarCellCalc<distypeS, distypeM>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
     {
       // check whether current instance should be deleted
       if (i->second == delete_me)

@@ -145,10 +145,9 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassSelfContribution() cons
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      double* denssum_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
+      const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+      double* denssum_i = container_i->GetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
 
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
@@ -186,19 +185,11 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleContribution() 
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    double* denssum_i = container_i->CondGetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
 
-    double* denssum_i =
-        container_i->HaveStoredState(PARTICLEENGINE::DensitySum)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i)
-            : nullptr;
-
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
-
-    double* denssum_j =
-        container_j->HaveStoredState(PARTICLEENGINE::DensitySum)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_j)
-            : nullptr;
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
+    double* denssum_j = container_j->CondGetPtrToState(PARTICLEENGINE::DensitySum, particle_j);
 
     // sum contribution of neighboring particle j
     if (denssum_i) denssum_i[0] += particlepair.Wij_ * mass_i[0];
@@ -235,9 +226,9 @@ void PARTICLEINTERACTION::SPHDensityBase::SumWeightedMassParticleWallContributio
         particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-    double* denssum_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, particle_i);
+    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+    double* denssum_i = container_i->GetPtrToState(PARTICLEENGINE::DensitySum, particle_i);
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
@@ -319,12 +310,10 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldSelfContribution() const
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
-      const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-      const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
-      const double* dens_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-      double* colorfield_i =
-          container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+      const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+      const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
+      const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
+      double* colorfield_i = container_i->GetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
 
       // evaluate kernel
       const double Wii = kernel_->W0(rad_i[0]);
@@ -369,29 +358,21 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleContribution() co
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i =
-        container_i->HaveStoredState(PARTICLEENGINE::Density)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-            : &(material_j->initDensity_);
+    const double* dens_i = container_i->HaveStoredState(PARTICLEENGINE::Density)
+                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                               : &(material_j->initDensity_);
 
-    double* colorfield_i =
-        container_i->HaveStoredState(PARTICLEENGINE::Colorfield)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i)
-            : nullptr;
+    double* colorfield_i = container_i->CondGetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
 
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j =
-        container_j->HaveStoredState(PARTICLEENGINE::Density)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-            : &(material_i->initDensity_);
+    const double* dens_j = container_j->HaveStoredState(PARTICLEENGINE::Density)
+                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+                               : &(material_i->initDensity_);
 
-    double* colorfield_j =
-        container_j->HaveStoredState(PARTICLEENGINE::Colorfield)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_j)
-            : nullptr;
+    double* colorfield_j = container_j->CondGetPtrToState(PARTICLEENGINE::Colorfield, particle_j);
 
     // sum contribution of neighboring particle j
     if (colorfield_i) colorfield_i[0] += (particlepair.Wij_ / dens_j[0]) * mass_j[0];
@@ -432,12 +413,11 @@ void PARTICLEINTERACTION::SPHDensityBase::SumColorfieldParticleWallContribution(
         particlematerial_->GetPtrToParticleMatParameter(type_i);
 
     // get pointer to particle states
-    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    double* colorfield_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, particle_i);
+    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    double* colorfield_i = container_i->GetPtrToState(PARTICLEENGINE::Colorfield, particle_i);
 
     // get pointer to virtual particle states
-    const double* mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_k = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_k = &(material_i->initDensity_);
 
     // (current) volume of virtual particle k
@@ -541,37 +521,29 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleContribution
     // get pointer to particle states
     const double* vel_i =
         container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-            : container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+            ? container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
 
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i =
-        container_i->HaveStoredState(PARTICLEENGINE::Density)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-            : &(material_j->initDensity_);
+    const double* dens_i = container_i->HaveStoredState(PARTICLEENGINE::Density)
+                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                               : &(material_j->initDensity_);
 
-    double* densdot_i =
-        container_i->HaveStoredState(PARTICLEENGINE::DensityDot)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i)
-            : nullptr;
+    double* densdot_i = container_i->CondGetPtrToState(PARTICLEENGINE::DensityDot, particle_i);
 
     const double* vel_j =
         container_j->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_j)
-            : container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+            ? container_j->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_j)
+            : container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
 
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j =
-        container_j->HaveStoredState(PARTICLEENGINE::Density)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-            : &(material_i->initDensity_);
+    const double* dens_j = container_j->HaveStoredState(PARTICLEENGINE::Density)
+                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+                               : &(material_i->initDensity_);
 
-    double* densdot_j =
-        container_j->HaveStoredState(PARTICLEENGINE::DensityDot)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_j)
-            : nullptr;
+    double* densdot_j = container_j->CondGetPtrToState(PARTICLEENGINE::DensityDot, particle_j);
 
     // relative velocity (use modified velocities in case of transport velocity formulation)
     double vel_ij[3];
@@ -626,12 +598,12 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     // get pointer to particle states
     const double* vel_i =
         container_i->HaveStoredState(PARTICLEENGINE::ModifiedVelocity)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::ModifiedVelocity, particle_i)
-            : container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
+            ? container_i->GetPtrToState(PARTICLEENGINE::ModifiedVelocity, particle_i)
+            : container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
 
-    const double* rad_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Radius, particle_i);
-    const double* dens_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i);
-    double* densdot_i = container_i->GetPtrToParticleState(PARTICLEENGINE::DensityDot, particle_i);
+    const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
+    const double* dens_i = container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i);
+    double* densdot_i = container_i->GetPtrToState(PARTICLEENGINE::DensityDot, particle_i);
 
     // get pointer to column wall element
     DRT::Element* ele = particlewallpair.ele_;
@@ -672,7 +644,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     }
 
     // get pointer to virtual particle states
-    const double* mass_k = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_k = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
     const double* dens_k = &(material_i->initDensity_);
     const double* vel_k = &vel_j[0];
 
@@ -971,9 +943,9 @@ void PARTICLEINTERACTION::SPHDensityPredictCorrect::CorrectDensity() const
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    double* dens = container_i->GetPtrToParticleState(PARTICLEENGINE::Density, 0);
-    const double* denssum = container_i->GetPtrToParticleState(PARTICLEENGINE::DensitySum, 0);
-    const double* colorfield = container_i->GetPtrToParticleState(PARTICLEENGINE::Colorfield, 0);
+    double* dens = container_i->GetPtrToState(PARTICLEENGINE::Density, 0);
+    const double* denssum = container_i->GetPtrToState(PARTICLEENGINE::DensitySum, 0);
+    const double* colorfield = container_i->GetPtrToState(PARTICLEENGINE::Colorfield, 0);
 
     // get material for current particle type
     const MAT::PAR::ParticleMaterialBase* material =

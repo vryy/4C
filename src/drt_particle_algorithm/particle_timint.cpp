@@ -211,10 +211,10 @@ void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
+    double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // iterate over owned particles of current type
     for (int i = 0; i < particlestored; ++i)

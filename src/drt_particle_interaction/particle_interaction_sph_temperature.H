@@ -33,6 +33,7 @@ namespace PARTICLEINTERACTION
   class MaterialHandler;
   class SPHNeighborPairs;
   class SPHHeatSourceBase;
+  class SPHHeatLossEvaporation;
 }  // namespace PARTICLEINTERACTION
 
 namespace MAT
@@ -91,6 +92,9 @@ namespace PARTICLEINTERACTION
     //! init heat source handler
     void InitHeatSourceHandler();
 
+    //! init evaporation induced heat loss handler
+    void InitHeatLossEvaporationHandler();
+
     //! evaluate energy equation
     void EnergyEquation() const;
 
@@ -114,6 +118,9 @@ namespace PARTICLEINTERACTION
 
     //! heat source handler
     std::unique_ptr<PARTICLEINTERACTION::SPHHeatSourceBase> heatsource_;
+
+    //! evaporation induced heat loss handler
+    std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation> heatlossevaporation_;
 
     //! temperature of ghosted particles to refresh
     PARTICLEENGINE::StatesOfTypesToRefresh temptorefresh_;

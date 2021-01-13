@@ -386,8 +386,8 @@ void SSTI::SSTIMono::SetupSystem()
       new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
-          CouplingAdapterStructure(), interface_map_scatra, MeshtyingScatra(), ScaTraFieldBase(),
-          StructureField()));
+          CouplingAdapterStructure(), Teuchos::null, interface_map_scatra, MeshtyingScatra(),
+          ScaTraFieldBase(), StructureField(), false));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
       ssti_maps_mono_->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),

@@ -13,7 +13,6 @@ DEBUG_OPTIMIZED=0
 USE_ACML=0
 USE_FORCEBUILD=0
 TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version (e.g. current state of develop)
-ADDITIONAL_TESTS_PATH=""
 SHARED_LIBS=OFF
 
 USE_TRILINOS_Q1_2015=OFF
@@ -34,11 +33,11 @@ USE_TRILINOS_Q1_2019=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,ide: -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--additionaltests=testfile] [--forceBuild] [--ide=clion/eclipse/vscode]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode]"
 
 eval set -- $OPTIONS
 
@@ -50,10 +49,6 @@ while true; do
       ;;
     -c|--config)
       CONFIGURATION_FILE="$2" ;
-      shift
-      ;;
-    --additionaltests)
-      ADDITIONAL_TESTS_PATH="$2" ;
       shift
       ;;
     -d|--debug)
@@ -253,7 +248,6 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D LAPACK_LIBRARIES:FILEPATH="$LAPACK_LIBS" \
   -D ACMLDIR:STRING="$ACMLDIR_PATH" \
   -D AMDLIBMDIR:FILEPATH="$AMDLIBMDIR_PATH" \
-  -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
   "$EXTRA_ARGS" \
   "${BACI_HOME}")
 

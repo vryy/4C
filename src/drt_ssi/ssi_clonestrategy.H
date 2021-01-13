@@ -34,10 +34,10 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit ScatraStructureCloneStrategy() { return; };
+    explicit ScatraStructureCloneStrategy() = default;
 
     //! destructor
-    virtual ~ScatraStructureCloneStrategy() { return; };
+    virtual ~ScatraStructureCloneStrategy() = default;
 
     //! return map with original names of conditions to be cloned as key values, and final names of
     //! cloned conditions as mapped values
