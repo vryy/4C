@@ -61,14 +61,16 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver&
 /*  Setup mesh-tying problem                ehrl (04/11) */
 /*-------------------------------------------------------*/
 
-void FLD::Meshtying::SetupMeshtying(std::vector<int> coupleddof)
+void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bool pcoupled)
 {
   // get pointer to dof row map
   dofrowmap_ = discret_->DofRowMap();
 
+  // set whether pressure dof is coupled
+  pcoupled_ = pcoupled;
+
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
-  if (coupleddof[nsd_] == 0) pcoupled_ = false;
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
