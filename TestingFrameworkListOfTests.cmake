@@ -1927,7 +1927,7 @@ baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_condensed
 baci_test(sti_mono_3D_tet4_hex8_elch_s2i_butlervolmerpeltier_adiabatic_mortar_standard_BGS-AMG_4x4 3 15)
 
 # brownian dynamic test cases using random numbers from Boost Random libraries
-if ((${Boost_MAYOR_VERSION} EQUAL 1) AND ((${Boost_MINOR_VERSION} GREATER 56) AND (${Boost_MINOR_VERSION} LESS_EQUAL 58)))
+if ((${Boost_MAYOR_VERSION} EQUAL 1) AND (${Boost_MINOR_VERSION} GREATER 56) AND (${Boost_MINOR_VERSION} LESS 59))
 baci_test(beam3eb_backweuler_browndyn_singlefil 3 "")
 baci_test(beam3r_herm2line3_backweuler_browndyn_crosslinking_beam3rline2 2 70)
 baci_test(beam3r_herm2line3_backweuler_browndyn_randcrosslinking_beam3rline2 2 "")
