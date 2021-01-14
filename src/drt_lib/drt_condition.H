@@ -251,6 +251,7 @@ namespace DRT
       SSIInterfaceMeshtying,
       SSIMeshtying3DomainIntersection,
       SSTIInterfaceMeshtying,
+      SSTIMeshtying3DomainIntersection,
       RedAirwayVentilatorCond,
       RedAirwayTissue,
       RedAirwayNodeTissue,

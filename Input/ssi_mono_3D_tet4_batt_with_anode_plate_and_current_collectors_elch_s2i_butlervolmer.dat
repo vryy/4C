@@ -251,9 +251,9 @@ E 11 - 4 Slave S2ICouplingID 4
 -----------------------DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS
 DLINE  2
 // line_triple_point_cc_side
-E 4 - 0 Slave SSISurfSlaveID 4 SSISurfMasterID 2
+E 4 - 0 Slave MeshtyingSurfSlaveID 4 MeshtyingSurfMasterID 2
 // line_triple_point_el_side
-E 5 - 0 Master SSISurfSlaveID 4 SSISurfMasterID 2
+E 5 - 0 Master MeshtyingSurfSlaveID 4 MeshtyingSurfMasterID 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    791 DNODE 1
 NODE    794 DNODE 1
