@@ -307,10 +307,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
   LINALG::Matrix<4, 1, double> quaternion_beam_ref;
   LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_solid;
   LINALG::Matrix<4, 1, scalar_type_rot_1st> quaternion_rel;
-  LINALG::Matrix<3, 3, scalar_type_rot_1st> T_beam;
+  LINALG::Matrix<3, 3, double> T_beam;
   LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid;
   LINALG::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
-  LINALG::Matrix<3, 3, scalar_type_rot_1st> T_rel;
   LINALG::Matrix<3, 1, scalar_type_rot_1st> potential_variation;
   LINALG::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> fc_beam_gp;
   LINALG::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
@@ -377,13 +376,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       LARGEROTATIONS::quaterniontoangle(quaternion_rel, psi_rel);
 
       // Calculate the transformation matrices.
-      T_beam = LARGEROTATIONS::Tmatrix(psi_beam);
+      T_beam = LARGEROTATIONS::Tmatrix(FADUTILS::CastToDouble(psi_beam));
       T_solid = LARGEROTATIONS::Tmatrix(psi_solid_val);
-      T_rel = LARGEROTATIONS::Tmatrix(psi_rel);
 
       // Force terms.
       DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
-      potential_variation.MultiplyTN(T_rel, psi_rel);
+      potential_variation = psi_rel;
       potential_variation.Scale(rotational_penalty_parameter);
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
