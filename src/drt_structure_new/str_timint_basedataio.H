@@ -61,7 +61,7 @@ namespace STR
       BaseDataIO();
 
       /// destructor
-      virtual ~BaseDataIO(){};
+      virtual ~BaseDataIO() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IOParams, const Teuchos::ParameterList& sDynParams,
@@ -118,6 +118,12 @@ namespace STR
 
       /// \brief return TRUE if the results shall be written for this load/time \c step
       bool WriteResultsForThisStep(const int step) const;
+
+      /// \brief return TRUE if runtime vtk results shall be written for this load/time \c step
+      bool WriteRuntimeVtkResultsForThisStep(const int step) const;
+
+      /// \brief return TRUE if runtime vtp results shall be written for this load/time \c step
+      bool WriteRuntimeVtpResultsForThisStep(const int step) const;
 
       /// \brief return TRUE if the restart state shall be written for this load/time step
       bool ShouldWriteRestartForStep(int step) const;
@@ -194,7 +200,6 @@ namespace STR
       {
         CheckInitSetup();
         writeinitialstate_ = initialstateistobewritten;
-        return;
       };
 
       /// Shall we write surfactant output?
@@ -468,17 +473,17 @@ namespace NOX
             WriteOutputEveryIteration(IO::EveryIterationWriter& every_iter_writer);
 
             /// destructor
-            virtual ~WriteOutputEveryIteration(){};
+            ~WriteOutputEveryIteration() override = default;
 
             /// called at the very beginning of a Newton loop
-            virtual void runPreSolve(const NOX::Solver::Generic& solver);
+            void runPreSolve(const NOX::Solver::Generic& solver) override;
 
             /// called in the end of each Newton step
-            virtual void runPostIterate(const NOX::Solver::Generic& solver);
+            void runPostIterate(const NOX::Solver::Generic& solver) override;
 
             /// called before the step is reduced in a line search routine
-            virtual void runPreModifyStepLength(
-                const NOX::Solver::Generic& solver, const NOX::LineSearch::Generic& linesearch);
+            void runPreModifyStepLength(const NOX::Solver::Generic& solver,
+                const NOX::LineSearch::Generic& linesearch) override;
 
            private:
             IO::EveryIterationWriter& every_iter_writer_;
