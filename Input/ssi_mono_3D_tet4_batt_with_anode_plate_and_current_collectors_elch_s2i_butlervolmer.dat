@@ -68,7 +68,6 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
-CONVTOL                         1.0e-7
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
