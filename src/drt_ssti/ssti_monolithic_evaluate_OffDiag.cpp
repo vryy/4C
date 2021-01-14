@@ -277,18 +277,19 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       }
 
       // finalize auxiliary system matrix
-      if (!meshtying_3_domain_intersection_)
-      {
-        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
-            *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
-      }
-      else
+      if (meshtying_3_domain_intersection_)
       {
         mastermatrixsparse.Complete(
             *LINALG::MultiMapExtractor::MergeMaps({icoup_structure_->MasterDofMap(),
                 icoup_structure_3_domain_intersection_->MasterDofMap()}),
             *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
       }
+      else
+      {
+        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
+            *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
+      }
+
 
       // split sparse matrix to block matrix
       blockmastermatrix = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(

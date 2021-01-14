@@ -227,7 +227,9 @@ namespace SSTI
   class SSTIStructuralMeshtying
   {
    public:
-    SSTIStructuralMeshtying(const SSTI::SSTIAlgorithm& ssti_algorithm);
+    SSTIStructuralMeshtying();
+
+    void Setup(const SSTI::SSTIAlgorithm& ssti_algorithm);
 
     //! coupling adapters for structral meshtying
     //@{

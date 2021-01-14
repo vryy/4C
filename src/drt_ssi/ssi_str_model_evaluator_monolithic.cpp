@@ -42,7 +42,16 @@ STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(const Teuchos::RCP<const SSI::
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
 {
-  if (!ssi_mono_->Meshtying3DomainIntersection())
+  if (ssi_mono_->Meshtying3DomainIntersection())
+
+  {
+    if (ssi_mono_->Comm().MyPID() == 1)
+    {
+      std::cout << "WARNING: Calculation of interface stresses not implemented for triple meshtying"
+                << std::endl;
+    }
+  }
+  else
   {
     // extract raw data for element-wise stresses
     const std::vector<char>& stressdata = EvalData().StressData();
@@ -230,14 +239,6 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
           }
         }
       }
-    }
-  }
-  else
-  {
-    if (ssi_mono_->Comm().MyPID() == 1)
-    {
-      std::cout << "WARNING: Calculation of interface stresses not implemented for triple meshtying"
-                << std::endl;
     }
   }
 }

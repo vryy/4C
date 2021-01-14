@@ -1183,13 +1183,13 @@ void SSTI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& syst
 {
   // map for slave side structural degrees of freedom
   Teuchos::RCP<const Epetra_Map> slavemaps;
-  if (!Meshtying3DomainIntersection())
-    slavemaps = MapStructureSlave();
-  else
+  if (Meshtying3DomainIntersection())
   {
     slavemaps = LINALG::MultiMapExtractor::MergeMaps(
         {MapStructureSlave(), MapStructureSlave3DomainIntersection()});
   }
+  else
+    slavemaps = MapStructureSlave();
 
   // subject slave-side rows of structural system matrix to pseudo Dirichlet conditions to
   // finalize structural meshtying

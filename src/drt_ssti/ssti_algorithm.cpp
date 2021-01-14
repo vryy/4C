@@ -47,7 +47,7 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
       thermo_(Teuchos::null),
       meshtying_strategy_scatra_(Teuchos::null),
       meshtying_strategy_thermo_(Teuchos::null),
-      structural_meshtying_(Teuchos::null),
+      structural_meshtying_(Teuchos::rcp(new SSTI::SSTIStructuralMeshtying())),
       interfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSTIInterfaceMeshtying") !=
           nullptr),
@@ -203,7 +203,7 @@ void SSTI::SSTIAlgorithm::Setup()
   }
 
   // setup everything for SSTI structural meshtying
-  structural_meshtying_ = Teuchos::rcp(new SSTI::SSTIStructuralMeshtying(*this));
+  structural_meshtying_->Setup(*this);
 
   issetup_ = true;
 }
