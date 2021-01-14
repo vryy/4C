@@ -184,7 +184,8 @@ void SSTI::SSTIAlgorithm::Setup()
     SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssticonditions, structdis);
 
     // set up scatra-scatra interface coupling adapter for structure field
-    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis);
+    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(
+        structdis, false, "SSTIInterfaceMeshtying", "SSIMeshtying3DomainIntersection");
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(

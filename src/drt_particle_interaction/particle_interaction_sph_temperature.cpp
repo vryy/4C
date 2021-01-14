@@ -14,6 +14,7 @@
 #include "particle_interaction_material_handler.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
 #include "particle_interaction_sph_heatsource.H"
+#include "particle_interaction_sph_heatloss_evaporation.H"
 
 #include "particle_interaction_utils.H"
 
@@ -42,6 +43,9 @@ void PARTICLEINTERACTION::SPHTemperature::Init()
 {
   // init heat source handler
   InitHeatSourceHandler();
+
+  // init evaporation induced heat loss handler
+  InitHeatLossEvaporationHandler();
 
   // init with potential integrated thermo particle types
   intthermotypes_ = {PARTICLEENGINE::Phase1, PARTICLEENGINE::Phase2, PARTICLEENGINE::RigidPhase};
@@ -98,6 +102,9 @@ void PARTICLEINTERACTION::SPHTemperature::Setup(
 
   // setup heat source handler
   if (heatsource_) heatsource_->Setup(particleengineinterface, particlematerial, neighborpairs);
+
+  // setup evaporation induced heat loss handler
+  if (heatlossevaporation_) heatlossevaporation_->Setup(particleengineinterface, particlematerial);
 }
 
 void PARTICLEINTERACTION::SPHTemperature::SetCurrentTime(const double currenttime)
@@ -146,6 +153,9 @@ void PARTICLEINTERACTION::SPHTemperature::ComputeTemperature() const
 
   // evaluate heat source
   if (heatsource_) heatsource_->EvaluateHeatSource(time_);
+
+  // evaluate evaporation induced heat loss
+  if (heatlossevaporation_) heatlossevaporation_->EvaluateEvaporationInducedHeatLoss();
 
   // iterate over integrated thermo particle types
   for (const auto& type_i : intthermotypes_)
@@ -202,6 +212,16 @@ void PARTICLEINTERACTION::SPHTemperature::InitHeatSourceHandler()
   if (heatsource_) heatsource_->Init();
 }
 
+void PARTICLEINTERACTION::SPHTemperature::InitHeatLossEvaporationHandler()
+{
+  if (DRT::INPUT::IntegralValue<int>(params_sph_, "VAPOR_HEATLOSS"))
+    heatlossevaporation_ = std::unique_ptr<PARTICLEINTERACTION::SPHHeatLossEvaporation>(
+        new PARTICLEINTERACTION::SPHHeatLossEvaporation(params_sph_));
+
+  // init evaporation induced heat loss handler
+  if (heatlossevaporation_) heatlossevaporation_->Init();
+}
+
 void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
 {
   // iterate over integrated thermo particle types
@@ -246,35 +266,23 @@ void PARTICLEINTERACTION::SPHTemperature::EnergyEquation() const
     const MAT::PAR::ParticleMaterialThermo* thermomaterial_j = thermomaterial_[type_j];
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i =
-        (container_i->HaveStoredState(PARTICLEENGINE::Density))
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-            : &(basematerial_i->initDensity_);
+    const double* dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
+                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                               : &(basematerial_i->initDensity_);
 
-    const double* temp_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
+    const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
+    double* tempdot_i = container_i->CondGetPtrToState(PARTICLEENGINE::TemperatureDot, particle_i);
 
-    double* tempdot_i =
-        container_i->HaveStoredState(PARTICLEENGINE::TemperatureDot)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_i)
-            : nullptr;
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
+                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+                               : &(basematerial_j->initDensity_);
 
-    const double* dens_j =
-        (container_j->HaveStoredState(PARTICLEENGINE::Density))
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-            : &(basematerial_j->initDensity_);
-
-    const double* temp_j =
-        container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
-
-    double* tempdot_j =
-        container_j->HaveStoredState(PARTICLEENGINE::TemperatureDot)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureDot, particle_j)
-            : nullptr;
+    const double* temp_j = container_j->GetPtrToState(PARTICLEENGINE::Temperature, particle_j);
+    double* tempdot_j = container_j->CondGetPtrToState(PARTICLEENGINE::TemperatureDot, particle_j);
 
     // thermal conductivities
     const double& k_i = thermomaterial_i->thermalConductivity_;
@@ -339,48 +347,36 @@ void PARTICLEINTERACTION::SPHTemperature::TemperatureGradient() const
         particlematerial_->GetPtrToParticleMatParameter(type_j);
 
     // get pointer to particle states
-    const double* mass_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_i);
+    const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
 
-    const double* dens_i =
-        (container_i->HaveStoredState(PARTICLEENGINE::Density))
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::Density, particle_i)
-            : &(basematerial_i->initDensity_);
+    const double* dens_i = (container_i->HaveStoredState(PARTICLEENGINE::Density))
+                               ? container_i->GetPtrToState(PARTICLEENGINE::Density, particle_i)
+                               : &(basematerial_i->initDensity_);
 
-    const double* temp_i =
-        container_i->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_i);
-
+    const double* temp_i = container_i->GetPtrToState(PARTICLEENGINE::Temperature, particle_i);
     double* tempgrad_i =
-        container_i->HaveStoredState(PARTICLEENGINE::TemperatureGradient)
-            ? container_i->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_i)
-            : nullptr;
+        container_i->CondGetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_i);
 
-    const double* mass_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Mass, particle_j);
+    const double* mass_j = container_j->GetPtrToState(PARTICLEENGINE::Mass, particle_j);
 
-    const double* dens_j =
-        (container_j->HaveStoredState(PARTICLEENGINE::Density))
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::Density, particle_j)
-            : &(basematerial_j->initDensity_);
+    const double* dens_j = (container_j->HaveStoredState(PARTICLEENGINE::Density))
+                               ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
+                               : &(basematerial_j->initDensity_);
 
-    const double* temp_j =
-        container_j->GetPtrToParticleState(PARTICLEENGINE::Temperature, particle_j);
-
+    const double* temp_j = container_j->GetPtrToState(PARTICLEENGINE::Temperature, particle_j);
     double* tempgrad_j =
-        container_j->HaveStoredState(PARTICLEENGINE::TemperatureGradient)
-            ? container_j->GetPtrToParticleState(PARTICLEENGINE::TemperatureGradient, particle_j)
-            : nullptr;
+        container_j->CondGetPtrToState(PARTICLEENGINE::TemperatureGradient, particle_j);
 
-    const double fac =
-        (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) *
-        (dens_i[0] * temp_j[0] + dens_j[0] * temp_i[0]) / (dens_i[0] + dens_j[0]);
+    const double temp_ji = temp_j[0] - temp_i[0];
 
     // sum contribution of neighboring particle j
     if (tempgrad_i)
       UTILS::vec_addscale(
-          tempgrad_i, (dens_i[0] / mass_i[0]) * fac * particlepair.dWdrij_, particlepair.e_ij_);
+          tempgrad_i, (mass_j[0] / dens_j[0]) * temp_ji * particlepair.dWdrij_, particlepair.e_ij_);
 
     // sum contribution of neighboring particle i
     if (tempgrad_j and status_j == PARTICLEENGINE::Owned)
       UTILS::vec_addscale(
-          tempgrad_j, -(dens_j[0] / mass_j[0]) * fac * particlepair.dWdrji_, particlepair.e_ij_);
+          tempgrad_j, (mass_i[0] / dens_i[0]) * temp_ji * particlepair.dWdrji_, particlepair.e_ij_);
   }
 }

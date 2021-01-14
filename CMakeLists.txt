@@ -1,4 +1,3 @@
-
 # Build system for baci and support tools.
 # Including nightly test definitions.
 #
@@ -438,6 +437,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_createdis.cpp
   src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp
+  src/drt_lib/drt_utils_gid_vector.cpp
   src/drt_lib/drt_utils_nullspace.cpp
   src/drt_lib/drt_utils_discret.cpp
   src/drt_lib/drt_utils_discret_dbc.cpp
@@ -565,6 +565,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/viscoelasthyper.cpp
   src/drt_mat/visconeohooke.cpp
+  src/drt_mat/viscoplastic_no_yield_surface.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_anisoactivestress_evolution.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
@@ -1866,6 +1867,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_density.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
+  src/drt_particle_interaction/particle_interaction_sph_heatloss_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
@@ -1876,6 +1878,9 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
   src/drt_particle_interaction/particle_interaction_sph_rigid_particle_contact.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_barrier_force.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_interface_viscosity.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_recoilpressure_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
   src/drt_particle_interaction/particle_interaction_sph_virtual_wall_particle.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp

@@ -31,6 +31,7 @@ MAX_RADIUS                      0.5
 MAX_VELOCITY                    2.0
 REL_PENETRATION                 0.2
 COEFF_RESTITUTION               0.8
+TENSION_CUTOFF                  No
 POISSON_RATIO                   0.3
 FRICT_COEFF_TANG                0.2
 -------------------------------------------------------------------MATERIALS

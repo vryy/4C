@@ -782,7 +782,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
     if (particlestored == 0) continue;
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // position increment of particle
     double positionincrement[3];
@@ -791,9 +791,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
     for (int i = 0; i < particlestored; ++i)
     {
       // get pointer to particle states
-      const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, i);
+      const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, i);
       const double* lasttransferpos =
-          container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, i);
+          container->GetPtrToState(PARTICLEENGINE::LastTransferPosition, i);
 
       // position increment of particle considering periodic boundaries
       particleengine_->DistanceBetweenParticles(pos, lasttransferpos, positionincrement);

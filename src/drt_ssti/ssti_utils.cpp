@@ -565,7 +565,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (ssti_mono.NewtonIteration() == itermax_)
+  if (ssti_mono.NewtonIteration() == itermax_ and !exit)
   {
     if (ssti_mono.Comm().MyPID() == 0)
     {

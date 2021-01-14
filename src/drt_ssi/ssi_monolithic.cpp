@@ -762,10 +762,11 @@ void SSI::SSIMono::SetupSystem()
 
   // initialize object, that performs evaluations of OD coupling
   scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-      MapsStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+      MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
       MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
-      InterfaceCouplingAdapterStructure(), interface_map_scatra, meshtying_strategy_s2i_,
-      ScaTraBaseAlgorithm(), StructureField()));
+      InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
+      interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField(),
+      Meshtying3DomainIntersection()));
 
   // instantiate appropriate equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
@@ -940,14 +941,27 @@ void SSI::SSIMono::UpdateIterStructure()
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    MapsStructure()->InsertVector(
+    MapsCoupStruct()->InsertVector(
         InterfaceCouplingAdapterStructure()->MasterToSlave(
-            MapsStructure()->ExtractVector(StructureField()->Dispnp(), 2)),
+            MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
         1, StructureField()->WriteAccessDispnp());
     StructureField()->SetState(StructureField()->WriteAccessDispnp());
-    MapsStructure()->InsertVector(InterfaceCouplingAdapterStructure()->MasterToSlave(
-                                      MapsStructure()->ExtractVector(increment_structure, 2)),
+    MapsCoupStruct()->InsertVector(InterfaceCouplingAdapterStructure()->MasterToSlave(
+                                       MapsCoupStruct()->ExtractVector(increment_structure, 2)),
         1, increment_structure);
+
+    if (Meshtying3DomainIntersection())
+    {
+      MapsCoupStruct3DomainIntersection()->InsertVector(
+          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
+              MapsCoupStruct3DomainIntersection()->ExtractVector(StructureField()->Dispnp(), 2)),
+          1, StructureField()->WriteAccessDispnp());
+      StructureField()->SetState(StructureField()->WriteAccessDispnp());
+      MapsCoupStruct3DomainIntersection()->InsertVector(
+          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
+              MapsCoupStruct3DomainIntersection()->ExtractVector(increment_structure, 2)),
+          1, increment_structure);
+    }
   }
 
   // update displacement of structure field

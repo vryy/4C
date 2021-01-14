@@ -159,7 +159,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
     if (particlestored <= 0) continue;
 
     // get pointer to particle state
-    const double* state = container->GetPtrToParticleState(transitionstate_, 0);
+    const double* state = container->GetPtrToState(transitionstate_, 0);
 
     // get material for particle types
     const MAT::PAR::ParticleMaterialBase* material_source =
@@ -189,12 +189,19 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
         // add density and pressure state for boundary or rigid particles
         if (isboundaryrigid_source and (not isboundaryrigid_target))
         {
-          particlestates[PARTICLEENGINE::Density].resize(1, material_source->initDensity_);
+          particlestates[PARTICLEENGINE::Density].assign(1, material_source->initDensity_);
 
           const double press = equationofstate_target->DensityToPressure(
               material_source->initDensity_, material_target->initDensity_);
 
-          particlestates[PARTICLEENGINE::Pressure].resize(1, press);
+          particlestates[PARTICLEENGINE::Pressure].assign(1, press);
+        }
+
+        // clear velocity and acceleration state of boundary or rigid particles
+        if (isboundaryrigid_target and (not isboundaryrigid_source))
+        {
+          particlestates[PARTICLEENGINE::Velocity].assign(3, 0.0);
+          particlestates[PARTICLEENGINE::Acceleration].assign(3, 0.0);
         }
 
         PARTICLEENGINE::ParticleObjShrdPtr particleobject =

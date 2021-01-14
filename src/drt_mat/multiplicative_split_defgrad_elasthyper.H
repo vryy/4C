@@ -13,7 +13,6 @@ multiplicatively into elastic and inelastic parts
 #include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include "anisotropy.H"
 
 /*----------------------------------------------------------------------*/
 /*! \class MultiplicativeSplitDefgrad_ElastHyper
@@ -32,6 +31,7 @@ multiplicatively into elastic and inelastic parts
 // forward declaration
 namespace MAT
 {
+  class Anisotropy;
   class InelasticDefgradFactors;
 
   namespace ELASTIC
@@ -55,10 +55,10 @@ namespace MAT
       MultiplicativeSplitDefgrad_ElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~MultiplicativeSplitDefgrad_ElastHyper() { ; }
+      ~MultiplicativeSplitDefgrad_ElastHyper() override = default;
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// length of elastic material list
       const int nummat_elast_;
@@ -83,11 +83,11 @@ namespace MAT
   class MultiplicativeSplitDefgrad_ElastHyperType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
+    std::string Name() const override { return "MultiplicativeSplitDefgrad_ElastHyperType"; }
 
     static MultiplicativeSplitDefgrad_ElastHyperType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MultiplicativeSplitDefgrad_ElastHyperType instance_;
@@ -159,7 +159,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return MultiplicativeSplitDefgrad_ElastHyperType::Instance().UniqueParObjectId();
     }
@@ -172,7 +172,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -184,32 +184,32 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+      if (kinem != INPAR::STR::kinem_nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_multiplicative_split_defgrad_elasthyper;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new MultiplicativeSplitDefgrad_ElastHyper(*this));
     }
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate stress response and elasticity tensor
     void Evaluate(const LINALG::Matrix<3, 3>* defgrad,  ///< Deformation gradient
@@ -237,8 +237,8 @@ namespace MAT
     /*! \brief Evaluate additional terms of the elasticity tensor
      *
      * \f[
-     *   cmatadd = \frac{\partial\bold{S}}{\partial \bold{F}_{in}^{-1}}
-     *             :\frac{\partial\bold{F}_{in}^{-1}}{\partial \bold{C}})
+     *   cmat_{add} = \frac{\partial\bold{S}}{\partial \bold{F}_{in}^{-1}}
+     *             :\frac{\partial\bold{F}_{in}^{-1}}{\partial \bold{C}}
      * \f]
      */
     void EvaluateAdditionalCmat(
@@ -261,14 +261,15 @@ namespace MAT
         const LINALG::Matrix<9, 1>& CiFiniCe9x1,  ///< C * F_{in}^{-1} * C_e^{-1}
         const LINALG::Matrix<6, 1>& iCV,          ///< Inverse right Cauchy-Green tensor
         const LINALG::Matrix<3, 3>& iFinCeM,      ///< F_{in}^{-1} * C_e
-        LINALG::Matrix<6, 9>& dSdiFin)
-        const;  ///< derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic right
-                ///< Cauchy-Green tensor
+        const double detFin,                      ///< determinant of inelastic deformation gradient
+        LINALG::Matrix<6, 9>& dSdiFin)  ///< derivative of 2nd Piola Kirchhoff stresses w.r.t.
+                                        ///< inverse inelastic deformation gradient
+        const;
 
     /*! \brief Evaluates stress and cmat
      *
      * \f[
-     *   cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}})
+     *   cmat = 2 \frac{\partial \bold{S}}{\partial \bold{C}}
      * \f]
      *
      *  cf. Holzapfel [1], p. 216 (6.32) and p. 248
@@ -276,17 +277,14 @@ namespace MAT
      *  with \f$\bold{C}_{in} = \bold{F}_{in}^T \bold{F}_{in}\f$
      *  and \f$\bold{F}_{in}\f$ detoting the inelastic deformation gradient
      * \f[
-     *   \bold{S} = 2 \bold{F}_{in}^{-1} \frac{\partial \Psi_e}{\partial \bold{C}_e}
-     *   \bold{F}_{in}^{-T}
-     * \f]
-     * \f[
-     *   \bold{S} = \gamma_1 \ \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} .
-     *   \bold{C}_{in}^{-1} + \gamma_3 \ \bold{C}^{-1}
-     * \f]
-     * with \f$\gamma_i\f$ as defined in MAT::CalculateGammaDelta()
+     *   \bold{S} = 2 det(\bold{F}_{in}) \bold{F}_{in}^{-1} \frac{\partial \Psi_e}{\partial
+     * \bold{C}_e} \bold{F}_{in}^{-T} \f] \f[ \bold{S} = det(\bold{F}_{in}) \left(\gamma_1 \
+     * \bold{C}_{in}^{-1} + \gamma_2 \ \bold{C}_{in}^{-1} . \bold{C} . \bold{C}_{in}^{-1} + \gamma_3
+     * \ \bold{C}^{-1} \right) \f] with \f$\gamma_i\f$ as defined in MAT::CalculateGammaDelta()
      *
      * \f[
-     *   \mathbb{C} = \delta_1 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \right)
+     *   \mathbb{C} = det(\bold{F}_{in}) \left( \delta_1 \left( \bold{C}_{in}^{-1} \otimes
+     * \bold{C}_{in}^{-1} \right)
      *              + \delta_2 \left( \bold{C}_{in}^{-1} \otimes \bold{C}_{in}^{-1} \bold{C}
      *              \bold{C}_{in}^{-1}  + \bold{C}_{in}^{-1} \bold{C} \bold{C}_{in}^{-1} \otimes
      *              \bold{C}_{in}^{-1} \right)
@@ -299,7 +297,7 @@ namespace MAT
      *              \bold{C}_{in}^{-1} \right)
      *              + \delta_6 \left( \bold{C}^{-1} \otimes \bold{C}^{-1} \right)
      *              + \delta_7 \left( \bold{C}^{-1} \odot \bold{C}^{-1} \right)
-     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right)
+     *              + \delta_8 \left( \bold{C}_{in}^{-1} \odot \bold{C}_{in}^{-1} \right) \right)
      * \f]
      *
      * \f$\odot\f$ is defined as follows:
@@ -314,6 +312,7 @@ namespace MAT
         const LINALG::Matrix<6, 1>& iCinCiCinV,  ///< C_{in}^{-1} * C * C_{in}^{-1}
         const LINALG::Matrix<3, 1>& gamma,       ///< Factors for stress calculation
         const LINALG::Matrix<8, 1>& delta,       ///< Factors for elasticity tensor calculation
+        const double detFin,                     ///< determinant of inelastic deformation gradient
         LINALG::Matrix<6, 1>& stress,            ///< Isotropic stress tensor
         LINALG::Matrix<6, 6>& cmatiso) const;    ///< Isotropic stiffness matrix
 

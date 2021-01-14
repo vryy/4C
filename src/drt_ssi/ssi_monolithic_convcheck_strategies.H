@@ -31,18 +31,16 @@ namespace SSI
   class SSIMono::ConvCheckStrategyBase
   {
    public:
-    //! constructor
-    ConvCheckStrategyBase(
-        const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
-    );
+    ConvCheckStrategyBase(const Teuchos::ParameterList& global_time_parameters);
 
-    //! destructor
     virtual ~ConvCheckStrategyBase() = default;
 
-    //! check termination criterion for Newton-Raphson iteration
-    virtual bool ExitNewtonRaphson(
-        const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
-        ) const = 0;
+    /*!
+     * \brief Check, if Newton-Raphson has converged and print residuals and increments to screen
+     *
+     * @param[in] ssi_mono     time integration algorithm for monolithic SSI
+     * */
+    virtual bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const = 0;
 
    protected:
     //! maximum number of Newton-Raphson iteration steps
@@ -69,19 +67,12 @@ namespace SSI
   class SSIMono::ConvCheckStrategyStd : public SSIMono::ConvCheckStrategyBase
   {
    public:
-    //! constructor
-    ConvCheckStrategyStd(
-        const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
-        )
-        : ConvCheckStrategyBase(parameters){};
+    ConvCheckStrategyStd(const Teuchos::ParameterList& global_time_parameters)
+        : ConvCheckStrategyBase(global_time_parameters){};
 
-    //! destructor
     ~ConvCheckStrategyStd() override = default;
 
-    //! check termination criterion for Newton-Raphson iteration
-    bool ExitNewtonRaphson(
-        const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
-        ) const override;
+    bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
    private:
     //! copy constructor
@@ -98,19 +89,12 @@ namespace SSI
   class SSIMono::ConvCheckStrategyElch : public SSIMono::ConvCheckStrategyBase
   {
    public:
-    //! constructor
-    ConvCheckStrategyElch(
-        const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
-        )
-        : ConvCheckStrategyBase(parameters){};
+    ConvCheckStrategyElch(const Teuchos::ParameterList& global_time_parameters)
+        : ConvCheckStrategyBase(global_time_parameters){};
 
-    //! destructor
     ~ConvCheckStrategyElch() override = default;
 
-    //! check termination criterion for Newton-Raphson iteration
-    bool ExitNewtonRaphson(
-        const SSI::SSIMono& timint  //!< time integrator for monolithic scalar-structure interaction
-        ) const override;
+    bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
    private:
     //! copy constructor

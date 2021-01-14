@@ -42,9 +42,9 @@ void DRT::INPUT::PrintEmptyMaterialDefinitions(std::ostream& stream,
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
   stream << greenlight << sectionname << endcolor << '\n';
 
-  for (unsigned i = 0; i < matlist.size(); ++i)
+  for (auto& i : matlist)
   {
-    matlist[i]->Print(stream, NULL, color);
+    i->Print(stream, nullptr, color);
   }
 }
 
@@ -1035,6 +1035,31 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // Elastic visco-plastic finite strain material law without yield surface
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_Viscoplastic_No_Yield_Surface",
+        "Elastic visco-plastic finite strain material law without yield surface",
+        INPAR::MAT::m_vp_no_yield_surface));
+
+    // elasticity parameters
+    AddNamedReal(m, "YOUNG", "Young's modulus");
+    AddNamedReal(m, "NUE", "Poisson's ratio");
+    AddNamedReal(m, "DENS", "material mass density");
+    // visco-plasticity parameters
+    AddNamedReal(m, "TEMPERATURE", "temperature in Kelvin");
+    AddNamedReal(m, "PRE_EXP_FAC", "pre-exponential factor of plastic shear strain rate 'A'");
+    AddNamedReal(m, "ACTIVATION_ENERGY", "activation energy 'Q'");
+    AddNamedReal(m, "GAS_CONSTANT", "gas constant 'R'");
+    AddNamedReal(m, "STRAIN_RATE_SENS", "strain-rate-sensitivity 'm'");
+    AddNamedReal(m, "INIT_FLOW_RES", "initial isotropic flow resistance 'S^0'");
+    AddNamedReal(m, "FLOW_RES_PRE_FAC", "flow resistance factor 'H_0'");
+    AddNamedReal(m, "FLOW_RES_EXP", "flow resistance exponential value 'a'");
+    AddNamedReal(m, "FLOW_RES_SAT_FAC", "flow resistance saturation factor 'S_*'");
+    AddNamedReal(m, "FLOW_RES_SAT_EXP", "flow resistance saturation exponent 'b'");
+
+    AppendMaterialDefinition(matlist, m);
+  }
 
   /*----------------------------------------------------------------------*/
   // Robinson's visco-plastic material

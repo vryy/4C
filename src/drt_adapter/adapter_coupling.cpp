@@ -16,7 +16,6 @@
 #include "../drt_lib/drt_matchingoctree.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_lib/drt_condition_utils.H"
-#include "../drt_lib/drt_discret.H"
 
 #include <Epetra_IntVector.h>
 
@@ -172,15 +171,14 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
   std::vector<int> masternodes;
   std::vector<int> slavenodes;
 
-  for (unsigned int i = 0; i < masternodes1.size(); ++i)
+  for (int& masternode1 : masternodes1)
   {
-    if (masternodes2.find(masternodes1[i]) == masternodes2.end())
-      masternodes.push_back(masternodes1[i]);
+    if (masternodes2.find(masternode1) == masternodes2.end()) masternodes.push_back(masternode1);
   }
 
-  for (unsigned int i = 0; i < slavenodes1.size(); ++i)
+  for (int& slavenode1 : slavenodes1)
   {
-    if (slavenodes2.find(slavenodes1[i]) == slavenodes2.end()) slavenodes.push_back(slavenodes1[i]);
+    if (slavenodes2.find(slavenode1) == slavenodes2.end()) slavenodes.push_back(slavenode1);
   }
 
   int localmastercount = static_cast<int>(masternodes.size());
@@ -302,6 +300,46 @@ void ADAPTER::Coupling::SetupCoupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
+    const DRT::Discretization& slavedis, const std::vector<std::vector<int>>& masternodes_vec,
+    const std::vector<std::vector<int>>& slavenodes_vec, const int numdof, const bool matchall,
+    const double tolerance, const int nds_master, const int nds_slave)
+{
+  // vectors with master and slave node maps (from input) for every coupling condition
+  // Permuted slave node map for each coupling conditions from MatchNodes()
+  std::vector<Teuchos::RCP<const Epetra_Map>> masternodemap_cond;
+  std::vector<Teuchos::RCP<const Epetra_Map>> slavenodemap_cond;
+  std::vector<Teuchos::RCP<const Epetra_Map>> permslavenodemap_cond;
+
+  for (unsigned i = 0; i < masternodes_vec.size(); ++i)
+  {
+    std::vector<int> masternodes = masternodes_vec.at(i);
+    std::vector<int> slavenodes = slavenodes_vec.at(i);
+
+    std::vector<int> permslavenodes;
+
+    MatchNodes(masterdis, slavedis, masternodes, permslavenodes, slavenodes, matchall, tolerance);
+
+    masternodemap_cond.push_back(Teuchos::rcp(
+        new const Epetra_Map(-1, masternodes.size(), &masternodes[0], 0, masterdis.Comm())));
+    slavenodemap_cond.push_back(Teuchos::rcp(
+        new const Epetra_Map(-1, slavenodes.size(), &slavenodes[0], 0, slavedis.Comm())));
+    permslavenodemap_cond.push_back(Teuchos::rcp(
+        new const Epetra_Map(-1, permslavenodes.size(), &permslavenodes[0], 0, slavedis.Comm())));
+  }
+
+  // merge maps for all conditions, but keep order (= keep assignment of permuted slave node map and
+  // master map)
+  auto masternodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(masternodemap_cond);
+  auto slavenodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(slavenodemap_cond);
+  auto permslavenodemap = LINALG::MultiMapExtractor::MergeMapsKeepOrder(permslavenodemap_cond);
+
+  FinishCoupling(masterdis, slavedis, masternodemap, slavenodemap, permslavenodemap,
+      BuildDofVectorFromNumDof(numdof), BuildDofVectorFromNumDof(numdof), nds_master, nds_slave);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
     const DRT::Discretization& slavedis, std::vector<int>& masternodes,
     std::vector<int>& permslavenodes, const std::vector<int>& slavenodes, const bool matchall,
@@ -325,10 +363,8 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   patchedmasternodes.reserve(coupling.size());
   permslavenodes.reserve(slavenodes.size());
 
-  for (unsigned i = 0; i < masternodes.size(); ++i)
+  for (int gid : masternodes)
   {
-    int gid = masternodes[i];
-
     // We allow to hand in master nodes that do not take part in the
     // coupling. If this is undesired behaviour the user has to make
     // sure all nodes were used.
@@ -459,10 +495,10 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::DiscretizationInterface& dis,
       // loop them and check, whether this is a pbc pure master node
       // for all previous conditions
       unsigned ntimesmaster = 0;
-      for (unsigned numcond = 0; numcond < thiscond.size(); ++numcond)
+      for (auto& cond : thiscond)
       {
-        const std::string* mymasterslavetoggle =
-            thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
+        const auto* mymasterslavetoggle =
+            cond->Get<std::string>("Is slave periodic boundary condition");
 
         if (*mymasterslavetoggle == "Master")
         {

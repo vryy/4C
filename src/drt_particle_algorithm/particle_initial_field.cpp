@@ -94,12 +94,12 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       DRT::UTILS::Function& function = DRT::Problem::Instance()->Funct(functid - 1);
 
       // get pointer to particle states
-      const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, 0);
-      double* state = container->GetPtrToParticleState(particleState, 0);
+      const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, 0);
+      double* state = container->GetPtrToState(particleState, 0);
 
       // get particle state dimensions
-      int posstatedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
-      int statedim = container->GetParticleStateDim(particleState);
+      int posstatedim = container->GetStateDim(PARTICLEENGINE::Position);
+      int statedim = container->GetStateDim(particleState);
 
       // safety check
       if (statedim != function.NumberComponents())

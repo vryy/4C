@@ -362,7 +362,7 @@ void PARTICLEWALL::WallHandlerBase::BuildParticleToWallNeighbors(
 
         // get position of neighboring particle
         const LINALG::Matrix<3, 1> currpos(
-            neighborcontainer->GetPtrToParticleState(PARTICLEENGINE::Position, neighborindex));
+            neighborcontainer->GetPtrToState(PARTICLEENGINE::Position, neighborindex));
 
         // get coordinates of closest point on current column wall element to particle
         LINALG::Matrix<3, 1> closestpos;

@@ -426,6 +426,8 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure coupling condition from Scatra to Solid";
   else if (Type() == SSIInterfaceMeshtying)
     os << "Scalar-Structure interaction interface meshtying condition: ";
+  else if (Type() == SSIMeshtying3DomainIntersection)
+    os << "Scalar-Structure interaction interface meshtying condition including 3 domains: ";
   else if (Type() == SSTIInterfaceMeshtying)
     os << "Scalar-Structure-Thermo interaction interface meshtying condition: ";
   else if (Type() == CellFocalAdhesion)
