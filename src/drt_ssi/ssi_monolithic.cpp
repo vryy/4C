@@ -588,13 +588,35 @@ void SSI::SSIMono::Setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
-  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+
+  const bool equilibration_scatra_initial = DRT::INPUT::IntegralValue<bool>(
+      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
+      "EQUILIBRATION_INIT_SCATRA");
+  const bool calc_initial_pot =
+      DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+
+  if (!equilibration_scatra_initial and
+      ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
   {
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
   }
+  if (equilibration_scatra_initial and
+      ScaTraField()->EquilibrationMethod() == LINALG::EquilibrationMethod::none)
+  {
+    dserror(
+        "You selected to equilibrate equations of initial potential but did not specify any "
+        "equilibration method in ScaTra.");
+  }
+  if (equilibration_scatra_initial and !calc_initial_pot)
+  {
+    dserror(
+        "You selected to equilibrate equations of initial potential but did not activate "
+        "INITPOTCALC in ELCH CONTROL");
+  }
+
   if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
       (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != LINALG::EquilibrationMethod::none))

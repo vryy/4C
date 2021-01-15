@@ -39,6 +39,7 @@ LINEAR_SOLVER                   2
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
 MATRIXTYPE                      block_condition_dof
+EQUILIBRATION                   rows_full
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -60,6 +61,7 @@ SCATRATIMINTTYPE                Elch
 LINEAR_SOLVER                   1
 MATRIXTYPE                      block
 EQUILIBRATION                   rows_maindiag
+EQUILIBRATION_INIT_SCATRA       Yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn

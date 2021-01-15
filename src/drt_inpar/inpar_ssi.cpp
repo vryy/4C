@@ -157,6 +157,10 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
           LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
+
+  BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
+      "use equilibration method of ScaTra to equilibrate initial calculation of potential",
+      &ssidynmono);
 }
 
 

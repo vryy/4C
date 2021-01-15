@@ -104,6 +104,9 @@ void INPAR::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
           LINALG::EquilibrationMethod::symmetry),
       &sstidynmono);
+  BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
+      "use equilibration method of ScaTra to equilibrate initial calculation of potential",
+      &sstidynmono);
 
   /*----------------------------------------------------------------------*/
   /* parameters for thermo                                                */
