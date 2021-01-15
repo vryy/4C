@@ -45,9 +45,9 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
       structure_(Teuchos::null),
       struct_adapterbase_ptr_(Teuchos::null),
       thermo_(Teuchos::null),
-      icoup_structure_(Teuchos::null),
       meshtying_strategy_scatra_(Teuchos::null),
       meshtying_strategy_thermo_(Teuchos::null),
+      structural_meshtying_(Teuchos::rcp(new SSTI::SSTIStructuralMeshtying())),
       interfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSTIInterfaceMeshtying") !=
           nullptr),
@@ -183,10 +183,6 @@ void SSTI::SSTIAlgorithm::Setup()
     structdis->GetCondition("SSTIInterfaceMeshtying", ssticonditions);
     SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssticonditions, structdis);
 
-    // set up scatra-scatra interface coupling adapter for structure field
-    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(
-        structdis, false, "SSTIInterfaceMeshtying", "SSIMeshtying3DomainIntersection");
-
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
         scatra_->ScaTraField()->Strategy());
@@ -205,6 +201,9 @@ void SSTI::SSTIAlgorithm::Setup()
     if (meshtying_strategy_thermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
       dserror("SSTI only implemented for interface coupling with matching interface nodes!");
   }
+
+  // setup everything for SSTI structural meshtying
+  structural_meshtying_->Setup(*this);
 
   issetup_ = true;
 }
@@ -227,7 +226,7 @@ void SSTI::SSTIAlgorithm::CloneDiscretizations(const Epetra_Comm& comm)
   {
     DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraStructureCloneStrategy>(structdis, scatradis);
     scatradis->FillComplete();
-    DRT::UTILS::CloneDiscretization<STI::ScatraThermoCloneStrategy>(scatradis, thermodis);
+    DRT::UTILS::CloneDiscretization<SSTI::SSTIScatraThermoCloneStrategy>(scatradis, thermodis);
     thermodis->FillComplete();
   }
   else

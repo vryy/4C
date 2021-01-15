@@ -199,8 +199,13 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Setup(
   MixtureConstituent::Setup(params, eleGID);
 
   // Update deposition stretch / prestretch of fiber depending on time function
-  double time = params.get<double>("total time", -1.0);
-  if (time < 0)
+  double time = params.get<double>("total time", -2.0);
+  if (std::abs(time + 1) < 1e-9)
+  {
+    // Time has not yet been set by the time integrator during Setup
+    time = 0.0;
+  }
+  else if (time < 0)
   {
     dserror("The current total time is not set in the ParameterList");
   }

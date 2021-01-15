@@ -304,16 +304,16 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       }
 
       // finalize auxiliary system matrix
-      if (!meshtying_3_domain_intersection_)
-      {
-        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
-            *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap());
-      }
-      else
+      if (meshtying_3_domain_intersection_)
       {
         mastermatrixsparse.Complete(
             *LINALG::MultiMapExtractor::MergeMaps({icoup_structure_->MasterDofMap(),
                 icoup_structure_3_domain_intersection_->MasterDofMap()}),
+            *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap());
+      }
+      else
+      {
+        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
             *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap());
       }
 

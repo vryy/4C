@@ -29,7 +29,6 @@
 #include "../drt_sti/sti_monolithic_evaluate_OffDiag.H"
 
 #include "../linalg/linalg_equilibrate.H"
-#include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_solver.H"
 
@@ -377,24 +376,27 @@ void SSTI::SSTIMono::SetupSystem()
       blockmapscatrainterface, blockmapthermointerface, InterfaceMeshtying()));
 
   // initialize strategy for assembly
-  ADAPTER::CouplingSlaveConverter converter(*CouplingAdapterStructure());
   strategy_assemble_ = SSTI::BuildAssembleStrategy(
-      Teuchos::rcp(this, false), converter, matrixtype_, ScaTraField()->MatrixType());
+      Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
   // initialize evaluation objects for coupling betwee subproblems
   scatrastructureoffdiagcoupling_ = Teuchos::rcp(
-      new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsInterfaceStructure(),
+      new SSI::ScatraStructureOffDiagCoupling(StructuralMeshtying()->MapsInterfaceStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
-          CouplingAdapterStructure(), Teuchos::null, interface_map_scatra, MeshtyingScatra(),
-          ScaTraFieldBase(), StructureField(), false));
+          StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
+          StructuralMeshtying()->InterfaceCouplingAdapterStructure3DomainIntersection(),
+          interface_map_scatra, MeshtyingScatra(), ScaTraFieldBase(), StructureField(),
+          StructuralMeshtying()->Meshtying3DomainIntersection()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
-      ssti_maps_mono_->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
+      StructuralMeshtying()->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
-      CouplingAdapterStructure(), interface_map_thermo, MeshtyingThermo(), StructureField(),
-      ThermoFieldBase()));
+      StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
+      StructuralMeshtying()->InterfaceCouplingAdapterStructure3DomainIntersection(),
+      interface_map_thermo, MeshtyingThermo(), StructureField(), ThermoFieldBase(),
+      StructuralMeshtying()->Meshtying3DomainIntersection()));
 
   scatrathermooffdiagcoupling_ = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
       ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
@@ -490,18 +492,40 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
       if (InterfaceMeshtying())
       {
         // displacements
-        ssti_maps_mono_->MapsInterfaceStructure()->InsertVector(
-            CouplingAdapterStructure()->MasterToSlave(
-                ssti_maps_mono_->MapsInterfaceStructure()->ExtractVector(
+        StructuralMeshtying()->MapsInterfaceStructure()->InsertVector(
+            StructuralMeshtying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
+                StructuralMeshtying()->MapsInterfaceStructure()->ExtractVector(
                     StructureField()->Dispnp(), 1)),
             0, StructureField()->WriteAccessDispnp());
 
         // increments
         StructureField()->SetState(StructureField()->WriteAccessDispnp());
-        ssti_maps_mono_->MapsInterfaceStructure()->InsertVector(
-            CouplingAdapterStructure()->MasterToSlave(
-                ssti_maps_mono_->MapsInterfaceStructure()->ExtractVector(subincrement, 1)),
+        StructuralMeshtying()->MapsInterfaceStructure()->InsertVector(
+            StructuralMeshtying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
+                StructuralMeshtying()->MapsInterfaceStructure()->ExtractVector(subincrement, 1)),
             0, subincrement);
+
+        if (StructuralMeshtying()->Meshtying3DomainIntersection())
+        {
+          // displacements
+          StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
+              StructuralMeshtying()
+                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
+                  ->MasterToSlave(StructuralMeshtying()
+                                      ->MapsInterfaceStructure3DomainIntersection()
+                                      ->ExtractVector(StructureField()->Dispnp(), 1)),
+              0, StructureField()->WriteAccessDispnp());
+          StructureField()->SetState(StructureField()->WriteAccessDispnp());
+
+          // increments
+          StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
+              StructuralMeshtying()
+                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
+                  ->MasterToSlave(StructuralMeshtying()
+                                      ->MapsInterfaceStructure3DomainIntersection()
+                                      ->ExtractVector(subincrement, 1)),
+              0, subincrement);
+        }
       }
       break;
     }
