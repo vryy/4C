@@ -515,7 +515,7 @@ imcs-buildtest_daily_debug_ubuntu20:
     <<: *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-DEBUG-GITLAB"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-baci-DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
         - imcs-nightly-debug-ubuntu20
