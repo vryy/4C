@@ -380,8 +380,8 @@ void SSTI::SSTIMono::SetupSystem()
       Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
   // initialize evaluation objects for coupling betwee subproblems
-  scatrastructureoffdiagcoupling_ = Teuchos::rcp(
-      new SSI::ScatraStructureOffDiagCoupling(StructuralMeshtying()->MapsInterfaceStructure(),
+  scatrastructureoffdiagcoupling_ =
+      Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
           StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
@@ -390,7 +390,7 @@ void SSTI::SSTIMono::SetupSystem()
           StructuralMeshtying()->Meshtying3DomainIntersection()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
-      StructuralMeshtying()->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
+      ssti_maps_mono_->MapsStructure(), ssti_maps_mono_->MapsThermo(),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
       StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
