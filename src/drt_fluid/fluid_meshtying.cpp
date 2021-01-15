@@ -18,7 +18,6 @@
 #include "../drt_adapter/adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
-#include "../drt_fluid_ele/fluid_ele_parameter.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_solver.H"
@@ -36,7 +35,7 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver&
       msht_(msht),
       myrank_(dis->Comm().MyPID()),
       surfacesplitter_(surfacesplitter),
-      dofrowmap_(NULL),
+      dofrowmap_(nullptr),
       problemrowmap_(Teuchos::null),
       gndofrowmap_(Teuchos::null),
       gsmdofrowmap_(Teuchos::null),
@@ -54,21 +53,22 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<DRT::Discretization> dis, LINALG::Solver&
       multifield_splitmatrix_(false),
       is_multifield_(false)
 {
-  return;
 }
 
 /*-------------------------------------------------------*/
 /*  Setup mesh-tying problem                ehrl (04/11) */
 /*-------------------------------------------------------*/
 
-void FLD::Meshtying::SetupMeshtying(std::vector<int> coupleddof)
+void FLD::Meshtying::SetupMeshtying(const std::vector<int>& coupleddof, const bool pcoupled)
 {
   // get pointer to dof row map
   dofrowmap_ = discret_->DofRowMap();
 
+  // set whether pressure dof is coupled
+  pcoupled_ = pcoupled;
+
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  1)   Setup Meshtying");
-  if (coupleddof[nsd_] == 0) pcoupled_ = false;
 
   // Setup of meshtying adapter
   adaptermeshtying_->Setup(
@@ -119,8 +119,10 @@ void FLD::Meshtying::SetupMeshtying(std::vector<int> coupleddof)
     std::cout << "number of slave dof's:   " << numdofslave << std::endl << std::endl;
 
     if (numdofmaster > numdofslave)
+    {
       std::cout << "The master side is discretized by more elements than the slave side"
                 << std::endl;
+    }
     else
       std::cout << "The slave side is discretized by more elements than the master side"
                 << std::endl;
@@ -131,10 +133,12 @@ void FLD::Meshtying::SetupMeshtying(std::vector<int> coupleddof)
     case INPAR::FLUID::condensed_bmat:
     case INPAR::FLUID::condensed_bmat_merged:
     {
-      if (pcoupled_ == false)
+      if (!pcoupled_)
+      {
         dserror(
             "The system cannot be solved in a block matrix!! \n"
             "The null space does not have the right length. Fix it or use option Smat");
+      }
 
       // slave dof rowmap
       gsdofrowmap_ = adaptermeshtying_->SlaveDofMap();
@@ -281,12 +285,10 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::InitSystemMatrix() const
       mat->SetCondElements(condelements);
 
       return mat;
-      break;
     }
     case INPAR::FLUID::condensed_smat:
     {
       return Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 108, false, true));
-      break;
     }
     default:
     {
@@ -317,7 +319,7 @@ void FLD::Meshtying::CheckOverlappingBC(Teuchos::RCP<Epetra_Map> map)
     int gid = adaptermeshtying_->Interface()->SlaveRowNodes()->GID(j);
     DRT::Node* node = adaptermeshtying_->Interface()->Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %", gid);
-    MORTAR::MortarNode* mtnode = static_cast<MORTAR::MortarNode*>(node);
+    auto* mtnode = static_cast<MORTAR::MortarNode*>(node);
 
     // check if this node's dofs are in given map
     for (int k = 0; k < mtnode->NumDof(); ++k)
@@ -344,8 +346,6 @@ void FLD::Meshtying::CheckOverlappingBC(Teuchos::RCP<Epetra_Map> map)
           "This leads to an over-constraint problem setup");
     }
   }
-
-  return;
 }
 
 /*---------------------------------------------------*/
@@ -385,8 +385,6 @@ void FLD::Meshtying::ProjectMasterToSlaveForOverlappingBC(
     // std::cout << "AFTER projection from master to slave side" << std::endl;
     // OutputVectorSplit(velnp);
   }
-
-  return;
 }
 
 /*------------------------------------------------------------------------------*/
@@ -429,8 +427,6 @@ void FLD::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
           << std::endl;
     }
   }
-
-  return;
 }
 
 /*------------------------------------------------------------------*/
@@ -439,7 +435,7 @@ void FLD::Meshtying::DirichletOnMaster(Teuchos::RCP<const Epetra_Map> bmaps)
 void FLD::Meshtying::IncludeDirichletInCondensation(
     const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& veln)
 {
-  if (dconmaster_ == true)
+  if (dconmaster_)
   {
     valuesdc_ = LINALG::CreateVector(*dofrowmap_, true);
     valuesdc_->Update(1.0, *velnp, 1.0);
@@ -447,8 +443,6 @@ void FLD::Meshtying::IncludeDirichletInCondensation(
 
     firstnonliniter_ = true;
   }
-
-  return;
 }
 
 
@@ -463,8 +457,6 @@ void FLD::Meshtying::EvaluateWithMeshRelocation(Teuchos::RCP<Epetra_Vector>& dis
 
   // call mortar evaluate routine including mesh correction
   adaptermeshtying_->EvaluateWithMeshRelocation(discret_, aledis, dispnp, discret_->Comm(), true);
-
-  return;
 }
 
 /*---------------------------------------------------*/
@@ -504,8 +496,6 @@ void FLD::Meshtying::PrepareMeshtyingSystem(const Teuchos::RCP<LINALG::SparseOpe
       dserror("Meshtying algorithm not recognized!");
       break;
   }
-
-  return;
 }
 
 
@@ -525,8 +515,6 @@ void FLD::Meshtying::ApplyPTToResidual(Teuchos::RCP<LINALG::SparseOperator> sysm
 
   // export residual back to original vector
   LINALG::Export(*res, *residual);
-
-  return;
 }
 
 
@@ -678,7 +666,6 @@ void FLD::Meshtying::SolveMeshtying(LINALG::Solver& solver,
       dserror("");
       break;
   }
-  return;
 }
 
 
@@ -709,8 +696,6 @@ void FLD::Meshtying::CondensationSparseMatrix(const Teuchos::RCP<LINALG::SparseO
   /**********************************************************************/
 
   CondensationOperationSparseMatrix(sysmat, residual, splitmatrix, splitres, splitvel);
-
-  return;
 }
 
 
@@ -738,8 +723,6 @@ void FLD::Meshtying::CondensationBlockMatrix(const Teuchos::RCP<LINALG::SparseOp
   /**********************************************************************/
 
   CondensationOperationBlockMatrix(sysmat, residual, splitres, splitvel);
-
-  return;
 }
 
 
@@ -774,8 +757,6 @@ void FLD::Meshtying::SplitMatrix(Teuchos::RCP<LINALG::SparseOperator>
 
   // finalize resulting block sparse matrix
   splitmatrix->Complete();
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -814,8 +795,6 @@ void FLD::Meshtying::SplitVector(
   splitvector[0] = fn;
   splitvector[1] = fm;
   splitvector[2] = fs;
-
-  return;
 }
 
 
@@ -831,8 +810,6 @@ void FLD::Meshtying::SplitVectorBasedOn3x3(
   // build up the reduced residual
   LINALG::Export(*(splitvector[0]), *vectorbasedon2x2);
   LINALG::Export(*(splitvector[1]), *vectorbasedon2x2);
-
-  return;
 }
 
 
@@ -902,7 +879,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   Teuchos::RCP<Epetra_Vector> dcmm = Teuchos::null;
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdcmaster(3);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
+  if (dconmaster_ and firstnonliniter_)
   {
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
@@ -942,8 +919,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
 
   sysmat->Add(*knm_mod, false, 1.0, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    knm_add->Multiply(false, *(splitdcmaster[1]), *dcnm);
+  if (dconmaster_ and firstnonliniter_) knm_add->Multiply(false, *(splitdcmaster[1]), *dcnm);
 
   /*--------------------------------------------------------------------*/
   // Part mn
@@ -975,8 +951,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
 
   sysmat->Add(*kmm_mod, false, 1.0, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
+  if (dconmaster_ and firstnonliniter_) kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
 
   Teuchos::RCP<Epetra_Vector> ones = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   Teuchos::RCP<LINALG::SparseMatrix> onesdiag;
@@ -1151,7 +1126,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   fm_mod->Update(-1.0, *fm_mod_mm, 1.0);
 
   // r_m: insert Dirichlet boundary conditions
-  if (dconmaster_ == true and firstnonliniter_ == true) fm_mod->Update(-1.0, *dcmm, 1.0);
+  if (dconmaster_ and firstnonliniter_) fm_mod->Update(-1.0, *dcmm, 1.0);
 
   // export additions to r_m subvector to r_new
   Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
@@ -1186,7 +1161,7 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   LINALG::Export(*(splitres[0]), *fnexp);
   resnew->Update(1.0, *fnexp, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
+  if (dconmaster_ and firstnonliniter_)
   {
     Teuchos::RCP<Epetra_Vector> fn_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
     LINALG::Export(*dcnm, *fn_exp);
@@ -1194,8 +1169,6 @@ void FLD::Meshtying::CondensationOperationSparseMatrix(
   }
 
   residual->Update(1.0, *resnew, 0.0);
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1242,7 +1215,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   Teuchos::RCP<Epetra_Vector> dcmm = Teuchos::null;
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdcmaster(3);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
+  if (dconmaster_ and firstnonliniter_)
   {
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
@@ -1264,8 +1237,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   sysmatnew->Matrix(0, 1).UnComplete();
   sysmatnew->Matrix(0, 1).Add(*knm_mod, false, 1.0, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    knm_mod->Multiply(false, *(splitdcmaster[1]), *dcnm);
+  if (dconmaster_ and firstnonliniter_) knm_mod->Multiply(false, *(splitdcmaster[1]), *dcnm);
 
   /*--------------------------------------------------------------------*/
   // block mn
@@ -1291,8 +1263,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   sysmatnew->Matrix(1, 1).UnComplete();
   sysmatnew->Matrix(1, 1).Add(*kmm_mod, false, 1.0, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
+  if (dconmaster_ and firstnonliniter_) kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
 
   // complete matrix
   sysmatnew->Complete();
@@ -1315,7 +1286,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   fm_mod->Update(-1.0, *fm_mod_mm, 1.0);
 
   // r_m: insert Dirichlet boundary conditions
-  if (dconmaster_ == true and firstnonliniter_ == true) fm_mod->Update(-1.0, *dcmm, 1.0);
+  if (dconmaster_ and firstnonliniter_) fm_mod->Update(-1.0, *dcmm, 1.0);
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Epetra_Vector> fm_modexp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_));
@@ -1340,7 +1311,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   LINALG::Export(*fn_mod, *fn_modexp);
   residual->Update(1.0, *fn_modexp, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
+  if (dconmaster_ and firstnonliniter_)
   {
     Teuchos::RCP<Epetra_Vector> fn_exp = Teuchos::rcp(new Epetra_Vector(*dofrowmap_, true));
     LINALG::Export(*dcnm, *fn_exp);
@@ -1350,8 +1321,6 @@ void FLD::Meshtying::CondensationOperationBlockMatrix(
   // export r_s = zero to residual
   Teuchos::RCP<Epetra_Vector> fs_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
   LINALG::Export(*fs_mod, *residual);
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1381,7 +1350,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
 
   // split vector containing Dirichlet boundary conditions, if any
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdcmaster(3);
-  if (dconmaster_ == true and firstnonliniter_ == true) SplitVector(valuesdc_, splitdcmaster);
+  if (dconmaster_ and firstnonliniter_) SplitVector(valuesdc_, splitdcmaster);
 
   // get transformation matrix
   Teuchos::RCP<LINALG::SparseMatrix> P = adaptermeshtying_->GetMortarTrafo();
@@ -1402,7 +1371,7 @@ void FLD::Meshtying::UpdateSlaveDOF(
   fs_mod->Update(1.0, *fs_mod_m, 1.0);
 
   // set Dirichlet boundary conditions, if any
-  if (dconmaster_ == true and firstnonliniter_ == true)
+  if (dconmaster_ and firstnonliniter_)
   {
     Teuchos::RCP<Epetra_Vector> fsdc_mod = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_, true));
     P->Multiply(false, *(splitdcmaster[1]), *fsdc_mod);
@@ -1425,12 +1394,10 @@ void FLD::Meshtying::UpdateSlaveDOF(
   incnew->Update(1.0, *fs_modexp, 1.0);
 
   // set iteration counter for Dirichlet boundary conditions, if any
-  if (dconmaster_ == true and firstnonliniter_ == true) firstnonliniter_ = false;
+  if (dconmaster_ and firstnonliniter_) firstnonliniter_ = false;
 
   // define incremental vector to new incremental vector
   inc->Update(1.0, *incnew, 0.0);
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1488,8 +1455,6 @@ void FLD::Meshtying::OutputSparseMatrixSplit(Teuchos::RCP<LINALG::SparseOperator
   std::cout << "Teil ss: " << std::endl << splitmatrix->Matrix(2, 2) << std::endl;
 
   dserror("Matrix output finished");
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1519,20 +1484,6 @@ void FLD::Meshtying::OutputBlockMatrix(
 
   std::cout << "Block mn" << *(sysmat3.EpetraMatrix()) << std::endl;
   std::cout << "Block mm" << *(sysmat4.EpetraMatrix()) << std::endl;
-  /*std::cout << "Block ms" << *(sysmat5.EpetraMatrix()) << std::endl;
-
-  std::cout << "Block sn" << *(sysmat6.EpetraMatrix()) << std::endl;
-  std::cout << "Block sm" << *(sysmat7.EpetraMatrix()) << std::endl;
-  std::cout << "Block ss" << *(sysmat8.EpetraMatrix()) << std::endl;*/
-
-  // LINALG::PrintMatrixInMatlabFormat("sysmat_BlockMatrix",*sysmat->EpetraMatrix(),true);
-
-  /*    if (sysmat->RowMap().SameAs(residual_->Map()))
-          std::cout << "juhu" << std::endl;
-        else
-          std::cout << "nein" << std::endl;  */
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1549,7 +1500,6 @@ void FLD::Meshtying::OutputVectorSplit(Teuchos::RCP<Epetra_Vector> vector)
   // std::cout << "Teil fn " << std::endl << *(splitvector[0]) << std::endl << std::endl;
   std::cout << "Teil fm: " << std::endl << *(splitvector[1]) << std::endl << std::endl;
   std::cout << "Teil fs: " << std::endl << *(splitvector[2]) << std::endl;
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1657,8 +1607,6 @@ void FLD::Meshtying::IsMultifield(
   multifield_rangemaps_shape_ = rangemaps_shape;
   multifield_splitmatrix_ = splitmatrix;
   is_multifield_ = ismultifield;
-
-  return;
 }
 
 /*-------------------------------------------------------*/
@@ -1882,7 +1830,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   Teuchos::RCP<Epetra_Vector> dcmm = Teuchos::null;
   std::vector<Teuchos::RCP<Epetra_Vector>> splitdcmaster(3);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
+  if (dconmaster_ and firstnonliniter_)
   {
     dcnm = Teuchos::rcp(new Epetra_Vector(*gndofrowmap_, true));
     dcmm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_, true));
@@ -1904,8 +1852,7 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   shapederivatives->Matrix(0, 1).UnComplete();
   shapederivatives->Matrix(0, 1).Add(*knm_mod, false, 1.0, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    knm_mod->Multiply(false, *(splitdcmaster[1]), *dcnm);  //???
+  if (dconmaster_ and firstnonliniter_) knm_mod->Multiply(false, *(splitdcmaster[1]), *dcnm);  //???
 
   /*--------------------------------------------------------------------*/
   // block mn
@@ -1931,10 +1878,8 @@ void FLD::Meshtying::CondensationOperationBlockMatrixShape(
   shapederivatives->Matrix(1, 1).UnComplete();
   shapederivatives->Matrix(1, 1).Add(*kmm_mod, false, 1.0, 1.0);
 
-  if (dconmaster_ == true and firstnonliniter_ == true)
-    kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
+  if (dconmaster_ and firstnonliniter_) kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
 
   // complete matrix
   shapederivatives->Complete();
-  return;
 }
