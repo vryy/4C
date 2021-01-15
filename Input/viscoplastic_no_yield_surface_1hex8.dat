@@ -17,8 +17,15 @@ PROBLEMTYP                      Structure
 -----------------------------------------------------------------IO
 STRUCT_STRESS                   cauchy
 STRUCT_STRAIN                   log
+------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+OUTPUT_STRUCTURE                yes
+DISPLACEMENT                    yes
+STRESS_STRAIN                   yes
+----------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              binary
+INTERVAL_STEPS                  1
 -------------------------------------------------STRUCTURAL DYNAMIC
-INT_STRATEGY                    Old
+INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
 RESTARTEVRY                     30
@@ -40,6 +47,8 @@ STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -9.06271329067036280e-02 TOL
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -9.06271329067068060e-02 TOLERANCE 9.1e-10
 STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 2.84025416687741394e-01 TOLERANCE 2.8e-09
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -9.06271329067021153e-02 TOLERANCE 9.1e-10
+STRUCTURE DIS structure NODE 4 QUANTITY stress_zz VALUE  1.83879098311578976e-01 TOLERANCE 1.8e-07
+STRUCTURE DIS structure NODE 8 QUANTITY stress_zz VALUE  1.83879098311589884e-01 TOLERANCE 1.8e-07
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
