@@ -451,7 +451,6 @@ imcs-buildtest_full_ubuntu20:
         CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
         - imcs-full-ubuntu20
-    allow_failure: true
     needs: ["checkcode"]
 
 imcs-buildtest_interactive:
