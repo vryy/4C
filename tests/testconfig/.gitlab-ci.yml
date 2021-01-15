@@ -38,7 +38,7 @@ variables:
 
     # Flags for entering interactive mode on specific machines # (0: off, 1: on)
     GITLAB_INTERACTIVE_MODE: "0"
-    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs)
+    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs, imcs_ubuntu20)
     GITLAB_INTERACTIVE_MACHINE: "none"
     # Flags for doing a clean build in interactive mode # (0: off, 1: on)
     GITLAB_INTERACTIVE_CLEAN: "0"
@@ -464,7 +464,7 @@ imcs-buildtest_interactive:
     tags:
         - imcs-interactive
     rules:
-        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs_ubuntu20"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs"'
           when: always
 
 imcs-buildtest_interactive_ubuntu20:
@@ -478,7 +478,7 @@ imcs-buildtest_interactive_ubuntu20:
     tags:
         - imcs-interactive-ubuntu20
     rules:
-        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs_ubuntu20"'
           when: always
 
 imcs-buildtest_daily:
