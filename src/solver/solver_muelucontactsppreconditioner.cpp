@@ -990,7 +990,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     H->GetLevel(0)->Set("Nullspace1", nullspace11);
     H->GetLevel(0)->Set("Nullspace2", nullspace22);
     H->GetLevel(0)->Set(
-        "PrimalInterfaceDofRowMap", Teuchos::rcp_dynamic_cast<const Map>(xSlaveDofMap, true));
+        "Primal interface DOF map", Teuchos::rcp_dynamic_cast<const Map>(xSlaveDofMap, true));
 
     mueLuFactory.SetupHierarchy(*H);
 
