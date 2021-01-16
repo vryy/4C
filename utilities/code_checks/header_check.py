@@ -110,7 +110,7 @@ def main():
     if diff_only:
       look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
     else:
-      look_cmd = "find ./ -type f"
+      look_cmd = "git ls-files"
     errors += check_cpp_files_for_header(look_cmd, allerrors)
     errors += check_support_files_for_tabs(look_cmd, allerrors)
     errors += check_support_files_for_trailing_whitespace(look_cmd, allerrors)

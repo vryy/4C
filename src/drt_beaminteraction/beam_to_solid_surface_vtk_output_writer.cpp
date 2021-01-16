@@ -66,6 +66,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
           "beam-to-solid-surface", vtk_params, restart_time));
 
+  // Whether or not to write unique cell and node IDs.
+  const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
+
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
   // with ranks that do not contribute to a certain writer.
@@ -81,6 +84,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       visualization_writer->AddFieldDataVector("sum_coupling_moment_beam");
       visualization_writer->AddFieldDataVector("sum_coupling_force_solid");
       visualization_writer->AddFieldDataVector("sum_coupling_moment_solid");
+      if (write_unique_ids) visualization_writer->AddPointDataVector("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->GetAveragedNormalsOutputFlag())
@@ -92,6 +96,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       visualization_writer->AddPointDataVector("normal_averaged", 3);
       visualization_writer->AddPointDataVector("normal_element", 3);
       visualization_writer->AddPointDataVector("coupling_id", 1);
+      if (write_unique_ids) visualization_writer->AddPointDataVector("uid_0_face_id", 1);
     }
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
@@ -100,6 +105,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btssc-mortar");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("lambda", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+      }
     }
 
     if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
@@ -109,6 +119,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
               "mortar-continuous", "btssc-mortar-continuous");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("lambda", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_writer->AddCellDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddCellDataVector("uid_1_pair_solid_id", 1);
+      }
     }
 
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
@@ -118,6 +135,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
               "integration-points", "btssc-integration-points");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("projection_direction", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+      }
     }
 
     if (output_params_ptr_->GetSegmentationOutputFlag())
@@ -126,6 +148,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btssc-segmentation");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("projection_direction", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+      }
     }
   }
 
@@ -204,8 +231,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
       const int coupling_id = beam_to_surface_condition->GetOtherCondition()->GetInt("COUPLING_ID");
 
       // Create the output for the averaged normal field.
-      AddAveragedNodalNormals(
-          visualization_averaged_normals, surface_evaluation_data->GetFaceElements(), coupling_id);
+      AddAveragedNodalNormals(visualization_averaged_normals,
+          surface_evaluation_data->GetFaceElements(), coupling_id,
+          output_params_ptr_->GetWriteUniqueIDsFlag());
     }
   }
 
@@ -217,7 +245,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
   if (nodal_force_visualization != Teuchos::null)
     AddBeamInteractionNodalForces(nodal_force_visualization, beam_contact->DiscretPtr(),
         beam_contact->BeamInteractionDataState().GetDisNp(),
-        beam_contact->BeamInteractionDataState().GetForceNp());
+        beam_contact->BeamInteractionDataState().GetForceNp(),
+        output_params_ptr_->GetWriteUniqueIDsFlag());
 
 
   // Loop over the assembly managers and add the visualization for the pairs contained in the

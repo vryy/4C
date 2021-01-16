@@ -21,7 +21,7 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 
   double* a = A.A();
   char uplo[5];
-  strncpy(uplo, "L ", 2);
+  strcpy(uplo, "L ");
   std::vector<int> ipiv(dim);
   int lwork = 10 * dim;
   std::vector<double> work(lwork);

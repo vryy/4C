@@ -75,7 +75,7 @@ namespace FLD
     virtual ~Meshtying() { return; };
 
     //! Set up mesh-tying framework
-    void SetupMeshtying(std::vector<int> coupleddof);
+    void SetupMeshtying(const std::vector<int>& coupleddof, const bool pcoupled = true);
 
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
 

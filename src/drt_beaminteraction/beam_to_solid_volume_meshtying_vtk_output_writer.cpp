@@ -69,6 +69,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
           "beam-to-solid-volume", vtk_params, restart_time));
 
+  // Whether or not to write unique cell and node IDs.
+  const bool write_unique_ids = output_params_ptr_->GetWriteUniqueIDsFlag();
+
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
   // with ranks that do not contribute to a certain writer.
@@ -80,6 +83,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("force_beam", 3);
       visualization_writer->AddPointDataVector("force_solid", 3);
+      if (write_unique_ids) visualization_writer->AddPointDataVector("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
@@ -88,6 +92,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btsvc-mortar");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("lambda", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+      }
     }
 
     if (output_params_ptr_->GetMortarLambdaContinuousOutputFlag())
@@ -97,6 +106,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
               "mortar-continuous", "btsvc-mortar-continuous");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("lambda", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_writer->AddCellDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddCellDataVector("uid_1_pair_solid_id", 1);
+      }
     }
 
     if (output_params_ptr_->GetIntegrationPointsOutputFlag())
@@ -106,6 +122,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
               "integration-points", "btsvc-integration-points");
       visualization_writer->AddPointDataVector("displacement", 3);
       visualization_writer->AddPointDataVector("force", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+      }
     }
 
     if (output_params_ptr_->GetSegmentationOutputFlag())
@@ -113,6 +134,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btsvc-segmentation");
       visualization_writer->AddPointDataVector("displacement", 3);
+      if (write_unique_ids)
+      {
+        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
+        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+      }
     }
   }
 
@@ -128,8 +154,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
   CheckInitSetup();
 
   // Get the time step and time for the output file. If output is desired at every iteration, the
-  // values are padded. The runtime output is written when the time step is already set to the next
-  // step.
+  // values are padded. The runtime output is written when the time step is already set to the
+  // next step.
   int i_step = beam_contact->GState().GetStepN();
   double time = beam_contact->GState().GetTimeN();
   if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
@@ -147,8 +173,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
 
   if (output_params_ptr_->GetOutputEveryIteration())
   {
-    // Get the time step and time for the output file. If output is desired at every iteration, the
-    // values are padded.
+    // Get the time step and time for the output file. If output is desired at every iteration,
+    // the values are padded.
     int i_step = 10000 * beam_contact->GState().GetStepN() + i_iteration;
     double time = beam_contact->GState().GetTimeN() + 1e-8 * i_iteration;
 
@@ -177,7 +203,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
   if (visualization != Teuchos::null)
     AddBeamInteractionNodalForces(visualization, beam_contact->DiscretPtr(),
         beam_contact->BeamInteractionDataState().GetDisNp(),
-        beam_contact->BeamInteractionDataState().GetForceNp());
+        beam_contact->BeamInteractionDataState().GetForceNp(),
+        output_params_ptr_->GetWriteUniqueIDsFlag());
 
 
   // Loop over the assembly managers and add the visualization for the pairs contained in the
@@ -198,8 +225,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
         BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect>(assembly_manager);
     if (not(indirect_assembly_manager == Teuchos::null))
     {
-      // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
-      // that will be passed to the pairs.
+      // Get the global vector with the Lagrange Multiplier values and add it to the parameter
+      // list that will be passed to the pairs.
       Teuchos::RCP<Epetra_Vector> lambda =
           indirect_assembly_manager->GetMortarManager()->GetGlobalLambdaCol(
               beam_contact->GState().GetDisNp());
@@ -209,8 +236,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::
       visualization_params.set<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
           "mortar_manager", indirect_assembly_manager->GetMortarManager());
 
-      // This map is used to ensure, that each discrete Lagrange multiplier is only written once per
-      // beam element.
+      // This map is used to ensure, that each discrete Lagrange multiplier is only written once
+      // per beam element.
       Teuchos::RCP<std::unordered_set<int>> beam_tracker =
           Teuchos::rcp(new std::unordered_set<int>());
       visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
