@@ -13,6 +13,9 @@
 #define BEAM_TO_SOLID_UTILS_H
 
 
+#include <Teuchos_RCP.hpp>
+
+
 // Forward declarations.
 namespace INPAR
 {
@@ -29,11 +32,33 @@ namespace LINALG
 namespace DRT
 {
   class Element;
+  class Discretization;
 }  // namespace DRT
+namespace LARGEROTATIONS
+{
+  template <unsigned int numnodes, typename T>
+  class TriadInterpolationLocalRotationVectors;
+}
+class Epetra_Vector;
 
 
 namespace BEAMINTERACTION
 {
+  /**
+   * \brief Setup the triad interpolation scheme for the current triad and reference triad of the
+   * given beam element.
+   * @param discret (in) Discretization.
+   * @param displacement_vector (in) Global displacement vector.
+   * @param ele (in) Pointer to the beam element.
+   * @param triad_interpolation_scheme (out) Interpolation of current triad field..
+   * @param ref_triad_interpolation_scheme (out) Interpolation of reference triad field.
+   */
+  void GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
+      const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
+      LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
+      LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+          ref_triad_interpolation_scheme);
+
   /**
    * \brief Get the rotation vector of a triad constructed in the solid.
    * @param rot_coupling_type (in) Type of triad construction.

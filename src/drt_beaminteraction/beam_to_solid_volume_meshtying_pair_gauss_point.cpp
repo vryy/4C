@@ -15,11 +15,9 @@
 
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
-#include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_volume.H"
-#include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
 
 #include <Epetra_FEVector.h>
@@ -204,28 +202,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // If there are no intersection segments, return no contact status.
   if (this->line_to_3D_segments_.size() == 0) return;
 
-  // Check that the beam element is a SR beam.
-  auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(this->Element1());
-  if (beam_ele == nullptr) dserror("Rotational coupling is only implemented for SR beams.");
-
-  // Get the rotations of the beam rotation nodes.
-  std::vector<double> beam_displacement_vector_full_double;
-  BEAMINTERACTION::UTILS::GetCurrentElementDis(
-      *discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
-
-  // Create object for triad interpolation schemes.
-  std::vector<LINALG::Matrix<4, 1, double>> nodal_quaternions(3);
-  beam_ele->GetNodalTriadsFromFullDispVecOrFromDispTheta<3, double>(
-      beam_displacement_vector_full_double, nodal_quaternions);
+  // Get the beam triad interpolation schemes.
   LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
-  triad_interpolation_scheme.Reset(nodal_quaternions);
-
-  std::vector<double> beam_displacement_vector_full_ref(
-      beam_displacement_vector_full_double.size(), 0.0);
-  beam_ele->GetNodalTriadsFromFullDispVecOrFromDispTheta<3, double>(
-      beam_displacement_vector_full_ref, nodal_quaternions);
   LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double> ref_triad_interpolation_scheme;
-  ref_triad_interpolation_scheme.Reset(nodal_quaternions);
+  GetBeamTriadInterpolationScheme(*discret, displacement_vector, this->Element1(),
+      triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
   // Set the FAD variables for the solid DOFs.
   LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
@@ -259,7 +240,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // The first 9 entries in the vector will be the rotational DOFs of the beam, the other entries
   // are the solid DOFs.
   std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-  beam_ele->LocationVector(*discret, lm_beam, lmowner, lmstride);
+  this->Element1()->LocationVector(*discret, lm_beam, lmowner, lmstride);
   this->Element2()->LocationVector(*discret, lm_solid, lmowner, lmstride);
   int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;

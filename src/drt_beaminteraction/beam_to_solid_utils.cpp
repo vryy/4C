@@ -11,12 +11,47 @@
 
 #include "beam_to_solid_utils.H"
 
+#include "beaminteraction_calc_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
 #include "../headers/FAD_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_fem_general/largerotations.H"
 #include "../drt_inpar/inpar_beam_to_solid.H"
+#include "../drt_beam3/beam3r.H"
+#include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
 
+
+/**
+ *
+ */
+void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
+    LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
+    LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+        ref_triad_interpolation_scheme)
+{
+  // Check that the beam element is a SR beam.
+  auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
+  if (beam_ele == nullptr)
+    dserror("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
+
+  // Get the rotations of the beam rotation nodes.
+  std::vector<double> beam_displacement_vector_full_double;
+  BEAMINTERACTION::UTILS::GetCurrentElementDis(
+      discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
+
+  // Create object for triad interpolation schemes.
+  std::vector<LINALG::Matrix<4, 1, double>> nodal_quaternions(3);
+  beam_ele->GetNodalTriadsFromFullDispVecOrFromDispTheta<3, double>(
+      beam_displacement_vector_full_double, nodal_quaternions);
+  triad_interpolation_scheme.Reset(nodal_quaternions);
+
+  std::vector<double> beam_displacement_vector_full_ref(
+      beam_displacement_vector_full_double.size(), 0.0);
+  beam_ele->GetNodalTriadsFromFullDispVecOrFromDispTheta<3, double>(
+      beam_displacement_vector_full_ref, nodal_quaternions);
+  ref_triad_interpolation_scheme.Reset(nodal_quaternions);
+}
 
 /**
  *
