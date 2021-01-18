@@ -249,15 +249,17 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(
 
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double concentration) const
+double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
+    const double concentration, const double temperature) const
 {
-  double firstderiv(0.0);
+  // derivative of diffusion coefficient w.r.t. concentration
+  double diffusion_coeff_conc_deriv(0.0);
 
   // evaluate derivative w.r.t. concentration of pre implemented concentration dependent diffusion
   // coefficient
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
   {
-    firstderiv =
+    diffusion_coeff_conc_deriv =
         EvalFirstDerivPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
             concentration, DiffusionCoefficientParams());
   }
@@ -271,12 +273,17 @@ double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double concentration
   // concentration as defined in the input file
   else
   {
-    firstderiv = (DRT::Problem::Instance()
-                      ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
-                      .EvaluateTimeDerivative(concentration, 1))[1];
+    diffusion_coeff_conc_deriv =
+        (DRT::Problem::Instance()
+                ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
+                .EvaluateTimeDerivative(concentration, 1))[1];
   }
 
-  return firstderiv;
+  // do the temperature dependent scaling
+  diffusion_coeff_conc_deriv *= ComputeTemperatureDependentScaleFactor(
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum());
+
+  return diffusion_coeff_conc_deriv;
 }
 
 /*----------------------------------------------------------------------*
@@ -325,15 +332,17 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeFirstDerivCond(const double concentration) const
+double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
+    const double concentration, const double temperature) const
 {
-  double firstderiv(0.0);
+  // derivative of conductivity w.r.t. concentration
+  double conductivity_conc_deriv(0.0);
 
   // evaluate derivative w.r.t. concentration of pre implemented concentration dependent
   // conductivity
   if (ConductivityConcentrationDependenceFunctNum() < 0)
   {
-    firstderiv = EvalFirstDerivPreDefinedFunctValue(
+    conductivity_conc_deriv = EvalFirstDerivPreDefinedFunctValue(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
   }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
@@ -346,12 +355,16 @@ double MAT::ElchSingleMat::ComputeFirstDerivCond(const double concentration) con
   // concentration as defined in the input file
   else
   {
-    firstderiv = (DRT::Problem::Instance()
-                      ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
-                      .EvaluateTimeDerivative(concentration, 1))[1];
+    conductivity_conc_deriv = (DRT::Problem::Instance()
+                                   ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
+                                   .EvaluateTimeDerivative(concentration, 1))[1];
   }
 
-  return firstderiv;
+  // do the temperature dependent scaling
+  conductivity_conc_deriv *=
+      ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
+
+  return conductivity_conc_deriv;
 }
 
 

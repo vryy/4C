@@ -197,8 +197,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // concentration depending diffusion coefficient
   diffmanager->SetIsotropicDiff(
       matnewman->ComputeDiffusionCoefficient(concentration, temperature), 0);
-  // derivation of concentration depending diffusion coefficient wrt all ionic species
-  diffmanager->SetDerivIsoDiffCoef(matnewman->ComputeFirstDerivDiffCoeff(concentration), 0, 0);
+  // derivation of concentration depending diffusion coefficient wrt concentration
+  diffmanager->SetDerivIsoDiffCoef(
+      matnewman->ComputeConcentrationDerivativeOfDiffusionCoefficient(concentration, temperature),
+      0, 0);
 
   // concentration depending transference number
   diffmanager->SetTransNum(matnewman->ComputeTransferenceNumber(concentration), 0);
@@ -214,8 +216,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // since time curve is used as input routine
   // conductivity of electrolyte solution
   diffmanager->SetCond(matnewman->ComputeConductivity(concentration, temperature));
-  // derivative of conductivity with respect to concentrations
-  diffmanager->SetDerivCond(matnewman->ComputeFirstDerivCond(concentration), 0);
+  // derivative of concentration depending conductivity wrt concentration
+  diffmanager->SetDerivCond(
+      matnewman->ComputeConcentrationDerivativeOfConductivity(concentration, temperature), 0);
 }
 
 /*----------------------------------------------------------------------*

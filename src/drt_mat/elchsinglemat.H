@@ -107,8 +107,9 @@ namespace MAT
     //! compute temperature dependent scale factor based on provided function
     double ComputeTemperatureDependentScaleFactor(double temperature, int functionNumber) const;
 
-    //! compute first derivative of diffusion coefficient according to function number
-    double ComputeFirstDerivDiffCoeff(double concentration) const;
+    //! compute first derivative of diffusion coefficient w.r.t. concentration
+    double ComputeConcentrationDerivativeOfDiffusionCoefficient(
+        double concentration, double temperature) const;
 
     //! compute conductivity accounting for concentration and temperature dependence
     double ComputeConductivity(double concentration, double temperature) const;
@@ -116,8 +117,9 @@ namespace MAT
     //! compute concentration dependent conductivity according to function number
     double ComputeConductivityConcentrationDependent(double concentration) const;
 
-    //! compute first derivative of conductivity according to function number
-    double ComputeFirstDerivCond(double concentration) const;
+    //! compute first derivative of conductivity w.r.t. concentration
+    double ComputeConcentrationDerivativeOfConductivity(
+        double concentration, double temperature) const;
 
    protected:
     //! return function number describing concentration dependence of the diffusion coefficient

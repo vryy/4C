@@ -87,13 +87,17 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::MatElectrode(
       matelectrode->ComputeDiffusionCoefficient(concentration, temperature), 0);
 
   // derivative of diffusion coefficient with respect to concentration
-  diffmanager->SetDerivIsoDiffCoef(matelectrode->ComputeFirstDerivDiffCoeff(concentration), 0, 0);
+  diffmanager->SetDerivIsoDiffCoef(
+      matelectrode->ComputeConcentrationDerivativeOfDiffusionCoefficient(
+          concentration, temperature),
+      0, 0);
 
   // electronic conductivity
   diffmanager->SetCond(matelectrode->ComputeConductivity(concentration, temperature));
 
   // derivative of electronic conductivity with respect to concentration
-  diffmanager->SetDerivCond(matelectrode->ComputeFirstDerivCond(concentration), 0);
+  diffmanager->SetDerivCond(
+      matelectrode->ComputeConcentrationDerivativeOfConductivity(concentration, temperature), 0);
 }
 
 
