@@ -14,16 +14,11 @@
 
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*
-DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
-    const int numdofpernode,                      ///< number of degrees of freedom per node
-    const int numscal,                            ///< number of transported scalars per node
-    const std::string& disname,                   ///< name of discretization
-    const ScaTraEleUtilsElchElectrode* delete_me  ///< creation/destruction indication
-)
+DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(const int numdofpernode,
+    const int numscal, const std::string& disname, const ScaTraEleUtilsElchElectrode* delete_me)
 {
   // each discretization is associated with exactly one instance of this class according to a static
   // map
@@ -31,7 +26,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
 
   // check whether instance already exists for current discretization, and perform instantiation if
   // not
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] =
@@ -41,15 +36,15 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
   // destruct instance
   else
   {
-    for (typename std::map<std::string, ScaTraEleUtilsElchElectrode<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
@@ -59,7 +54,6 @@ DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Done()
@@ -70,17 +64,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::ScaTraEleUtilsElchElectrode(
-    const int numdofpernode,    ///< number of degrees of freedom per node
-    const int numscal,          ///< number of transported scalars per node
-    const std::string& disname  ///< name of discretization
-    )
+    const int numdofpernode, const int numscal, const std::string& disname)
     : myelch::ScaTraEleUtilsElch(numdofpernode, numscal, disname)
 {
-  return;
 }
 
 
