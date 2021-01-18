@@ -295,15 +295,36 @@ void SSTI::SSTIMono::Setup()
           equilibration_method_.thermo != LINALG::EquilibrationMethod::none))
     dserror("Block based equilibration only for block matrices");
 
-  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+  const bool equilibration_scatra_initial = DRT::INPUT::IntegralValue<bool>(
+      DRT::Problem::Instance()->SSTIControlParams().sublist("MONOLITHIC"),
+      "EQUILIBRATION_INIT_SCATRA");
+  const bool calc_initial_pot =
+      DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+
+  if (!equilibration_scatra_initial and
+      ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
   {
     dserror(
         "You are within the monolithic SSTI framework but activated a pure scatra equilibration "
         "method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set it in 'SSTI "
         "CONTROL/MONOLITHIC' instead.");
   }
+  if (equilibration_scatra_initial and
+      ScaTraField()->EquilibrationMethod() == LINALG::EquilibrationMethod::none)
+  {
+    dserror(
+        "You selected to equilibrate equations of initial potential but did not specify any "
+        "equilibration method in ScaTra.");
+  }
+  if (equilibration_scatra_initial and !calc_initial_pot)
+  {
+    dserror(
+        "You selected to equilibrate equations of initial potential but did not activate "
+        "INITPOTCALC in ELCH CONTROL");
+  }
+
   if (!ScaTraField()->IsIncremental())
-    dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
+    dserror("Must have incremental solution approach for monolithic SSTI!");
 }
 
 /*--------------------------------------------------------------------------*
@@ -380,8 +401,8 @@ void SSTI::SSTIMono::SetupSystem()
       Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
   // initialize evaluation objects for coupling betwee subproblems
-  scatrastructureoffdiagcoupling_ = Teuchos::rcp(
-      new SSI::ScatraStructureOffDiagCoupling(StructuralMeshtying()->MapsInterfaceStructure(),
+  scatrastructureoffdiagcoupling_ =
+      Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
           StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
@@ -390,7 +411,7 @@ void SSTI::SSTIMono::SetupSystem()
           StructuralMeshtying()->Meshtying3DomainIntersection()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
-      StructuralMeshtying()->MapsInterfaceStructure(), ssti_maps_mono_->MapsThermo(),
+      ssti_maps_mono_->MapsStructure(), ssti_maps_mono_->MapsThermo(),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
       StructuralMeshtying()->InterfaceCouplingAdapterStructure(),

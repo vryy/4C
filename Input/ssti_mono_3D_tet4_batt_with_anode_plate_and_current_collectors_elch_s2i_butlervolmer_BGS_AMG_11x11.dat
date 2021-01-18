@@ -33,7 +33,7 @@ PROBLEMTYP                      Structure_Scalar_Thermo_Interaction
 STDOUTEVRY                      0
 ------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   3
 INT_STRATEGY                    Standard
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
@@ -41,9 +41,12 @@ RHO_INF                         0.95
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITIALFIELD                    field_by_condition
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   2
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
+MATRIXTYPE                      block_condition
+OUTPUTSCALARS                   entire_domain_and_by_condition
+EQUILIBRATION                   rows_full
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -67,13 +70,36 @@ COUPALGO                        ssti_Monolithic
 SCATRATIMINTTYPE                Elch
 --------------------------------------------SSTI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
-MATRIXTYPE                      sparse
+MATRIXTYPE                      block
+EQUILIBRATION                   rows_maindiag
+EQUILIBRATION_INIT_SCATRA       Yes
 ------------------------------------------------SSTI CONTROL/THERMO
-LINEAR_SOLVER                   1
+LINEAR_SOLVER                   4
 INITIALFIELD                    field_by_function
 INITTHERMOFUNCT                 6
 ----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11.xml
+AZSUB                           10
+----------------------------------------------------------SOLVER 2
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11_scatra.xml
+AZSUB                           20
+----------------------------------------------------------SOLVER 3
+SOLVER                          Aztec_MSR
+AZPREC                          MueLu_sym
+STRATIMIKOS_XMLFILE             ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11_structure.xml
+AZSUB                           20
+----------------------------------------------------------SOLVER 4
+SOLVER                          Aztec_MSR
+AZPREC                          AMGnxn
+AMGNXN_TYPE                     XML
+AMGNXN_XML_FILE                 ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11_thermo.xml
+AZSUB                           20
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_electrode DIFF_COEF_CONC_DEP_FUNCT -1 DIFF_COEF_TEMP_SCALE_FUNCT 0 COND_CONC_DEP_FUNCT -1 COND_TEMP_SCALE_FUNCT 0 DIFF_PARA_NUM 1 DIFF_PARA 5.0e-10 COND_PARA_NUM 1 COND_PARA 1.0e5 C_MAX 4.7933e4 CHI_MAX 1.0 OCP_MODEL csv X_MIN 0.3 X_MAX 0.9825 OCP_CSV ssi_mono_3D_tet4_batt_with_anode_plate_elch_s2i_butlervolmer.csv END
 MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 2 INELDEFGRADFACIDS 4 5 DENS 4.7e3
@@ -136,29 +162,29 @@ COMPONENT 1 FUNCTION 0.0
 ------------------------------------------------------------FUNCT6
 FUNCTION 300.0
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 4 QUANTITY phi1 VALUE  3.65053961524067745e+01 TOLERANCE 3.7e-06
-SCATRA DIS scatra NODE 4 QUANTITY phi2 VALUE  6.85349028495199283e-03 TOLERANCE 6.9e-10
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -3.06913309347307741e-08 TOLERANCE 3.1e-15
-STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -1.99927241456612905e-10 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE  5.21221414089495707e-10 TOLERANCE 1.0e-16
-SCATRA DIS thermo NODE 4 QUANTITY phi VALUE  2.99915297554596009e+02 TOLERANCE 3.0e-05
-SCATRA DIS scatra NODE 634 QUANTITY phi1 VALUE  4.55220021705832187e+04 TOLERANCE 4.6e-03
-SCATRA DIS scatra NODE 634 QUANTITY phi2 VALUE  3.50881383948899250e+00 TOLERANCE 3.5e-07
-STRUCTURE DIS structure NODE 634 QUANTITY dispx VALUE -5.85817157793190687e-08 TOLERANCE 5.9e-15
-STRUCTURE DIS structure NODE 634 QUANTITY dispy VALUE -1.83705702758929726e-10 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 634 QUANTITY dispz VALUE  2.59263462073545287e-10 TOLERANCE 1.0e-16
-SCATRA DIS thermo NODE 634 QUANTITY phi VALUE  3.00010940430998687e+02 TOLERANCE 3.0e-05
-SCATRA DIS scatra NODE 767 QUANTITY phi1 VALUE  4.52310101342989219e+04 TOLERANCE 4.5e-03
-SCATRA DIS scatra NODE 767 QUANTITY phi2 VALUE  3.53910227792493792e+00 TOLERANCE 3.5e-07
-STRUCTURE DIS structure NODE 767 QUANTITY dispx VALUE -7.85864900165068362e-09 TOLERANCE 7.9e-16
+SCATRA DIS scatra NODE 4 QUANTITY phi1 VALUE  3.65053961729195464e+01 TOLERANCE 3.7e-06
+SCATRA DIS scatra NODE 4 QUANTITY phi2 VALUE  6.85349028758564741e-03 TOLERANCE 6.9e-10
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -3.06913309532755546e-08 TOLERANCE 3.1e-15
+STRUCTURE DIS structure NODE 4 QUANTITY dispy VALUE -1.99927241574545855e-10 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE  5.21221414365215375e-10 TOLERANCE 1.0e-16
+SCATRA DIS thermo NODE 4 QUANTITY phi VALUE  2.99915297554545532e+02 TOLERANCE 3.0e-05
+SCATRA DIS scatra NODE 634 QUANTITY phi1 VALUE  4.55220021705560866e+04 TOLERANCE 4.6e-03
+SCATRA DIS scatra NODE 634 QUANTITY phi2 VALUE  3.50881383949730452e+00 TOLERANCE 3.5e-07
+STRUCTURE DIS structure NODE 634 QUANTITY dispx VALUE -5.85817158175354416e-08 TOLERANCE 5.9e-15
+STRUCTURE DIS structure NODE 634 QUANTITY dispy VALUE -1.83705702007128169e-10 TOLERANCE 1.0e-16
+STRUCTURE DIS structure NODE 634 QUANTITY dispz VALUE  2.59263461171008263e-10 TOLERANCE 1.0e-16
+SCATRA DIS thermo NODE 634 QUANTITY phi VALUE  3.00010940431006873e+02 TOLERANCE 3.0e-05
+SCATRA DIS scatra NODE 767 QUANTITY phi1 VALUE  4.52310101334653227e+04 TOLERANCE 4.5e-03
+SCATRA DIS scatra NODE 767 QUANTITY phi2 VALUE  3.53910227796411725e+00 TOLERANCE 3.5e-07
+STRUCTURE DIS structure NODE 767 QUANTITY dispx VALUE -7.85864901051456578e-09 TOLERANCE 7.9e-16
 STRUCTURE DIS structure NODE 767 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-STRUCTURE DIS structure NODE 767 QUANTITY dispz VALUE -2.04666510280444835e-09 TOLERANCE 2.0e-16
-SCATRA DIS thermo NODE 767 QUANTITY phi VALUE  3.00044060271298406e+02 TOLERANCE 3.0e-05
+STRUCTURE DIS structure NODE 767 QUANTITY dispz VALUE -2.04666510911625870e-09 TOLERANCE 2.0e-16
+SCATRA DIS thermo NODE 767 QUANTITY phi VALUE  3.00044060271393334e+02 TOLERANCE 3.0e-05
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  5
 NDSURF  28
-NDVOL   9
+NDVOL   17
 --------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
 DSURF  1
 // cat-side_cc
@@ -233,6 +259,26 @@ E 9 - 3 Slave KineticModel ConstantInterfaceResistance resistance 2.0e-3
 E 10 - 4 Master
 // cc-side_(sl)_of_sol-el-comp_cat-
 E 11 - 4 Slave KineticModel NoInterfaceFlux
+-----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
+DVOL   3
+// anode
+E 1 - ID 0
+// electrolyte
+E 2 - ID 1
+// cathode
+E 3 - ID 2
+-----------------------DESIGN SCATRA VOL CONDITIONS / PARTITIONING
+DVOL   5
+// anode
+E 1 -
+// electrolyte
+E 2 -
+// cathode
+E 3 -
+// anode_cc
+E 4 -
+// cathode_cc
+E 5 -
 -------------------DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS
 DVOL   1
 // cathode
