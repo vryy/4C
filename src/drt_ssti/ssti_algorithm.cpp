@@ -301,6 +301,8 @@ void SSTI::SSTIAlgorithm::DistributeThermoSolution()
 {
   StructureField()->Discretization()->SetState(2, "tempfield", thermo_->ScaTraField()->Phinp());
 
+  ScaTraField()->Discretization()->SetState(2, "thermo", thermo_->ScaTraField()->Phinp());
+
   if (interfacemeshtying_)
   {
     // extract master side temperatures and copy to slave side dof map

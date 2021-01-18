@@ -774,6 +774,10 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
 
+  // dummy matrix of nodal master temperature values and shape derivatives
+  LINALG::Matrix<my::nen_master_, 1> dummy_master_temp(true);
+  LINALG::Matrix<my::nsd_slave_ + 1, my::nen_slave_> dummy_shapederivatives(true);
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
@@ -782,15 +786,18 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         my::EvalShapeFuncAndDomIntFacAtIntPoint(slaveelement, masterelement, cell, intpoints, gpid);
 
     // evaluate overall integration factor
-    const double timefacfac =
-        DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
+    const double timefac = DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac();
+    const double timefacfac = timefac * fac;
     if (timefacfac < 0.) dserror("Integration factor is negative!");
+
+    const double timefacwgt = timefac * intpoints.IP().qwgt[gpid];
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
         distypeS>::template EvaluateS2ICouplingODAtIntegrationPoint<distypeM>(matelectrode,
-        my::ephinp_slave_, etempnp_slave_, my::ephinp_master_, my::funct_slave_, my::funct_master_,
-        my::test_lm_slave_, my::test_lm_master_, kineticmodel, numelectrons, kr, alphaa, alphac,
-        timefacfac, static_cast<int>(SCATRA::DifferentiationType::temp), k_ss, k_ms);
+        my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_, my::funct_slave_,
+        my::funct_master_, my::test_lm_slave_, my::test_lm_master_, dummy_shapederivatives,
+        kineticmodel, numelectrons, kr, alphaa, alphac, timefacfac, timefacwgt,
+        static_cast<int>(SCATRA::DifferentiationType::temp), k_ss, k_ms);
   }  // loop over integration points
 
   return;

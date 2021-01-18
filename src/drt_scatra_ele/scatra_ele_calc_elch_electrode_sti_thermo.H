@@ -12,8 +12,9 @@ within thermodynamic electrodes
 #define SCATRA_ELE_CALC_ELCH_ELECTRODE_STI_THERMO_H
 
 #include "scatra_ele_sti_thermo.H"
+#include "scatra_ele_calc_elch_electrode.H"
 
-#include "../drt_scatra_ele/scatra_ele_calc_elch_electrode.H"
+#include "../drt_mat/material.H"
 
 namespace DRT
 {
@@ -113,6 +114,11 @@ namespace DRT
             ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<my::nsd_, my::nen_>>(
             my::scatravarmanager_);
       };
+
+     private:
+      // material type for evaluation
+      INPAR::MAT::MaterialType materialtype_;
+
     };  // class ScaTraEleCalcElchElectrodeSTIThermo
 
 

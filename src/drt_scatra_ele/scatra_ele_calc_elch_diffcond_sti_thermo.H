@@ -11,8 +11,9 @@
 #define SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_H
 
 #include "scatra_ele_sti_thermo.H"
+#include "scatra_ele_calc_elch_diffcond.H"
 
-#include "../drt_scatra_ele/scatra_ele_calc_elch_diffcond.H"
+#include "../drt_mat/material.H"
 
 namespace DRT
 {
@@ -113,6 +114,11 @@ namespace DRT
             ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<my::nsd_, my::nen_>>(
             my::scatravarmanager_);
       };
+
+     private:
+      // material type for evaluation
+      INPAR::MAT::MaterialType materialtype_;
+
     };  // class ScaTraEleCalcElchDiffCondSTIThermo
 
 
