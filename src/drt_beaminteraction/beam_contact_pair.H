@@ -321,19 +321,21 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair and assemble
-     * them into global matrices.
+     * \brief Evaluate the global matrices and vectors resulting from mortar coupling.
      * @param discret (in) Discretization, used to get the beam GIDs.
      * @param mortar_manager (in) Mortar manager, used to get the Lagrange multiplier GIDs.
-     * @param global_D (in/out) Global mortar matrix D.
-     * @param global_M (in/out) Global mortar matrix D.
-     * @param global_constraint_offset (in/out) Global constraint offset vector.
+     * @param global_GB (in/out) Constraint equations derived w.r.t the beam DOFs.
+     * @param global_GS (in/out) Constraint equations derived w.r.t the solid DOFs.
+     * @param global_FB (in/out) Beam force vector derived w.r.t the Lagrange multipliers.
+     * @param global_FS (in/out) Solid force vector derived w.r.t the Lagrange multipliers.
+     * @param global_constraint (in/out) Global constraint vector.
      * @param global_kappa (in/out) Global scaling matrix.
      * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
      */
-    virtual void EvaluateAndAssembleDM(const DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
-        LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint_offset,
+    virtual void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
+        LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
+        LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active){};
 
     /**

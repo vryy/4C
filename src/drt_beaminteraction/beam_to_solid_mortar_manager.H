@@ -145,9 +145,10 @@ namespace BEAMINTERACTION
         const BEAMINTERACTION::BeamContactPair* contact_pair, std::vector<int>& lambda_row) const;
 
     /**
-     * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
+     * \brief Evaluate mortar coupling contributions on all pairs and assemble them into the global
+     * matrices.
      */
-    void EvaluateGlobalDM();
+    void EvaluateGlobalCouplingContributions();
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -282,14 +283,20 @@ namespace BEAMINTERACTION
     //! used on this rank.
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
-    //! Global \f$D\f$ matrix.
-    Teuchos::RCP<LINALG::SparseMatrix> global_D_;
-
-    //! Global \f$M\f$ matrix.
-    Teuchos::RCP<LINALG::SparseMatrix> global_M_;
-
     //! Global constraint vector.
     Teuchos::RCP<Epetra_FEVector> global_constraint_;
+
+    //! Derivative of constraint vector w.r.t the beam DOF.
+    Teuchos::RCP<LINALG::SparseMatrix> global_GB_;
+
+    //! Derivative of constraint vector w.r.t the solid DOF.
+    Teuchos::RCP<LINALG::SparseMatrix> global_GS_;
+
+    //! Derivative of the beam coupling forces w.r.t the Lagrange multipliers.
+    Teuchos::RCP<LINALG::SparseMatrix> global_FB_;
+
+    //! Derivative of the solid coupling forces w.r.t the Lagrange multipliers.
+    Teuchos::RCP<LINALG::SparseMatrix> global_FS_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

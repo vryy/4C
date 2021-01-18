@@ -68,12 +68,12 @@ namespace BEAMINTERACTION
         const Epetra_Vector& global_lambda) override;
 
     /**
-     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair and assemble
-     * them into global matrices. (derived)
+     * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    void EvaluateAndAssembleDM(const DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
-        LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint,
+    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
+        LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
+        LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active) override;
   };
 

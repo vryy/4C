@@ -116,9 +116,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleDM(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
-    LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint,
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
+    LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
+    LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
@@ -203,18 +204,24 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   std::vector<int> lambda_gid;
   mortar_manager->LocationVector(this, lambda_gid);
 
-  // Assemble into the global D matrix.
+  // Assemble into the matrices related to beam DOFs.
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-      global_D.FEAssemble(FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam)),
-          lambda_gid[i_lambda], beam_centerline_gid(i_beam));
+    {
+      const double val = FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
+      global_GB.FEAssemble(val, lambda_gid[i_lambda], beam_centerline_gid(i_beam));
+      global_FB.FEAssemble(val, beam_centerline_gid(i_beam), lambda_gid[i_lambda]);
+    }
 
-  // Assemble into the global M matrix.
+  // Assemble into the matrices related to solid DOFs.
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
     for (unsigned int i_patch = 0; i_patch < patch_gid.size(); i_patch++)
-      global_M.FEAssemble(
-          -1.0 * FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch)),
-          lambda_gid[i_lambda], patch_gid[i_patch]);
+    {
+      const double val =
+          FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
+      global_GS.FEAssemble(val, lambda_gid[i_lambda], patch_gid[i_patch]);
+      global_FS.FEAssemble(val, patch_gid[i_patch], lambda_gid[i_lambda]);
+    }
 
   // Assemble into global coupling vector.
   LINALG::Matrix<mortar::n_dof_, 1, double> constraint_vector_double =
