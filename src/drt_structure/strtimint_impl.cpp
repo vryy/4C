@@ -1329,7 +1329,7 @@ bool STR::TimIntImpl::Converged()
           convDispLagrIncr = normlagr_ < tollagr_;
           break;*/
         default:
-          dserror("You should not turn up here.");
+          dserror("Unknown norm type for Lagrange multiplier increment.");
           break;
       }
 
