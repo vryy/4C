@@ -38,7 +38,7 @@ namespace DRT
       using my = ScaTraEleCalc<distype>;
 
      public:
-      virtual ~ScaTraEleCalcElch() = default;
+      ~ScaTraEleCalcElch() override = default;
 
       /// called upon destruction
       virtual void Done() = 0;
@@ -329,22 +329,28 @@ namespace DRT
       {
       }
 
-      virtual ~ScaTraEleInternalVariableManagerElch() = default;
+      ~ScaTraEleInternalVariableManagerElch() override = default;
 
       // compute and set internal variables used by Nernst-Planck formulation and the
       // Diffusion-Conduction formulation
-      void SetInternalVariablesElch(
-          const LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const LINALG::Matrix<NSD, NEN>&
-              derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<LINALG::Matrix<NEN, 1>>&
-              ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,  //!< nodal state variables at t_(n)
-          const LINALG::Matrix<NSD, NEN>&
-              econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<LINALG::Matrix<NEN, 1>>&
-              ehist,              //!< history vector of transported scalars
-          bool do_setfrt = true)  //! should FRT be set?
+
+      /*!
+       * \brief ompute and set internal variables used by Nernst-Planck formulation and
+       * the Diffusion-Conduction formulation
+       *
+       * @param funct          array for shape functions
+       * @param derxy          global derivatives of shape functions w.r.t x,y,z
+       * @param ephinp         nodal state variables at t_(n+1) or t_(n+alpha_F)
+       * @param ephin          nodal state variables at t_(n)
+       * @param econvelnp      nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+       * @param ehist          history vector of transported scalars
+       * @param do_setfrt      should FRT be set?
+       */
+      void SetInternalVariablesElch(const LINALG::Matrix<NEN, 1>& funct,
+          const LINALG::Matrix<NSD, NEN>& derxy, const std::vector<LINALG::Matrix<NEN, 1>>& ephinp,
+          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,
+          const LINALG::Matrix<NSD, NEN>& econvelnp,
+          const std::vector<LINALG::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
       {
         // call base class (scatra)
         my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);

@@ -36,7 +36,7 @@ namespace DRT
           const ScaTraEleBoundaryCalcElchElectrodeSTIThermo* delete_me = NULL);
 
       //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() = default;
+      ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() override = default;
 
       //! singleton destruction
       virtual void Done();

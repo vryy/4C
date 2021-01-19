@@ -51,7 +51,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
-      virtual ~ScaTraEleCalcElchElectrode() = default;
+      ~ScaTraEleCalcElchElectrode() override = default;
 
       //! abbreviations
       using my = ScaTraEleCalc<distype>;
@@ -330,7 +330,7 @@ namespace DRT
       }
 
       //! destructor
-      virtual ~ScaTraEleInternalVariableManagerElchElectrode() = default;
+      ~ScaTraEleInternalVariableManagerElchElectrode() override = default;
 
       //! compute and set internal electrode-specific variables
       void SetInternalVariablesElchElectrode(

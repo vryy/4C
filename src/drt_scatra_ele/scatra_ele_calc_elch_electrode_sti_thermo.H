@@ -50,7 +50,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
-      virtual ~ScaTraEleCalcElchElectrodeSTIThermo() = default;
+      ~ScaTraEleCalcElchElectrodeSTIThermo() override = default;
 
       //! evaluate action for off-diagonal system matrix block
       int EvaluateActionOD(DRT::Element* ele,        //!< current element
@@ -142,7 +142,7 @@ namespace DRT
             ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>(){};
 
       //! destructor
-      virtual ~ScaTraEleInternalVariableManagerElchElectrodeSTIThermo() = default;
+      ~ScaTraEleInternalVariableManagerElchElectrodeSTIThermo() override = default;
 
       //! set internal variables for element evaluation
       void SetInternalVariables(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions

@@ -25,7 +25,7 @@ namespace DRT
     class ScaTraEleCalcElchNP : public ScaTraEleCalcElch<distype>
     {
      public:
-      virtual ~ScaTraEleCalcElchNP() { return; };
+      ~ScaTraEleCalcElchNP() override = default;
 
       /// Singleton access method
       static ScaTraEleCalcElchNP<distype>* Instance(const int numdofpernode, const int numscal,
@@ -35,8 +35,8 @@ namespace DRT
       virtual void Done();
 
      private:
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElch<distype> myelch;
+      using my = ScaTraEleCalc<distype>;
+      using myelch = ScaTraEleCalcElch<distype>;
 
       /// private constructor, since we are a Singleton.
       ScaTraEleCalcElchNP(const int numdofpernode, const int numscal, const std::string& disname);
@@ -358,8 +358,8 @@ namespace DRT
         : public ScaTraEleInternalVariableManagerElch<NSD, NEN>
     {
      public:
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> vm;
-      typedef ScaTraEleInternalVariableManagerElch<NSD, NEN> vmelch;
+      using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
+      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
 
       ScaTraEleInternalVariableManagerElchNP(
           int numscal, const DRT::ELEMENTS::ScaTraEleParameterElch* elchpara)
@@ -371,10 +371,10 @@ namespace DRT
             migvelint_(true),
             migconv_(true)
       {
-        return;
       }
 
-      virtual ~ScaTraEleInternalVariableManagerElchNP() { return; };
+      ~ScaTraEleInternalVariableManagerElchNP() override = default;
+      ;
 
       //! compute and set internal variables for the Nernst-Planck formulation
       void SetInternalVariablesElchNP(
@@ -399,8 +399,6 @@ namespace DRT
 
         // convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi}*\grad{N}
         migconv_.MultiplyTN(-vmelch::frt_, derxy, vmelch::gradpot_);
-
-        return;
       };
 
       /*========================================================================*/
