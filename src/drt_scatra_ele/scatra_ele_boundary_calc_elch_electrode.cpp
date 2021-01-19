@@ -38,12 +38,14 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
   else
   {
     for (auto& i : instances)
+    {
       if (i.second == delete_me)
       {
         delete i.second;
         instances.erase(i.first);
         return nullptr;
       }
+    }
   }
 
   return instances[disname];
@@ -452,7 +454,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         // access input parameters associated with current condition
         const int numelectrons = my::scatraparamsboundary_->NumElectrons();
         const double faraday = myelch::elchparams_->Faraday();
-        const double gasconstant = myelch::elchparams_->GasConstant();
         const double alphaa = my::scatraparamsboundary_->AlphaA();
         const double alphac = my::scatraparamsboundary_->AlphaC();
         const double kr = my::scatraparamsboundary_->ChargeTransferConstant();

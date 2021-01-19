@@ -10,7 +10,6 @@ within electrodes
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_electrode.H"
 
-#include "scatra_ele.H"
 #include "scatra_ele_parameter_std.H"
 
 #include "../drt_lib/drt_discret.H"
@@ -64,8 +63,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CheckElchElementParamet
   if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode) dserror("Invalid material type!");
 
   if (my::numscal_ != 1) dserror("Invalid number of transported scalars!");
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CheckElchElementParameter
 
 
@@ -81,8 +78,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity(
 {
   // use precomputed conductivity
   sigma_all = DiffManager()->GetCond();
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::GetConductivity
 
 
@@ -124,10 +119,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateCurrent(
       dserror("Invalid flux type!");
       break;
     }
-  };
-
-
-  return;
+  }
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateCurrent
 
 
@@ -254,8 +246,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOCAn
     scalars(4) = intcdivv;
     scalars(5) = intvgradc;
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOCAndCRate
 
 
@@ -292,9 +282,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux(
       dserror("received illegal flag inside flux evaluation for whole domain");
       break;
     }
-  };
-
-  return;
+  }
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateFlux
 
 
@@ -310,8 +298,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalErrorComparedToAnaly
 {
   // call base class routine
   myelch::CalErrorComparedToAnalytSolution(ele, params, errors);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalErrorComparedToAnalytSolution
 
 
@@ -324,8 +310,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesFor
   // set internal variables
   VarManager()->SetInternalVariablesElchElectrode(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesForMatAndRHS()
 
 // template classes

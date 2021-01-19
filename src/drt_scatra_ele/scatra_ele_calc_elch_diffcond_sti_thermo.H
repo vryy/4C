@@ -39,17 +39,17 @@ namespace DRT
 
      private:
       //! abbreviations
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElch<distype> myelch;
-      typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
-      typedef ScaTraEleSTIThermo<distype> mythermo;
+      using my = ScaTraEleCalc<distype>;
+      using myelch = ScaTraEleCalcElch<distype>;
+      using mydiffcond = ScaTraEleCalcElchDiffCond<distype>;
+      using mythermo = ScaTraEleSTIThermo<distype>;
 
       //! private constructor for singletons
       ScaTraEleCalcElchDiffCondSTIThermo(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
-      virtual ~ScaTraEleCalcElchDiffCondSTIThermo() { return; }
+      virtual ~ScaTraEleCalcElchDiffCondSTIThermo() = default;
 
       //! evaluate action for off-diagonal system matrix block
       int EvaluateActionOD(DRT::Element* ele,        //!< current element
@@ -130,9 +130,9 @@ namespace DRT
     {
      public:
       //! abbreviations
-      typedef ScaTraEleInternalVariableManagerElch<NSD, NEN> vmelch;
-      typedef ScaTraEleInternalVariableManagerElchDiffCond<NSD, NEN> vmdiffcond;
-      typedef ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN> vmthermo;
+      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
+      using vmdiffcond = ScaTraEleInternalVariableManagerElchDiffCond<NSD, NEN>;
+      using vmthermo = ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>;
 
       //! constructor
       ScaTraEleInternalVariableManagerElchDiffCondSTIThermo(int numscal,
@@ -141,13 +141,10 @@ namespace DRT
           :  // call base class constructors
             ScaTraEleInternalVariableManagerElchDiffCond<NSD, NEN>(
                 numscal, elchparams, diffcondparams),
-            ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>()
-      {
-        return;
-      };
+            ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>(){};
 
       //! destructor
-      virtual ~ScaTraEleInternalVariableManagerElchDiffCondSTIThermo() { return; };
+      virtual ~ScaTraEleInternalVariableManagerElchDiffCondSTIThermo() = default;
 
       //! set internal variables for element evaluation
       void SetInternalVariables(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
@@ -170,8 +167,6 @@ namespace DRT
         // set scatra variables
         // this requires the temperature to be already set
         vmdiffcond::SetInternalVariablesElchDiffCond(funct, derxy, ephinp, ephin, econvelnp, ehist);
-
-        return;
       }
 
       //! set factor F/RT
@@ -180,8 +175,6 @@ namespace DRT
         vmelch::frt_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday() /
                        (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *
                            vmthermo::Temp());
-
-        return;
       }
     };  // class ScaTraEleInternalVariableManagerElchDiffCondSTIThermo
   }     // namespace ELEMENTS

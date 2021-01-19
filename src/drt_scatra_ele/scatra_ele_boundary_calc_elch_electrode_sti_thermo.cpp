@@ -12,10 +12,8 @@
 #include "scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/electrode.H"
-#include "../drt_mat/soret.H"
 
 #include "../drt_inpar/inpar_s2i.H"
 
@@ -34,7 +32,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Instance(
 {
   static std::map<std::string, ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] =
@@ -43,15 +41,15 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Instance(
 
   else
   {
-    for (typename std::map<std::string,
-             ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
+    }
   }
 
   return instances[disname];
@@ -66,8 +64,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -81,7 +77,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
     :  // constructor of base class
       myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname)
 {
-  return;
 }
 
 
@@ -157,8 +152,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Evalua
         shapederivatives, kineticmodel, numelectrons, kr, alphaa, alphac, timefacfac, timefacwgt,
         differentiationtype, eslavematrix, dummymatrix);
   }  // loop over integration points
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::EvaluateS2ICouplingOD
 
 
@@ -415,8 +408,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
       break;
     }
   }  // select kinetic model
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::EvaluateS2ICouplingODAtIntegrationPoint
 
 
@@ -472,8 +463,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Extrac
 
   // extract nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
   my::ExtractNodeValues(etempnp_, discretization, la, "thermo", 2);
-
-  return;
 }
 
 

@@ -12,8 +12,6 @@ within thermodynamic electrodes
 
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_mat/material.H"
-
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/

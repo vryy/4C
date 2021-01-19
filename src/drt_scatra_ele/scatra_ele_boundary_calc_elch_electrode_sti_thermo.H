@@ -24,10 +24,10 @@ namespace DRT
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype> myelch;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype> myelectrode;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils myelectrodeutils;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
+      using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      public:
       //! singleton access method
@@ -36,7 +36,7 @@ namespace DRT
           const ScaTraEleBoundaryCalcElchElectrodeSTIThermo* delete_me = NULL);
 
       //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() { return; };
+      virtual ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() = default;
 
       //! singleton destruction
       virtual void Done();

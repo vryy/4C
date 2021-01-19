@@ -35,10 +35,10 @@ namespace DRT
       /// -> therefore, it has to be protected instead of private
       ScaTraEleCalcElch(const int numdofpernode, const int numscal, const std::string& disname);
 
-      typedef ScaTraEleCalc<distype> my;
+      using my = ScaTraEleCalc<distype>;
 
      public:
-      virtual ~ScaTraEleCalcElch() {}
+      virtual ~ScaTraEleCalcElch() = default;
 
       /// called upon destruction
       virtual void Done() = 0;
@@ -133,10 +133,7 @@ namespace DRT
               tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
           const std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_f)
           const double vol                    //!< element volume
-      )
-      {
-        return;
-      };
+      ){};
 
       /*========================================================================*/
       //! @name methods for evaluation of individual terms
@@ -223,10 +220,7 @@ namespace DRT
       virtual void CalculateCurrent(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
           const INPAR::SCATRA::FluxType fluxtype,                    //!< type fo flux
           const double fac                                           //!< integration factor
-      )
-      {
-        return;
-      };
+      ){};
 
       //! calculate error of numerical solution with respect to analytical solution
       virtual void CalErrorComparedToAnalytSolution(const DRT::Element* ele,  //!< element
@@ -280,17 +274,12 @@ namespace DRT
      public:
       ScaTraEleDiffManagerElch(int numscal) : ScaTraEleDiffManager(numscal), valence_(numscal, 0.0)
       {
-        return;
       }
 
-      ~ScaTraEleDiffManagerElch(){};
+      ~ScaTraEleDiffManagerElch() override = default;
 
       //! Set valence of the single ionic species
-      virtual void SetValence(const double valence, const int k)
-      {
-        valence_[k] = valence;
-        return;
-      };
+      virtual void SetValence(const double valence, const int k) { valence_[k] = valence; };
 
       //! Access routine for valence of all ionic species or of single ionic species k
       const std::vector<double> GetValence() { return valence_; };
@@ -305,8 +294,6 @@ namespace DRT
           valence_.push_back(0.0);
           diff_.push_back(0.0);
         }
-
-        return;
       };
 
      protected:
@@ -327,7 +314,7 @@ namespace DRT
     template <int NSD, int NEN>
     class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableManager<NSD, NEN>
     {
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
+      using my = ScaTraEleInternalVariableManager<NSD, NEN>;
 
      public:
       ScaTraEleInternalVariableManagerElch(
@@ -340,10 +327,9 @@ namespace DRT
             gradpot_(true),
             sgconv_(true)
       {
-        return;
       }
 
-      virtual ~ScaTraEleInternalVariableManagerElch(){};
+      virtual ~ScaTraEleInternalVariableManagerElch() = default;
 
       // compute and set internal variables used by Nernst-Planck formulation and the
       // Diffusion-Conduction formulation
@@ -405,12 +391,7 @@ namespace DRT
       const LINALG::Matrix<NEN, 1>& SGConv() const { return sgconv_; };
 
       //! set factor F/RT
-      virtual void SetFRT()
-      {
-        frt_ = parameters_->FRT();
-
-        return;
-      }
+      virtual void SetFRT() { frt_ = parameters_->FRT(); }
 
       //! return parameter class
       const DRT::ELEMENTS::ScaTraEleParameterElch* ElchParams() const { return parameters_; };

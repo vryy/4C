@@ -12,8 +12,6 @@
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_elch.H"
 
-#include "../drt_mat/material.H"
-
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
@@ -25,7 +23,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(const int n
 {
   static std::map<std::string, ScaTraEleCalcElchDiffCondSTIThermo<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] =
@@ -34,15 +32,15 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(const int n
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleCalcElchDiffCondSTIThermo<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
+    }
   }
 
   return instances[disname];
@@ -57,8 +55,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -78,8 +74,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ExtractElementA
 
   // call base class routine to extract thermo-related quantitites
   mythermo::ExtractElementAndNodeValues(ele, params, discretization, la);
-
-  return;
 }
 
 
@@ -103,8 +97,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
   Teuchos::RCP<const MAT::Material> material = ele->Material(1);
   materialtype_ = material->MaterialType();
   if (materialtype_ == INPAR::MAT::m_soret) mythermo::MatSoret(material);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialParams
 
 
@@ -150,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
 
     // matrix and vector contributions arising from additional, thermodynamic term in expression for
     // current density
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
     {
       // recurring indices
       const int rowconc(vi * 2);
@@ -160,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
       double laplawfrhs_temp(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_temp, gradtemp, vi);
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
       {
         // recurring index
         const int colconc(ui * 2);
@@ -195,7 +187,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
         mydiffcond::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
         VarManager()->GradTemp(), my::derxy_);
   }
-  return;
 }
 
 
@@ -284,7 +275,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 
     // matrix contributions arising from additional, thermodynamic term in expression for current
     // density
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
     {
       // recurring indices
       const int rowconc(vi * 2);
@@ -294,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
       double laplawfrhs_conc(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
 
-      for (unsigned ui = 0; ui < my::nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
       {
         // gradient of test function times gradient of shape function
         double laplawf(0.);
@@ -323,8 +314,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
         mydiffcond::DiffManager()->GetIsotropicDiff(0), VarManager()->Temp(),
         VarManager()->GradTemp(), my::funct_, my::derxy_);
   }
-
-  return;
 }
 
 
@@ -337,8 +326,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SetInternalVari
   // set internal variables for element evaluation
   VarManager()->SetInternalVariables(my::funct_, my::derxy_, mythermo::etempnp_, my::ephinp_,
       my::ephin_, my::econvelnp_, my::ehist_);
-
-  return;
 }
 
 
@@ -361,8 +348,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDif
   my::scatravarmanager_ =
       Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<my::nsd_, my::nen_>(
           my::numscal_, myelch::elchparams_, mydiffcond::diffcondparams_));
-
-  return;
 }
 
 

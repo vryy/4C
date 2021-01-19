@@ -21,7 +21,6 @@
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.H"
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_sti_electrode.H"
-#include "../drt_scatra_ele/scatra_ele_calc_utils.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
@@ -106,9 +105,11 @@ void SCATRA::MeshtyingStrategyS2IElch::ComputeTimeStepSize(double& dt)
 
       // check whether maximum interfacial overpotential has become negative
       if (etagrowthmax < 0.0 and intlayergrowth_startstep_ < 0)
+      {
         // store current time step as indicator for completed onset of scatra-scatra interface layer
         // growth
         intlayergrowth_startstep_ = scatratimint_->Step();
+      }
 
       // check whether adaptive time stepping for scatra-scatra interface layer growth needs to be
       // deactivated this is the case if ten time steps have passed since the completed onset of
@@ -146,8 +147,6 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 
   // call base class routine
   SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying();
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying
 
 /*------------------------------------------------------------------------*
@@ -157,13 +156,13 @@ void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
 {
   if (couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_petrov or
       couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov)
+  {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  }
   else
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-
-  return;
 }  // SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy
 
 
@@ -180,11 +179,9 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
     scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
 
     // loop over all conditions
-    for (unsigned icond = 0; icond < conditions.size(); ++icond)
+    for (const auto& condition : conditions)
     {
       // extract current condition
-      const DRT::Condition* const condition = conditions[icond];
-
       // extract kinetic model from current condition
       switch (condition->GetInt("kinetic model"))
       {
@@ -207,11 +204,9 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
           const std::vector<int>* nodegids = condition->Nodes();
 
           // loop over all nodes
-          for (unsigned inode = 0; inode < nodegids->size(); ++inode)
+          for (int nodegid : *nodegids)
           {
             // extract global ID of current node
-            const int nodegid((*nodegids)[inode]);
-
             // process only nodes stored by current processor
             if (scatratimint_->Discretization()->HaveGlobalNode(nodegid))
             {
@@ -282,9 +277,11 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
                   if (std::abs(residual) < intlayergrowth_convtol_)
                     break;
                   else if (iternum == intlayergrowth_itemax_)
+                  {
                     dserror(
                         "Local Newton-Raphson iteration for scatra-scatra interface layer growth "
                         "did not converge!");
+                  }
 
                   // compute linearization of current Newton-Raphson residual w.r.t. Butler-Volmer
                   // current density associated with lithium plating
@@ -320,8 +317,6 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
   else
     // call base class routine
     MeshtyingStrategyS2I::Update();
-
-  return;
 }
 
 
@@ -356,9 +351,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
   else
   {
     // loop over all existing instances
-    for (typename std::map<std::string, MortarCellCalcElch<distypeS, distypeM>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
     {
       // check whether current instance should be deleted
       if (i->second == delete_me)
@@ -370,7 +363,7 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::Instance(
         instances.erase(i);
 
         // return null pointer
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -391,8 +384,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::Done()
 {
   // delete singleton
   Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
-
-  return;
 }
 
 
@@ -409,7 +400,6 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
     )
     : my::MortarCellCalc(couplingtype, lmside, numdofpernode_slave, numdofpernode_master)
 {
-  return;
 }
 
 
@@ -446,7 +436,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
 
   // extract condition from parameter list
   DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-  if (condition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (condition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -494,8 +484,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         numelectrons, kr, alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV,
         timefacfac, timefacrhsfac, GetFRT(), k_ss, k_sm, k_ms, k_mm, r_s, r_m);
   }
-
-  return;
 }
 
 
@@ -571,8 +559,6 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
       alphaa, alphac, resistance, itemaxmimplicitBV, convtolimplicitBV, timefacfac, timefacrhsfac,
       DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT(), k_ss, k_sm, k_ms, k_mm, r_s,
       r_m);
-
-  return;
 }
 
 
@@ -584,7 +570,7 @@ double SCATRA::MortarCellCalcElch<distypeS, distypeM>::GetFRT() const
 {
   // fetch factor F/RT from electrochemistry parameter list
   return DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
-};
+}
 
 
 /*----------------------------------------------------------------------*
@@ -618,9 +604,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
   else
   {
     // loop over all existing instances
-    for (typename std::map<std::string, MortarCellCalcElchSTIThermo<distypeS, distypeM>*>::iterator
-             i = instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
     {
       // check whether current instance should be deleted
       if (i->second == delete_me)
@@ -632,7 +616,7 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
         instances.erase(i);
 
         // return null pointer
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -652,9 +636,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Done()
 {
   // delete singleton
   Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
-
-  return;
-};
+}
 
 
 /*----------------------------------------------------------------------*
@@ -674,7 +656,6 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
       // initialize member variable
       etempnp_slave_(true)
 {
-  return;
 }
 
 
@@ -720,8 +701,6 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
       break;
     }
   }
-
-  return;
 }
 
 
@@ -752,7 +731,7 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
 
   // extract condition from parameter list
   DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
-  if (s2icondition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (s2icondition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
   Teuchos::RCP<const MAT::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const MAT::Electrode>(
@@ -799,8 +778,6 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
         kineticmodel, numelectrons, kr, alphaa, alphac, timefacfac, timefacwgt,
         static_cast<int>(SCATRA::DifferentiationType::temp), k_ss, k_ms);
   }  // loop over integration points
-
-  return;
 }
 
 
@@ -819,8 +796,6 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::ExtractNodeValues(
 
   // extract nodal temperature variables associated with mortar integration cell
   my::ExtractNodeValues(etempnp_slave_, idiscret, la_slave, "thermo", 1);
-
-  return;
 }
 
 
@@ -876,9 +851,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
   else
   {
     // loop over all existing instances
-    for (typename std::map<std::string, MortarCellCalcSTIElch<distypeS, distypeM>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
     {
       // check whether current instance should be deleted
       if (i->second == delete_me)
@@ -890,7 +863,7 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
         instances.erase(i);
 
         // return null pointer
-        return NULL;
+        return nullptr;
       }
     }
 
@@ -911,9 +884,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Done()
 {
   // delete singleton
   Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
-
-  return;
-};
+}
 
 
 /*----------------------------------------------------------------------*
@@ -934,7 +905,6 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
       eelchnp_slave_(2, LINALG::Matrix<my::nen_slave_, 1>(true)),
       eelchnp_master_(2, LINALG::Matrix<my::nen_master_, 1>(true))
 {
-  return;
 }
 
 
@@ -989,8 +959,6 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
       break;
     }
   }
-
-  return;
 }
 
 
@@ -1017,7 +985,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
 
   // extract condition from parameter list
   DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
-  if (s2icondition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (s2icondition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of slave element
   const Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
@@ -1069,9 +1037,6 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
         my::funct_slave_, my::funct_master_, kineticmodel, kr, alphaa, alphac, peltier, thermoperm,
         molar_heat_capacity, timefacfac, timefacrhsfac, k_ss, dummy_ksm, r_s);
   }  // loop over integration points
-
-
-  return;
 }
 
 
@@ -1099,7 +1064,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
 
   // extract condition from parameter list
   DRT::Condition* s2icondition = params.get<DRT::Condition*>("condition");
-  if (s2icondition == NULL) dserror("Cannot access scatra-scatra interface coupling condition!");
+  if (s2icondition == nullptr) dserror("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of parent element
   Teuchos::RCP<const MAT::Soret> matsoret = Teuchos::rcp_dynamic_cast<const MAT::Soret>(
@@ -1149,8 +1114,6 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
         molar_heat_capacity, timefacfac, fac, static_cast<int>(SCATRA::DifferentiationType::elch),
         dummy_shape_deriv, k_ss, k_sm);
   }  // loop over integration points
-
-  return;
 }
 
 
@@ -1170,8 +1133,6 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::ExtractNodeValues(
   // extract nodal electrochemistry variables associated with mortar integration cell
   my::ExtractNodeValues(
       eelchnp_slave_, eelchnp_master_, idiscret, la_slave, la_master, "scatra", 1);
-
-  return;
 }
 
 
