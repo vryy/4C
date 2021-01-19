@@ -130,13 +130,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>::Evalua
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
+  // get shape derivatives when linearization w.r.t. displacement is calculated
+  static LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives;
+  if (differentiationtype == static_cast<int>(SCATRA::DifferentiationType::disp))
+    my::EvalShapeDerivatives(shapederivatives);
+
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
   {
-    // shape derivatives only for 3D problems
-    static LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives;
-    if (my::nsd_ == 2) my::EvalShapeDerivatives(shapederivatives);
-
     // evaluate values of shape functions and domain integration factor at current integration point
     const double fac = my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
@@ -193,8 +194,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
   const double emastertempint = funct_master.Dot(emastertempnp);
   const double emasterphiint = funct_master.Dot(emasterphinp[0]);
   const double emasterpotint = funct_master.Dot(emasterphinp[1]);
-
-  if (eslavetempint <= 0.0) dserror("Temperature is non-positive!");
 
   const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const double gasconstant =
@@ -317,22 +316,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
       {
         case static_cast<int>(SCATRA::DifferentiationType::disp):
         {
-          // exponential Butler-Volmer terms
-          const double expterm1 = std::exp(alphaa * frt * eta);
-          const double expterm2 = std::exp(-alphac * frt * eta);
-          const double expterm = expterm1 - expterm2;
-
-          // safety check
-          if (std::abs(expterm) > 1.0e5)
-          {
-            dserror(
-                "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
-                "%lf",
-                expterm);
-          }
-
-          // core linearization associated with Butler-Volmer mass flux density
-          const double dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+          double dj_dd_slave_timefacwgt(0.0);
+          myelectrodeutils::CalculateButlerVolmerDispLinearizations(
+              alphaa, alphac, frt, j0, eta, timefacwgt, dj_dd_slave_timefacwgt);
 
           // loop over matrix columns
           for (int ui = 0; ui < my::nen_; ++ui)
