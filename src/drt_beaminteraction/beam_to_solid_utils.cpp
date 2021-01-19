@@ -11,7 +11,10 @@
 
 #include "beam_to_solid_utils.H"
 
+#include "beam_contact_pair.H"
 #include "beaminteraction_calc_utils.H"
+#include "beam_to_solid_mortar_manager.H"
+#include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_geometry_pair/geometry_pair_element.H"
 #include "../headers/FAD_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
@@ -19,6 +22,8 @@
 #include "../drt_inpar/inpar_beam_to_solid.H"
 #include "../drt_beam3/beam3r.H"
 #include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
+
+#include <Epetra_FEVector.h>
 
 
 /**
@@ -323,9 +328,66 @@ void BEAMINTERACTION::CheckPlaneRotations(
         FADUTILS::VectorNorm(projection_on_x), tol);
 }
 
+/**
+ *
+ */
+template <typename beam, typename other, typename mortar>
+void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
+    const DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
+    LINALG::SparseMatrix& global_GB, LINALG::SparseMatrix& global_GS,
+    LINALG::SparseMatrix& global_FB, LINALG::SparseMatrix& global_FS,
+    Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
+    Epetra_FEVector& global_lambda_active,
+    const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    const LINALG::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
+    const LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    const LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint)
+{
+  // Get the GIDs of the Lagrange multipliers.
+  std::vector<int> lambda_row;
+  mortar_manager->LocationVector(pair, lambda_row);
+
+  // Get the beam centerline GIDs.
+  LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  UTILS::GetElementCenterlineGIDIndices(discret, pair->Element1(), beam_centerline_gid);
+
+  // Get the other GIDs.
+  // We call this function on the element pointer of the geometry pair, since for face elements,
+  // the element pointer of the beam contact pair is to the volume element and only the element
+  // pointer of the geometry pair is to the face element.
+  std::vector<int> other_row;
+  std::vector<int> dummy_1;
+  std::vector<int> dummy_2;
+  pair->GeometryPair()->Element2()->LocationVector(discret, other_row, dummy_1, dummy_2);
+
+  // Assemble into the global matrices. All contributions here are assumed to be symmetric.
+  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; ++i_lambda)
+  {
+    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; ++i_beam)
+    {
+      global_GB.FEAssemble(
+          local_D(i_lambda, i_beam), lambda_row[i_lambda], beam_centerline_gid(i_beam));
+      global_FB.FEAssemble(
+          local_D(i_lambda, i_beam), beam_centerline_gid(i_beam), lambda_row[i_lambda]);
+    }
+    for (unsigned int i_other = 0; i_other < other::n_dof_; ++i_other)
+    {
+      global_GS.FEAssemble(-local_M(i_lambda, i_other), lambda_row[i_lambda], other_row[i_other]);
+      global_FS.FEAssemble(-local_M(i_lambda, i_other), other_row[i_other], lambda_row[i_lambda]);
+    }
+  }
+  global_kappa.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_kappa.A());
+  global_constraint.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_constraint.A());
+
+  // Set all entries in the local kappa vector to 1 and add them to the active vector.
+  LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa_active;
+  local_kappa_active.PutScalar(1.0);
+  global_lambda_active.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_kappa_active.A());
+}
+
 
 /**
- * Explicit template initialization of template function.
+ * Explicit template initialization of template functions.
  */
 namespace BEAMINTERACTION
 {
@@ -349,4 +411,62 @@ namespace BEAMINTERACTION
   initialize_template_get_solid_rotation_vector(t_tet4);
   initialize_template_get_solid_rotation_vector(t_tet10);
   initialize_template_get_solid_rotation_vector(t_nurbs27);
+
+#define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)    \
+  template void AssembleLocalMortarContributions<beam, other, mortar>(                  \
+      const BEAMINTERACTION::BeamContactPair*, const DRT::Discretization&,              \
+      const BeamToSolidMortarManager*, LINALG::SparseMatrix&, LINALG::SparseMatrix&,    \
+      LINALG::SparseMatrix&, LINALG::SparseMatrix&, Epetra_FEVector&, Epetra_FEVector&, \
+      Epetra_FEVector&, const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>&,    \
+      const LINALG::Matrix<mortar::n_dof_, other::n_dof_, double>&,                     \
+      const LINALG::Matrix<mortar::n_dof_, 1, double>&,                                 \
+      const LINALG::Matrix<mortar::n_dof_, 1, double>&);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex8, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex8, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex8, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex20, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex20, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex20, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex27, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex27, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex27, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tet4, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tet4, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tet4, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tet10, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tet10, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tet10, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs27, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs27, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs27, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad4, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad4, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad4, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad8, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad8, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad8, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad9, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad9, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_quad9, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tri3, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tri3, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tri3, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tri6, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tri6, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_tri6, t_line4);
+
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line2);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line3);
+  initialize_template_assemble_local_mortar_contributions(t_hermite, t_nurbs9, t_line4);
 }  // namespace BEAMINTERACTION

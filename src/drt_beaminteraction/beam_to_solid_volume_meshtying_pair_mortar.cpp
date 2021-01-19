@@ -14,6 +14,7 @@ functions for the traction.
 #include "beam_to_solid_vtu_output_writer_visualization.H"
 #include "beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "beam_to_solid_mortar_manager.H"
+#include "beam_to_solid_utils.H"
 
 #include "../drt_lib/drt_utils.H"
 #include "../linalg/linalg_utils_densematrix_inverse.H"
@@ -37,14 +38,17 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   // Empty constructor.
 }
 
-
 /**
  *
  */
 template <typename beam, typename solid, typename mortar>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
-    LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
+    LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
+    LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -58,117 +62,21 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
   }
 
   // If there are no intersection segments, return no contact status.
-  if (this->line_to_3D_segments_.size() == 0) return false;
+  if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> D(true);
-  LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double> M(true);
-  LINALG::Matrix<mortar::n_dof_, 1, double> kappa(true);
+  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
+  LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double> local_M(false);
+  LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
+  LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
 
-  // Initialize variables for shape function values.
-  LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  LINALG::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
+  // Evaluate the local mortar contributions.
+  EvaluateDM(local_D, local_M, local_kappa, local_constraint);
 
-  // Initialize variable for beam position derivative.
-  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
-
-  // Initialize scalar variables.Clear
-  double segment_jacobian, beam_segmentation_factor;
-
-  // Calculate the mortar matrices.
-  // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
-  {
-    // Factor to account for a segment length not from -1 to 1.
-    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
-
-    // Gauss point loop.
-    for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
-    {
-      // Get the current Gauss point.
-      const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
-          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
-
-      // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
-          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
-
-      // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
-
-      // Get the shape function matrices.
-      N_mortar.Clear();
-      N_beam.Clear();
-      N_solid.Clear();
-      mortar::EvaluateShapeFunction(
-          N_mortar, projected_gauss_point.GetEta(), std::integral_constant<unsigned int, 1>{});
-      beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, 1>{}, this->Element1());
-      solid::EvaluateShapeFunction(N_solid, projected_gauss_point.GetXi(),
-          std::integral_constant<unsigned int, 3>{}, this->Element2());
-
-      // Fill in the local templated mortar matrix D.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_beam_node = 0; i_beam_node < beam::n_nodes_; i_beam_node++)
-            for (unsigned int i_beam_val = 0; i_beam_val < beam::n_val_; i_beam_val++)
-              for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                D(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
-                    i_beam_node * beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
-                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                    N_beam(i_beam_node * beam::n_val_ + i_beam_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
-
-      // Fill in the local templated mortar matrix M.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_solid_node = 0; i_solid_node < solid::n_nodes_; i_solid_node++)
-            for (unsigned int i_solid_val = 0; i_solid_val < solid::n_val_; i_solid_val++)
-              for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                M(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
-                    i_solid_node * solid::n_val_ * 3 + i_solid_val * 3 + i_dim) +=
-                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                    N_solid(i_solid_node * solid::n_val_ + i_solid_val) *
-                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
-
-      // Fill in the local templated mortar scaling vector kappa.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
-                N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                projected_gauss_point.GetGaussWeight() * segment_jacobian;
-    }
-  }
-
-  // Put the values of the templated matrices into the local matrices that are returned.
-  local_D.Shape(mortar::n_dof_, beam::n_dof_);
-  local_M.Shape(mortar::n_dof_, solid::n_dof_);
-  local_kappa.Shape(mortar::n_dof_, 1);
-  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
-    for (unsigned int i_col = 0; i_col < beam::n_dof_; i_col++)
-      local_D(i_row, i_col) = D(i_row, i_col);
-  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
-    for (unsigned int i_col = 0; i_col < solid::n_dof_; i_col++)
-      local_M(i_row, i_col) = M(i_row, i_col);
-  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
-
-  // Add the local constraint contributions.
-  local_constraint.Shape(mortar::n_dof_, 1);
-  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
-  {
-    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-      local_constraint(i_lambda) +=
-          FADUTILS::CastToDouble(D(i_lambda, i_beam) * this->ele1pos_(i_beam));
-    for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-      local_constraint(i_lambda) -=
-          FADUTILS::CastToDouble(M(i_lambda, i_solid) * this->ele2pos_(i_solid));
-  }
-
-  // If we get to this point, the pair has a mortar contribution.
-  return true;
+  // Assemble into global matrices.
+  AssembleLocalMortarContributions<beam, solid, mortar>(this, discret, mortar_manager, global_GB,
+      global_GS, global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
+      local_D, local_M, local_kappa, local_constraint);
 }
 
 /**
@@ -364,6 +272,111 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   }
 }
 
+/**
+ *
+ */
+template <typename beam, typename solid, typename mortar>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>::EvaluateDM(
+    LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
+    LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+{
+  // Initialize the local mortar matrices.
+  local_D.PutScalar(0.0);
+  local_M.PutScalar(0.0);
+  local_kappa.PutScalar(0.0);
+  local_constraint.PutScalar(0.0);
+
+  // Initialize variables for shape function values.
+  LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  LINALG::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
+  LINALG::Matrix<1, solid::n_nodes_ * solid::n_val_, double> N_solid(true);
+
+  // Initialize variable for beam position derivative.
+  LINALG::Matrix<3, 1, double> dr_beam_ref(true);
+
+  // Initialize scalar variables.Clear
+  double segment_jacobian, beam_segmentation_factor;
+
+  // Calculate the mortar matrices.
+  // Loop over segments.
+  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  {
+    // Factor to account for a segment length not from -1 to 1.
+    beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
+
+    // Gauss point loop.
+    for (unsigned int i_gp = 0;
+         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+    {
+      // Get the current Gauss point.
+      const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
+          this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
+
+      // Get the jacobian in the reference configuration.
+      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+          projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref, this->Element1());
+
+      // Jacobian including the segment length.
+      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+
+      // Get the shape function matrices.
+      N_mortar.Clear();
+      N_beam.Clear();
+      N_solid.Clear();
+      mortar::EvaluateShapeFunction(
+          N_mortar, projected_gauss_point.GetEta(), std::integral_constant<unsigned int, 1>{});
+      beam::EvaluateShapeFunction(N_beam, projected_gauss_point.GetEta(),
+          std::integral_constant<unsigned int, 1>{}, this->Element1());
+      solid::EvaluateShapeFunction(N_solid, projected_gauss_point.GetXi(),
+          std::integral_constant<unsigned int, 3>{}, this->Element2());
+
+      // Fill in the local templated mortar matrix D.
+      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_beam_node = 0; i_beam_node < beam::n_nodes_; i_beam_node++)
+            for (unsigned int i_beam_val = 0; i_beam_val < beam::n_val_; i_beam_val++)
+              for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+                local_D(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                    i_beam_node * beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
+                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
+                    N_beam(i_beam_node * beam::n_val_ + i_beam_val) *
+                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+
+      // Fill in the local templated mortar matrix M.
+      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_solid_node = 0; i_solid_node < solid::n_nodes_; i_solid_node++)
+            for (unsigned int i_solid_val = 0; i_solid_val < solid::n_val_; i_solid_val++)
+              for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+                local_M(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                    i_solid_node * solid::n_val_ * 3 + i_solid_val * 3 + i_dim) +=
+                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
+                    N_solid(i_solid_node * solid::n_val_ + i_solid_val) *
+                    projected_gauss_point.GetGaussWeight() * segment_jacobian;
+
+      // Fill in the local templated mortar scaling vector kappa.
+      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+            local_kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
+                N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
+                projected_gauss_point.GetGaussWeight() * segment_jacobian;
+    }
+  }
+
+  // Add the local constraint contributions.
+  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  {
+    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+      local_constraint(i_lambda) +=
+          local_D(i_lambda, i_beam) * FADUTILS::CastToDouble(this->ele1pos_(i_beam));
+    for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+      local_constraint(i_lambda) -=
+          local_M(i_lambda, i_solid) * FADUTILS::CastToDouble(this->ele2pos_(i_solid));
+  }
+}
 
 /**
  *
@@ -378,9 +391,6 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 }
 
 
-/**
- * Explicit template initialization of template class.
- */
 /**
  * Explicit template initialization of template class.
  */

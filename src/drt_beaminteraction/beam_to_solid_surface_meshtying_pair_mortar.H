@@ -61,11 +61,23 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidSurfaceMeshtyingPairMortar(){};
 
     /**
-     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair. (derived)
+     * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa,
-        LINALG::SerialDenseVector& local_constraint) override;
+    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
+        LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
+        LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
+
+   protected:
+    /**
+     * \brief Evaluate the local mortar matrices for this contact element pair.
+     */
+    void EvaluateDM(LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+        LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
+        LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+        LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
   };
 
   /**

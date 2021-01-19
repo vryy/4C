@@ -11,6 +11,7 @@
 
 #include "beam_contact_params.H"
 #include "beam_to_solid_surface_meshtying_params.H"
+#include "beam_to_solid_utils.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_functions.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
@@ -31,9 +32,13 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
  *
  */
 template <typename beam, typename surface, typename mortar>
-bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
-    LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-    LINALG::SerialDenseVector& local_kappa, LINALG::SerialDenseVector& local_constraint)
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
+    LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
+    LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -45,12 +50,38 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   }
 
   // If there are no intersection segments, return no contact status.
-  if (this->line_to_3D_segments_.size() == 0) return false;
+  if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> D(true);
-  LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double> M(true);
-  LINALG::Matrix<mortar::n_dof_, 1, double> kappa(true);
+  LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
+  LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double> local_M(false);
+  LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
+  LINALG::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
+
+  // Evaluate the local mortar contributions.
+  EvaluateDM(local_D, local_M, local_kappa, local_constraint);
+
+  // Assemble into global matrices.
+  AssembleLocalMortarContributions<beam, surface, mortar>(this, discret, mortar_manager, global_GB,
+      global_GS, global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
+      local_D, local_M, local_kappa, local_constraint);
+}
+
+/**
+ *
+ */
+template <typename beam, typename surface, typename mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::EvaluateDM(
+    LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+    LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
+    LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+    LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+{
+  // Initialize the local mortar matrices.
+  local_D.PutScalar(0.0);
+  local_M.PutScalar(0.0);
+  local_kappa.PutScalar(0.0);
+  local_constraint.PutScalar(0.0);
 
   // Initialize variables for shape function values.
   LINALG::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
@@ -102,7 +133,7 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
           for (unsigned int i_beam_node = 0; i_beam_node < beam::n_nodes_; i_beam_node++)
             for (unsigned int i_beam_val = 0; i_beam_val < beam::n_val_; i_beam_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                D(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                local_D(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
                     i_beam_node * beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
                     N_beam(i_beam_node * beam::n_val_ + i_beam_val) *
@@ -115,7 +146,7 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
                i_surface_node++)
             for (unsigned int i_surface_val = 0; i_surface_val < surface::n_val_; i_surface_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                M(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                local_M(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
                     i_surface_node * surface::n_val_ * 3 + i_surface_val * 3 + i_dim) +=
                     N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
                     N_surface(i_surface_node * surface::n_val_ + i_surface_val) *
@@ -125,23 +156,11 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
         for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
+            local_kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
                 N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
                 projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
-
-  // Put the values of the templated matrices into the local matrices that are returned.
-  local_D.Shape(mortar::n_dof_, beam::n_dof_);
-  local_M.Shape(mortar::n_dof_, surface::n_dof_);
-  local_kappa.Shape(mortar::n_dof_, 1);
-  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
-    for (unsigned int i_col = 0; i_col < beam::n_dof_; i_col++)
-      local_D(i_row, i_col) = D(i_row, i_col);
-  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
-    for (unsigned int i_col = 0; i_col < surface::n_dof_; i_col++)
-      local_M(i_row, i_col) = M(i_row, i_col);
-  for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++) local_kappa(i_row) = kappa(i_row);
 
   // Add the local constraint contributions. For this we multiply the local mortar matrices with the
   // positions / displacements to get the actual constraint terms for this pair.
@@ -172,19 +191,15 @@ bool BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
     default:
       dserror("Wrong coupling type.");
   }
-  local_constraint.Shape(mortar::n_dof_, 1);
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
       local_constraint(i_lambda) +=
-          FADUTILS::CastToDouble(D(i_lambda, i_beam) * beam_coupling_dof(i_beam));
+          local_D(i_lambda, i_beam) * FADUTILS::CastToDouble(beam_coupling_dof(i_beam));
     for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
       local_constraint(i_lambda) -=
-          FADUTILS::CastToDouble(M(i_lambda, i_surface) * surface_coupling_dof(i_surface));
+          local_M(i_lambda, i_surface) * FADUTILS::CastToDouble(surface_coupling_dof(i_surface));
   }
-
-  // If we get to this point, the pair has a mortar contribution.
-  return true;
 }
 
 

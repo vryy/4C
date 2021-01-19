@@ -17,6 +17,11 @@
 
 
 // Forward declarations.
+namespace BEAMINTERACTION
+{
+  class BeamToSolidMortarManager;
+  class BeamContactPair;
+}  // namespace BEAMINTERACTION
 namespace INPAR
 {
   namespace BEAMTOSOLID
@@ -28,6 +33,7 @@ namespace LINALG
 {
   template <unsigned int rows, unsigned int cols, class value_type>
   class Matrix;
+  class SparseMatrix;
 }  // namespace LINALG
 namespace DRT
 {
@@ -40,6 +46,7 @@ namespace LARGEROTATIONS
   class TriadInterpolationLocalRotationVectors;
 }
 class Epetra_Vector;
+class Epetra_FEVector;
 
 
 namespace BEAMINTERACTION
@@ -147,6 +154,40 @@ namespace BEAMINTERACTION
   template <typename scalar_type>
   void CheckPlaneRotations(const LINALG::Matrix<3, 3, scalar_type> deformation_gradient,
       const LINALG::Matrix<4, 1, double>& quaternion_beam_ref);
+
+  /**
+   * \brief Assemble local mortar contributions from the classical mortar matrices D and M into the
+   * global matrices.
+   *
+   * This function assumes that the mortar contributions are symmetric, i.e. global_GB =
+   * global_FB^T and global_GS = global_FS^T.
+   *
+   * @param pair (in) The beam-to-solid pair.
+   * @param discret (in)
+   * @param mortar_manager (in)
+   * @param global_GB (in/out)
+   * @param global_GS (in/out)
+   * @param global_FB (in/out)
+   * @param global_FS (in/out)
+   * @param global_constraint (in/out)
+   * @param global_kappa (in/out)
+   * @param global_lambda_active (in/out)
+   * @param local_D (in) Local D matrix of the pair.
+   * @param local_M (in) Local M matrix of the pair.
+   * @param local_kappa (in) Local scaling vector of the pair.
+   * @param local_constraint (in) Local constraint contributions of the pair.
+   */
+  template <typename beam, typename other, typename mortar>
+  void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
+      const DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
+      LINALG::SparseMatrix& global_GB, LINALG::SparseMatrix& global_GS,
+      LINALG::SparseMatrix& global_FB, LINALG::SparseMatrix& global_FS,
+      Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
+      Epetra_FEVector& global_lambda_active,
+      const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+      const LINALG::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
+      const LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+      const LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint);
 }  // namespace BEAMINTERACTION
 
 #endif
