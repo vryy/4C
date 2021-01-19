@@ -106,6 +106,10 @@ STR::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& timeparams,
       normpres_(0.0),
       normcontconstr_(0.0),  // < norm of contact constraints (saddlepoint formulation)
       normlagr_(0.0),        // < norm of lagrange multiplier increment (saddlepoint formulation)
+      normw_(0.0),
+      normwrhs_(0.0),
+      normwm_(0.0),
+      normwmrhs_(0.0),
       alpha_ls_(sdynparams.get<double>("ALPHA_LS")),
       sigma_ls_(sdynparams.get<double>("SIGMA_LS")),
       ls_maxiter_(sdynparams.get<int>("LSMAXITER")),
