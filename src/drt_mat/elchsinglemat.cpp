@@ -166,10 +166,12 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
 
     // safety check
     if (functparams.size() != nfunctparams)
+    {
       dserror(
           "Number of provided parameters does not match number of expected parameters for function "
           "with curve number %i (%s)!",
           functnr, functionname.c_str());
+    }
   }
 }
 
@@ -196,21 +198,24 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
 
   // evaluate pre implemented concentration dependent diffusion coefficient
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
+  {
     diffusionCoefficient =
         EvalPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
             concentration, DiffusionCoefficientParams());
-
-  // diffusion coefficient is a constant prescribed in input file
+  }
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
+  {
     dserror(
         "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
         "the implemented models, or set a positive value and make use of the function framework!");
-
+  }
   // diffusion coefficient is a function of the concentration as defined in the input file
   else
+  {
     diffusionCoefficient = DRT::Problem::Instance()
                                ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
                                .EvaluateTime(concentration);
+  }
 
   return diffusionCoefficient;
 }
@@ -232,34 +237,53 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(
         DRT::Problem::Instance()->Funct(functionNumber - 1).EvaluateTime(temperature);
   }
   else
+  {
     dserror(
         "You have to set a reasonable function number for the temperature dependence.\n This can "
         "be either 0 if no temperature dependence is desired or the number of the function in "
         "which you defined the temperature dependence.");
+  }
 
   return temperatureDependentScaleFactor;
 }
 
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeFirstDerivDiffCoeff(const double concentration) const
+double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
+    const double concentration, const double temperature) const
 {
-  double firstderiv(0.0);
+  // derivative of diffusion coefficient w.r.t. concentration
+  double diffusion_coeff_conc_deriv(0.0);
 
+  // evaluate derivative w.r.t. concentration of pre implemented concentration dependent diffusion
+  // coefficient
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
-    firstderiv =
+  {
+    diffusion_coeff_conc_deriv =
         EvalFirstDerivPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
             concentration, DiffusionCoefficientParams());
+  }
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
+  {
     dserror(
         "'DIFF_COEF_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of "
         "the implemented models, or set a positive value and make use of the function framework!");
+  }
+  // evaluate derivative w.r.t. concentration of diffusion coefficient that is a function of the
+  // concentration as defined in the input file
   else
-    firstderiv = (DRT::Problem::Instance()
-                      ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
-                      .EvaluateTimeDerivative(concentration, 1))[1];
+  {
+    diffusion_coeff_conc_deriv =
+        (DRT::Problem::Instance()
+                ->Funct(DiffusionCoefficientConcentrationDependenceFunctNum() - 1)
+                .EvaluateTimeDerivative(concentration, 1))[1];
+  }
 
-  return firstderiv;
+  // do the temperature dependent scaling
+  diffusion_coeff_conc_deriv *= ComputeTemperatureDependentScaleFactor(
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum());
+
+  return diffusion_coeff_conc_deriv;
 }
 
 /*----------------------------------------------------------------------*
@@ -285,43 +309,62 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
 
   // evaluate pre implemented concentration dependent conductivity
   if (ConductivityConcentrationDependenceFunctNum() < 0)
+  {
     conductivity = EvalPreDefinedFunctValue(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
-
-  // conductivity is a constant prescribed in input file
+  }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
+  {
     dserror(
         "'COND_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of the "
         "implemented models, or set a positive value and make use of the function framework!");
-
+  }
   // conductivity is a function of the concentration as defined in the input file
   else
+  {
     conductivity = DRT::Problem::Instance()
                        ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
                        .EvaluateTime(concentration);
+  }
 
   return conductivity;
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeFirstDerivCond(const double concentration) const
+double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
+    const double concentration, const double temperature) const
 {
-  double firstderiv(0.0);
+  // derivative of conductivity w.r.t. concentration
+  double conductivity_conc_deriv(0.0);
 
+  // evaluate derivative w.r.t. concentration of pre implemented concentration dependent
+  // conductivity
   if (ConductivityConcentrationDependenceFunctNum() < 0)
-    firstderiv = EvalFirstDerivPreDefinedFunctValue(
+  {
+    conductivity_conc_deriv = EvalFirstDerivPreDefinedFunctValue(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
+  }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
+  {
     dserror(
         "'COND_CONC_DEP_FUNCT' must not be 0! Either set it to a negative value to use one of the "
         "implemented models, or set a positive value and make use of the function framework!");
+  }
+  // evaluate derivative w.r.t. concentration of conductivity that is a function of the
+  // concentration as defined in the input file
   else
-    firstderiv = (DRT::Problem::Instance()
-                      ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
-                      .EvaluateTimeDerivative(concentration, 1))[1];
+  {
+    conductivity_conc_deriv = (DRT::Problem::Instance()
+                                   ->Funct(ConductivityConcentrationDependenceFunctNum() - 1)
+                                   .EvaluateTimeDerivative(concentration, 1))[1];
+  }
 
-  return firstderiv;
+  // do the temperature dependent scaling
+  conductivity_conc_deriv *=
+      ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
+
+  return conductivity_conc_deriv;
 }
 
 
@@ -580,10 +623,12 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunctValue(
 
       // safety check
       if (std::abs(exponent) > 20.0)
+      {
         dserror(
             "Overflow detected during conductivity evaluation! Absolute value of exponent is too "
             "large: %lf",
             exponent);
+      }
 
       firstderivfunctval =
           functparams[0] * std::exp(exponent) *
