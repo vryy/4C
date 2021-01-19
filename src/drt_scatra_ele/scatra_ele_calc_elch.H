@@ -357,8 +357,8 @@ namespace DRT
           const LINALG::Matrix<NSD, NEN>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
           const std::vector<LINALG::Matrix<NEN, 1>>&
-              ehist  //!< history vector of transported scalars
-      )
+              ehist,              //!< history vector of transported scalars
+          bool do_setfrt = true)  //! should FRT be set?
       {
         // call base class (scatra)
         my::SetInternalVariables(funct, derxy, ephinp, ephin, econvelnp, ehist);
@@ -379,7 +379,7 @@ namespace DRT
         gradpot_.Multiply(derxy, ephinp[my::numscal_]);
 
         // set factor F/RT
-        SetFRT();
+        if (do_setfrt) SetFRT();
       }
 
       /*========================================================================*/

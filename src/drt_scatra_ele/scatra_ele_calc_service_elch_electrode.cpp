@@ -224,7 +224,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::CalculateElectrodeSOCAn
       const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
 
       // compute internal variables at current integration point
-      SetInternalVariablesForMatAndRHS();
+      VarManager()->SetInternalVariablesElchElectrodeSOCAndCRate(
+          my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 
       // compute velocity and its divergence
       static LINALG::Matrix<my::nsd_, 1> v;
@@ -326,7 +327,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesFor
 
   return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesForMatAndRHS()
-
 
 // template classes
 // 1D elements
