@@ -299,12 +299,13 @@ namespace BEAMINTERACTION
      * @param force_vector (in / out) Global force vector.
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param lambda (in) Global Lagrange multiplier vector.
+     * @param displacement_vector (in) Global displacement vector.
      */
     virtual void EvaluateAndAssemble(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
-        const Epetra_Vector& global_lambda){};
+        const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector){};
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair.
@@ -331,12 +332,14 @@ namespace BEAMINTERACTION
      * @param global_constraint (in/out) Global constraint vector.
      * @param global_kappa (in/out) Global scaling matrix.
      * @param global_lambda_active (in/out) Global vector with active Lagrange multipliers.
+     * @param displacement_vector (in) Global displacement vector.
      */
     virtual void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
         const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
         LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
         LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
-        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active){};
+        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector){};
 
     /**
      * \brief Add the visualization of this pair to the beam to solid vtu output writer.

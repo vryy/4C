@@ -147,8 +147,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate mortar coupling contributions on all pairs and assemble them into the global
      * matrices.
+     * @param displacement_vector (in) global displacement vector.
      */
-    void EvaluateGlobalCouplingContributions();
+    void EvaluateGlobalCouplingContributions(
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector);
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.

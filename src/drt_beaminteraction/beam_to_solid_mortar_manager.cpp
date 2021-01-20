@@ -392,7 +392,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::LocationVector(
 /**
  *
  */
-void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributions()
+void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributions(
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   CheckSetup();
   CheckGlobalMaps();
@@ -502,7 +503,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::EvaluateGlobalCouplingContributi
     // Evaluate the mortar contributions of the pair and the pair assembles the terms into the
     // global matrices.
     elepairptr->EvaluateAndAssembleMortarContributions(*discret_, this, *global_GB_, *global_GS_,
-        *global_FB_, *global_FS_, *global_constraint_, *global_kappa_, *global_active_lambda_);
+        *global_FB_, *global_FS_, *global_constraint_, *global_kappa_, *global_active_lambda_,
+        displacement_vector);
   }
 
   // Complete the global mortar matrices.
@@ -596,7 +598,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
   // Add the force and stiffness contributions that are assembled directly by the pairs.
   Teuchos::RCP<Epetra_Vector> lambda_col = GetGlobalLambdaCol(data_state->GetDisColNp());
   for (auto& elepairptr : contact_pairs_)
-    elepairptr->EvaluateAndAssemble(*discret_, this, force, stiff, *lambda_col);
+    elepairptr->EvaluateAndAssemble(
+        *discret_, this, force, stiff, *lambda_col, *data_state->GetDisColNp());
 }
 
 /**
