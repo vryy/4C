@@ -208,9 +208,18 @@ namespace SSTI
    *---------------------------------------------------------------------------------*/
   class SSTIScatraStructureCloneStrategy : public SSI::ScatraStructureCloneStrategy
   {
-   protected:
+   public:
     /// returns condition names to be copied (source and target name)
     std::map<std::string, std::string> ConditionsToCopy() override;
+
+   protected:
+    //! provide cloned element with element specific data (material etc.)
+    void SetElementData(
+        Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
+        DRT::Element* oldele,               //! current element on source discretization
+        const int matid,                    //! material of cloned element
+        const bool isnurbs                  //! nurbs flag
+        ) override;
   };
 
   /*---------------------------------------------------------------------------------*

@@ -26,6 +26,12 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 
+#include "../drt_mat/matpar_material.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_scatra_ele/scatra_ele.H"
+#include "../drt_so3/so_nurbs27.H"
+
+
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
@@ -595,6 +601,53 @@ std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::Condi
       "SSTIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
 
   return conditions_to_copy;
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+{
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property
+
+  // note: SetMaterial() was reimplemented by the transport element!
+  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  if (trans != nullptr)
+  {
+    // set material
+    trans->SetMaterial(matid, oldele);
+    // set distype as well!
+    trans->SetDisType(oldele->Shape());
+
+    // now check whether ImplType is reasonable and if set the ImplType
+    INPAR::SCATRA::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
+
+    if (impltype == INPAR::SCATRA::impltype_undefined)
+    {
+      dserror(
+          "ScatraStructureCloneStrategy copies scatra discretization from structure "
+          "discretization, but the STRUCTURE elements that are defined in the .dat file are either "
+          "not meant to be copied to scatra elements or the ImplType is set 'Undefined' which is "
+          "not meaningful for the created scatra discretization! Use SOLIDSCATRA, WALLSCATRA or "
+          "SHELLSCATRA elements with meaningful ImplType instead!");
+    }
+    else
+    {
+      // find the appropriate thermo type
+      if (impltype == INPAR::SCATRA::impltype_elch_electrode)
+        trans->SetImplType(INPAR::SCATRA::impltype_elch_electrode_thermo);
+      else if (impltype == INPAR::SCATRA::impltype_elch_diffcond)
+        trans->SetImplType(INPAR::SCATRA::impltype_elch_diffcond_thermo);
+      else
+        dserror("Something went wrong");
+    }
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*newele).name());
+  }
 }
 
 /*---------------------------------------------------------------------------------*
