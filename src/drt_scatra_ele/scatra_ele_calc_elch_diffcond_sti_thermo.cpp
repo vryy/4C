@@ -142,7 +142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
 
     // matrix and vector contributions arising from additional, thermodynamic term in expression for
     // current density
-    for (int vi = 0; vi < my::nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
     {
       // recurring indices
       const int rowconc(vi * 2);
@@ -152,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
       double laplawfrhs_temp(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_temp, gradtemp, vi);
 
-      for (int ui = 0; ui < my::nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
       {
         // recurring index
         const int colconc(ui * 2);
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 
     // matrix contributions arising from additional, thermodynamic term in expression for current
     // density
-    for (int vi = 0; vi < my::nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
     {
       // recurring indices
       const int rowconc(vi * 2);
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
       double laplawfrhs_conc(0.);
       my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
 
-      for (int ui = 0; ui < my::nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
       {
         // gradient of test function times gradient of shape function
         double laplawf(0.);
