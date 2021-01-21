@@ -35,10 +35,11 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamContactAssemblyManager()
 {
-  // Create the mortar manager.
+  // Create the mortar manager. We add 1 to the MaxAllGID since this gives the maximum GID and NOT
+  // the length of the GIDs.
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
       new BEAMINTERACTION::BeamToSolidMortarManager(
-          discret, beam_to_solid_params, discret->DofRowMap()->MaxAllGID()));
+          discret, beam_to_solid_params, discret->DofRowMap()->MaxAllGID() + 1));
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
