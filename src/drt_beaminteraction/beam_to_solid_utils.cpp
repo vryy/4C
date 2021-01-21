@@ -29,6 +29,87 @@
 /**
  *
  */
+void BEAMINTERACTION::MortarShapeFunctionsToLagrangeValues(
+    const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
+    unsigned int& n_lambda_node, unsigned int& n_lambda_element)
+{
+  switch (shape_function)
+  {
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none:
+    {
+      n_lambda_node = 0;
+      n_lambda_element = 0;
+      return;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+    {
+      n_lambda_node = 1 * 3;
+      n_lambda_element = 0 * 3;
+      return;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+    {
+      n_lambda_node = 1 * 3;
+      n_lambda_element = 1 * 3;
+      return;
+    }
+    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+    {
+      n_lambda_node = 1 * 3;
+      n_lambda_element = 2 * 3;
+      return;
+    }
+    default:
+      dserror("Mortar shape function not implemented!");
+  }
+}
+
+/**
+ *
+ */
+void BEAMINTERACTION::GetMortarGID(const BeamToSolidMortarManager* mortar_manager,
+    const BEAMINTERACTION::BeamContactPair* contact_pair, const unsigned int n_mortar_pos,
+    const unsigned int n_mortar_rot, std::vector<int>* lambda_gid_pos,
+    std::vector<int>* lambda_gid_rot)
+{
+  std::vector<int> lambda_total;
+  mortar_manager->LocationVector(contact_pair, lambda_total);
+
+#if DEBUG
+  if (lambda_total.size() != n_mortar_pos + n_mortar_rot)
+    dserror("BEAMINTERACTION::GetMortarGID the local and global GID sizes do not match.");
+#endif
+
+  unsigned int n_nodal_dof = 3;
+  if (n_mortar_rot > 0) n_nodal_dof = 6;
+
+  if (lambda_gid_pos != nullptr)
+  {
+    // Get the Lagrange multiplier GIDs for positional coupling.
+    lambda_gid_pos->clear();
+    for (unsigned int i_node = 0; i_node < 2; i_node++)
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        lambda_gid_pos->push_back(lambda_total[n_nodal_dof * i_node + i_dim]);
+    for (unsigned int i_dof = 6; i_dof < n_mortar_pos; i_dof++)
+      lambda_gid_pos->push_back(lambda_total[n_nodal_dof * 2 - 6 + i_dof]);
+  }
+
+  if (lambda_gid_rot != nullptr)
+  {
+    // Get the Lagrange multiplier GIDs for rotational coupling.
+    lambda_gid_rot->clear();
+    for (unsigned int i_node = 0; i_node < 2; i_node++)
+      for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+        lambda_gid_rot->push_back(lambda_total[3 + n_nodal_dof * i_node + i_dim]);
+    const unsigned int offset = n_mortar_pos - 2 * n_nodal_dof;
+    for (unsigned int i_dof = 6; i_dof < n_mortar_rot; i_dof++)
+      lambda_gid_rot->push_back(lambda_total[offset + n_nodal_dof * 2 + i_dof]);
+  }
+}
+
+/**
+ *
+ */
 void BEAMINTERACTION::GetBeamTriadInterpolationScheme(const DRT::Discretization& discret,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector, const DRT::Element* ele,
     LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
@@ -341,11 +422,12 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
     const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
     const LINALG::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
     const LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-    const LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint)
+    const LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint,
+    const unsigned int n_mortar_rot)
 {
   // Get the GIDs of the Lagrange multipliers.
   std::vector<int> lambda_row;
-  mortar_manager->LocationVector(pair, lambda_row);
+  GetMortarGID(mortar_manager, pair, mortar::n_dof_, n_mortar_rot, &lambda_row, nullptr);
 
   // Get the beam centerline GIDs.
   LINALG::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
@@ -420,7 +502,7 @@ namespace BEAMINTERACTION
       Epetra_FEVector&, const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>&,    \
       const LINALG::Matrix<mortar::n_dof_, other::n_dof_, double>&,                     \
       const LINALG::Matrix<mortar::n_dof_, 1, double>&,                                 \
-      const LINALG::Matrix<mortar::n_dof_, 1, double>&);
+      const LINALG::Matrix<mortar::n_dof_, 1, double>&, const unsigned int);
 
   initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex8, t_line2);
   initialize_template_assemble_local_mortar_contributions(t_hermite, t_hex8, t_line3);

@@ -20,7 +20,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
     mortar_rot>::BeamToSolidVolumeMeshtyingPairMortarRotation()
     : BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>()
 {
-  // Empty constructor.
+  // Set the number of rotational mortar DOFs.
+  this->n_mortar_rot_ = mortar_rot::n_dof_;
 }
 
 /**

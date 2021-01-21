@@ -14,6 +14,7 @@
 
 
 #include <Teuchos_RCP.hpp>
+#include <vector>
 
 
 // Forward declarations.
@@ -27,6 +28,7 @@ namespace INPAR
   namespace BEAMTOSOLID
   {
     enum class BeamToSolidRotationCoupling;
+    enum class BeamToSolidMortarShapefunctions;
   }  // namespace BEAMTOSOLID
 }  // namespace INPAR
 namespace LINALG
@@ -45,12 +47,42 @@ namespace LARGEROTATIONS
   template <unsigned int numnodes, typename T>
   class TriadInterpolationLocalRotationVectors;
 }
+namespace BEAMINTERACTION
+{
+  class BeamContactPair;
+  class BeamToSolidMortarManager;
+}  // namespace BEAMINTERACTION
 class Epetra_Vector;
 class Epetra_FEVector;
 
 
 namespace BEAMINTERACTION
 {
+  /**
+   * \brief Get the number of Lagrange multiplicator values corresponding to the beam nodes and beam
+   * element.
+   * @param shape_function (in) Mortar shape function.
+   * @param n_lambda_node (out) Number of Lagrange multiplicators per node.
+   * @param n_lambda_element_ (out) Number of Lagrange multiplicators per element.
+   */
+  void MortarShapeFunctionsToLagrangeValues(
+      const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
+      unsigned int& n_lambda_node, unsigned int& n_lambda_element);
+
+  /**
+   * \brief Get the GIDs of the Lagrange multiplicator unknowns for a beam-to-solid pair.
+   * @param mortar_manager (in)
+   * @param contact_pair (in)
+   * @param n_mortar_pos (in)
+   * @param n_mortar_rot (in)
+   * @param lambda_gid_pos (out)
+   * @param lambda_gid_rot (out)
+   */
+  void GetMortarGID(const BeamToSolidMortarManager* mortar_manager,
+      const BEAMINTERACTION::BeamContactPair* contact_pair, const unsigned int n_mortar_pos,
+      const unsigned int n_mortar_rot, std::vector<int>* lambda_gid_pos,
+      std::vector<int>* lambda_gid_rot);
+
   /**
    * \brief Setup the triad interpolation scheme for the current triad and reference triad of the
    * given beam element.
@@ -176,6 +208,7 @@ namespace BEAMINTERACTION
    * @param local_M (in) Local M matrix of the pair.
    * @param local_kappa (in) Local scaling vector of the pair.
    * @param local_constraint (in) Local constraint contributions of the pair.
+   * @param n_mortar_rot (int) Number of total rotational Lagrange multiplier DOFs per beam.
    */
   template <typename beam, typename other, typename mortar>
   void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
@@ -187,7 +220,8 @@ namespace BEAMINTERACTION
       const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
       const LINALG::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
       const LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-      const LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint);
+      const LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint,
+      const unsigned int n_mortar_rot = 0);
 }  // namespace BEAMINTERACTION
 
 #endif

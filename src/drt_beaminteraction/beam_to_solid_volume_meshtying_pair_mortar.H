@@ -108,6 +108,10 @@ namespace BEAMINTERACTION
     void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
         const LINALG::Matrix<3, 1, scalar_type>& r_solid,
         LINALG::Matrix<3, 1, scalar_type>& force) const override;
+
+   protected:
+    //! Number of rotational Lagrange multiplier DOFS.
+    unsigned int n_mortar_rot_;
   };
 }  // namespace BEAMINTERACTION
 

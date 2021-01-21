@@ -12,6 +12,7 @@
 #include "beam_contact_pair.H"
 #include "beam_contact_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
+#include "beam_to_solid_utils.H"
 #include "beaminteraction_calc_utils.H"
 #include "str_model_evaluator_beaminteraction_datastate.H"
 
@@ -54,28 +55,25 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       contact_pairs_(Teuchos::null)
 {
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
-  switch (params->GetMortarShapeFunctionType())
+  unsigned int n_lambda_node_temp = 0;
+  unsigned int n_lambda_element_temp = 0;
+  MortarShapeFunctionsToLagrangeValues(
+      params->GetMortarShapeFunctionType(), n_lambda_node_temp, n_lambda_element_temp);
+  n_lambda_node_ = n_lambda_node_temp;
+  n_lambda_element_ = n_lambda_element_temp;
+
+  // Check if the coupling also consists of rotational coupling.
+  auto beam_to_volume_params =
+      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(params);
+  if (beam_to_volume_params != Teuchos::null)
   {
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
-    {
-      n_lambda_node_ = 1 * 3;
-      n_lambda_element_ = 0 * 3;
-      break;
-    }
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
-    {
-      n_lambda_node_ = 1 * 3;
-      n_lambda_element_ = 1 * 3;
-      break;
-    }
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
-    {
-      n_lambda_node_ = 1 * 3;
-      n_lambda_element_ = 2 * 3;
-      break;
-    }
-    default:
-      dserror("Mortar shape function not implemented!");
+    // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
+    // beam element.
+    MortarShapeFunctionsToLagrangeValues(
+        beam_to_volume_params->GetMortarShapeFunctionRotationType(), n_lambda_node_temp,
+        n_lambda_element_temp);
+    n_lambda_node_ += n_lambda_node_temp;
+    n_lambda_element_ += n_lambda_element_temp;
   }
 }
 

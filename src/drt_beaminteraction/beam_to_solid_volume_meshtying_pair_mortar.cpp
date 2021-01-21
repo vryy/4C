@@ -33,7 +33,7 @@ functions for the traction.
 template <typename beam, typename solid, typename mortar>
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     mortar>::BeamToSolidVolumeMeshtyingPairMortar()
-    : BeamToSolidVolumeMeshtyingPairBase<beam, solid>()
+    : BeamToSolidVolumeMeshtyingPairBase<beam, solid>(), n_mortar_rot_(0)
 {
   // Empty constructor.
 }
@@ -76,7 +76,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
   // Assemble into global matrices.
   AssembleLocalMortarContributions<beam, solid, mortar>(this, discret, mortar_manager, global_GB,
       global_GS, global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
-      local_D, local_M, local_kappa, local_constraint);
+      local_D, local_M, local_kappa, local_constraint, n_mortar_rot_);
 }
 
 /**
@@ -122,8 +122,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
 
     // Get the lambda GIDs of this pair.
     std::vector<int> lambda_row;
+    GetMortarGID(mortar_manager.get(), this, mortar::n_dof_, n_mortar_rot_, &lambda_row, nullptr);
     std::vector<double> lambda_pair;
-    mortar_manager->LocationVector(this, lambda_row);
     DRT::UTILS::ExtractMyValues(*lambda, lambda_pair, lambda_row);
     for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
       q_lambda(i_dof) = lambda_pair[i_dof];
