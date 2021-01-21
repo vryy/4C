@@ -55,6 +55,9 @@ namespace MIXTURE
    */
   class GrowthRemodelMixtureRule : public MIXTURE::MixtureRule
   {
+   private:
+    static constexpr auto OUTPUT_CURRENT_REFERENCE_DENSITY = "current_reference_density";
+
    public:
     /// Constructor for mixture rule given the input parameters
     explicit GrowthRemodelMixtureRule(MIXTURE::PAR::GrowthRemodelMixtureRule* params);
@@ -88,7 +91,14 @@ namespace MIXTURE
      */
     void EvaluateInverseGrowthDeformationGradient(LINALG::Matrix<3, 3>& iFgM, int gp) const;
 
+    void RegisterVtkOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool EvaluateVtkOutputData(
+        const std::string& name, Epetra_SerialDenseMatrix& data) const override;
+
    private:
+    double ComputeCurrentReferenceDensity(int gp) const;
     ///! Rule parameters as defined in the input file
     PAR::GrowthRemodelMixtureRule* params_{};
   };

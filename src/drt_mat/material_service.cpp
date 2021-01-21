@@ -12,6 +12,7 @@
 #include "matpar_bundle.H"
 
 #include "../drt_mixture/mixture_prestress_strategy_isocyl.H"
+#include "../drt_mixture/mixture_prestress_strategy_constant.H"
 #include "../drt_mixture/mixture_prestress_strategy_iterative.H"
 #include "../drt_mixture/mixture_rule_growthremodel.H"
 
@@ -1502,6 +1503,8 @@ template void MAT::AddtoCmatHolzapfelProduct<FAD>(
     LINALG::Matrix<6, 6, FAD>&, const LINALG::Matrix<6, 1, FAD>&, const FAD scalar);
 
 template MIXTURE::PAR::IsotropicCylinderPrestressStrategy* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::ConstantPrestressStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);

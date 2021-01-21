@@ -1,0 +1,63 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+5.000000000000000e+01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="8" NumberOfCells="1" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAAMAAAADAAAAAJQAAAA==eNpjYAADBwasgIOA+Ad7NAkC4jAAk+cgIA7jw83DEAcA1PYLmQ==
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAACAAAAAgAAAAHQAAAA==eNpjYGBgYARiJiBmBmIWIGYFYjYgZgdiAAFwAB0=
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAAAQAAAAEAAAADAAAAA==eNrjYGBgAAAAJAAJ
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAEAAAABAAAACQAAAA==eNrjAQAADQAN
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
+AQAAAMAAAADAAAAAywAAAA==eNoBwAA//8rOVsaoWfA/fR5yULokhj/Qo0GQKtKEP1kAZspkSvI/4Qq9X3ZEZD8njU7eIBaDv6dC1DpNjfI/IgOl2ncvm7+3GQD+YXuCv5MsbzbBgvA/5v8RRlygib97NF9QxD2FP7NeeaZ2q/A/QEgW+PRXhz9J2LXv0CKMv5yJ9fQgz/I/5++N1qG7aT+pvEZh1uqjvxATNOrsD/M/EBYRFw4GnL/N/mO0TyWkv+yxCO7I0/A/2kYfAWSGi7++qfe/J0GNv47yYV4=
+        </DataArray>
+        <DataArray type="Float64" Name="nodal_GL_strains_xyz" NumberOfComponents="6" format="binary">
+AQAAAIABAACAAQAAdgEAAA==eNqz5NlStVNymz3HiVfn92+cvl/ggl6Rr+KM/enntx1afaHFXoP9y1LGb/b2SU+FE57pdNknlrv21dYesPeL45L10Ji7/8VB9gXRQXP3S6wwtXN/XWL/8qqq48Ij7vYKDwtaO6812nOLah7ek37QfhtUPYdy/PF/QvP279nwLObLzGR7hh962anLa/f1Wt/9fXlSo/0xsRurlFW32x8/DnGPharNVLEnM/a/f3zuX3hDyf4df6aUrvpssJ99Bee68JQue5ZbK5Y/09phv8x6073jFjP3XzwPcX/BDRbjlNhW+7rO3WxnAuTsQ32n7z69ImW/csjKWDbfQ/YPHCyMbJbM298Edf+X3gtqfDEl9oszK12cM8ztXzXm9KhbVNo7LI26M133sP0RqHoVqPuX83+7ajw9yV5sSwzfUk6L/XfflR/UX19hz+B+rclOe6f9Nqh7XqpA3L/hgJ7be+Gy/Vfag7yEFrns5/vy7uWcqrT9ANQ0u9A=
+        </DataArray>
+        <DataArray type="Float64" Name="nodal_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
+AQAAAIABAACAAQAAiwEAAA==eNoBgAF//jZ/I03j/WdAUA58avLZ8T9A5na2b7DrP5xIrHmRUwhAnPpnExe61j+MimOw5RQCQBCY44kVKGdAiN8rCbrwGcBkj9uIvtsbwA2iK93Itw9AOJsuy+Nz5T84U+hMO0sXQHbdCo++02hAKy1glAF8E8Cq1SLWV1AZwIAdUdAt6WG/gi9TtP0ewr8VXuJ0SFQWQLBITC3d8WhATPrU/+Lu/z+ct/K0uh70P7LC2QUp4xLAICcmfFj/yr80Pm8eFi4CQD6mPikx5WlAPMZ6JvxG/D8apz5Q6PgDQEyvvbFUYAlAKG7aXc5BhL+44HUzEOwWwBBMT0vMgWpA4IpnDxPvFcAZsk4y3QYQwI8tCjomGA5A2thLFVw90T+jzjRpjgL9P8YwuwPUL2xAlK9aOc+cEcBc5nxj1TsPwBBxXJiiX9e/MII7+wTT4b/cUm+U58/3P5z9hugj2GpAgjVmGk8oA0CEo9wzuhYFQAbmG4/FSxTAO0Uli42Kz7/qMsPepNoXwKeGs+M=
+        </DataArray>
+  </PointData>
+  <CellData>
+        <DataArray type="Float64" Name="current_reference_density" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
+AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/3Oh3CL218E/9Pp4htMbm79Ys5Z1Rgmbv4WoJUXesl8/IzHxt+mOCz/a6JTj6bFvP5x1GtY=
+        </DataArray>
+        <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
+AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/6wqqzPZv2lAtphTR5j1C0AH8aPMmvkLQEDugn7P/aQ/UAzLqm68bD8AJjEune60P1D0F4E=
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+      </CellData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

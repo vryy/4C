@@ -3585,6 +3585,17 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Constant predefined prestretch
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Constant",
+        "Simple predefined prestress", INPAR::MAT::mix_prestress_strategy_constant));
+
+    AddNamedRealVector(m, "PRESTRETCH", "Definition of the prestretch as a 9x1 vector", 9);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Prestress strategy for a cylinder
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Cylinder",
