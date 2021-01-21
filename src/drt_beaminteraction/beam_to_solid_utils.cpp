@@ -475,24 +475,33 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
-#define initialize_template_get_solid_rotation_vector(a)                                           \
+#define initialize_template_get_solid_rotation_vector(a, fad_order)                                \
   template void GetSolidRotationVector<a,                                                          \
-      FADUTILS::HigherOrderFadType<2, Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>(           \
+      FADUTILS::HigherOrderFadType<fad_order, Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>(   \
       const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling&, const LINALG::Matrix<3, 1, double>&, \
       const LINALG::Matrix<a::n_dof_, 1, double>&,                                                 \
       const LINALG::Matrix<a::n_dof_, 1,                                                           \
-          FADUTILS::HigherOrderFadType<2, Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&,      \
+          FADUTILS::HigherOrderFadType<fad_order,                                                  \
+              Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&,                                  \
       const LINALG::Matrix<4, 1, double>&,                                                         \
       LINALG::Matrix<3, 1,                                                                         \
-          FADUTILS::HigherOrderFadType<2, Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&,      \
+          FADUTILS::HigherOrderFadType<fad_order,                                                  \
+              Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&,                                  \
       const DRT::Element* element);
 
-  initialize_template_get_solid_rotation_vector(t_hex8);
-  initialize_template_get_solid_rotation_vector(t_hex20);
-  initialize_template_get_solid_rotation_vector(t_hex27);
-  initialize_template_get_solid_rotation_vector(t_tet4);
-  initialize_template_get_solid_rotation_vector(t_tet10);
-  initialize_template_get_solid_rotation_vector(t_nurbs27);
+  initialize_template_get_solid_rotation_vector(t_hex8, 1);
+  initialize_template_get_solid_rotation_vector(t_hex20, 1);
+  initialize_template_get_solid_rotation_vector(t_hex27, 1);
+  initialize_template_get_solid_rotation_vector(t_tet4, 1);
+  initialize_template_get_solid_rotation_vector(t_tet10, 1);
+  initialize_template_get_solid_rotation_vector(t_nurbs27, 1);
+
+  initialize_template_get_solid_rotation_vector(t_hex8, 2);
+  initialize_template_get_solid_rotation_vector(t_hex20, 2);
+  initialize_template_get_solid_rotation_vector(t_hex27, 2);
+  initialize_template_get_solid_rotation_vector(t_tet4, 2);
+  initialize_template_get_solid_rotation_vector(t_tet10, 2);
+  initialize_template_get_solid_rotation_vector(t_nurbs27, 2);
 
 #define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)    \
   template void AssembleLocalMortarContributions<beam, other, mortar>(                  \
