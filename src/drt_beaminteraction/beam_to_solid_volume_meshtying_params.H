@@ -64,6 +64,16 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns the shape function for the mortar Lagrange-multiplicators to interpolate the
+     * rotational coupling.
+     */
+    inline INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions GetMortarShapeFunctionRotationType()
+        const
+    {
+      return mortar_shape_function_rotation_;
+    }
+
+    /**
      * \brief Returns the penalty parameter for rotational coupling.
      */
     inline double GetRotationalCouplingPenaltyParameter() const
@@ -89,6 +99,9 @@ namespace BEAMINTERACTION
 
     //! Type of rotational coupling.
     INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling rotation_coupling_;
+
+    //! Shape function for the mortar Lagrange-multiplicators
+    INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function_rotation_;
 
     //! Penalty parameter for rotational coupling.
     double rotational_coupling_penalty_parameter_;

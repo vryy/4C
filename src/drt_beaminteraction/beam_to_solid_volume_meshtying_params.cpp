@@ -52,6 +52,19 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     rotation_coupling_ = Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling>(
         beam_to_solid_contact_params_list, "ROTATION_COUPLING");
 
+    // Mortar contact discretization to be used.
+    mortar_shape_function_rotation_ =
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions>(
+            beam_to_solid_contact_params_list, "ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION");
+    if (GetContactDiscretization() ==
+            INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar and
+        rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
+        mortar_shape_function_rotation_ ==
+            INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none)
+      dserror(
+          "If mortar coupling and rotational coupling are activated, the shape function type for "
+          "rotational coupling has to be explicitly given.");
+
     // Penalty parameter for rotational coupling.
     rotational_coupling_penalty_parameter_ =
         beam_to_solid_contact_params_list.get<double>("ROTATION_COUPLING_PENALTY_PARAMETER");

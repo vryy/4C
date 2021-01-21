@@ -117,6 +117,15 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_3),
         &beam_to_solid_volume_mestying);
 
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>(
+        "ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multipliers",
+        tuple<std::string>("none", "line2", "line3", "line4"),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
+            BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
+            BeamToSolidMortarShapefunctions::line4),
+        &beam_to_solid_volume_mestying);
+
     DoubleParameter("ROTATION_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for rotational coupling in beam-to-solid volume mesh tying",
         &beam_to_solid_volume_mestying);
