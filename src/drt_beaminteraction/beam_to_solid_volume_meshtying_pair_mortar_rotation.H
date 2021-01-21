@@ -82,6 +82,16 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
+    /**
+     * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
+     * matrix (derived).
+     */
+    void EvaluateAndAssemble(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager,
+        const Teuchos::RCP<Epetra_FEVector>& force_vector,
+        const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+        const Epetra_Vector& global_lambda, const Epetra_Vector& displacement_vector) override;
+
    private:
     /**
      * \brief Evaluate the constraint vector and the coupling matrices.
@@ -99,6 +109,22 @@ namespace BEAMINTERACTION
         LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB,
         LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS,
         LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const;
+
+    /**
+     * \brief Evaluate the stiffness contributions of this pair.
+     */
+    void EvaluateRotationalCouplingStiffTerms(
+        const INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling& rot_coupling_type,
+        const LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd>& q_solid,
+        LINALG::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
+        const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+            triad_interpolation_scheme,
+        const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
+            ref_triad_interpolation_scheme,
+        LINALG::Matrix<n_dof_rot_, n_dof_rot_, double>& local_stiff_BB,
+        LINALG::Matrix<n_dof_rot_, solid::n_dof_, double>& local_stiff_BS,
+        LINALG::Matrix<solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
+        LINALG::Matrix<solid::n_dof_, solid::n_dof_, double>& local_stiff_SS) const;
   };
 }  // namespace BEAMINTERACTION
 
