@@ -19,6 +19,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
 
 #include "../drt_ssi/ssi_monolithic.H"
 
@@ -29,10 +30,11 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/17 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(const Teuchos::RCP<const SSI::SSIMono>
-        ssi_mono  //!< monolithic algorithm for scalar-structure interaction
-    )
-    : stresses_(Teuchos::null), ssi_mono_(ssi_mono)
+STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(
+    const Teuchos::RCP<const SSI::SSIMono> ssi_mono, bool smooth_output_interface_stress)
+    : stresses_(Teuchos::null),
+      ssi_mono_(ssi_mono),
+      smooth_output_interface_stress_(smooth_output_interface_stress)
 {
 }
 
@@ -42,66 +44,56 @@ STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(const Teuchos::RCP<const SSI::
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
 {
-  if (ssi_mono_->Meshtying3DomainIntersection())
+  // extract raw data for element-wise stresses
+  const std::vector<char>& stressdata = EvalData().StressData();
 
+  // initialize map for element-wise stresses
+  const auto stresses = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+
+  // initialize position pointer
+  std::vector<char>::size_type position(0);
+
+  // loop over all row elements
+  for (int i = 0; i < Discret().ElementRowMap()->NumMyElements(); ++i)
   {
-    if (ssi_mono_->Comm().MyPID() == 1)
-    {
-      std::cout << "WARNING: Calculation of interface stresses not implemented for triple meshtying"
-                << std::endl;
-    }
+    // initialize matrix for stresses associated with current element
+    const auto stresses_ele = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+
+    // extract stresses
+    DRT::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
+
+    // store stresses
+    (*stresses)[Discret().ElementRowMap()->GID(i)] = stresses_ele;
   }
-  else
+
+  // export map to column format
+  DRT::Exporter exporter(*Discret().ElementRowMap(),
+      *Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr())->ElementColMap(),
+      Discret().Comm());
+  exporter.Export(*stresses);
+
+  // evaluate nodal stresses
+  stresses_->PutScalar(0.0);
+  Teuchos::ParameterList parameters;
+  parameters.set("action", "postprocess_stress");
+  parameters.set("gpstressmap", stresses);
+  parameters.set("stresstype", "ndxyz");
+  parameters.set("poststress", stresses_);
+  Discret().Evaluate(
+      parameters, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+
+  if (smooth_output_interface_stress_)
   {
-    // extract raw data for element-wise stresses
-    const std::vector<char>& stressdata = EvalData().StressData();
-
-    // initialize map for element-wise stresses
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> stresses =
-        Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-
-    // initialize position pointer
-    std::vector<char>::size_type position(0);
-
-    // loop over all row elements
-    for (int i = 0; i < Discret().ElementRowMap()->NumMyElements(); ++i)
-    {
-      // initialize matrix for stresses associated with current element
-      const Teuchos::RCP<Epetra_SerialDenseMatrix> stresses_ele =
-          Teuchos::rcp(new Epetra_SerialDenseMatrix);
-
-      // extract stresses
-      DRT::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
-
-      // store stresses
-      (*stresses)[Discret().ElementRowMap()->GID(i)] = stresses_ele;
-    }
-
-    // export map to column format
-    DRT::Exporter exporter(*Discret().ElementRowMap(),
-        *Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr())->ElementColMap(),
-        Discret().Comm());
-    exporter.Export(*stresses);
-
-    // evaluate nodal stresses
-    stresses_->PutScalar(0.);
-    Teuchos::ParameterList parameters;
-    parameters.set("action", "postprocess_stress");
-    parameters.set("gpstressmap", stresses);
-    parameters.set("stresstype", "ndxyz");
-    parameters.set("poststress", stresses_);
-    Discret().Evaluate(
-        parameters, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
     // initialize vectors for stresses and element numbers on slave and master sides of
     // scatra-scatra coupling interfaces
-    const Teuchos::RCP<Epetra_MultiVector> stresses_slave(Teuchos::rcp(
-        new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2))),
-        stresses_master(Teuchos::rcp(new Epetra_MultiVector(
-            *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap(), 2)));
+    const auto stresses_slave(Teuchos::rcp(
+        new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
+    const auto stresses_master(Teuchos::rcp(new Epetra_MultiVector(
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap(), 2)));
     Epetra_IntVector numelement_slave(
-        *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap()),
-        numelement_master(*ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap());
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    Epetra_IntVector numelement_master(
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap());
 
     // extract scatra-scatra interface coupling conditions
     std::vector<DRT::Condition*> conditions;
@@ -127,64 +119,59 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
       // loop over all nodes
       for (int nodegid : *nodegids)
       {
-        // extract global ID of current node
-        // process only nodes stored on calling processor
-        if (Discret().HaveGlobalNode(nodegid))
+        // process only nodes owned by calling processor
+        if (DRT::UTILS::IsNodeGIDOnThisProc(Discret(), nodegid))
         {
+          // extract local ID of current node
+          const int nodelid = Discret().NodeRowMap()->LID(nodegid);
+          if (nodelid < 0) dserror("Local ID not found!");
+
           // extract node
           const DRT::Node* const node = Discret().gNode(nodegid);
-          if (node == nullptr) dserror("Couldn't find node!");
 
-          // process only nodes owned by calling processor
-          if (node->Owner() == Discret().Comm().MyPID())
-          {
-            // extract local ID of current node
-            const int nodelid = Discret().NodeRowMap()->LID(nodegid);
-            if (nodelid < 0) dserror("Local ID not found!");
+          // extract global ID of first degree of freedom associated with current node
+          const int dofgid = Discret().Dof(0, node, 0);
 
-            // extract global ID of first degree of freedom associated with current node
-            const int dofgid = Discret().Dof(0, node, 0);
+          // extract corresponding local ID
+          const int doflid = stresses_vector.Map().LID(dofgid);
+          if (doflid < 0) dserror("Local ID not found!");
 
-            // extract corresponding local ID
-            const int doflid = stresses_vector.Map().LID(dofgid);
-            if (doflid < 0) dserror("Local ID not found!");
+          // extract number of elements adjacent to current node
+          const int numelement = node->NumElement();
 
-            // extract number of elements adjacent to current node
-            const int numelement = node->NumElement();
+          // scale and store stresses associated with current node
+          (*stresses_vector(0))[doflid] = (*(*stresses_)(0))[nodelid] * numelement;
+          (*stresses_vector(0))[doflid + 1] = (*(*stresses_)(1))[nodelid] * numelement;
+          (*stresses_vector(0))[doflid + 2] = (*(*stresses_)(2))[nodelid] * numelement;
+          (*stresses_vector(1))[doflid] = (*(*stresses_)(3))[nodelid] * numelement;
+          (*stresses_vector(1))[doflid + 1] = (*(*stresses_)(4))[nodelid] * numelement;
+          (*stresses_vector(1))[doflid + 2] = (*(*stresses_)(5))[nodelid] * numelement;
 
-            // scale and store stresses associated with current node
-            (*stresses_vector(0))[doflid] = (*(*stresses_)(0))[nodelid] * numelement;
-            (*stresses_vector(0))[doflid + 1] = (*(*stresses_)(1))[nodelid] * numelement;
-            (*stresses_vector(0))[doflid + 2] = (*(*stresses_)(2))[nodelid] * numelement;
-            (*stresses_vector(1))[doflid] = (*(*stresses_)(3))[nodelid] * numelement;
-            (*stresses_vector(1))[doflid + 1] = (*(*stresses_)(4))[nodelid] * numelement;
-            (*stresses_vector(1))[doflid + 2] = (*(*stresses_)(5))[nodelid] * numelement;
-
-            // store number of elements adjacent to current node
-            numelement_vector[doflid] = numelement;
-            numelement_vector[doflid + 1] = numelement;
-            numelement_vector[doflid + 2] = numelement;
-          }
+          // store number of elements adjacent to current node
+          numelement_vector[doflid] = numelement;
+          numelement_vector[doflid + 1] = numelement;
+          numelement_vector[doflid + 2] = numelement;
         }
       }
     }
 
     // communicate vectors from master to slave side
-    const Teuchos::RCP<Epetra_MultiVector> stresses_temp(Teuchos::rcp(
+    const auto stresses_master_to_slave(Teuchos::rcp(
         new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
-    Epetra_IntVector numelement_temp(
+    Epetra_IntVector numelement_master_to_slave(
         *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(stresses_master, stresses_temp);
     ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(
-        numelement_master, numelement_temp);
+        stresses_master, stresses_master_to_slave);
+    ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(
+        numelement_master, numelement_master_to_slave);
 
     // add stresses together
-    stresses_slave->Update(1., *stresses_temp, 1.);
+    stresses_slave->Update(1.0, *stresses_master_to_slave, 1.0);
 
     // unscale stresses
     for (int lid = 0; lid < stresses_slave->MyLength(); ++lid)
       for (int ivec = 0; ivec < 2; ++ivec)
-        (*(*stresses_slave)(ivec))[lid] /= numelement_slave[lid] + numelement_temp[lid];
+        (*(*stresses_slave)(ivec))[lid] /= numelement_slave[lid] + numelement_master_to_slave[lid];
 
     // communicate back
     ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveToMaster(stresses_slave, stresses_master);
@@ -207,36 +194,30 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
       // loop over all nodes
       for (int nodegid : *nodegids)
       {
-        // extract global ID of current node
-        // process only nodes stored on calling processor
-        if (Discret().HaveGlobalNode(nodegid))
+        // process only nodes owned by calling processor
+        if (DRT::UTILS::IsNodeGIDOnThisProc(Discret(), nodegid))
         {
+          // extract local ID of current node
+          const int nodelid = Discret().NodeRowMap()->LID(nodegid);
+          if (nodelid < 0) dserror("Local ID not found!");
+
           // extract node
           const DRT::Node* const node = Discret().gNode(nodegid);
-          if (node == nullptr) dserror("Couldn't find node!");
 
-          // process only nodes owned by calling processor
-          if (node->Owner() == Discret().Comm().MyPID())
-          {
-            // extract local ID of current node
-            const int nodelid = Discret().NodeRowMap()->LID(nodegid);
-            if (nodelid < 0) dserror("Local ID not found!");
+          // extract global ID of first degree of freedom associated with current node
+          const int dofgid = Discret().Dof(0, node, 0);
 
-            // extract global ID of first degree of freedom associated with current node
-            const int dofgid = Discret().Dof(0, node, 0);
+          // extract corresponding local ID
+          const int doflid = stresses_vector.Map().LID(dofgid);
+          if (doflid < 0) dserror("Local ID not found!");
 
-            // extract corresponding local ID
-            const int doflid = stresses_vector.Map().LID(dofgid);
-            if (doflid < 0) dserror("Local ID not found!");
-
-            // write back stresses associated with current node
-            (*(*stresses_)(0))[nodelid] = (*stresses_vector(0))[doflid];
-            (*(*stresses_)(1))[nodelid] = (*stresses_vector(0))[doflid + 1];
-            (*(*stresses_)(2))[nodelid] = (*stresses_vector(0))[doflid + 2];
-            (*(*stresses_)(3))[nodelid] = (*stresses_vector(1))[doflid];
-            (*(*stresses_)(4))[nodelid] = (*stresses_vector(1))[doflid + 1];
-            (*(*stresses_)(5))[nodelid] = (*stresses_vector(1))[doflid + 2];
-          }
+          // write back stresses associated with current node
+          (*(*stresses_)(0))[nodelid] = (*stresses_vector(0))[doflid];
+          (*(*stresses_)(1))[nodelid] = (*stresses_vector(0))[doflid + 1];
+          (*(*stresses_)(2))[nodelid] = (*stresses_vector(0))[doflid + 2];
+          (*(*stresses_)(3))[nodelid] = (*stresses_vector(1))[doflid];
+          (*(*stresses_)(4))[nodelid] = (*stresses_vector(1))[doflid + 1];
+          (*(*stresses_)(5))[nodelid] = (*stresses_vector(1))[doflid + 2];
         }
       }
     }
