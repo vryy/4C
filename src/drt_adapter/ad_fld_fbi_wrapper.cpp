@@ -10,6 +10,7 @@
 #include "ad_fld_fbi_wrapper.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_io/io_control.H"
+#include "../linalg/linalg_sparseoperator.H"
 #include <Teuchos_RCP.hpp>
 
 /*======================================================================*/
@@ -28,7 +29,7 @@ ADAPTER::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<DRT::Discret
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FluidFBI::SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix)
+void ADAPTER::FluidFBI::SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix)
 {
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)
       ->SetCouplingContributions(matrix);

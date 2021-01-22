@@ -17,6 +17,7 @@
 namespace LINALG
 {
   class Solver;
+  class SparseOperator;
 }  // namespace LINALG
 
 namespace IO
@@ -49,7 +50,7 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
 
     /**
      * \brief Resets the external forces acting on the fluid to zero

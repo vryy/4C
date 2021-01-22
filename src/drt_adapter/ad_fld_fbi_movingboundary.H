@@ -14,9 +14,15 @@
 
 #include "ad_fld_moving_boundary.H"
 
+// forward declarations
+
+namespace LINALG
+{
+  class SparseOperator;
+}
+
 namespace ADAPTER
 {
-  // forward declarations
   class Coupling;
   class Fluid;
 
@@ -124,7 +130,7 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
 
     /**
      * \brief Pass additional contributions to the fluid residual to the fluid class
