@@ -23,6 +23,11 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
+namespace BEAMINTERACTION
+{
+  class BeamToFluidMeshtyingVtkOutputWriter;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -62,6 +67,7 @@ namespace ADAPTER
   class FBIConstraintenforcer
   {
     friend ConstraintEnforcerFactory;
+    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;
 
    public:
     /// empty destructor
