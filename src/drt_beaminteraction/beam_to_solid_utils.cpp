@@ -169,10 +169,100 @@ void BEAMINTERACTION::GetSolidRotationVector(
       GetSolidRotationVectorDeformationGradient3D<solid>(
           rot_coupling_type, xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
       return;
+    case INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_3d_general:
+      GetSolidRotationVectorDeformationGradient3DGeneral<solid>(
+          xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
+      return;
     default:
       dserror("Got unexpected rotational coupling type");
       break;
   }
+}
+
+/**
+ *
+ */
+template <typename solid, typename scalar_type>
+void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
+    const LINALG::Matrix<3, 1, double>& xi,
+    const LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
+    const LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+    const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+    LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element)
+{
+  // Get basis vectors of reference triad in the current configuration.
+  LINALG::Matrix<4, 1, scalar_type> quaternion_beam_ref_fad;
+  for (unsigned int i = 0; i < 4; i++) quaternion_beam_ref_fad(i) = quaternion_beam_ref(i);
+  LINALG::Matrix<3, 3, scalar_type> ref_triad;
+  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
+  LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
+  GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
+      xi, q_solid_ref, q_solid, deformation_gradient, element);
+  LINALG::Matrix<3, 3, scalar_type> deformed_basis;
+  deformed_basis.Multiply(deformation_gradient, ref_triad);
+
+  // Average of deformed basis vectors.
+  LINALG::Matrix<3, 1, scalar_type> average_vector(true);
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    for (unsigned int j_vec = 0; j_vec < 3; j_vec++)
+      average_vector(i_dim) += deformed_basis(i_dim, j_vec);
+  average_vector.Scale(1.0 / FADUTILS::Norm(average_vector));
+
+  // Project the deformed basis vectors on the plane.
+  LINALG::Matrix<3, 1, scalar_type> projected_basis[3];
+  LINALG::Matrix<3, 1, scalar_type> temp_vec;
+  scalar_type projection;
+  for (unsigned int i_basis = 0; i_basis < 3; i_basis++)
+  {
+    projection = 0.0;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      projection += average_vector(i_dim) * deformed_basis(i_dim, i_basis);
+
+    temp_vec = average_vector;
+    temp_vec.Scale(projection);
+
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      projected_basis[i_basis](i_dim) = deformed_basis(i_dim, i_basis) - temp_vec(i_dim);
+
+    projected_basis[i_basis].Scale(1.0 / FADUTILS::Norm(projected_basis[i_basis]));
+  }
+
+  // Calculate angles between the projected basis vectors.
+  scalar_type alpha_21 = acos(projected_basis[0].Dot(projected_basis[1]));
+  scalar_type alpha_31 = 2.0 * M_PI - acos(projected_basis[0].Dot(projected_basis[2]));
+
+  // Minimum relative angle.
+  scalar_type alpha = 1.0 / 3.0 * (alpha_21 + alpha_31 - 2.0 * M_PI);
+
+  // Rotate up the first basis vector.
+  LINALG::Matrix<3, 1, scalar_type> rot_vec;
+  LINALG::Matrix<4, 1, scalar_type> rot_quat;
+  LINALG::Matrix<3, 3, scalar_type> rot_mat;
+  LINALG::Matrix<3, 1, scalar_type> start_vec;
+
+  rot_vec.CrossProduct(projected_basis[0], average_vector);
+  rot_vec.Scale(0.5 * (M_PI - 2.0 * acos(1.0 / sqrt(3.0))));  // No need to normalize before, should
+                                                              // already be length one.
+  LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+  LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
+  start_vec.Multiply(rot_mat, projected_basis[0]);
+
+  // Rotate to the new basis vectors.
+  LINALG::Matrix<3, 3, scalar_type> new_basis;
+  for (unsigned int i_basis = 0; i_basis < 3; i_basis++)
+  {
+    rot_vec = average_vector;
+    rot_vec.Scale(alpha + i_basis * M_PI * 2.0 / 3.0);
+    LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+    LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
+
+    temp_vec.Multiply(rot_mat, start_vec);
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++) new_basis(i_dim, i_basis) = temp_vec(i_dim);
+  }
+
+  // Get the rotation angle.
+  LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
+  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 }
 
 /**

@@ -105,7 +105,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         tuple<std::string>("none", "polar_decomposition_2d", "deformation_gradient_y_2d",
             "deformation_gradient_z_2d", "deformation_gradient_average_2d", "fix_triad_2d",
             "deformation_gradient_3d_local_1", "deformation_gradient_3d_local_2",
-            "deformation_gradient_3d_local_3"),
+            "deformation_gradient_3d_local_3", "deformation_gradient_3d_general"),
         tuple<BeamToSolidRotationCoupling>(BeamToSolidRotationCoupling::none,
             BeamToSolidRotationCoupling::polar_decomposition_2d,
             BeamToSolidRotationCoupling::deformation_gradient_y_2d,
@@ -114,7 +114,8 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidRotationCoupling::fix_triad_2d,
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_1,
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_2,
-            BeamToSolidRotationCoupling::deformation_gradient_3d_local_3),
+            BeamToSolidRotationCoupling::deformation_gradient_3d_local_3,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_general),
         &beam_to_solid_volume_mestying);
 
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>(

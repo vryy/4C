@@ -94,7 +94,9 @@ namespace INPAR
       //! 3D case where the triad construction starts with the local e2 vector.
       deformation_gradient_3d_local_2,
       //! 3D case where the triad construction starts with the local e3 vector.
-      deformation_gradient_3d_local_3
+      deformation_gradient_3d_local_3,
+      //! 3D case with a general
+      deformation_gradient_3d_general
     };
 
     /**
