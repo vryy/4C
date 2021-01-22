@@ -33,8 +33,14 @@ AQAAAAEAAAABAAAACQAAAA==eNrjAQAADQAN
       </Cells>
 
   <PointData>
+        <DataArray type="Float64" Name="current_reference_density" format="binary">
+AQAAAEAAAABAAAAALAAAAA==eNpTTGr/mbT8oz0DGvj9SljowsaP9lJ7fd5w7cGUT1P2+yB07KM9AC1vEMw=
+        </DataArray>
         <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
 AQAAAMAAAADAAAAAywAAAA==eNoBwAA//xPznQnIW/A/Ic/bPSYghj+jSA1yec2EPzFdOCyCTPI/xAFoIEtLZD9lDlOdexSDv56OLYVqj/I/2kEYc2Mwm7/av8ZVunmCv2wkDHnghPA/vqO9IBucib/QuLPCLDmFP75IVOmVrfA/TYZ+5pJThz/I4H97xB6Mv7UE3Cs+0fI/8ETJb4vCaT/ySRzPUOujv3FQHBEKEvM/3OiguPwGnL+I24L0yiWkv0qs4jHo1fA/5K0fnFKCi7+azNiiMj2Nv1gLYWE=
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
+AQAAAEACAABAAgAAIQAAAA==eNpjYACBD/YMWOmhDqjlr+EXPv/B4L09Ok2qOQCBfiAg
         </DataArray>
         <DataArray type="Float64" Name="nodal_GL_strains_xyz" NumberOfComponents="6" format="binary">
 AQAAAIABAACAAQAAdQEAAA==eNpLVd+i8Utpm/1zs4LS/Wun78/76ssTLTtjv0Lrk7etj1rsr027vtP5t719Xv+MifL2XfbFLy0aMmsP2F/78ns7k9bc/WmrLxSLh8zd/zNqpWfExxJ7Nx8xuQtH3O2vBxgdnnqz0V47yJdvVfpB+0NfIep3bJL6uEdk3v6cZfZqon3J9gzf5nimzm/Yd3/my7prUxvtZQ+tzGrT225/COqezUfMf9g/mLF/t67GxLeLSvbr2dZ/i/xqsN+k7n/3kbIu+yd9m+5nmeywXyZbK/PfZOZ+Kaj7n84V2bkov9U+6HPf9q/hcvZKvPw7Nd+m7O+M+8v+1eeQ/ZZY15bfS+ftj1kDcb9VzoU5XxNL7D9JOH8OzTC3V7x4406IUaV9xu93L9t1D9sXQ9Uvgbp/8gf3o5u6k+yzwhy/aXBZ7O/S1WYrW1lhv01ZesZjk5329VD3HIa6/3Hsdnkn87L9P6bWBy1f4rI/oid076b9afsBF8fFDQ==
@@ -44,17 +50,11 @@ AQAAAIABAACAAQAAiwEAAA==eNoBgAF//g3Z0VYEBGhAmBmgt2wL8j/wJTxR/BHsP0cwW+Z6fwhAxmpZ
         </DataArray>
   </PointData>
   <CellData>
-        <DataArray type="Float64" Name="current_reference_density" format="binary">
-AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
-        </DataArray>
         <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
 AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/2SlHCDk18E/CPqz+JYam7+01PbUCQibv6k53dv6sl8/orVxPwGPCz+s9WyYBrJvP4c+GUU=
         </DataArray>
         <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
 AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/7V6wlnIv2lAcLBCo+QSDEDtoJUX5hYMQGgZQGWrE6U/EA6SEHq6bD+EedXGeAS1PxYZFLI=
-        </DataArray>
-        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
-AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
         </DataArray>
       </CellData>
 

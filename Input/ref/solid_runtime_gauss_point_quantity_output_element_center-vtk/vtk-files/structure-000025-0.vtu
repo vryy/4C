@@ -40,18 +40,18 @@ AQAAAIABAACAAQAAQQEAAA==eNoTYuT9qvD3rX3VuTtZ8nFt++OnPo1csrht/9+5jvyLbN/bq8zO+rZ+
 AQAAAAADAAAAAwAAMwIAAA==eNqbmP7j677cJfbhRjeiQ9ZNs58stL/UTWi6fc+TCeEHrifaCwR92896x3q/1K9bjslxVfb+56eKdS1YYm+60fPNXbv59s1laZEzZ863F+hN/PfLttVeZfmm41vX2ewv1NAI2b6wz97EPWS+C/NS+xtQ9TWFr0tspBfYPzv7fPGHjtD9+2cxPf6QqWq/acJ2D7/TffaPZsuGS25bYl9gCHGPzq2l/TWbp9t/Cbb5EGNRZa+Rf9ApQkTTvueRE3eyYJX9I49Qq2l/l9hXrBGbfPjjdPsWqPsFV5bJKDkl2jN+C1O791lu/7Oi+QaGZ1vt19g67bNPWWovc3XCBD7bBfYdUPe/NOpoTDraan8l5IHZD12l/Tr5Zf2Jgpn2fFdY3lYeXmq/4wpEvQvU/T6bvF4s/hezv5wx6qFSqJ19wKWXX2+dTbPf8uobr4XLUnuWtRD3pEDdX2RW/Ovo40p7OYZIo6AYB3uLJXI5jEtaSQ7PA5pXT6ht3mqvVbt2n9e96fv/aMxPSPSdsf91+Nvvhqwt9g7cgRnvT9jbf5F8/skkptP+jJWc0rI92+zFoOpP3bj/0Zp/5v4MjtpLv74X7V9RrrDC5anBftYJ2y7ZT+gkOb5IDc/Pr9Y3th3Ybr8tzXRZafLM/R1Q92v56lbZdrfYu0tKN0sIy9nf4mZQvrsgcf+ijc8lWPbvsK+Hqt8NdX/T1E1HN9aV7FcXSbxxv9tlf4yp/Ez2tOT9pMYXAFercy0=
         </DataArray>
         <DataArray type="Float64" Name="nodal_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
-AQAAAAADAAAAAwAAbwIAAA==eNqL+Zlxb21vmoPQ16MlX1Uf7xftTNNm+/doP2u8XfSV/8/3y8zarl7WVrD/uHhkvuiT5/unfZ33Mjg/zeFa9ukD6wye2VsFX+e87vDMXlvJpS4zl8HBQtApc0XgGvt5WbZ5t9YzOExg/6jsMjfNoXrp5MxXcU/trbI0zrrPf2r/UXunSPMkhgP7V+y4Grd0w/66jYp2T00YHSS+Xj7tviHNIffWqiqD14/38x594daR9Xi/G4NZ0WTXF/Y9f0xYNfXC9i+YulnwqtmL/SavreqzLqU5tHVN++b84/H+FoaN91c2Ptn/O3/+x88ZL/bv0StJ+2NTvv90jvfuE4Yv7HfcvH7M5FSaQ7DXDGYt5qf2u73efYre/MQ+Qm1VW/l0RoekGnkGzbWb9l/aFRcfJcl44NHbn3rq39Ic+r46n5gb/cT+mMTaLE6bJ/Zu17UlrX4zHnB5EZR/wWWL/cEi0TU8dxkPCDEeCBP/kuawZNeMRQkbnuy/trZhHdfDJ/sZLsdN/mX0wv7Uodovz/2a7JdPCfK6wPHCntTwvLHo4Z3wA+kOP1S/Jgk1v7cXeGdgm97z3F5rzoL3CcVsDmmL86SP6l6zZ/B8Klyoy+Bw4prLXvnNGQ49LOK3Xu77a//E0mT3V8ZP9qe0uPvNPgseqNN+NufQlZP7+b4odnRakB5fpIang1DqPPelmQ5zDnDw80v8stdLqF1w+TqTw29nIZOdyewODE4sfx6bqO43WXgnqO2H6AGj+bL7RKZnORSlht8WYWFy6Hmya5Lne2aHGxOa+jN8hQ98S3T7LFJwYf9j7f/vbt4XIzm+AMjdeHA=
+AQAAAAADAAAAAwAAcAIAAA==eNq7N7/E35Et3eHSxjPWxkwP90/Ib/mldevBfs9k572dzS/2r/kSPe2LWcH+ApUT7YeKXuzvum74j+dVmoNEPvv8nPIX9vv2KWd6tr+w/7Jeq+TpIQaHoAmvNbMZ19rrmTpIZbAwOmhxbV9+Qyrd4eOn4OxLa5/b67p5LbV++9y+e2Laloz3DAc6Lio+3c+4cX+Br6KNVh+jQ9Tpg3tfaaU7zHE8ur/p0MP9L1Z5LJ/s+HD/ij+b4w9veWEfI7F27mHL8P0hBWXuM0682M9RU3NL2j/dQWlulEDsqYf7WSPTTrGEPNov98LQZtLHF/vrtlodWFJSvn9btmOxxLQX9ps8FLrmeaU7OL59d/dZxHP7Z3/uHFTkem4vv4/tq/B3RodZh05vrOfbvP+j2vHd+bWMBw7tVX8eX5nucG33/MqGnc/s3R7/r/WZ9cx+gZxh1spkpgN78y0Z16/eYn9nwb1EJ3emAzVyTgLXitIdWF1iFqysfbSfkbG8NX3do/1O8vtF85a8sH/AH+0pnNZkf2HhU/mJuS/sSQ3PmpbprZ1sGQ57kkon9lt+sL/hs1BAqOaFvXOG0r5NT9gcPvCahs5wvWafw/lnicd8BodvM45MKv6d4ZAQPbX+l8U/e5G81euzqj/Zc00S1Z+vJ3TAW2auqQb7qf1XdvDNM9vAQHJ8kRqel7p33trxPtPhBl9tfMTkX/Yxp0+7nBZldni3c/G0oIfsDg7qsjf1w2P3H1x7MNTBXOzAxcijjPMeZzn8Efrje8SJyeGae9xKMT0WB+XJrzdM6hc+MCGkbcXB4Av7m5fohsgoiZMcXwBY3neY
         </DataArray>
   </PointData>
   <CellData>
         <DataArray type="Float64" Name="current_reference_density" format="binary">
-AQAAABAAAAAQAAAAGQAAAA==eNrrO8a77E7jR3vOG1YXF/V/tAcASyEI4g==
+AQAAABAAAAAQAAAAGQAAAA==eNo7/Kxui0LdR3uu68X2i7o/2gMATLUImg==
         </DataArray>
         <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
 AQAAAGAAAABgAAAAawAAAA==eNoBYACf/9CNWKVp2aQ/xCUvDGymmz/oJT9SsrWbPx2r8z1B+XE/HqKblDEk+j6YWW5uQPmBP0AGQItajKU/AMHeYfPraz/gnX+p+OdrP5E05LUaH3M/lfNnY6zF/b7KVdTqHh+DP8QXL8c=
         </DataArray>
         <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
-AQAAAGAAAABgAAAAawAAAA==eNoBYACf/2d/jjlhpmZAennu0zb0rj8w5Wp+H4auP2D6+dIPuWM/CRcAhnNySb/wxT6O671zP2Hc7Hmrr2dAD2t8+20nD8DeGFhWkCsPwLCSps5eQ6G/BAO02ODmXL9o5uaKyUKxvwLOMTs=
+AQAAAGAAAABgAAAAawAAAA==eNoBYACf/wNvqpAcIWdA14XAbTOOwD9l0P21t3LAP0DYd0yVxlE/EOZChe5rSb/Q8+zqedBhPwHRSPYgO2hA6zkEqiudDsC+OSonSaEOwNigftnQtKK/tIfDdDLHXL/gA5nsMrSyvxwQMcM=
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
 AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb

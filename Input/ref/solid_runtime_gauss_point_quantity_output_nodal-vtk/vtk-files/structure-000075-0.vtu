@@ -10,51 +10,51 @@
       </DataArray>
     </FieldData>
 
-    <Piece NumberOfPoints="24" NumberOfCells="3" >
+    <Piece NumberOfPoints="16" NumberOfCells="2" >
       <Points>
         <DataArray type="Float64" NumberOfComponents="3" format="binary">
-AQAAAEACAABAAgAAQQAAAA==eNpjYMAHPtjjFyckT8hcdHXo4qSqwwAO+MUJmYvLP3C+A35xQv7BZQ4McBAQx/A3AXF0d3IQEMflToQ4ALFlKQE=
+AQAAAIABAACAAQAALgAAAA==eNpjYMAHPtjjFyckT8hcdHXo4qSqwwAO+MUJmYvLP3C+A35xQv75YA8AzRYdaQ==
         </DataArray>
       </Points>
 
       <Cells>
         <DataArray type="Int32" Name="connectivity" format="binary">
-AQAAAGAAAABgAAAAMgAAAA==eNoNwwcOgCAQALBDHLgHjv//1DZpRESyMdva2TtYHJ2cXVzd3D08vazePr5+/iRQARU=
+AQAAAEAAAABAAAAAKAAAAA==eNoNwwkSwBAQALB1VIvi/7+VzCQiIpktVh+br5/d4fR3uT1eCuAAeQ==
 
         </DataArray>
         <DataArray type="Int32" Name="offsets" format="binary">
-AQAAAAwAAAAMAAAAEQAAAA==eNrjYGBgEABiCSAGAAFMADE=
+AQAAAAgAAAAIAAAADgAAAA==eNrjYGBgEABiAACIABk=
 
         </DataArray>
         <DataArray type="UInt8" Name="types" format="binary">
-AQAAAAMAAAADAAAACwAAAA==eNrj4eEBAABLACU=
+AQAAAAIAAAACAAAACgAAAA==eNrj4QEAACYAGQ==
 
         </DataArray>
       </Cells>
 
   <PointData>
         <DataArray type="Float64" Name="current_reference_density" format="binary">
-AQAAAMAAAADAAAAAewAAAA==eNqb3PZl95E5H+15Jju+El/00d6j6aGZ76qP9svW7FU+BOQXeMlyb1jx0V4u6vnixE0f7c/GzvoVsuuj/ZzAljl96xD6Oub3SWQv/2h/I5zV68ZGhDkwfZcyN9oI7/loz5y1IUL6GMIcmD4GNAAzB6YPXR5mDgBNYFPg
+AQAAAIAAAACAAAAAbgAAAA==eNqr4NK8t3fOR3tvsxvZAos+2j9xurTUddVH+3OzJljuBvIbPvqKrFzx0d4v3JchatNH+9CyCS6+uz7au5y8NKN9HUKfYlL7z6TlH+1/vxIWurARYQ5Mn9Renzdcez7apyn7fRA6hjAHAK8MQZc=
         </DataArray>
         <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
-AQAAAEACAABAAgAArwEAAA==eNr7q9jvp/Dvrf3TWrG0G4yd+7+J/Pm1wrdz///4VKYZ4e/tc+Zc2uRUMXH/KuF2vYhfE/c/K+My4F/03n7R7G+J1ccm2P/Wn9TSlDBp/xNZnz3fnd/Zh+wyfuYp0mnP4Xvj/WGurv0Zh/5IB3W+s8/ext58NLNrf12gZLVUQqd9hkHCo9+v39vfVRU9Y2I8aX+k2M9Faq0T7O2Oxiusl/pgP+/3onCtuIn2N0IvnRc4McE+cPrBIv1z7+w5q14xhYR32RcI7M4P+tFpj8udAp/ncp6I/mAfcf62rZpCm/0SD96iyrMt9pkqPJUPWj7Yxy7eqyA9p3P/3x2bD+lYttrj8hcud+7xCHk5de0H+3Ntdc8mBbfbn3pQX31Erme/55pHhi+ufrD/u1Z+TlBT9/5XZ24sMrLt3Y/LX7jcqRtrodPk88n+H1OGgrd3iv1rvuC51SLN++f26bZm9X+yl3OUKE42mL2f9cCx0F2VTftx+QuXO7ew3NG2u/jJ3sDtZH73oUx7Ri+Z8wGvF+/PCZAR5BL6bH/sxYIdf9jm7O+83fTllOoSnP4CAIynI+4=
+AQAAAIABAACAAQAAQQEAAA==eNr7q9jvp/Dvrf2EerG0G4yd+/1F//xa4du5/198KtOM8Pf2mnMubXKqmLj/inC7XsSviftflXEZ8C96b+82+1ti9bEJ9g36k1qaEibtfyXrs+e78zt74T3GzzxFOu3P+dx4f5ira3/CoT/SQZ3v7K9tYW8+mtm1/1WgZLVUQqd9qkHCo9+v39u/URU9Y2I8af8CsZ+L1Fon2DsejVdYL/XBPu33onCtuIn2haGXzgucmGAfOv1gkf65d/ahFa+YQsK77DUFducH/ei0x+VO4c9zOU9Ef7BXPH/bVk2hzX6xB29R5dkW+xwVnsoHLR/s9y3eqyA9p3P/hR2bD+lYttrj8hcud+7zCHk5de0He9+2umeTgtvtTzyorz4i17Pfa80jwxdXP9g/WSs/J6ipe/+sMzcWGdn27sflLwC4RsFJ
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
-AQAAAMAGAADABgAAMwAAAA==eNpjYACBD/YMWGlSweAx5z8YvLdHpwfKHIZhGs6j5ozMfDE4w2ewgdHwoXU6BADwuI6x
+AQAAAIAEAACABAAAKwAAAA==eNpjYACBD/YMWGlSweAx5z8YvLdHpwfKHIZhGs6j5ozMfEEt9wAAmmNukg==
         </DataArray>
         <DataArray type="Float64" Name="nodal_GL_strains_xyz" NumberOfComponents="6" format="binary">
-AQAAAIAEAACABAAA6gIAAA==eNqV0fkv23Ecx3E1x1zzgzO2EjOrI8SsU2TxdszVIdEQlHVzH4v7mFpQR8nYapY12o4a4Stl9kMjypiPM8uyLKtNyjKbWUVCUkeomA77od9/4Pv784dHXq/bs2ZfXphh8EPPLsErVQgNAnaJ3ycheKyUX/xr8gC+3Q+pu5UbgGoyD0hMJhs6U6rHtmMx+Jetq2+c0gMGVuwEi2c9UNFvfkhb58JgQv0kYxDQdK2okBTYBj9HO8lr7zAIzdH2EZlJ22HKHigTfbY1t0lGlRMFtUveFCiSLlFzC9rg+fCHj1FMDM4uaD3Yq6WHr9kioNvubFsrq2CMrMwI5blBg75uS7opG/aKBc0UDANL9/yJkykRjHVo/Uxn9ubGLxZIRpyT+HRHxIk5CpBbNkGE0Kf03HEAqlNmOJ5GvWCE+zn0nb2S4iZILFTudodeQ/ZDN2b8KFlw+tKMTG8eAB+8D8b94oA2eXh6KnqbNlC+wg+ER7tOiwpFOlCf5NU572NQj3tWcX+iIU1B4ldBmF6Q3WNeEEiX/Zm9Ki7hPcMpIy4nV0fhq09RORruQMPqaNNksgApGjdU3D+NECZaHg/RAFDaBO0O0AKBs5K8Jk8ZyPBeZ4F2DL8F6NTDpV3VW4bkQbVHSWovpKk5b52vaCH8F9E9+3jStTzqGKyTq6+cU4XIHff7iy3Hewu5cHLMk6kT7OHM1HzcVZWBnjpdFiip4zCD94fzWv8gS+YQTKtA9eJaxkDfHWTSGv9eirIQ0b+I7snZ8uXkVk9DyqFGpuvWhSyG5KU2cV2ojymJTNwvA+dYa3v5fDjEMLzn+N/rwJcRfWkwewYwvN+X2u1PWooRVwLXrXjpoLPqT8/s5kyxhFs1Cn4d4b+I7tnBOjVUR82C9F5oo6ZfjCLfaP2uefJOdWoZpNmHHMTn0GBxcWU1zpsNcZqdrWaPOSCxtH037r+rCl+QtqbBZn7QkYuxL6q/6W5QIakEon/9B83/KxM=
+AQAAAAADAAAAAwAAMwIAAA==eNr7cZD3/CTeZfa2bFLhBokz7cVmVhZZnp5p//xuKcdP7gT7t8rOjaaZdvuzkj4zRkVV2r+Kqd3xKnCZ/Zx0JlaumIX2aqKV4cK9C+35l/F/MX/Yav/Fu2lP0Cr7/TvrZ+UzOvTbb9o2R/b+rmX276DqOVIjX7k9XmifM+usBL949H6mL3n1V4zU7f9svGKSmddvv2Tt8ZM+UcvsE1kh7lGZfSV7QeUs+zni716JPa6y/3fpUYprn5b9IzamrmSeSnu1ohnt6suW2U/VzN39a98se4sZEPdHaFc+e3Ivzn5FlmrkVC/F/at9vtldEGmznzTTrPi/4nL7ppiDDXqci+xtoO7P8X73oaiwDeiux+/nu6rsj1theNBSPc3eeiqvrFf7cnsTqPorKRD3T7Hov+CenLhfP2l56Y2pDvb9b5QvXruWbK/SmdWo+nGZPYsWxD0ToO4/wG1+jXFqlf2npw5S1X2O9vtuWEUtettKcnimqm/R+KW0zf65WUHp/rXT9+d99eWJlp2xX6H1ydvWRy3216Zd3+n8294+r3/GRHn7LnvZQyuz2vS22x+Cqt98xPyH/YMZ+3frakx8u6hkv55t/bfIrwb7Ter+dx8p6yI5vkgNzyd9m+5nmeywXyZbK/PfZOZ+Kaj7n84V2bkov9U+6HPf9q/hcvZKvPw7Nd+m7N+mLD3jsclO+3qo+sNQ9z+O3S7vZF62/8fU+qDlS1z2R/SE7t20P20/qfEFADItaHk=
         </DataArray>
         <DataArray type="Float64" Name="nodal_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
-AQAAAIAEAACABAAANQMAAA==eNqV0Y1Ty3EcwPHtN6rFsWq2arg4KpmIExm+H10PHkJheShFar8ZEyIbEVNTURFx8nwRXaNuiDG+X3HKcy7WqYRJrV+OtJ5QHv6F/Qfve73Zh1IUec0ySC3yT4gsM+Mkq0fHnHQzTuM5VOZuZ7DM8CHfVJiIjfH5sY4KBkPXMFlEpQyiUiQe+p2t6LHLtnFB2a1IzEn1MajZMPU+Upd6laHghLM7VHfZoKg2O9V2y6CxLTNmxAULKt8Q0QMWC6pODs/oLmaTydWbfKkXeny+cGFQ6TwKjKG6umhHGqrTlw0S7f6MjU1Ug6fVjL1/u9/bfJFBi4pEkizpaiz9GheZU/m/59HRwfoJNGgu55RsTP+Mxx7SVP0SNuG6GyyHQiuDmQ3lEwzinVhpLpm1LpNB0op60aqxNJi+ObWHhVqQa9HfmCk/WpD2bWKXupyCxBtPY2jWTeyRHF5/UkKRcGpeXf0SGtYaNI+4BS0oMHZJglbVgsQiUQbfk0P0xbrTFx+XI1Pje18xl0Mm9YbEHw2nIWwBWiMIbsK5ee+MD1RNOMEucPzhSwxqdJ02SxCXhkaXaf061zPIVk/fXScebuHIgXWmIEPl2IE87DhP+LyvqGzUcNO+PQ7w07m/ubDShDwX6HKXAwXeE9UsTY8cZKf2uNXwWCC+s9Q+bnEnEszutCvqdSbRKa0v2t2f4UQ523pkFWXzL1s9kzLOvm1j1kP8bLrbX92HciTzI/kuA2AzaPuis7kwVxnBBNhrsTFqRcEbtpA47z3w0fpeAZbvXVn5gRwYU5HqGuU3ENaQzL8RcXxybO2M05OVr7CdM9fwo11o8y9bPT/FTi+p96Ih+6AxNMDenXwLU/C3d4iI0uxIX6oaCs28/SF3tn5BA7wEUv1SIexfNyZZWyOHK3dVT0bmuZBOjVTrRrsRIq1it61Mxw0KnZ9uZAW+XHOt5mW0wOZftnrWht3yOr5PAU+DK8SlAwVkr+8RZBrOI9RxIQkaNwR0eh9lvuQ1ap+DyLmPfei2YTD3/MSNENKflCa47kRM/cUze+mhRP6qwf+LpRb3PD8VMP/1J+z9x9Pn2tUeZOuvfzX5Hl0=
+AQAAAAADAAAAAwAAbgIAAA==eNqbtzR8QdHzNAephAS2tDWP9iue0UgKbHy0P8IsS3p62av9P248+9G0KH//h9XNy1WzX+2/0fJZ2/lEmoOGU7SgWv1L+ykSpiXbJ760rzxX9K2sitHh8OTvpRUaG+xXHJyoZLKH0cEnaMmhM9/THEKYLY1nLn1h/82OdeuuNy/sXTexzzy0ivFAj7HV4itnN+3XPOGaUuzF5GByd/YWe+50hxfm13nUKx/v3xyeHWj0/tF+v9sV+kFLX9lrrHaxPRceu79Kzy133YlX+y/lKE2arpfuYPf6v3FJ4+P939NeX2YSebL/9M47tzZ+ebXfwCfqmrFu1f6oGw2dBl2v7H9a9WwIVkt3ONbYwXbO+4V9+Bzubdu+PrfP5tX45rmdycGX1cLShXHr/qbaxKhiG6YDVtMZfW4Gpztop/51njzvuX1Wy5stArXP7VfUzk7+qsZ84Imj2L+e49vsu5cv3iHAxXzgRiHj3OrAdIdF+0MYpRyf7J/2/Hbr0ZIn+3tZZ6wuWfbKXljkgYxXUou92buEOwezXtmTGp68Ny+GsbBkOMyQXLA9h/uT/QdVm8A/gm/s3Q2in1XVczgcy4q8cuv4NXsDh2KZQEcmhx18xzeK/8hwOFRXpe0nyOBwgznsRljAF/tw1lpGjZ9CBzhTfYtTpE/vl/J99HdqNBPJ8UVqeG66lja75XWmQ8qjw5G6VX/se/w/WU8QZnFIEUo0y+njdDjQO2/5Db62/ZlP9tyKYRI/EH80cEP/vSyHil06VwWdmR32VG1adN2Q1UFCrNTyQZLIgaW/Ra9uzDm/v03nWVLDR3GS4wsAQ7xuyw==
         </DataArray>
   </PointData>
   <CellData>
         <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
-AQAAAJAAAACQAAAAmwAAAA==eNoBkABv/7wadijLf6Y/SJJUTbDMnj9I1hH/g9uePyiYS5Qr5XE/vlwfFHDn+D7+vOEPK+WBPxwGuYo+W6c/2OT3dixXdT8QRDXPT1R1P057Sa7ZHnM/ldyBfIpk/r51Hp2e3h6DP2mlHCDk18E/9Pmz+JYam7/Y1PbUCQibv0U43dv6sl8/hINxPwGPCz8p+GyYBrJvP9CyRrc=
+AQAAAGAAAABgAAAAawAAAA==eNoBYACf/8AadijLf6Y/EJJUTbDMnj8w1hH/g9uePwGaS5Qr5XE/tnIfFHDn+D6kvOEPK+WBP3wGuYo+W6c/UOT3dixXdT8ARDXPT1R1Py18Sa7ZHnM/wJeBfIpk/r4CHp2e3h6DP2RYK/I=
         </DataArray>
         <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
-AQAAAJAAAACQAAAAmwAAAA==eNoBkABv/wlro6Pf/WZAT2Wgye9UwD+MFENWyTnAPyBweDgPglE/wak9hpQdSb+gCSw5nothP8e0sx1eJGhAd7ITHKwLEMDhWCBfsw0QwBDSl68VgaO/DCXILmhlXL8wKyx3fYCzv8F6wlnIv2lAWLJCo+QSDEDUoJUX5hYMQPj2P2WrE6U/wDuOEHq6bD/EwdXGeAS1P/cfQIc=
+AQAAAGAAAABgAAAAawAAAA==eNoBYACf/zZZvfnB/mZA4roYpxBlwD+nY+pF6knAPwBRW7FNWlE/gLYi14gdSb9QZ8Ds3GNhP8H8JLd8JWhAZMmlViALEMAv476UJw0QwLDAEvLrg6O/uMTxEChlXL/U/CCrU4Ozv/6/ME8=
         </DataArray>
       </CellData>
 

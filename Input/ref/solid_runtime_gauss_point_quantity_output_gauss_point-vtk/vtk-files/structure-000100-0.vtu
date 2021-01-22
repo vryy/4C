@@ -10,93 +10,93 @@
       </DataArray>
     </FieldData>
 
-    <Piece NumberOfPoints="24" NumberOfCells="3" >
+    <Piece NumberOfPoints="16" NumberOfCells="2" >
       <Points>
         <DataArray type="Float64" NumberOfComponents="3" format="binary">
-AQAAAEACAABAAgAAQQAAAA==eNpjYMAHPtjjFyckT8hcdHXo4qSqwwAO+MUJmYvLP3C+A35xQv7BZQ4McBAQx/A3AXF0d3IQEMflToQ4ALFlKQE=
+AQAAAIABAACAAQAALgAAAA==eNpjYMAHPtjjFyckT8hcdHXo4qSqwwAO+MUJmYvLP3C+A35xQv75YA8AzRYdaQ==
         </DataArray>
       </Points>
 
       <Cells>
         <DataArray type="Int32" Name="connectivity" format="binary">
-AQAAAGAAAABgAAAAMgAAAA==eNoNwwcOgCAQALBDHLgHjv//1DZpRESyMdva2TtYHJ2cXVzd3D08vazePr5+/iRQARU=
+AQAAAEAAAABAAAAAKAAAAA==eNoNwwkSwBAQALB1VIvi/7+VzCQiIpktVh+br5/d4fR3uT1eCuAAeQ==
 
         </DataArray>
         <DataArray type="Int32" Name="offsets" format="binary">
-AQAAAAwAAAAMAAAAEQAAAA==eNrjYGBgEABiCSAGAAFMADE=
+AQAAAAgAAAAIAAAADgAAAA==eNrjYGBgEABiAACIABk=
 
         </DataArray>
         <DataArray type="UInt8" Name="types" format="binary">
-AQAAAAMAAAADAAAACwAAAA==eNrj4eEBAABLACU=
+AQAAAAIAAAACAAAACgAAAA==eNrj4QEAACYAGQ==
 
         </DataArray>
       </Cells>
 
   <PointData>
         <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
-AQAAAEACAABAAgAAsAEAAA==eNo7v9gxQfHfW/vOXRuZgtg69ztfVJ6tGdS5f02O6ZPD4e/tH3/tqgytnrh/o7na1Jy/E/ffezZrutWi9/aZ2+IeTDg5wX4Wx+FXc5In7f/9WE3sh/M7+12Nx2IPS3Ta30hY4hjE37X/RInIgcDOd/Z7PiWuiMrr2l80w+LbrJRO++ZNVy+rvXlvXzPvYl+w2aT9L+esLnPomGC/fbJIwhGpD/Y5jBfPeidOtH+1fcc8g9MT7PnnyiTrnXtn36vt6/syust+7cz+Zw/+dNrjcufsA5uXf4/+YG9o+8Nrt3ybfbasdDT32RZ7rWcMwgKtH+zFXp7X3Tm7c3/BQtHGgxat9rj8hcudD58E1x9d+8E+Tjm1Qje43Z7n9GzbDLme/eKVYkfEr32wD1U+8uhrY/d+O+Pl72/Y9O7H5S9c7vzK8mLORp9P9l9ifv5+7Z1ibyyf6xIi0rz/lK76x5n9n+zNBPXzKwxm7xddce3JpMqm/bj8hcudOUuqJude/GQv1SkhoXs4095xvV579OvF+z9ZrS2xFPpsny4RcUmQfc7+Hwt2brmqugSnvwCf7iiZ
+AQAAAIABAACAAQAAQgEAAA==eNq7sdgxQfHfW/t/uzcyBbF17i++qDxbM6hz/64c0yeHw9/bf//aVRlaPXH/THO1qTl/J+4//WzWdKtF7+37t8U9mHBygn0kx+FXc5In7X/3WE3sh/M7+3dNx2IPS3TaFyQscQzi79p/okTkQGDnO3uDj4krovK69nfPsPg2K6XTvmLT1ctqb97b/5t7sS/YbNL+K3NWlzl0TLDfO1kk4YjUB3tGxotnvRMn2s/YvmOewekJ9vxzZZL1zr2z99Ty9X0Z3WUfN7P/2YM/nfa43Dn7wObl36M/2AfZ/vDaLd9mbycrHc19tsVe8xmDsEDrB3uHl+d1d87u3D97oWjjQYtWe1z+wuXOR0+C64+u/WDvqpxaoRvcbj/31GzbDLme/VKVYkfEr32wv6V05NHXxu79842Xv79h07sfl78AdtrKaw==
         </DataArray>
         <DataArray type="Float64" Name="nodal_GL_strains_xyz" NumberOfComponents="6" format="binary">
-AQAAAIAEAACABAAA7gIAAA==eNqV0fs303Ecx/GkU0JSLMqOYuR+mTOXs87xtqMdzsk5ztGO5sTMMI5DZbnOPdvky8yh49Zxz9e9nGhziQ+hX0qJHElanJGOcLTkxIl+2P6B/f784XFeL5jaswwzxCHEbMlgMroazjPniHPvq0FJoxPoOmzQavdaMY33RobOFW/imOnAEgXlHzFwaG7mTFHCGyEtWc+CVtoI5abFVowVIYyV/bVWdAFa9OkQEGkSSB3Gk/eHcdhW9/iyS0DGWiNk6iz8IV+5jSjknLd0ig0c75VxsLsSqD9c5pmF4ZBySeU5x3bQu5FdAxeWGpwnFHzYiS8k70rsgWQTkZmimw69Nk34fhsO7+TbzO7xGiDfUvlTPJxkRfMsKM5uGW4MsEBNF2n8xwQREPx+B1lYt4JnrmcyV78JStV+cecndg1PBFKTgaI0Pys0Hav8IbHkAnfRNoeHtcJqjqrnqP1Y7kD7YUwEMvV2DNCp9AFWWa8dcSYSBuM7Pf4pcfD+pvLkqv3coQcvuyr4cBm7R5iX0ICf7mmXsCXUeM8JzMBkmiQFf7L2fU53JYqamBccEasQvv5I21QhAIHY323mAOBh4bX8fh8M1r33pSwXGbip+yrhR/Z3eRWinpIGH7QkoREj856CXVc0UqoVzU7DNP5L0z1L/MOz6e79sFZJPWilVCNXtb+eUB9MTRQCb/pzqIxpDokbvrNuyiiUnIpljboPgFjd09V+/fo7qyHUFCR0NrfffHIdZQyeDZ6c5CJN/9J0TzmVVBeTNQrhRUav7e1rkVibXgKMWhQ6T1pU7CTB6VlR+fSEHxTsJTh+WciDU2w5sy1mDNyKVT2RsUVcNa5DLzIDn2uJI+FY3MneD0O5Iz39nD6zijyN/9J0z4Wn4mxlwCuwtD0jJeF1KPSEyh/0ddYhi5MEzKuzzxixntDDs/w1RU6HdUVDkchpHDZsVL3ipsrP7fO17cA4sKkI7HbW9UJ6LOOfO21poOlf/wF73yX2
+AQAAAAADAAAAAwAAMQIAAA==eNpbePa7UqzAMvskmbt8R1Nn2j8Lvypz9fxMeyZLV1FXjgT7uHyLRxI5dvvDdKadzoqotA9qC2r+H7LMftfipLMm8QvtQ0q5FR0nLLSfL9KjEvKo1V6q5qfqkzX2+//ZrmqRcey3n753Wemvvcvsv0HVKzzU96l+ttD+jdrNb4YK0fsvq9SfcTVRt+/etj2pK7/f/vy/h0XSscvsQ6HueRWvze1dN8t+zZUFekeeVNmnGXYafu3XsrfQSawp46q0P6y2aNmvFcvsVe+9j1h7eJY9F9T9Vea627uvx9lbCy7du9BHcX+OuGPVbNE2ez73L0GKqsvtD9Wbl6bxLLJPgrqfbe2NhFlFbfZMf3d0V7ir7M+I+fyyXynNfsptjfqiruX2NVD1Tx5A3K9SuXPlv/TE/UVmOj4c0x3sW+Zv1pS5lGz/LGe12d/Py+xjoO6JSYC433Nv054106rsGWoKRK/3O9rnVJtr5r5rJTk8m7r4xC8ob7OfZMhcnLR2+n6nI9db/svM2M//YgqzxJMW+4BJHkaXftvbb+i0bt7h0GVfbP9rW5z+dns3qPqa1isJz+/P2P+VfVvY76Ul++MY5Da0fzXYv3MiY2pCRRfJ8UVqeB7ziK9zNd1hP2261e/lJjP33zgMcb+g6Pwwq8JW+5j+WzHbI+TsfV47Xzb6nLI/r7yr9oDpTvsqqPp0qPt/zM17GmlVtp/LWE7r7RKX/cw7+MOOHk3bT2p8AQCYGmfl
         </DataArray>
         <DataArray type="Float64" Name="nodal_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
-AQAAAIAEAACABAAAOAMAAA==eNqV0f1Ty3EAwPE9lFjUKrZUsrjo1rVJHu647vPJrYSmB1TDnIvag5gjehStSThNVybS5VBRUpYe7tDno2d2Yow6lvUwat+SmVKow7+wf+D9w+u9dO3RQPZwAvzM8VB/qhlEpEODRR2KQbSqZMOe2TQCMcIKzeHFMoRIDTfOywike0w+bu5MgFcjchXXzphA0a4jf30LTGCx2sC8nE6GHqvVrDu+taAGNMrDnpLh/ky5a8pUAsyweec3Wz4C8h7wBF7jI8DkxsgcqCJjXSc/b5lWjYpoC6ovb6PAD0HLPX7SRDA66YljZcYQyqk5yqqyDKKtz+2VT+4RICkrvrBdIkR0aruF/pJAES3nOsI4IjjR7OU1qRhC0vlvNZeYRuRVF7yd8YtAtDiZ8f7qNEQbGvlQkkcAhxiV26z3/36883dv/giYLsNX5k8NA+fN9tzEJgpsrUtWNNnUI/ozH4UqkII7Yspfndkhgs76SL6+dBigP5gnyBwGeluT0d2HisfndGt9NQ1gaXR/+Hp7Kn7Td/smN1IEtz1KPlDBMyIp5WNAdIoR6ejKNEMlAehCfydlvAJo5+h+cWUEsNazvMslxEIVw0RyaF+/gwX0HqddxK5jwJzZOh4lnwu/8ihJQ13vQezD3XX+PAo013qzbabFcG+QlL3MhQSTUm7c7doxAVIP++YofzvjZoftBaIlGhTLaDWc3kex+pe1nhfOtl+XjUogqfr1DD41A+RlBs6JRTbQ5wtrbFf+PEhfKZCf5+Sge+8O1rZSmTgQaNakfpLCtmydapJHhWOq0WNtAbaQahDcCj+4EEe9rD7QJH2FSnO1o4SFafUvaz0jJX789ytFUHCa82bTPDestNvMy55wx+mucSy/F47w/hJRSPGxzyCkLdR8cicTprGDd2e9FcNOuzUxnoUuGORuGVghWYxJ+r5sYX8Oyq1I7Sn1bEGdMHmyQMiw+pe1niSn4sj8LCkUilm9jXYMbE7hB2k96djDEjzbzXaApiM/1JKNWtDysNuU3zcD1jHvZhRzE2Evt0HDqHfC4lC/rm+HHDGMVeX5T/ag5qrCck/tAIq7qaeXVE4Ba3/9A4uJKhw=
+AQAAAAADAAAAAwAAcAIAAA==eNqbd7s1yPZ5msO2xoaHHesf7TfWlzxS0PJof69OxVHh6lf703+acxnPzt+fNunttoX5r/b/+nR3O+uJNAebTLYTfxte2i8+d854wuSX9kfrdNMXVjM6aHmdttimvcE++uL5ebF7GR2ckqRW9n5Pczj1juVF4vIX9lkz3z1qfffC3lP4L/eX1YwHHsmb15pe3LRffMKFukXeTA42h+8lcXKnO3zlSxYOqXm8X8lGXyL006P9XNKH955f+cr+yNQXr75lxu4XCxHP0Tz7av+9onf2CXrpDnzHop/Ma3m8/4WK7ixz8Sf7eVr/eer+fLV/E8PqoO1GVfuXm/j5r+97ZS9wq+ybkFq6g9PsK8+6fF/Yi5Vs2V/4/bn9keAItvodTA4LhFTiz7Bs3f/V9aPlKlumA1zH4r9NC053eOO446Tjguf2O459vryv7rl93f47xgYazAc2TV+y0eH0NvsYnagv3tzMB+y6dvo6B6Y7FCjWfghwebL/X7XLkf/lT/ZP2ad/99OqV/a6wUJVk1Nb7Huaz+U75r+yJzU8uUScWv8zZziECOS9/cb3yX5Dq+CMNxJv7P/9mJWb2cThUMNyNv3FiWv2Tpc1zD1cmBymTZVZLvgjw6HPdJGDrjCDQ4tm27Z7wV/s92xuc5j9S+jAnc/v/xbKnt4vYRPvMj2OieT4IjU8f6UvDql9nenAcXya3PXaP/aLTnz2bxBlcSgV4HDPm8jpkLHQm8dSv23/n126X88zix/IOzZXq/1elkMdA8NOBldmh3cs12edN2Z1YGM7nhKTInIg6MzX82uyzu9/9pN99/dP4iTHFwDtCH7K
         </DataArray>
   </PointData>
   <CellData>
         <DataArray type="Float64" Name="current_reference_density_gp_0" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNrjuRGrcnLBR/sjabtuO677aM8ABQCN8wjd
+AQAAABAAAAAQAAAAGQAAAA==eNq7dcuq78SCj/bt4cflHNd9tAcAUcEI9w==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_1" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNrjuRGrcnLBR/sjabtuO677aM8ABQCN8wjd
+AQAAABAAAAAQAAAAGQAAAA==eNq7dcuq78SCj/bt4cflHNd9tAcAUcEI9w==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_2" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNoT2rrhtdWSj/bap7dxWW/5aM8ABQCJcwhG
+AQAAABAAAAAQAAAAGQAAAA==eNo7FCIcarXko7399TM+Vls+2gMAPx4H2Q==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_3" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNpj27rhtdWSj/bap7dxWW/5aM8ABQCIUwg6
+AQAAABAAAAAQAAAAGQAAAA==eNo7GiIcarXko7399TM+Vls+2gMAP04H3A==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_4" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNqznv2hefnyj/YzecK7lXd9tGeAAgCM1ghc
+AQAAABAAAAAQAAAAGQAAAA==eNrjv3L1zbLlH+37eCrPKO36aA8AUBEJDQ==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_5" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNqzmf2hefnyj/YzecK7lXd9tGeAAgCM7ghd
+AQAAABAAAAAQAAAAGQAAAA==eNrjvXL1zbLlH+27eSrPKO36aA8AT9kJCA==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_6" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNpbwDmTlX/1R/vF8z+z/t7/0Z4BCgCBGghW
+AQAAABAAAAAQAAAAGQAAAA==eNqLf/M3l2/1R/un7ipuv/Z/tAcATmoJHg==
         </DataArray>
         <DataArray type="Float64" Name="current_reference_density_gp_7" format="binary">
-AQAAABgAAAAYAAAAGwAAAA==eNpbwDmTlX/1R/vF8z+z/t7/0Z4BCgCBGghW
+AQAAABAAAAAQAAAAGQAAAA==eNqLf/M3l2/1R/un7ipuv/Z/tAcATmoJHg==
         </DataArray>
         <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
-AQAAAJAAAACQAAAAmwAAAA==eNoBkABv/yDYyRycgqY/ANii8zbSnj+4oBwcCuGeP6fY13ge5XE//kdPivnl+D6j85b1HeWBPwBbwciqXqc/wMF//YlkdT+w/VobrGF1PwwTbqDgHnM/9yvQBVpl/r6i/D6S5R6DP6pLTIDi18E/THecbHoam7/41VpJ7Qebv/OXS3f7sl8/KumCHwGPCz+GTYw2B7JvP1j7SQg=
+AQAAAGAAAABgAAAAawAAAA==eNoBYACf/xTYyRycgqY/yNei8zbSnj9YoBwcCuGePzjW13ge5XE/HK1Pivnl+D6o85b1HeWBPyRbwciqXqc/0MB//YlkdT+A/FobrGF1P+YRbqDgHnM/fenPBVpl/r4b/T6S5R6DP46lMgA=
         </DataArray>
         <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
-AQAAAJAAAACQAAAAmwAAAA==eNoBkABv/391rNhy/mZAyiLo/FdmwD9OJ4URMkvAPyAoGmRDYFE/QlybCg0dSb/wOY8C0mlhP6MsCuc7JWhAXRwv7KMMEMCCIFAdqw4QwPCAslxQhaO/gNu/LnVkXL94qI4euISzvxvCetTGv2lAfr6s9YgVDEDLCW1SihkMQCAZrFCiFaU/IErqy1C6bD8c03Sqbwa1P3mhPj4=
+AQAAAGAAAABgAAAAawAAAA==eNoBYACf/yawrhCG/mZAGftkkLZnwD+zApCmkEzAP+CW+6TgXFE/G0exCgwdSb9AgvRHb2ZhP/SLSrBVJWhAV0cuWZcMEMC8Dd+Jng4QwPj2FlGQhaO/oBr9hm9kXL9UXrkR+ISzv38oLYs=
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_0" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_1" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_2" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_3" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_4" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_5" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_6" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
         <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_7" NumberOfComponents="9" format="binary">
-AQAAANgAAADYAAAAFwAAAA==eNpjYACBD/YMWGlSAbXMoRwAAJp2Bxs=
+AQAAAJAAAACQAAAAFQAAAA==eNpjYACBD/YMWGlSAeXmAACawAcb
         </DataArray>
       </CellData>
 

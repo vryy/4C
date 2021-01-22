@@ -19,5 +19,6 @@
       <PDataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="ascii"/>
     </PCellData>
     <Piece Source="structure-000050-0.vtu"/>
+    <Piece Source="structure-000050-1.vtu"/>
   </PUnstructuredGrid>
 </VTKFile>

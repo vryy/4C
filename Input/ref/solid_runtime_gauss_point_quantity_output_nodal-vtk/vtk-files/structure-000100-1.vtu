@@ -33,8 +33,14 @@ AQAAAAEAAAABAAAACQAAAA==eNrjAQAADQAN
       </Cells>
 
   <PointData>
+        <DataArray type="Float64" Name="current_reference_density" format="binary">
+AQAAAEAAAABAAAAALAAAAA==eNo7deZ97+blH+0Z0ABTOH+X4qaP9moXJzjH7sGUd+1bqJR27KM9AEIjEJc=
+        </DataArray>
         <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="binary">
 AQAAAMAAAADAAAAAywAAAA==eNoBwAA//5vAs6f3W/A/Uj34Srsfhj8+HRtbC82EP/QE6JyxTPI/sV35++tLZD8OH21EVBSDv9AtJ/GZj/I/WxEvb3gwm79gqNbkknmCvynmABMQhfA/QOnPLbmbib+boRWBwTiFP+LkU3/FrfA/RSNleC1Thz+dyps9aB6Mv2+kepNt0fI/C4cYGC3DaT9Xry6HW+ujv/E6rXQ5EvM/chhY0hEHnL/FoLm01SWkvxp5FsQX1vA/2iLE4vWBi7+fM6fv2DyNv24zX9A=
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
+AQAAAEACAABAAgAAIQAAAA==eNpjYACBD/YMWOmhDqjlr+EXPv/B4L09Ok2qOQCBfiAg
         </DataArray>
         <DataArray type="Float64" Name="nodal_GL_strains_xyz" NumberOfComponents="6" format="binary">
 AQAAAIABAACAAQAAcwEAAA==eNpr6uITv6C8zX6SIXNx0trp+52OXG/5LzNjP/+LKcwST1rsAyZ5GF36bW+/odO6eYdDl/02K+V56bUH7H27hY9pac3dz8Hi2mcfMne/713l208+lthHn22bfOGIu/2rn7k6d2422pcl3I9YkX7Q/hJU/dLgdzJPRebtn9bmv4mxN9me4VjG5ou7G/ad2ZK0RXpao32x/a9tcfrb7d2g7qlpvZLw/P6M/V/Zt4X9XlqyP45BbkP7V4P9OycypiZUdNkf84ivczXdYT9tutXv5SYz9984DHG/oOj8MKvCVvuY/lsx2yPk7H1eO182+pyyn3t9b91nn0P2/9R5tykvm7c/H+p+hduXtWuTSuynGV1eH5Jhbt9eqPTprGGl/fknC7rbdA/b34Sq74K6/9VaZ41VXUn20uf81+pxWew3iBF583FFhX1eeVftAdOd9lVQ96RD3f9jbt7TSKuy/VzGclpvl7jsZ97BH3b0aNp+AEC4vVg=
@@ -44,17 +50,11 @@ AQAAAIABAACAAQAAiwEAAA==eNoBgAF//goUQoX/A2hAVBBu7fYO8j+whRGY7BjsP/74mm1pgghAfATN
         </DataArray>
   </PointData>
   <CellData>
-        <DataArray type="Float64" Name="current_reference_density" format="binary">
-AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
-        </DataArray>
         <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
 AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/8FLTIDi18E/OHecbHoam7/o1VpJ7Qebv12YS3f7sl8/2PGCHwGPCz9mTYw2B7JvP2GzFwc=
         </DataArray>
         <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
 AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/07CetTGv2lA5MKs9YgVDECoDW1SihkMQHgRrFCiFaU/wO7qy1C6bD/cy3Sqbwa1P0hmF4Y=
-        </DataArray>
-        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
-AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
         </DataArray>
       </CellData>
 

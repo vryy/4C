@@ -44,7 +44,28 @@ AQAAAIABAACAAQAAiwEAAA==eNoBgAF//riLNKs5BGhAXP89Gofk8T94s1LYj8XrP6DQdQlOXghAq42C
         </DataArray>
   </PointData>
   <CellData>
-        <DataArray type="Float64" Name="current_reference_density" format="binary">
+        <DataArray type="Float64" Name="current_reference_density_gp_0" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_1" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_2" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_3" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_4" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_5" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_6" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="current_reference_density_gp_7" format="binary">
 AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
         </DataArray>
         <DataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="binary">
@@ -53,7 +74,28 @@ AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/3Oh3CL218E/9Pp4htMbm79Ys5Z1Rgmbv4WoJUXesl8/IzHx
         <DataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="binary">
 AQAAADAAAAAwAAAAOwAAAA==eNoBMADP/6wqqzPZv2lAtphTR5j1C0AH8aPMmvkLQEDugn7P/aQ/UAzLqm68bD8AJjEune60P1D0F4E=
         </DataArray>
-        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch" NumberOfComponents="9" format="binary">
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_0" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_1" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_2" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_3" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_4" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_5" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_6" NumberOfComponents="9" format="binary">
+AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
+        </DataArray>
+        <DataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_7" NumberOfComponents="9" format="binary">
 AQAAAEgAAABIAAAADAAAAA==eNpjYKAOAAAASAAB
         </DataArray>
       </CellData>
