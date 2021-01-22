@@ -38,6 +38,7 @@
 #include "scatra_mat_multiporo.H"
 #include "scatra_mat_multiscale.H"
 #include "scatra_mat_aniso.H"
+#include "muscle_weickenmeier.H"
 #include "myocard.H"
 #include "mixfrac.H"
 #include "sutherland.H"
@@ -389,6 +390,14 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ScatraMatAniso(curmat));
       auto* params = static_cast<MAT::PAR::ScatraMatAniso*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_muscle_weickenmeier:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::Muscle_Weickenmeier(curmat));
+      MAT::PAR::Muscle_Weickenmeier* params =
+          static_cast<MAT::PAR::Muscle_Weickenmeier*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_myocard:
