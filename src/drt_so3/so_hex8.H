@@ -809,7 +809,7 @@ namespace DRT
         static LINALG::SerialDenseMatrix expol(NUMNOD_SOH8, NUMGPT_SOH8);
         static bool isfilled = false;
 
-        if (isfilled == false)
+        if (!isfilled)
         {
           double sq3 = sqrt(3.0);
           expol(0, 0) = 1.25 + 0.75 * sq3;
