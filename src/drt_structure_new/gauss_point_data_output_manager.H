@@ -89,10 +89,7 @@ namespace STR
         return quantities_;
       }
 
-      inline const INPAR::STR::GaussPointDataOutputType GetOutputType() const
-      {
-        return output_type_;
-      }
+      inline INPAR::STR::GaussPointDataOutputType GetOutputType() const { return output_type_; }
 
 
      private:

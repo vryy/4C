@@ -662,7 +662,14 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
                       ->GetMutableGaussPointData()
                       .at(quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              break;
             }
+            case INPAR::STR::GaussPointDataOutputType::none:
+              dserror(
+                  "You specified a Gauss point data output type of none, so you should not end up "
+                  "here.");
+            default:
+              dserror("Unknown Gauss point data output type.");
           }
         }
       }

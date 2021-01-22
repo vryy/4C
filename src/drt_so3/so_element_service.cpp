@@ -14,13 +14,13 @@ template <class T>
 void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data,
     const T& nodal_data, const DRT::ELEMENTS::So_base* ele, bool nodal_average)
 {
-  for (int i = 0; i < nodal_data.M(); ++i)
+  for (decltype(nodal_data.M()) i = 0; i < nodal_data.M(); ++i)
   {
     const int lid = global_data.Map().LID(ele->NodeIds()[i]);
     if (lid >= 0)  // rownode
     {
       const double invmyadjele = (nodal_average) ? 1.0 / ele->Nodes()[i]->NumElement() : 1.0;
-      for (int j = 0; j < nodal_data.N(); ++j)
+      for (decltype(nodal_data.N()) j = 0; j < nodal_data.N(); ++j)
       {
         (*(global_data(j)))[lid] += nodal_data(i, j) * invmyadjele;
       }
@@ -36,11 +36,11 @@ void DRT::ELEMENTS::AssembleAveragedElementValues(
   int lid = elemap.LID(ele->Id());
   if (lid != -1)
   {
-    for (int i = 0; i < gp_data.N(); ++i)
+    for (decltype(gp_data.N()) i = 0; i < gp_data.N(); ++i)
     {
       double& s = (*(global_data(i)))[lid];  // resolve pointer for faster access
       s = 0.;
-      for (unsigned j = 0; j < gp_data.M(); ++j)
+      for (decltype(gp_data.M()) j = 0; j < gp_data.M(); ++j)
       {
         s += gp_data(j, i);
       }

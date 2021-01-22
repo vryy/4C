@@ -80,6 +80,10 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareData(
     case INPAR::STR::GaussPointDataOutputType::gauss_points:
       PrepareGaussPointDataVectors(element_row_map);
       break;
+    case INPAR::STR::GaussPointDataOutputType::none:
+      dserror("Your Gauss point data output type is none, so you don't need to prepare data!");
+    default:
+      dserror("Unknown Gauss point data output type");
   }
 }
 
@@ -134,7 +138,6 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PostEvaluate()
     for (const auto& name_and_size : quantities_)
     {
       const std::string& name = name_and_size.first;
-      const int size = name_and_size.second;
 
       Epetra_MultiVector& nodal_data = *data_nodes_[name];
       const Epetra_IntVector& nodal_count = *data_nodes_count_[name];

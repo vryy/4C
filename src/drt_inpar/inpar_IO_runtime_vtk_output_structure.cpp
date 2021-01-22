@@ -68,7 +68,7 @@ namespace INPAR
             "selected in the --IO input section",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
-        // whether to write material data
+        // mode to write gauss point data
         setStringToIntegralParameter<INPAR::STR::GaussPointDataOutputType>(
             "GAUSS_POINT_DATA_OUTPUT_TYPE", "none",
             "Where to write gauss point data. (none, projected to nodes, projected to element "
