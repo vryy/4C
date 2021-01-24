@@ -45,7 +45,7 @@ bool DRT::UTILS::IsNodeGIDOnThisProc(Teuchos::RCP<DRT::Discretization> dis, int 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::IsNodeGIDOnThisProc(DRT::DiscretizationInterface& dis, int node_gid)
+bool DRT::UTILS::IsNodeGIDOnThisProc(const DRT::DiscretizationInterface& dis, int node_gid)
 {
   return (dis.HaveGlobalNode(node_gid) and dis.gNode(node_gid)->Owner() == dis.Comm().MyPID());
 }

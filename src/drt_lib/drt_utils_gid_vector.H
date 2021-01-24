@@ -27,7 +27,7 @@ namespace DRT
         const std::vector<int>& global_node_gid_vec, std::vector<int>& my_gid_vec);
 
     /*!
-     * \brief check, wheter node with GID is owned by this processor
+     * \brief check, whether node with GID is owned by this processor
      *
      * @param[in] dis                   discretization, that holds nodes with GIDs
      * @param[in] node_gid              GID of node to be checked
@@ -36,13 +36,13 @@ namespace DRT
     bool IsNodeGIDOnThisProc(Teuchos::RCP<DRT::Discretization> dis, int node_gid);
 
     /*!
-     * \brief check, wheter node with GID is owned by this processor
+     * \brief check, whether node with GID is owned by this processor
      *
      * @param[in] dis                   discretization, that holds nodes with GIDs
      * @param[in] node_gid              GID of node to be checked
      * @return                          indicates, whether node is owned by this processor
      */
-    bool IsNodeGIDOnThisProc(DRT::DiscretizationInterface& dis, int node_gid);
+    bool IsNodeGIDOnThisProc(const DRT::DiscretizationInterface& dis, int node_gid);
 
     /*!
      * \brief remove nodal GIDs from vector when they are owned by this processor
