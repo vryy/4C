@@ -1,6 +1,7 @@
 import os
 import hashlib
 import json
+import re
 
 
 class DiagnosticItem:
@@ -50,6 +51,7 @@ class DiagnosticItem:
         item = {
             "description": "{0} ({1})".format(self.message, self.name),
             "fingerprint": self.global_hash(hash_set),
+            "severity": self.getSeverity(self.name),
             "location": {
                 "path": self.get_relative_path(),
                 "lines": {"begin": self.line_number},
@@ -67,3 +69,8 @@ class DiagnosticItem:
         diagnosticItem.offset = object["DiagnosticMessage"]["FileOffset"]
 
         return diagnosticItem
+
+    @staticmethod
+    def getSeverity(name):
+        # clang-tidy hints are just an info
+        return "info"
