@@ -58,6 +58,10 @@ WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
 SEGMENTATION                          yes
 AVERAGED_NORMALS                      yes
+INTEGRATION_POINTS                    yes
+MORTAR_LAMBDA_DISCRET                 yes
+MORTAR_LAMBDA_CONTINUOUS              yes
+UNIQUE_IDS                            yes
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
 --------------------------------------------------------------------BEAM CONTACT

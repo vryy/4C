@@ -29,7 +29,8 @@ BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::BeamToSolidSurfaceVtkOutputP
       mortar_lambda_continuous_(false),
       mortar_lambda_continuous_segments_(0),
       segmentation_(false),
-      integration_points_(false)
+      integration_points_(false),
+      write_unique_ids_(false)
 {
   // empty constructor
 }
@@ -90,6 +91,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputParams::Setup()
 
   integration_points_ = (bool)DRT::INPUT::IntegralValue<int>(
       beam_to_solid_volume_meshtying_vtk_paramslist, "INTEGRATION_POINTS");
+
+  write_unique_ids_ = (bool)DRT::INPUT::IntegralValue<int>(
+      beam_to_solid_volume_meshtying_vtk_paramslist, "UNIQUE_IDS");
 
   // Set the setup flag.
   issetup_ = true;

@@ -50,7 +50,7 @@ source ./utilities/baci-python-venv/bin/activate
 IFS=$'\n'
 
 echo "Start test for code format ..."
-for line in $(find ./ -type f)
+for line in $(git ls-files)
 do
 # check if the file is a c or cpp file
 if [[ $line == *.cpp || $line == *.cc || $line == *.cp || $line == *.cxx || $line == *.H || $line == *.h || $line == *.hpp || $line == *.hh || $line == *.hxx ]]

@@ -42,10 +42,11 @@ namespace SSTI
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
+        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
         Teuchos::RCP<const Epetra_Map> interface_map_thermo,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo, bool meshtying_3_domain_intersection);
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
     void EvaluateOffDiagBlockStructureThermoDomain(
@@ -80,6 +81,9 @@ namespace SSTI
     //! scatra-scatra interface coupling adapter for structure field
     Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
 
+    //! scatra-scatra interface coupling adapter for structure field with 3 intersection domains
+    const Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
+
     //! map associated with all degrees of freedom on scatra interface
     const Teuchos::RCP<const Epetra_Map> interface_map_thermo_;
 
@@ -91,6 +95,9 @@ namespace SSTI
 
     //! thermo problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
+
+    //! indicates, if meshtying includes three entities
+    bool meshtying_3_domain_intersection_;
   };
 }  // namespace SSTI
 #endif  // #ifndef SSTI_MONOLITHIC_EVALUATE_OffDiag_H

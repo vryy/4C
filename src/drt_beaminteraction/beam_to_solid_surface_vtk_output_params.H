@@ -108,6 +108,11 @@ namespace BEAMINTERACTION
      */
     bool GetIntegrationPointsOutputFlag() const { return integration_points_; }
 
+    /**
+     * \brief Return the write unique IDs output flag.
+     */
+    bool GetWriteUniqueIDsFlag() const { return write_unique_ids_; }
+
    protected:
     /**
      * \brief Checks the init and setup status.
@@ -165,6 +170,9 @@ namespace BEAMINTERACTION
 
     //! Flag whether or not to write data at integration points.
     bool integration_points_;
+
+    //! Flag whether or not to write unique cell and point data IDs.
+    bool write_unique_ids_;
   };
 
 }  // namespace BEAMINTERACTION

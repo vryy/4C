@@ -288,13 +288,7 @@ void SSI::SSIBase::Setup()
     icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis,
         Meshtying3DomainIntersection(), "SSIInterfaceMeshtying", "SSIMeshtying3DomainIntersection");
 
-    if (!Meshtying3DomainIntersection())
-    {
-      // set up map for interior and master-side structural degrees of freedom
-      map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),
-          *InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    }
-    else
+    if (Meshtying3DomainIntersection())
     {
       icoup_structure_3_domain_intersection_ =
           SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
@@ -310,6 +304,13 @@ void SSI::SSIBase::Setup()
       map_structure_condensed_ =
           LINALG::SplitMap(*structure_->Discretization()->DofRowMap(), *map3);
     }
+    else
+    {
+      // set up map for interior and master-side structural degrees of freedom
+      map_structure_condensed_ = LINALG::SplitMap(*structure_->Discretization()->DofRowMap(),
+          *InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    }
+
 
     slave_side_converter_ = Teuchos::rcp(new SSI::UTILS::SSISlaveSideConverter(
         icoup_structure_, icoup_structure_3_domain_intersection_, Meshtying3DomainIntersection()));

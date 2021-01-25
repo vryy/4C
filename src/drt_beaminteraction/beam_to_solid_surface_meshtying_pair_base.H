@@ -144,10 +144,12 @@ namespace BEAMINTERACTION
      * \brief Add points on the beam element to an output writer.
      * @param visualization_writer (in/out) Output writer the points are appended to.
      * @param points (in) Vector with the projection points.
+     * @param visualization_params (in) Parameter list with visualization parameters.
      */
     void AddVisualizationIntegrationPoints(
         const Teuchos::RCP<BeamToSolidVtuOutputWriterVisualization>& visualization_writer,
-        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points) const;
+        const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
+        const Teuchos::ParameterList& visualization_params) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.

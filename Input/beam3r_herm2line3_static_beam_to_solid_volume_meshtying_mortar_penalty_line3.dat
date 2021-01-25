@@ -64,9 +64,9 @@ WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes
 MORTAR_LAMBDA_DISCRET                 yes
 MORTAR_LAMBDA_CONTINUOUS              yes
-MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
+UNIQUE_IDS yes
 --------------------------------------------------------------RESULT DESCRIPTION
 // Displacements at a solid node.
 STRUCTURE DIS structure NODE 175 QUANTITY dispx VALUE -0.4574379917037107 TOLERANCE 1e-10

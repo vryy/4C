@@ -2007,7 +2007,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
           for (const auto& conditiontriplemeshtying : conditionstriplemeshtying)
           {
-            const int surf_cond_id = conditiontriplemeshtying->GetInt("SSISurfSlaveID");
+            const int surf_cond_id = conditiontriplemeshtying->GetInt("MeshtyingSurfSlaveID");
             const auto* side = conditiontriplemeshtying->Get<std::string>("Side");
             const bool isslave = (*side == "Slave");
 

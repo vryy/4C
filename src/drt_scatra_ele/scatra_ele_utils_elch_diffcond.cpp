@@ -18,16 +18,11 @@
 
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>*
-DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(
-    const int numdofpernode,                     ///< number of degrees of freedom per node
-    const int numscal,                           ///< number of transported scalars per node
-    const std::string& disname,                  ///< name of discretization
-    const ScaTraEleUtilsElchDiffCond* delete_me  ///< creation/destruction indication
-)
+DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(const int numdofpernode,
+    const int numscal, const std::string& disname, const ScaTraEleUtilsElchDiffCond* delete_me)
 {
   // each discretization is associated with exactly one instance of this class according to a static
   // map
@@ -35,7 +30,7 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(
 
   // check whether instance already exists for current discretization, and perform instantiation if
   // not
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleUtilsElchDiffCond<distype>(numdofpernode, numscal, disname);
@@ -44,15 +39,15 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(
   // destruct instance
   else
   {
-    for (typename std::map<std::string, ScaTraEleUtilsElchDiffCond<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
@@ -62,7 +57,6 @@ DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Instance(
 
 
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Done()
@@ -73,17 +67,12 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::Done()
 
 
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
-    const int numdofpernode,    ///< number of degrees of freedom per node
-    const int numscal,          ///< number of transported scalars per node
-    const std::string& disname  ///< name of discretization
-    )
+    const int numdofpernode, const int numscal, const std::string& disname)
     : myelectrode::ScaTraEleUtilsElchElectrode(numdofpernode, numscal, disname)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -106,8 +95,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchMat(
   const Teuchos::RCP<const MAT::Material> elchphase = elchmat->PhaseById(elchmat->PhaseID(0));
 
   if (elchphase->MaterialType() == INPAR::MAT::m_elchphase)
+  {
     // evaluate electrolyte phase
     MatElchPhase(elchphase, concentrations, temperature, equpot, ffrt, diffmanager, diffcondmat);
+  }
   else
     dserror("Invalid material type!");
 }
@@ -151,8 +142,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatElchPhase(
 
         // evaluate standard Newman material
         if (elchPhaseMaterial->MaterialType() == INPAR::MAT::m_newman)
+        {
           MatNewman(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
-
+        }
         // evaluate multi-scale Newman material
         else
           MatNewmanMultiScale(elchPhaseMaterial, concentrations[0], temperature, diffmanager);
@@ -205,8 +197,10 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // concentration depending diffusion coefficient
   diffmanager->SetIsotropicDiff(
       matnewman->ComputeDiffusionCoefficient(concentration, temperature), 0);
-  // derivation of concentration depending diffusion coefficient wrt all ionic species
-  diffmanager->SetDerivIsoDiffCoef(matnewman->ComputeFirstDerivDiffCoeff(concentration), 0, 0);
+  // derivation of concentration depending diffusion coefficient wrt concentration
+  diffmanager->SetDerivIsoDiffCoef(
+      matnewman->ComputeConcentrationDerivativeOfDiffusionCoefficient(concentration, temperature),
+      0, 0);
 
   // concentration depending transference number
   diffmanager->SetTransNum(matnewman->ComputeTransferenceNumber(concentration), 0);
@@ -222,8 +216,9 @@ void DRT::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::MatNewman(
   // since time curve is used as input routine
   // conductivity of electrolyte solution
   diffmanager->SetCond(matnewman->ComputeConductivity(concentration, temperature));
-  // derivative of conductivity with respect to concentrations
-  diffmanager->SetDerivCond(matnewman->ComputeFirstDerivCond(concentration), 0);
+  // derivative of concentration depending conductivity wrt concentration
+  diffmanager->SetDerivCond(
+      matnewman->ComputeConcentrationDerivativeOfConductivity(concentration, temperature), 0);
 }
 
 /*----------------------------------------------------------------------*

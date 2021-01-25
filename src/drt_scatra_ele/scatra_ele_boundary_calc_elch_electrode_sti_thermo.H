@@ -24,9 +24,10 @@ namespace DRT
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype> myelch;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype> myelectrode;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
+      using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      public:
       //! singleton access method
@@ -35,7 +36,7 @@ namespace DRT
           const ScaTraEleBoundaryCalcElchElectrodeSTIThermo* delete_me = NULL);
 
       //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() { return; };
+      ~ScaTraEleBoundaryCalcElchElectrodeSTIThermo() override = default;
 
       //! singleton destruction
       virtual void Done();
@@ -50,17 +51,20 @@ namespace DRT
        * @param[in] matelectrode     electrode material
        * @param[in] eslavephinp      scatra state variables at slave-side nodes
        * @param[in] eslavetempnp     thermo state variables at slave-side nodes
+       * @param[in] eslavetempnp     thermo state variables at master-side nodes
        * @param[in] emasterphinp     scatra state variables at master-side nodes
        * @param[in] funct_slave      slave-side shape function values
        * @param[in] funct_master     master-side shape function values
        * @param[in] test_slave       slave-side test function values
        * @param[in] test_master      master-side test function values
+       * @param[in] shapederivatives      spatial derivatives of shape functions
        * @param[in] kineticmodel     kinetic model of scatra-scatra interface condition
        * @param[in] numelectrons     number of electrons involved in charge transfer
        * @param[in] kr               charge transfer constant
        * @param[in] alphaa           symmetry coefficient of anodic intercalation reaction
        * @param[in] alphac           symmetry coefficient of cathodic intercalation reaction
        * @param[in] timefacfac       time-integration factor times domain-integration factor
+       * @param[in] timefacwgt       time-integration factor times Gauß point weight
        * @param[in] differentiationtype
        *                             type of variable for linearization
        * @param[out] k_ss            linearizations of slave-side residuals w.r.t. slave-side dofs
@@ -73,6 +77,9 @@ namespace DRT
           const Teuchos::RCP<const MAT::Electrode>& matelectrode,
           const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
           const LINALG::Matrix<my::nen_, 1>& eslavetempnp,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              emastertempnp,
           const std::vector<LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
               emasterphinp,
@@ -84,8 +91,9 @@ namespace DRT
           const LINALG::Matrix<
               DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
               test_master,
-          int kineticmodel, int numelectrons, double kr, double alphaa, double alphac,
-          double timefacfac, int differentiationtype, Epetra_SerialDenseMatrix& k_ss,
+          LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives, int kineticmodel,
+          int numelectrons, double kr, double alphaa, double alphac, double timefacfac,
+          double timefacwgt, int differentiationtype, Epetra_SerialDenseMatrix& k_ss,
           Epetra_SerialDenseMatrix& k_ms);
 
      private:

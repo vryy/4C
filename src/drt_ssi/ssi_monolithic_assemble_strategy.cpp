@@ -550,13 +550,13 @@ void SSI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& syste
 {
   // map for slave side structural degrees of freedom
   Teuchos::RCP<const Epetra_Map> slavemaps;
-  if (!Meshtying3DomainIntersection())
-    slavemaps = ssi_mono_->MapsCoupStruct()->Map(1);
-  else
+  if (Meshtying3DomainIntersection())
   {
     slavemaps = LINALG::MultiMapExtractor::MergeMaps({ssi_mono_->MapsCoupStruct()->Map(1),
         ssi_mono_->MapsCoupStruct3DomainIntersection()->Map(1)});
   }
+  else
+    slavemaps = ssi_mono_->MapsCoupStruct()->Map(1);
 
   // subject slave-side rows of structural system matrix to pseudo Dirichlet conditions to
   // finalize structural meshtying
@@ -713,10 +713,7 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     // zero out slave-side part of structural right-hand side vector
     ssi_mono_->MapsCoupStruct()->PutScalar(residual_structure, 1, 0.0);
     if (Meshtying3DomainIntersection())
-    {
-      ssi_mono_->MapsCoupStruct3DomainIntersection()->PutScalar(
-          residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), 0.0);
-    }
+      ssi_mono_->MapsCoupStruct3DomainIntersection()->PutScalar(residual_structure, 1, 0.0);
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     ssi_mono_->MapsSubProblems()->AddVector(

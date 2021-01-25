@@ -38,12 +38,14 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::Instance(const int n
   else
   {
     for (auto& i : instances)
+    {
       if (i.second == delete_me)
       {
         delete i.second;
         instances.erase(i.first);
         return nullptr;
       }
+    }
   }
 
   return instances[disname];
@@ -416,14 +418,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  LINALG::Matrix<my::nen_, 1> eslavetempnp(true);
-  LINALG::Matrix<my::nen_, 1> emastertempnp(true);
-  if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-  {
-    my::ExtractNodeValues(eslavetempnp, discretization, la, "islavetemp", 2);
-    my::ExtractNodeValues(emastertempnp, discretization, la, "imastertemp", 2);
-  }
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -441,8 +435,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     // evaluate overall integration factors
     const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
     if (timefacwgt < 0.0) dserror("Integration factor is negative!");
-    const double timefacfac =
-        my::scatraparamstimint_->TimeFac() * my::EvalShapeFuncAndIntFac(intpoints, gpid);
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
@@ -450,10 +442,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
     const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
     const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
     const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
-    const double etempslaveint = my::funct_.Dot(eslavetempnp);
-    const double etempmasterint = my::funct_.Dot(emastertempnp);
-
-    const double etempint = 0.5 * (etempslaveint + etempmasterint);
 
     // compute matrix and vector contributions according to kinetic
     // model for current scatra-scatra interface coupling condition
@@ -462,12 +450,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       // Butler-Volmer kinetics
       case INPAR::S2I::kinetics_butlervolmer:
       case INPAR::S2I::kinetics_butlervolmerreduced:
-      case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
       {
         // access input parameters associated with current condition
         const int numelectrons = my::scatraparamsboundary_->NumElectrons();
         const double faraday = myelch::elchparams_->Faraday();
-        const double gasconstant = myelch::elchparams_->GasConstant();
         const double alphaa = my::scatraparamsboundary_->AlphaA();
         const double alphac = my::scatraparamsboundary_->AlphaC();
         const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
@@ -477,10 +463,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         const double cmax = matelectrode->CMax();
 
         // compute factor F/(RT)
-        const double frt =
-            (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-                ? faraday / (etempint * gasconstant)
-                : myelch::elchparams_->FRT();
+        const double frt = myelch::elchparams_->FRT();
 
         // equilibrium electric potential difference at electrode surface
         const double epd = matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt);
@@ -504,22 +487,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
         {
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
-            // exponential Butler-Volmer terms
-            const double expterm1 = std::exp(alphaa * frt * eta);
-            const double expterm2 = std::exp(-alphac * frt * eta);
-            const double expterm = expterm1 - expterm2;
-
-            // safety check
-            if (std::abs(expterm) > 1.0e5)
-            {
-              dserror(
-                  "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
-                  "%lf",
-                  expterm);
-            }
-
-            // core linearization associated with Butler-Volmer mass flux density
-            const double dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+            double dj_dd_slave_timefacwgt(0.0);
+            myelectrodeutils::CalculateButlerVolmerDispLinearizations(
+                alphaa, alphac, frt, j0, eta, timefacwgt, dj_dd_slave_timefacwgt);
 
             // loop over matrix columns
             for (int ui = 0; ui < my::nen_; ++ui)
@@ -543,43 +513,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
                 }
               }
             }
-            break;
-          }
-          case static_cast<int>(SCATRA::DifferentiationType::temp):
-          {
-            if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
-            {
-              // derivative of epd w.r.t temperature
-              const double depddT = matelectrode->ComputeFirstDerivOpenCircuitPotentialTemp(
-                  eslavephiint, faraday, gasconstant);
-
-              // forward declarations
-              double dj_dT_slave(0.0);
-
-              // calculate linearizations of Butler-Volmer kinetics w.r.t. tmperature dofs
-              myelectrodeutils::CalculateButlerVolmerTempLinearizations(alphaa, alphac, depddT, eta,
-                  etempint, faraday, frt, gasconstant, j0, dj_dT_slave);
-
-              const double djdT_slave_timefacfac = dj_dT_slave * timefacfac;
-
-              // loop over matrix columns
-              for (int ui = 0; ui < my::nen_; ++ui)
-              {
-                // loop over matrix rows
-                for (int vi = 0; vi < my::nen_; ++vi)
-                {
-                  const int row_conc = vi * 2;
-                  const int row_pot = row_conc + 1;
-                  const double vi_dj_dT_slave = my::funct_(vi) * djdT_slave_timefacfac;
-
-                  // compute linearizations w.r.t. temperature
-                  eslavematrix(row_conc, ui) += vi_dj_dT_slave * my::funct_(ui);
-                  eslavematrix(row_pot, ui) += numelectrons * vi_dj_dT_slave * my::funct_(ui);
-                }
-              }
-            }
-            else
-              dserror("Unknown kinetics type");
             break;
           }
           default:
@@ -623,8 +556,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
             }
             break;
           }
-          case static_cast<int>(SCATRA::DifferentiationType::temp):
-            break;
           default:
           {
             dserror("Unknown primary quantity to calculate derivative");

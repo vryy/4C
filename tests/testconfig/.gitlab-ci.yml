@@ -38,10 +38,16 @@ variables:
 
     # Flags for entering interactive mode on specific machines # (0: off, 1: on)
     GITLAB_INTERACTIVE_MODE: "0"
-    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs)
+    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
     GITLAB_INTERACTIVE_MACHINE: "none"
     # Flags for doing a clean build in interactive mode # (0: off, 1: on)
     GITLAB_INTERACTIVE_CLEAN: "0"
+
+    # Flags for cdash.
+    CTEST_DROP_SITE_CDASH_GITLAB: "0"
+    CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+    CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -407,89 +413,60 @@ checkcode:
 
 # IMCS--------------------------------------------------------------------------
 
-imcs-buildtest_minimal:
+imcs-buildtest_minimal_ubuntu20:
     <<: *buildtest_minimal
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-minimal-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-minimal-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
-        - imcs-minimal
+        - imcs-minimal-ubuntu20
     needs: ["checkcode"]
 
-imcs-buildtest_full:
+imcs-buildtest_full_ubuntu20:
     <<: *buildtest_full
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-$TEST_TAG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-full-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
-        - imcs-full
+        - imcs-full-ubuntu20
     needs: ["checkcode"]
 
-imcs-buildtest_interactive:
+imcs-buildtest_interactive_ubuntu20:
     <<: *buildtest_interactive
     variables:
         TEST_TAG: ""
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-interactive-baci-Q1-2015-$TEST_TAG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-interactive-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
         GIT_STRATEGY: fetch
     tags:
-        - imcs-interactive
+        - imcs-interactive-ubuntu20
     rules:
-        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs"'
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "imcs_ubuntu20"'
           when: always
 
-imcs-buildtest_daily:
+imcs-buildtest_daily_ubuntu20:
     <<: *buildtest_daily
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-nightly-full-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
-        - imcs-nightly-full
+        - imcs-nightly-full-ubuntu20
     needs: ["checkcode"]
-
-imcs-buildtest_daily_debug:
+    
+imcs-buildtest_daily_debug_ubuntu20:
     <<: *buildtest_daily_debug
     variables:
         CTEST_MAKE: "make full -j3"
-        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-baci-Q1-2015-DEBUG-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
+        CTEST_BUILD_NAME_GITLAB: "imcs-workstation-ubuntu20-baci-DEBUG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation_ubuntu20-04.config"
     tags:
-        - imcs-nightly-debug
+        - imcs-nightly-debug-ubuntu20
     needs: ["checkcode"]
 
-.imcs-doxygen:
-    <<: *doxygen
-    variables:
-        CTEST_OPTION_IMCS: "-E '-*pp*|-*energy*'"
-        CTEST_MAKE: "make documentation"
-        CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
-        CTEST_BUILD_CONFIG_GITLAB: "imcs_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
-        # Path on testing machine where doxygen will be copied to.
-        DOXYGEN_PATH: "TBD"
-    tags:
-        - imcs-nightly
 
 # LNM---------------------------------------------------------------------------
 
@@ -535,8 +512,6 @@ lnm-buildtest_minimal:
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-minimal-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-mastermod-minimal
     needs: ["checkcode"]
@@ -547,9 +522,6 @@ lnm-buildtest_full:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-user-full
     needs: ["checkcode"]
@@ -561,9 +533,6 @@ lnm-workstation-buildtest_interactive:
         CTEST_MAKE: "make full -j3"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-interactive-$TEST_TAG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
         - lnm-workstation-interactive
@@ -583,9 +552,6 @@ lnm-buildtest_coverage_weekly:
         CTEST_MAKE: "make full -j4"
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-coverage-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-weekly-coverage
     needs: []
@@ -642,8 +608,6 @@ lnm-buildtest_daily:
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-nightly-full
     needs: ["checkcode"]
@@ -657,8 +621,6 @@ lnm-buildtest_daily_bruteforce_icc:
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-BruteForce-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-nightly-build-bruteforce
     only:
@@ -675,8 +637,6 @@ lnm-buildtest_daily_bruteforce_gcc:
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-BruteForce-GCC-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce_gcc.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     before_script:
         - module load comp/gcc/5.3.0
     tags:
@@ -695,8 +655,6 @@ lnm-buildtest-bruteforce-icc_interactive:
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-BruteForce-icc-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "bruteforce_Q12015_icc.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
         - lnm-bruteforce-icc-interactive
@@ -713,8 +671,6 @@ lnm-buildtest-bruteforce-gcc_interactive:
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-BruteForce-gcc-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_bruteforce_gcc.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     before_script:
         - module load comp/gcc/5.3.0
@@ -733,8 +689,6 @@ lnm-buildtest_daily_deep:
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-nightly-build-deep
     only:
@@ -751,8 +705,6 @@ lnm-buildtest-deep_interactive:
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Deep-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_deep.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
         - lnm-deep-interactive
@@ -769,8 +721,6 @@ lnm-buildtest_daily_schmarrn:
         CTEST_BUILD_NAME_GITLAB: "CentOS-baci-Q1-2015-Kaiser-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-nightly-build-schmarrn
     only:
@@ -787,8 +737,6 @@ lnm-buildtest-schmarrn_interactive:
         CTEST_BUILD_NAME_GITLAB: "CentOS-interactive-baci-Q1-2015-Kaiser-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "schmarrn_Q12015_gcc48_ACML_ompi162.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         GIT_STRATEGY: fetch
     tags:
         - lnm-schmarrn-interactive
@@ -803,8 +751,6 @@ lnm-buildtest_daily_debug:
         CTEST_BUILD_NAME_GITLAB: "LnM-Workstation DEBUG-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-debug-nightly-full
     needs: ["checkcode"]
@@ -815,9 +761,6 @@ lnm-doxygen-web:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
-        CTEST_DROP_SITE_CDASH_GITLAB: "0"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
     tags:
         - lnm-release-user-full
 
@@ -828,8 +771,6 @@ lnm-doxygen:
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
-        CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
-        CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
         # Path on testing machine where doxygen will be copied to.
         DOXYGEN_PATH: "/home/gitlab-runner/."
     tags:

@@ -97,7 +97,9 @@ namespace ADAPTER
           Cfs_(Teuchos::null),
           Csf_(Teuchos::null),
           ff_(Teuchos::null),
-          fs_(Teuchos::null){};
+          fs_(Teuchos::null),
+          fluid_scaled_(false),
+          structure_scaled_(false){};
 
     /**
      * \brief Sets the flag to compute only force contributions from the beam
@@ -135,6 +137,14 @@ namespace ADAPTER
 
     /// Force vector acting on the structure side \f$f_s\f$
     Teuchos::RCP<Epetra_FEVector> fs_;
+
+    /// Bool to keep track if the fluid coupling contributions were already scaled with the penalty
+    /// parameter
+    bool fluid_scaled_;
+
+    /// Bool to keep track if the structure coupling contributions were already scaled with the
+    /// penalty parameter
+    bool structure_scaled_;
   };
 }  // namespace ADAPTER
 

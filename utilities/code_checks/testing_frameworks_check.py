@@ -264,7 +264,7 @@ def main():
     if diff_only:
       look_cmd = "git diff --name-only --cached --diff-filter=MRAC"
     else:
-      look_cmd = "find ./ -type f"
+      look_cmd = "git ls-files"
 
     # execute error checks
 

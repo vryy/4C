@@ -157,6 +157,15 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
           LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
+
+  BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
+      "use equilibration method of ScaTra to equilibrate initial calculation of potential",
+      &ssidynmono);
+
+  BoolParameter("SMOOTH_OUTPUT_INTERFACE_STRESS", "no",
+      "average stress at master and slave side to smooth out errors from discretization and "
+      "non-zero residuals for output of stress.",
+      &ssidynmono);
 }
 
 
@@ -305,11 +314,13 @@ void INPAR::SSI::SetValidConditions(
       new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
           Teuchos::tuple<std::string>("Master", "Slave"))));
   ssitriplepointmeshtying.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("SSISurfSlaveID")));
-  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("SSISurfSlaveID")));
+      Teuchos::rcp(new SeparatorConditionComponent("MeshtyingSurfSlaveID")));
   ssitriplepointmeshtying.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("SSISurfMasterID")));
-  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("SSISurfMasterID")));
+      Teuchos::rcp(new IntConditionComponent("MeshtyingSurfSlaveID")));
+  ssitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("MeshtyingSurfMasterID")));
+  ssitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new IntConditionComponent("MeshtyingSurfMasterID")));
 
   for (auto& conditioncomponent : ssitriplepointmeshtying)
     ssiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);

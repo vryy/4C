@@ -14,9 +14,9 @@
   <ParameterList name="BGS_List">
     <Parameter name="type" type="string" value="BGS"/>
     <ParameterList name="parameters">
-      <Parameter name="blocks"       type="string" value="(0),(1),(2)"/>
-      <Parameter name="smoothers"    type="string" value="MueLu,MueLu,MueLu"/>
-      <Parameter name="local sweeps" type="string" value="1,1,1"/>
+      <Parameter name="blocks"       type="string" value="(0),(1),(2),(3),(4)"/>
+      <Parameter name="smoothers"    type="string" value="MueLu,MueLu,MueLu,MueLu,MueLu"/>
+      <Parameter name="local sweeps" type="string" value="1,1,1,1,1"/>
     </ParameterList>
   </ParameterList>
   
@@ -40,10 +40,11 @@
           <Parameter name="Nullspace"    type="string" value="TentativePFactory_List"/>
         </ParameterList>
       </ParameterList>
-
+      
       <ParameterList name="Matrix">
-          <Parameter name="PDE equations" type="int" value="1"/>
+                <Parameter name="PDE equations" type="int" value="2"/>
       </ParameterList>
+
       <ParameterList name="Factories">
         <ParameterList name="CoalesceDropFactory_List">
           <Parameter name="factory"          type="string" value="CoalesceDropFactory"/>

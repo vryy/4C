@@ -343,6 +343,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/homogenized-constrained-mixture* @baci/team_structure
 
+/Input/mat*                        @baci/team_material
+
 /Input/membrane*                   @baci/team_structure
 
 /Input/meshtying*                  @baci/team_contact
