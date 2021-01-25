@@ -43,7 +43,7 @@ NLNSOL                          fullnewton
 DIVERCONT                       adapt_step
 TIMESTEP                        0.00001
 NUMSTEP                         1000000000
-MAXTIME                         0.015 // just or debuif 0.015
+MAXTIME                         0.015
 PREDICT                         ConstDis              
 NORM_DISP                       Abs
 NORM_RESF                       Abs
@@ -53,7 +53,7 @@ TOLRES                          1.0E-06
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01
 MAXITER                         100
-MATERIALTANGENT			analytical
+MATERIALTANGENT			        analytical
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

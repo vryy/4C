@@ -453,8 +453,8 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
   double Poptft = 0.0;
   for (int iMU = 0; iMU < muTypesNum; ++iMU)
   {
-    Poptft += Na * Ft[iMU] * rho[iMU];  // sum up twitch forces for all MU types weighted by the
-                                        // respective MU type fraction
+    // sum up twitch forces for all MU types weighted by the respective MU type fraction
+    Poptft += Na * Ft[iMU] * rho[iMU];
   }
 
   // compute force-stretch dependency fxi
@@ -563,11 +563,6 @@ void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(Teuchos::ParameterList& p
  *----------------------------------------------------------------------*/
 void MAT::Muscle_Weickenmeier::EvaluateLambert(double xi, double& W0, double tol, double maxiter)
 {
-  // Solution of Lambert W function is functional inverse of xi = W_0*exp(W_0)
-  // Computation here restricted to principal branch W_0
-  // Use of Halley's method according to:
-  // https://blogs.mathworks.com/cleve/2013/09/02/the-lambert-w-funsolutiction/
-
   double W0_old =
       std::numeric_limits<double>::infinity();  // s.t. error is infinite in the beginning
   int numiter = 0;                              // number of iterations
