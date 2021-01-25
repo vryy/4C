@@ -28,9 +28,8 @@ namespace STR
     {
      public:
       //! constructor
-      MonolithicSSI(const Teuchos::RCP<const SSI::SSIMono>
-              ssi_mono  //!< monolithic algorithm for scalar-structure interaction
-      );
+      MonolithicSSI(
+          const Teuchos::RCP<const SSI::SSIMono> ssi_mono, bool smooth_output_interface_stress);
 
       //! destructor
       ~MonolithicSSI() override = default;
@@ -142,6 +141,9 @@ namespace STR
 
       //! monolithic algorithm for scalar-structure interaction
       const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
+
+      //! indicates, whether stresses at interface should be smoothed for output reasons
+      const bool smooth_output_interface_stress_;
     };  // class MonolithicSSI
   }     // namespace MODELEVALUATOR
 }  // namespace STR

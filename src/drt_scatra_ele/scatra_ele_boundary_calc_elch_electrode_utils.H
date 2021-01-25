@@ -82,6 +82,20 @@ namespace DRT
           double gasconstant, double j0, double& dj_dT_slave);
 
       /*!
+       *
+       * @param [in] alphaa       symmetry coefficient of anodic intercalation reaction
+       * @param [in] alphac       symmetry coefficient of cathodic intercalation reaction
+       * @param [in] frt          Faraday/(gasconstant * temperature)
+       * @param [in] j0           exchange mass flux density
+       * @param [in] eta          electrode-electrolyte overpotential
+       * @param [in] timefacwgt   time-integration factor times Gauß point weight
+       * @param [out] dj_dd_slave_timefacwgt [out] linearization of Butler-Volmer mass flux density
+       *                                            w.r.t. slave side displacements times timefacwgt
+       */
+      static void CalculateButlerVolmerDispLinearizations(double alphaa, double alphac, double frt,
+          double j0, double eta, double timefacwgt, double& dj_dd_slave_timefacwgt);
+
+      /*!
        * \brief calculate modified Butler-Volmer mass flux density via Newton method
        *
        * \remark This is a static method as it is called from static method

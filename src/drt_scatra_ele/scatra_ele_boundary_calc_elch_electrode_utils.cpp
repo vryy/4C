@@ -131,6 +131,31 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
+    CalculateButlerVolmerDispLinearizations(const double alphaa, const double alphac,
+        const double frt, const double j0, const double eta, const double timefacwgt,
+        double& dj_dd_slave_timefacwgt)
+{
+  // exponential Butler-Volmer terms
+  const double expterm1 = std::exp(alphaa * frt * eta);
+  const double expterm2 = std::exp(-alphac * frt * eta);
+  const double expterm = expterm1 - expterm2;
+
+  // safety check
+  if (std::abs(expterm) > 1.0e5)
+  {
+    dserror(
+        "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
+        "%lf",
+        expterm);
+  }
+
+  // core linearization associated with Butler-Volmer mass flux density
+  dj_dd_slave_timefacwgt = timefacwgt * j0 * expterm;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
     CalculateModifiedButlerVolmerMassFluxDensity(const double j0, const double alphaa,
         const double alphac, const double frt, const double pot_ed, const double pot_el,

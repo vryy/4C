@@ -800,11 +800,26 @@ void SSI::SSIMono::SetupSystem()
 void SSI::SSIMono::SetupModelEvaluator() const
 {
   // construct and register structural model evaluator if necessary
-  if (DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
-          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none and
-      SSIInterfaceMeshtying())
+
+  const bool do_output_stress =
+      DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
+          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none;
+  const bool smooth_output_interface_stress = DRT::INPUT::IntegralValue<bool>(
+      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
+      "SMOOTH_OUTPUT_INTERFACE_STRESS");
+
+  if (Meshtying3DomainIntersection() and smooth_output_interface_stress)
+    dserror("Smoothing of interface stresses not implemented for triple meshtying.");
+
+  if (smooth_output_interface_stress and !do_output_stress)
+    dserror("Smoothing of interface stresses only when stress output is written.");
+
+  if (do_output_stress and SSIInterfaceMeshtying())
+  {
     StructureBaseAlgorithm()->RegisterModelEvaluator("Monolithic Coupling Model",
-        Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
+        Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(
+            Teuchos::rcp(this, false), smooth_output_interface_stress)));
+  }
 }
 
 /*---------------------------------------------------------------------------------*

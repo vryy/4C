@@ -40,6 +40,7 @@ ITEMAX                          2
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
+SMOOTH_OUTPUT_INTERFACE_STRESS  Yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
