@@ -40,6 +40,7 @@ namespace FBI
 namespace LINALG
 {
   class SparseMatrix;
+  class SparseOperator;
   class MapExtractor;
 }  // namespace LINALG
 namespace ADAPTER
@@ -169,7 +170,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
+    virtual Teuchos::RCP<const LINALG::SparseOperator> AssembleFluidCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;

@@ -27,7 +27,8 @@ namespace DRT
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class SparseOperator;
+}  // namespace LINALG
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -129,7 +130,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const = 0;
+    virtual Teuchos::RCP<const LINALG::SparseOperator> GetCff() const = 0;
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;

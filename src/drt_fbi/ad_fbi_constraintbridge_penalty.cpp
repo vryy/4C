@@ -15,6 +15,7 @@ approach for Fluid-beam interaction.
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparseoperator.H"
 #include <Epetra_FEVector.h>
 
 void ADAPTER::FBIConstraintBridgePenalty::Setup(

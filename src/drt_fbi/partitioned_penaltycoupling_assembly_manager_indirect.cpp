@@ -23,6 +23,7 @@ coupling matrices M and D first.
 #include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
+#include "../linalg/linalg_sparsematrix.H"
 
 
 /**
@@ -53,7 +54,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect::
     EvaluateForceStiff(const DRT::Discretization& discretization1,
         const DRT::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseMatrix>& cff,
+        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<LINALG::SparseOperator> cff,
         Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
         Teuchos::RCP<LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel)
