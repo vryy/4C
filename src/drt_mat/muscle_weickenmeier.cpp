@@ -57,27 +57,22 @@ MAT::PAR::Muscle_Weickenmeier::Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Materi
   // active material parameters
   // stimulation frequency dependent parameters
   if (Na_ < 0.0)
-    dserror(
-        "Material parameter ACTMUNUM (# of active motor units per undeformed cross-sectional "
-        "area) must be postive or zero");
+  {
+    dserror("Material parameter ACTMUNUM must be postive or zero");
+  }
 
   double sumrho = 0.0;
   for (int iMU = 0; iMU < muTypesNum_; ++iMU)
   {
-    if (I_[iMU] < 0.0)
-      dserror("Material parameter INTERSTIM (interstimulus interval) must be postive or zero");
-    if (rho_[iMU] < 0.0)
-      dserror(
-          "Material parameter FRACACTMU (fractions of motor unit types) must be postive or "
-          "zero");
+    if (I_[iMU] < 0.0) dserror("Material parameter INTERSTIM must be postive or zero");
+    if (rho_[iMU] < 0.0) dserror("Material parameter FRACACTMU must be postive or zero");
+
     sumrho += rho_[iMU];
-    if (F_[iMU] < 0.0) dserror("Material parameter FTWITCH (twitch force) must be postive or zero");
-    if (T_[iMU] < 0.0)
-      dserror("Material parameter TTWITCH (twitch contraction time) must be postive or zero");
+    if (F_[iMU] < 0.0) dserror("Material parameter FTWITCH must be postive or zero");
+    if (T_[iMU] < 0.0) dserror("Material parameter TTWITCH must be postive or zero");
   }
 
-  if (muTypesNum_ > 1 && sumrho != 1.0)
-    dserror("Sum of fractions of motor unit types must equal one");
+  if (muTypesNum_ > 1 && sumrho != 1.0) dserror("Sum of fractions of MU types must equal one");
 
   // stretch dependent parameters
   if (lambdaMin_ <= 0.0) dserror("Material parameter LAMBDAMIN must be postive");
@@ -89,15 +84,11 @@ MAT::PAR::Muscle_Weickenmeier::Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Materi
 
   // prescribed activation in time intervals
   if (actTimesNum_ != int(actTimes_.size()))
-    dserror("Number of activation times ACTTIMES must be equal to ACTTIMESNUM");
+    dserror("Number of activation times ACTTIMES must equal ACTTIMESNUM");
   if (actIntervalsNum_ != int(actValues_.size()))
-    dserror(
-        "Number of activation values ACTVALUES must be equal to number of activation intervals "
-        "ACTINTERVALSNUM");
+    dserror("Number of activation values ACTVALUES must equal ACTINTERVALSNUM");
   if (actTimesNum_ != actIntervalsNum_ + 1)
-    dserror(
-        "Number of activation times ACTTIMESNUM must be one smaller than number of activation "
-        "intervals ACTINTERVALSNUM");
+    dserror("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
 }
 
 /*---------------------------------------------------------------------------*
@@ -126,10 +117,10 @@ DRT::ParObject* MAT::Muscle_WeickenmeierType::Create(const std::vector<char>& da
  | Constructor (empty material object)                                  |
  *----------------------------------------------------------------------*/
 MAT::Muscle_Weickenmeier::Muscle_Weickenmeier()
-    : params_(NULL),
+    : params_(nullptr),
       t_tot_(0),
       anisotropy_(),
-      anisotropyExtension_(1, 0.0, 0,
+      anisotropyExtension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
@@ -143,7 +134,7 @@ MAT::Muscle_Weickenmeier::Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* par
     : params_(params),
       t_tot_(0),
       anisotropy_(),
-      anisotropyExtension_(1, 0.0, 0,
+      anisotropyExtension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
@@ -173,7 +164,7 @@ void MAT::Muscle_Weickenmeier::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   anisotropyExtension_.PackAnisotropy(data);
@@ -185,7 +176,7 @@ void MAT::Muscle_Weickenmeier::Pack(DRT::PackBuffer& data) const
 void MAT::Muscle_Weickenmeier::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  params_ = NULL;
+  params_ = nullptr;
 
   std::vector<char>::size_type position = 0;
   // extract type
@@ -224,8 +215,6 @@ void MAT::Muscle_Weickenmeier::Setup(int numgp, DRT::INPUT::LineDefinition* line
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -234,15 +223,6 @@ void MAT::Muscle_Weickenmeier::Setup(int numgp, DRT::INPUT::LineDefinition* line
 void MAT::Muscle_Weickenmeier::PostSetup(Teuchos::ParameterList& params, const int eleGID)
 {
   anisotropy_.ReadAnisotropyFromParameterList(params);
-}
-
-/*----------------------------------------------------------------------*
- | Update                                                               |
- *----------------------------------------------------------------------*/
-void MAT::Muscle_Weickenmeier::Update(LINALG::Matrix<3, 3> const& defgrd, int const gp,
-    Teuchos::ParameterList& params, int const eleGID)
-{
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -326,13 +306,14 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
   double omegaa = 0.0;
   LINALG::Matrix<3, 3> domegaadC(true);    // matrix notation
   LINALG::Matrix<6, 1> domegaadCv(false);  // Voigt notation
-  if (Pa !=
-      0.0)  // compute activation level and derivative only of active nominal stress is not zero
+  // compute activation level and derivative only of active nominal stress is not zero
+  if (Pa != 0.0)
   {
     EvaluateActivationLevel(params, lambdaM, M, Pa, derivPa, omegaa, domegaadC);
   }
-  else  // if active nominal stress is zero, material is purely passive, thus activation level and
-        // derivative are zero
+  // if active nominal stress is zero, material is purely passive, thus activation level and
+  // derivative are zero
+  else
   {
     domegaadC.Clear();
     // omegaa remains zero as initialized
@@ -367,13 +348,12 @@ void MAT::Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
                                        // C^-1 L) = det(C)*tr(C^-1 L)
 
   // exponential prefactors
-  double expalpha = exp(alpha * (I - 1.0));
-  double expbeta = exp(beta * (J - 1.0));
+  double expalpha = std::exp(alpha * (I - 1.0));
+  double expbeta = std::exp(beta * (J - 1.0));
 
   // compute second Piola-Kirchhoff stress
   LINALG::Matrix<3, 3> stressM(false);
-  UTILS::VOIGT::Stresses::VectorToMatrix(*stress, stressM);  // convert to matrix
-  stressM.Update(expalpha, LomegaaM, 1.0);                   // add contributions
+  stressM.Update(expalpha, LomegaaM, 0.0);  // add contributions
   stressM.Update(-expbeta, invCLinvC, 1.0);
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Scale(0.5 * gamma);
@@ -407,10 +387,10 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
   // get active microstructural parameters from params_
   const double Na = params_->Na_;
   const int muTypesNum = params_->muTypesNum_;
-  const std::vector<double> I = params_->I_;
-  const std::vector<double> rho = params_->rho_;
-  const std::vector<double> F = params_->F_;
-  const std::vector<double> T = params_->T_;
+  const auto& I = params_->I_;
+  const auto& rho = params_->rho_;
+  const auto& F = params_->F_;
+  const auto& T = params_->T_;
 
   const double lambdaMin = params_->lambdaMin_;
   const double lambdaOpt = params_->lambdaOpt_;
@@ -421,8 +401,8 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
 
   // const int actTimesNum = params_->actTimesNum_; //TODO: may be needed.
   const int actIntervalsNum = params_->actIntervalsNum_;
-  const std::vector<double> actTimes = params_->actTimes_;
-  const std::vector<double> actValues = params_->actValues_;
+  const auto& actTimes = params_->actTimes_;
+  const auto& actValues = params_->actValues_;
 
   // compute twitch force of motor unit (MU) type iMU
   double t_iMU_jstim = 0;                // time of arriving stimulus jstim for MU type iMU
@@ -457,14 +437,14 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
 
         // add single twitch force response for stimulus jstim and motor unit iMU scaled by
         // percentage activation prescribed in actinterval
-        sumg[iMU] += actValues[actinterval] * ratiotime * F[iMU] * exp(1 - ratiotime);
+        sumg[iMU] += actValues[actinterval] * ratiotime * F[iMU] * std::exp(1 - ratiotime);
 
         // next impulse jstim at time t_iMU_jstim after stimulation interval I
         t_iMU_jstim += I[iMU];
       }
     }  // end actinterval
 
-    G[iMU] = (1 - exp(-2 * std::pow(T[iMU] / I[iMU], 3))) /
+    G[iMU] = (1 - std::exp(-2 * std::pow(T[iMU] / I[iMU], 3))) /
              (T[iMU] / I[iMU]);    // gain function for MU type iMU
     Ft[iMU] = G[iMU] * sumg[iMU];  // twitch force for MU type iMU
   }                                // end iMU
@@ -479,8 +459,8 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
 
   // compute force-stretch dependency fxi
   double fxi = 1.0;
-  double explambda = exp(((2 * lambdaMin - lambdaM - lambdaOpt) * (lambdaM - lambdaOpt)) /
-                         (2 * std::pow(lambdaMin - lambdaOpt, 2)));  // prefactor
+  double explambda = std::exp(((2 * lambdaMin - lambdaM - lambdaOpt) * (lambdaM - lambdaOpt)) /
+                              (2 * std::pow(lambdaMin - lambdaOpt, 2)));  // prefactor
   if (lambdaM > lambdaMin)
   {
     fxi = ((lambdaM - lambdaMin) / (lambdaOpt - lambdaMin)) * explambda;
@@ -524,8 +504,6 @@ void MAT::Muscle_Weickenmeier::EvaluateActiveNominalStress(
                  explambda;
   }
   derivPa = Poptft * (fv * dFsdLamdaM + fxi * dFvdDotLambdaM * dDotLambdaMdLambdaM);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -551,22 +529,23 @@ void MAT::Muscle_Weickenmeier::EvaluateActivationLevel(Teuchos::ParameterList& p
   // argument for Lambert W function
   double xi =
       Pa * ((2.0 * alpha * lambdaM) / gamma) *
-          exp(0.5 * alpha * (2.0 - 2.0 * Ip + lambdaM * derivIp)) +
-      0.5 * alpha * lambdaM * derivIp * exp(0.5 * alpha * lambdaM * derivIp);  // argument xi
+          std::exp(0.5 * alpha * (2.0 - 2.0 * Ip + lambdaM * derivIp)) +
+      0.5 * alpha * lambdaM * derivIp * std::exp(0.5 * alpha * lambdaM * derivIp);  // argument xi
 
   // solution W0 of principal branch of Lambert W function approximated with Halley's method
-  double W0 = 1.0;                 // starting guess for solution
-  double tol = 0.000000000000001;  // tolerance for numeric approximation 10^-15
-  int maxiter = 100;               // maximal number of iterations
+  double W0 = 1.0;     // starting guess for solution
+  double tol = 1e-15;  // tolerance for numeric approximation 10^-15
+  int maxiter = 100;   // maximal number of iterations
   EvaluateLambert(xi, W0, tol, maxiter);
 
   // derivatives of xi and W0 w.r.t. lambdaM used for activation level computation
-  double derivXi = (2.0 * alpha / gamma * exp(0.5 * alpha * (2.0 - 2.0 * Ip + lambdaM * derivIp))) *
-                       (Pa + lambdaM * derivPa +
-                           0.5 * alpha * Pa * lambdaM * (lambdaM * derivderivIp - derivIp)) +
-                   0.5 * alpha * (1.0 + 0.5 * alpha) * exp(0.5 * alpha * lambdaM * derivIp) *
-                       (derivIp + lambdaM * derivderivIp);
-  double derivLambert = derivXi / ((1.0 + W0) * exp(W0));
+  double derivXi =
+      (2.0 * alpha / gamma * std::exp(0.5 * alpha * (2.0 - 2.0 * Ip + lambdaM * derivIp))) *
+          (Pa + lambdaM * derivPa +
+              0.5 * alpha * Pa * lambdaM * (lambdaM * derivderivIp - derivIp)) +
+      0.5 * alpha * (1.0 + 0.5 * alpha) * std::exp(0.5 * alpha * lambdaM * derivIp) *
+          (derivIp + lambdaM * derivderivIp);
+  double derivLambert = derivXi / ((1.0 + W0) * std::exp(W0));
 
   // computation of activation level omegaa
   omegaa = W0 / (alpha * std::pow(lambdaM, 2.)) - derivIp / (2.0 * lambdaM);
@@ -594,12 +573,12 @@ void MAT::Muscle_Weickenmeier::EvaluateLambert(double xi, double& W0, double tol
   int numiter = 0;                              // number of iterations
 
   // Halley's method
-  while ((abs(W0 - W0_old) / abs(W0) > tol) && (numiter <= maxiter))
+  while ((std::abs(W0 - W0_old) / std::abs(W0) > tol) && (numiter <= maxiter))
   {
     numiter++;
     W0_old = W0;
-    W0 = W0 - (W0 * exp(W0) - xi) /
-                  ((exp(W0) * (W0 + 1) - (W0 + 2) * (W0 * exp(W0) - xi) / (2 * W0 + 2)));
+    W0 = W0 - (W0 * std::exp(W0) - xi) /
+                  ((std::exp(W0) * (W0 + 1) - (W0 + 2) * (W0 * std::exp(W0) - xi) / (2 * W0 + 2)));
   }
 
   // error handling
@@ -610,8 +589,6 @@ void MAT::Muscle_Weickenmeier::EvaluateLambert(double xi, double& W0, double tol
         "exceeded for tolerance %d.",
         tol);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -742,26 +719,4 @@ void MAT::Muscle_Weickenmeier::AddtoCmatDerivInvCLInvCProduct(LINALG::Matrix<6, 
   cmat(5, 5) += scalar * -0.5 *
                 (invC(0, 0) * invCLinvC(2, 2) + invC(0, 2) * invCLinvC(2, 0) +
                     invC(2, 0) * invCLinvC(0, 2) + invC(2, 2) * invCLinvC(0, 0));
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
-  Return visualization data                                             |
- *----------------------------------------------------------------------*/
-bool MAT::Muscle_Weickenmeier::VisData(
-    const std::string& name, std::vector<double>& data, int numgp, int eleID)
-{
-  // not yet implemented but useful for visualization of e.g. activation level
-  return false;
-}
-
-/*----------------------------------------------------------------------*
-  Return names of visualization data                                    |
- *----------------------------------------------------------------------*/
-void MAT::Muscle_Weickenmeier::VisNames(std::map<std::string, int>& names)
-{
-  // not yet implemented but useful for visualization of e.g. activation level
-  return;
 }

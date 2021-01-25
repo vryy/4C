@@ -396,8 +396,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     {
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::Muscle_Weickenmeier(curmat));
-      MAT::PAR::Muscle_Weickenmeier* params =
-          static_cast<MAT::PAR::Muscle_Weickenmeier*>(curmat->Parameter());
+      auto* params = static_cast<MAT::PAR::Muscle_Weickenmeier*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_myocard:

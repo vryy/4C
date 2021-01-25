@@ -92,7 +92,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
     };  // class Muscle_Weickenmeier
   }     // namespace PAR
 
@@ -104,7 +104,7 @@ namespace MAT
 
     static Muscle_WeickenmeierType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Muscle_WeickenmeierType instance_;
@@ -127,7 +127,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return Muscle_WeickenmeierType::Instance().UniqueParObjectId();
     }
@@ -140,7 +140,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -152,44 +152,44 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// Check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// Material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_muscle_weickenmeier;
     }
 
     /// Return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new Muscle_Weickenmeier(*this));
     }
 
     /// Material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// Hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,  ///< Container for additional information
-        LINALG::Matrix<6, 1>* stress,    ///< 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,      ///< Constitutive matrix
-        const int gp,                    ///< Gauss point
-        const int eleGID);               ///< Element ID
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
+        Teuchos::ParameterList& params,                ///< Container for additional information
+        LINALG::Matrix<6, 1>* stress,                  ///< 2nd Piola-Kirchhoff stresses
+        LINALG::Matrix<6, 6>* cmat,                    ///< Constitutive matrix
+        const int gp,                                  ///< Gauss point
+        const int eleGID) override;                    ///< Element ID
 
 
     /// Setup
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /*!
      * \brief Post setup routine called before the first Evaluate call to read anisotropy from
@@ -200,20 +200,14 @@ namespace MAT
      */
     void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
 
-    /// Update
-    void Update(LINALG::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
-        int const gp,                                ///< Current Gauß-Point
-        Teuchos::ParameterList& params,              ///< Container for additional information
-        int const eleGID) override;                  ///< Element ID
-
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// Evaluate active nominal stress Pa and its derivative w.r.t. the fiber stretch
