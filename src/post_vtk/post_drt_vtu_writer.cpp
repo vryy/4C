@@ -27,6 +27,9 @@
 
 #include "../drt_beam3/beam3_base.H"
 
+//! Number of linear subsegments used for visualization of beam centerline.
+#define BEAMSVTUVISUALSUBSEGMENTS 5
+
 
 PostVtuWriter::PostVtuWriter(PostField* field, const std::string& filename)
     : PostVtkWriter(field, filename)
