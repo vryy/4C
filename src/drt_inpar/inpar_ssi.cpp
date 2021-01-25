@@ -161,6 +161,11 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
       "use equilibration method of ScaTra to equilibrate initial calculation of potential",
       &ssidynmono);
+
+  BoolParameter("SMOOTH_OUTPUT_INTERFACE_STRESS", "no",
+      "average stress at master and slave side to smooth out errors from discretization and "
+      "non-zero residuals for output of stress.",
+      &ssidynmono);
 }
 
 

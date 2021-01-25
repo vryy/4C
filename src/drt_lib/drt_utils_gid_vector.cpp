@@ -40,6 +40,12 @@ void DRT::UTILS::RemoveNodeGIDsFromVector(Teuchos::RCP<DRT::Discretization> dis,
 /*----------------------------------------------------------------------*/
 bool DRT::UTILS::IsNodeGIDOnThisProc(Teuchos::RCP<DRT::Discretization> dis, int node_gid)
 {
-  // call resolve "->Owner()" only, if node is stored on current processor
-  return (dis->HaveGlobalNode(node_gid) and dis->gNode(node_gid)->Owner() == dis->Comm().MyPID());
+  return DRT::UTILS::IsNodeGIDOnThisProc(*dis, node_gid);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::UTILS::IsNodeGIDOnThisProc(const DRT::DiscretizationInterface& dis, int node_gid)
+{
+  return (dis.HaveGlobalNode(node_gid) and dis.gNode(node_gid)->Owner() == dis.Comm().MyPID());
 }
