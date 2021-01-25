@@ -8,6 +8,8 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 
 *----------------------------------------------------------------------*/
 #include "ad_fbi_constraintbridge.H"
+#include "fluid_assembly_strategy.H"
+#include "fluidblockmatrix_assembly_strategy.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "beam_to_fluid_meshtying_pair_factory.H"
@@ -17,13 +19,14 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 
 ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(Teuchos::null),
+      assemblystrategy_(Teuchos::null),
       meshtying_pairs_(
           Teuchos::rcp(new std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>)),
       geometry_evaluation_data_(Teuchos::null){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-    Teuchos::RCP<LINALG::SparseOperator> fluidmatrix)
+    Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
@@ -36,6 +39,13 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
   // Create the beaminteraction data container and set the parameters
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
       new GEOMETRYPAIR::LineTo3DEvaluationData(geometry_parameter_list));
+
+  if (fluidmeshtying)
+    assemblystrategy_ = Teuchos::rcp<FBI::UTILS::FBIBlockAssemblyStrategy>(
+        new FBI::UTILS::FBIBlockAssemblyStrategy());
+  else
+    assemblystrategy_ =
+        Teuchos::rcp<FBI::UTILS::FBIAssemblyStrategy>(new FBI::UTILS::FBIAssemblyStrategy());
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

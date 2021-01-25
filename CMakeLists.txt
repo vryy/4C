@@ -1225,6 +1225,8 @@ set(OBJS_DRT_FBI
   src/drt_fbi/beam_to_fluid_mortar_manager.cpp
   src/drt_fbi/constraintenforcer_fbi_factory.cpp
   src/drt_fbi/constraintenforcer_fbi_penalty.cpp
+  src/drt_fbi/fluid_assembly_strategy.cpp
+  src/drt_fbi/fluidblockmatrix_assembly_strategy.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_indirect.cpp

@@ -72,6 +72,12 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
   if (meshtying)
   {
+    if (structure_->Discretization()->Comm().NumProc() > 1)
+      dserror(
+          "Currently fluid mesh tying can only be used for serial computations, since offproc "
+          "assembly is not supported. Once the coupling matrices are computed by the fluid element "
+          "owner, this will change.");
+
     fluidmatrix = (Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->GetMeshtying())
                       ->InitSystemMatrix();
   }
@@ -83,7 +89,8 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   }
 
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap(),
-      fluidmatrix);
+      fluidmatrix, meshtying);
+
   geometrycoupler_->Setup(discretizations_);
 
   if (structure_->Discretization()->Comm().NumProc() > 1)

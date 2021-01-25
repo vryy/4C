@@ -45,7 +45,11 @@ class Epetra_FEVector;
 namespace FBI
 {
   class BeamToFluidMeshtyingParams;
-}
+  namespace UTILS
+  {
+    class FBIAssemblyStrategy;
+  }
+}  // namespace FBI
 
 namespace ADAPTER
 {
@@ -69,9 +73,14 @@ namespace ADAPTER
 
     /**
      * \brief Initializes all members of the class
+     *
+     * \params[in] beam_map Row Map of the structure discretization
+     * \params[in} fluid_map Row Map of the fluid discretization
+     * \params[in] fluidmatrix system matrix of the fluid matrix in correct from
+     * \params[in] fluidmeshtying bool indicating if fluid meshtying is included
      */
     virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix);
+        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying);
 
     /**
      * \brief Computes the coupling matrices
@@ -153,6 +162,9 @@ namespace ADAPTER
 
     /// data container holding all beam interaction related parameters
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
+
+    /// Store the assembly strategy here to hand into the assembly manager
+    Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy_;
 
    private:
     /// meshtying pairs

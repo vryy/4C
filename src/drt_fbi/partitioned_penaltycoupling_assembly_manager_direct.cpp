@@ -16,6 +16,7 @@ be directly assembled into the global matrices.
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
 #include "../drt_fbi/fbi_calc_utils.H"
+#include "../drt_fbi/fluid_assembly_strategy.H"
 
 #include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -29,8 +30,10 @@ be directly assembled into the global matrices.
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
     PartitionedBeamInteractionAssemblyManagerDirect(
-        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs)
-    : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs)
+        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
+        Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy)
+    : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs),
+      assemblystrategy_(assemblystrategy)
 {
 }
 
@@ -93,8 +96,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
           &elestiff);
 
       // assemble the contributions into force and stiffness matrices
-      FBI::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrices(discretization1, discretization2,
-          elegids, eleforce, elestiff, fb, ff, cbb, cff, cbf, cfb);
+      assemblystrategy_->Assemble(discretization1, discretization2, elegids, eleforce, elestiff, fb,
+          ff, cbb, cff, cbf, cfb);
     }
   }
   int err = fb->GlobalAssemble();

@@ -17,6 +17,13 @@ be directly assembled into the global matrices.
 #include <Epetra_FEVector.h>
 #include "partitioned_penaltycoupling_assembly_manager.H"
 
+namespace FBI
+{
+  namespace UTILS
+  {
+    class FBIAssemblyStrategy;
+  }
+}  // namespace FBI
 
 namespace BEAMINTERACTION
 {
@@ -34,10 +41,13 @@ namespace BEAMINTERACTION
        * \brief Constructor.
        * \param[in] assembly_contact_elepairs Vector with element pairs to be evaluated by this
        * class.
+       * \param[in] assemblystrategy Object determining how the local matrices are assembled into
+       * the global one
        */
       PartitionedBeamInteractionAssemblyManagerDirect(
           const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>
-              assembly_contact_elepairs);
+              assembly_contact_elepairs,
+          Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy);
 
       /**
        * \brief empty Destructor
@@ -61,8 +71,11 @@ namespace BEAMINTERACTION
           Teuchos::RCP<LINALG::SparseMatrix>& cbb, Teuchos::RCP<LINALG::SparseMatrix>& cfb,
           Teuchos::RCP<LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
           Teuchos::RCP<const Epetra_Vector> beam_vel) override;
-    };
 
+     protected:
+      /// Object determining how the local matrices are assembled into the global one
+      Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy_;
+    };
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION
 
