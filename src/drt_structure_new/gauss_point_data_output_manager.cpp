@@ -120,6 +120,7 @@ void STR::MODELEVALUATOR::GaussPointDataOutputManager::PrepareGaussPointDataVect
     const std::string& name = name_and_size.first;
     const int size = name_and_size.second;
 
+    data_gauss_point_.emplace(name, std::vector<Teuchos::RCP<Epetra_MultiVector>>());
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& gp_data = data_gauss_point_[name];
 
     gp_data.resize(max_num_gp_);
