@@ -515,6 +515,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H
+  src/drt_mat/muscle_weickenmeier.cpp
   src/drt_mat/myocard.cpp
   src/drt_mat/myocard_fitzhugh_nagumo.cpp
   src/drt_mat/myocard_inada.cpp

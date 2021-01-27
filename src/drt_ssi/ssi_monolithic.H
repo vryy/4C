@@ -138,9 +138,6 @@ namespace SSI
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
-    //! finite difference check for global system matrix
-    void FDCheck();
-
     // build and return vector of equilibration methods for each block of system matrix
     Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
 
