@@ -33,6 +33,5 @@
       <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_7" NumberOfComponents="9" format="ascii"/>
     </PCellData>
     <Piece Source="structure-000100-0.vtu"/>
-    <Piece Source="structure-000100-1.vtu"/>
   </PUnstructuredGrid>
 </VTKFile>
