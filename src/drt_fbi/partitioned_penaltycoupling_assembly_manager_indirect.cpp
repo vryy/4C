@@ -68,6 +68,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
   mortar_manager_->EvaluateGlobalDM(assembly_contact_elepairs_);
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
-  mortar_manager_->AddGlobalForceStiffnessContributions(
-      ff, fb, cbb, cbf, cff, cfb, beam_vel, fluid_vel);
+  mortar_manager_->AddGlobalForceStiffnessContributions(ff, fb, cbb, cbf,
+      Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(cff, true), cfb, beam_vel, fluid_vel);
 }

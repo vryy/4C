@@ -14,6 +14,7 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "beam_to_fluid_meshtying_pair_factory.H"
 #include "beam_to_fluid_meshtying_params.H"
+#include "../drt_inpar/inpar_fbi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_sparseoperator.H"
 
@@ -41,8 +42,16 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
       new GEOMETRYPAIR::LineTo3DEvaluationData(geometry_parameter_list));
 
   if (fluidmeshtying)
+  {
+    // For the option condensed smat this can be changed by creating a FEMatrix instead of a
+    // CRSMatrix!
+    if (beam_interaction_params_->GetContactDiscretization() ==
+        INPAR::FBI::BeamToFluidDiscretization::mortar)
+      dserror("Fluid Meshtying is not supported when using a mortar discretization!");
+
     assemblystrategy_ = Teuchos::rcp<FBI::UTILS::FBIBlockAssemblyStrategy>(
         new FBI::UTILS::FBIBlockAssemblyStrategy());
+  }
   else
     assemblystrategy_ =
         Teuchos::rcp<FBI::UTILS::FBIAssemblyStrategy>(new FBI::UTILS::FBIAssemblyStrategy());
