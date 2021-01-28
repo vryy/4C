@@ -4288,16 +4288,8 @@ namespace LINALG
 
   template <unsigned int rows, unsigned int cols, class value_type>
   Matrix<rows, cols, value_type>::Matrix(const Epetra_SerialDenseMatrix& d)
-      : data_(nullptr), isview_(false), isreadonly_(false)
+      : Matrix(const_cast<Epetra_SerialDenseMatrix&>(d), false)
   {
-    DENSEERROR::Checker<(rows != 0) and cols != 0>::Matrix_dimensions_cannot_be_zero();
-    if (d.A() == nullptr) return;
-    if (d.M() != rows or d.N() != cols) dserror("illegal matrix dimension (%d,%d)", d.M(), d.N());
-    if (allocatesmemory_)
-      data_ = new value_type[rows * cols];
-    else
-      data_ = &datafieldsmall_[0];
-    std::copy(d.A(), d.A() + rows * cols, data_);
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
