@@ -32,7 +32,7 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       write_rve_crosssection_forces_(false),
       write_ref_length_(false),
       write_element_gid_(false),
-      n_subsegments_(-1)
+      n_subsegments_(0)
 {
   // empty constructor
 }
