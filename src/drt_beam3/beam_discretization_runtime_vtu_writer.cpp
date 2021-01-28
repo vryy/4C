@@ -40,13 +40,14 @@ BeamDiscretizationRuntimeVtuWriter::BeamDiscretizationRuntimeVtuWriter()
 void BeamDiscretizationRuntimeVtuWriter::Initialize(
     Teuchos::RCP<DRT::Discretization> discretization,
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
-    bool use_absolute_positions_for_point_coordinates,
+    bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
     Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
     unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output)
 {
   discretization_ = discretization;
   use_absolute_positions_ = use_absolute_positions_for_point_coordinates;
   periodic_boundingbox_ = periodic_boundingbox;
+  n_subsegments_ = n_subsegments;
 
   // determine path of output directory
   const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
@@ -121,7 +122,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (BEAMSVTUVISUALSUBSEGMENTS + 1);
+  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
 
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
@@ -178,10 +179,10 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
     LINALG::Matrix<3, 1> interpolated_position_priorpoint(true);
     double xi = 0.0;
 
-    for (unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint)
+    for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
       interpolated_position.Clear();
-      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
+      xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
       if (use_absolute_positions_)
         beamele->GetPosAtXi(interpolated_position, xi, beamelement_displacement_vector);
@@ -201,7 +202,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
       // if there is a shift between two consecutive points, double that point and create new cell
       // not for first and last point
-      if (ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS and shift)
+      if (ipoint != 0 and ipoint != n_subsegments_ and shift)
       {
         for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
           point_coordinates.push_back(unshift_interpolated_position(idim));
@@ -214,7 +215,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 
       // in case of last visualization point, we only add the unshifted (compared to former point)
       // configuration
-      if (ipoint == BEAMSVTUVISUALSUBSEGMENTS)
+      if (ipoint == n_subsegments_)
       {
         for (unsigned int idim = 0; idim < num_spatial_dimensions; ++idim)
           point_coordinates.push_back(unshift_interpolated_position(idim));
@@ -277,7 +278,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (BEAMSVTUVISUALSUBSEGMENTS + 1);
+  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
   std::vector<int32_t> const& cell_offsets = runtime_vtuwriter_->GetMutableCellOffsetVector();
 
   // disp vector
@@ -312,9 +313,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
     LINALG::Matrix<3, 1> refpos_visualization_point;
     double xi = 0.0;
 
-    for (unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint)
+    for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
-      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
+      xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
       pos_visualization_point.Clear();
       refpos_visualization_point.Clear();
@@ -327,7 +328,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
       // element) can exists twice, we check this here by looking if current point is in cell offset
       // list and therefore starts of a new cell
       unsigned int num_point_exists = 1;
-      if (ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS)
+      if (ipoint != 0 and ipoint != n_subsegments_)
       {
         unsigned int curr_point_number = points_sofar + 1;
         if (std::find(cell_offsets.begin(), cell_offsets.end(), curr_point_number) !=
@@ -363,7 +364,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (BEAMSVTUVISUALSUBSEGMENTS + 1);
+  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
   std::vector<int32_t> const& cell_offsets = runtime_vtuwriter_->GetMutableCellOffsetVector();
 
   // we write the triad field as three base vectors at every visualization point
@@ -404,9 +405,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
     LINALG::Matrix<3, 3> triad_visualization_point;
     double xi = 0.0;
 
-    for (unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint)
+    for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
-      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
+      xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
       triad_visualization_point.Clear();
 
@@ -416,7 +417,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
       // element) can exists twice, we check this here by looking if current point is in cell offset
       // list and therefore starts of a new cell
       unsigned int num_point_exists = 1;
-      if (ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS)
+      if (ipoint != 0 and ipoint != n_subsegments_)
       {
         unsigned int curr_point_number = points_sofar + 1;
         if (std::find(cell_offsets.begin(), cell_offsets.end(), curr_point_number) !=
@@ -681,7 +682,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (BEAMSVTUVISUALSUBSEGMENTS + 1);
+  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
 
 
   // a beam with circular cross-section can be visualized as a 'chain' of straight cylinders
@@ -726,9 +727,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
      * parameter space xi \in [-1,1] ) and determine the triad */
     LINALG::Matrix<3, 3> triad_visualization_point;
     double xi = 0.0;
-    for (unsigned int ipoint = 0; ipoint < BEAMSVTUVISUALSUBSEGMENTS + 1; ++ipoint)
+    for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
-      xi = -1.0 + ipoint * 2.0 / BEAMSVTUVISUALSUBSEGMENTS;
+      xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
       triad_visualization_point.Clear();
 
@@ -738,7 +739,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
       // element) can exists twice, we check this here by looking if current point is in cell offset
       // list and therefore starts of a new cell
       unsigned int num_point_exists = 1;
-      if (ipoint != 0 and ipoint != BEAMSVTUVISUALSUBSEGMENTS)
+      if (ipoint != 0 and ipoint != n_subsegments_)
       {
         unsigned int curr_point_number = points_sofar + 1;
         if (std::find(cell_offsets.begin(), cell_offsets.end(), curr_point_number) !=

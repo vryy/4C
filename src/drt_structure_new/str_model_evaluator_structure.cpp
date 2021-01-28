@@ -864,7 +864,8 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
   beam_vtu_writer_ptr_->Initialize(
       Teuchos::rcp_dynamic_cast<DRT::Discretization>(
           const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true),
-      disn_col, beam_vtu_output_params.UseAbsolutePositions(), bounding_box_ptr,
+      disn_col, beam_vtu_output_params.UseAbsolutePositions(),
+      beam_vtu_output_params.GetNumberVisualizationSubsegments(), bounding_box_ptr,
       num_timesteps_in_simulation_upper_bound, GState().GetTimeN(),
       GInOutput().GetRuntimeVtkOutputParams()->WriteBinaryOutput());
 }

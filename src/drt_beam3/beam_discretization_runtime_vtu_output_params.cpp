@@ -31,7 +31,8 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       write_orientation_parameter_(false),
       write_rve_crosssection_forces_(false),
       write_ref_length_(false),
-      write_element_gid_(false)
+      write_element_gid_(false),
+      n_subsegments_(0)
 {
   // empty constructor
 }
@@ -81,6 +82,10 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
 
   write_element_gid_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
+
+  n_subsegments_ = IO_vtk_structure_beams_paramslist.get<int>("NUMBER_SUBSEGMENTS");
+  if (n_subsegments_ < 1)
+    dserror("The number of subsegments has to be at least 1. Got %d", n_subsegments_);
 
   isinit_ = true;
 }
