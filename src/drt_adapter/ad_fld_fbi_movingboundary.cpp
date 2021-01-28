@@ -162,3 +162,9 @@ void ADAPTER::FBIFluidMB::ResetExternalForces()
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->ResetExternalForces();
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const FLD::Meshtying> ADAPTER::FBIFluidMB::GetMeshtying()
+{
+  return Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->GetMeshtying();
+}

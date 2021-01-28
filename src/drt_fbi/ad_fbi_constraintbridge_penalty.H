@@ -46,7 +46,8 @@ namespace ADAPTER
     /**
      * \brief Initializes all members of the class     *
      */
-    virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map);
+    void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix) override;
 
     /**
      * \brief Computes the coupling matrices

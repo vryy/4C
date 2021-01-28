@@ -975,6 +975,8 @@ namespace FLD
 
     void ResetExternalForces();
 
+    Teuchos::RCP<const FLD::Meshtying> GetMeshtying() { return meshtying_; }
+
    protected:
     // don't want = operator and cctor
     // FluidImplicitTimeInt operator = (const FluidImplicitTimeInt& old);

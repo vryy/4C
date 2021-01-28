@@ -13,6 +13,7 @@
 #define ADAPTER_FLUIDBEAM_IMMERSED_H
 
 #include "ad_fld_moving_boundary.H"
+#include "../drt_fluid/fluid_meshtying.H"
 
 // forward declarations
 
@@ -120,6 +121,8 @@ namespace ADAPTER
 
     /// Get velocity at timestep n+1
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
+
+    virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
 
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *

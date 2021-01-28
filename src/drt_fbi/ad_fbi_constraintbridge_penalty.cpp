@@ -18,15 +18,14 @@ approach for Fluid-beam interaction.
 #include "../linalg/linalg_sparseoperator.H"
 #include <Epetra_FEVector.h>
 
-void ADAPTER::FBIConstraintBridgePenalty::Setup(
-    const Epetra_Map* beam_map, const Epetra_Map* fluid_map)
+void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,
+    const Epetra_Map* fluid_map, Teuchos::RCP<LINALG::SparseOperator> fluidmatrix)
 {
   // Initialize all necessary vectors and matrices
-  FBIConstraintBridge::Setup(beam_map, fluid_map);
+  FBIConstraintBridge::Setup(beam_map, fluid_map, fluidmatrix);
   fs_ = Teuchos::rcp(new Epetra_FEVector(*beam_map));
   ff_ = Teuchos::rcp(new Epetra_FEVector(*fluid_map));
-  Cff_ = Teuchos::rcp(new LINALG::SparseMatrix(*fluid_map, 30, true, true,
-      LINALG::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
+  Cff_ = fluidmatrix;  // todo Is there a better estimator?
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

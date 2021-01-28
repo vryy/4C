@@ -42,3 +42,11 @@ void ADAPTER::FluidFBI::ResetExternalForces()
 {
   Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->ResetExternalForces();
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+Teuchos::RCP<const FLD::Meshtying> ADAPTER::FluidFBI::GetMeshtying()
+{
+  return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->GetMeshtying();
+}

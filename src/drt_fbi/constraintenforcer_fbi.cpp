@@ -19,6 +19,7 @@ interaction.
 #include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"  // todo put this into bridge to keep everything beam specific in there
+#include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_inpar/inpar_fbi.H"
 #include "../drt_inpar/inpar_fluid.H"
@@ -32,6 +33,7 @@ interaction.
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 #include <iostream>
 
@@ -60,11 +62,29 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
   discretizations_.push_back(structure_->Discretization());
   discretizations_.push_back(fluid_->Discretization());
 
-  bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap());
-  geometrycoupler_->Setup(discretizations_);
-
   LINALG::CreateMapExtractorFromDiscretization(
       *(fluid_->Discretization()), 3, *velocity_pressure_splitter_);
+
+  bool meshtying =
+      (DRT::Problem::Instance()->FluidDynamicParams().get<std::string>("MESHTYING") != "no");
+
+  Teuchos::RCP<LINALG::SparseOperator> fluidmatrix(Teuchos::null);
+
+  if (meshtying)
+  {
+    fluidmatrix = (Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->GetMeshtying())
+                      ->InitSystemMatrix();
+  }
+  else
+  {
+    fluidmatrix = Teuchos::rcp(
+        new LINALG::SparseMatrix(*(fluid_->Discretization()->DofRowMap()), 30, true, true,
+            LINALG::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
+  }
+
+  bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap(),
+      fluidmatrix);
+  geometrycoupler_->Setup(discretizations_);
 
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {

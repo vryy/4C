@@ -6625,17 +6625,7 @@ void FLD::FluidImplicitTimeInt::SetCouplingContributions(
     }
     else
     {
-      if (Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(contributing_matrix, false) ==
-          Teuchos::null)
-        dserror(
-            "In the meshtying case you need to hand in a LINALG::BlockSparseMatrx for the behavior "
-            "to be defined!");
-
-      Teuchos::RCP<LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>>
-          contributing_matrix =
-              Teuchos::rcp(new LINALG::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>(
-                  *velpressplitter_, *velpressplitter_, 108, false, true));
-      contributing_matrix->SetNumdim(numdim_);
+      couplingcontributions_ = meshtying_->InitSystemMatrix();
     }
   }
   // Note that we are passing the pointer to the coupling matrix here and do not copy the content!

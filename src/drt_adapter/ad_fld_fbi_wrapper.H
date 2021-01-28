@@ -13,6 +13,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include "ad_fld_fluid_fsi.H"
+#include "../drt_fluid/fluid_meshtying.H"
 
 namespace LINALG
 {
@@ -56,6 +57,8 @@ namespace ADAPTER
      * \brief Resets the external forces acting on the fluid to zero
      */
     virtual void ResetExternalForces();
+
+    virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
   };
 }  // namespace ADAPTER
 
