@@ -33,7 +33,7 @@ NUMSTEP                               2
 RESULTSEVRY                           5
 RESTARTEVRY                           5
 --------------------------------------------------FSI DYNAMIC/PARTITIONED SOLVER
-CONVTOL                               1.0E-03
+CONVTOL                               1.0E-07
 ITEMAX                                100
 COUPVARIABLE                          Force
 PREDICTOR                             d(n)
@@ -47,8 +47,6 @@ PREDICT                               TangDis
 NEGLECTINERTIA                        no
 LOADLIN                               yes
 DIVERCONT                             continue
-----------------------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                                 1
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = fbi_part_struct_solver.xml
 -----------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -104,7 +102,6 @@ INITIALFIELD                          zero_field
 INITSTATITEMAX                        5
 ITEMAX                                50
 LIFTDRAG                              No
-MAXTIME                               5
 MESHTYING                             Condensed_Smat
 NONLINEARBC                           no
 NONLINITER                            Newton
@@ -120,10 +117,7 @@ STEADYSTEP                            -1
 STRONG_REDD_3D_COUPLING_TYPE          no
 THETA                                 0.5
 TIMEINTEGR                            One_Step_Theta
-RESULTSEVRY                           1
 LINEAR_SOLVER                         3
-TIMESTEP                              0.001
-NUMSTEP                               10
 --------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES                          1.e-08
 TOL_VEL_INC                          1.e-08
@@ -132,10 +126,6 @@ TOL_PRES_INC                         1.e-04
 --------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CHARELELENGTH_PC                      root_of_volume
 VSTAB                                 vstab_gls
---------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
-EOS_PRES                              std_eos
-EOS_CONV_STREAM                         std_eos
-EOS_CONV_CROSS                         std_eos
 ------------------------------------------------------------------------SOLVER 1
 SOLVER                                Superlu
 ------------------------------------------------------------------------SOLVER 2
@@ -154,44 +144,28 @@ ML_SMOOTHERMED                        ILU
 ML_SMOOTHERCOARSE                     Umfpack
 ---------------------------------------------------------SOLVER 3
 NAME           1,1 block solver/smoothers
-SOLVER         Aztec_MSR          // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
-AZOUTPUT       0                  // output every so often, 0 no output
-AZSOLVE        GMRES              // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC         ILU                // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
-AZREUSE        0                  // how often to recompute some preconditioners
-AZDROP         0.0                // drop tolerance for ILUT
+SOLVER         Aztec_MSR
+AZOUTPUT       0
+AZSOLVE        GMRES
+AZPREC         ILU
+AZREUSE        0
+AZDROP         0.0
 IFPACKFILL     1.0
 IFPACKGFILL    0
 IFPACKOVERLAP  0
-AZTOL          1.0E-9             // tolerance in (un)scaled residual
-AZCONV         AZ_r0              // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
-AZITER         1000               // max iterations
-AZSUB          1000                 // size of krylov space for gmres
-AZOMEGA        1.0                // damping factor for Jacobi/GaussSeidel type preconditioners
-AZGRAPH        1                  // unused
-AZPOLY         1                  // polynomial order for Neumann
-AZSCAL         none               // none sym infnorm scaling of the system
-DWINDTAU       2.5                // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
-ML_PRINT          0               // ML print-out level (0-10)
-ML_MAXCOARSESIZE  125            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL       3               // ML max number of levels
-ML_COARSEN        UC              // UC MIS METIS VBMETIS
-ML_AGG_SIZE       27              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_PROLONG_SMO    0.0             // damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_THRES  0.0             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE   SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED    SGS             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERCOARSE Umfpack             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
-ML_SMOTIMES       1 1 0       // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE       0.35            // damping fine grid
-ML_DAMPMED        0.85             // damping med grids
-ML_DAMPCOARSE     1.0             // damping coarse grid
+AZTOL          1.0E-9
+AZCONV         AZ_r0
+AZITER         1000
+AZSUB          1000
+AZOMEGA        1.0
+AZGRAPH        1
+AZPOLY         1
+AZSCAL         none
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e+06 DENS 1e+03 CROSSAREA 0.1 MOMIN 8.33333333333333333335e-06
 --------------------------------------------------------------------------FUNCT1
 FUNCTION heaviside(0.05-t)*0.5*(1-cos(pi*t*0.2e+2))+heaviside(t-0.05)
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  3
