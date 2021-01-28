@@ -25,7 +25,6 @@ derived from an abstract, purely virtual interface class.
 #include "../linalg/linalg_mapextractor.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                               fang 11/17 |
  *----------------------------------------------------------------------*/
 SSI::SSIMono::ConvCheckStrategyBase::ConvCheckStrategyBase(
     const Teuchos::ParameterList& parameters  //!< parameter list for Newton-Raphson iteration
@@ -36,59 +35,68 @@ SSI::SSIMono::ConvCheckStrategyBase::ConvCheckStrategyBase(
 {
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyBase::CheckL2Norm(
+    double& incnorm, double& resnorm, double& dofnorm) const
+{
+  if (std::isnan(incnorm) or std::isnan(resnorm) or std::isnan(dofnorm))
+    dserror("Vector norm is not a number!");
+  if (std::isinf(incnorm) or std::isinf(resnorm) or std::isinf(dofnorm))
+    dserror("Vector norm is infinity!");
+
+  if (dofnorm < 1.e-10) dofnorm = 1.e-10;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyBase::GetAndCheckL2NormStructure(
+    const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
+{
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::structure))
+      ->Norm2(&incnorm);
+
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::structure))
+      ->Norm2(&resnorm);
+
+  ssi_mono.StructureField()->Dispnp()->Norm2(&dofnorm);
+
+  CheckL2Norm(incnorm, resnorm, dofnorm);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyStd::GetAndCheckL2NormScaTra(
+    const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
+{
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(
+          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
+      ->Norm2(&incnorm);
+
+  ssi_mono.MapsSubProblems()
+      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
+      ->Norm2(&resnorm);
+
+  ssi_mono.ScaTraField()->Phinp()->Norm2(&dofnorm);
+
+  CheckL2Norm(incnorm, resnorm, dofnorm);
+}
 
 /*-----------------------------------------------------------------------*
- | check termination criterion for Newton-Raphson iteration   fang 11/17 |
  *-----------------------------------------------------------------------*/
 bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const
 {
   // initialize exit flag
   bool exit(false);
 
-  //! compute L2 norm of scalar transport state vector
-  double scatradofnorm(0.);
-  ssi_mono.ScaTraField()->Phinp()->Norm2(&scatradofnorm);
+  double scatraincnorm(0.0), scatraresnorm(0.0), scatradofnorm(0.0), structureincnorm(0.0),
+      structureresnorm(0.0), structuredofnorm(0.0);
 
-  //! compute L2 norm of scalar transport increment vector
-  double scatraincnorm(0.);
-  ssi_mono.MapsSubProblems()
-      ->ExtractVector(
-          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
-      ->Norm2(&scatraincnorm);
-
-  //! compute L2 norm of scalar transport residual vector
-  double scatraresnorm(0.);
-  ssi_mono.MapsSubProblems()
-      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
-      ->Norm2(&scatraresnorm);
-
-  //! compute L2 norm of structural state vector
-  double structuredofnorm(0.);
-  ssi_mono.StructureField()->Dispnp()->Norm2(&structuredofnorm);
-
-  //! compute L2 norm of structural residual vector
-  double structureresnorm(0.);
-  ssi_mono.MapsSubProblems()
-      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::structure))
-      ->Norm2(&structureresnorm);
-
-  //! compute L2 norm of structural increment vector
-  double structureincnorm(0.);
-  ssi_mono.MapsSubProblems()
-      ->ExtractVector(ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::structure))
-      ->Norm2(&structureincnorm);
-
-  // safety checks
-  if (std::isnan(scatradofnorm) or std::isnan(scatraresnorm) or std::isnan(scatraincnorm) or
-      std::isnan(structuredofnorm) or std::isnan(structureresnorm) or std::isnan(structureincnorm))
-    dserror("Vector norm is not a number!");
-  if (std::isinf(scatradofnorm) or std::isinf(scatraresnorm) or std::isinf(scatraincnorm) or
-      std::isinf(structuredofnorm) or std::isinf(structureresnorm) or std::isinf(structureincnorm))
-    dserror("Vector norm is infinity!");
-
-  // prevent division by zero
-  if (scatradofnorm < 1.e-10) scatradofnorm = 1.e-10;
-  if (structuredofnorm < 1.e-10) structuredofnorm = 1.e-10;
+  GetAndCheckL2NormScaTra(ssi_mono, scatraincnorm, scatraresnorm, scatradofnorm);
+  GetAndCheckL2NormStructure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
 
   // first Newton-Raphson iteration
   if (ssi_mono.IterationCount() == 1)
@@ -175,91 +183,69 @@ bool SSI::SSIMono::ConvCheckStrategyStd::ExitNewtonRaphson(const SSI::SSIMono& s
   return exit;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormConc(
+    const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
+{
+  ssi_mono.ScaTraField()
+      ->Splitter()
+      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+      ->Norm2(&incnorm);
+
+  ssi_mono.ScaTraField()
+      ->Splitter()
+      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+      ->Norm2(&resnorm);
+
+  ssi_mono.ScaTraField()
+      ->Splitter()
+      ->ExtractOtherVector(ssi_mono.ScaTraField()->Phinp())
+      ->Norm2(&dofnorm);
+
+  CheckL2Norm(incnorm, resnorm, dofnorm);
+}
 
 /*----------------------------------------------------------------------*
- | perform convergence check for Newton-Raphson iteration    fang 11/17 |
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormPot(
+    const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
+{
+  ssi_mono.ScaTraField()
+      ->Splitter()
+      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+      ->Norm2(&incnorm);
+
+  ssi_mono.ScaTraField()
+      ->Splitter()
+      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+      ->Norm2(&resnorm);
+
+  ssi_mono.ScaTraField()
+      ->Splitter()
+      ->ExtractCondVector(ssi_mono.ScaTraField()->Phinp())
+      ->Norm2(&dofnorm);
+
+  CheckL2Norm(incnorm, resnorm, dofnorm);
+}
+
+/*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const
 {
   // initialize exit flag
   bool exit(false);
 
-  //! compute L2 norm of concentration state vector
-  double concdofnorm(0.);
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->ExtractOtherVector(ssi_mono.ScaTraField()->Phinp())
-      ->Norm2(&concdofnorm);
+  double concincnorm(0.0), concresnorm(0.0), concdofnorm(0.0), potdofnorm(0.0), potincnorm(0.0),
+      potresnorm(0.0), structuredofnorm(0.0), structureresnorm(0.0), structureincnorm(0.0);
 
-  //! compute L2 norm of concentration increment vector
-  double concincnorm(0.);
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
-      ->Norm2(&concincnorm);
-
-  //! compute L2 norm of concentration residual vector
-  double concresnorm(0.);
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
-      ->Norm2(&concresnorm);
-
-  //! compute L2 norm of potential state vector
-  double potdofnorm(0.);
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->ExtractCondVector(ssi_mono.ScaTraField()->Phinp())
-      ->Norm2(&potdofnorm);
-
-  //! compute L2 norm of potential increment vector
-  double potincnorm(0.);
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
-      ->Norm2(&potincnorm);
-
-  //! compute L2 norm of potential residual vector
-  double potresnorm(0.);
-  ssi_mono.ScaTraField()
-      ->Splitter()
-      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
-      ->Norm2(&potresnorm);
-
-  //! compute L2 norm of structural state vector
-  double structuredofnorm(0.);
-  ssi_mono.StructureField()->Dispnp()->Norm2(&structuredofnorm);
-
-  //! compute L2 norm of structural residual vector
-  double structureresnorm(0.);
-  ssi_mono.MapsSubProblems()
-      ->ExtractVector(ssi_mono.residual_, ssi_mono.GetProblemPosition(Subproblem::structure))
-      ->Norm2(&structureresnorm);
-
-  //! compute L2 norm of structural increment vector
-  double structureincnorm(0.);
-  ssi_mono.MapsSubProblems()
-      ->ExtractVector(ssi_mono.increment_, ssi_mono.GetProblemPosition(Subproblem::structure))
-      ->Norm2(&structureincnorm);
-
-  // safety checks
-  if (std::isnan(concdofnorm) or std::isnan(concresnorm) or std::isnan(concincnorm) or
-      std::isnan(potdofnorm) or std::isnan(potresnorm) or std::isnan(potincnorm) or
-      std::isnan(structuredofnorm) or std::isnan(structureresnorm) or std::isnan(structureincnorm))
-    dserror("Vector norm is not a number!");
-  if (std::isinf(concdofnorm) or std::isinf(concresnorm) or std::isinf(concincnorm) or
-      std::isinf(potdofnorm) or std::isinf(potresnorm) or std::isinf(potincnorm) or
-      std::isinf(structuredofnorm) or std::isinf(structureresnorm) or std::isinf(structureincnorm))
-    dserror("Vector norm is infinity!");
-
-  // prevent division by zero
-  if (concdofnorm < 1.e-10) concdofnorm = 1.e-10;
-  if (potdofnorm < 1.e-10) potdofnorm = 1.e-10;
-  if (structuredofnorm < 1.e-10) structuredofnorm = 1.e-10;
+  GetAndCheckL2NormConc(ssi_mono, concincnorm, concresnorm, concdofnorm);
+  GetAndCheckL2NormPot(ssi_mono, potincnorm, potresnorm, potdofnorm);
+  GetAndCheckL2NormStructure(ssi_mono, structureincnorm, structureresnorm, structuredofnorm);
 
   // first Newton-Raphson iteration
   if (ssi_mono.IterationCount() == 1)
