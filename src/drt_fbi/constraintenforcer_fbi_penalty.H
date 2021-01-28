@@ -54,7 +54,7 @@ namespace ADAPTER
 
    public:
     /// empty destructor
-    virtual ~FBIPenaltyConstraintenforcer(){};
+    ~FBIPenaltyConstraintenforcer() override = default;
 
     /**
      * \brief Sets up the constraint enforcer

@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
       /**
        * \brief empty Destructor
        */
-      virtual ~PartitionedBeamInteractionAssemblyManagerDirect(){};
+      ~PartitionedBeamInteractionAssemblyManagerDirect() override = default;
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

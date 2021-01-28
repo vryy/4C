@@ -48,7 +48,7 @@ namespace BEAMINTERACTION
        * class.
        */
       PartitionedBeamInteractionAssemblyManagerIndirect(
-          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
+          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
           Teuchos::RCP<const DRT::Discretization>& discretization1,
           Teuchos::RCP<const DRT::Discretization>& discretization2,
           Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Destructor.
        */
-      virtual ~PartitionedBeamInteractionAssemblyManagerIndirect(){};
+      ~PartitionedBeamInteractionAssemblyManagerIndirect() override = default;
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

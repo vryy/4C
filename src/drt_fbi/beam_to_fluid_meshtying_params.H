@@ -44,7 +44,7 @@ namespace FBI
     /**
      * \brief empty Destructor
      */
-    virtual ~BeamToFluidMeshtyingParams(){};
+    ~BeamToFluidMeshtyingParams() override = default;
 
     /**
      * \brief Initialize with the stuff coming from input file

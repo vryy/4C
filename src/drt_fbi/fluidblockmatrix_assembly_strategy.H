@@ -38,7 +38,7 @@ namespace FBI
       /**
        * \brief Destructor.
        */
-      virtual ~FBIBlockAssemblyStrategy() = default;
+      ~FBIBlockAssemblyStrategy() override = default;
 
       /**
        * \brief Calls the correct assembly method for the used global fluid matrix depending on the

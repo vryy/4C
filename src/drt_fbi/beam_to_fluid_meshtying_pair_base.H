@@ -51,7 +51,7 @@ namespace BEAMINTERACTION
     /**
      * \brief empty Destructor.
      */
-    virtual ~BeamToFluidMeshtyingPairBase(){};
+    virtual ~BeamToFluidMeshtyingPairBase() = default;
 
     /**
      * \brief Setup the contact pair and set information on the current position of the elements in

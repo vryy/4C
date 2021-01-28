@@ -72,7 +72,7 @@ namespace ADAPTER
 
    public:
     /// empty destructor
-    virtual ~FBIConstraintenforcer(){};
+    virtual ~FBIConstraintenforcer() = default;
 
     /**
      * \brief Sets up the constraint enforcer

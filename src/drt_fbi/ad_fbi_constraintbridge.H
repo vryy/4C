@@ -69,7 +69,7 @@ namespace ADAPTER
 
    public:
     /// empty destructor
-    virtual ~FBIConstraintBridge(){};
+    virtual ~FBIConstraintBridge() = default;
 
     /**
      * \brief Initializes all members of the class

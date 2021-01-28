@@ -47,12 +47,9 @@ namespace BEAMINTERACTION
   {
    private:
     /// constructor
-    BeamToFluidAssemblyManagerFactory(){};
+    BeamToFluidAssemblyManagerFactory() = delete;
 
    public:
-    /// destructor
-    ~BeamToFluidAssemblyManagerFactory(){};
-
     /**
      *  \brief Creates the appropriate beam to fluid meshtying assembly manager for the desired
      * discretizations

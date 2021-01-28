@@ -55,12 +55,12 @@ namespace BEAMINTERACTION
        * class.
        */
       PartitionedBeamInteractionAssemblyManager(
-          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs);
+          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs);
 
       /**
        * \brief Destructor.
        */
-      virtual ~PartitionedBeamInteractionAssemblyManager(){};
+      virtual ~PartitionedBeamInteractionAssemblyManager() = default;
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

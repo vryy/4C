@@ -41,7 +41,7 @@ namespace ADAPTER
 
    public:
     /// empty destructor
-    virtual ~FBIConstraintBridgePenalty(){};
+    ~FBIConstraintBridgePenalty() override = default;
 
     /**
      * \brief Initializes all members of the class     *
