@@ -27,7 +27,6 @@ namespace SSI
   interaction problems
 
   */
-
   class SSIMono::ConvCheckStrategyBase
   {
    public:
@@ -43,6 +42,13 @@ namespace SSI
     virtual bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const = 0;
 
    protected:
+    //! get L2 norms from structure field and check if they are reasonable
+    void GetAndCheckL2NormStructure(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+    //! check, if L2 norm is inf or nan. For dofnom: check if it is numerical zero
+    void CheckL2Norm(double& incnorm, double& resnorm, double& dofnorm) const;
+
     //! maximum number of Newton-Raphson iteration steps
     const int itermax_;
 
@@ -63,7 +69,6 @@ namespace SSI
   interaction problems involving standard scalar transport
 
   */
-
   class SSIMono::ConvCheckStrategyStd : public SSIMono::ConvCheckStrategyBase
   {
    public:
@@ -75,8 +80,11 @@ namespace SSI
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
    private:
-    //! copy constructor
     ConvCheckStrategyStd(const ConvCheckStrategyStd& old);
+
+    //! get L2 norms from scatra field and check if they are reasonable
+    void GetAndCheckL2NormScaTra(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
   };  // class ConvCheckStrategyStd
 
 
@@ -85,7 +93,6 @@ namespace SSI
   interaction problems involving electrochemistry
 
   */
-
   class SSIMono::ConvCheckStrategyElch : public SSIMono::ConvCheckStrategyBase
   {
    public:
@@ -97,8 +104,15 @@ namespace SSI
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
    private:
-    //! copy constructor
     ConvCheckStrategyElch(const ConvCheckStrategyElch& old);
+
+    //! get L2 norms from concentration field and check if they are reasonable
+    void GetAndCheckL2NormConc(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+    //! get L2 norms from potential field and check if they are reasonable
+    void GetAndCheckL2NormPot(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
   };  // class ConvCheckStrategyElch
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H

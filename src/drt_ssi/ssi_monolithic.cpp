@@ -81,38 +81,6 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
-  // needed to communicate to NOX state
-  StructureField()->SetState(StructureField()->WriteAccessDispnp());
-
-  // pass structural degrees of freedom to scalar transport discretization
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
-
-  // pass scalar transport degrees of freedom to structural discretization
-  SetScatraSolution(ScaTraField()->Phinp());
-
-  // evaluate temperature from function and set to structural discretization
-  EvaluateAndSetTemperatureField();
-
-  // build system matrix and residual for structure field
-  StructureField()->Evaluate();
-
-  // build system matrix and residual for scalar transport field
-  ScaTraField()->PrepareLinearSolve();
-
-  // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
-  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      ssi_matrices_->ScaTraStructureDomain());
-
-  // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
-  if (SSIInterfaceMeshtying())
-    scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        ssi_matrices_->ScaTraStructureInterface());
-
-  // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
-  // global system matrix
-  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      ssi_matrices_->StructureScaTraDomain());
-
   // assemble scatra block into system matrix
   strategy_assemble_->AssembleScatraDomain(
       ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
@@ -148,6 +116,43 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS());
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::EvaluateSubproblems()
+{
+  // needed to communicate to NOX state
+  StructureField()->SetState(StructureField()->WriteAccessDispnp());
+
+  // pass structural degrees of freedom to scalar transport discretization
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+
+  // pass scalar transport degrees of freedom to structural discretization
+  SetScatraSolution(ScaTraField()->Phinp());
+
+  // evaluate temperature from function and set to structural discretization
+  EvaluateAndSetTemperatureField();
+
+  // build system matrix and residual for structure field
+  StructureField()->Evaluate();
+
+  // build system matrix and residual for scalar transport field
+  ScaTraField()->PrepareLinearSolve();
+
+  // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
+  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
+      ssi_matrices_->ScaTraStructureDomain());
+
+  // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
+  if (SSIInterfaceMeshtying())
+    scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
+        ssi_matrices_->ScaTraStructureInterface());
+
+  // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
+  // global system matrix
+  scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
+      ssi_matrices_->StructureScaTraDomain());
 }
 
 /*-------------------------------------------------------------------------------*
@@ -579,6 +584,9 @@ void SSI::SSIMono::NewtonLoop()
 
     // store time before evaluating elements and assembling global system of equations
     double time = timer_->WallTime();
+
+    // evaluate subproblems and get all matrices and right-hand-sides
+    EvaluateSubproblems();
 
     // assemble global system of equations
     AssembleMatAndRHS();

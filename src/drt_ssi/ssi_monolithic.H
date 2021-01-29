@@ -138,6 +138,9 @@ namespace SSI
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
+    //! get matrix and right-hand-side for all subproblems incl. coupling
+    void EvaluateSubproblems();
+
     // build and return vector of equilibration methods for each block of system matrix
     Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
 
