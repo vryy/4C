@@ -85,7 +85,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *----------------------------------------------------------------------*/
 void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // reset the setup flag
   SetIsSetup(false);

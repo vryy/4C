@@ -71,14 +71,9 @@ namespace SSI
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
-    void Init(const Epetra_Comm& comm,                   //!< communicator
-        const Teuchos::ParameterList& globaltimeparams,  //!< parameter list for time integration
-        const Teuchos::ParameterList& scatraparams,      //!< parameter list for scalar transport
-        const Teuchos::ParameterList& structparams,      //!< parameter list for structure
-        std::string struct_disname,                      //!< name of structural discretization
-        std::string scatra_disname,  //!< name of scalar transport discretization
-        bool isAle                   //!< flag for ALE
-        ) override;
+    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! get vector containing positions within system matrix for specific subproblem
     Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;

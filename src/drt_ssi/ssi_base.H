@@ -112,7 +112,7 @@ namespace SSI
     \author rauch  */
     virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) = 0;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) = 0;
 
     /*! \brief Setup all class internal objects and members
 

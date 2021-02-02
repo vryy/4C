@@ -41,7 +41,7 @@ SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
   SSI::SSIPart::Init(
@@ -458,8 +458,8 @@ SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call init of base class
   SSI::SSIPart2WC::Init(
@@ -537,9 +537,11 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
     // since the velocity field has to fit to the relaxated displacements we also have to relaxate
     // them.
     if (UseOldStructureTimeInt())
+    {
       // since the velocity depends nonlinear on the displacements we can just approximate them via
       // finite differences here.
       velnp = CalcVelocity(dispnp);
+    }
     else
     {
       // consistent derivation of velocity field from displacement field
@@ -681,8 +683,8 @@ SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
  *----------------------------------------------------------------------*/
 void SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
   SSI::SSIPart2WC::Init(

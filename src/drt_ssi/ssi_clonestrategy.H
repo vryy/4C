@@ -33,41 +33,44 @@ namespace SSI
   class ScatraStructureCloneStrategy
   {
    public:
-    //! constructor
     explicit ScatraStructureCloneStrategy() = default;
 
-    //! destructor
     virtual ~ScatraStructureCloneStrategy() = default;
 
     //! return map with original names of conditions to be cloned as key values, and final names of
     //! cloned conditions as mapped values
     virtual std::map<std::string, std::string> ConditionsToCopy();
 
-    //! return SCATRA::ImplType of the element
-    virtual INPAR::SCATRA::ImplType GetImplType(
-        DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
-    );
+    //! get impltype of scatra element from structure element
+    //!
+    //! \param ele     element whose SCATRA::ImplType shall be determined
+    //! \return        impltype of the scatra element
+    virtual INPAR::SCATRA::ImplType GetImplType(DRT::Element* ele);
 
    protected:
     //! check material of cloned element
-    void CheckMaterialType(const int matid  //! material of cloned element
-    );
+    //!
+    //! \param matid     material of cloned element
+    void CheckMaterialType(const int matid);
 
     //! decide whether element should be cloned or not, and if so, determine type of cloned element
+    //!
+    //! \param actele       current element on source discretization
+    //! \param ismyele      ownership flag
+    //! \param eletype      vector storing types of cloned elements
+    //! \return
     virtual bool DetermineEleType(
-        DRT::Element* actele,              //! current element on source discretization
-        const bool ismyele,                //! ownership flag
-        std::vector<std::string>& eletype  //! vector storing types of cloned elements
-    );
+        DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
-    virtual void SetElementData(
-        Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-        DRT::Element* oldele,               //! current element on source discretization
-        const int matid,                    //! material of cloned element
-        const bool isnurbs                  //! nurbs flag
-    );
-  };  // class ScatraStructureCloneStrategy
+    //!
+    //! \param newele    current cloned element on target discretization
+    //! \param oldele    current element on source discretization
+    //! \param matid     material of cloned element
+    //! \param isnurbs   nurbs flag
+    virtual void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele,
+        const int matid, const bool isnurbs);
+  };
 
   class ScatraStructureCloneStrategyManifold : public ScatraStructureCloneStrategy
   {
@@ -77,5 +80,6 @@ namespace SSI
     void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
         const bool isnurbs) override;
   };
+
 }  // namespace SSI
 #endif

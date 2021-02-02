@@ -35,7 +35,7 @@ SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void SSI::SSIPart1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
   SSI::SSIPart::Init(
@@ -187,8 +187,8 @@ SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
  *----------------------------------------------------------------------*/
 void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
   SSI::SSIPart1WC::Init(
@@ -257,8 +257,8 @@ SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
  *----------------------------------------------------------------------*/
 void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
   SSI::SSIPart1WC::Init(

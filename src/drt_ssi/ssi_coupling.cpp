@@ -18,15 +18,12 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 
-#include "../drt_inpar/inpar_volmortar.H"
 #include "../drt_volmortar/volmortar_utils.H"
 
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
 #include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -60,7 +57,6 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,  /// dimension of the 
   AssignMaterialPointers(structdis, scatradis);
 
   SetIsInit(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -70,7 +66,6 @@ void SSI::SSICouplingMatchingVolume::Setup()
   CheckIsInit();
 
   SetIsSetup(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -195,7 +190,6 @@ void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,  /// dimension of
   adaptermeshtying_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
 
   SetIsInit(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -214,7 +208,6 @@ void SSI::SSICouplingNonMatchingBoundary::Setup()
       new LINALG::MapExtractor(*structdis_->DofRowMap(0), adaptermeshtying_->MasterDofMap(), true));
 
   SetIsSetup(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -227,7 +220,6 @@ void SSI::SSICouplingNonMatchingBoundary::AssignMaterialPointers(
   // nothing to do in this case, since
   // transferring scalar state to structure discretization not implemented for
   // transport on structural boundary. Only SolidToScatra coupling available.
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -318,7 +310,6 @@ void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,  /// dimension of t
   // volcoupl_structurescatra_->Redistribute();
 
   SetIsInit(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -331,7 +322,6 @@ void SSI::SSICouplingNonMatchingVolume::Setup()
   volcoupl_structurescatra_->Setup();
 
   SetIsSetup(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -342,7 +332,6 @@ void SSI::SSICouplingNonMatchingVolume::AssignMaterialPointers(
 )
 {
   volcoupl_structurescatra_->AssignMaterials(structdis, scatradis);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -413,8 +402,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,  /// dimens
         dserror("No coupling condition defined on one or both structure or scatra discretization!");
 
       std::set<int> couplingids;
-      for (unsigned i = 0; i < conds_struct.size(); ++i)
-        couplingids.insert(conds_struct[i]->GetInt("coupling id"));
+      for (auto& cond_struct : conds_struct) couplingids.insert(cond_struct->GetInt("coupling id"));
 
       Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structgidmatchingdofset =
           Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
@@ -442,16 +430,15 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,  /// dimens
         dserror("No coupling condition defined on one or both structure or scatra discretization!");
 
       std::set<int> couplingids;
-      for (unsigned i = 0; i < conds_struct.size(); ++i)
-        couplingids.insert(conds_struct[i]->GetInt("coupling id"));
+      for (auto& cond_struct : conds_struct) couplingids.insert(cond_struct->GetInt("coupling id"));
 
       Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatragidmatchingdofset =
           Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
 
-      for (std::set<int>::iterator it = couplingids.begin(); it != couplingids.end(); ++it)
+      for (int couplingid : couplingids)
       {
         std::set<int> tempset;
-        tempset.insert(*it);
+        tempset.insert(couplingid);
 
         Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_struct =
             Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
@@ -499,7 +486,6 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,  /// dimens
   AssignMaterialPointers(structdis, scatradis);
 
   SetIsInit(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -509,7 +495,6 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Setup()
   CheckIsInit();
 
   SetIsSetup(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -519,7 +504,6 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::AssignMaterialPointers(
     Teuchos::RCP<DRT::Discretization> scatradis   /// underlying scatra discretization
 )
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*/

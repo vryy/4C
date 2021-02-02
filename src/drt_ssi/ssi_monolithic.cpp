@@ -265,7 +265,7 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // check input parameters for scalar transport field
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=

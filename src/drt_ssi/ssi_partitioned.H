@@ -39,7 +39,7 @@ namespace SSI
     */
     void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     /*!
     \brief Setup vectors and pointers

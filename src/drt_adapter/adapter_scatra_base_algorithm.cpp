@@ -15,10 +15,7 @@
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_elch.H"
-#include "../drt_inpar/inpar_cardiac_monodomain.H"
 #include "../drt_inpar/inpar_ssi.H"
 #include "../drt_inpar/inpar_ssti.H"
 #include "../drt_inpar/inpar_sti.H"
@@ -39,7 +36,6 @@
 // loma specific files
 #include "../drt_scatra/scatra_timint_loma_genalpha.H"
 #include "../drt_scatra/scatra_timint_loma_ost.H"
-#include "../drt_scatra/scatra_timint_loma_bdf2.H"
 
 // elch specific files
 #include "../drt_scatra/scatra_resulttest_elch.H"
@@ -63,8 +59,6 @@
 ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm()
     : scatra_(Teuchos::null), issetup_(false), isinit_(false)
 {
-  // Keep constructor empty
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -213,7 +207,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // algorithm construction depending on problem type and
   // time-integration (or stationary) scheme
   // -------------------------------------------------------------------
-  INPAR::SCATRA::TimeIntegrationScheme timintscheme =
+  auto timintscheme =
       DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatradyn, "TIMEINTEGR");
 
   // low Mach number flow
@@ -428,8 +422,10 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     // HDG implements all time stepping schemes within gen-alpha
     if (DRT::Problem::Instance()->SpatialApproximationType() ==
         ShapeFunctionType::shapefunction_hdg)
+    {
       scatra_ = Teuchos::rcp(new SCATRA::TimIntCardiacMonodomainHDG(
           discret, solver, cmonoparams, scatratimeparams, extraparams, output));
+    }
     else
     {
       switch (timintscheme)
@@ -571,7 +567,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   scatra_->Init();
 
   SetIsInit(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -608,15 +603,17 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
       const Teuchos::RCP<LINALG::Solver>& solver = scatra_->Solver();
 
       const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
-      INPAR::SOLVER::AzPrecType prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
+      auto prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
       if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
           prec != INPAR::SOLVER::azprec_TekoSIMPLE)  // TODO adapt error message
+      {
         dserror(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as "
             "preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER "
             "%i block in your dat file.",
             linsolvernumber);
+      }
 
       solver->Params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
       solver->Params().set(
@@ -637,7 +634,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
   }
 
   SetIsSetup(true);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
