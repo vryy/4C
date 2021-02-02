@@ -13,6 +13,7 @@
 #include "material.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_inpar/inpar_structure.H"
+#include <unordered_map>
 
 namespace MAT
 {
@@ -191,6 +192,7 @@ namespace MAT
     //@}
 
     //! @name Visualization methods
+    //@{
 
     /// Return names of visualization data
     virtual void VisNames(std::map<std::string, int>& names){
@@ -207,6 +209,33 @@ namespace MAT
     { /* do nothing for simple material models */
       return false;
     };
+
+    /*!
+     * \brief Register names of the internal data that should be saved during runtime vtk output
+     *
+     * \param name_and_size [out] : unordered map of names of the data with the respective vector
+     * size
+     */
+    virtual void RegisterVtkOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const
+    {
+      // do nothing if material does not have vtk runtime output
+    }
+
+    /*!
+     * \brief Evaluate internal data for every Gauss point saved for output during runtime vtk
+     * output
+     *
+     * \param name [in] : Name of the data to export
+     * \param data [out] : NUMGPxNUMDATA Matrix holding the data
+     *
+     * \return true if data is set by the material, otherwise false
+     */
+    virtual bool EvaluateVtkOutputData(
+        const std::string& name, Epetra_SerialDenseMatrix& data) const
+    {
+      return false;
+    }
 
     //@}
 

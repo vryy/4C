@@ -14,6 +14,7 @@
 
 
 #include "../drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.H"
+#include "../drt_inpar/inpar_structure.H"
 
 namespace Teuchos
 {
@@ -78,6 +79,13 @@ namespace DRT
         return output_stress_strain_;
       };
 
+      /// Return output type of Gauss point data
+      INPAR::STR::GaussPointDataOutputType GaussPointDataOutput() const
+      {
+        CheckInitSetup();
+        return gauss_point_data_output_type_;
+      }
+
      private:
       /// get the init indicator status
       const bool& IsInit() const { return isinit_; };
@@ -115,6 +123,9 @@ namespace DRT
 
       /// whether to write stress and / or strain data
       bool output_stress_strain_;
+
+      /// Output type of Gauss point data
+      INPAR::STR::GaussPointDataOutputType gauss_point_data_output_type_;
       //@}
     };
 

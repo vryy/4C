@@ -12,7 +12,10 @@
 #define SRC_DRT_STRUCTURE_NEW_STR_MODEL_EVALUATOR_DATA_H_
 
 #include "../drt_lib/drt_dserror.H"
+#include <Epetra_MultiVector.h>
 #include <NOX_Abstract_Vector.H>
+#include <unordered_map>
+#include "gauss_point_data_output_manager.H"
 #include "str_elements_paramsinterface.H"  // base class of the Data class
 #include "str_timint_basedatasdyn.H"       // base class of the Data class
 #include "str_enum_lists.H"
@@ -48,6 +51,7 @@ namespace STR
     class BeamData;
     class ContactData;
     class BrownianDynData;
+    class GaussPointDataOutputManager;
 
 
     /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
@@ -191,6 +195,9 @@ namespace STR
 
       //! get the current strain type [derived]
       virtual enum INPAR::STR::OptQuantityType GetOptQuantityOutputType() const;
+
+      //< get the manager of Gauss point data output
+      Teuchos::RCP<GaussPointDataOutputManager>& MutableGaussPointDataOutputManagerPtr() override;
 
       //! register energy type to be computed and written to file
       void InsertEnergyTypeToBeConsidered(enum STR::EnergyType type);
@@ -498,6 +505,25 @@ namespace STR
       inline void SetStressData(const Teuchos::RCP<std::vector<char>>& stressdata)
       {
         stressdata_ptr_ = stressdata;
+      }
+
+      /*!
+       * \brief Set the pointer to the manager of gauss point data output
+       *
+       * \param data_manager Manager of gauss point data output
+       */
+      inline void SetGaussPointDataOutputManagerPtr(
+          const Teuchos::RCP<GaussPointDataOutputManager> data_manager)
+      {
+        gauss_point_data_manager_ptr_ = data_manager;
+      }
+
+      /// Return constant manager of gauss point data output
+      inline const Teuchos::RCP<GaussPointDataOutputManager>& GetGaussPointDataOutputManagerPtr()
+          const
+      {
+        CheckInitSetup();
+        return gauss_point_data_manager_ptr_;
       }
 
       //! get stress data vector
@@ -882,6 +908,9 @@ namespace STR
 
       //! system energy, stored separately by type
       std::map<enum STR::EnergyType, double> energy_data_;
+
+      //! Manager of gauss point data output
+      Teuchos::RCP<GaussPointDataOutputManager> gauss_point_data_manager_ptr_;
 
       //!@}
 

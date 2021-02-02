@@ -1,0 +1,142 @@
+--------------------------------------------------------------------TITLE
+Growth simulation with output of Gauss points data postprocessed to the nodes
+--------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure
+-----------------------------------------------------------------------IO
+OUTPUT_BIN                      yes
+STRUCT_DISP                     yes
+FILESTEPS                       1000
+VERBOSITY                       Standard
+STRUCT_STRAIN                   gl
+STRUCT_STRESS                   cauchy
+OUTPUT_SPRING                   Yes
+WRITE_INITIAL_STATE             no
+-----------------------------------------------------IO/RUNTIME VTK OUTPUT
+OUTPUT_DATA_FORMAT              binary
+INTERVAL_STEPS                  25
+EVERY_ITERATION                 no
+-------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
+OUTPUT_STRUCTURE                yes
+DISPLACEMENT                    yes
+ELEMENT_OWNER                   no
+STRESS_STRAIN                   yes
+GAUSS_POINT_DATA_OUTPUT_TYPE    element_center
+-----------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          Superlu
+-------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
+DYNAMICTYP                      Statics
+PRESTRESSTIME                   100
+PRESTRESSTOLDISP                1e-9
+RESULTSEVRY                     1
+RESTARTEVRY                     1
+TIMESTEP                        1.0
+NUMSTEP                         100
+MAXTIME                         100
+TOLDISP                         1e-9
+TOLRES                          1e-9
+LINEAR_SOLVER                   1
+NLNSOL                          fullnewton
+LOADLIN                         yes
+------------------------------------------------STRUCT NOX/Printing
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Outer Iteration StatusTest      = No
+----------------------------------------------------------------MATERIALS
+// Growing material
+MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.1 0.9 MATIDMIXTURERULE 10 DENS 1.0
+MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_TYPE 0
+
+MAT 11 MIX_Constituent_ExplicitRemodelFiber MATID 110 DECAY_TIME 10.0 GROWTH_CONSTANT 1.0e-1 DEPOSITION_STRETCH 1.1783669297169926516 DEPOSITION_STRETCH_TIMEFUNCT 0 GROWTH_ENABLED true
+MAT 110 ELAST_CoupAnisoExpo K1 10 K2 30 GAMMA 0.0 K1COMP 0.0 K2COMP 1.0 ADAPT_ANGLE No INIT 3 STR_TENS_ID 1000 FIBER_ID 1
+
+MAT 12 MIX_Constituent_ElastHyper NUMMAT 2 MATIDS 121 122 PRESTRESS_STRATEGY 129
+MAT 121 ELAST_IsoExpoPow K1 10 K2 10 C 1
+MAT 122 ELAST_VolSussmanBathe KAPPA 100
+MAT 129 MIX_Prestress_Strategy_Constant PRESTRETCH 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0
+
+// Material that does not grow
+MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 1.0
+MAT 21 ELAST_IsoExpoPow K1 500 K2 10 C 1
+MAT 22 ELAST_VolSussmanBathe KAPPA 1000
+
+// Structural tensor strategy
+MAT 1000 ELAST_StructuralTensor STRATEGY Standard
+-------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION 1+0.2*y+0.4*z
+---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
+DSURF                           1
+E 1 - NUMDOF 3 ONOFF 1 1 1 STIFF 100.0 100.0 100.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET -1.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION xyz COUPLING none
+-------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF                           1
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 150.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0
+------------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 9.79463525505158028e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -1.70720439370962811e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE -1.75682989152432002e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 9.88553329566652428e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE 1.63939129776537219e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE -1.79581182753812754e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 9.97577108134990787e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE -1.77853637618725496e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE 1.61447594099656568e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.00653493434331920e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 1.69727177019480119e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 1.64001080394697088e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE 1.02245297917037337e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE 1.08027107480937763e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE 1.01567160776443090e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE  1.03248603270766148e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10 QUANTITY dispy VALUE -1.25040499788054253e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 10 QUANTITY dispz VALUE  1.03621594923459515e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE  1.04242467629801916e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE  1.13891174666080307e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE -1.37298721124117437e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE  1.05226875874320114e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 12 QUANTITY dispy VALUE -1.34314737156430528e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE -1.42762134682016227e-02 TOLERANCE 1e-8
+-------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        3
+NODES                           16
+DIM                             3
+MATERIALS                       9999
+-------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         2
+NDLINE                          0
+NDSURF                          2
+NDVOL                           0
+------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 13 DNODE 1
+NODE 14 DNODE 2
+------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 2 DSURFACE 1
+NODE 3 DSURFACE 1
+NODE 1 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 16 DSURFACE 2
+NODE 14 DSURFACE 2
+NODE 15 DSURFACE 2
+NODE 13 DSURFACE 2
+--------------------------------------------------------------NODE COORDS
+FNODE 1 COORD 0.0 0.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 2 COORD 0.0 1.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 3 COORD 0.0 0.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 4 COORD 0.0 1.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 5 COORD 1.0 0.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 6 COORD 1.0 1.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 7 COORD 1.0 0.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 8 COORD 1.0 1.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 9 COORD 2.0 0.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 10 COORD 2.0 1.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 11 COORD 2.0 0.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 12 COORD 2.0 1.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 13 COORD 3.0 0.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 14 COORD 3.0 1.0 0.0 FIBER1 1.0 0.0 0.0
+FNODE 15 COORD 3.0 0.0 1.0 FIBER1 1.0 0.0 0.0
+FNODE 16 COORD 3.0 1.0 1.0 FIBER1 1.0 0.0 0.0
+-------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear EAS none
+2 SOLIDH8 HEX8 5 9 10 6 7 11 12 8 MAT 1 KINEM nonlinear EAS none
+3 SOLIDH8 HEX8 9 13 14 10 11 15 16 12 MAT 2 KINEM nonlinear EAS none
+---------------------------------------------------------------------------END

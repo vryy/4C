@@ -522,7 +522,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
 {
   if (lengthname_ != "*UNDEFINED*")
     length_ = material->GetInt(lengthname_);
-  else
+  else if (length_ < 0)
     dserror("Trouble to get length of real vector material component.");
 
   // initialize double parameter vector to be read

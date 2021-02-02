@@ -8,6 +8,9 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Epetra_MultiVector.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include "so_element_service.H"
 #include "so_hex8.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -28,6 +31,8 @@
 #include "../drt_mat/robinson.H"
 #include "../drt_mat/material_service.H"
 
+#include "../drt_structure_new/gauss_point_data_output_manager.H"
+
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -36,6 +41,7 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <impl/Kokkos_Traits.hpp>
 
 // inverse design object
 #include "inversedesign.H"
@@ -574,25 +580,98 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       }
       else if (stresstype == "cxyz")
       {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        if (lid != -1)
-        {
-          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
-          {
-            double& s = (*((*poststress)(i)))[lid];  // resolve pointer for faster access
-            s = 0.;
-            for (unsigned j = 0; j < NUMGPT_SOH8; ++j)
-            {
-              s += gpstress(j, i);
-            }
-            s *= 1.0 / NUMGPT_SOH8;
-          }
-        }
+        DRT::ELEMENTS::AssembleAveragedElementValues<
+            LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>>(*poststress, gpstress, this);
       }
       else
       {
         dserror("unknown type of stress/strain output on element level");
+      }
+      break;
+    }
+    case ELEMENTS::struct_init_gauss_point_data_output:
+    {
+      dsassert(IsParamsInterface(),
+          "This action type should only be called from the new time integration framework!");
+
+      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
+          NUMGPT_SOH8);
+
+      std::unordered_map<std::string, int> quantities_map{};
+      SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+
+      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+    }
+    break;
+    case ELEMENTS::struct_gauss_point_data_output:
+    {
+      dsassert(IsParamsInterface(),
+          "This action type should only be called from the new time integration framework!");
+
+      // ToDo: Here happens material output data evaluation and assembly of the data
+      for (const auto& quantity :
+          StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+      {
+        const std::string& quantity_name = quantity.first;
+        const int quantity_size = quantity.second;
+
+        // Step 1: Collect the data for each Gauss point for the material
+        LINALG::SerialDenseMatrix gp_data(NUMGPT_SOH8, quantity_size, true);
+        bool data_available = SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+
+        // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
+        // point)
+        if (data_available)
+        {
+          switch (StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+          {
+            case INPAR::STR::GaussPointDataOutputType::element_center:
+            {
+              // compute average of the quantities
+              Teuchos::RCP<Epetra_MultiVector> global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableElementCenterData()
+                      .at(quantity_name);
+              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::nodes:
+            {
+              Teuchos::RCP<Epetra_MultiVector> global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableNodalData()
+                      .at(quantity_name);
+
+              Epetra_IntVector& global_nodal_element_count =
+                  *StrParamsInterface()
+                       .MutableGaussPointDataOutputManagerPtr()
+                       ->GetMutableNodalDataCount()
+                       .at(quantity_name);
+
+              ExtrapolateGPQuantityToNodesAndAssemble(gp_data, *global_data, false);
+              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::gauss_points:
+            {
+              std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableGaussPointData()
+                      .at(quantity_name);
+              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::none:
+              dserror(
+                  "You specified a Gauss point data output type of none, so you should not end up "
+                  "here.");
+            default:
+              dserror("Unknown Gauss point data output type.");
+          }
+        }
       }
     }
     break;
@@ -2634,7 +2713,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     {
       const double density = Material()->Density(gp);
 
-      // integrate consistent mass matrix
+      // integrate consistent mass matri
       const double factor = detJ_w * density;
       double ifactor, massfactor;
       for (int inod = 0; inod < NUMNOD_SOH8; ++inod)

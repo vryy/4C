@@ -55,6 +55,7 @@ STR::MODELEVALUATOR::Data::Data()
       straindata_postprocessed_element_ptr_(Teuchos::null),
       plastic_straindata_ptr_(Teuchos::null),
       couplstressdata_ptr_(Teuchos::null),
+      gauss_point_data_manager_ptr_(Teuchos::null),
       sdyn_ptr_(Teuchos::null),
       io_ptr_(Teuchos::null),
       gstate_ptr_(Teuchos::null),
@@ -510,6 +511,13 @@ enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::GetOptQuantityOutput
 {
   CheckInitSetup();
   return io_ptr_->GetOptQuantityOutputType();
+}
+
+Teuchos::RCP<STR::MODELEVALUATOR::GaussPointDataOutputManager>&
+STR::MODELEVALUATOR::Data::MutableGaussPointDataOutputManagerPtr()
+{
+  CheckInitSetup();
+  return gauss_point_data_manager_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

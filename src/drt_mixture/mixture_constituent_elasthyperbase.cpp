@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent_elasthyperbase.H"
+#include <Teuchos_RCPDecl.hpp>
 #include "../drt_mat/material_service.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -204,28 +205,6 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(LINALG::Matrix<
   }
 }
 
-// Add names for each summand for the quantities for post processing
-void MIXTURE::MixtureConstituent_ElastHyperBase::VisNames(std::map<std::string, int>& names)
-{
-  MixtureConstituent::VisNames(names);
-
-  // loop map of associated potential summands
-  for (auto& summand : potsum_) summand->VisNames(names);
-}
-
-// Add values for each summand of the quantities for post processing
-bool MIXTURE::MixtureConstituent_ElastHyperBase::VisData(
-    const std::string& name, std::vector<double>& data, int numgp, int eleGID)
-{
-  // loop map of associated potential summands
-  for (auto& summand : potsum_)
-  {
-    bool vis = summand->VisData(name, data, numgp, eleGID);
-    if (vis) return true;
-  }
-  return MixtureConstituent::VisData(name, data, numgp, eleGID);
-}
-
 void MIXTURE::MixtureConstituent_ElastHyperBase::Setup(
     Teuchos::ParameterList& params, const int eleGID)
 {
@@ -246,4 +225,35 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
         cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
         gp, eleGID);
   }
+}
+
+void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  if (!Teuchos::is_null(params_->PrestressStrategy()))
+  {
+    names_and_size["mixture_constituent_elasthyper_prestretch"] = 9;
+  }
+}
+
+bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
+    const std::string& name, Epetra_SerialDenseMatrix& data) const
+{
+  if (!Teuchos::is_null(params_->PrestressStrategy()) &&
+      name == "mixture_constituent_elasthyper_prestretch")
+  {
+    for (int gp = 0; gp < NumGP(); ++gp)
+    {
+      static LINALG::Matrix<9, 1> tmp(false);
+      tmp.Clear();
+      UTILS::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
+
+      for (int i = 0; i < 9; ++i)
+      {
+        data(gp, i) = tmp(i, 0);
+      }
+    }
+    return true;
+  }
+  return false;
 }

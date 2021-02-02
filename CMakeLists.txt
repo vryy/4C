@@ -941,6 +941,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/inversedesign_evaluate.cpp
   src/drt_so3/prestress.cpp
   src/drt_so3/so_base.cpp
+  src/drt_so3/so_element_service.cpp
   src/drt_so3/so_hex18.cpp
   src/drt_so3/so_hex20.cpp
   src/drt_so3/so_hex20_evaluate.cpp
@@ -1751,6 +1752,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_prestress.cpp
   src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_resulttest.cpp
+  src/drt_structure_new/gauss_point_data_output_manager.cpp
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
   src/drt_structure_new/str_monitor_dbc.cpp
@@ -2619,6 +2621,7 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_rule.cpp
   src/drt_mixture/mixture_rule_growthremodel.cpp
   src/drt_mixture/mixture_prestress_strategy.cpp
+  src/drt_mixture/mixture_prestress_strategy_constant.cpp
   src/drt_mixture/mixture_prestress_strategy_isocyl.cpp
   src/drt_mixture/mixture_prestress_strategy_iterative.cpp)
 

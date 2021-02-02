@@ -494,6 +494,7 @@ void MIXTURE::OrthogonalAnisotropyExtension::OnGlobalDataInitialized()
     A_orth_[gp].Update(1.0, Id, -1.0, other_->GetStructuralTensor(gp, 0));
   }
 }
+
 const LINALG::Matrix<3, 3>& MIXTURE::OrthogonalAnisotropyExtension::OrthogonalStructuralTensor(
     int gp) const
 {

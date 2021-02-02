@@ -10,6 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "str_model_evaluator_structure.H"
+#include "gauss_point_data_output_manager.H"
 #include "str_model_evaluator_data.H"
 #include "str_timint_implicit.H"
 #include "str_predict_generic.H"
@@ -18,6 +19,7 @@
 #include "str_dbc.H"
 #include "str_timint_basedataio_runtime_vtk_output.H"
 
+#include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Epetra_Time.h>
 #include <Teuchos_ParameterList.hpp>
@@ -589,6 +591,31 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructure()
           const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true),
       num_timesteps_in_simulation_upper_bound, GState().GetTimeN(),
       vtu_output_params.WriteBinaryOutput());
+
+  if (GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams()->GaussPointDataOutput() !=
+      INPAR::STR::GaussPointDataOutputType::none)
+  {
+    InitOutputRuntimeVtkStructureGaussPointData();
+  }
+}
+
+void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructureGaussPointData()
+{
+  // Set all parameters in the evaluation data container.
+  EvalData().SetActionType(DRT::ELEMENTS::struct_init_gauss_point_data_output);
+  EvalData().SetGaussPointDataOutputManagerPtr(Teuchos::rcp(new GaussPointDataOutputManager(
+      GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams()->GaussPointDataOutput())));
+  EvalData().SetTotalTime(GState().GetTimeNp());
+  EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+
+  // Set vector values needed by elements.
+  Discret().ClearState();
+
+  // Set dummy evaluation vectors and matrices.
+  Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
+  Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
+
+  EvaluateInternal(eval_mat, eval_vec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -723,6 +750,51 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
         EvalData().GetStrainDataElementPostprocessed(), 6, name_element);
   }
 
+  // Add gauss point data if desired
+  if (structure_vtu_output_params.GaussPointDataOutput() !=
+      INPAR::STR::GaussPointDataOutputType::none)
+  {
+    const GaussPointDataOutputManager& elementDataManager =
+        *EvalData().GetGaussPointDataOutputManagerPtr();
+    for (const auto& nameAndSize : elementDataManager.GetQuantities())
+    {
+      const std::string& name = nameAndSize.first;
+      const int size = nameAndSize.second;
+
+      switch (elementDataManager.GetOutputType())
+      {
+        case INPAR::STR::GaussPointDataOutputType::element_center:
+        {
+          Teuchos::RCP<Epetra_MultiVector> data =
+              elementDataManager.GetElementCenterData().at(name);
+          vtu_writer_ptr_->AppendElementBasedResultDataVector(data, size, name);
+          break;
+        }
+        case INPAR::STR::GaussPointDataOutputType::gauss_points:
+        {
+          const std::vector<Teuchos::RCP<Epetra_MultiVector>>& data_list =
+              elementDataManager.GetGaussPointData().at(name);
+          for (std::size_t gp = 0; gp < data_list.size(); ++gp)
+          {
+            const std::string name_with_gp = name + "_gp_" + std::to_string(gp);
+            vtu_writer_ptr_->AppendElementBasedResultDataVector(data_list[gp], size, name_with_gp);
+          }
+          break;
+        }
+        case INPAR::STR::GaussPointDataOutputType::nodes:
+        {
+          Teuchos::RCP<Epetra_MultiVector> data = elementDataManager.GetNodalData().at(name);
+          vtu_writer_ptr_->AppendNodeBasedResultDataVector(data, size, name);
+          break;
+        }
+        case INPAR::STR::GaussPointDataOutputType::none:
+          dserror("Gauss point data output type is none");
+        default:
+          dserror("Gauss point data output type is not implemented yet");
+      }
+    }
+  }
+
   // finalize everything and write all required files to filesystem
   vtu_writer_ptr_->WriteFiles();
   vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
@@ -759,8 +831,8 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
 
     EvaluateInternal(eval_mat, eval_vec);
 
-    // Define a helper function to extract the element / nodal stress / strains from the gauss point
-    // data.
+    // Define a helper function to extract the element / nodal stress / strains from the gauss
+    // point data.
     auto DetermineStressStrainRuntimeOutput =
         [this](const Teuchos::RCP<std::vector<char>>& data, const Epetra_Map* result_map,
             Teuchos::RCP<Epetra_MultiVector>& postprocessed_data, const std::string& stress_type) {
@@ -830,6 +902,36 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
           Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 6, true));
       LINALG::Export(*row_nodal_data, *EvalData().GetStrainDataNodePostprocessedMutable());
     }
+  }
+}
+
+void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructureGaussPointData()
+{
+  const DRT::ELEMENTS::StructureRuntimeVtuOutputParams& structure_vtu_output_params =
+      *GInOutput().GetRuntimeVtkOutputParams()->GetStructureParams();
+  if (structure_vtu_output_params.GaussPointDataOutput() !=
+      INPAR::STR::GaussPointDataOutputType::none)
+  {
+    CheckInitSetup();
+
+    EvalData().SetActionType(DRT::ELEMENTS::struct_gauss_point_data_output);
+    EvalData().SetTotalTime(GState().GetTimeNp());
+    EvalData().SetDeltaTime((*GState().GetDeltaTime())[0]);
+
+    const auto* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
+    EvalData().MutableGaussPointDataOutputManagerPtr()->PrepareData(
+        *discret->NodeColMap(), *discret->ElementRowMap());
+
+    Discret().ClearState();
+    Discret().SetState(0, "displacement", GState().GetDisNp());
+    Discret().SetState(0, "residual displacement", dis_incr_ptr_);
+
+    Teuchos::RCP<Epetra_Vector> eval_vec[3] = {Teuchos::null, Teuchos::null, Teuchos::null};
+    Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
+
+    EvaluateInternal(eval_mat, eval_vec);
+
+    EvalData().MutableGaussPointDataOutputManagerPtr()->PostEvaluate();
   }
 }
 
@@ -1142,6 +1244,7 @@ void STR::MODELEVALUATOR::Structure::RunPostIterate(const NOX::Solver::Generic& 
       GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
   {
     OutputRuntimeVtkStructurePostprocessStressStrain();
+    OutputRuntimeVtkStructureGaussPointData();
     WriteIterationOutputRuntimeVtkStructure();
   }
 
@@ -1519,7 +1622,11 @@ void STR::MODELEVALUATOR::Structure::RuntimePreOutputStepState()
 {
   CheckInitSetup();
 
-  if (vtu_writer_ptr_ != Teuchos::null) OutputRuntimeVtkStructurePostprocessStressStrain();
+  if (vtu_writer_ptr_ != Teuchos::null)
+  {
+    OutputRuntimeVtkStructurePostprocessStressStrain();
+    OutputRuntimeVtkStructureGaussPointData();
+  }
 }
 
 /*----------------------------------------------------------------------------*

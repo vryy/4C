@@ -14,6 +14,7 @@
 #ifndef SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
 #define SRC_DRT_STRUCTURE_NEW_STR_ELEMENTS_PARAMSINTERFACE_H_
 
+#include <unordered_map>
 #include "str_enum_lists.H"
 #include "../drt_inpar/inpar_structure.H"             // enums
 #include "../drt_inpar/inpar_browniandyn.H"           // enums
@@ -37,6 +38,10 @@ namespace BROWNIANDYN
 }
 namespace STR
 {
+  namespace MODELEVALUATOR
+  {
+    class GaussPointDataOutputManager;
+  }
   namespace ELEMENTS
   {
     class BeamParamsInterface;
@@ -168,6 +173,9 @@ namespace STR
       //! get the current coupling stress type
       virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const = 0;
 
+      virtual Teuchos::RCP<MODELEVALUATOR::GaussPointDataOutputManager>&
+      MutableGaussPointDataOutputManagerPtr() = 0;
+
       //! add contribution to energy of specified type
       virtual void AddContributionToEnergyType(double value, enum STR::EnergyType type) = 0;
 
@@ -202,6 +210,7 @@ namespace STR
       //! @}
     };  // class BeamParamsInterface
   }     // namespace ELEMENTS
+
 }  // namespace STR
 
 namespace BROWNIANDYN

@@ -139,23 +139,6 @@ namespace MIXTURE
     double CurrentRefDensity(int gp) const override;
 
     /*!
-     * \brief Get the names and dimension of the quantities to visualize
-     *
-     * @param names (out) Tuple of names and the corresponding dimension of the quantity
-     */
-    void VisNames(std::map<std::string, int>& names) override;
-
-    /*!
-     * \brief
-     * @param name (in) Name of the quantity
-     * @param data (out) Values of the quantity
-     * @param numgp (in) number of Gauß points
-     * @param eleGID (in) Global element id
-     */
-    bool VisData(
-        const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
-
-    /*!
      * \brief Returns a reference to all summands
      *
      * \return const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& Reference to the summands
@@ -187,6 +170,12 @@ namespace MIXTURE
      */
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
+
+    void RegisterVtkOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool EvaluateVtkOutputData(
+        const std::string& name, Epetra_SerialDenseMatrix& data) const override;
 
    protected:
     /*!
