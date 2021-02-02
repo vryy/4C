@@ -648,6 +648,9 @@ namespace STR
     //! Access solver, one of these have to be removed (see above)
     Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
+    //! Access solver for contact/meshtying problems
+    Teuchos::RCP<LINALG::Solver> ContactSolver() { return contactsolver_; }
+
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
 

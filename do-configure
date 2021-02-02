@@ -12,7 +12,7 @@ COVERAGE=0
 DEBUG_OPTIMIZED=0
 USE_ACML=0
 USE_FORCEBUILD=0
-TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version (e.g. current state of develop)
+TRILINOS_EXPERIMENTAL=OFF  # use experimental Trilinos version (e.g. current state of develop)
 SHARED_LIBS=OFF
 CCACHE_COMMAND=ccache
 
@@ -69,7 +69,7 @@ while true; do
       TRILINOS_BUILD_TYPE="dbg"
       ;;
     -e|--experimental)
-      TRILINOS_EXPERIMENTAL=1
+      TRILINOS_EXPERIMENTAL=ON
       ;;
     -a|--useACML)
       USE_ACML=1

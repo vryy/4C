@@ -1886,6 +1886,15 @@ baci_test(contact3D_lin_duallagr_SP 2 "")
 baci_test(contact3D_lin_duallagr_SP_new_struct 2 "")
 endif (TRILINOS_Q1_2015)
 
+if (TRILINOS_DEVELOP)
+baci_test(contact3D_sp_dual_simple 3 "")
+baci_test(contact3D_sp_std_simple 3 "")
+baci_test(contact3D_sp_std_uzawa 3 "")
+baci_test(meshtying3D_sp_dual_simple 3 "")
+baci_test(meshtying3D_sp_std_simple 3 "")
+baci_test(meshtying3D_sp_std_uzawa 3 "")
+endif (TRILINOS_DEVELOP)
+
 baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
 
 # testing the AMGnxn with a TSI problem

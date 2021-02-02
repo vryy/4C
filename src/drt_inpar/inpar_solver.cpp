@@ -285,6 +285,9 @@ namespace INPAR
             name, number, &list);
       }
 
+      StringParameter(
+          "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
+
       //  // parameters for AMG(BS)
       //  setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
       //                            "Relaxation factor for Braess-Sarazin smoother within AMGBS

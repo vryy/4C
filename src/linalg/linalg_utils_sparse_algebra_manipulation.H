@@ -209,13 +209,13 @@ namespace LINALG
   int InsertMyRowDiagonalIntoUnfilledMatrix(LINALG::SparseMatrix& mat, const Epetra_Vector& diag);
 
   /*!
-   \brief split a rowmap of matrix A
+   \brief Split an Epetra_Map and return the part complementary to \c Agiven
 
-   splits A->RowMap() into 2 maps, where one is given on input and the other map
+   Splits \c Amap into 2 maps, where one is given on input and the other map
    is created as complementary map. The complementary map is returned.
 
-   \param Amap      : Map to split on input
-   \param Agiven    : on entry submap that is given and part of Amap
+   \param[in] Amap      : Map to split on input
+   \param[in] Agiven    : on entry submap that is given and part of Amap
    \return the remainder map of Amap that is not overlapping with Agiven
    */
   Teuchos::RCP<Epetra_Map> SplitMap(const Epetra_Map& Amap, const Epetra_Map& Agiven);
