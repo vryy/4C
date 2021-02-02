@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "ad_fld_fbi_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_sparseoperator.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "ad_fld_fbi_movingboundary.H"
 #include "ad_fld_base_algorithm.H"
@@ -131,7 +132,8 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::FBIFluidMB::CreateFieldTest()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void ADAPTER::FBIFluidMB::SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix)
+void ADAPTER::FBIFluidMB::SetCouplingContributions(
+    Teuchos::RCP<const LINALG::SparseOperator> matrix)
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)
       ->SetCouplingContributions(matrix);
@@ -159,4 +161,10 @@ void ADAPTER::FBIFluidMB::SetItemax(int itemax) { FluidField()->SetItemax(itemax
 void ADAPTER::FBIFluidMB::ResetExternalForces()
 {
   Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->ResetExternalForces();
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const FLD::Meshtying> ADAPTER::FBIFluidMB::GetMeshtying()
+{
+  return Teuchos::rcp_dynamic_cast<ADAPTER::FluidFBI>(FluidField(), true)->GetMeshtying();
 }

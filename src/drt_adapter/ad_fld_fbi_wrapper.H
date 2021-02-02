@@ -13,10 +13,12 @@
 #include <Teuchos_RCP.hpp>
 
 #include "ad_fld_fluid_fsi.H"
+#include "../drt_fluid/fluid_meshtying.H"
 
 namespace LINALG
 {
   class Solver;
+  class SparseOperator;
 }  // namespace LINALG
 
 namespace IO
@@ -49,12 +51,14 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
 
     /**
      * \brief Resets the external forces acting on the fluid to zero
      */
     virtual void ResetExternalForces();
+
+    virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
   };
 }  // namespace ADAPTER
 

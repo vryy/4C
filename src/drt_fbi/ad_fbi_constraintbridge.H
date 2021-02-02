@@ -27,7 +27,8 @@ namespace DRT
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class SparseOperator;
+}  // namespace LINALG
 namespace BEAMINTERACTION
 {
   class BeamContactPair;
@@ -44,7 +45,11 @@ class Epetra_FEVector;
 namespace FBI
 {
   class BeamToFluidMeshtyingParams;
-}
+  namespace UTILS
+  {
+    class FBIAssemblyStrategy;
+  }
+}  // namespace FBI
 
 namespace ADAPTER
 {
@@ -64,12 +69,18 @@ namespace ADAPTER
 
    public:
     /// empty destructor
-    virtual ~FBIConstraintBridge(){};
+    virtual ~FBIConstraintBridge() = default;
 
     /**
      * \brief Initializes all members of the class
+     *
+     * \params[in] beam_map Row Map of the structure discretization
+     * \params[in} fluid_map Row Map of the fluid discretization
+     * \params[in] fluidmatrix system matrix of the fluid matrix in correct from
+     * \params[in] fluidmeshtying bool indicating if fluid meshtying is included
      */
-    virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map);
+    virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying);
 
     /**
      * \brief Computes the coupling matrices
@@ -129,7 +140,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const = 0;
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const = 0;
+    virtual Teuchos::RCP<const LINALG::SparseOperator> GetCff() const = 0;
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
     virtual Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const = 0;
@@ -151,6 +162,9 @@ namespace ADAPTER
 
     /// data container holding all beam interaction related parameters
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
+
+    /// Store the assembly strategy here to hand into the assembly manager
+    Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy_;
 
    private:
     /// meshtying pairs

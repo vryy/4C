@@ -23,7 +23,8 @@ namespace BEAMINTERACTION
 namespace LINALG
 {
   class SparseMatrix;
-}
+  class SparseOperator;
+}  // namespace LINALG
 namespace ADAPTER
 {
   /**
@@ -40,12 +41,13 @@ namespace ADAPTER
 
    public:
     /// empty destructor
-    virtual ~FBIConstraintBridgePenalty(){};
+    ~FBIConstraintBridgePenalty() override = default;
 
     /**
      * \brief Initializes all members of the class     *
      */
-    virtual void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map);
+    void Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+        Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying) override;
 
     /**
      * \brief Computes the coupling matrices
@@ -70,7 +72,7 @@ namespace ADAPTER
     Teuchos::RCP<const LINALG::SparseMatrix> GetCss() const override { return Css_; };
 
     /// Matrix containing only fluid side contributions \f$C_{ff}\f$
-    Teuchos::RCP<const LINALG::SparseMatrix> GetCff() const override { return Cff_; };
+    Teuchos::RCP<const LINALG::SparseOperator> GetCff() const override { return Cff_; };
 
     /// Matrix containing mixed fluid side contributions \f$C_{fs}\f$
     Teuchos::RCP<const LINALG::SparseMatrix> GetCfs() const override { return Cfs_; };
@@ -124,7 +126,7 @@ namespace ADAPTER
     Teuchos::RCP<LINALG::SparseMatrix> Css_;
 
     /// Coupling matrix containing only fluid side contributions \f$C_ff\f$
-    Teuchos::RCP<LINALG::SparseMatrix> Cff_;
+    Teuchos::RCP<LINALG::SparseOperator> Cff_;
 
     /// Coupling matrix containing mixed fluid side contributions \f$C_fs\f$
     Teuchos::RCP<LINALG::SparseMatrix> Cfs_;

@@ -8,6 +8,7 @@ constraint discretization approach
 */
 
 #include "beam_to_fluid_assembly_manager_factory.H"
+#include "fluid_assembly_strategy.H"
 #include "partitioned_penaltycoupling_assembly_manager_direct.H"
 #include "partitioned_penaltycoupling_assembly_manager_indirect.H"
 #include "beam_to_fluid_meshtying_params.H"
@@ -22,7 +23,8 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
     Teuchos::RCP<const DRT::Discretization> discretization1,
     Teuchos::RCP<const DRT::Discretization> discretization2,
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
-    const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr)
+    const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
+    Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy)
 {
   // Get the meshtying discretization method.
   INPAR::FBI::BeamToFluidDiscretization meshtying_discretization =
@@ -38,7 +40,7 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::CreateAssemblyManager(
     case INPAR::FBI::BeamToFluidDiscretization::gauss_point_to_segment:
       return Teuchos::rcp(
           new BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect(
-              interaction_pairs));
+              interaction_pairs, assemblystrategy));
       break;
     default:
       dserror("Beam To Fluid Meshtying Discretization Type not supported!");

@@ -127,10 +127,6 @@ void FLD::FluidImplicitTimeInt::Init()
   // -------------------------------------------------------------------
   // get the basic parameters first
   // -------------------------------------------------------------------
-  // genalpha integration scheme (afgenalpha or npgenalpha)
-  // move to adapterif (timealgo_==INPAR::FLUID::timeint_afgenalpha or
-  // timealgo_==INPAR::FLUID::timeint_npgenalpha)
-  // time-step size
   dtp_ = params_->get<double>("time step size");
 
   // parameter theta for time-integration schemes (required for all schemes)
@@ -320,9 +316,6 @@ void FLD::FluidImplicitTimeInt::Init()
   // rhs: standard (stabilized) residual vector (rhs for the incremental form)
   residual_ = LINALG::CreateVector(*dofrowmap, true);
   trueresidual_ = LINALG::CreateVector(*dofrowmap, true);
-
-  // right hand side vector for linearised solution;
-  //  rhs_ = LINALG::CreateVector(*dofrowmap,true);
 
   // Nonlinear iteration increment vector
   incvel_ = LINALG::CreateVector(*dofrowmap, true);
@@ -6610,11 +6603,31 @@ void FLD::FluidImplicitTimeInt::AddContributionToExternalLoads(
  * problems                                                                    |
  *----------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::SetCouplingContributions(
-    Teuchos::RCP<const LINALG::SparseMatrix> contributing_matrix)
+    Teuchos::RCP<const LINALG::SparseOperator> contributing_matrix)
 {
+  // Setup the "storage" for the coupling matrix contributions in the first step
   if (couplingcontributions_ == Teuchos::null)
-    couplingcontributions_ = Teuchos::rcp(new LINALG::SparseMatrix(
-        *discret_->DofRowMap(), 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
+  {
+    /* The system matrix has a different structure in the meshtying case. To be able to simple add
+  the additional contributions to the system matrix within every Newton step, this structure has to
+  be the same. Make sure you hand in the correct derived type!
+   */
+    if (params_->get<int>("MESHTYING") == INPAR::FLUID::no_meshtying)
+    {
+      if (Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(contributing_matrix, false) ==
+          Teuchos::null)
+        dserror(
+            "In the none-meshtying case you need to hand in a LINALG::SparseMatrx for the behavior "
+            "to be defined!");
+
+      couplingcontributions_ = Teuchos::rcp(new LINALG::SparseMatrix(
+          *discret_->DofRowMap(), 30, true, true, LINALG::SparseMatrix::FE_MATRIX));
+    }
+    else
+    {
+      couplingcontributions_ = meshtying_->InitSystemMatrix();
+    }
+  }
   // Note that we are passing the pointer to the coupling matrix here and do not copy the content!
   // So make sure the matrix contains the correct values at the moment of the assembly procedure!
   couplingcontributions_ = contributing_matrix;
@@ -6627,7 +6640,8 @@ void FLD::FluidImplicitTimeInt::AssembleCouplingContributions()
 {
   if (couplingcontributions_ != Teuchos::null)
   {
-    // For now we assume to have a linear matrix, so we add the matrix itself to the system matrix
+    // For now we assume to have a linear matrix, so we add the matrix itself to the system
+    // matrix
     sysmat_->Add(*couplingcontributions_, false, 1.0 / ResidualScaling(), 1.0);
 
     // Add the matrix multiplied with the solution of the last time step to the rhs

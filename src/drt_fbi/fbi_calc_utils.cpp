@@ -14,6 +14,8 @@
 #include "../drt_beam3/beam3_base.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

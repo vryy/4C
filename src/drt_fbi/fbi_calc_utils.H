@@ -12,6 +12,8 @@
 #define SRC_DRT_FBI_FBI_CALC_UTILS_H
 
 #include <vector>
+#include <Epetra_FEVector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {
@@ -23,6 +25,8 @@ namespace LINALG
 {
   class SerialDenseVector;
   class SerialDenseMatrix;
+  class SparseOperator;
+  class SparseMatrix;
 }  // namespace LINALG
 
 namespace FBI
