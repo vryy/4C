@@ -22,7 +22,6 @@
 
 
 /*----------------------------------------------------------------------*
- | copy conditions to scatra discretization (public)      schmidt 09/17 |
  *----------------------------------------------------------------------*/
 std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::ConditionsToCopy()
 {
@@ -73,13 +72,24 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
   return conditions_to_copy;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::ConditionsToCopy()
+{
+  std::map<std::string, std::string> conditions_to_copy;
+
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("SSISurfaceManifold", "SSISurfaceManifold"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("ScaTraManifoldInitfield", "Initfield"));
+
+  return conditions_to_copy;
+}
+
 
 /*----------------------------------------------------------------------*
- | return SCATRA::ImplType of element (public)            schmidt 09/17 |
  *----------------------------------------------------------------------*/
-INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(
-    DRT::Element* ele  //! element whose SCATRA::ImplType shall be determined
-)
+INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(DRT::Element* ele)
 {
   INPAR::SCATRA::ImplType impltype(INPAR::SCATRA::impltype_undefined);
 
@@ -172,7 +182,6 @@ INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(
 
 
 /*----------------------------------------------------------------------*
- | check if material type is admissible (protected)       schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategy::CheckMaterialType(const int matid)
 {
@@ -188,7 +197,6 @@ void SSI::ScatraStructureCloneStrategy::CheckMaterialType(const int matid)
 
 
 /*----------------------------------------------------------------------*
- | set the element data (protected)                       schmidt 09/17 |
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategy::SetElementData(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
@@ -213,12 +221,10 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
     {
       dserror(
           "ScatraStructureCloneStrategy copies scatra discretization from structure "
-          "discretization, but the "
-          "STRUCTURE elements that are defined in the .dat file are either not meant to be copied "
-          "to scatra elements "
-          "or the ImplType is set 'Undefined' which is not meaningful for the created scatra "
-          "discretization! "
-          "Use SOLIDSCATRA, WALLSCATRA or SHELLSCATRA elements with meaningful ImplType instead!");
+          "discretization, but the STRUCTURE elements that are defined in the .dat file are "
+          "either not meant to be copied to scatra elements or the ImplType is set 'Undefined' "
+          "which is not meaningful for the created scatra discretization! Use SOLIDSCATRA, "
+          "WALLSCATRA or SHELLSCATRA elements with meaningful ImplType instead!");
     }
     else
       trans->SetImplType(impltype);
@@ -229,9 +235,28 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+{
+  // note: SetMaterial() was reimplemented by the transport element!
+  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  if (trans != nullptr and oldele->ElementType().Name() == "StructuralSurfaceType")
+  {
+    // set material
+    trans->SetMaterial(matid, oldele);
+    // set distype as well!
+    trans->SetDisType(oldele->Shape());
+    // so far, only scatra on manifolds only with one scalar
+    trans->SetImplType(INPAR::SCATRA::impltype_std);
+  }
+  else
+    dserror("unsupported element type");
+}
+
 
 /*----------------------------------------------------------------------*
- | determine the element type (protected)                 schmidt 09/17 |
  *----------------------------------------------------------------------*/
 bool SSI::ScatraStructureCloneStrategy::DetermineEleType(
     DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)

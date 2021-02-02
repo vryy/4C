@@ -276,6 +276,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
   reader.ReadGidSection("--ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
   reader.ReadGidSection("--SSI CONTROL", *list);
+  reader.ReadGidSection("--SSI CONTROL/MANIFOLD", *list);
   reader.ReadGidSection("--SSI CONTROL/MONOLITHIC", *list);
   reader.ReadGidSection("--SSI CONTROL/PARTITIONED", *list);
   reader.ReadGidSection("--SSTI CONTROL", *list);
@@ -2089,6 +2090,16 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
       AddDis("structure", structdis);
       AddDis("scatra", scatradis);
+
+      // consider case of additional scatra manifold
+      if (DRT::INPUT::IntegralValue<bool>(SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD"))
+      {
+        auto scatra_surface_dis =
+            Teuchos::rcp(new DRT::Discretization("scatra_surface", reader.Comm()));
+        scatra_surface_dis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(scatra_surface_dis)));
+        AddDis("scatra_manifold", scatra_surface_dis);
+      }
 
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));

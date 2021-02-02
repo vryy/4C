@@ -11,9 +11,10 @@
 
 #include "drt_validparameters.H"
 #include "inpar_ssi.H"
+#include "inpar_scatra.H"
 #include "../drt_lib/drt_conditiondefinition.H"
-#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_equilibrate.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -166,10 +167,33 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "average stress at master and slave side to smooth out errors from discretization and "
       "non-zero residuals for output of stress.",
       &ssidynmono);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for SSI with manifold */
+  /*----------------------------------------------------------------------*/
+
+  Teuchos::ParameterList& ssidynmanifold = ssidyn.sublist("MANIFOLD", false,
+      "Monolithic Structure Scalar Interaction with additional scalar transport on manifold");
+
+  BoolParameter("ADD_MANIFOLD", "no", "activate additional manifold?", &ssidynmanifold);
+
+
+  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+      "Initial field for scalar transport on manifold",
+      tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
+      tuple<int>(INPAR::SCATRA::initfield_zero_field, INPAR::SCATRA::initfield_field_by_function,
+          INPAR::SCATRA::initfield_field_by_condition),
+      &ssidynmanifold);
+
+  IntParameter("INITFUNCNO", -1, "function number for scalar transport on manifold initial field",
+      &ssidynmanifold);
+
+  IntParameter(
+      "LINEAR_SOLVER", -1, "linear solver for scalar transport on manifold", &ssidynmanifold);
 }
 
-
-
+/*--------------------------------------------------------------------
+--------------------------------------------------------------------*/
 void INPAR::SSI::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
@@ -326,4 +350,28 @@ void INPAR::SSI::SetValidConditions(
     ssiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
 
   condlist.push_back(ssiinterfacemeshtying3domainintersection);
+
+  /*--------------------------------------------------------------------*/
+  // condition, where addidional scatra field on manifold is created
+  auto ssisurfacemanifold = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SSI MANIFOLD SURF CONDITIONS", "SSISurfaceManifold", "scalar transport on manifold",
+      DRT::Condition::SSISurfaceManifold, true, DRT::Condition::Surface));
+
+  ssisurfacemanifold->AddComponent(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  condlist.emplace_back(ssisurfacemanifold);
+
+  /*--------------------------------------------------------------------*/
+  // initial field by condition for scatra on manifold
+  auto surfmanifoldinitfields =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF SCATRA MANIFOLD INITIAL FIELD CONDITIONS",
+          "ScaTraManifoldInitfield", "Surface ScaTra Manifold Initfield",
+          DRT::Condition::SurfaceInitfield, false, DRT::Condition::Surface));
+
+  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new StringConditionComponent("Field", "ScaTra",
+      Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"))));
+
+  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
+
+  condlist.emplace_back(surfmanifoldinitfields);
 }

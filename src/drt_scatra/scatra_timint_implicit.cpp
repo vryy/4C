@@ -3799,7 +3799,7 @@ bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
       structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
 
       // do mesh tying if there is at least one mesh tying condition
-      if (!ssiconditions.empty()) IsS2IMeshtying = true;
+      if (!ssiconditions.empty() and Discretization()->Name() == "scatra") IsS2IMeshtying = true;
       break;
     }
     case prb_ssti:

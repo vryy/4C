@@ -34,8 +34,8 @@
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::Init(const int ndim,  /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,           /// underlying structure discretization
-    Teuchos::RCP<DRT::Discretization> scatradis            /// underlying scatra discretization
-)
+    Teuchos::RCP<DRT::Discretization> scatradis,           /// underlying scatra discretization
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis)
 {
   SetIsSetup(false);
 
@@ -44,7 +44,7 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,  /// dimension of the 
   // build a proxy of the scatra discretization for the structure field
   Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
 
-  // check if scatra field has 2 discretizations, so that coupling is possible
+  // add proxy dofssets of other fields to discretizations and check if number of dofsets is correct
   if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
   if (structdis->AddDofSet(scatradofset) != 1) dserror("unexpected dof sets in structure field");
 
@@ -132,7 +132,17 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
   structdis.SetState(1, "scalarfield", phi);
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetTemperatureField(
+    DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
+{
+  structdis.SetState(2, "tempfield", temp);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolumeAndBoundary::SetTemperatureField(
     DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
 {
   structdis.SetState(2, "tempfield", temp);
@@ -142,8 +152,8 @@ void SSI::SSICouplingMatchingVolume::SetTemperatureField(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::Init(const int ndim,  /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,  /// underlying structure discretization
-    Teuchos::RCP<DRT::Discretization> scatradis   /// underlying scatra discretization
-)
+    Teuchos::RCP<DRT::Discretization> scatradis,  /// underlying scatra discretization
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis)
 {
   SetIsSetup(false);
 
@@ -265,8 +275,8 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::Init(const int ndim,  /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,  /// underlying structure discretization
-    Teuchos::RCP<DRT::Discretization> scatradis   /// underlying scatra discretization
-)
+    Teuchos::RCP<DRT::Discretization> scatradis,  /// underlying scatra discretization
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis)
 {
   SetIsSetup(false);
 
@@ -378,8 +388,8 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarField(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,  /// dimension of the problem
     Teuchos::RCP<DRT::Discretization> structdis,  /// underlying structure discretization
-    Teuchos::RCP<DRT::Discretization> scatradis   /// underlying scatra discretization
-)
+    Teuchos::RCP<DRT::Discretization> scatradis,  /// underlying scatra discretization
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis)
 {
   SetIsSetup(false);
 
@@ -387,65 +397,102 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,  /// dimens
   //        is the same externally! The best thing is if you do this in your *_dyn.cpp,
   //        i.e., your global control algorithm.
 
+  if (scatra_manifold_dis == Teuchos::null)
   {
-    // get condition which defines the coupling on target discretization
-    std::vector<DRT::Condition*> conds_struct;
-    structdis->GetCondition("SSICouplingSolidToScatra", conds_struct);
+    {
+      // get condition which defines the coupling on target discretization
+      std::vector<DRT::Condition*> conds_struct;
+      structdis->GetCondition("SSICouplingSolidToScatra", conds_struct);
 
-    // get condition which defines the coupling on source discretization
-    std::vector<DRT::Condition*> conds_scatra;
-    scatradis->GetCondition("SSICouplingSolidToScatra", conds_scatra);
+      // get condition which defines the coupling on source discretization
+      std::vector<DRT::Condition*> conds_scatra;
+      scatradis->GetCondition("SSICouplingSolidToScatra", conds_scatra);
 
-    // at least one condition needs to be defined on each discretization
-    if (conds_struct.size() == 0 or conds_scatra.size() == 0)
-      dserror("No coupling condition defined on one or both structure or scatra discretization!");
+      // at least one condition needs to be defined on each discretization
+      if (conds_struct.size() == 0 or conds_scatra.size() == 0)
+        dserror("No coupling condition defined on one or both structure or scatra discretization!");
+
+      std::set<int> couplingids;
+      for (unsigned i = 0; i < conds_struct.size(); ++i)
+        couplingids.insert(conds_struct[i]->GetInt("coupling id"));
+
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structgidmatchingdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+
+      Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_scatra =
+          Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+              structgidmatchingdofset, structdis, "SSICouplingSolidToScatra", couplingids));
+
+      // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
+      if (scatradis->AddDofSet(newdofset_scatra) != 1)
+        dserror("unexpected dof sets in scatra field");
+    }
+
+    {
+      // get condition which defines the coupling on target discretization
+      std::vector<DRT::Condition*> conds_struct;
+      structdis->GetCondition("SSICouplingScatraToSolid", conds_struct);
+
+      // get condition which defines the coupling on source discretization
+      std::vector<DRT::Condition*> conds_scatra;
+      scatradis->GetCondition("SSICouplingScatraToSolid", conds_scatra);
+
+      // at least one condition needs to be defined on each discretization
+      if (conds_struct.size() == 0 or conds_scatra.size() == 0)
+        dserror("No coupling condition defined on one or both structure or scatra discretization!");
+
+      std::set<int> couplingids;
+      for (unsigned i = 0; i < conds_struct.size(); ++i)
+        couplingids.insert(conds_struct[i]->GetInt("coupling id"));
+
+      Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatragidmatchingdofset =
+          Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
+
+      for (std::set<int>::iterator it = couplingids.begin(); it != couplingids.end(); ++it)
+      {
+        std::set<int> tempset;
+        tempset.insert(*it);
+
+        Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_struct =
+            Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+                scatragidmatchingdofset, scatradis, "SSICouplingScatraToSolid", tempset));
+
+        structdis->AddDofSet(newdofset_struct);
+      }
+    }
+  }
+  else
+  {
+    // build a proxy of the structure discretization for the scatra field
+    Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+    // build a proxy of the scatra discretization for the structure field
+    Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+
+    // add proxy dofssets of other fields to discretizations and check if number of dofsets is
+    // correct
+    if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
+    if (structdis->AddDofSet(scatradofset) != 1) dserror("unexpected dof sets in structure field");
+
+    std::vector<DRT::Condition*> conds;
+    structdis->GetCondition("SSISurfaceManifold", conds);
 
     std::set<int> couplingids;
-    for (unsigned i = 0; i < conds_struct.size(); ++i)
-      couplingids.insert(conds_struct[i]->GetInt("coupling id"));
+    for (auto& cond : conds) couplingids.insert(cond->GetInt("coupling id"));
 
-    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> structgidmatchingdofset =
-        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+    auto newdofset_scatra = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+        structdis->GetDofSetProxy(), structdis, "SSISurfaceManifold", couplingids));
 
-    Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_scatra =
-        Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-            structgidmatchingdofset, structdis, "SSICouplingSolidToScatra", couplingids));
-
-    // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
-    if (scatradis->AddDofSet(newdofset_scatra) != 1) dserror("unexpected dof sets in scatra field");
+    if (scatra_manifold_dis->AddDofSet(newdofset_scatra) != 1)
+      dserror("unexpected dof sets in scatra surface field");
   }
 
+  if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
   {
-    // get condition which defines the coupling on target discretization
-    std::vector<DRT::Condition*> conds_struct;
-    structdis->GetCondition("SSICouplingScatraToSolid", conds_struct);
+    const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
-    // get condition which defines the coupling on source discretization
-    std::vector<DRT::Condition*> conds_scatra;
-    scatradis->GetCondition("SSICouplingScatraToSolid", conds_scatra);
-
-    // at least one condition needs to be defined on each discretization
-    if (conds_struct.size() == 0 or conds_scatra.size() == 0)
-      dserror("No coupling condition defined on one or both structure or scatra discretization!");
-
-    std::set<int> couplingids;
-    for (unsigned i = 0; i < conds_struct.size(); ++i)
-      couplingids.insert(conds_struct[i]->GetInt("coupling id"));
-
-    Teuchos::RCP<DRT::DofSetGIDBasedWrapper> scatragidmatchingdofset =
-        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
-
-    for (std::set<int>::iterator it = couplingids.begin(); it != couplingids.end(); ++it)
-    {
-      std::set<int> tempset;
-      tempset.insert(*it);
-
-      Teuchos::RCP<DRT::DofSetDefinedMappingWrapper> newdofset_struct =
-          Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-              scatragidmatchingdofset, scatradis, "SSICouplingScatraToSolid", tempset));
-
-      structdis->AddDofSet(newdofset_struct);
-    }
+    Teuchos::RCP<DRT::DofSetInterface> dofsettemp =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
+    if (structdis->AddDofSet(dofsettemp) != 2) dserror("unexpected dof sets in structure field");
   }
 
   // exchange material pointers for coupled material formulations

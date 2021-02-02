@@ -9,30 +9,33 @@
 
 #include "ssi_base.H"
 
-#include "ssi_partitioned.H"
+#include "ssi_clonestrategy.H"
 #include "ssi_coupling.H"
+#include "ssi_partitioned.H"
 #include "ssi_resulttest.H"
-#include "ssi_utils.H"
 #include "ssi_str_model_evaluator_partitioned.H"
+#include "ssi_utils.H"
 
-#include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/ad_str_structure_new.H"
-#include "../drt_adapter/ad_str_factory.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
-
-#include "../drt_lib/drt_globalproblem.H"
-// for cloning
-#include "../drt_lib/drt_utils_createdis.H"
-#include "ssi_clonestrategy.H"
+#include "../drt_adapter/ad_str_factory.H"
+#include "../drt_adapter/ad_str_ssiwrapper.H"
+#include "../drt_adapter/ad_str_structure_new.H"
 
 #include "../drt_inpar/inpar_volmortar.H"
+
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_vector.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+
+#include "../drt_lib/drt_utils_parallel.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -44,14 +47,18 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       icoup_structure_3_domain_intersection_(Teuchos::null),
       isinit_(false),
       issetup_(false),
+      is_scatra_manifold_(
+          DRT::INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       iter_(0),
       maps_coup_struct_(Teuchos::null),
       maps_coup_struct_3_domain_intersection_(Teuchos::null),
       map_structure_condensed_(Teuchos::null),
+      map_structure_manifold_(Teuchos::null),
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
           "MESHTYING_3_DOMAIN_INTERSECTION")),
       scatra_base_algorithm_(Teuchos::null),
+      scatra_manifold_base_algorithm_(Teuchos::null),
       slave_side_converter_(Teuchos::null),
       ssicoupling_(Teuchos::null),
       ssiinterfacemeshtying_(
@@ -63,7 +70,8 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
       temperature_vector_(Teuchos::null),
       use_old_structure_(false),  // todo temporary flag
-      zeros_(Teuchos::null)
+      zeros_structure_(Teuchos::null),
+      zeros_structure_manifold_(Teuchos::null)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -75,7 +83,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
     const std::string struct_disname, const std::string scatra_disname, bool isAle)
 {
@@ -84,9 +92,6 @@ int SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
 
   // get the global problem
   DRT::Problem* problem = DRT::Problem::Instance();
-
-  // get the solver number used for ScalarTransport solver
-  const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   // 3.- Create the two uncoupled subproblems.
   // access the structural discretization
@@ -106,6 +111,9 @@ int SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
     structtimeparams = &structparams;
     scatratimeparams = &scatraparams;
   }
+
+  // do discretization specific setup (e.g. clone discr. scatra from structure)
+  InitDiscretizations(comm, struct_disname, scatra_disname);
 
   // we do not construct a structure here, in case it
   // was built externally and handed into this object.
@@ -161,19 +169,26 @@ int SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
 
   }  // if structure_ not set from outside
 
-  // create scatra field
-  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-
-  // do discretization specific setup (e.g. clone discr. scatra from structure)
-  InitDiscretizations(comm, struct_disname, scatra_disname);
-
-  // initialize scatra base algorithm.
+  // create and initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
+  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   ScaTraBaseAlgorithm()->Init(*scatratimeparams, scatraparams,
-      problem->SolverParams(linsolvernumber), scatra_disname, isAle);
+      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
 
-  int redistribute = InitFieldCoupling(comm, struct_disname, scatra_disname);
+  // create and initialize scatra base algorithm for manifolds
+  if (IsScaTraManifold())
+  {
+    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+
+    ScaTraManifoldBaseAlgorithm()->Init(*scatratimeparams,
+        SSI::UTILS::CloneScaTraManifoldParams(
+            scatraparams, globaltimeparams.sublist("MANIFOLD"), Comm()),
+        problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
+        "scatra_manifold", isAle);
+  }
+
+  const int redistribution_type = InitFieldCoupling(comm, struct_disname, scatra_disname);
 
   // is adaptive time stepping activated?
   if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
@@ -195,7 +210,7 @@ int SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
   // set isinit_ flag true
   SetIsInit(true);
 
-  return redistribute;
+  if (redistribution_type != static_cast<int>(SSI::none)) Redistribute(redistribution_type);
 }
 
 /*----------------------------------------------------------------------*
@@ -211,6 +226,7 @@ void SSI::SSIBase::Setup()
 
   // set up scalar transport field
   ScaTraField()->Setup();
+  if (IsScaTraManifold()) ScaTraManifold()->Setup();
 
   // only relevant for new structural time integration
   // only if adapter base has not already been set up outside
@@ -266,9 +282,6 @@ void SSI::SSIBase::Setup()
     dserror("Scalar transport discretization does not have any degrees of freedom!");
   if (structure_->DofRowMap()->NumGlobalElements() == 0)
     dserror("Structure discretization does not have any degrees of freedom!");
-
-  // construct vector of zeroes
-  zeros_ = LINALG::CreateVector(*structure_->DofRowMap());
 
   // set up materials
   ssicoupling_->AssignMaterialPointers(
@@ -340,6 +353,45 @@ void SSI::SSIBase::Setup()
     }
   }
 
+  // create map of dofs on structure discretization that have the same nodes as manifold (scatra)
+  if (IsScaTraManifold())
+  {
+    std::vector<DRT::Condition*> conditions(0, nullptr);
+    StructureField()->Discretization()->GetCondition("SSISurfaceManifold", conditions);
+    if (!conditions.size()) dserror("Condition SSISurfaceManifold not found");
+
+    // Build GID vector of nodes on this proc, sort, and remove duplicates
+    std::vector<int> condition_node_vec;
+    for (auto* condition : conditions)
+    {
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          StructureField()->Discretization(), *condition->Nodes(), condition_node_vec);
+    }
+    DRT::UTILS::SortAndRemoveDuplicateVectorElements(condition_node_vec);
+
+    // Build GID vector of dofs
+    std::vector<int> condition_dof_vec;
+    for (int condidtion_node : condition_node_vec)
+    {
+      const int dim = StructureField()->Discretization()->gNode(condidtion_node)->Dim();
+      for (int j = 0; j < dim; ++j) condition_dof_vec.emplace_back(condidtion_node * dim + j);
+    }
+
+    // maps of conditioned dofs and other dofs
+    const auto condition_dof_map = Teuchos::rcp(
+        new const Epetra_Map(-1, condition_dof_vec.size(), &condition_dof_vec[0], 0, Comm()));
+    const auto non_condition_dof_map =
+        LINALG::SplitMap(*StructureField()->Discretization()->DofRowMap(), *condition_dof_map);
+
+    map_structure_manifold_ = Teuchos::rcp(new LINALG::MapExtractor(
+        *StructureField()->DofRowMap(), non_condition_dof_map, condition_dof_map));
+  }
+
+  // construct vector of zeroes
+  zeros_structure_ = LINALG::CreateVector(*structure_->DofRowMap());
+  zeros_structure_manifold_ =
+      IsScaTraManifold() ? LINALG::CreateVector(*map_structure_manifold_->Map(0)) : Teuchos::null;
+
   // set flag
   SetIsSetup(true);
 }
@@ -355,13 +407,13 @@ void SSI::SSIBase::InitDiscretizations(
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  // 1.-Initialization.
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
+  auto structdis = problem->GetDis(struct_disname);
+  auto scatradis = problem->GetDis(scatra_disname);
 
   if (scatradis->NumGlobalNodes() == 0)
   {
-    if (fieldcoupling_ != INPAR::SSI::coupling_volume_match)
+    if (fieldcoupling_ != INPAR::SSI::coupling_volume_match and
+        fieldcoupling_ != INPAR::SSI::coupling_volumeboundary_match)
     {
       dserror(
           "If 'FIELDCOUPLING' is NOT 'volume_matching' in the SSI CONTROL section cloning of the "
@@ -372,6 +424,22 @@ void SSI::SSIBase::InitDiscretizations(
     // fill scatra discretization by cloning structure discretization
     DRT::UTILS::CloneDiscretization<SSI::ScatraStructureCloneStrategy>(structdis, scatradis);
     scatradis->FillComplete();
+
+    // create discretization for scatra manifold based on SSISurfaceManifold condition
+    if (IsScaTraManifold())
+    {
+      auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
+      DRT::UTILS::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
+          *structdis, *scatra_manifold_dis, "SSISurfaceManifold");
+      {
+        std::map<std::string, std::string> conditions_to_copy;
+        conditions_to_copy.insert(
+            std::pair<std::string, std::string>("SSISurfaceManifold", "ScatraPartitioning"));
+        DRT::UTILS::DiscretizationCreatorBase creator;
+        creator.CopyConditions(*structdis, *scatra_manifold_dis, conditions_to_copy);
+      }
+      scatra_manifold_dis->FillComplete();
+    }
   }
   else
   {
@@ -379,12 +447,10 @@ void SSI::SSIBase::InitDiscretizations(
     {
       dserror(
           "Reading a TRANSPORT discretization from the .dat file for the input parameter "
-          "'FIELDCOUPLING volume_matching' in the"
-          "SSI CONTROL section is not supported! As this coupling relies on matching node (and "
-          "sometimes element) IDs,"
-          "the ScaTra discretization is cloned from the structure discretization. Delete the "
-          "ScaTra discretization"
-          "from your input file.");
+          "'FIELDCOUPLING volume_matching' in the SSI CONTROL section is not supported! As this "
+          "coupling relies on matching node (and sometimes element) IDs, the ScaTra discretization "
+          "is cloned from the structure discretization. Delete the ScaTra discretization from your "
+          "input file.");
     }
 
     // copy conditions
@@ -426,8 +492,10 @@ int SSI::SSIBase::InitFieldCoupling(
   int redistribution_required = (int)SSI::none;
 
   DRT::Problem* problem = DRT::Problem::Instance();
-  Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis(struct_disname);
-  Teuchos::RCP<DRT::Discretization> scatradis = problem->GetDis(scatra_disname);
+  auto structdis = problem->GetDis(struct_disname);
+  auto scatradis = problem->GetDis(scatra_disname);
+  Teuchos::RCP<DRT::Discretization> scatra_manifold_dis(Teuchos::null);
+  if (IsScaTraManifold()) scatra_manifold_dis = problem->GetDis("scatra_manifold");
 
   // safety check
   {
@@ -441,8 +509,7 @@ int SSI::SSIBase::InitFieldCoupling(
     {
       dserror(
           "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
-          "'boundary_nonmatching' "
-          "or 'volumeboundary_matching' in SSI DYNAMIC section. ");
+          "'boundary_nonmatching' or 'volumeboundary_matching' in SSI DYNAMIC section. ");
     }
 
     if (fieldcoupling_ == INPAR::SSI::coupling_volume_nonmatch)
@@ -457,6 +524,8 @@ int SSI::SSIBase::InitFieldCoupling(
             "risk.");
       }
     }
+    if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::coupling_volumeboundary_match)
+      dserror("Solving manifolds only in combination with matching volumes and boundaries");
   }
 
   // build SSI coupling class
@@ -483,7 +552,7 @@ int SSI::SSIBase::InitFieldCoupling(
   }
 
   // initialize coupling objects including dof sets
-  ssicoupling_->Init(problem->NDim(), structdis, scatradis);
+  ssicoupling_->Init(problem->NDim(), structdis, scatradis, scatra_manifold_dis);
 
   return redistribution_required;
 }
@@ -504,12 +573,14 @@ void SSI::SSIBase::ReadRestart(int restart)
     if (not restartfromstructure)  // standard restart
     {
       ScaTraField()->ReadRestart(restart);
+      if (IsScaTraManifold()) ScaTraManifold()->ReadRestart(restart);
     }
     else  // restart from structure simulation
     {
       // Since there is no restart output for the scatra fiels available, we only have to fix the
       // time and step counter
       ScaTraField()->SetTimeStep(structure_->TimeOld(), restart);
+      if (IsScaTraManifold()) ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restart);
     }
 
     SetTimeStep(structure_->TimeOld(), restart);
@@ -526,6 +597,9 @@ void SSI::SSIBase::ReadRestart(int restart)
  *----------------------------------------------------------------------*/
 void SSI::SSIBase::ReadRestartfromTime(double restarttime)
 {
+  if (IsScaTraManifold())
+    dserror("Restart from Time not supported for SSI with additional manifold.");
+
   if (restarttime > 0.0)
   {
     const int restartstructure = SSI::UTILS::CheckTimeStepping(structure_->Dt(), restarttime);
@@ -565,6 +639,8 @@ void SSI::SSIBase::TestResults(const Epetra_Comm& comm) const
 
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(ScaTraBaseAlgorithm()->CreateScaTraFieldTest());
+  if (IsScaTraManifold())
+    problem->AddFieldTest(ScaTraManifoldBaseAlgorithm()->CreateScaTraFieldTest());
   problem->AddFieldTest(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
   problem->TestAll(comm);
 }
@@ -618,7 +694,12 @@ void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
   CheckIsInit();
   CheckIsSetup();
 
-  ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_, vel);
+  ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
+  if (IsScaTraManifold())
+  {
+    ssicoupling_->SetVelocityFields(ScaTraManifoldBaseAlgorithm(), zeros_structure_manifold_,
+        MapStructureManifold()->ExtractVector(vel, 0));
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -630,6 +711,11 @@ void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
   CheckIsSetup();
 
   ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), disp);
+  if (IsScaTraManifold())
+  {
+    ssicoupling_->SetMeshDisp(
+        ScaTraManifoldBaseAlgorithm(), MapStructureManifold()->ExtractVector(disp, 0));
+  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -648,7 +734,62 @@ void SSI::SSIBase::SetDtFromScaTraToStructure()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void SSI::SSIBase::Redistribute(const int redsitribution_type)
+{
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  auto structdis = problem->GetDis("structure");
+  auto scatradis = problem->GetDis("scatra");
+  if (redsitribution_type == static_cast<int>(SSI::match))
+  {
+    if (IsScaTraManifold())
+    {
+      std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+      dis.push_back(structdis);
+      DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+
+      DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(*structdis,
+          *problem->GetDis("scatra_manifold"), "SSISurfaceManifold", "SSISurfaceManifold");
+
+      DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*structdis, *scatradis);
+
+      structdis->ExportColumnNodes(*scatradis->NodeColMap());
+    }
+    else
+    {
+      // first we bin the scatra discretization
+      std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+      dis.push_back(scatradis);
+      DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+
+      DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
+          *scatradis, *scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
+
+      // now we redistribute the structure dis to match the scatra dis
+      DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
+    }
+  }
+  else if (redsitribution_type == static_cast<int>(SSI::binning))
+  {
+    // create vector of discr.
+    std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+    dis.push_back(structdis);
+    dis.push_back(scatradis);
+
+    DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
 {
   return scatra_base_algorithm_->ScaTraField();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
+{
+  return scatra_manifold_base_algorithm_->ScaTraField();
 }

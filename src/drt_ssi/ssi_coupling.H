@@ -37,8 +37,8 @@ namespace SSI
     //! Init
     virtual void Init(const int ndim,                 //!< dimension of the problem
         Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-        ) = 0;
+        Teuchos::RCP<DRT::Discretization> scatradis,  //!< underlying scatra discretization
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) = 0;
 
     //! \brief setup this class
     virtual void Setup() = 0;
@@ -86,8 +86,8 @@ namespace SSI
     //! Init
     virtual void Init(const int ndim,                 //!< dimension of the problem
         Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+        Teuchos::RCP<DRT::Discretization> scatradis,  //!< underlying scatra discretization
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
 
     //! \brief setup this class
     virtual void Setup();
@@ -171,8 +171,8 @@ namespace SSI
     //! Setup
     virtual void Init(const int ndim,                 //!< dimension of the problem
         Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+        Teuchos::RCP<DRT::Discretization> scatradis,  //!< underlying scatra discretization
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
 
     //! \brief setup this class
     virtual void Setup();
@@ -271,8 +271,8 @@ namespace SSI
     //! Init
     virtual void Init(const int ndim,                 //!< dimension of the problem
         Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+        Teuchos::RCP<DRT::Discretization> scatradis,  //!< underlying scatra discretization
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
 
     //! \brief setup this class
     virtual void Setup();
@@ -361,8 +361,8 @@ namespace SSI
     //!        i.e., your global control algorithm.
     virtual void Init(const int ndim,                 //!< dimension of the problem
         Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+        Teuchos::RCP<DRT::Discretization> scatradis,  //!< underlying scatra discretization
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
 
     //! \brief setup this class
     virtual void Setup();
@@ -391,10 +391,8 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
     );
 
-    void SetTemperatureField(DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
-    {
-      dserror("only for matching nodes");
-    };
+    void SetTemperatureField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp);
 
    private:
     //! flag indicating if class is setup

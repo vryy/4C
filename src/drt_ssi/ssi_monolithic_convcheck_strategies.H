@@ -79,12 +79,13 @@ namespace SSI
 
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
-   private:
-    ConvCheckStrategyStd(const ConvCheckStrategyStd& old);
-
+   protected:
     //! get L2 norms from scatra field and check if they are reasonable
     void GetAndCheckL2NormScaTra(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+   private:
+    ConvCheckStrategyStd(const ConvCheckStrategyStd& old);
   };  // class ConvCheckStrategyStd
 
 
@@ -103,9 +104,7 @@ namespace SSI
 
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
-   private:
-    ConvCheckStrategyElch(const ConvCheckStrategyElch& old);
-
+   protected:
     //! get L2 norms from concentration field and check if they are reasonable
     void GetAndCheckL2NormConc(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
@@ -113,6 +112,35 @@ namespace SSI
     //! get L2 norms from potential field and check if they are reasonable
     void GetAndCheckL2NormPot(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+   private:
+    ConvCheckStrategyElch(const ConvCheckStrategyElch& old);
+  };  // class ConvCheckStrategyElch
+
+  /*!
+ \brief specific strategy for Newton-Raphson convergence check for monolithic scalar-structure
+ interaction problems involving electrochemistry
+
+ */
+  class SSIMono::ConvCheckStrategyElchScaTraManifold : public SSIMono::ConvCheckStrategyElch
+  {
+   public:
+    ConvCheckStrategyElchScaTraManifold(const Teuchos::ParameterList& global_time_parameters)
+        : ConvCheckStrategyElch(global_time_parameters){};
+
+    ~ConvCheckStrategyElchScaTraManifold() override = default;
+
+    bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
+
+   protected:
+    //! get L2 norms from scatra manifold and check if they are reasonable
+    void GetAndCheckL2NormScaTraManifold(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+   private:
+    ConvCheckStrategyElchScaTraManifold(const ConvCheckStrategyElch& old);
+
+
   };  // class ConvCheckStrategyElch
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_CONVCHECK_STRATEGIES_H

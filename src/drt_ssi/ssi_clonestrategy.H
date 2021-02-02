@@ -68,5 +68,14 @@ namespace SSI
         const bool isnurbs                  //! nurbs flag
     );
   };  // class ScatraStructureCloneStrategy
+
+  class ScatraStructureCloneStrategyManifold : public ScatraStructureCloneStrategy
+  {
+   public:
+    std::map<std::string, std::string> ConditionsToCopy() override;
+
+    void SetElementData(Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid,
+        const bool isnurbs) override;
+  };
 }  // namespace SSI
 #endif
