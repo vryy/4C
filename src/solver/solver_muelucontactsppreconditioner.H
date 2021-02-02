@@ -29,7 +29,7 @@
 #include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
 #include "muelu/MueLu_ContactSPRepartitionInterface_fwd.hpp"
 
-#else  // TRILINOS_Q1_2015
+#else  // not TRILINOS_Q1_2015
 
 // MueLu
 #include <MueLu_Hierarchy.hpp>

@@ -171,7 +171,7 @@ typedef LocalOrdinal LO;
 typedef GlobalOrdinal GO;
 typedef Node NO;
 
-#else  // TRILINOS_Q1_2015
+#else  // not TRILINOS_Q1_2015
 
 #include "muelu/muelu_utils.H"
 
