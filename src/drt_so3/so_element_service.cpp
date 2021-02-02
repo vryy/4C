@@ -9,6 +9,7 @@
 #include "so_element_service.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include "so_hex8.H"
+#include "so_tet10.H"
 
 template <class T>
 void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data,
@@ -85,6 +86,8 @@ void DRT::ELEMENTS::AssembleNodalElementCount(
 // explicit template instantiations
 template void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector&,
     const LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>&, const DRT::ELEMENTS::So_base*, bool);
+template void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector&,
+    const LINALG::Matrix<NUMNOD_SOTET10, MAT::NUM_STRESS_3D>&, const DRT::ELEMENTS::So_base*, bool);
 template void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(
     Epetra_MultiVector&, const LINALG::SerialDenseMatrix&, const DRT::ELEMENTS::So_base*, bool);
 

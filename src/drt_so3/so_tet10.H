@@ -337,7 +337,9 @@ namespace DRT
         calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
         prestress_update,
         postprocess_stress,
-        calc_global_gpstresses_map
+        calc_global_gpstresses_map,
+        struct_init_gauss_point_data_output,
+        struct_gauss_point_data_output
       };
 
 
@@ -416,6 +418,17 @@ namespace DRT
           LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D>& stresses,  ///< gp stresses
           Epetra_MultiVector& expolstresses                              ///< nodal stresses
       );
+
+      void ExtrapolateGPQuantityToNodesAndAssemble(const LINALG::SerialDenseMatrix& gp_quantity,
+          Epetra_MultiVector& global_quantity, bool nodal_average);
+
+      /*!
+       * \brief Returns s const reference to the extrapolation matrix to project quantities that
+       * live on Gauss points to the nodes
+       *
+       * \return const LINALG::SerialDenseMatrix&
+       */
+      static const LINALG::SerialDenseMatrix& GaussPointsToNodesExtrapolation();
 
       // These functions are basically copied from the So_integrator,
       // along with the rather inconsitent matrix sizes.

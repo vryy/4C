@@ -9,6 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "so_tet10.H"
+#include "so_element_service.H"
 #include "so_surface.H"
 #include "so_line.H"
 #include "../drt_lib/drt_discret.H"
@@ -21,6 +22,8 @@
 #include "../drt_lib/prestress_service.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_mat/so3_material.H"
+
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -293,15 +296,22 @@ void DRT::ELEMENTS::So_tet10::Print(std::ostream& os) const
 void DRT::ELEMENTS::So_tet10::so_tet10_expol(
     LINALG::Matrix<NUMGPT_SOTET10, MAT::NUM_STRESS_3D>& stresses, Epetra_MultiVector& expolstresses)
 {
-  static LINALG::Matrix<NUMNOD_SOTET10, NUMGPT_SOTET10> expol;
-  static bool isfilled;
   LINALG::Matrix<NUMNOD_SOTET10, MAT::NUM_STRESS_3D> nodalstresses;
+  static LINALG::Matrix<NUMNOD_SOTET10, NUMGPT_SOTET10> extrapolationMatrix(
+      GaussPointsToNodesExtrapolation());
+  nodalstresses.Multiply(extrapolationMatrix, stresses);
 
-  if (isfilled == true)
-  {
-    nodalstresses.Multiply(expol, stresses);
-  }
-  else
+  DRT::ELEMENTS::AssembleExtrapolatedNodalValues<
+      LINALG::Matrix<NUMNOD_SOTET10, MAT::NUM_STRESS_3D>>(expolstresses, nodalstresses, this);
+}
+
+const LINALG::SerialDenseMatrix& DRT::ELEMENTS::So_tet10::GaussPointsToNodesExtrapolation()
+{
+  // static variables, that are the same for every element
+  static LINALG::SerialDenseMatrix expol(NUMNOD_SOTET10, NUMGPT_SOTET10);
+  static bool isfilled = false;
+
+  if (!isfilled)
   {
     // get gaussian points
     const DRT::UTILS::IntegrationPoints3D intpoints(DRT::UTILS::intrule_tet_4point);
@@ -330,13 +340,14 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(
       e3expol = (e3 - pbeta * (1 + palpha - pbeta)) / ((palpha - pbeta) * (palpha - pbeta));
 
       // shape functions for the extrapolated coordinates
-      // (yes, we REALLY mean DiscretizationType tet4 here, because we are using 4 GP for stiffness
-      // matrix integration )
+      // (yes, we REALLY mean DiscretizationType tet4 here, because we are using 4 GP for
+      // stiffness matrix integration )
       LINALG::Matrix<NUMNOD_SOTET10, 1> funct;
       DRT::UTILS::shape_function_3D(funct, e1expol, e2expol, e3expol, tet4);
 
       // extrapolation matrix
-      // Evaluate shape functions (of fictious GP element) at the corner nodes of the actual element
+      // Evaluate shape functions (of fictious GP element) at the corner nodes of the actual
+      // element
       for (int i = 0; i < NUMGPT_SOTET10; ++i)
       {
         expol(ip, i) = funct(i);
@@ -356,27 +367,22 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(
       expol(8, i) = (0.5 * expol(1, i) + 0.5 * expol(3, i));
       expol(9, i) = (0.5 * expol(2, i) + 0.5 * expol(3, i));
     }
-    // do extrapolation
-    nodalstresses.Multiply(expol, stresses);
-
-    isfilled = true;
   }
 
-  // "assembly" of extrapolated nodal stresses
-  for (int i = 0; i < NUMNOD_SOTET10; ++i)
-  {
-    const int lid = expolstresses.Map().LID(NodeIds()[i]);
-    if (lid >= 0)  // rownode
-    {
-      const double invmyadjele = 1.0 / Nodes()[i]->NumElement();
-      for (int j = 0; j < MAT::NUM_STRESS_3D; ++j)
-        (*(expolstresses(j)))[lid] += nodalstresses(i, j) * invmyadjele;
-    }
-  }
-  return;
+  return expol;
 }
 
+void DRT::ELEMENTS::So_tet10::ExtrapolateGPQuantityToNodesAndAssemble(
+    const LINALG::SerialDenseMatrix& gp_quantity, Epetra_MultiVector& global_quantity,
+    bool nodal_average)
+{
+  LINALG::SerialDenseMatrix nodal_quantity(NUMNOD_SOTET10, gp_quantity.N());
 
+  nodal_quantity.Multiply('N', 'N', 1.0, GaussPointsToNodesExtrapolation(), gp_quantity, 0.0);
+
+  DRT::ELEMENTS::AssembleExtrapolatedNodalValues<LINALG::SerialDenseMatrix>(
+      global_quantity, nodal_quantity, this, nodal_average);
+}
 
 /*====================================================================*/
 /* 10-node tetrahedra node topology*/
