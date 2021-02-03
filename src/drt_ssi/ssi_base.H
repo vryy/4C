@@ -49,7 +49,7 @@ namespace SSI
     class SSISlaveSideConverter;
   }
 
-  enum RedistributionType
+  enum class RedistributionType
   {
     none,     //!< unknown redistribution type
     binning,  //!< redistribute by binning
@@ -146,8 +146,8 @@ namespace SSI
     \return int
     \date 08/16
     \author vuong, rauch  */
-    virtual int InitFieldCoupling(const Epetra_Comm& comm, const std::string& struct_disname,
-        const std::string& scatra_disname);
+    virtual RedistributionType InitFieldCoupling(const Epetra_Comm& comm,
+        const std::string& struct_disname, const std::string& scatra_disname);
 
     /*! \brief Setup discretizations
 
@@ -253,7 +253,7 @@ namespace SSI
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
 
     //! Redistribute nodes and elements on processors
-    void Redistribute(int redsitribution_type);
+    void Redistribute(RedistributionType redsitribution_type);
 
    protected:
     //! get bool indicating if old structural time integration is used

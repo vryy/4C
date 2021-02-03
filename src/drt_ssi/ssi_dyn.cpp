@@ -44,7 +44,7 @@ void ssi_drt()
   SSI::UTILS::ChangeTimeParameter(comm, ssiparams, scatradyn, sdyn);
 
   const auto coupling =
-      DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
+      Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
 
 
   // 3.- Creation of Structure + Scalar_Transport problem.
@@ -56,31 +56,31 @@ void ssi_drt()
   // 3.1 choose algorithm depending on solution type
   switch (coupling)
   {
-    case INPAR::SSI::ssi_OneWay_ScatraToSolid:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid:
     {
       ssi = Teuchos::rcp(new SSI::SSIPart1WCScatraToSolid(comm, ssiparams));
       isale = false;
     }
     break;
-    case INPAR::SSI::ssi_OneWay_SolidToScatra:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra:
       ssi = Teuchos::rcp(new SSI::SSIPart1WCSolidToScatra(comm, ssiparams));
       break;
-    case INPAR::SSI::ssi_IterStagg:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_IterStagg:
       ssi = Teuchos::rcp(new SSI::SSIPart2WC(comm, ssiparams));
       break;
-    case INPAR::SSI::ssi_IterStaggFixedRel_ScatraToSolid:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_ScatraToSolid:
       ssi = Teuchos::rcp(new SSI::SSIPart2WCScatraToSolidRelax(comm, ssiparams));
       break;
-    case INPAR::SSI::ssi_IterStaggFixedRel_SolidToScatra:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_SolidToScatra:
       ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelax(comm, ssiparams));
       break;
-    case INPAR::SSI::ssi_IterStaggAitken_ScatraToSolid:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_ScatraToSolid:
       ssi = Teuchos::rcp(new SSI::SSIPart2WCScatraToSolidRelaxAitken(comm, ssiparams));
       break;
-    case INPAR::SSI::ssi_IterStaggAitken_SolidToScatra:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_SolidToScatra:
       ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelaxAitken(comm, ssiparams));
       break;
-    case INPAR::SSI::ssi_Monolithic:
+    case INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic:
       ssi = Teuchos::rcp(new SSI::SSIMono(comm, ssiparams));
       break;
     default:
@@ -126,7 +126,8 @@ void ssi_drt()
   // 3.3 AFTER restart: reset inputfilename of the problem so that results from other runs can be
   // read
   bool flag_readscatra = DRT::INPUT::IntegralValue<bool>(ssiparams, "SCATRA_FROM_RESTART_FILE");
-  if (coupling == INPAR::SSI::ssi_OneWay_ScatraToSolid and flag_readscatra)
+  if (coupling == INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid and
+      flag_readscatra)
   {
     std::string filename = Teuchos::getNumericStringParameter(ssiparams, "SCATRA_FILENAME");
     Teuchos::RCP<IO::InputControl> inputscatra = Teuchos::rcp(new IO::InputControl(filename, comm));

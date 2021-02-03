@@ -41,7 +41,7 @@
 /*----------------------------------------------------------------------*/
 SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
-      fieldcoupling_(DRT::INPUT::IntegralValue<INPAR::SSI::FieldCoupling>(
+      fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       icoup_structure_(Teuchos::null),
       icoup_structure_3_domain_intersection_(Teuchos::null),
@@ -188,7 +188,8 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
         "scatra_manifold", isAle);
   }
 
-  const int redistribution_type = InitFieldCoupling(comm, struct_disname, scatra_disname);
+  const RedistributionType redistribution_type =
+      InitFieldCoupling(comm, struct_disname, scatra_disname);
 
   // is adaptive time stepping activated?
   if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
@@ -210,7 +211,7 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   // set isinit_ flag true
   SetIsInit(true);
 
-  if (redistribution_type != static_cast<int>(SSI::none)) Redistribute(redistribution_type);
+  if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
 }
 
 /*----------------------------------------------------------------------*
@@ -237,9 +238,9 @@ void SSI::SSIBase::Setup()
 
     // pass initial scalar field to structural discretization to correctly compute initial
     // accelerations
-    if (DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(
+    if (Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(
             DRT::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
-        INPAR::SSI::ssi_OneWay_SolidToScatra)
+        INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
       ssicoupling_->SetScalarField(
           *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp());
 
@@ -412,8 +413,8 @@ void SSI::SSIBase::InitDiscretizations(
 
   if (scatradis->NumGlobalNodes() == 0)
   {
-    if (fieldcoupling_ != INPAR::SSI::coupling_volume_match and
-        fieldcoupling_ != INPAR::SSI::coupling_volumeboundary_match)
+    if (fieldcoupling_ != INPAR::SSI::FieldCoupling::volume_match and
+        fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
     {
       dserror(
           "If 'FIELDCOUPLING' is NOT 'volume_matching' in the SSI CONTROL section cloning of the "
@@ -443,7 +444,7 @@ void SSI::SSIBase::InitDiscretizations(
   }
   else
   {
-    if (fieldcoupling_ == INPAR::SSI::coupling_volume_match)
+    if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_match)
     {
       dserror(
           "Reading a TRANSPORT discretization from the .dat file for the input parameter "
@@ -485,11 +486,11 @@ void SSI::SSIBase::InitDiscretizations(
 /*----------------------------------------------------------------------*
  | Setup ssi coupling object                                rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIBase::InitFieldCoupling(
+SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
 {
   // initialize return variable
-  int redistribution_required = (int)SSI::none;
+  RedistributionType redistribution_required = SSI::RedistributionType::none;
 
   DRT::Problem* problem = DRT::Problem::Instance();
   auto structdis = problem->GetDis(struct_disname);
@@ -504,15 +505,15 @@ int SSI::SSIBase::InitFieldCoupling(
     scatradis->GetCondition("SSICoupling", ssicoupling);
     const bool havessicoupling = (ssicoupling.size() > 0);
 
-    if (havessicoupling and (fieldcoupling_ != INPAR::SSI::coupling_boundary_nonmatch and
-                                fieldcoupling_ != INPAR::SSI::coupling_volumeboundary_match))
+    if (havessicoupling and (fieldcoupling_ != INPAR::SSI::FieldCoupling::boundary_nonmatch and
+                                fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match))
     {
       dserror(
           "SSICoupling condition only valid in combination with FIELDCOUPLING set to "
           "'boundary_nonmatching' or 'volumeboundary_matching' in SSI DYNAMIC section. ");
     }
 
-    if (fieldcoupling_ == INPAR::SSI::coupling_volume_nonmatch)
+    if (fieldcoupling_ == INPAR::SSI::FieldCoupling::volume_nonmatch)
     {
       const Teuchos::ParameterList& volmortarparams = DRT::Problem::Instance()->VolmortarParams();
       if (DRT::INPUT::IntegralValue<INPAR::VOLMORTAR::CouplingType>(
@@ -524,27 +525,27 @@ int SSI::SSIBase::InitFieldCoupling(
             "risk.");
       }
     }
-    if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::coupling_volumeboundary_match)
+    if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
       dserror("Solving manifolds only in combination with matching volumes and boundaries");
   }
 
   // build SSI coupling class
   switch (fieldcoupling_)
   {
-    case INPAR::SSI::coupling_volume_match:
+    case INPAR::SSI::FieldCoupling::volume_match:
       ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolume());
       break;
-    case INPAR::SSI::coupling_volume_nonmatch:
+    case INPAR::SSI::FieldCoupling::volume_nonmatch:
       ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingVolume());
       // redistribution is still performed inside
-      redistribution_required = (int)SSI::binning;
+      redistribution_required = SSI::RedistributionType::binning;
       break;
-    case INPAR::SSI::coupling_boundary_nonmatch:
+    case INPAR::SSI::FieldCoupling::boundary_nonmatch:
       ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingBoundary());
       break;
-    case INPAR::SSI::coupling_volumeboundary_match:
+    case INPAR::SSI::FieldCoupling::volumeboundary_match:
       ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolumeAndBoundary());
-      redistribution_required = (int)SSI::match;
+      redistribution_required = SSI::RedistributionType::match;
       break;
     default:
       dserror("unknown type of field coupling for SSI!");
@@ -734,13 +735,13 @@ void SSI::SSIBase::SetDtFromScaTraToStructure()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::Redistribute(const int redsitribution_type)
+void SSI::SSIBase::Redistribute(const RedistributionType redsitribution_type)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
   auto structdis = problem->GetDis("structure");
   auto scatradis = problem->GetDis("scatra");
-  if (redsitribution_type == static_cast<int>(SSI::match))
+  if (redsitribution_type == SSI::RedistributionType::match)
   {
     if (IsScaTraManifold())
     {
@@ -769,7 +770,7 @@ void SSI::SSIBase::Redistribute(const int redsitribution_type)
       DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
     }
   }
-  else if (redsitribution_type == static_cast<int>(SSI::binning))
+  else if (redsitribution_type == SSI::RedistributionType::binning)
   {
     // create vector of discr.
     std::vector<Teuchos::RCP<DRT::Discretization>> dis;

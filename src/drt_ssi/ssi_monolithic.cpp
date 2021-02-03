@@ -274,9 +274,9 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
 
   // initialize strategy for Newton-Raphson convergence check
   switch (
-      DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
+      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
   {
-    case INPAR::SSI::scatratiminttype_elch:
+    case INPAR::SSI::ScaTraTimIntType::elch:
     {
       if (IsScaTraManifold())
       {
@@ -289,7 +289,7 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       break;
     }
 
-    case INPAR::SSI::scatratiminttype_standard:
+    case INPAR::SSI::ScaTraTimIntType::standard:
     {
       strategy_convcheck_ = Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyStd(globaltimeparams));
       break;

@@ -247,9 +247,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   else if (probtype == prb_elch or
            disname == "scatra" and
                ((probtype == prb_ssi and
-                    DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
+                    Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                         DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
-                        INPAR::SSI::scatratiminttype_elch) or
+                        INPAR::SSI::ScaTraTimIntType::elch) or
                    (probtype == prb_ssti and
                        Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
                            DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
@@ -412,9 +412,9 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
   // cardiac monodomain
   else if (probtype == prb_cardiac_monodomain or
            (probtype == prb_ssi and
-               DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
+               Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
-                   INPAR::SSI::scatratiminttype_cardiac_monodomain))
+                   INPAR::SSI::ScaTraTimIntType::cardiac_monodomain))
   {
     Teuchos::RCP<Teuchos::ParameterList> cmonoparams =
         rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->EPControlParams()));
@@ -645,9 +645,9 @@ Teuchos::RCP<DRT::ResultTest> ADAPTER::ScaTraBaseAlgorithm::CreateScaTraFieldTes
   bool is_elch_timeint;
   if (probtype == prb_ssi)
   {
-    is_elch_timeint = DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(
+    is_elch_timeint = Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                           DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
-                      INPAR::SSI::scatratiminttype_elch;
+                      INPAR::SSI::ScaTraTimIntType::elch;
   }
   else if (probtype == prb_ssti)
   {

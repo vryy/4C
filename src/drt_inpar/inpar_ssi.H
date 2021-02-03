@@ -30,7 +30,7 @@ namespace INPAR
   namespace SSI
   {
     /// Type of coupling strategy for SSI problems
-    enum SolutionSchemeOverFields
+    enum class SolutionSchemeOverFields
     {
       ssi_OneWay_ScatraToSolid,
       ssi_OneWay_SolidToScatra,
@@ -46,20 +46,20 @@ namespace INPAR
     };
 
     /// Type of coupling strategy between the two fields of the SSI problems
-    enum FieldCoupling
+    enum class FieldCoupling
     {
-      coupling_volume_match,
-      coupling_volume_nonmatch,
-      coupling_boundary_nonmatch,
-      coupling_volumeboundary_match
+      volume_match,
+      volume_nonmatch,
+      boundary_nonmatch,
+      volumeboundary_match
     };
 
     //! type of scalar transport time integration
-    enum ScaTraTimIntType
+    enum class ScaTraTimIntType
     {
-      scatratiminttype_standard,
-      scatratiminttype_cardiac_monodomain,
-      scatratiminttype_elch
+      standard,
+      cardiac_monodomain,
+      elch
     };
 
     /// set the ssi parameters
