@@ -423,7 +423,7 @@ namespace DRT
           Epetra_MultiVector& global_quantity, bool nodal_average);
 
       /*!
-       * \brief Returns s const reference to the extrapolation matrix to project quantities that
+       * \brief Returns constant reference to the extrapolation matrix to project quantities that
        * live on Gauss points to the nodes
        *
        * \return const LINALG::SerialDenseMatrix&

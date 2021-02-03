@@ -869,12 +869,17 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       dsassert(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
 
+      // Save number of Gauss of the element for gauss point data output
       StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
           NUMGPT_SOTET10);
 
+      // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
+
+      // Ask material for the output quantity names and sizes
       SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
 
+      // Add quantities to the Gauss point output data manager (if they do not already exist)
       StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
     }
     break;
@@ -883,7 +888,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       dsassert(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
 
-      // ToDo: Here happens material output data evaluation and assembly of the data
+      // Collection and assembly of gauss point data
       for (const auto& quantity :
           StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
       {

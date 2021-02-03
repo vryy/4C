@@ -798,7 +798,7 @@ namespace DRT
       void soh8_recover_from_eas_backup_state();
 
       /*!
-       * \brief Returns s const reference to the extrapolation matrix to project quantities that
+       * \brief Returns constant reference to the extrapolation matrix to project quantities that
        * live on Gauss points to the nodes
        *
        * \return const LINALG::SerialDenseMatrix&
@@ -806,60 +806,60 @@ namespace DRT
       static inline const LINALG::SerialDenseMatrix& GaussPointsToNodesExtrapolation()
       {
         // static variables, that are the same for every element
-        static LINALG::SerialDenseMatrix expol(NUMNOD_SOH8, NUMGPT_SOH8);
+        static LINALG::SerialDenseMatrix extrapolationMatrix(NUMNOD_SOH8, NUMGPT_SOH8);
         static bool isfilled = false;
 
         if (!isfilled)
         {
           double sq3 = sqrt(3.0);
-          expol(0, 0) = 1.25 + 0.75 * sq3;
-          expol(0, 1) = -0.25 - 0.25 * sq3;
-          expol(0, 2) = -0.25 + 0.25 * sq3;
-          expol(0, 3) = -0.25 - 0.25 * sq3;
-          expol(0, 4) = -0.25 - 0.25 * sq3;
-          expol(0, 5) = -0.25 + 0.25 * sq3;
-          expol(0, 6) = 1.25 - 0.75 * sq3;
-          expol(0, 7) = -0.25 + 0.25 * sq3;
-          expol(1, 1) = 1.25 + 0.75 * sq3;
-          expol(1, 2) = -0.25 - 0.25 * sq3;
-          expol(1, 3) = -0.25 + 0.25 * sq3;
-          expol(1, 4) = -0.25 + 0.25 * sq3;
-          expol(1, 5) = -0.25 - 0.25 * sq3;
-          expol(1, 6) = -0.25 + 0.25 * sq3;
-          expol(1, 7) = 1.25 - 0.75 * sq3;
-          expol(2, 2) = 1.25 + 0.75 * sq3;
-          expol(2, 3) = -0.25 - 0.25 * sq3;
-          expol(2, 4) = 1.25 - 0.75 * sq3;
-          expol(2, 5) = -0.25 + 0.25 * sq3;
-          expol(2, 6) = -0.25 - 0.25 * sq3;
-          expol(2, 7) = -0.25 + 0.25 * sq3;
-          expol(3, 3) = 1.25 + 0.75 * sq3;
-          expol(3, 4) = -0.25 + 0.25 * sq3;
-          expol(3, 5) = 1.25 - 0.75 * sq3;
-          expol(3, 6) = -0.25 + 0.25 * sq3;
-          expol(3, 7) = -0.25 - 0.25 * sq3;
-          expol(4, 4) = 1.25 + 0.75 * sq3;
-          expol(4, 5) = -0.25 - 0.25 * sq3;
-          expol(4, 6) = -0.25 + 0.25 * sq3;
-          expol(4, 7) = -0.25 - 0.25 * sq3;
-          expol(5, 5) = 1.25 + 0.75 * sq3;
-          expol(5, 6) = -0.25 - 0.25 * sq3;
-          expol(5, 7) = -0.25 + 0.25 * sq3;
-          expol(6, 6) = 1.25 + 0.75 * sq3;
-          expol(6, 7) = -0.25 - 0.25 * sq3;
-          expol(7, 7) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(0, 0) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(0, 1) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(0, 2) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(0, 3) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(0, 4) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(0, 5) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(0, 6) = 1.25 - 0.75 * sq3;
+          extrapolationMatrix(0, 7) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(1, 1) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(1, 2) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(1, 3) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(1, 4) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(1, 5) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(1, 6) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(1, 7) = 1.25 - 0.75 * sq3;
+          extrapolationMatrix(2, 2) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(2, 3) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(2, 4) = 1.25 - 0.75 * sq3;
+          extrapolationMatrix(2, 5) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(2, 6) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(2, 7) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(3, 3) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(3, 4) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(3, 5) = 1.25 - 0.75 * sq3;
+          extrapolationMatrix(3, 6) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(3, 7) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(4, 4) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(4, 5) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(4, 6) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(4, 7) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(5, 5) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(5, 6) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(5, 7) = -0.25 + 0.25 * sq3;
+          extrapolationMatrix(6, 6) = 1.25 + 0.75 * sq3;
+          extrapolationMatrix(6, 7) = -0.25 - 0.25 * sq3;
+          extrapolationMatrix(7, 7) = 1.25 + 0.75 * sq3;
 
           for (int i = 0; i < NUMNOD_SOH8; ++i)
           {
             for (int j = 0; j < i; ++j)
             {
-              expol(i, j) = expol(j, i);
+              extrapolationMatrix(i, j) = extrapolationMatrix(j, i);
             }
           }
           isfilled = true;
         }
 
-        return expol;
+        return extrapolationMatrix;
       }
 
      private:

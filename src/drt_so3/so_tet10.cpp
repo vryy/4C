@@ -308,7 +308,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol(
 const LINALG::SerialDenseMatrix& DRT::ELEMENTS::So_tet10::GaussPointsToNodesExtrapolation()
 {
   // static variables, that are the same for every element
-  static LINALG::SerialDenseMatrix expol(NUMNOD_SOTET10, NUMGPT_SOTET10);
+  static LINALG::SerialDenseMatrix extrapolationMatrix(NUMNOD_SOTET10, NUMGPT_SOTET10);
   static bool isfilled = false;
 
   if (!isfilled)
@@ -350,7 +350,7 @@ const LINALG::SerialDenseMatrix& DRT::ELEMENTS::So_tet10::GaussPointsToNodesExtr
       // element
       for (int i = 0; i < NUMGPT_SOTET10; ++i)
       {
-        expol(ip, i) = funct(i);
+        extrapolationMatrix(ip, i) = funct(i);
       }
     }
 
@@ -360,16 +360,22 @@ const LINALG::SerialDenseMatrix& DRT::ELEMENTS::So_tet10::GaussPointsToNodesExtr
     // of corner nodes
     for (int i = 0; i < NUMGPT_SOTET10; ++i)
     {
-      expol(4, i) = (0.5 * expol(0, i) + 0.5 * expol(1, i));
-      expol(5, i) = (0.5 * expol(1, i) + 0.5 * expol(2, i));
-      expol(6, i) = (0.5 * expol(0, i) + 0.5 * expol(2, i));
-      expol(7, i) = (0.5 * expol(0, i) + 0.5 * expol(3, i));
-      expol(8, i) = (0.5 * expol(1, i) + 0.5 * expol(3, i));
-      expol(9, i) = (0.5 * expol(2, i) + 0.5 * expol(3, i));
+      extrapolationMatrix(4, i) =
+          (0.5 * extrapolationMatrix(0, i) + 0.5 * extrapolationMatrix(1, i));
+      extrapolationMatrix(5, i) =
+          (0.5 * extrapolationMatrix(1, i) + 0.5 * extrapolationMatrix(2, i));
+      extrapolationMatrix(6, i) =
+          (0.5 * extrapolationMatrix(0, i) + 0.5 * extrapolationMatrix(2, i));
+      extrapolationMatrix(7, i) =
+          (0.5 * extrapolationMatrix(0, i) + 0.5 * extrapolationMatrix(3, i));
+      extrapolationMatrix(8, i) =
+          (0.5 * extrapolationMatrix(1, i) + 0.5 * extrapolationMatrix(3, i));
+      extrapolationMatrix(9, i) =
+          (0.5 * extrapolationMatrix(2, i) + 0.5 * extrapolationMatrix(3, i));
     }
   }
 
-  return expol;
+  return extrapolationMatrix;
 }
 
 void DRT::ELEMENTS::So_tet10::ExtrapolateGPQuantityToNodesAndAssemble(
