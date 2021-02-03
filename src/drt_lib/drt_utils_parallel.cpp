@@ -320,7 +320,8 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
 *----------------------------------------------------------------------*/
 void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     DRT::Discretization& dis_template, DRT::Discretization& dis_to_redistribute,
-    const std::string& condname_template, const std::string& condname_redistribute)
+    const std::string& condname_template, const std::string& condname_redistribute,
+    const bool print)
 {
   // clone communicator of target discretization
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
@@ -425,13 +426,16 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
       redistribute_colelegid_vec.push_back(it->first);
     }
 
-    dis_to_redistribute.Comm().Barrier();
-    for (it = matched_ele_map.begin(); it != matched_ele_map.end(); ++it)
+    if (print)
     {
-      std::cout << "ELEMENT : " << it->first << " ->  ( " << it->second[0] << ", " << it->second[1]
-                << ", " << it->second[2] << " )"
-                << " on PROC " << dis_to_redistribute.Comm().MyPID()
-                << " map size = " << matched_ele_map.size() << std::endl;
+      dis_to_redistribute.Comm().Barrier();
+      for (it = matched_ele_map.begin(); it != matched_ele_map.end(); ++it)
+      {
+        std::cout << "ELEMENT : " << it->first << " ->  ( " << it->second[0] << ", "
+                  << it->second[1] << ", " << it->second[2] << " )"
+                  << " on PROC " << dis_to_redistribute.Comm().MyPID()
+                  << " map size = " << matched_ele_map.size() << std::endl;
+      }
     }
 
 
@@ -488,13 +492,18 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     }
 
     // fill vec with processor local node gids of dis to be redistributed
-    DRT::Condition* redistribute_cond = dis_to_redistribute.GetCondition(condname_redistribute);
-    const std::vector<int>* redistribute_cond_nodes = redistribute_cond->Nodes();
-    for (int lid = 0; lid < (int)redistribute_cond_nodes->size(); ++lid)
+    std::vector<DRT::Condition*> redistribute_conds;
+    dis_to_redistribute.GetCondition(condname_redistribute, redistribute_conds);
+
+    for (auto* const redistribute_cond : redistribute_conds)
     {
-      if (dis_to_redistribute.HaveGlobalNode(redistribute_cond_nodes->at(lid)))
-        if (dis_to_redistribute.gNode(redistribute_cond_nodes->at(lid))->Owner() == com->MyPID())
-          redistribute_rownodegid_vec.push_back(redistribute_cond_nodes->at(lid));
+      const std::vector<int>* redistribute_cond_nodes = redistribute_cond->Nodes();
+      for (int lid = 0; lid < (int)redistribute_cond_nodes->size(); ++lid)
+      {
+        if (dis_to_redistribute.HaveGlobalNode(redistribute_cond_nodes->at(lid)))
+          if (dis_to_redistribute.gNode(redistribute_cond_nodes->at(lid))->Owner() == com->MyPID())
+            redistribute_rownodegid_vec.push_back(redistribute_cond_nodes->at(lid));
+      }
     }
 
     // initialize search tree for matching with template (source) nodes
@@ -522,14 +531,16 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
 
       redistribute_colnodegid_vec.push_back(it->first);
     }
-
-    dis_to_redistribute.Comm().Barrier();
-    for (it = matched_node_map.begin(); it != matched_node_map.end(); ++it)
+    if (print)
     {
-      std::cout << "NODE : " << it->first << " ->  ( " << it->second[0] << ", " << it->second[1]
-                << ", " << it->second[2] << " )"
-                << " on PROC " << dis_to_redistribute.Comm().MyPID()
-                << " map size = " << matched_node_map.size() << std::endl;
+      dis_to_redistribute.Comm().Barrier();
+      for (it = matched_node_map.begin(); it != matched_node_map.end(); ++it)
+      {
+        std::cout << "NODE : " << it->first << " ->  ( " << it->second[0] << ", " << it->second[1]
+                  << ", " << it->second[2] << " )"
+                  << " on PROC " << dis_to_redistribute.Comm().MyPID()
+                  << " map size = " << matched_node_map.size() << std::endl;
+      }
     }
 
 
