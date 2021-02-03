@@ -168,29 +168,22 @@ namespace SSI
 
     ~AssembleStrategyBlock() override = default;
 
-    //! write 1.0 on main diagonal of slave side dofs
     void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override = 0;
 
-    //! apply structural Dirichlet boundary conditions on system matrix
     void ApplyStructuralDBCSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
 
-    //! assemble ScaTraBlock into system matrix
     void AssembleScatraDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override = 0;
 
-    //! assemble ScaTra-Structure-Block (domain contributions) into system matrix
     void AssembleScatraStructureDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain) override = 0;
 
-    //! assemble ScaTra-Structure-Block (interface contributions) into system matrix
     void AssembleScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterfaceslaveside) override = 0;
 
-    //! assemble StructureBlock into system matrix
     void AssembleStructureDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override = 0;
 
-    //! assemble Structure-ScaTra-Block (domain contributions) into system matrix
     void AssembleStructureScatraDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) override = 0;
 
