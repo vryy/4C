@@ -18,9 +18,6 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_DefaultComm.hpp>
 
-// Xpetra
-#include <Xpetra_MatrixUtils.hpp>
-
 // Baci
 #include "solver_muelucontactsppreconditioner.H"
 
@@ -37,7 +34,6 @@
 #include <Xpetra_BlockedCrsMatrix.hpp>
 #include <Xpetra_StridedMap.hpp>
 #include <Xpetra_CrsMatrix.hpp>  // for merging blocked operator
-#include <Xpetra_IO.hpp>
 
 // MueLu
 #include <MueLu.hpp>
@@ -106,7 +102,6 @@
 
 typedef Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node> Map;
 typedef Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> Matrix;
-using MatrixUtils = Xpetra::MatrixUtils<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
 typedef Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrix;
 typedef Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node> CrsMatrixWrap;
 typedef Xpetra::EpetraCrsMatrix EpetraCrsMatrix;
@@ -185,9 +180,11 @@ typedef Node NO;
 // Xpetra
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
+#include <Xpetra_IO.hpp>
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
+#include <Xpetra_MatrixUtils.hpp>
 #include <Xpetra_UseShortNamesOrdinal.hpp>
 #include <Xpetra_UseShortNamesScalar.hpp>
 
@@ -346,7 +343,11 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   stridedMaps.push_back(stridedRangeMapPrimal);
   stridedMaps.push_back(stridedRangeMapDual);
 
+#ifdef TRILINOS_DEVELOP
   RCP<const Map> stridedFullMap = MapUtils::concatenateMaps(stridedMaps);
+#else
+  RCP<const Map> stridedFullMap = Teuchos::null;
+#endif
 
   Teuchos::RCP<const ::MapExtractor> map_extractor =
       MapExtractorFactory::Build(stridedFullMap, stridedMaps);
@@ -382,6 +383,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
   bOp->SetFixedBlockSize(numdf);
   bOp->fillComplete();
 
+#ifdef TRILINOS_DEVELOP
   // Check for proper striding information
   {
     RCP<Matrix> myA11 = bOp->getMatrix(0, 0);
@@ -396,6 +398,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
     Teuchos::rcp_dynamic_cast<const StridedMap>(myA21->getRowMap("stridedMaps"), true);
     Teuchos::rcp_dynamic_cast<const StridedMap>(myA21->getColMap("stridedMaps"), true);
   }
+#endif
 
   // Re-create or re-use the preconditioner?
   if (create)
