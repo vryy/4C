@@ -1974,6 +1974,12 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     case DRT::ELEMENTS::struct_calc_predict:
       action = "calc_struct_predict";
       break;
+    case DRT::ELEMENTS::struct_init_gauss_point_data_output:
+      action = "struct_init_gauss_point_data_output";
+      break;
+    case DRT::ELEMENTS::struct_gauss_point_data_output:
+      action = "struct_gauss_point_data_output";
+      break;
     default:
       action = "unknown";
       break;

@@ -4,6 +4,7 @@
 \level 1
 *----------------------------------------------------------------------*/
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "so_element_service.H"
 #include "so_tet10.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
@@ -25,6 +26,7 @@
 #include "prestress.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
+#include "../drt_structure_new/gauss_point_data_output_manager.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -86,6 +88,10 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     act = So_tet10::calc_global_gpstresses_map;
   else if (action == "postprocess_stress")
     act = So_tet10::postprocess_stress;
+  else if (action == "struct_init_gauss_point_data_output")
+    act = So_tet10::struct_init_gauss_point_data_output;
+  else if (action == "struct_gauss_point_data_output")
+    act = So_tet10::struct_gauss_point_data_output;
   else if (action == "calc_struct_recover")
     return 0;
   else if (action == "calc_struct_predict")
@@ -854,6 +860,97 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           data.StartPacking();
           AddtoPack(data, strain);
           std::copy(data().begin(), data().end(), std::back_inserter(*straindata));
+        }
+      }
+    }
+    break;
+    case struct_init_gauss_point_data_output:
+    {
+      dsassert(IsParamsInterface(),
+          "This action type should only be called from the new time integration framework!");
+
+      // Save number of Gauss of the element for gauss point data output
+      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
+          NUMGPT_SOTET10);
+
+      // holder for output quantity names and their size
+      std::unordered_map<std::string, int> quantities_map{};
+
+      // Ask material for the output quantity names and sizes
+      SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
+
+      // Add quantities to the Gauss point output data manager (if they do not already exist)
+      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+    }
+    break;
+    case struct_gauss_point_data_output:
+    {
+      dsassert(IsParamsInterface(),
+          "This action type should only be called from the new time integration framework!");
+
+      // Collection and assembly of gauss point data
+      for (const auto& quantity :
+          StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+      {
+        const std::string& quantity_name = quantity.first;
+        const int quantity_size = quantity.second;
+
+        // Step 1: Collect the data for each Gauss point for the material
+        LINALG::SerialDenseMatrix gp_data(NUMGPT_SOTET10, quantity_size, true);
+        bool data_available = SolidMaterial()->EvaluateVtkOutputData(quantity_name, gp_data);
+
+        // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
+        // point)
+        if (data_available)
+        {
+          switch (StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+          {
+            case INPAR::STR::GaussPointDataOutputType::element_center:
+            {
+              // compute average of the quantities
+              Teuchos::RCP<Epetra_MultiVector> global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableElementCenterData()
+                      .at(quantity_name);
+              DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::nodes:
+            {
+              Teuchos::RCP<Epetra_MultiVector> global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableNodalData()
+                      .at(quantity_name);
+
+              Epetra_IntVector& global_nodal_element_count =
+                  *StrParamsInterface()
+                       .MutableGaussPointDataOutputManagerPtr()
+                       ->GetMutableNodalDataCount()
+                       .at(quantity_name);
+
+              ExtrapolateGPQuantityToNodesAndAssemble(gp_data, *global_data, false);
+              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::gauss_points:
+            {
+              std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
+                  StrParamsInterface()
+                      .MutableGaussPointDataOutputManagerPtr()
+                      ->GetMutableGaussPointData()
+                      .at(quantity_name);
+              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              break;
+            }
+            case INPAR::STR::GaussPointDataOutputType::none:
+              dserror(
+                  "You specified a Gauss point data output type of none, so you should not end up "
+                  "here.");
+            default:
+              dserror("Unknown Gauss point data output type.");
+          }
         }
       }
     }

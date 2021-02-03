@@ -18,6 +18,6 @@
       <PDataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="ascii"/>
       <PDataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="ascii"/>
     </PCellData>
-    <Piece Source="structure-000075-0.vtu"/>
+    <Piece Source="structure-000005-0.vtu"/>
   </PUnstructuredGrid>
 </VTKFile>
