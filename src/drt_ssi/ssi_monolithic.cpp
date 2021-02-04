@@ -137,11 +137,10 @@ void SSI::SSIMono::EvaluateSubproblems()
   // needed to communicate to NOX state
   StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
-  // pass structural degrees of freedom to scalar transport discretization
+  // distribute states to other fields
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
-
-  // pass scalar transport degrees of freedom to structural discretization
   SetScatraSolution(ScaTraField()->Phinp());
+  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
 
   // evaluate temperature from function and set to structural discretization
   EvaluateAndSetTemperatureField();
@@ -342,6 +341,7 @@ void SSI::SSIMono::PrepareTimeStep()
   // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
   SetScatraSolution(ScaTraField()->Phinp());
+  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
 
   // evaluate temperature from function and set to structural discretization
   EvaluateAndSetTemperatureField();
@@ -600,7 +600,7 @@ void SSI::SSIMono::SetupSystem()
         MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
-        MapStructureManifold()->Map(0), InterfaceCouplingAdapterStructure(),
+        MapStructureOnScaTraManifold()->Map(0), InterfaceCouplingAdapterStructure(),
         InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
         meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
         StructureField(), Meshtying3DomainIntersection()));

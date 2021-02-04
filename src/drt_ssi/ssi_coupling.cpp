@@ -111,9 +111,17 @@ void SSI::SSICouplingMatchingVolume::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::SetScalarField(
-    DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi)
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  structdis.SetState(1, "scalarfield", phi);
+  dis.SetState(nds, "scalarfield", phi);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolume::SetScaTraManifoldField(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dserror("Scatra on manifolds only with matching volume and boundaries");
 }
 
 /*----------------------------------------------------------------------*/
@@ -234,11 +242,19 @@ void SSI::SSICouplingNonMatchingBoundary::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
-    DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi)
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dserror(
       "transferring scalar state to structure discretization not implemented for "
       "transport on structural boundary. Only SolidToScatra coupling available.");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingNonMatchingBoundary::SetScaTraManifoldField(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dserror("Scatra on manifolds only with matching volume and boundaries");
 }
 
 /*----------------------------------------------------------------------*/
@@ -335,9 +351,17 @@ void SSI::SSICouplingNonMatchingVolume::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::SetScalarField(
-    DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi)
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  structdis.SetState(1, "scalarfield", volcoupl_structurescatra_->ApplyVectorMapping12(phi));
+  dis.SetState(nds, "scalarfield", volcoupl_structurescatra_->ApplyVectorMapping12(phi));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingNonMatchingVolume::SetScaTraManifoldField(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dserror("Scatra on manifolds only with matching volume and boundaries");
 }
 
 /*----------------------------------------------------------------------*/
@@ -435,11 +459,29 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     auto structgidmatchingdofset =
         Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
 
-    auto newdofset_scatra = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+    auto scatragidmatchingdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
+
+    auto scatramanifoldgidmatchingdofset = Teuchos::rcp(
+        new DRT::DofSetGIDBasedWrapper(scatra_manifold_dis, scatra_manifold_dis->GetDofSetProxy()));
+
+    auto proxy_structure_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
         structgidmatchingdofset, structdis, "SSISurfaceManifold", couplingids));
 
-    if (scatra_manifold_dis->AddDofSet(newdofset_scatra) != 1)
-      dserror("unexpected dof sets in scatra surface field");
+    auto proxy_scatra_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+        scatragidmatchingdofset, scatradis, "SSISurfaceManifold", couplingids));
+
+    auto proxy_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+        scatramanifoldgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
+
+    if (scatra_manifold_dis->AddDofSet(proxy_structure_scatramanifold) != 1)
+      dserror("unexpected dof sets in scatra manifold field");
+
+    if (scatra_manifold_dis->AddDofSet(proxy_scatra_scatramanifold) != 2)
+      dserror("unexpected dof sets in scatra manifold field");
+
+    if (scatradis->AddDofSet(proxy_scatramanifold) != 2)
+      dserror("unexpected dof sets in scatra field");
   }
 
   if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)
@@ -497,7 +539,15 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetVelocityFields(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
-    DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi)
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
-  structdis.SetState(1, "scalarfield", phi);
+  dis.SetState(nds, "scalarfield", phi);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolumeAndBoundary::SetScaTraManifoldField(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dis.SetState(nds, "manifoldfield", phi);
 }

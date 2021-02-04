@@ -53,7 +53,8 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       maps_coup_struct_(Teuchos::null),
       maps_coup_struct_3_domain_intersection_(Teuchos::null),
       map_structure_condensed_(Teuchos::null),
-      map_structure_manifold_(Teuchos::null),
+      map_scatra_on_scatra_manifold_(Teuchos::null),
+      map_structure_on_scatra_manifold_(Teuchos::null),
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
           "MESHTYING_3_DOMAIN_INTERSECTION")),
@@ -132,7 +133,7 @@ void SSI::SSIBase::Setup()
             DRT::Problem::Instance()->SSIControlParams(), "COUPALGO") !=
         INPAR::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra)
       ssicoupling_->SetScalarField(
-          *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp());
+          *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
 
     // temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
@@ -244,41 +245,15 @@ void SSI::SSIBase::Setup()
     }
   }
 
-  // create map of dofs on structure discretization that have the same nodes as manifold (scatra)
+  // create map of dofs on structure/scatra discretization that have the same nodes as manifold
+  // (scatra)
   if (IsScaTraManifold())
   {
-    std::vector<DRT::Condition*> conditions(0, nullptr);
-    StructureField()->Discretization()->GetCondition("SSISurfaceManifold", conditions);
-    if (conditions.empty()) dserror("Condition SSISurfaceManifold not found");
+    map_structure_on_scatra_manifold_ =
+        SSI::UTILS::CreateManifoldMultiMapExtractor(StructureField()->Discretization());
 
-    // Build GID vector of nodes on this proc, sort, and remove duplicates
-    std::vector<int> condition_node_vec;
-    for (auto* condition : conditions)
-    {
-      if (condition->GetInt("coupling id") != 1)
-        dserror("'coupling id' in 'SSISurfaceManifold' must be set to 1");
-
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          StructureField()->Discretization(), *condition->Nodes(), condition_node_vec);
-    }
-    DRT::UTILS::SortAndRemoveDuplicateVectorElements(condition_node_vec);
-
-    // Build GID vector of dofs
-    std::vector<int> condition_dof_vec;
-    for (int condition_node : condition_node_vec)
-    {
-      const int dim = StructureField()->Discretization()->gNode(condition_node)->Dim();
-      for (int j = 0; j < dim; ++j) condition_dof_vec.emplace_back(condition_node * dim + j);
-    }
-
-    // maps of conditioned dofs and other dofs
-    const auto condition_dof_map = Teuchos::rcp(
-        new const Epetra_Map(-1, condition_dof_vec.size(), &condition_dof_vec[0], 0, Comm()));
-    const auto non_condition_dof_map =
-        LINALG::SplitMap(*StructureField()->Discretization()->DofRowMap(), *condition_dof_map);
-
-    map_structure_manifold_ = Teuchos::rcp(new LINALG::MapExtractor(
-        *StructureField()->DofRowMap(), non_condition_dof_map, condition_dof_map));
+    map_scatra_on_scatra_manifold_ =
+        SSI::UTILS::CreateManifoldMultiMapExtractor(ScaTraField()->Discretization());
   }
 
   // construct vector of zeroes
@@ -561,7 +536,18 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
   CheckIsInit();
   CheckIsSetup();
 
-  ssicoupling_->SetScalarField(*structure_->Discretization(), phi);
+  ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
+  if (IsScaTraManifold()) ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
+{
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+  ssicoupling_->SetScaTraManifoldField(*ScaTraField()->Discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
