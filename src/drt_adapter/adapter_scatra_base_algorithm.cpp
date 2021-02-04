@@ -245,7 +245,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
 
   // electrochemistry
   else if (probtype == prb_elch or
-           disname == "scatra" and
+           (disname == "scatra" and
                ((probtype == prb_ssi and
                     Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
                         DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
@@ -257,7 +257,7 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
                    (probtype == prb_sti and
                        Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
                            DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
-                           INPAR::STI::ScaTraTimIntType::elch)))
+                           INPAR::STI::ScaTraTimIntType::elch))))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));

@@ -359,7 +359,7 @@ void SSI::SSIBase::Setup()
   {
     std::vector<DRT::Condition*> conditions(0, nullptr);
     StructureField()->Discretization()->GetCondition("SSISurfaceManifold", conditions);
-    if (!conditions.size()) dserror("Condition SSISurfaceManifold not found");
+    if (conditions.empty()) dserror("Condition SSISurfaceManifold not found");
 
     // Build GID vector of nodes on this proc, sort, and remove duplicates
     std::vector<int> condition_node_vec;
@@ -598,13 +598,13 @@ void SSI::SSIBase::ReadRestart(int restart)
  *----------------------------------------------------------------------*/
 void SSI::SSIBase::ReadRestartfromTime(double restarttime)
 {
-  if (IsScaTraManifold())
-    dserror("Restart from Time not supported for SSI with additional manifold.");
-
   if (restarttime > 0.0)
   {
     const int restartstructure = SSI::UTILS::CheckTimeStepping(structure_->Dt(), restarttime);
     const int restartscatra = SSI::UTILS::CheckTimeStepping(ScaTraField()->Dt(), restarttime);
+    const int restartscatramanifold =
+        IsScaTraManifold() ? SSI::UTILS::CheckTimeStepping(ScaTraManifold()->Dt(), restarttime)
+                           : -1;
 
     structure_->ReadRestart(restartstructure);
 
@@ -615,12 +615,15 @@ void SSI::SSIBase::ReadRestartfromTime(double restarttime)
     if (not restartfromstructure)  // standard restart
     {
       ScaTraField()->ReadRestart(restartscatra);
+      if (IsScaTraManifold()) ScaTraManifold()->ReadRestart(restartscatramanifold);
     }
     else  // restart from structure simulation
     {
       // Since there is no restart output for the scatra fiels available, we only have to fix the
       // time and step counter
       ScaTraField()->SetTimeStep(structure_->TimeOld(), restartscatra);
+      if (IsScaTraManifold())
+        ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restartscatramanifold);
     }
 
     SetTimeStep(structure_->TimeOld(), restartstructure);

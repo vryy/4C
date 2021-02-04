@@ -397,9 +397,6 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     elementmatchingtree.FillSlaveToMasterGIDMapping(
         dis_to_redistribute, redistribute_rowelegid_vec, matched_ele_map);
 
-    // declare iterator
-    std::map<int, std::vector<double>>::iterator it;
-
     // now we have a map matching the geometry ids of slave elements
     // to the geometry id of master elements (always starting from 0).
     // for redistribution we need to translate the geometry ids to the
@@ -407,23 +404,23 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     // fill vectors with row and col gids for new distribution
     std::vector<int> redistribute_colelegid_vec;
     redistribute_rowelegid_vec.clear();
-    for (it = matched_ele_map.begin(); it != matched_ele_map.end(); ++it)
+    for (const auto& it : matched_ele_map)
     {
       // if this proc owns the template element we also want to own
       // the element of the redistributed discretization.
       // we also want to own all nodes of this element.
-      if ((int)(it->second)[2] == 1) redistribute_rowelegid_vec.push_back(it->first);
+      if (static_cast<int>((it.second)[2]) == 1) redistribute_rowelegid_vec.push_back(it.first);
 
-      redistribute_colelegid_vec.push_back(it->first);
+      redistribute_colelegid_vec.push_back(it.first);
     }
 
     if (print)
     {
       dis_to_redistribute.Comm().Barrier();
-      for (it = matched_ele_map.begin(); it != matched_ele_map.end(); ++it)
+      for (const auto& it : matched_ele_map)
       {
-        std::cout << "ELEMENT : " << it->first << " ->  ( " << it->second[0] << ", "
-                  << it->second[1] << ", " << it->second[2] << " )"
+        std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
+                  << ", " << it.second[2] << " )"
                   << " on PROC " << dis_to_redistribute.Comm().MyPID()
                   << " map size = " << matched_ele_map.size() << std::endl;
       }
@@ -514,21 +511,21 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     // fill vectors with row gids for new distribution
     redistribute_rownodegid_vec.clear();
     // std::vector<int> redistribute_colnodegid_vec;
-    for (it = matched_node_map.begin(); it != matched_node_map.end(); ++it)
+    for (const auto& it : matched_node_map)
     {
       // if this proc owns the template node we also want to own
       // the node of the redistributed discretization
-      if ((int)(it->second)[2] == 1) redistribute_rownodegid_vec.push_back(it->first);
+      if (static_cast<int>((it.second)[2]) == 1) redistribute_rownodegid_vec.push_back(it.first);
 
-      redistribute_colnodegid_vec.push_back(it->first);
+      redistribute_colnodegid_vec.push_back(it.first);
     }
     if (print)
     {
       dis_to_redistribute.Comm().Barrier();
-      for (it = matched_node_map.begin(); it != matched_node_map.end(); ++it)
+      for (const auto& it : matched_node_map)
       {
-        std::cout << "NODE : " << it->first << " ->  ( " << it->second[0] << ", " << it->second[1]
-                  << ", " << it->second[2] << " )"
+        std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
+                  << ", " << it.second[2] << " )"
                   << " on PROC " << dis_to_redistribute.Comm().MyPID()
                   << " map size = " << matched_node_map.size() << std::endl;
       }
@@ -744,7 +741,7 @@ void DRT::UTILS::MatchElementRowColDistribution(const DRT::Discretization& dis_t
     // if this proc owns the template element we also want to own
     // the element of the redistributed discretization.
     // we also want to own all nodes of this element.
-    if ((int)(it->second)[2] == 1) row_id_vec_to_fill.push_back(it->first);
+    if (static_cast<int>((it->second)[2]) == 1) row_id_vec_to_fill.push_back(it->first);
 
     col_id_vec_to_fill.push_back(it->first);
   }
@@ -801,7 +798,7 @@ void DRT::UTILS::MatchNodalRowColDistribution(const DRT::Discretization& dis_tem
   {
     // if this proc owns the template node we also want to own
     // the node of the redistributed discretization
-    if ((int)(it->second)[2] == 1) temprowset.insert(it->first);
+    if (static_cast<int>((it->second)[2]) == 1) temprowset.insert(it->first);
 
     tempcolset.insert(it->first);
   }
