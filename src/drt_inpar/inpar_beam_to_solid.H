@@ -95,8 +95,11 @@ namespace INPAR
       deformation_gradient_3d_local_2,
       //! 3D case where the triad construction starts with the local e3 vector.
       deformation_gradient_3d_local_3,
-      //! 3D case with a general
-      deformation_gradient_3d_general
+      //! 3D case with a general construction.
+      deformation_gradient_3d_general,
+      //! 3D case with a construction based on the local e1 vector and minization of realitve
+      //! angles.
+      deformation_gradient_3d_base_1
     };
 
     /**

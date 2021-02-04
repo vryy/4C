@@ -173,6 +173,10 @@ void BEAMINTERACTION::GetSolidRotationVector(
       GetSolidRotationVectorDeformationGradient3DGeneral<solid>(
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
       return;
+    case INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_3d_base_1:
+      GetSolidRotationVectorDeformationGradient3DBase1<solid>(
+          xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
+      return;
     default:
       dserror("Got unexpected rotational coupling type");
       break;
@@ -258,6 +262,84 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
 
     temp_vec.Multiply(rot_mat, start_vec);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++) new_basis(i_dim, i_basis) = temp_vec(i_dim);
+  }
+
+  // Get the rotation angle.
+  LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
+  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+}
+
+/**
+ *
+ */
+template <typename solid, typename scalar_type>
+void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
+    const LINALG::Matrix<3, 1, double>& xi,
+    const LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
+    const LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+    const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+    LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element)
+{
+  // Get basis vectors of reference triad in the current configuration.
+  LINALG::Matrix<4, 1, scalar_type> quaternion_beam_ref_fad;
+  for (unsigned int i = 0; i < 4; i++) quaternion_beam_ref_fad(i) = quaternion_beam_ref(i);
+  LINALG::Matrix<3, 3, scalar_type> ref_triad;
+  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref_fad, ref_triad);
+  LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
+  GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
+      xi, q_solid_ref, q_solid, deformation_gradient, element);
+  LINALG::Matrix<3, 3, scalar_type> deformed_basis;
+  deformed_basis.Multiply(deformation_gradient, ref_triad);
+
+  // Average of deformed basis vectors.
+  LINALG::Matrix<3, 1, scalar_type> normalized_base_1(true);
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    normalized_base_1(i_dim) = deformed_basis(i_dim, 0);
+  normalized_base_1.Scale(1.0 / FADUTILS::Norm(normalized_base_1));
+
+  // Project the deformed basis vectors on the plane.
+  LINALG::Matrix<3, 1, scalar_type> projected_basis[2];
+  LINALG::Matrix<3, 1, scalar_type> temp_vec;
+  scalar_type projection;
+  for (unsigned int i_basis = 1; i_basis < 3; i_basis++)
+  {
+    projection = 0.0;
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      projection += normalized_base_1(i_dim) * deformed_basis(i_dim, i_basis);
+
+    temp_vec = normalized_base_1;
+    temp_vec.Scale(projection);
+
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      projected_basis[i_basis - 1](i_dim) = deformed_basis(i_dim, i_basis) - temp_vec(i_dim);
+
+    projected_basis[i_basis - 1].Scale(1.0 / FADUTILS::Norm(projected_basis[i_basis - 1]));
+  }
+
+  // Calculate angles between the projected basis vectors.
+  scalar_type alpha_32 = acos(projected_basis[0].Dot(projected_basis[1]));
+
+  // Rotation angle for base 2.
+  scalar_type alpha = 0.5 * (alpha_32 - 0.5 * M_PI);
+
+  // Construct the new basis.
+  // Rotate to the new basis vectors.
+  LINALG::Matrix<3, 3, scalar_type> new_basis;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++) new_basis(i_dim, 0) = normalized_base_1(i_dim);
+
+  LINALG::Matrix<3, 1, scalar_type> rot_vec;
+  LINALG::Matrix<4, 1, scalar_type> rot_quat;
+  LINALG::Matrix<3, 3, scalar_type> rot_mat;
+  for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
+  {
+    rot_vec = normalized_base_1;
+    rot_vec.Scale(alpha + i_basis * M_PI * 0.5);
+    LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+    LARGEROTATIONS::quaterniontotriad(rot_quat, rot_mat);
+
+    temp_vec.Multiply(rot_mat, projected_basis[0]);
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      new_basis(i_dim, i_basis + 1) = temp_vec(i_dim);
   }
 
   // Get the rotation angle.

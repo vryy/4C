@@ -119,7 +119,7 @@ namespace BEAMINTERACTION
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
-   * vector of said triad.
+   * vector of said triad. The construction is based on the average vector of the deformed triad.
    *
    * @param xi (in) Parameter coordinates in the solid.
    * @param q_solid_ref (in) Reference position of the solid.
@@ -137,7 +137,26 @@ namespace BEAMINTERACTION
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
-   * vector of said triad.
+   * vector of said triad. The construction is based on the first basis vector of the deformed
+   * triad.
+   *
+   * @param xi (in) Parameter coordinates in the solid.
+   * @param q_solid_ref (in) Reference position of the solid.
+   * @param q_solid (in) Displacement of the solid.
+   * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
+   * @param psi_solid (out) Rotation vector of the constructed solid triad.
+   * @param element (in) Pointer to the solid element.
+   */
+  template <typename solid, typename scalar_type>
+  void GetSolidRotationVectorDeformationGradient3DBase1(const LINALG::Matrix<3, 1, double>& xi,
+      const LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
+      const LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+      const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+      LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element = nullptr);
+
+  /**
+   * \brief Construct a solid triad depending on the deformation gradient and return the rotation
+   * vector of said triad. The construction starts with a user-given base vector.
    *
    * @param rot_coupling_type (in) Type of triad construction.
    * @param xi (in) Parameter coordinates in the solid.
