@@ -1331,7 +1331,7 @@ post_processing(ssi_mono_3D_289tet4_scatra 3 "" "" 10 "_scatra" "")
 post_processing(ssi_mono_3D_289tet4_scatra 3 "" "" 10 "_structure" "")
 baci_test(ssi_mono_3D_tet4_batt_with_anode_plate_elch_s2i_butlervolmer 2 "")
 baci_test(ssi_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer 2 "")
-baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold 3 18)
+baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold 3 8)
 baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_cycling 3 40)
 baci_test(ssi_twoway_3D_1hex8_scatra 3 5)
 baci_test(ssi_twoway_3D_1hex8_scatra_linaniso_growthlaw 3 "")
@@ -1924,9 +1924,9 @@ baci_test(elch_3D_tet4_s2i_butlervolmer_mortar_standard_redist_BGS-AMG_3x3 3 "")
 baci_test(elch_3D_tet4_s2i_butlervolmer_plating_monolithic_reg_trig_BGS-AMG_4x4 3 "")
 
 # scalar-structure interaction using the MueLu/AMGnxn framework
-baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_7x7 3 "")
-baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_3x3 3 18)
-baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6 3 18)
+baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_BGS-AMG_7x7 3 8)
+baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_3x3 3 8)
+baci_test(ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6 3 8)
 
 # scatra-thermo interaction using the MueLu/AMGnxn framework
 baci_test(sti_mono_2D_quad4_elch_s2i_butlervolmerpeltier_diabatic_AMG_pointbased 3 "")
