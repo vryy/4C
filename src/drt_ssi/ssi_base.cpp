@@ -27,6 +27,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_vector.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -35,7 +36,6 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
-#include "../drt_lib/drt_utils_parallel.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -69,7 +69,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       temperature_funct_num_(
           DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
       temperature_vector_(Teuchos::null),
-      use_old_structure_(false),  // todo temporary flag
+      use_old_structure_(false),
       zeros_structure_(Teuchos::null),
       zeros_structure_manifold_(Teuchos::null)
 {
@@ -90,128 +90,19 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
   // reset the setup flag
   SetIsSetup(false);
 
-  // get the global problem
-  DRT::Problem* problem = DRT::Problem::Instance();
-
-  // 3.- Create the two uncoupled subproblems.
-  // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis(struct_disname);
-
-  // !!! TIME PARAMETER HANDLING !!!
-  // Determine which time params to use to build the single fields.
-  // In case of time stepping, time params have to be read from single field sections.
-  // In case of equal timestep size for all fields the time params are controlled solely
-  // by the problem section (e.g. ---SSI DYNAMIC or ---CELL DYNAMIC).
-  //
-  // access the ssi dynamic params
-  const Teuchos::ParameterList* structtimeparams = &globaltimeparams;
-  const Teuchos::ParameterList* scatratimeparams = &globaltimeparams;
-  if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))
-  {
-    structtimeparams = &structparams;
-    scatratimeparams = &scatraparams;
-  }
-
   // do discretization specific setup (e.g. clone discr. scatra from structure)
   InitDiscretizations(comm, struct_disname, scatra_disname);
 
-  // we do not construct a structure here, in case it
-  // was built externally and handed into this object.
-  if (struct_adapterbase_ptr_ == Teuchos::null)
-  {
-    // create structural field
-    // todo FIX THIS !!!!
-    // Decide whether to use old structural time integration or new structural time integration.
-    // This should be removed as soon as possible!
-    // Also all structural elements need to be adapted first!
-    // Then, we can switch the remaining ssi tests using the old time integration to the new one,
-    // i.e.: todo
-    //
-    // build structure
-    if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
-    {
-      struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(structparams);
-
-      // initialize structure base algorithm
-      struct_adapterbase_ptr_->Init(
-          *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
-    }
-    else if (structparams.get<std::string>("INT_STRATEGY") ==
-             "Old")  // todo this is the part that should be removed !
-    {
-      if (comm.MyPID() == 0)
-      {
-        std::cout << "\n"
-                  << " USING OLD STRUCTURAL TIME INTEGRATION FOR STRUCTURE-SCATRA-INTERACTION!\n"
-                     " FIX THIS! THIS IS ONLY SUPPOSED TO BE TEMPORARY!"
-                     "\n"
-                  << std::endl;
-      }
-
-      use_old_structure_ = true;
-
-      Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-          Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
-              *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
-      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
-          structure->StructureField(), true);
-      if (structure_ == Teuchos::null)
-        dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
-    }
-    else
-    {
-      dserror(
-          "Unknown time integration requested!\n"
-          "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!\n"
-          "If you want to use yet unsupported elements or algorithms,\n"
-          "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
-    }
-
-  }  // if structure_ not set from outside
-
-  // create and initialize scatra base algorithm.
-  // scatra time integrator constructed and initialized inside.
-  // mesh is written inside. cloning must happen before!
-  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  ScaTraBaseAlgorithm()->Init(*scatratimeparams, scatraparams,
-      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
-
-  // create and initialize scatra base algorithm for manifolds
-  if (IsScaTraManifold())
-  {
-    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-
-    ScaTraManifoldBaseAlgorithm()->Init(*scatratimeparams,
-        SSI::UTILS::CloneScaTraManifoldParams(
-            scatraparams, globaltimeparams.sublist("MANIFOLD"), Comm()),
-        problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
-        "scatra_manifold", isAle);
-  }
+  InitTimeIntegrators(
+      globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const RedistributionType redistribution_type =
       InitFieldCoupling(comm, struct_disname, scatra_disname);
 
-  // is adaptive time stepping activated?
-  if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
-  {
-    // safety check: adaptive time stepping in one of the subproblems?
-    if (!DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
-    {
-      dserror(
-          "Must provide adaptive time stepping algorithim in one of the subproblems. (Currently "
-          "just ScTra)");
-    }
-    if (DRT::INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-        INPAR::STR::timada_kind_none)
-      dserror("Adaptive time stepping in SSI currently just from ScaTra");
-    if (DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
-      dserror("Currently, only one step methods are allowed for adaptive time stepping");
-  }
+  if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
 
   // set isinit_ flag true
   SetIsInit(true);
-
-  if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
 }
 
 /*----------------------------------------------------------------------*
@@ -799,4 +690,105 @@ const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraField() const
 const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> SSI::SSIBase::ScaTraManifold() const
 {
   return scatra_manifold_base_algorithm_->ScaTraField();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
+    const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+    const std::string& struct_disname, const std::string& scatra_disname, const bool isAle)
+{
+  // get the global problem
+  auto* problem = DRT::Problem::Instance();
+
+  // time parameter handling
+  // In case of different time stepping, time params have to be read from single field sections.
+  // In case of equal time step size for all fields the time params are controlled solely by the
+  // problem section (e.g. ---SSI DYNAMIC or ---CELL DYNAMIC).
+  const auto* structtimeparams = &globaltimeparams;
+  const auto* scatratimeparams = &globaltimeparams;
+  if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))
+  {
+    structtimeparams = &structparams;
+    scatratimeparams = &scatraparams;
+  }
+
+  // we do not construct a structure, in case it was built externally and handed into this object
+  if (struct_adapterbase_ptr_ == Teuchos::null)
+  {
+    // access the structural discretization
+    auto structdis = problem->GetDis(struct_disname);
+
+    // build structure based on new structural time integration
+    if (structparams.get<std::string>("INT_STRATEGY") == "Standard")
+    {
+      struct_adapterbase_ptr_ = ADAPTER::STR::BuildStructureAlgorithm(structparams);
+
+      // initialize structure base algorithm
+      struct_adapterbase_ptr_->Init(
+          *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
+    }
+    // build structure based on old structural time integration
+    else if (structparams.get<std::string>("INT_STRATEGY") == "Old")
+    {
+      use_old_structure_ = true;
+
+      auto structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
+          *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
+      structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(
+          structure->StructureField(), true);
+      if (structure_ == Teuchos::null)
+        dserror("cast from ADAPTER::Structure to ADAPTER::SSIStructureWrapper failed");
+    }
+    else
+    {
+      dserror(
+          "Unknown time integration requested!\n"
+          "Set parameter INT_STRATEGY to Standard in ---STRUCTURAL DYNAMIC section!\n"
+          "If you want to use yet unsupported elements or algorithms,\n"
+          "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
+    }
+  }
+
+  // create and initialize scatra base algorithm.
+  // scatra time integrator constructed and initialized inside.
+  // mesh is written inside. cloning must happen before!
+  scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+  ScaTraBaseAlgorithm()->Init(*scatratimeparams, scatraparams,
+      problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
+
+  // create and initialize scatra base algorithm for manifolds
+  if (IsScaTraManifold())
+  {
+    scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
+
+    ScaTraManifoldBaseAlgorithm()->Init(*scatratimeparams,
+        SSI::UTILS::CloneScaTraManifoldParams(
+            scatraparams, globaltimeparams.sublist("MANIFOLD"), Comm()),
+        problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
+        "scatra_manifold", isAle);
+  }
+
+  // do checks if adaptive time stepping is activated
+  if (DRT::INPUT::IntegralValue<bool>(globaltimeparams, "ADAPTIVE_TIMESTEPPING"))
+    CheckAdaptiveTimeStepping(scatraparams, structparams);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::CheckAdaptiveTimeStepping(
+    const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams)
+{
+  // safety check: adaptive time stepping in one of the sub problems
+  if (!DRT::INPUT::IntegralValue<bool>(scatraparams, "ADAPTIVE_TIMESTEPPING"))
+  {
+    dserror(
+        "Must provide adaptive time stepping algorithm in one of the sub problems. (Currently "
+        "just ScaTra)");
+  }
+  if (DRT::INPUT::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
+      INPAR::STR::timada_kind_none)
+    dserror("Adaptive time stepping in SSI currently just from ScaTra");
+  if (DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
+    dserror("Currently, only one step methods are allowed for adaptive time stepping");
 }
