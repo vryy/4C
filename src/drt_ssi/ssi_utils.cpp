@@ -383,6 +383,60 @@ SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
+    const Teuchos::ParameterList& scatraparams,
+    const Teuchos::ParameterList& sublist_manifold_params, const Epetra_Comm& comm)
+{
+  auto* scatra_manifold_params = new Teuchos::ParameterList(scatraparams);
+
+  switch (DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(
+      sublist_manifold_params, "INITIALFIELD"))
+  {
+    case INPAR::SCATRA::initfield_zero_field:
+    {
+      scatra_manifold_params->set<std::string>("INITIALFIELD", "zero_field");
+      scatra_manifold_params->set<int>("INITFUNCNO", -1);
+      break;
+    }
+    case INPAR::SCATRA::initfield_field_by_function:
+    {
+      scatra_manifold_params->set<std::string>("INITIALFIELD", "field_by_function");
+      scatra_manifold_params->set<int>(
+          "INITFUNCNO", sublist_manifold_params.get<int>("INITFUNCNO"));
+      break;
+    }
+    case INPAR::SCATRA::initfield_field_by_condition:
+    {
+      scatra_manifold_params->set<std::string>("INITIALFIELD", "field_by_condition");
+      scatra_manifold_params->set<int>("INITFUNCNO", -1);
+      break;
+    }
+    default:
+      dserror("Initial field type on manifold not supported.");
+      break;
+  }
+
+  scatra_manifold_params->set<std::string>("OUTPUTSCALARS", "none");
+  scatra_manifold_params->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
+
+  // so far only one scalar -> block_condition_dof not reasonable
+  if (Teuchos::getIntegralValue<LINALG::MatrixType>(scatraparams, "MATRIXTYPE") ==
+      LINALG::MatrixType::block_condition_dof)
+  {
+    scatra_manifold_params->set<std::string>("MATRIXTYPE", "block_condition");
+    if (comm.MyPID() == 0)
+    {
+      std::cout << "WARNING: MATRIXTYPE 'block_condition_dof' not reasonable for ScaTra on "
+                   "manifolds. Using 'block_condition' instead"
+                << std::endl;
+    }
+  }
+
+  return *scatra_manifold_params;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(
     const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
 {
@@ -466,8 +520,22 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
       scatrastructuredomain_ =
           SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()),
               ssi_mono_algorithm.MapStructure());
+
       structurescatradomain_ = SetupBlockMatrix(ssi_mono_algorithm.MapStructure(),
           Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()));
+
+      if (ssi_mono_algorithm.IsScaTraManifold())
+      {
+        // structure dofs on manifold discretization
+        const auto map_structure_manifold = Teuchos::rcp(
+            new LINALG::MultiMapExtractor(*ssi_mono_algorithm.MapStructureManifold()->Map(0),
+                std::vector<Teuchos::RCP<const Epetra_Map>>(
+                    1, ssi_mono_algorithm.MapStructureManifold()->Map(0))));
+
+        scatramanifoldstructuredomain_ =
+            SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraManifold()->BlockMaps()),
+                map_structure_manifold);
+      }
 
       if (ssi_mono_algorithm.SSIInterfaceMeshtying())
       {
@@ -482,6 +550,12 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
     {
       scatrastructuredomain_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
       structurescatradomain_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
+      if (ssi_mono_algorithm.IsScaTraManifold())
+      {
+        scatramanifoldstructuredomain_ =
+            SetupSparseMatrix(ssi_mono_algorithm.ScaTraManifold()->DofRowMap());
+      }
+
       if (ssi_mono_algorithm.SSIInterfaceMeshtying())
         scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
 

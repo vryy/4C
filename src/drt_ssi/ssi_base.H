@@ -49,7 +49,7 @@ namespace SSI
     class SSISlaveSideConverter;
   }
 
-  enum RedistributionType
+  enum class RedistributionType
   {
     none,     //!< unknown redistribution type
     binning,  //!< redistribute by binning
@@ -107,12 +107,12 @@ namespace SSI
           the constructed in \ref Setup().
 
     \warning none
-    \return int
+    \return void
     \date 08/16
     \author rauch  */
-    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) = 0;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) = 0;
 
     /*! \brief Setup all class internal objects and members
 
@@ -146,8 +146,8 @@ namespace SSI
     \return int
     \date 08/16
     \author vuong, rauch  */
-    virtual int InitFieldCoupling(const Epetra_Comm& comm, const std::string& struct_disname,
-        const std::string& scatra_disname);
+    virtual RedistributionType InitFieldCoupling(const Epetra_Comm& comm,
+        const std::string& struct_disname, const std::string& scatra_disname);
 
     /*! \brief Setup discretizations
 
@@ -175,6 +175,12 @@ namespace SSI
     {
       return map_structure_condensed_;
     };
+
+    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureManifold() const
+    {
+      return map_structure_manifold_;
+    }
 
     //! holds slave side converter og multiple coupling adapters
     Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
@@ -215,8 +221,17 @@ namespace SSI
       return scatra_base_algorithm_;
     }
 
+    //! access the scalar transport base algorithm on manifolds
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScaTraManifoldBaseAlgorithm() const
+    {
+      return scatra_manifold_base_algorithm_;
+    }
+
     //! access the scalar transport field
     const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
+
+    //! access the scalar transport field on manifolds
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
 
     /// set structure solution on scatra field
     void SetStructSolution(
@@ -233,6 +248,12 @@ namespace SSI
 
     //! indicates, if meshtying includes triple points
     bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; };
+
+    //! solve additional scatra field on manifolds
+    bool IsScaTraManifold() const { return is_scatra_manifold_; }
+
+    //! Redistribute nodes and elements on processors
+    void Redistribute(RedistributionType redistribution_type);
 
    protected:
     //! get bool indicating if old structural time integration is used
@@ -288,8 +309,11 @@ namespace SSI
     //! flag indicating if class is setup
     bool issetup_;
 
-    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
-    //! (partitioned algorithm)
+    //! solve additional scatra field on manifolds
+    const bool is_scatra_manifold_;
+
+    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
+    //! iterations (partitioned algorithm)
     int iter_;
 
     //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom, 2:
@@ -303,11 +327,17 @@ namespace SSI
     //! map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
+    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_manifold_;
+
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;
 
-    /// ptr underlying scatra problem base algorithm
+    //! underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;
+
+    //! underlying scatra problem base algorithm on manifolds
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
 
     //! slave side converter
     Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
@@ -334,8 +364,11 @@ namespace SSI
     //! todo Remove as soon as structural elements are adapted to new structure.
     bool use_old_structure_;
 
-    /// a zero vector of full length
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    //! a zero vector of full length with structure dofs
+    Teuchos::RCP<Epetra_Vector> zeros_structure_;
+
+    //! a zero vector of full length with structure dofs on manifold
+    Teuchos::RCP<Epetra_Vector> zeros_structure_manifold_;
 
   };  // SSI_Base
 }  // namespace SSI

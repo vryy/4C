@@ -18,12 +18,10 @@
 #include "drt_discret.H"
 #include "drt_dserror.H"
 
-#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../drt_lib/drt_matchingoctree.H"
-#include "../drt_lib/drt_condition.H"
 
 #include <Epetra_IntVector.h>
 
@@ -49,12 +47,11 @@ void DRT::UTILS::RedistributeDiscretizationsByBinning(
                             << IO::endl;
       IO::cout(IO::verbose) << "| Redistribute discretizations using Binning Strategy ...       "
                             << IO::endl;
-      for (int dis_num = 0; dis_num < (int)(vector_of_discretizations.size()); dis_num++)
+      for (const auto& curr_dis : vector_of_discretizations)
       {
-        if (!vector_of_discretizations[dis_num]->Filled())
-          dserror("FillComplete(false,false,false) was not called");
+        if (!curr_dis->Filled()) dserror("FillComplete(false,false,false) was not called");
         IO::cout(IO::verbose) << "| Redistribute discretization " << std::setw(11)
-                              << vector_of_discretizations[dis_num]->Name() << IO::endl;
+                              << curr_dis->Name() << IO::endl;
       }
       IO::cout(IO::verbose) << "+---------------------------------------------------------------"
                             << IO::endl;
@@ -78,11 +75,8 @@ void DRT::UTILS::RedistributeDiscretizationsByBinning(
           vector_of_discretizations, stdelecolmap, stdnodecolmap);
   }  // if more than 1 proc
   else
-  {
-    for (int i = 0; i < static_cast<int>(vector_of_discretizations.size()); ++i)
-      vector_of_discretizations[i]->FillComplete();
-  }
-  return;
+    for (const auto& curr_dis : vector_of_discretizations) curr_dis->FillComplete();
+
 }  // DRT::UTILS::RedistributeDiscretizationsByBinning
 
 /*----------------------------------------------------------------------*
@@ -166,7 +160,6 @@ void DRT::UTILS::GhostDiscretizationOnAllProcs(
           "Fix this!");
   }
 #endif
-  return;
 }  // DRT::UTILS::GhostDiscretizationOnAllProcs
 
 /*---------------------------------------------------------------------*
@@ -225,7 +218,6 @@ void DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
     // print to screen
     PrintParallelDistribution(dis_to_redistribute);
   }  // if more than one proc
-  return;
 }  // MatchDistributionOfMatchingDiscretizations
 
 
@@ -311,7 +303,6 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
     // print to screen
     PrintParallelDistribution(dis_to_redistribute);
   }  // if more than one proc
-  return;
 }  // DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations
 
 
@@ -320,7 +311,8 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
 *----------------------------------------------------------------------*/
 void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     DRT::Discretization& dis_template, DRT::Discretization& dis_to_redistribute,
-    const std::string& condname_template, const std::string& condname_redistribute)
+    const std::string& condname_template, const std::string& condname_redistribute,
+    const bool print)
 {
   // clone communicator of target discretization
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.Comm().Clone());
@@ -405,9 +397,6 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     elementmatchingtree.FillSlaveToMasterGIDMapping(
         dis_to_redistribute, redistribute_rowelegid_vec, matched_ele_map);
 
-    // declare iterator
-    std::map<int, std::vector<double>>::iterator it;
-
     // now we have a map matching the geometry ids of slave elements
     // to the geometry id of master elements (always starting from 0).
     // for redistribution we need to translate the geometry ids to the
@@ -415,23 +404,26 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     // fill vectors with row and col gids for new distribution
     std::vector<int> redistribute_colelegid_vec;
     redistribute_rowelegid_vec.clear();
-    for (it = matched_ele_map.begin(); it != matched_ele_map.end(); ++it)
+    for (const auto& it : matched_ele_map)
     {
       // if this proc owns the template element we also want to own
       // the element of the redistributed discretization.
       // we also want to own all nodes of this element.
-      if ((int)(it->second)[2] == 1) redistribute_rowelegid_vec.push_back(it->first);
+      if (static_cast<int>((it.second)[2]) == 1) redistribute_rowelegid_vec.push_back(it.first);
 
-      redistribute_colelegid_vec.push_back(it->first);
+      redistribute_colelegid_vec.push_back(it.first);
     }
 
-    dis_to_redistribute.Comm().Barrier();
-    for (it = matched_ele_map.begin(); it != matched_ele_map.end(); ++it)
+    if (print)
     {
-      std::cout << "ELEMENT : " << it->first << " ->  ( " << it->second[0] << ", " << it->second[1]
-                << ", " << it->second[2] << " )"
-                << " on PROC " << dis_to_redistribute.Comm().MyPID()
-                << " map size = " << matched_ele_map.size() << std::endl;
+      dis_to_redistribute.Comm().Barrier();
+      for (const auto& it : matched_ele_map)
+      {
+        std::cout << "ELEMENT : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
+                  << ", " << it.second[2] << " )"
+                  << " on PROC " << dis_to_redistribute.Comm().MyPID()
+                  << " map size = " << matched_ele_map.size() << std::endl;
+      }
     }
 
 
@@ -448,7 +440,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
       for (int node = 0; node < ele->NumNode(); node++)
       {
         DRT::Condition* nodal_cond = nodes[node]->GetCondition(condname_redistribute);
-        if (nodal_cond != NULL)
+        if (nodal_cond != nullptr)
         {
           conditionedele = true;
           break;
@@ -483,18 +475,23 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     for (int lid = 0; lid < dis_template.NodeColMap()->NumMyElements(); ++lid)
     {
       if (dis_template.gNode(dis_template.NodeColMap()->GID(lid))
-              ->GetCondition(condname_template) != NULL)
+              ->GetCondition(condname_template) != nullptr)
         my_template_nodegid_vec.push_back(dis_template.NodeColMap()->GID(lid));
     }
 
     // fill vec with processor local node gids of dis to be redistributed
-    DRT::Condition* redistribute_cond = dis_to_redistribute.GetCondition(condname_redistribute);
-    const std::vector<int>* redistribute_cond_nodes = redistribute_cond->Nodes();
-    for (int lid = 0; lid < (int)redistribute_cond_nodes->size(); ++lid)
+    std::vector<DRT::Condition*> redistribute_conds;
+    dis_to_redistribute.GetCondition(condname_redistribute, redistribute_conds);
+
+    for (auto* const redistribute_cond : redistribute_conds)
     {
-      if (dis_to_redistribute.HaveGlobalNode(redistribute_cond_nodes->at(lid)))
-        if (dis_to_redistribute.gNode(redistribute_cond_nodes->at(lid))->Owner() == com->MyPID())
-          redistribute_rownodegid_vec.push_back(redistribute_cond_nodes->at(lid));
+      const std::vector<int>* redistribute_cond_nodes = redistribute_cond->Nodes();
+      for (int redistribute_cond_node : *redistribute_cond_nodes)
+      {
+        if (dis_to_redistribute.HaveGlobalNode(redistribute_cond_node))
+          if (dis_to_redistribute.gNode(redistribute_cond_node)->Owner() == com->MyPID())
+            redistribute_rownodegid_vec.push_back(redistribute_cond_node);
+      }
     }
 
     // initialize search tree for matching with template (source) nodes
@@ -514,22 +511,24 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     // fill vectors with row gids for new distribution
     redistribute_rownodegid_vec.clear();
     // std::vector<int> redistribute_colnodegid_vec;
-    for (it = matched_node_map.begin(); it != matched_node_map.end(); ++it)
+    for (const auto& it : matched_node_map)
     {
       // if this proc owns the template node we also want to own
       // the node of the redistributed discretization
-      if ((int)(it->second)[2] == 1) redistribute_rownodegid_vec.push_back(it->first);
+      if (static_cast<int>((it.second)[2]) == 1) redistribute_rownodegid_vec.push_back(it.first);
 
-      redistribute_colnodegid_vec.push_back(it->first);
+      redistribute_colnodegid_vec.push_back(it.first);
     }
-
-    dis_to_redistribute.Comm().Barrier();
-    for (it = matched_node_map.begin(); it != matched_node_map.end(); ++it)
+    if (print)
     {
-      std::cout << "NODE : " << it->first << " ->  ( " << it->second[0] << ", " << it->second[1]
-                << ", " << it->second[2] << " )"
-                << " on PROC " << dis_to_redistribute.Comm().MyPID()
-                << " map size = " << matched_node_map.size() << std::endl;
+      dis_to_redistribute.Comm().Barrier();
+      for (const auto& it : matched_node_map)
+      {
+        std::cout << "NODE : " << it.first << " ->  ( " << it.second[0] << ", " << it.second[1]
+                  << ", " << it.second[2] << " )"
+                  << " on PROC " << dis_to_redistribute.Comm().MyPID()
+                  << " map size = " << matched_node_map.size() << std::endl;
+      }
     }
 
 
@@ -542,7 +541,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
       DRT::Condition* testcond =
           dis_to_redistribute.gNode(dis_to_redistribute.NodeRowMap()->GID(lid))
               ->GetCondition(condname_redistribute);
-      if (testcond == NULL)
+      if (testcond == nullptr)
         redistribute_rownodegid_vec.push_back(
             dis_to_redistribute.gNode(dis_to_redistribute.NodeRowMap()->GID(lid))->Id());
     }
@@ -552,7 +551,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
       DRT::Condition* testcond =
           dis_to_redistribute.gNode(dis_to_redistribute.NodeColMap()->GID(lid))
               ->GetCondition(condname_redistribute);
-      if (testcond == NULL)
+      if (testcond == nullptr)
         redistribute_colnodegid_vec.push_back(
             dis_to_redistribute.gNode(dis_to_redistribute.NodeColMap()->GID(lid))->Id());
     }
@@ -588,7 +587,6 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     PrintParallelDistribution(dis_to_redistribute);
 
   }  // if more than one proc
-  return;
 }  // MatchElementDistributionOfMatchingConditionedElements
 
 
@@ -743,11 +741,10 @@ void DRT::UTILS::MatchElementRowColDistribution(const DRT::Discretization& dis_t
     // if this proc owns the template element we also want to own
     // the element of the redistributed discretization.
     // we also want to own all nodes of this element.
-    if ((int)(it->second)[2] == 1) row_id_vec_to_fill.push_back(it->first);
+    if (static_cast<int>((it->second)[2]) == 1) row_id_vec_to_fill.push_back(it->first);
 
     col_id_vec_to_fill.push_back(it->first);
   }
-  return;
 }  // DRT::UTILS::MatchElementRowColDistribution
 
 /*----------------------------------------------------------------------*
@@ -760,15 +757,9 @@ void DRT::UTILS::MatchNodalRowColDistribution(const DRT::Discretization& dis_tem
   std::set<int> temprowset;
   std::set<int> tempcolset;
 
-  for (int i = 0; i < (int)row_id_vec_to_fill.size(); ++i)
-  {
-    temprowset.insert(row_id_vec_to_fill[i]);
-  }
+  for (int& row_id_to_fill : row_id_vec_to_fill) temprowset.insert(row_id_to_fill);
 
-  for (int i = 0; i < (int)col_id_vec_to_fill.size(); ++i)
-  {
-    tempcolset.insert(col_id_vec_to_fill[i]);
-  }
+  for (int& col_id_to_fill : col_id_vec_to_fill) tempcolset.insert(col_id_to_fill);
 
   // preliminary work
   const Epetra_Map* redistribute_noderowmap = dis_to_redistribute.NodeRowMap();
@@ -807,7 +798,7 @@ void DRT::UTILS::MatchNodalRowColDistribution(const DRT::Discretization& dis_tem
   {
     // if this proc owns the template node we also want to own
     // the node of the redistributed discretization
-    if ((int)(it->second)[2] == 1) temprowset.insert(it->first);
+    if (static_cast<int>((it->second)[2]) == 1) temprowset.insert(it->first);
 
     tempcolset.insert(it->first);
   }
@@ -820,7 +811,6 @@ void DRT::UTILS::MatchNodalRowColDistribution(const DRT::Discretization& dis_tem
   col_id_vec_to_fill.clear();
   col_id_vec_to_fill.reserve(tempcolset.size());
   col_id_vec_to_fill.assign(tempcolset.begin(), tempcolset.end());
-  return;
 }  // DRT::UTILS::MatchNodalRowColDistribution
 
 /*----------------------------------------------------------------------------*

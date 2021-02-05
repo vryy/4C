@@ -11,9 +11,10 @@
 
 #include "drt_validparameters.H"
 #include "inpar_ssi.H"
+#include "inpar_scatra.H"
 #include "../drt_lib/drt_conditiondefinition.H"
-#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_equilibrate.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {
@@ -44,16 +45,16 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "SCATRA_FILENAME", "nil", "Control-file name for reading scatra results in SSI", &ssidyn);
 
   // Type of coupling strategy between the two fields
-  setStringToIntegralParameter<int>("FIELDCOUPLING", "volume_matching",
+  setStringToIntegralParameter<FieldCoupling>("FIELDCOUPLING", "volume_matching",
       "Type of coupling strategy between fields",
       tuple<std::string>("volume_matching", "volume_nonmatching", "boundary_nonmatching",
           "volumeboundary_matching"),
-      tuple<int>(coupling_volume_match, coupling_volume_nonmatch, coupling_boundary_nonmatch,
-          coupling_volumeboundary_match),
+      tuple<FieldCoupling>(FieldCoupling::volume_match, FieldCoupling::volume_nonmatch,
+          FieldCoupling::boundary_nonmatch, FieldCoupling::volumeboundary_match),
       &ssidyn);
 
   // Coupling strategy for SSI solvers
-  setStringToIntegralParameter<int>("COUPALGO", "ssi_IterStagg",
+  setStringToIntegralParameter<SolutionSchemeOverFields>("COUPALGO", "ssi_IterStagg",
       "Coupling strategies for SSI solvers",
       tuple<std::string>("ssi_OneWay_ScatraToSolid", "ssi_OneWay_SolidToScatra",
           //                                "ssi_SequStagg_ScatraToSolid",
@@ -61,20 +62,25 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           "ssi_IterStagg", "ssi_IterStaggFixedRel_ScatraToSolid",
           "ssi_IterStaggFixedRel_SolidToScatra", "ssi_IterStaggAitken_ScatraToSolid",
           "ssi_IterStaggAitken_SolidToScatra", "ssi_Monolithic"),
-      tuple<int>(ssi_OneWay_ScatraToSolid, ssi_OneWay_SolidToScatra,
+      tuple<SolutionSchemeOverFields>(SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid,
+          SolutionSchemeOverFields::ssi_OneWay_SolidToScatra,
           //                                ssi_SequStagg_ScatraToSolid,
           //                                ssi_SequStagg_SolidToScatra,
-          ssi_IterStagg, ssi_IterStaggFixedRel_ScatraToSolid, ssi_IterStaggFixedRel_SolidToScatra,
-          ssi_IterStaggAitken_ScatraToSolid, ssi_IterStaggAitken_SolidToScatra, ssi_Monolithic),
+          SolutionSchemeOverFields::ssi_IterStagg,
+          SolutionSchemeOverFields::ssi_IterStaggFixedRel_ScatraToSolid,
+          SolutionSchemeOverFields::ssi_IterStaggFixedRel_SolidToScatra,
+          SolutionSchemeOverFields::ssi_IterStaggAitken_ScatraToSolid,
+          SolutionSchemeOverFields::ssi_IterStaggAitken_SolidToScatra,
+          SolutionSchemeOverFields::ssi_Monolithic),
       &ssidyn);
 
   // type of scalar transport time integration
-  setStringToIntegralParameter<int>("SCATRATIMINTTYPE", "Standard",
+  setStringToIntegralParameter<ScaTraTimIntType>("SCATRATIMINTTYPE", "Standard",
       "scalar transport time integration type is needed to instantiate correct scalar transport "
       "time integration scheme for ssi problems",
       tuple<std::string>("Standard", "Cardiac_Monodomain", "Elch"),
-      tuple<int>(INPAR::SSI::scatratiminttype_standard,
-          INPAR::SSI::scatratiminttype_cardiac_monodomain, INPAR::SSI::scatratiminttype_elch),
+      tuple<ScaTraTimIntType>(
+          ScaTraTimIntType::standard, ScaTraTimIntType::cardiac_monodomain, ScaTraTimIntType::elch),
       &ssidyn);
 
   // Restart from Structure problem instead of SSI
@@ -166,10 +172,33 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "average stress at master and slave side to smooth out errors from discretization and "
       "non-zero residuals for output of stress.",
       &ssidynmono);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for SSI with manifold */
+  /*----------------------------------------------------------------------*/
+
+  Teuchos::ParameterList& ssidynmanifold = ssidyn.sublist("MANIFOLD", false,
+      "Monolithic Structure Scalar Interaction with additional scalar transport on manifold");
+
+  BoolParameter("ADD_MANIFOLD", "no", "activate additional manifold?", &ssidynmanifold);
+
+
+  setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
+      "Initial field for scalar transport on manifold",
+      tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
+      tuple<int>(INPAR::SCATRA::initfield_zero_field, INPAR::SCATRA::initfield_field_by_function,
+          INPAR::SCATRA::initfield_field_by_condition),
+      &ssidynmanifold);
+
+  IntParameter("INITFUNCNO", -1, "function number for scalar transport on manifold initial field",
+      &ssidynmanifold);
+
+  IntParameter(
+      "LINEAR_SOLVER", -1, "linear solver for scalar transport on manifold", &ssidynmanifold);
 }
 
-
-
+/*--------------------------------------------------------------------
+--------------------------------------------------------------------*/
 void INPAR::SSI::SetValidConditions(
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
@@ -326,4 +355,28 @@ void INPAR::SSI::SetValidConditions(
     ssiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
 
   condlist.push_back(ssiinterfacemeshtying3domainintersection);
+
+  /*--------------------------------------------------------------------*/
+  // condition, where additional scatra field on manifold is created
+  auto ssisurfacemanifold = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SSI MANIFOLD SURF CONDITIONS", "SSISurfaceManifold", "scalar transport on manifold",
+      DRT::Condition::SSISurfaceManifold, true, DRT::Condition::Surface));
+
+  ssisurfacemanifold->AddComponent(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  condlist.emplace_back(ssisurfacemanifold);
+
+  /*--------------------------------------------------------------------*/
+  // initial field by condition for scatra on manifold
+  auto surfmanifoldinitfields =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF SCATRA MANIFOLD INITIAL FIELD CONDITIONS",
+          "ScaTraManifoldInitfield", "Surface ScaTra Manifold Initfield",
+          DRT::Condition::SurfaceInitfield, false, DRT::Condition::Surface));
+
+  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new StringConditionComponent("Field", "ScaTra",
+      Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"))));
+
+  surfmanifoldinitfields->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
+
+  condlist.emplace_back(surfmanifoldinitfields);
 }

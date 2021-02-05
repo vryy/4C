@@ -28,45 +28,51 @@ namespace SSI
   class SSICouplingBase
   {
    public:
-    //! constructor
-    SSICouplingBase(){};
+    SSICouplingBase() = default;
 
-    //! destructor
-    virtual ~SSICouplingBase(){};
+    virtual ~SSICouplingBase() = default;
 
-    //! Init
-    virtual void Init(const int ndim,                 //!< dimension of the problem
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-        ) = 0;
+    //! \brief init this class
+    //! \param ndim                     dimension of the problem
+    //! \param structdis                underlying structure discretization
+    //! \param scatradis                underlying scatra discretization
+    //! \param scatra_manifold_dis      underlying scatra manifold discretization
+    virtual void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis,
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) = 0;
 
     //! \brief setup this class
     virtual void Setup() = 0;
 
 
-    //! exchange material pointers of both discratizations
-    virtual void AssignMaterialPointers(
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-        ) = 0;
+    //! \brief exchange material pointers of both discratizations
+    //!
+    //! \param structdis   underlying structure discretization
+    //! \param scatradis   underlying scatra discretization
+    virtual void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
-    //! set structure mesh displacement on scatra field
-    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                 scatra,        //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> disp  //!< displacement field to set
-        ) = 0;
+    //! \brief set structure mesh displacement on scatra field
+    //!
+    //! \param scatra    underlying scatra problem of the SSI problem
+    //! \param disp      displacement field to set
+    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> disp) = 0;
 
-    //! set structure velocity fields on scatra field
-    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                       scatra,  //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity field to set
-        Teuchos::RCP<const Epetra_Vector> vel       //!< velocity field to set
-        ) = 0;
+    //! \brief set structure velocity fields on scatra field
+    //!
+    //! \param scatra    underlying scatra problem of the SSI problem
+    //! \param convvel   convective velocity field to set
+    //! \param vel       velocity field to set
+    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
-    //! set scatra solution on structure field
-    virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
-        Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
-        ) = 0;
+    //! \brief set scatra solution on structure field
+    //!
+    //! \param structdis    structural discretization
+    //! \param phi          scalar field
+    virtual void SetScalarField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) = 0;
 
     //! set temperature field on structure field
     virtual void SetTemperatureField(
@@ -77,45 +83,27 @@ namespace SSI
   class SSICouplingMatchingVolume : public SSICouplingBase
   {
    public:
-    //! constructor
     SSICouplingMatchingVolume() : issetup_(false), isinit_(false){};
 
-    //! destructor
-    virtual ~SSICouplingMatchingVolume(){};
+    ~SSICouplingMatchingVolume() override = default;
 
-    //! Init
-    virtual void Init(const int ndim,                 //!< dimension of the problem
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis,
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
 
-    //! \brief setup this class
-    virtual void Setup();
+    void Setup() override;
 
+    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    //! exchange material pointers of both discretizations
-    virtual void AssignMaterialPointers(
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    //! set structure mesh displacement on scatra field
-    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                 scatra,        //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> disp  //!< displacement field to set
-    );
+    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    //! set structure velocity fields on scatra field
-    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                       scatra,  //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity field to set
-        Teuchos::RCP<const Epetra_Vector> vel       //!< velocity field to set
-    );
-
-    //! set scatra solution on structure field
-    virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
-        Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
-    );
+    void SetScalarField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
@@ -158,48 +146,31 @@ namespace SSI
   class SSICouplingNonMatchingBoundary : public SSICouplingBase
   {
    public:
-    //! constructor
     SSICouplingNonMatchingBoundary()
         : adaptermeshtying_(Teuchos::null),
           extractor_(Teuchos::null),
           issetup_(false),
           isinit_(false){};
 
-    //! destructor
-    virtual ~SSICouplingNonMatchingBoundary(){};
+    ~SSICouplingNonMatchingBoundary() override = default;
 
-    //! Setup
-    virtual void Init(const int ndim,                 //!< dimension of the problem
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis,
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
 
-    //! \brief setup this class
-    virtual void Setup();
+    void Setup() override;
 
-    //! exchange material pointers of both discretizations
-    virtual void AssignMaterialPointers(
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    //! set structure mesh displacement on scatra field
-    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                 scatra,        //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> disp  //!< displacement field to set
-    );
+    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    //! set structure velocity field on scatra field
-    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                       scatra,  //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity field to set
-        Teuchos::RCP<const Epetra_Vector> vel       //!< velocity field to set
-    );
+    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    //! set scatra solution on structure field
-    virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
-        Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
-    );
+    void SetScalarField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
@@ -261,45 +232,28 @@ namespace SSI
   class SSICouplingNonMatchingVolume : public SSICouplingBase
   {
    public:
-    //! constructor
     SSICouplingNonMatchingVolume()
         : volcoupl_structurescatra_(Teuchos::null), issetup_(false), isinit_(false){};
 
-    //! destructor
-    virtual ~SSICouplingNonMatchingVolume(){};
+    ~SSICouplingNonMatchingVolume() override = default;
 
-    //! Init
-    virtual void Init(const int ndim,                 //!< dimension of the problem
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis,
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
 
-    //! \brief setup this class
-    virtual void Setup();
+    void Setup() override;
 
-    //! exchange material pointers of both discretizations
-    virtual void AssignMaterialPointers(
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    //! set structure mesh displacement on scatra field
-    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                 scatra,        //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> disp  //!< displacement field to set
-    );
+    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    //! set structure velocity field on scatra field
-    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                       scatra,  //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity field to set
-        Teuchos::RCP<const Epetra_Vector> vel       //!< velocity field to set
-    );
+    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
-    //! set scatra solution on structure field
-    virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
-        Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
-    );
+    void SetScalarField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
@@ -349,52 +303,32 @@ namespace SSI
   class SSICouplingMatchingVolumeAndBoundary : public SSICouplingBase
   {
    public:
-    //! constructor
     SSICouplingMatchingVolumeAndBoundary() : issetup_(false), isinit_(false){};
 
-    //! destructor
-    virtual ~SSICouplingMatchingVolumeAndBoundary(){};
+    ~SSICouplingMatchingVolumeAndBoundary() override = default;
 
-    //! \brief Setup
-    //! \note  We need to make sure that the parallel distribution of Volume and Boundary
-    //!        is the same externally! The best thing is if you do this in your *_dyn.cpp,
-    //!        i.e., your global control algorithm.
-    virtual void Init(const int ndim,                 //!< dimension of the problem
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void Init(const int ndim, Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis,
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis) override;
 
-    //! \brief setup this class
-    virtual void Setup();
 
-    //! exchange material pointers of both discretizations
-    virtual void AssignMaterialPointers(
-        Teuchos::RCP<DRT::Discretization> structdis,  //!< underlying structure discretization
-        Teuchos::RCP<DRT::Discretization> scatradis   //!< underlying scatra discretization
-    );
+    void Setup() override;
 
-    //! set structure mesh displacement on scatra field
-    virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                 scatra,        //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> disp  //!< displacement field to set
-    );
 
-    //! set structure velocity field on scatra field
-    virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>
-                                       scatra,  //!< underlying scatra problem of the SSI problem
-        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity field to set
-        Teuchos::RCP<const Epetra_Vector> vel       //!< velocity field to set
-    );
+    void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
+        Teuchos::RCP<DRT::Discretization> scatradis) override;
 
-    //! set scatra solution on structure field
-    virtual void SetScalarField(DRT::Discretization& structdis,  //!< structural discretization
-        Teuchos::RCP<const Epetra_Vector> phi                    //!< scalar field
-    );
+    void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> disp) override;
 
-    void SetTemperatureField(DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp)
-    {
-      dserror("only for matching nodes");
-    };
+    void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
+
+    void SetScalarField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
+
+    void SetTemperatureField(
+        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
 
    private:
     //! flag indicating if class is setup

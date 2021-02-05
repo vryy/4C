@@ -694,8 +694,8 @@ void MAT::InelasticFactorsHandler::Setup(MAT::PAR::MultiplicativeSplitDefgrad_El
   // safety checks
   // get the scatra structure control parameter list
   const Teuchos::ParameterList& ssicontrol = DRT::Problem::Instance()->SSIControlParams();
-  if (DRT::INPUT::IntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
-      INPAR::SSI::ssi_Monolithic)
+  if (Teuchos::getIntegralValue<INPAR::SSI::SolutionSchemeOverFields>(ssicontrol, "COUPALGO") ==
+      INPAR::SSI::SolutionSchemeOverFields::ssi_Monolithic)
   {
     for (auto& inelfac : facdefgradin_)
     {

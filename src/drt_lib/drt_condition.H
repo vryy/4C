@@ -250,6 +250,7 @@ namespace DRT
       SSICouplingScatraToSolid,
       SSIInterfaceMeshtying,
       SSIMeshtying3DomainIntersection,
+      SSISurfaceManifold,
       SSTIInterfaceMeshtying,
       SSTIMeshtying3DomainIntersection,
       RedAirwayVentilatorCond,

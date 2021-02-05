@@ -54,7 +54,8 @@ namespace SSI
   enum class Subproblem : int
   {
     scalar_transport,
-    structure
+    structure,
+    manifold
   };
 
   class SSIMono : public SSIBase
@@ -70,14 +71,9 @@ namespace SSI
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
-    int Init(const Epetra_Comm& comm,                    //!< communicator
-        const Teuchos::ParameterList& globaltimeparams,  //!< parameter list for time integration
-        const Teuchos::ParameterList& scatraparams,      //!< parameter list for scalar transport
-        const Teuchos::ParameterList& structparams,      //!< parameter list for structure
-        std::string struct_disname,                      //!< name of structural discretization
-        std::string scatra_disname,  //!< name of scalar transport discretization
-        bool isAle                   //!< flag for ALE
-        ) override;
+    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! get vector containing positions within system matrix for specific subproblem
     Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
@@ -85,8 +81,11 @@ namespace SSI
     //! get position within global dof map for specific subproblem
     int GetProblemPosition(Subproblem subproblem) const;
 
-    //! return global map extractor (0: scalar transport, 1: structure)
-    const Teuchos::RCP<LINALG::MapExtractor>& MapsSubProblems() const { return maps_sub_problems_; }
+    //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
+    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
+    {
+      return maps_sub_problems_;
+    };
 
     //! return map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; }
@@ -129,8 +128,9 @@ namespace SSI
    private:
     // strategies for Newton-Raphson convergence check
     class ConvCheckStrategyBase;
-    class ConvCheckStrategyStd;
     class ConvCheckStrategyElch;
+    class ConvCheckStrategyElchScaTraManifold;
+    class ConvCheckStrategyStd;
 
     //! assemble global system of equations
     void AssembleMatAndRHS();
@@ -179,8 +179,8 @@ namespace SSI
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
 
-    //! global map extractor (0: scalar transport, 1: structure)
-    Teuchos::RCP<LINALG::MapExtractor> maps_sub_problems_;
+    //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
+    Teuchos::RCP<LINALG::MultiMapExtractor> maps_sub_problems_;
 
     //! map extractor associated with blocks of global system matrix
     Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;

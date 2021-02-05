@@ -64,6 +64,11 @@ namespace SSI
         const std::string& conditionname_coupling,
         const std::string& conditionname_3_domain_intersection);
 
+    //! clone scatra specific parameters for solver of manifold. Add manifold specific parameters
+    Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
+        const Teuchos::ParameterList& sublist_manifold_params, const Epetra_Comm& comm);
+
+
     /*---------------------------------------------------------------------------------*
      *---------------------------------------------------------------------------------*/
     //! sets up and holds all subblocks of system matrices and system matrix for SSTI simulations
@@ -73,22 +78,26 @@ namespace SSI
       SSIMatrices(
           const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra);
 
-      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
+      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; }
 
       //! return subblocks of system matrix
       //@{
       Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureDomain()
       {
         return scatrastructuredomain_;
-      };
+      }
       Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureInterface()
       {
         return scatrastructureinterface_;
-      };
+      }
       Teuchos::RCP<LINALG::SparseOperator> StructureScaTraDomain()
       {
         return structurescatradomain_;
-      };
+      }
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureDomain()
+      {
+        return scatramanifoldstructuredomain_;
+      }
       //@}
 
      private:
@@ -105,6 +114,7 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
       Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
       Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
+      Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructuredomain_;
       //@}
     };
 
