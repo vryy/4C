@@ -584,7 +584,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructureDomain(
     }
     else
     {
-      AssembleScatraStructureDomainMeshtying(
+      AssembleScatraManifoldStructureDomainMeshtying(
           systemmatrix_block->Matrix(
               BlockPositionScaTraManifold()->at(iblock), PositionStructure()),
           manifoldstructuredomain_block->Matrix(iblock, 0), false);
@@ -611,7 +611,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructureDomain(
   }
   else
   {
-    AssembleScatraStructureDomainMeshtying(
+    AssembleScatraManifoldStructureDomainMeshtying(
         systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure()),
         *manifoldstructuredomain_sparse, false);
   }
