@@ -9,17 +9,16 @@
 
 #include "ssi_monolithic.H"
 
-#include "../drt_io/io_control.H"
-
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_matrixtransform.H"
-
 #include "../drt_adapter/ad_str_ssiwrapper.H"
+
+#include "../drt_io/io_control.H"
 
 #include "../drt_lib/drt_locsys.H"
 
-#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "../linalg/linalg_matrixtransform.H"
+#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -84,7 +83,7 @@ SSI::AssembleStrategySparse::AssembleStrategySparse(const Teuchos::RCP<const SSI
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleScatraDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleScatra(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatradomain)
 {
@@ -106,7 +105,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleScatraDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleScatra(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatradomain)
 {
@@ -121,8 +120,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleScatraDomain(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+void SSI::AssembleStrategySparse::AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> scatradomain)
 {
   auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
@@ -130,13 +128,13 @@ void SSI::AssembleStrategySparse::AssembleScatraDomain(
   auto scatradomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatradomain);
 
   // add scalar transport system matrix to global system matrix
-  systemmatrix_sparse->Add(*scatradomain_sparse, false, 1.0, 0.0);
+  systemmatrix_sparse->Add(*scatradomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
  |                         assemble structure domain into system matrix |
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleStructureDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
@@ -150,15 +148,14 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureDomain(
   }
   else
   {
-    AssembleStructureDomainMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain,
-        false);
+    AssembleStructureMeshtying(
+        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleStructureDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
@@ -172,15 +169,14 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructureDomain(
   }
   else
   {
-    AssembleStructureDomainMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain,
-        false);
+    AssembleStructureMeshtying(
+        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleStructureDomain(
+void SSI::AssembleStrategySparse::AssembleStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
@@ -190,14 +186,14 @@ void SSI::AssembleStrategySparse::AssembleStructureDomain(
   if (!ssi_mono_->SSIInterfaceMeshtying())
     systemmatrix_sparse->Add(*structuredomain, false, 1.0, 1.0);
   else
-    AssembleStructureDomainMeshtying(*systemmatrix_sparse, structuredomain, true);
+    AssembleStructureMeshtying(*systemmatrix_sparse, structuredomain);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
+void SSI::AssembleStrategyBase::AssembleStructureMeshtying(
     LINALG::SparseMatrix& systemmatrix_structure,
-    Teuchos::RCP<LINALG::SparseMatrix> structuredomain, bool zero)
+    Teuchos::RCP<LINALG::SparseMatrix> structurematrix)
 {
   /* Transform and assemble the structural matrix in the global system matrix block by block:
    * S_m: structural interior and master side dofs
@@ -212,49 +208,49 @@ void SSI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
    *       --------------
    */
   // assemble derivs. of interior & master dofs w.r.t. interior & master dofs (block a)
-  LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureCondensed(),
-      *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_structure, true, zero);
+  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureCondensed(),
+      *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_structure, true, true);
 
   // assemble  derivs. of surface slave dofs w.r.t. master & interior dofs (block d)
-  LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
+  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureSlave(),
       *MapStructureCondensed(), 1.0, &StructureSlaveConverter(), nullptr, systemmatrix_structure,
       true, true);
 
   // assemble derivs. of master & interior w.r.t. surface slave dofs (block b)
-  LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureCondensed(),
+  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureCondensed(),
       *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), systemmatrix_structure, true,
       true);
 
   // assemble derivs. of surface slave dofs w.r.t. surface slave dofs (block e)
-  LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
+  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureSlave(),
       *MapStructureSlave(), 1.0, &StructureSlaveConverter(), &StructureSlaveConverter(),
       systemmatrix_structure, true, true);
 
   if (Meshtying3DomainIntersection())
   {
     // assemble derivs. of line slave dofs w.r.t. master & interior (block g)
-    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain,
+    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureCondensed(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), nullptr, systemmatrix_structure, true, true);
 
     // assemble derivs. of master & interior w.r.t. line slave dofs (block c)
-    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureCondensed(),
+    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureCondensed(),
         *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
         &StructureSlaveConverter3DomainIntersection(), systemmatrix_structure, true, true);
 
     // assemble derivs. of line slave dof w.r.t. line slave dofs (block i)
-    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain,
+    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureSlave3DomainIntersection(), 1.0,
         &StructureSlaveConverter3DomainIntersection(),
         &StructureSlaveConverter3DomainIntersection(), systemmatrix_structure, true, true);
 
     // assemble derivs. of surface slave dofs w.r.t. line slave dofs (block f)
-    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain, *MapStructureSlave(),
+    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureSlave(),
         *MapStructureSlave3DomainIntersection(), 1.0, &StructureSlaveConverter(),
         &StructureSlaveConverter3DomainIntersection(), systemmatrix_structure, true, true);
 
     // assemble derivs. of line slave dofs w.r.t. surface slave dofs (block h)
-    LINALG::MatrixLogicalSplitAndTransform()(*structuredomain,
+    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureSlave(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), &StructureSlaveConverter(),
         systemmatrix_structure, true, true);
@@ -263,9 +259,10 @@ void SSI::AssembleStrategyBase::AssembleStructureDomainMeshtying(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
@@ -283,18 +280,26 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureDomain(
     }
     else
     {
-      AssembleScatraStructureDomainMeshtying(
+      AssembleXXXStructureMeshtying(
           systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
-          scatrastructuredomain_block->Matrix(iblock, 0), false);
+          scatrastructuredomain_block->Matrix(iblock, 0));
+
+      auto scatrastructureinterface_block =
+          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
+
+      AssembleXXXStructureMeshtying(
+          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
+          scatrastructureinterface_block->Matrix(iblock, 0));
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleScatraStructureDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
@@ -309,17 +314,25 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructureDomain(
   }
   else
   {
-    AssembleScatraStructureDomainMeshtying(
+    AssembleXXXStructureMeshtying(
         systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
-        *scatrastructuredomain_sparse, false);
+        *scatrastructuredomain_sparse);
+
+    auto scatrastructureinterface_sparse =
+        LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
+
+    AssembleXXXStructureMeshtying(
+        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
+        *scatrastructureinterface_sparse);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleScatraStructureDomain(
+void SSI::AssembleStrategySparse::AssembleScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain)
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
+    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
   auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
 
@@ -330,92 +343,43 @@ void SSI::AssembleStrategySparse::AssembleScatraStructureDomain(
   if (!ssi_mono_->SSIInterfaceMeshtying())
     systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
   else
-    AssembleScatraStructureDomainMeshtying(
-        *systemmatrix_sparse, *scatrastructuredomain_sparse, true);
+  {
+    AssembleXXXStructureMeshtying(*systemmatrix_sparse, *scatrastructuredomain_sparse);
+
+    auto scatrastructureinterface_sparse =
+        LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
+
+    AssembleXXXStructureMeshtying(*systemmatrix_sparse, *scatrastructureinterface_sparse);
+  }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleScatraStructureDomainMeshtying(
-    LINALG::SparseMatrix& systemmatrix_scatra_structure,
-    const LINALG::SparseMatrix& scatrastructuredomain, bool zero)
+void SSI::AssembleStrategyBase::AssembleXXXStructureMeshtying(
+    LINALG::SparseMatrix& systemmatrix_xxx_structure,
+    const LINALG::SparseMatrix& xxx_structurematrix)
 {
-  // assemble derivs. of scatra w.r.t. structural master & interior dofs
-  LINALG::MatrixLogicalSplitAndTransform()(scatrastructuredomain, scatrastructuredomain.RangeMap(),
-      *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_scatra_structure, true, zero);
+  // assemble derivs. of x w.r.t. structural master & interior dofs
+  LINALG::MatrixLogicalSplitAndTransform()(xxx_structurematrix, xxx_structurematrix.RangeMap(),
+      *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_xxx_structure, true, true);
 
-  // assemble derivs. of scatra w.r.t. structural surface slave dofs
-  LINALG::MatrixLogicalSplitAndTransform()(scatrastructuredomain, scatrastructuredomain.RangeMap(),
-      *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), systemmatrix_scatra_structure,
+  // assemble derivs. of x w.r.t. structural surface slave dofs
+  LINALG::MatrixLogicalSplitAndTransform()(xxx_structurematrix, xxx_structurematrix.RangeMap(),
+      *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), systemmatrix_xxx_structure,
       true, true);
 
   if (Meshtying3DomainIntersection())
   {
-    // assemble derivs. of scatra w.r.t. structural line slave dofs
-    LINALG::MatrixLogicalSplitAndTransform()(scatrastructuredomain,
-        scatrastructuredomain.RangeMap(), *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
-        &StructureSlaveConverter3DomainIntersection(), systemmatrix_scatra_structure, true, true);
+    // assemble derivs. of x w.r.t. structural line slave dofs
+    LINALG::MatrixLogicalSplitAndTransform()(xxx_structurematrix, xxx_structurematrix.RangeMap(),
+        *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
+        &StructureSlaveConverter3DomainIntersection(), systemmatrix_xxx_structure, true, true);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
-{
-  auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-
-  auto scatrastructureinterface_block =
-      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
-
-  // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
-  // assemble into auxiliary system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
-  {
-    // assemble scatra-structure-interface into system matrix
-    AssembleScatraStructureDomainMeshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
-        scatrastructureinterface_block->Matrix(iblock, 0), true);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
-{
-  auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-
-  auto scatrastructureinterface_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
-
-  // assemble scatra-structure-interface into system matrix
-  AssembleScatraStructureDomainMeshtying(
-      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
-      *scatrastructureinterface_sparse, true);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
-{
-  auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-
-  auto scatrastructureinterface_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
-
-  // assemble scatra-structure-interface into system matrix
-  AssembleScatraStructureDomainMeshtying(
-      *systemmatrix_sparse, *scatrastructureinterface_sparse, true);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleStructureScatra(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain)
 {
@@ -435,16 +399,16 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatraDomain(
     }
     else
     {
-      AssembleStructureScatraDomainMeshtying(
+      AssembleStructureXXXMeshtying(
           systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock)),
-          structurescatradomain_block->Matrix(0, iblock), false);
+          structurescatradomain_block->Matrix(0, iblock));
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleStructureScatraDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleStructureScatra(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain)
 {
@@ -461,15 +425,15 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructureScatraDomain(
   }
   else
   {
-    AssembleStructureScatraDomainMeshtying(
+    AssembleStructureXXXMeshtying(
         systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0)),
-        *structurescatradomain_sparse, false);
+        *structurescatradomain_sparse);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleStructureScatraDomain(
+void SSI::AssembleStrategySparse::AssembleStructureScatra(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain)
 {
@@ -482,39 +446,38 @@ void SSI::AssembleStrategySparse::AssembleStructureScatraDomain(
   if (!ssi_mono_->SSIInterfaceMeshtying())
     systemmatrix_sparse->Add(*structurescatradomain_sparse, false, 1.0, 1.0);
   else
-    AssembleStructureScatraDomainMeshtying(
-        *systemmatrix_sparse, *structurescatradomain_sparse, true);
+    AssembleStructureXXXMeshtying(*systemmatrix_sparse, *structurescatradomain_sparse);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleStructureScatraDomainMeshtying(
-    LINALG::SparseMatrix& systemmatrix_structure_scatra,
-    const LINALG::SparseMatrix& structurescatradomain, bool zero)
+void SSI::AssembleStrategyBase::AssembleStructureXXXMeshtying(
+    LINALG::SparseMatrix& systemmatrix_structure_xxx,
+    const LINALG::SparseMatrix& structure_xxx_matrix)
 {
   // assemble derivs. of structural master & interior dofs w.r.t. scatra dofs
-  LINALG::MatrixLogicalSplitAndTransform()(structurescatradomain, *MapStructureCondensed(),
-      structurescatradomain.DomainMap(), 1.0, nullptr, nullptr, systemmatrix_structure_scatra, true,
-      zero);
+  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *MapStructureCondensed(),
+      structure_xxx_matrix.DomainMap(), 1.0, nullptr, nullptr, systemmatrix_structure_xxx, true,
+      true);
 
   // assemble derivs. of structural surface slave dofs & interior dofs w.r.t. scatra dofs
-  LINALG::MatrixLogicalSplitAndTransform()(structurescatradomain, *MapStructureSlave(),
-      structurescatradomain.DomainMap(), 1.0, &StructureSlaveConverter(), nullptr,
-      systemmatrix_structure_scatra, true, true);
+  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *MapStructureSlave(),
+      structure_xxx_matrix.DomainMap(), 1.0, &StructureSlaveConverter(), nullptr,
+      systemmatrix_structure_xxx, true, true);
 
   if (Meshtying3DomainIntersection())
   {
     // assemble derivs. of structural surface line dofs & interior dofs w.r.t. scatra dofs
-    LINALG::MatrixLogicalSplitAndTransform()(structurescatradomain,
-        *MapStructureSlave3DomainIntersection(), structurescatradomain.DomainMap(), 1.0,
-        &StructureSlaveConverter3DomainIntersection(), nullptr, systemmatrix_structure_scatra, true,
+    LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix,
+        *MapStructureSlave3DomainIntersection(), structure_xxx_matrix.DomainMap(), 1.0,
+        &StructureSlaveConverter3DomainIntersection(), nullptr, systemmatrix_structure_xxx, true,
         true);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifold(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifolddomain)
 {
@@ -536,7 +499,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifold(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifolddomain)
 {
@@ -551,7 +514,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleScaTraManifoldDomain(
+void SSI::AssembleStrategySparse::AssembleScaTraManifold(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifolddomain)
 {
@@ -564,7 +527,7 @@ void SSI::AssembleStrategySparse::AssembleScaTraManifoldDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructureDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain)
 {
@@ -584,17 +547,17 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructureDomain(
     }
     else
     {
-      AssembleScatraManifoldStructureDomainMeshtying(
+      AssembleXXXStructureMeshtying(
           systemmatrix_block->Matrix(
               BlockPositionScaTraManifold()->at(iblock), PositionStructure()),
-          manifoldstructuredomain_block->Matrix(iblock, 0), false);
+          manifoldstructuredomain_block->Matrix(iblock, 0));
     }
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructureDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain)
 {
@@ -611,15 +574,15 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructureDomain(
   }
   else
   {
-    AssembleScatraManifoldStructureDomainMeshtying(
+    AssembleXXXStructureMeshtying(
         systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure()),
-        *manifoldstructuredomain_sparse, false);
+        *manifoldstructuredomain_sparse);
   }
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructureDomain(
+void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain)
 {
@@ -632,34 +595,7 @@ void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructureDomain(
   if (!ssi_mono_->SSIInterfaceMeshtying())
     systemmatrix_sparse->Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
   else
-    AssembleScatraManifoldStructureDomainMeshtying(
-        *systemmatrix_sparse, *manifoldstructuredomain_sparse, true);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleScatraManifoldStructureDomainMeshtying(
-    LINALG::SparseMatrix& systemmatrix_scatramanifold_structure,
-    const LINALG::SparseMatrix& scatramanifoldstructuredomain, bool zero)
-{
-  // assemble derivs. of scatra w.r.t. structural master & interior dofs
-  LINALG::MatrixLogicalSplitAndTransform()(scatramanifoldstructuredomain,
-      scatramanifoldstructuredomain.RangeMap(), *MapStructureCondensed(), 1.0, nullptr, nullptr,
-      systemmatrix_scatramanifold_structure, true, zero);
-
-  // assemble derivs. of scatra w.r.t. structural surface slave dofs
-  LINALG::MatrixLogicalSplitAndTransform()(scatramanifoldstructuredomain,
-      scatramanifoldstructuredomain.RangeMap(), *MapStructureSlave(), 1.0, nullptr,
-      &StructureSlaveConverter(), systemmatrix_scatramanifold_structure, true, true);
-
-  if (Meshtying3DomainIntersection())
-  {
-    // assemble derivs. of scatra w.r.t. structural line slave dofs
-    LINALG::MatrixLogicalSplitAndTransform()(scatramanifoldstructuredomain,
-        scatramanifoldstructuredomain.RangeMap(), *MapStructureSlave3DomainIntersection(), 1.0,
-        nullptr, &StructureSlaveConverter3DomainIntersection(),
-        systemmatrix_scatramanifold_structure, true, true);
-  }
+    AssembleXXXStructureMeshtying(*systemmatrix_sparse, *manifoldstructuredomain_sparse);
 }
 
 /*----------------------------------------------------------------------*

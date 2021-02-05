@@ -81,35 +81,33 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
+  // clear system matrix from previous Newton step
+  ssi_matrices_->SystemMatrix()->Zero();
+
   // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatraDomain(
+  strategy_assemble_->AssembleScatra(
       ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
 
-  // assemble scatra-strucutre block (domain contributions) into system matrix
-  strategy_assemble_->AssembleScatraStructureDomain(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
+  // assemble scatra-strucutre block into system matrix
+  strategy_assemble_->AssembleScatraStructure(ssi_matrices_->SystemMatrix(),
+      ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
 
-  // assemble scatra-strucutre block (interface contributions) into system matrix
-  if (SSIInterfaceMeshtying())
-    strategy_assemble_->AssembleScatraStructureInterface(
-        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureInterface());
-
-  // assemble structure-scatra block (domain contributions) into system matrix
-  strategy_assemble_->AssembleStructureScatraDomain(
+  // assemble structure-scatra block into system matrix
+  strategy_assemble_->AssembleStructureScatra(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
 
   // assemble structure block into system matrix
-  strategy_assemble_->AssembleStructureDomain(
+  strategy_assemble_->AssembleStructure(
       ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
 
   if (IsScaTraManifold())
   {
     // assemble manifold block into system matrix
-    strategy_assemble_->AssembleScaTraManifoldDomain(
+    strategy_assemble_->AssembleScaTraManifold(
         ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
 
     // assemble manifold-structure block into system matrix
-    strategy_assemble_->AssembleScaTraManifoldStructureDomain(
+    strategy_assemble_->AssembleScaTraManifoldStructure(
         ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
   }
 
