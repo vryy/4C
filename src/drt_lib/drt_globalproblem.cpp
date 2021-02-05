@@ -2094,11 +2094,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       // consider case of additional scatra manifold
       if (DRT::INPUT::IntegralValue<bool>(SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD"))
       {
-        auto scatra_surface_dis =
-            Teuchos::rcp(new DRT::Discretization("scatra_surface", reader.Comm()));
-        scatra_surface_dis->SetWriter(
-            Teuchos::rcp(new IO::DiscretizationWriter(scatra_surface_dis)));
-        AddDis("scatra_manifold", scatra_surface_dis);
+        auto scatra_manifold_dis =
+            Teuchos::rcp(new DRT::Discretization("scatra_manifold", reader.Comm()));
+        scatra_manifold_dis->SetWriter(
+            Teuchos::rcp(new IO::DiscretizationWriter(scatra_manifold_dis)));
+        AddDis("scatra_manifold", scatra_manifold_dis);
       }
 
       nodereader.AddElementReader(
