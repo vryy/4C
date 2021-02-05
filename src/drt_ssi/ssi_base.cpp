@@ -365,6 +365,9 @@ void SSI::SSIBase::Setup()
     std::vector<int> condition_node_vec;
     for (auto* condition : conditions)
     {
+      if (condition->GetInt("coupling id") != 1)
+        dserror("'coupling id' in 'SSISurfaceManifold' must be set to 1");
+
       DRT::UTILS::AddOwnedNodeGIDVector(
           StructureField()->Discretization(), *condition->Nodes(), condition_node_vec);
     }
