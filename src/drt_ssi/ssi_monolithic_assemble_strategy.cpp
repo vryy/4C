@@ -564,7 +564,7 @@ void SSI::AssembleStrategySparse::AssembleScaTraManifoldDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructuredDomain(
+void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructureDomain(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain)
 {
@@ -594,7 +594,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructuredDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructuredDomain(
+void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructureDomain(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain)
 {
@@ -619,7 +619,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructuredDomain(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructuredDomain(
+void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructureDomain(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain)
 {

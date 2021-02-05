@@ -357,7 +357,7 @@ void INPAR::SSI::SetValidConditions(
   condlist.push_back(ssiinterfacemeshtying3domainintersection);
 
   /*--------------------------------------------------------------------*/
-  // condition, where addidional scatra field on manifold is created
+  // condition, where additional scatra field on manifold is created
   auto ssisurfacemanifold = Teuchos::rcp(new ConditionDefinition(
       "DESIGN SSI MANIFOLD SURF CONDITIONS", "SSISurfaceManifold", "scalar transport on manifold",
       DRT::Condition::SSISurfaceManifold, true, DRT::Condition::Surface));

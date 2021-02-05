@@ -372,10 +372,10 @@ void SSI::SSIBase::Setup()
 
     // Build GID vector of dofs
     std::vector<int> condition_dof_vec;
-    for (int condidtion_node : condition_node_vec)
+    for (int condition_node : condition_node_vec)
     {
-      const int dim = StructureField()->Discretization()->gNode(condidtion_node)->Dim();
-      for (int j = 0; j < dim; ++j) condition_dof_vec.emplace_back(condidtion_node * dim + j);
+      const int dim = StructureField()->Discretization()->gNode(condition_node)->Dim();
+      for (int j = 0; j < dim; ++j) condition_dof_vec.emplace_back(condition_node * dim + j);
     }
 
     // maps of conditioned dofs and other dofs
@@ -417,9 +417,9 @@ void SSI::SSIBase::InitDiscretizations(
         fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
     {
       dserror(
-          "If 'FIELDCOUPLING' is NOT 'volume_matching' in the SSI CONTROL section cloning of the "
-          "scatra discretization"
-          "from the structure discretization is not supported!");
+          "If 'FIELDCOUPLING' is NOT 'volume_matching' or 'volumeboundary_matching' in the SSI "
+          "CONTROL section cloning of the scatra discretization from the structure discretization "
+          "is not supported!");
     }
 
     // fill scatra discretization by cloning structure discretization
@@ -738,13 +738,13 @@ void SSI::SSIBase::SetDtFromScaTraToStructure()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::Redistribute(const RedistributionType redsitribution_type)
+void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
   auto structdis = problem->GetDis("structure");
   auto scatradis = problem->GetDis("scatra");
-  if (redsitribution_type == SSI::RedistributionType::match)
+  if (redistribution_type == SSI::RedistributionType::match)
   {
     if (IsScaTraManifold())
     {
@@ -773,7 +773,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redsitribution_type)
       DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*scatradis, *structdis);
     }
   }
-  else if (redsitribution_type == SSI::RedistributionType::binning)
+  else if (redistribution_type == SSI::RedistributionType::binning)
   {
     // create vector of discr.
     std::vector<Teuchos::RCP<DRT::Discretization>> dis;

@@ -818,7 +818,7 @@ void runEnsightVtuFilter(PostProblem& problem)
     {
       std::string basename = problem.outname();
 
-      const int numfield = problem.num_discr();
+      const int numfields = problem.num_discr();
 
       PostField* scatrafield =
           problem.get_discretization(0);  // remark: scalar transport discretization number is one
@@ -826,20 +826,18 @@ void runEnsightVtuFilter(PostProblem& problem)
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
 
-      if (numfield == 2)
+      if (numfields == 2)
       {
-        PostField* structfield = problem.get_discretization(
-            1);  // remark: structure discretization number is zero for old
-        // structural time integration!
+        // remark: structure discretization number is zero for old structural time integration!
+        PostField* structfield = problem.get_discretization(1);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
       }
-      else if (numfield == 3)
+      else if (numfields == 3)
       {
-        PostField* structfield = problem.get_discretization(
-            2);  // remark: structure discretization number is zero for old
-        // structural time integration!
+        // remark: structure discretization number is zero for old structural time integration!
+        PostField* structfield = problem.get_discretization(2);
         StructureFilter structwriter(
             structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();

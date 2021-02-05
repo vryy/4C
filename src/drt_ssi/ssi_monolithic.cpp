@@ -109,7 +109,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
         ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
 
     // assemble manifold-structure block into system matrix
-    strategy_assemble_->AssembleScaTraManifoldStructuredDomain(
+    strategy_assemble_->AssembleScaTraManifoldStructureDomain(
         ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
   }
 

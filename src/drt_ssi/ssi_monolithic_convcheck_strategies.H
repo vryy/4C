@@ -119,7 +119,7 @@ namespace SSI
 
   /*!
  \brief specific strategy for Newton-Raphson convergence check for monolithic scalar-structure
- interaction problems involving electrochemistry
+ interaction problems involving electrochemistry and ScaTra on manifolds
 
  */
   class SSIMono::ConvCheckStrategyElchScaTraManifold : public SSIMono::ConvCheckStrategyElch

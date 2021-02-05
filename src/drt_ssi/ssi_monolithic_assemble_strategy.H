@@ -88,7 +88,7 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> manifolddomain) = 0;
 
     //! assemble ScaTra Manifold-Structure-Block into system matrix
-    virtual void AssembleScaTraManifoldStructuredDomain(
+    virtual void AssembleScaTraManifoldStructureDomain(
         Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) = 0;
 
@@ -190,7 +190,7 @@ namespace SSI
     void AssembleScaTraManifoldDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifolddomain) override = 0;
 
-    void AssembleScaTraManifoldStructuredDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void AssembleScaTraManifoldStructureDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override = 0;
 
    protected:
@@ -246,7 +246,7 @@ namespace SSI
     void AssembleScaTraManifoldDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifolddomain) override;
 
-    void AssembleScaTraManifoldStructuredDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void AssembleScaTraManifoldStructureDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override;
   };
 
@@ -279,7 +279,7 @@ namespace SSI
     void AssembleScaTraManifoldDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifolddomain) override;
 
-    void AssembleScaTraManifoldStructuredDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void AssembleScaTraManifoldStructureDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override;
   };
 
@@ -314,7 +314,7 @@ namespace SSI
     void AssembleScaTraManifoldDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifolddomain) override;
 
-    void AssembleScaTraManifoldStructuredDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    void AssembleScaTraManifoldStructureDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override;
   };
 

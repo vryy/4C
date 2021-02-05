@@ -107,7 +107,7 @@ namespace SSI
           the constructed in \ref Setup().
 
     \warning none
-    \return int
+    \return void
     \date 08/16
     \author rauch  */
     virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
@@ -253,7 +253,7 @@ namespace SSI
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
 
     //! Redistribute nodes and elements on processors
-    void Redistribute(RedistributionType redsitribution_type);
+    void Redistribute(RedistributionType redistribution_type);
 
    protected:
     //! get bool indicating if old structural time integration is used
