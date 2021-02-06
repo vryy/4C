@@ -284,6 +284,30 @@ namespace SSI
     virtual void SetupModelEvaluator() const = 0;
 
    private:
+    /*!
+     * @brief Checks whether flags for adaptive time stepping in ssi have been set consistently
+     *
+     * @param[in] scatraparams  parameter list containing the SCALAR TRANSPORT DYNAMIC parameters
+     * @param[in] structparams  parameter list containing the STRUCTURAL DYNAMIC parameters
+     */
+    static void CheckAdaptiveTimeStepping(
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams);
+
+    /*!
+     * @brief Time integrators for the scalar and structure fields are instantiated and initialized
+     *
+     * @param[in] globaltimeparams  parameter list containing the SSI CONTROL parameters
+     * @param[in] scatraparams      parameter list containing the SCALAR TRANSPORT DYNAMIC
+     *                              parameters
+     * @param[in] structparams      parameter list containing the STRUCTURAL DYNAMIC parameters
+     * @param[in] struct_disname    name of structure discretization
+     * @param[in] scatra_disname    name of scalar transport discretization
+     * @param[in] isAle             flag indicating if ALE is activated
+     */
+    void InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string& struct_disname, const std::string& scatra_disname, const bool isAle);
+
     //! returns true if Init(..) was called and is still valid
     bool IsInit() const { return isinit_; }
 
@@ -360,8 +384,7 @@ namespace SSI
     //! vector of temperatures
     Teuchos::RCP<Epetra_Vector> temperature_vector_;
 
-    //! Temporary flag to indicate whether old strutural time integration is used.
-    //! todo Remove as soon as structural elements are adapted to new structure.
+    //! Flag to indicate whether old structural time integration is used.
     bool use_old_structure_;
 
     //! a zero vector of full length with structure dofs
