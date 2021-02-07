@@ -70,8 +70,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
       temperature_vector_(Teuchos::null),
       use_old_structure_(false),
-      zeros_structure_(Teuchos::null),
-      zeros_structure_manifold_(Teuchos::null)
+      zeros_structure_(Teuchos::null)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -284,8 +283,6 @@ void SSI::SSIBase::Setup()
 
   // construct vector of zeroes
   zeros_structure_ = LINALG::CreateVector(*structure_->DofRowMap());
-  zeros_structure_manifold_ =
-      IsScaTraManifold() ? LINALG::CreateVector(*map_structure_manifold_->Map(0)) : Teuchos::null;
 
   // set flag
   SetIsSetup(true);
@@ -594,10 +591,7 @@ void SSI::SSIBase::SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel)
 
   ssicoupling_->SetVelocityFields(ScaTraBaseAlgorithm(), zeros_structure_, vel);
   if (IsScaTraManifold())
-  {
-    ssicoupling_->SetVelocityFields(ScaTraManifoldBaseAlgorithm(), zeros_structure_manifold_,
-        MapStructureManifold()->ExtractVector(vel, 0));
-  }
+    ssicoupling_->SetVelocityFields(ScaTraManifoldBaseAlgorithm(), zeros_structure_, vel);
 }
 
 /*----------------------------------------------------------------------*/
@@ -609,11 +603,7 @@ void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
   CheckIsSetup();
 
   ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), disp);
-  if (IsScaTraManifold())
-  {
-    ssicoupling_->SetMeshDisp(
-        ScaTraManifoldBaseAlgorithm(), MapStructureManifold()->ExtractVector(disp, 0));
-  }
+  if (IsScaTraManifold()) ssicoupling_->SetMeshDisp(ScaTraManifoldBaseAlgorithm(), disp);
 }
 
 /*----------------------------------------------------------------------*/

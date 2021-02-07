@@ -432,8 +432,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     std::set<int> couplingids;
     for (auto& cond : conds) couplingids.insert(cond->GetInt("coupling id"));
 
+    auto structgidmatchingdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));
+
     auto newdofset_scatra = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-        structdis->GetDofSetProxy(), structdis, "SSISurfaceManifold", couplingids));
+        structgidmatchingdofset, structdis, "SSISurfaceManifold", couplingids));
 
     if (scatra_manifold_dis->AddDofSet(newdofset_scatra) != 1)
       dserror("unexpected dof sets in scatra surface field");
