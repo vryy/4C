@@ -24,29 +24,26 @@ def getCompilerPaths():
     # to avoid filename clashes
     save = "".join([random.choice(string.ascii_letters) for x in range(30)])
     complicated_name_cpp = "dummy_" + save + ".cpp"
-    complicated_name_output = "dummy_" + save + ".txt"
 
     # write path information into output file
     with open(complicated_name_cpp,"w") as f:
       f.write("\n")
-    os.system('g++ -v -E -P -dD '+complicated_name_cpp+' &> '+complicated_name_output)
+    output = subprocess.check_output("g++ -v -E -P -dD "+complicated_name_cpp, encoding='UTF-8', shell = True, stderr=subprocess.STDOUT)
     import time
     time.sleep(1)
     os.system('rm '+complicated_name_cpp)
 
-    # parse output file and store compiler paths in set
-    with open(complicated_name_output,"r") as f:
-      paths_are_comming=False
-      for l in f.readlines():
-          if l.find("#include <...> search starts here:") == 0:
-              paths_are_comming=True
-          else:
-              if l.find("End of search list") == 0:
-                  paths_are_comming=False
-              if paths_are_comming:
-                  comppath.add(l.strip())
+    # parse output and store compiler paths in set
+    paths_are_comming=False
+    for l in output.splitlines():
+        if l.find("#include <...> search starts here:") == 0:
+            paths_are_comming=True
+        else:
+            if l.find("End of search list") == 0:
+                paths_are_comming=False
+            if paths_are_comming:
+                comppath.add(l.strip())
 
-    os.system('rm '+complicated_name_output)
     return comppath
 
 def getPaths(build_folder):
