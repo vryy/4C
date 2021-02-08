@@ -129,6 +129,14 @@ void PASI::PartitionedAlgo::PrepareTimeStep(bool printheader)
   particlealgorithm_->PrepareTimeStep(false);
 }
 
+void PASI::PartitionedAlgo::PreEvaluateTimeStep()
+{
+  TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::PreEvaluateTimeStep");
+
+  // pre evaluate time step
+  particlealgorithm_->PreEvaluateTimeStep();
+}
+
 void PASI::PartitionedAlgo::StructStep()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PASI::PartitionedAlgo::StructStep");

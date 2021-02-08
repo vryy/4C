@@ -149,6 +149,7 @@ namespace INPAR
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
+      m_muscle_weickenmeier,                      ///< weickenmeier active skeletal muscle material
       m_myocard,                ///< anisotropic electrophysical model of heart tissue
       m_neohooke,               ///< Neo-Hooke material
       m_newman,                 ///< properties of an ion species in an electrolyte solution
@@ -213,6 +214,7 @@ namespace INPAR
       m_viscoanisotropic,      ///< Viscous Anisotropic Fiber Material
       m_viscoelasthyper,       ///< viscohyperelastic material
       m_visconeohooke,         ///< Viscous NeoHookean Material
+      m_vp_no_yield_surface,   ///< visco-plastic finite strain material law without yield surface
       m_vp_robinson,           ///< Robinson's visco-plastic material
       m_yoghurt,  ///< "yoghurt-type" fluid with nonlinear viscosity according to a power law and
                   ///< extended by an Arrhenius-type term to account for temperature dependence
@@ -279,6 +281,7 @@ namespace INPAR
       mix_rule_growthremodel,            ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder
       mix_prestress_strategy_iterative,  ///< Iterative prestress strategy for any geometry
+      mix_prestress_strategy_constant,   ///< Constant, predefined prestretch
       mix_elasthyper,                    ///< Elast Hyper toolbox for Constituents
       mix_elasthyper_damage,             ///< Elast hyper toolbox with temporal damage
       mix_elasthyper_elastin_membrane,   ///< Elast Hyper toolbox with temporal damage and 2D

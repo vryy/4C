@@ -2,13 +2,13 @@
 # BACI code owners file
 #
 # eligible code owners:
-#  * single developers (@username)
 #  * baci teams (@baci/team_name)
 #  * baci developer group (@baci/baci_developers)
 #  * baci maintainer group (@baci/baci_maintainer)
 #
 # note:
-# The order in which the paths are defined is significant: the last pattern that matches a given path will be used to find the code owners.
+#  * single developers are no eligible code owners!
+#  * combinations of eligible code owners are possible
 #
 # refer to:
 # https://docs.gitlab.com/ee/user/project/code_owners.html
@@ -40,6 +40,7 @@
 
 # testing framework configuration files
 TestingFramework.cmake             @baci/team_testing
+TestingFrameworkListOfTests.cmake  @baci/baci_developers
 UnittestingFramework.cmake         @baci/team_testing
 
 
@@ -78,10 +79,6 @@ src/drt_beam3/                     @baci/team_structure
 src/drt_beamcontact/               @baci/team_structure
 
 src/drt_beaminteraction/           @baci/team_structure
-src/drt_beaminteraction/beam_link*                            @jeichinger
-src/drt_beaminteraction/beaminteraction_geometry_utils*       @jeichinger
-src/drt_beaminteraction/str_model_evaluator_beamdata*         @jeichinger
-src/drt_beaminteraction/str_model_evaluator_beaminteraction*  @jeichinger
 
 src/drt_bele3/                     @baci/team_discretization
 
@@ -94,7 +91,6 @@ src/drt_cardiovascular0d/          @baci/team_reduced_fluid_models
 src/drt_comm/                      @baci/team_discretization
 
 src/drt_constraint/                @baci/team_discretization
-src/drt_constraint/springdashpot*  @agebauer @baci/team_discretization
 
 src/drt_contact/                   @baci/team_contact
 src/drt_contact/contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
@@ -118,7 +114,7 @@ src/drt_elch/                      @baci/team_scatra
 
 src/drt_elemag/                    @baci/team_scatra
 
-src/drt_fbi/                       @NHagmeyer
+src/drt_fbi/                       @baci/team_fsi
 
 src/drt_fem_general/               @baci/team_discretization
 
@@ -147,19 +143,17 @@ src/drt_fsi_xfem/                  @baci/team_fsi
 
 src/drt_geometry/                  @baci/team_discretization
 
-src/drt_geometry_pair/             @istein @NHagmeyer @baci/team_discretization
+src/drt_geometry_pair/             @baci/team_discretization
 
 src/drt_immersed_problem/          @baci/team_fsi
 
 src/drt_inpar/                     @baci/team_input
 src/drt_inpar/inpar_beam*          @baci/team_input @baci/team_structure
-src/drt_inpar/inpar_beaminteraction.H @jeichinger
 src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
 src/drt_inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
 src/drt_inpar/inpar_IO_runtime_vt*_output*                 @baci/team_input @baci/team_output
-src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams* @jeichinger @baci/team_output
-src/drt_inpar/inpar_particle*      @sfuchs @baci/team_particle
-src/drt_inpar/inpar_pasi*          @sfuchs @baci/team_particle
+src/drt_inpar/inpar_particle*      @baci/team_particle
+src/drt_inpar/inpar_pasi*          @baci/team_particle
 src/drt_inpar/inpar_poro*          @baci/team_poro
 
 src/drt_inv_analysis/              @baci/team_queens
@@ -169,7 +163,7 @@ src/drt_io/                        @baci/team_input @baci/team_output
 src/drt_levelset/                  @baci/team_fluid
 
 src/drt_lib/                       @baci/team_discretization
-src/drt_lib/drt_particlereader*    @sfuchs @baci/team_particle
+src/drt_lib/drt_particlereader*    @baci/team_particle
 
 src/drt_loma/                      @baci/team_fluid
 
@@ -178,13 +172,13 @@ src/drt_lubrication/               @baci/team_scatra
 src/drt_lubrication_ele/           @baci/team_scatra
 
 src/drt_mat/                       @baci/team_material
-src/drt_mat/anisotropy*            @agebauer
+src/drt_mat/anisotropy*            @baci/team_structure @baci/team_material
 src/drt_mat/beam_elasthyper*       @baci/team_structure @baci/team_material
 src/drt_mat/cnst_1d_art*           @baci/team_reduced_fluid_models
 src/drt_mat/fluidporo*             @baci/team_poro
-src/drt_mat/membrane_elasthyper*   @sfuchs @baci/team_material
-src/drt_mat/mixture_elasthyper*    @agebauer
-src/drt_mat/particle_material*     @sfuchs @baci/team_particle
+src/drt_mat/membrane_elasthyper*   @baci/team_structure @baci/team_material
+src/drt_mat/mixture_elasthyper*    @baci/team_structure @baci/team_material
+src/drt_mat/particle_material*     @baci/team_particle
 src/drt_mat/poro*                  @baci/team_poro
 src/drt_mat/scatra_mat_multiporo*  @baci/team_poro @baci/team_scatra
 src/drt_mat/scatra_mat_poro*       @baci/team_poro @baci/team_scatra
@@ -192,9 +186,9 @@ src/drt_mat/structporo*            @baci/team_poro
 
 src/drt_matelast/                  @baci/team_material
 
-src/drt_membrane/                  @sfuchs @baci/team_structure
+src/drt_membrane/                  @baci/team_structure
 
-src/drt_mixture/                   @agebauer
+src/drt_mixture/                   @baci/team_structure @baci/team_material
 
 src/drt_mlmc/                      @baci/team_queens
 
@@ -206,17 +200,17 @@ src/drt_nurbs_discret/             @baci/team_discretization
 
 src/drt_opti/                      @baci/team_fluid
 
-src/drt_particle_algorithm/        @sfuchs @baci/team_particle
+src/drt_particle_algorithm/        @baci/team_particle
 
-src/drt_particle_engine/           @sfuchs @baci/team_particle
+src/drt_particle_engine/           @baci/team_particle
 
-src/drt_particle_interaction/      @sfuchs @baci/team_particle
+src/drt_particle_interaction/      @baci/team_particle
 
-src/drt_particle_rigidbody/        @sfuchs @baci/team_particle
+src/drt_particle_rigidbody/        @baci/team_particle
 
-src/drt_particle_wall/             @sfuchs @baci/team_particle
+src/drt_particle_wall/             @baci/team_particle
 
-src/drt_pasi/                      @sfuchs @baci/team_particle
+src/drt_pasi/                      @baci/team_particle
 
 src/drt_patspec/                   @baci/baci_maintainer # todo: ask Jonas Biehler
 
@@ -232,7 +226,7 @@ src/drt_poromultiphase_scatra/     @baci/team_poro
 
 src/drt_red_airways/               @baci/team_reduced_fluid_models
 
-src/drt_rigidsphere/               @jeichinger
+src/drt_rigidsphere/               @baci/team_structure
 
 src/drt_s8/                        @baci/team_structure
 
@@ -331,44 +325,42 @@ src/solver_nonlin_nox/             @baci/team_solvers
 /Input/ale*                        @baci/team_fluid
 
 /Input/beam3*                      @baci/team_structure
-/Input/beam3*crosslinking*                                @jeichinger
-/Input/beam3r_line2_backweuler_browndyn_largesys.dat      @jeichinger
 
 /Input/cardiovascular0d*           @baci/team_reduced_fluid_models
 
 /Input/contact*                    @baci/team_contact
 
-/Input/elch_*                      @cschmidt @ssinzig
+/Input/elch_*                      @baci/team_scatra
 
 /Input/f2_*                        @baci/team_fluid
 /Input/f3_*                        @baci/team_fluid
 
-/Input/fbi_*                       @NHagmeyer
+/Input/fbi_*                       @baci/team_fsi
 
 /Input/fpsi_*                      @baci/team_fsi @baci/team_poro
 
 /Input/fsi_*                       @baci/team_fsi
 
-/Input/homogenized-constrained-mixture* @agebauer
+/Input/homogenized-constrained-mixture* @baci/team_structure
 
-/Input/membrane*                   @sfuchs @baci/team_structure
+/Input/mat*                        @baci/team_material
+
+/Input/membrane*                   @baci/team_structure
 
 /Input/meshtying*                  @baci/team_contact
 
-/Input/mixture*                    @agebauer
+/Input/mixture*                    @baci/team_structure
 
 /Input/one_d_3_artery*             @baci/team_reduced_fluid_models
 
-/Input/particle_nointer*           @sfuchs @baci/team_particle
-/Input/particle_dem*               @sfuchs @baci/team_particle
-/Input/particle_sph*               @sfuchs @baci/team_particle
-/Input/pasi*                       @sfuchs @baci/team_particle
+/Input/particle_nointer*           @baci/team_particle
+/Input/particle_dem*               @baci/team_particle
+/Input/particle_sph*               @baci/team_particle
+/Input/pasi*                       @baci/team_particle
 
-/Input/poro_*                      @baci/team_poro
-/Input/porofluidmulti*             @jkremheller @b.wirthl
-/Input/poromultielast*             @jkremheller @b.wirthl
+/Input/poro*                       @baci/team_poro
 
-/Input/prestress*                  @agebauer
+/Input/prestress*                  @baci/team_structure
 
 /Input/ref/                        @baci/team_testing
 
@@ -378,11 +370,11 @@ Input/rigidsphere*                 @baci/team_structure
 
 /Input/solid*                      @baci/team_structure
 
-/Input/spring_dashpot*             @agebauer @baci/team_discretization
+/Input/spring_dashpot*             @baci/team_discretization
 
-/Input/ssi*                        @cschmidt @ssinzig
-/Input/ssti*                       @cschmidt @ssinzig
-/Input/sti*                        @cschmidt @ssinzig
+/Input/ssi*                        @baci/team_scatra
+/Input/ssti*                       @baci/team_scatra
+/Input/sti*                        @baci/team_scatra
 
 /Input/thermo*                     @baci/team_thermo
 

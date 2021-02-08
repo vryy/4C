@@ -44,7 +44,12 @@ namespace SSI
   // forward declaration
   class SSICouplingBase;
 
-  enum RedistributionType
+  namespace UTILS
+  {
+    class SSISlaveSideConverter;
+  }
+
+  enum class RedistributionType
   {
     none,     //!< unknown redistribution type
     binning,  //!< redistribute by binning
@@ -66,11 +71,11 @@ namespace SSI
       return icoup_structure_;
     };
 
-    //! return scatra-scatra interface coupling adapter slave converter for structure field
-    ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const
+    const Teuchos::RCP<ADAPTER::Coupling>& InterfaceCouplingAdapterStructure3DomainIntersection()
+        const
     {
-      return *icoup_structure_slave_converter_;
-    }
+      return icoup_structure_3_domain_intersection_;
+    };
 
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
@@ -102,12 +107,12 @@ namespace SSI
           the constructed in \ref Setup().
 
     \warning none
-    \return int
+    \return void
     \date 08/16
     \author rauch  */
-    virtual int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    virtual void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) = 0;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) = 0;
 
     /*! \brief Setup all class internal objects and members
 
@@ -141,8 +146,8 @@ namespace SSI
     \return int
     \date 08/16
     \author vuong, rauch  */
-    virtual int InitFieldCoupling(const Epetra_Comm& comm, const std::string& struct_disname,
-        const std::string& scatra_disname);
+    virtual RedistributionType InitFieldCoupling(const Epetra_Comm& comm,
+        const std::string& struct_disname, const std::string& scatra_disname);
 
     /*! \brief Setup discretizations
 
@@ -151,17 +156,36 @@ namespace SSI
     virtual void InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
         const std::string& scatra_disname);
 
-    //! return structural map extractor (0: other degrees of freedom, 1: slave-side degrees of
-    //! freedom, 2: master-side degrees of freedom)
-    const Teuchos::RCP<const LINALG::MultiMapExtractor>& MapsStructure() const
+    //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
+    //! slave-side degrees of freedom, 2: master-side degrees of freedom)
+    const Teuchos::RCP<const LINALG::MultiMapExtractor>& MapsCoupStruct() const
     {
-      return maps_structure_;
+      return maps_coup_struct_;
+    };
+
+    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+    const Teuchos::RCP<const LINALG::MultiMapExtractor>& MapsCoupStruct3DomainIntersection() const
+    {
+      return maps_coup_struct_3_domain_intersection_;
     };
 
     //! return map for interior and master-side structural degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& MapStructureCondensed() const
     {
       return map_structure_condensed_;
+    };
+
+    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureManifold() const
+    {
+      return map_structure_manifold_;
+    }
+
+    //! holds slave side converter og multiple coupling adapters
+    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
+    {
+      return slave_side_converter_;
     };
 
     /// setup
@@ -197,8 +221,17 @@ namespace SSI
       return scatra_base_algorithm_;
     }
 
+    //! access the scalar transport base algorithm on manifolds
+    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm>& ScaTraManifoldBaseAlgorithm() const
+    {
+      return scatra_manifold_base_algorithm_;
+    }
+
     //! access the scalar transport field
     const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const;
+
+    //! access the scalar transport field on manifolds
+    const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
 
     /// set structure solution on scatra field
     void SetStructSolution(
@@ -212,6 +245,15 @@ namespace SSI
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
     bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; };
+
+    //! indicates, if meshtying includes triple points
+    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; };
+
+    //! solve additional scatra field on manifolds
+    bool IsScaTraManifold() const { return is_scatra_manifold_; }
+
+    //! Redistribute nodes and elements on processors
+    void Redistribute(RedistributionType redistribution_type);
 
    protected:
     //! get bool indicating if old structural time integration is used
@@ -242,6 +284,30 @@ namespace SSI
     virtual void SetupModelEvaluator() const = 0;
 
    private:
+    /*!
+     * @brief Checks whether flags for adaptive time stepping in ssi have been set consistently
+     *
+     * @param[in] scatraparams  parameter list containing the SCALAR TRANSPORT DYNAMIC parameters
+     * @param[in] structparams  parameter list containing the STRUCTURAL DYNAMIC parameters
+     */
+    static void CheckAdaptiveTimeStepping(
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams);
+
+    /*!
+     * @brief Time integrators for the scalar and structure fields are instantiated and initialized
+     *
+     * @param[in] globaltimeparams  parameter list containing the SSI CONTROL parameters
+     * @param[in] scatraparams      parameter list containing the SCALAR TRANSPORT DYNAMIC
+     *                              parameters
+     * @param[in] structparams      parameter list containing the STRUCTURAL DYNAMIC parameters
+     * @param[in] struct_disname    name of structure discretization
+     * @param[in] scatra_disname    name of scalar transport discretization
+     * @param[in] isAle             flag indicating if ALE is activated
+     */
+    void InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
+        const std::string& struct_disname, const std::string& scatra_disname, const bool isAle);
+
     //! returns true if Init(..) was called and is still valid
     bool IsInit() const { return isinit_; }
 
@@ -254,11 +320,12 @@ namespace SSI
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
 
-    //! scatra-scatra interface coupling adapter for structure field
+    //! structure interface coupling adapter between two geometric entities
     Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
 
-    //! scatra-scatra interface coupling adapter for structure field
-    Teuchos::RCP<ADAPTER::CouplingSlaveConverter> icoup_structure_slave_converter_;
+    //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
+    //! intersection domains
+    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
 
     //! flag indicating if class is initialized
     bool isinit_;
@@ -266,19 +333,38 @@ namespace SSI
     //! flag indicating if class is setup
     bool issetup_;
 
-    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
-    //! (partitioned algorithm)
+    //! solve additional scatra field on manifolds
+    const bool is_scatra_manifold_;
+
+    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
+    //! iterations (partitioned algorithm)
     int iter_;
 
-    //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees of freedom, 2:
+    //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom, 2:
     //! master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_;
+
+    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
 
     //! map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
-    /// ptr underlying scatra problem base algorithm
+    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_manifold_;
+
+    //! indicates, if meshtying includes three entities
+    const bool meshtying_3_domain_intersection_;
+
+    //! underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;
+
+    //! underlying scatra problem base algorithm on manifolds
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
+
+    //! slave side converter
+    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
@@ -298,12 +384,11 @@ namespace SSI
     //! vector of temperatures
     Teuchos::RCP<Epetra_Vector> temperature_vector_;
 
-    //! Temporary flag to indicate whether old strutural time integration is used.
-    //! todo Remove as soon as structural elements are adapted to new structure.
+    //! Flag to indicate whether old structural time integration is used.
     bool use_old_structure_;
 
-    /// a zero vector of full length
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    //! a zero vector of full length with structure dofs
+    Teuchos::RCP<Epetra_Vector> zeros_structure_;
 
   };  // SSI_Base
 }  // namespace SSI

@@ -29,7 +29,7 @@ namespace FBI
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToFluidMeshtyingVtkOutputParams(){};
+    ~BeamToFluidMeshtyingVtkOutputParams() override = default;
 
     /**
      * \brief Setup member variables.

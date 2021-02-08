@@ -971,9 +971,11 @@ namespace FLD
      * \param[in] matrix (size fluid_dof x fluid_dof) linear matrix containing entries that need
      * to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
 
     void ResetExternalForces();
+
+    Teuchos::RCP<const FLD::Meshtying> GetMeshtying() { return meshtying_; }
 
    protected:
     // don't want = operator and cctor
@@ -1436,7 +1438,7 @@ namespace FLD
      * arise from meshtying methods or in general weak Dirichlet conditions
      *
      */
-    Teuchos::RCP<const LINALG::SparseMatrix> couplingcontributions_;
+    Teuchos::RCP<const LINALG::SparseOperator> couplingcontributions_;
     double meshtyingnorm_;
 
   };  // class FluidImplicitTimeInt

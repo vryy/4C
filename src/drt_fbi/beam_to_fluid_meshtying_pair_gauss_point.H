@@ -36,7 +36,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToFluidMeshtyingPairGaussPoint(){};
+    ~BeamToFluidMeshtyingPairGaussPoint() override = default;
 
     /**
      * \brief Evaluate this contact element pair.

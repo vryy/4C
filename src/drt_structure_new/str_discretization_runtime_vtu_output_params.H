@@ -14,6 +14,7 @@
 
 
 #include "../drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.H"
+#include "../drt_inpar/inpar_structure.H"
 
 namespace Teuchos
 {
@@ -57,11 +58,18 @@ namespace DRT
         return output_element_owner_;
       };
 
-      /// whether to write the id of elements
+      /// whether to write the GIDs of elements
       bool OutputElementGID() const
       {
         CheckInitSetup();
         return output_element_gid_;
+      };
+
+      /// whether to write the GIDs of the nodes
+      bool OutputNodeGID() const
+      {
+        CheckInitSetup();
+        return output_node_gid_;
       };
 
       /// whether to write stress and / or strain data
@@ -70,6 +78,13 @@ namespace DRT
         CheckInitSetup();
         return output_stress_strain_;
       };
+
+      /// Return output type of Gauss point data
+      INPAR::STR::GaussPointDataOutputType GaussPointDataOutput() const
+      {
+        CheckInitSetup();
+        return gauss_point_data_output_type_;
+      }
 
      private:
       /// get the init indicator status
@@ -103,8 +118,14 @@ namespace DRT
       /// whether to write the element GIDs
       bool output_element_gid_;
 
+      /// whether to write the node GIDs
+      bool output_node_gid_;
+
       /// whether to write stress and / or strain data
       bool output_stress_strain_;
+
+      /// Output type of Gauss point data
+      INPAR::STR::GaussPointDataOutputType gauss_point_data_output_type_;
       //@}
     };
 

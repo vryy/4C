@@ -12,6 +12,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_H
 #define BACI_MIXTURE_CONSTITUENT_H
 
+#include <unordered_map>
+
 #include "../drt_mat/matpar_parameter.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_pack_buffer.H"
@@ -269,20 +271,28 @@ namespace MIXTURE
     virtual double CurrentRefDensity(int gp) const = 0;
 
     /*!
-     * \brief Get the names and dimension of the quantities to visualize
+     * \brief Register names of the internal data that should be saved during runtime vtk output
      *
-     * @param names (out) Tuple of names and the corresponding dimension of the quantity
+     * \param name_and_size [out] : unordered map of names of the data with the respective vector
+     * size
      */
-    virtual void VisNames(std::map<std::string, int>& names) {}
+    virtual void RegisterVtkOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const
+    {
+      // do nothing for simple constituents
+    }
 
     /*!
-     * \brief
-     * @param name (in) Name of the quantity
-     * @param data (out) Values of the quantity
-     * @param numgp (in) number of Gauß points
-     * @param eleGID (in) Global element id
+     * \brief Evaluate internal data for every Gauss point saved for output during runtime vtk
+     * output
+     *
+     * \param name [in] : Name of the data to export
+     * \param data [out] : NUMGPxNUMDATA Matrix holding the data
+     *
+     * \return true if data is set by the material, otherwise false
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleGID)
+    virtual bool EvaluateVtkOutputData(
+        const std::string& name, Epetra_SerialDenseMatrix& data) const
     {
       return false;
     }

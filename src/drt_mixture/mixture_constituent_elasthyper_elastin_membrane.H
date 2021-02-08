@@ -176,23 +176,6 @@ namespace MIXTURE
         int eleGID) override;
 
     /*!
-     * \brief Get the names and dimension of the quantities to visualize
-     *
-     * @param names (out) Tuple of names and the corresponding dimension of the quantity
-     */
-    void VisNames(std::map<std::string, int>& names) override;
-
-    /*!
-     * \brief
-     * @param name (in) Name of the quantity
-     * @param data (out) Values of the quantity
-     * @param numgp (in) number of Gauß points
-     * @param eleGID (in) Global element id
-     */
-    bool VisData(
-        const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
-
-    /*!
      * \brief Returns the current reference mass density of the constituent
      *
      * @param gp (in) : Gauss point

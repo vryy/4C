@@ -14,8 +14,17 @@
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_SerialDenseVector.h>
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
+
+
+// forward declarations
+namespace LINALG
+{
+  template <int dim>
+  class FourTensor;
+}
 
 /// MAT: materials
 namespace MAT
@@ -476,6 +485,84 @@ namespace MAT
 
   template <class T>
   T* CreateMaterialParameterInstance(Teuchos::RCP<MAT::PAR::Material> curmat);
+
+  /// Set every tensor value to zero
+  template <int dim>
+  void ClearFourTensor(LINALG::FourTensor<dim>& fourTensor);
+
+  /*!
+   * @brief Multiply 4-Tensor*Matrix
+   *
+   * @param[in,out] fourTensorResult   result of 4-Tensor matrix multiplication C^ijkl += A^ijkm *
+   *                                   B_m^l
+   * @param[in] fourTensor             4-tensor A^ijkm
+   * @param[in] matrix                 2-tensor B_m^l
+   * @param[in] clearResultTensor      if true: C^ijkl is cleared when method is called
+   */
+  template <int dim>
+  void MultiplyFourTensorMatrix(LINALG::FourTensor<dim>& fourTensorResult,
+      const LINALG::FourTensor<dim>& fourTensor, const LINALG::Matrix<dim, dim>& matrix,
+      const bool clearResultTensor = true);
+
+  /*!
+   * @brief Multiply Matrix*4-Tensor
+   *
+   * @param[in,out] fourTensorResult   result of 4-Tensor matrix multiplication C^ijkl += B^i_m *
+   *                                   A^mjkl
+   * @param[in] matrix                 2-tensor B^i_m
+   * @param[in] fourTensor             4-tensor A^mjkl
+   * @param[in] clearResultTensor      if true: C^ijkl is cleared when method is called
+   */
+  template <int dim>
+  void MultiplyMatrixFourTensor(LINALG::FourTensor<dim>& fourTensorResult,
+      const LINALG::Matrix<dim, dim>& matrix, const LINALG::FourTensor<dim>& fourTensor,
+      const bool clearResultTensor = true);
+
+  /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
+  /// via the 2th order deformation gradient (also in matrix notation)
+  template <int dim>
+  LINALG::Matrix<6, 6> PullBackFourTensor(
+      const LINALG::Matrix<dim, dim>& defgr, const LINALG::Matrix<6, 6>& cMatVoigt);
+
+  /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
+  /// notation) via the 2th order deformation gradient (also in matrix notation)
+  template <int dim>
+  double PullBackFourTensorijkl(const LINALG::Matrix<dim, dim>& defgr,
+      const LINALG::FourTensor<dim>& fourTensor, const int i, const int j, const int k,
+      const int l);
+
+  //
+  /*!
+   * @brief Setup 4-Tensor from 6x6 Voigt notation
+   *
+   * @note Setup 4-Tensor from 6x6 Voigt matrix (which has to be the representative of a 4 tensor
+   * with at least minor symmetries)
+   *
+   * @param[out] fourTensor   4-Tensor that is set up based on matrixVoigt
+   * @param[in]  matrixVoigt  4-Tensor in Voigt notation with at least minor symmetries
+   */
+  template <int dim>
+  void SetupFourTensor(
+      LINALG::FourTensor<dim>& fourTensor, const LINALG::Matrix<6, 6>& matrixVoigt);
+
+  /*!
+   * @brief Setup 6x6 Voigt matrix from 4-tensor with minor symmetries
+   *
+   * @param[out] matrixVoigt  6x6 Voigt matrix that is set up based on fourTensor
+   * @param[in]  fourTensor   4-tensor with minor symmetries
+   */
+  template <int dim>
+  void Setup6x6VoigtMatrix(
+      LINALG::Matrix<6, 6>& matrixVoigt, const LINALG::FourTensor<dim>& fourTensor);
+
+  /// Transpose four tensor wrt to basis vectors 1 and 2
+  template <int dim>
+  void TransposeFourTensor12(
+      LINALG::FourTensor<dim>& resultTensor, const LINALG::FourTensor<dim>& inputTensor);
+
+  /// print four tensor
+  template <int dim>
+  void PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor);
 
 }  // namespace MAT
 

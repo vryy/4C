@@ -431,8 +431,8 @@ void runEnsightVtuFilter(PostProblem& problem)
     {
       std::string basename = problem.outname();
       // do we have a fluid discretization?
-      int numfield = problem.num_discr();
-      if (numfield == 2)
+      int numfields = problem.num_discr();
+      if (numfields == 2)
       {
         PostField* fluidfield = problem.get_discretization(0);
         FluidFilter fluidwriter(fluidfield, basename);
@@ -442,14 +442,14 @@ void runEnsightVtuFilter(PostProblem& problem)
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
       }
-      else if (numfield == 1)
+      else if (numfields == 1)
       {
         PostField* scatrafield = problem.get_discretization(0);
         ScaTraFilter scatrawriter(scatrafield, basename);
         scatrawriter.WriteFiles();
       }
       else
-        dserror("number of fields does not match: got %d", numfield);
+        dserror("number of fields does not match: got %d", numfields);
 
       break;
     }
@@ -818,18 +818,36 @@ void runEnsightVtuFilter(PostProblem& problem)
     {
       std::string basename = problem.outname();
 
+      const int numfields = problem.num_discr();
+
       PostField* scatrafield =
           problem.get_discretization(0);  // remark: scalar transport discretization number is one
                                           // for old structural time integration!
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
 
-      PostField* structfield =
-          problem.get_discretization(1);  // remark: structure discretization number is zero for old
-                                          // structural time integration!
-      StructureFilter structwriter(
-          structfield, basename, problem.stresstype(), problem.straintype());
-      structwriter.WriteFiles();
+      if (numfields == 2)
+      {
+        // remark: structure discretization number is zero for old structural time integration!
+        PostField* structfield = problem.get_discretization(1);
+        StructureFilter structwriter(
+            structfield, basename, problem.stresstype(), problem.straintype());
+        structwriter.WriteFiles();
+      }
+      else if (numfields == 3)
+      {
+        // remark: structure discretization number is zero for old structural time integration!
+        PostField* structfield = problem.get_discretization(2);
+        StructureFilter structwriter(
+            structfield, basename, problem.stresstype(), problem.straintype());
+        structwriter.WriteFiles();
+
+        PostField* scatra_surfacefiled = problem.get_discretization(1);
+        ScaTraFilter scatra_surfacefiledwrite(scatra_surfacefiled, basename);
+        scatra_surfacefiledwrite.WriteFiles();
+      }
+      else
+        dserror("Unknwon number of solution fields");
 
       break;
     }
@@ -888,32 +906,6 @@ void runEnsightVtuFilter(PostProblem& problem)
       PostField* field = problem.get_discretization(0);
       ElemagFilter writer(field, problem.outname());
       writer.WriteFiles();
-      break;
-    }
-    case prb_uq:
-    {
-      for (int i = 0; i < problem.num_discr(); i++)
-      {
-        std::string disname = problem.get_discretization(i)->discretization()->Name();
-        if ((disname.compare("structure") == 0) || (disname.compare("red_airway") == 0))  // 0=true
-        {
-          PostField* field = problem.get_discretization(i);
-          StructureFilter writer(
-              field, problem.outname(), problem.stresstype(), problem.straintype());
-          writer.WriteFiles();
-        }
-        else if (disname.compare("ale") == 0)
-        {
-          PostField* field = problem.get_discretization(i);
-          AleFilter writer(field, problem.outname());
-          writer.WriteFiles();
-          break;
-        }
-        else
-        {
-          dserror("Unknown discretization type for problem type UQ");
-        }
-      }
       break;
     }
     case prb_invana:

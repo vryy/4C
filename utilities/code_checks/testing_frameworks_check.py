@@ -132,11 +132,11 @@ def check_inputtests(look_cmd, allerrors):
   errors = 0
   input_tests = [str(ff) for ff in utils.files_changed(look_cmd)[:-1] if utils.is_input_file(ff)]
 
-  # read TestingFramework.cmake
+  # read TestingFrameworkListOfTests.cmake
   entries = []
   mpi_ranks = []
   categories = []
-  with open('TestingFramework.cmake', 'r') as cmakefile:
+  with open('TestingFrameworkListOfTests.cmake', 'r') as cmakefile:
     entry_regex = [
       re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_and_post_ensight_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
@@ -150,7 +150,7 @@ def check_inputtests(look_cmd, allerrors):
     # list of test categories as one test can be run in different scenarios using differnt mpi-ranks
     test_categories = ['', '', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
 
-    # go through all lines in the TestingFramework.cmake file
+    # go through all lines in the TestingFrameworkListOfTests.cmake file
     for line in cmakefile:
       # split comments
       line = line.split('#', 1)[0]
@@ -225,7 +225,7 @@ def check_inputtests(look_cmd, allerrors):
   # check if some input tests are missing
   missing_input_tests = []
   for input_test in input_tests:
-    # check, whether this input file is in TestingFramework.cmake
+    # check, whether this input file is in TestingFrameworkListOfTests.cmake
     found = False
 
     for entry in entries:
@@ -237,7 +237,7 @@ def check_inputtests(look_cmd, allerrors):
 
   if len(missing_input_tests) > 0:
     errors += 1
-    allerrors.append('The following input files are missing in TestingFramework.cmake:')
+    allerrors.append('The following input files are missing in TestingFrameworkListOfTests.cmake:')
     allerrors.append('')
     allerrors.extend(missing_input_tests)
 

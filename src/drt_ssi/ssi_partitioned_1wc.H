@@ -36,9 +36,9 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! actual time loop (implemented by derived class)
     void Timeloop() override = 0;
@@ -80,9 +80,9 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! actual time loop
     void Timeloop() override;
@@ -114,9 +114,9 @@ namespace SSI
     \date 08/16
     \author rauch
     */
-    int Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-        const std::string struct_disname, const std::string scatra_disname, bool isAle) override;
+        const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
 
     //! actual time loop
     void Timeloop() override;

@@ -34,12 +34,12 @@ void SSI::SSIPart::SetupSystem() {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  int returnvar = SSI::SSIBase::Init(
+  SSI::SSIBase::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // safety check
@@ -52,7 +52,7 @@ int SSI::SSIPart::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
         "degrees of freedom!");
   }
 
-  return returnvar;
+  if (IsScaTraManifold()) dserror("Manifold not implemented for partitioned SSI");
 }
 
 /*----------------------------------------------------------------------*/

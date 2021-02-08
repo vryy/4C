@@ -39,12 +39,12 @@ SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  int returnvar = SSI::SSIPart::Init(
+  SSI::SSIPart::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // call the SSI parameter lists
@@ -95,8 +95,6 @@ int SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList&
   // Get the parameters for the ConvergenceCheck
   itmax_ = ssicontrol.get<int>("ITEMAX");          // default: =10
   ittol_ = ssicontrolpart.get<double>("CONVTOL");  // default: =1e-6
-
-  return returnvar;
 }
 
 /*----------------------------------------------------------------------*
@@ -458,13 +456,13 @@ SSI::SSIPart2WCSolidToScatraRelax::SSIPart2WCSolidToScatraRelax(
 /*----------------------------------------------------------------------*
  | Init this class                                          rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
+void SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call init of base class
-  int returnvar = SSI::SSIPart2WC::Init(
+  SSI::SSIPart2WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
@@ -472,8 +470,6 @@ int SSI::SSIPart2WCSolidToScatraRelax::Init(const Epetra_Comm& comm,
 
   // Get minimal relaxation parameter from input file
   omega_ = ssicontrolpart.get<double>("STARTOMEGA");
-
-  return returnvar;
 }
 
 /*----------------------------------------------------------------------*
@@ -541,9 +537,11 @@ void SSI::SSIPart2WCSolidToScatraRelax::OuterLoop()
     // since the velocity field has to fit to the relaxated displacements we also have to relaxate
     // them.
     if (UseOldStructureTimeInt())
+    {
       // since the velocity depends nonlinear on the displacements we can just approximate them via
       // finite differences here.
       velnp = CalcVelocity(dispnp);
+    }
     else
     {
       // consistent derivation of velocity field from displacement field
@@ -683,13 +681,13 @@ SSI::SSIPart2WCScatraToSolidRelax::SSIPart2WCScatraToSolidRelax(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
+void SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  int returnvar = SSI::SSIPart2WC::Init(
+  SSI::SSIPart2WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   const Teuchos::ParameterList& ssicontrolpart =
@@ -707,8 +705,6 @@ int SSI::SSIPart2WCScatraToSolidRelax::Init(const Epetra_Comm& comm,
     std::cout << "\n#########################################################################\n  "
               << std::endl;
   }
-
-  return returnvar;
 }
 
 /*----------------------------------------------------------------------*

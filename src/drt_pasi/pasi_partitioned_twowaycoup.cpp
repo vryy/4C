@@ -109,6 +109,9 @@ void PASI::PASI_PartTwoWayCoup::Timeloop()
     // prepare time step
     PrepareTimeStep();
 
+    // pre evaluate time step
+    PreEvaluateTimeStep();
+
     // iteration loop between coupled fields
     Outerloop();
 

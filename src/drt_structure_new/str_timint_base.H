@@ -96,7 +96,7 @@ namespace STR
       virtual void PostOutput(){};
 
       /// things that should be done after the actual time loop is finished
-      virtual void PostTimeLoop(){/* FixMe HaveMicroMat() is doing something here */};
+      void PostTimeLoop() override;
 
       /// @name General access methods
       ///@{

@@ -288,10 +288,10 @@ void IO::OutputControl::WriteHeader(
     time_t time_value;
     time_value = time(NULL);
 
-    char hostname[31];
+    char hostname[256];
     struct passwd* user_entry;
     user_entry = getpwuid(getuid());
-    gethostname(hostname, 30);
+    gethostname(hostname, 256);
 
     controlfile_ << "# baci output control file\n"
                  << "# created by " << user_entry->pw_name << " on " << hostname << " at "

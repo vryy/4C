@@ -43,7 +43,7 @@ namespace FBI
 
    public:
     /// empty destructor
-    virtual ~FBIGeometryCoupler(){};
+    virtual ~FBIGeometryCoupler() = default;
 
     /** \brief Setup the Geoemtry object
      *

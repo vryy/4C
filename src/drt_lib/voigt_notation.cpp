@@ -21,6 +21,17 @@ void UTILS::VOIGT::Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix
   out(8) = in(2, 0);
 }
 
+void UTILS::VOIGT::Matrix9x1to3x3(LINALG::Matrix<9, 1> const& in, LINALG::Matrix<3, 3>& out)
+{
+  for (int i = 0; i < 3; ++i) out(i, i) = in(i);
+  out(0, 1) = in(3);
+  out(1, 2) = in(4);
+  out(0, 2) = in(5);
+  out(1, 0) = in(6);
+  out(2, 1) = in(7);
+  out(2, 0) = in(8);
+}
+
 template <NotationType rows_notation, NotationType cols_notation>
 void UTILS::VOIGT::FourthOrderIdentityMatrix(LINALG::Matrix<6, 6>& id)
 {

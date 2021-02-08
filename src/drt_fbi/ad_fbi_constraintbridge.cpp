@@ -8,20 +8,26 @@ constraint enforcement technique with a discretization approach for Fluid-beam i
 
 *----------------------------------------------------------------------*/
 #include "ad_fbi_constraintbridge.H"
+#include "fluid_assembly_strategy.H"
+#include "fluidblockmatrix_assembly_strategy.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_3D_evaluation_data.H"
 #include "../drt_beaminteraction/beam_contact_pair.H"
 #include "beam_to_fluid_meshtying_pair_factory.H"
 #include "beam_to_fluid_meshtying_params.H"
+#include "../drt_inpar/inpar_fbi.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_sparseoperator.H"
 
 ADAPTER::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(Teuchos::null),
+      assemblystrategy_(Teuchos::null),
       meshtying_pairs_(
           Teuchos::rcp(new std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>)),
       geometry_evaluation_data_(Teuchos::null){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map)
+void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
+    Teuchos::RCP<LINALG::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
   beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
@@ -34,6 +40,21 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
   // Create the beaminteraction data container and set the parameters
   geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
       new GEOMETRYPAIR::LineTo3DEvaluationData(geometry_parameter_list));
+
+  if (fluidmeshtying)
+  {
+    // For the option condensed smat this can be changed by creating a FEMatrix instead of a
+    // CRSMatrix!
+    if (beam_interaction_params_->GetContactDiscretization() ==
+        INPAR::FBI::BeamToFluidDiscretization::mortar)
+      dserror("Fluid Meshtying is not supported when using a mortar discretization!");
+
+    assemblystrategy_ = Teuchos::rcp<FBI::UTILS::FBIBlockAssemblyStrategy>(
+        new FBI::UTILS::FBIBlockAssemblyStrategy());
+  }
+  else
+    assemblystrategy_ =
+        Teuchos::rcp<FBI::UTILS::FBIAssemblyStrategy>(new FBI::UTILS::FBIAssemblyStrategy());
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

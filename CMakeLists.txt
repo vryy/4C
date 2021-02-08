@@ -1,4 +1,3 @@
-
 # Build system for baci and support tools.
 # Including nightly test definitions.
 #
@@ -438,6 +437,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_utils_createdis.cpp
   src/drt_lib/drt_utils_materials.cpp
   src/drt_lib/drt_utils_factory.cpp
+  src/drt_lib/drt_utils_gid_vector.cpp
   src/drt_lib/drt_utils_nullspace.cpp
   src/drt_lib/drt_utils_discret.cpp
   src/drt_lib/drt_utils_discret_dbc.cpp
@@ -515,6 +515,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H
+  src/drt_mat/muscle_weickenmeier.cpp
   src/drt_mat/myocard.cpp
   src/drt_mat/myocard_fitzhugh_nagumo.cpp
   src/drt_mat/myocard_inada.cpp
@@ -565,6 +566,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/viscoelasthyper.cpp
   src/drt_mat/visconeohooke.cpp
+  src/drt_mat/viscoplastic_no_yield_surface.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_anisoactivestress_evolution.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
@@ -763,7 +765,6 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_loca_continuation.cpp
   src/drt_inpar/inpar_lubrication.cpp
   src/drt_inpar/inpar_binningstrategy.cpp
-  src/drt_inpar/inpar_mlmc.cpp
   src/drt_inpar/inpar_mor.cpp
   src/drt_inpar/inpar_mortar.cpp
   src/drt_inpar/inpar_poroelast.cpp
@@ -940,6 +941,7 @@ set(OBJS_SOH8_LIB
   src/drt_so3/inversedesign_evaluate.cpp
   src/drt_so3/prestress.cpp
   src/drt_so3/so_base.cpp
+  src/drt_so3/so_element_service.cpp
   src/drt_so3/so_hex18.cpp
   src/drt_so3/so_hex20.cpp
   src/drt_so3/so_hex20_evaluate.cpp
@@ -1225,6 +1227,8 @@ set(OBJS_DRT_FBI
   src/drt_fbi/beam_to_fluid_mortar_manager.cpp
   src/drt_fbi/constraintenforcer_fbi_factory.cpp
   src/drt_fbi/constraintenforcer_fbi_penalty.cpp
+  src/drt_fbi/fluid_assembly_strategy.cpp
+  src/drt_fbi/fluidblockmatrix_assembly_strategy.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_indirect.cpp
@@ -1624,8 +1628,6 @@ set(OBJS_POST_DRT_VTK
   src/post_vtk/post_drt_vtk_writer.cpp
 )
 set(OBJS_INV_ANALYSIS
-  src/drt_inv_analysis/gen_inv_analysis.cpp
-  src/drt_structure/str_invanalysis.cpp
   src/drt_inv_analysis/invana_cal_drt.cpp
 )
 set(OBJS_STATINV_ANALYSIS
@@ -1668,18 +1670,6 @@ set(OBJS_STATINV_ANALYSIS
 )
 set(OBJS_STATINV_ANALYSIS_LIB
   src/drt_inv_analysis/particle_data.cpp
-)
-set(OBJS_MLMC
-	src/drt_mlmc/drt_uq_redairways.cpp
-	src/drt_mlmc/drt_uq_dyn.cpp
-  src/drt_mlmc/mlmc.cpp
-  src/drt_mlmc/mc_utils.cpp
-  src/drt_mlmc/mc_mat_par_manager.cpp
-  src/drt_mlmc/mc_var_thickness_manager.cpp
-  src/drt_mlmc/randomfield.cpp
-  src/drt_mlmc/randomfield_fourier.cpp
-  src/drt_mlmc/randomfield_spectral.cpp
-  src/drt_mlmc/randomvariable.cpp
 )
 set(OBJS_DRT_MAT
   src/drt_mat/micromaterial_evaluate.cpp
@@ -1764,6 +1754,7 @@ set(OBJS_DRT_STRUCTURE
   src/drt_structure/strtimint_prestress.cpp
   src/drt_structure/stru_aux.cpp
   src/drt_structure/stru_resulttest.cpp
+  src/drt_structure_new/gauss_point_data_output_manager.cpp
   src/drt_structure_new/str_utils.cpp
   src/drt_structure_new/str_dbc.cpp
   src/drt_structure_new/str_monitor_dbc.cpp
@@ -1881,6 +1872,7 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_density.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate_bundle.cpp
   src/drt_particle_interaction/particle_interaction_sph_equationofstate.cpp
+  src/drt_particle_interaction/particle_interaction_sph_heatloss_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_heatsource.cpp
   src/drt_particle_interaction/particle_interaction_sph_kernel.cpp
   src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.cpp
@@ -1891,6 +1883,9 @@ set(OBJS_DRT_PARTICLE_INTERACTION
   src/drt_particle_interaction/particle_interaction_sph_pressure.cpp
   src/drt_particle_interaction/particle_interaction_sph_rigid_particle_contact.cpp
   src/drt_particle_interaction/particle_interaction_sph_surface_tension.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_barrier_force.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_interface_viscosity.cpp
+  src/drt_particle_interaction/particle_interaction_sph_surface_tension_recoilpressure_evaporation.cpp
   src/drt_particle_interaction/particle_interaction_sph_temperature.cpp
   src/drt_particle_interaction/particle_interaction_sph_virtual_wall_particle.cpp
   src/drt_particle_interaction/particle_interaction_sph.cpp
@@ -1990,6 +1985,7 @@ set(OBJS_SOLVER
   src/solver/muelu/MueLu_MeshtyingSPAmalgamationFactory.cpp
   src/solver/muelu/MueLu_ContactSPRepartitionInterface.cpp
   src/solver/muelu/MueLu_BaciFactoryFactory.cpp
+  src/solver/muelu/muelu_utils.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
   src/solver/solver_amgnxn_vcycle.cpp
   src/solver/solver_amgnxn_hierarchies.cpp
@@ -2628,6 +2624,7 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_rule.cpp
   src/drt_mixture/mixture_rule_growthremodel.cpp
   src/drt_mixture/mixture_prestress_strategy.cpp
+  src/drt_mixture/mixture_prestress_strategy_constant.cpp
   src/drt_mixture/mixture_prestress_strategy_isocyl.cpp
   src/drt_mixture/mixture_prestress_strategy_iterative.cpp)
 
@@ -2769,9 +2766,7 @@ add_library(alg_contact_aug ${OBJS_DRT_CONTACT_AUG})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_fluid_turbulence ${OBJS_DRT_FLUID_TURBULENCE})
 add_library(alg_xfluid ${OBJS_DRT_FLUID_XFLUID})
-add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
 add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
-add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_lubrication ${OBJS_DRT_LUBRICATION})
 add_library(alg_porofluidmultiphase ${OBJS_DRT_POROFLUIDMULTIPHASE})
@@ -2802,9 +2797,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_scatra
   alg_structure
   alg_xstructure
-  alg_invanalysis
   alg_statinvanalysis
-  alg_mlmc
   alg_thermo
   alg_contact
   alg_contact_aug

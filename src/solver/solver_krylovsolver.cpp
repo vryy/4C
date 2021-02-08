@@ -37,7 +37,12 @@ typedef Xpetra::Vector<Scalar, LocalOrdinal, GlobalOrdinal, Node> Vector;
 typedef Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node> MultiVector;
 typedef Xpetra::VectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node> VectorFactory;
 typedef Xpetra::MapFactory<LocalOrdinal, GlobalOrdinal, Node> MapFactory;
-typedef Xpetra::EpetraCrsMatrix EpetraCrsMatrix;
+
+#ifdef TRILINOS_DEVELOP
+using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;
+#else
+using EpetraCrsMatrix = Xpetra::EpetraCrsMatrix;
+#endif
 
 typedef MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> FactoryManager;
 typedef MueLu::FactoryBase FactoryBase;
@@ -68,6 +73,9 @@ typedef Node NO;
 #include "solver_muelucontactsppreconditioner.H"
 #include "solver_muelucontactpenaltypreconditioner.H"
 #endif  // TRILINOS_Q1_2015
+#ifdef TRILINOS_DEVELOP
+#include "solver_muelucontactsppreconditioner.H"
+#endif
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif  // HAVE_TEKO
@@ -333,11 +341,13 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef TRILINOS_Q1_2015
+#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_DEVELOP)
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
-      dserror("MueLu (Contact) preconditioner only available with Trilinos Q1_2015.");
+      dserror(
+          "MueLu (Contact) preconditioner only available with Trilinos Q1_2015 or current Trilinos "
+          "develop branch.");
 #endif
     }
     else if (Params().isSublist("AMGnxn Parameters"))
@@ -346,6 +356,10 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else
     {
+#ifdef DEBUG
+      Params().print(std::cout);
+#endif
+
       dserror("unknown preconditioner for block matrix solver");
     }
   }
@@ -363,7 +377,7 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+      Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar, LO, GO, Node>> xCrsOp =
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LO, GO, Node>(xCrsA));
   Teuchos::RCP<Xpetra::Matrix<Scalar, LO, GO, Node>> xOp =
@@ -473,7 +487,7 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
 
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+      Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
   xOp->SetFixedBlockSize(Params()
@@ -627,7 +641,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindNonDiagonalDominantRows(
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+      Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
   xA->SetFixedBlockSize(Params()
@@ -679,7 +693,7 @@ Teuchos::RCP<Map> LINALG::SOLVER::KrylovSolver::FindZeroDiagonalEntries(
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+      Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xA = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
   xA->SetFixedBlockSize(Params()
@@ -696,7 +710,7 @@ int LINALG::SOLVER::KrylovSolver::CountZerosOnDiagonalEpetra(
 {
   // wrap Epetra_CrsMatrix -> Xpetra::Matrix
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LO, GO, Node>> xCrsA =
-      Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+      Teuchos::rcp(new EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
   xOp->SetFixedBlockSize(Params()

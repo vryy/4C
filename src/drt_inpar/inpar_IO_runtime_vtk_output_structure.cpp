@@ -13,6 +13,7 @@
 #include "drt_validparameters.H"
 #include "inpar.H"
 #include "inpar_parameterlist_utils.H"
+#include "inpar_structure.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -53,8 +54,12 @@ namespace INPAR
         setStringToIntegralParameter<int>("ELEMENT_OWNER", "No", "write element owner", yesnotuple,
             yesnovalue, &sublist_IO_VTK_structure);
 
-        // whether to write element GID
+        // whether to write element GIDs
         setStringToIntegralParameter<int>("ELEMENT_GID", "No", "write baci internal element GIDs",
+            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+
+        // whether to write node GIDs
+        setStringToIntegralParameter<int>("NODE_GID", "No", "write baci internal node GIDs",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
         // whether to write stress and / or strain data
@@ -62,6 +67,18 @@ namespace INPAR
             "Write element stress and / or strain  data. The type of stress / strain has to be "
             "selected in the --IO input section",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+
+        // mode to write gauss point data
+        setStringToIntegralParameter<INPAR::STR::GaussPointDataOutputType>(
+            "GAUSS_POINT_DATA_OUTPUT_TYPE", "none",
+            "Where to write gauss point data. (none, projected to nodes, projected to element "
+            "center, raw at gauss points)",
+            tuple<std::string>("none", "nodes", "element_center", "gauss_points"),
+            tuple<INPAR::STR::GaussPointDataOutputType>(INPAR::STR::GaussPointDataOutputType::none,
+                INPAR::STR::GaussPointDataOutputType::nodes,
+                INPAR::STR::GaussPointDataOutputType::element_center,
+                INPAR::STR::GaussPointDataOutputType::gauss_points),
+            &sublist_IO_VTK_structure);
       }
 
 

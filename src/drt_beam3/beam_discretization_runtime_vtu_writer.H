@@ -75,7 +75,7 @@ class BeamDiscretizationRuntimeVtuWriter
    *  \date 03/17 */
   void Initialize(Teuchos::RCP<DRT::Discretization> discretization,
       Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
-      bool use_absolute_positions_for_point_coordinates,
+      bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
       Teuchos::RCP<const GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
       unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output);
 
@@ -243,6 +243,9 @@ class BeamDiscretizationRuntimeVtuWriter
   //! flag indicating whether to use absolute positions for point coordinates
   // false: use reference position
   bool use_absolute_positions_;
+
+  //! number of visual subsegments for the beam polyline visialization.
+  unsigned int n_subsegments_;
 };
 
 #endif

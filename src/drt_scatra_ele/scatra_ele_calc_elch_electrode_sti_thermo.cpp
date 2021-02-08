@@ -12,8 +12,6 @@ within thermodynamic electrodes
 
 #include "scatra_ele_parameter_timint.H"
 
-#include "../drt_mat/material.H"
-
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
@@ -101,10 +99,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialPar
 
   // get parameters of secondary, thermodynamic electrolyte material
   Teuchos::RCP<const MAT::Material> material = ele->Material(1);
-  if (material->MaterialType() == INPAR::MAT::m_soret)
-    mythermo::MatSoret(material);
-  else
-    dserror("Invalid electrode material!");
+  materialtype_ = material->MaterialType();
+  if (materialtype_ == INPAR::MAT::m_soret) mythermo::MatSoret(material);
 
   return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams
@@ -137,14 +133,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
   myelectrode::CalcMatAndRhs(
       emat, erhs, k, fac, timefacfac, rhsfac, taufac, timetaufac, rhstaufac, tauderpot, rhsint);
 
-  // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
-  mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
-      myelectrode::DiffManager()->GetIsotropicDiff(0),
-      myelectrode::DiffManager()->GetDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
-      VarManager()->GradTemp(), my::funct_, my::derxy_);
-  mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
-      myelectrode::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
-      VarManager()->GradTemp(), my::derxy_);
+  if (materialtype_ == INPAR::MAT::m_soret)
+  {
+    // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
+    mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
+        myelectrode::DiffManager()->GetIsotropicDiff(0),
+        myelectrode::DiffManager()->GetDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
+        VarManager()->GradTemp(), my::funct_, my::derxy_);
+    mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
+        myelectrode::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
+        VarManager()->GradTemp(), my::derxy_);
+  }
 
   return;
 }

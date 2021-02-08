@@ -226,6 +226,18 @@ namespace UTILS
     /// V_7 = A_21; V_8 = A_20
     void Matrix3x3to9x1(LINALG::Matrix<3, 3> const& in, LINALG::Matrix<9, 1>& out);
 
+    /// convert 9x1 vector to non-symmetric 2-tensor
+    ///
+    /// Vector   V_0 = A_00; V_1 = A_11; V_2 = A_22; V_3 = A_01; V_4 = A_12; V_5 = A_02; V_6 = A_10;
+    /// V_7 = A_21; V_8 = A_20
+    ///
+    /// is converted to
+    ///
+    ///          A_00 A_01 A_02
+    /// Matrix   A_10 A_11 A_12
+    ///          A_20 A_21 A_22
+    void Matrix9x1to3x3(LINALG::Matrix<9, 1> const& in, LINALG::Matrix<3, 3>& out);
+
     /**
      * \brief Identity matrix in stress/strain-like Voigt notation
      * @param id (out) : 2nd order identity tensor in stress/strain-like Voigt notation

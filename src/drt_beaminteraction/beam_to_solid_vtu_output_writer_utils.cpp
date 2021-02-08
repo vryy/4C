@@ -11,6 +11,7 @@
 #include "beam_to_solid_vtu_output_writer_utils.H"
 
 #include "beam_to_solid_vtu_output_writer_visualization.H"
+#include "beam_to_solid_surface_vtk_output_params.H"
 #include "beaminteraction_calc_utils.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
 #include "../drt_lib/drt_discret.H"
@@ -25,7 +26,7 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>& visualization,
     const Teuchos::RCP<const DRT::Discretization>& discret_ptr,
     const Teuchos::RCP<const Epetra_MultiVector>& displacement,
-    const Teuchos::RCP<const Epetra_MultiVector>& force)
+    const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
 {
   // Add the reference geometry and displacement to the visualization.
   visualization->AddDiscretizationNodalReferencePosition(discret_ptr);
@@ -57,6 +58,13 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
   LINALG::Export(*force, *force_solid);
   visualization->AddDiscretizationNodalData("force_beam", force_beam);
   visualization->AddDiscretizationNodalData("force_solid", force_solid);
+
+  if (write_unique_ids)
+  {
+    std::vector<double>& unique_id = visualization->GetMutablePointDataVector("uid_0_node_id");
+    for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
+      unique_id.push_back(discret_ptr->lRowNode(i_lid)->Id());
+  }
 }
 
 /**
@@ -66,7 +74,7 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
         output_writer_base_ptr,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
-    const int condition_coupling_id)
+    const int condition_coupling_id, const bool write_unique_ids)
 {
   // Get the visualization vectors.
   std::vector<double>& point_coordinates =
@@ -79,6 +87,10 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
       output_writer_base_ptr->GetMutablePointDataVector("normal_element");
   std::vector<double>& coupling_id =
       output_writer_base_ptr->GetMutablePointDataVector("coupling_id");
+
+  std::vector<double>* face_id = nullptr;
+  if (write_unique_ids)
+    face_id = &(output_writer_base_ptr->GetMutablePointDataVector("uid_0_face_id"));
 
   // Loop over face elements.
   for (auto const& face_element_iterator : face_elements)
@@ -118,6 +130,9 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
           normal_element.push_back(n(dim));
         }
         coupling_id.push_back(condition_coupling_id);
+
+        if (write_unique_ids)
+          face_id->push_back(face_element_iterator.second->GetDrtFaceElement()->Id());
       }
     }
   }

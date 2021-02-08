@@ -44,37 +44,15 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const LINALG::Matrix
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
 {
-  // routine runs when calculation is done during the inverse analysis
-  // inverse analysis runs with ln(b) and ln(c),
-  // but material calculates with real parameters b and c=exp(ln(c))
-  // if no inverse analysis: normal parameters are used
-  std::string ia =
-      DRT::Problem::Instance()->InverseAnalysisParams().get<std::string>("INV_ANALYSIS");
-  if (ia != "none")
-  {
-    const double a = params_->a_;
-    const double b = exp(params_->b_);
-    const double c = exp(params_->c_);
+  const double a = params_->a_;
+  const double b = params_->b_;
+  const double c = params_->c_;
 
-    // strain energy: Psi = a \exp[ b(I_1 - 3) - (2b + c)ln{J} + c(J-1) ] - a
-    // add to overall strain energy
-    psi += a * exp(b * (prinv(0) - 3.0) - (2.0 * b + c) * log(sqrt(prinv(2))) +
-                   c * (sqrt(prinv(2)) - 1.0)) -
-           a;
-  }
-  else
-  // normal routine
-  {
-    const double a = params_->a_;
-    const double b = params_->b_;
-    const double c = params_->c_;
-
-    // strain energy: Psi = a \exp[ b(I_1 - 3) - (2b + c)ln{J} + c(J-1) ] - a
-    // add to overall strain energy
-    psi += a * exp(b * (prinv(0) - 3.0) - (2.0 * b + c) * log(sqrt(prinv(2))) +
-                   c * (sqrt(prinv(2)) - 1.0)) -
-           a;
-  }
+  // strain energy: Psi = a \exp[ b(I_1 - 3) - (2b + c)ln{J} + c(J-1) ] - a
+  // add to overall strain energy
+  psi += a * exp(b * (prinv(0) - 3.0) - (2.0 * b + c) * log(sqrt(prinv(2))) +
+                 c * (sqrt(prinv(2)) - 1.0)) -
+         a;
 }
 
 
@@ -84,61 +62,26 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const LINALG::Matrix
 void MAT::ELASTIC::CoupExpPol::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
-  // routine runs when calculation is done during the inverse analysis
-  // inverse analysis runs with ln(b) and ln(c),
-  // but material calculates with real parameters b and c=exp(ln(c))
-  // if no inverse analysis: normal parameters are used
-  std::string ia =
-      DRT::Problem::Instance()->InverseAnalysisParams().get<std::string>("INV_ANALYSIS");
-  if (ia != "none")
-  {
-    const double a = params_->a_;
-    const double b = exp(params_->b_);
-    const double c = exp(params_->c_);
+  const double a = params_->a_;
+  const double b = params_->b_;
+  const double c = params_->c_;
 
-    // ln of determinant of deformation gradient
-    const double logdetf = std::log(std::sqrt(prinv(2)));
+  // ln of determinant of deformation gradient
+  const double logdetf = std::log(std::sqrt(prinv(2)));
 
-    // exponential function
-    const double expfunc =
-        std::exp(b * (prinv(0) - 3.0) - (2.0 * b + c) * logdetf + c * (std::sqrt(prinv(2)) - 1.0));
+  // exponential function
+  const double expfunc =
+      std::exp(b * (prinv(0) - 3.0) - (2.0 * b + c) * logdetf + c * (std::sqrt(prinv(2)) - 1.0));
 
-    dPI(0) += a * b * expfunc;
-    dPI(2) += a * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
+  dPI(0) += a * b * expfunc;
+  dPI(2) += a * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
 
-    ddPII(0) += a * b * b * expfunc;
-    ddPII(2) +=
-        a * expfunc *
-        ((0.5 * (2. * b + c) / (prinv(2) * prinv(2))) - (0.25 * c / std::pow(prinv(2), 1.5)) +
-            (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))) *
-                (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))));
-    ddPII(4) += a * b * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
-  }
-  else
-  // normal routine
-  {
-    const double a = params_->a_;
-    const double b = params_->b_;
-    const double c = params_->c_;
-
-    // ln of determinant of deformation gradient
-    const double logdetf = std::log(std::sqrt(prinv(2)));
-
-    // exponential function
-    const double expfunc =
-        std::exp(b * (prinv(0) - 3.0) - (2.0 * b + c) * logdetf + c * (std::sqrt(prinv(2)) - 1.0));
-
-    dPI(0) += a * b * expfunc;
-    dPI(2) += a * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
-
-    ddPII(0) += a * b * b * expfunc;
-    ddPII(2) +=
-        a * expfunc *
-        ((0.5 * (2. * b + c) / (prinv(2) * prinv(2))) - (0.25 * c / std::pow(prinv(2), 1.5)) +
-            (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))) *
-                (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))));
-    ddPII(4) += a * b * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
-  }
+  ddPII(0) += a * b * b * expfunc;
+  ddPII(2) += a * expfunc *
+              ((0.5 * (2. * b + c) / (prinv(2) * prinv(2))) - (0.25 * c / std::pow(prinv(2), 1.5)) +
+                  (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))) *
+                      (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))));
+  ddPII(4) += a * b * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
 
   return;
 }

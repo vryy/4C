@@ -17,7 +17,6 @@
 
 #include "../drt_io/every_iteration_writer.H"
 #include "../drt_io/io_control.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../solver_nonlin_nox/nox_nln_aux.H"
 #include "../solver_nonlin_nox/nox_nln_linesearch_generic.H"
@@ -36,7 +35,7 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       params_runtime_vtp_output_(Teuchos::null),
       params_monitor_dbc_(Teuchos::null),
       energyfile_(Teuchos::null),
-      errfile_(NULL),
+      errfile_(nullptr),
       gmsh_out_(false),
       printlogo_(false),
       printerrfile_(false),
@@ -51,7 +50,6 @@ STR::TIMINT::BaseDataIO::BaseDataIO()
       printscreen_(-1),
       outputcounter_(-1),
       writerestartevery_(-1),
-      writereducedrestart_(-1),
       writeresultsevery_(-1),
       writeenergyevery_(-1),
       writestress_(INPAR::STR::stress_none),
@@ -80,17 +78,16 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
   {
     output_ = output;
     printscreen_ = ioparams.get<int>("STDOUTEVRY");
-    printlogo_ = (printscreen_ > 0 ? true : false);
+    printlogo_ = printscreen_ > 0;
     errfile_ = xparams.get<FILE*>("err file");
     gmsh_out_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "OUTPUT_GMSH");
-    printerrfile_ = (true and errfile_);
+    printerrfile_ = errfile_ != nullptr;
     printiter_ = true;
     p_io_every_iteration_ =
         Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
     outputeveryiter_ = DRT::INPUT::IntegralValue<bool>(*p_io_every_iteration_, "OUTPUT_EVERY_ITER");
     writeinitialstate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "WRITE_INITIAL_STATE");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
-    writereducedrestart_ = xparams.get<int>("REDUCED_OUTPUT");
     writestate_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
     writejac2matlab_ = (bool)DRT::INPUT::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
@@ -136,8 +133,6 @@ void STR::TIMINT::BaseDataIO::Init(const Teuchos::ParameterList& ioparams,
   }
 
   isinit_ = true;
-
-  return;
 }
 
 
@@ -151,9 +146,6 @@ void STR::TIMINT::BaseDataIO::Setup()
   if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new IO::EveryIterationWriter());
 
   issetup_ = true;
-
-  // Good bye
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -161,8 +153,6 @@ void STR::TIMINT::BaseDataIO::Setup()
 void STR::TIMINT::BaseDataIO::CheckInitSetup() const
 {
   if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -220,6 +210,25 @@ bool STR::TIMINT::BaseDataIO::WriteResultsForThisStep(const int step) const
   return ((GetWriteResultsEveryNStep() and step % GetWriteResultsEveryNStep() == 0) or
           GetInitialStateIsToBeWritten());
 }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataIO::WriteRuntimeVtkResultsForThisStep(const int step) const
+{
+  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  return (GetRuntimeVtkOutputParams() != Teuchos::null and
+          step % GetRuntimeVtkOutputParams()->OutputIntervalInSteps() == 0);
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) const
+{
+  if (step < 0) dserror("The variable step is not allowed to be negative.");
+  return (GetRuntimeVtpOutputParams() != Teuchos::null and
+          step % GetRuntimeVtpOutputParams()->OutputIntervalInSteps() == 0);
+}
+
 
 bool STR::TIMINT::BaseDataIO::ShouldWriteRestartForStep(const int step) const
 {

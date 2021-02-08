@@ -33,15 +33,13 @@ SSI::SSIPart1WC::SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIPart1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIPart1WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  int returnvar = SSI::SSIPart::Init(
+  SSI::SSIPart::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
-
-  return returnvar;
 }
 
 /*----------------------------------------------------------------------*/
@@ -187,13 +185,13 @@ SSI::SSIPart1WCSolidToScatra::SSIPart1WCSolidToScatra(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
+void SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  int returnvar = SSI::SSIPart1WC::Init(
+  SSI::SSIPart1WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // do some checks
@@ -208,8 +206,6 @@ int SSI::SSIPart1WCSolidToScatra::Init(const Epetra_Comm& comm,
           "TRANSPORT DYNAMIC section!");
     }
   }
-
-  return returnvar;
 }
 
 /*----------------------------------------------------------------------*/
@@ -259,20 +255,18 @@ SSI::SSIPart1WCScatraToSolid::SSIPart1WCScatraToSolid(
 /*----------------------------------------------------------------------*
  | Setup this class                                         rauch 08/16 |
  *----------------------------------------------------------------------*/
-int SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
+void SSI::SSIPart1WCScatraToSolid::Init(const Epetra_Comm& comm,
     const Teuchos::ParameterList& globaltimeparams, const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& structparams, const std::string struct_disname,
-    const std::string scatra_disname, bool isAle)
+    const Teuchos::ParameterList& structparams, const std::string& struct_disname,
+    const std::string& scatra_disname, bool isAle)
 {
   // call setup of base class
-  int returnvar = SSI::SSIPart1WC::Init(
+  SSI::SSIPart1WC::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 
   // Flag for reading scatra result from restart file instead of computing it
   isscatrafromfile_ = DRT::INPUT::IntegralValue<bool>(
       DRT::Problem::Instance()->SSIControlParams(), "SCATRA_FROM_RESTART_FILE");
-
-  return returnvar;
 }
 
 /*----------------------------------------------------------------------*/

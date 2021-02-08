@@ -15,19 +15,28 @@
 #include "ssti_monolithic.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
-#include "../drt_adapter/adapter_coupling.H"
+
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
+#include "../drt_ssi/ssi_utils.H"
+
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+
+
+#include "../drt_mat/matpar_material.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_scatra_ele/scatra_ele.H"
+#include "../drt_so3/so_nurbs27.H"
+
+
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
-    : map_structure_condensed_(Teuchos::null),
-      maps_interface_structure_(Teuchos::null),
-      maps_scatra_(Teuchos::null),
+    : maps_scatra_(Teuchos::null),
       maps_structure_(Teuchos::null),
       maps_subproblems_(Teuchos::null),
       maps_thermo_(Teuchos::null)
@@ -83,23 +92,6 @@ SSTI::SSTIMaps::SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm)
   maps_scatra_->CheckForValidMapExtractor();
   maps_structure_->CheckForValidMapExtractor();
   maps_thermo_->CheckForValidMapExtractor();
-
-  if (ssti_mono_algorithm.InterfaceMeshtying())
-  {
-    // set up map for interior and master-side structural degrees of freedom
-    map_structure_condensed_ = LINALG::SplitMap(*ssti_mono_algorithm.StructureField()->DofRowMap(),
-        *ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
-
-    // set up structural map extractor holding interface maps of dofs
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps_interface(0, Teuchos::null);
-    maps_interface.emplace_back(ssti_mono_algorithm.CouplingAdapterStructure()->SlaveDofMap());
-    maps_interface.emplace_back(ssti_mono_algorithm.CouplingAdapterStructure()->MasterDofMap());
-    maps_interface.emplace_back(LINALG::SplitMap(*map_structure_condensed_,
-        *ssti_mono_algorithm.CouplingAdapterStructure()->MasterDofMap()));
-    maps_interface_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
-        *ssti_mono_algorithm.StructureField()->DofRowMap(), maps_interface));
-    maps_interface_structure_->CheckForValidMapExtractor();
-  }
 }
 
 /*---------------------------------------------------------------------------------*
@@ -565,7 +557,7 @@ bool SSTI::ConvCheckMono::Converged(const SSTI::SSTIMono& ssti_mono)
 
   // print warning to screen if maximum number of Newton-Raphson iterations is reached without
   // convergence
-  if (ssti_mono.NewtonIteration() == itermax_)
+  if (ssti_mono.NewtonIteration() == itermax_ and !exit)
   {
     if (ssti_mono.Comm().MyPID() == 0)
     {
@@ -605,9 +597,155 @@ std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::Condi
       std::pair<std::string, std::string>("ThermoVolumeNeumann", "ThermoVolumeNeumann"));
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("ThermoInitfield", "ThermoInitfield"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "SSTIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
 
   return conditions_to_copy;
 }
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSTI::SSTIScatraStructureCloneStrategy::SetElementData(
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbsdis)
+{
+  // We need to set material and possibly other things to complete element setup.
+  // This is again really ugly as we have to extract the actual
+  // element type in order to access the material property
+
+  // note: SetMaterial() was reimplemented by the transport element!
+  auto* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
+  if (trans != nullptr)
+  {
+    // set material
+    trans->SetMaterial(matid, oldele);
+    // set distype as well!
+    trans->SetDisType(oldele->Shape());
+
+    // now check whether ImplType is reasonable and if set the ImplType
+    INPAR::SCATRA::ImplType impltype = SSI::ScatraStructureCloneStrategy::GetImplType(oldele);
+
+    if (impltype == INPAR::SCATRA::impltype_undefined)
+    {
+      dserror(
+          "ScatraStructureCloneStrategy copies scatra discretization from structure "
+          "discretization, but the STRUCTURE elements that are defined in the .dat file are either "
+          "not meant to be copied to scatra elements or the ImplType is set 'Undefined' which is "
+          "not meaningful for the created scatra discretization! Use SOLIDSCATRA, WALLSCATRA or "
+          "SHELLSCATRA elements with meaningful ImplType instead!");
+    }
+    else
+    {
+      // find the appropriate thermo type
+      if (impltype == INPAR::SCATRA::impltype_elch_electrode)
+        trans->SetImplType(INPAR::SCATRA::impltype_elch_electrode_thermo);
+      else if (impltype == INPAR::SCATRA::impltype_elch_diffcond)
+        trans->SetImplType(INPAR::SCATRA::impltype_elch_diffcond_thermo);
+      else
+        dserror("Something went wrong");
+    }
+  }
+  else
+  {
+    dserror("unsupported element type '%s'", typeid(*newele).name());
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::ConditionsToCopy()
+{
+  // call base class
+  std::map<std::string, std::string> conditions_to_copy =
+      STI::ScatraThermoCloneStrategy::ConditionsToCopy();
+
+  conditions_to_copy.insert(std::pair<std::string, std::string>(
+      "Meshtying3DomainIntersection", "Meshtying3DomainIntersection"));
+
+  return conditions_to_copy;
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+SSTI::SSTIStructuralMeshtying::SSTIStructuralMeshtying()
+    : icoup_structure_(Teuchos::null),
+      icoup_structure_3_domain_intersection_(Teuchos::null),
+      icoup_structure_slave_converter_(Teuchos::null),
+      icoup_structure_slave_converter_3_domain_intersection_(Teuchos::null),
+      map_structure_condensed_(Teuchos::null),
+      maps_interface_structure_(Teuchos::null),
+      maps_interface_structure_3_domain_intersection_(Teuchos::null),
+      meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
+          DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
+          "MESHTYING_3_DOMAIN_INTERSECTION"))
+{
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSTI::SSTIStructuralMeshtying::Setup(const SSTI::SSTIAlgorithm& ssti_algorithm)
+{
+  // setup coupling adapters
+  icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(
+      ssti_algorithm.StructureField()->Discretization(), Meshtying3DomainIntersection(),
+      "SSTIInterfaceMeshtying", "SSTIMeshtying3DomainIntersection");
+  if (Meshtying3DomainIntersection())
+  {
+    icoup_structure_3_domain_intersection_ =
+        SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
+            ssti_algorithm.StructureField()->Discretization(), "SSTIMeshtying3DomainIntersection");
+  }
+
+  // set up map for interior and master-side structural degrees of freedom
+  if (Meshtying3DomainIntersection())
+  {
+    auto map1 =
+        Teuchos::rcp(new const Epetra_Map(*InterfaceCouplingAdapterStructure()->SlaveDofMap()));
+    auto map2 = Teuchos::rcp(new const Epetra_Map(
+        *InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap()));
+    auto map3 = LINALG::MultiMapExtractor::MergeMaps({map1, map2});
+
+    map_structure_condensed_ =
+        LINALG::SplitMap(*ssti_algorithm.StructureField()->Discretization()->DofRowMap(), *map3);
+  }
+  else
+  {
+    map_structure_condensed_ = LINALG::SplitMap(*ssti_algorithm.StructureField()->DofRowMap(),
+        *InterfaceCouplingAdapterStructure()->SlaveDofMap());
+  }
+
+
+  // set up structural map extractor holding interior and interface maps of degrees of freedom
+  std::vector<Teuchos::RCP<const Epetra_Map>> maps_interface_surf(0, Teuchos::null);
+  maps_interface_surf.emplace_back(InterfaceCouplingAdapterStructure()->SlaveDofMap());
+  maps_interface_surf.emplace_back(InterfaceCouplingAdapterStructure()->MasterDofMap());
+  maps_interface_surf.emplace_back(LINALG::SplitMap(
+      *map_structure_condensed_, *InterfaceCouplingAdapterStructure()->MasterDofMap()));
+  maps_interface_structure_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
+      *ssti_algorithm.StructureField()->Discretization()->DofRowMap(), maps_interface_surf));
+  maps_interface_structure_->CheckForValidMapExtractor();
+
+  if (Meshtying3DomainIntersection())
+  {
+    std::vector<Teuchos::RCP<const Epetra_Map>> maps_interface_line(0, Teuchos::null);
+    maps_interface_line.emplace_back(
+        InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap());
+    maps_interface_line.emplace_back(
+        InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap());
+    maps_interface_structure_3_domain_intersection_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
+        *ssti_algorithm.StructureField()->Discretization()->DofRowMap(), maps_interface_line));
+    maps_interface_structure_3_domain_intersection_->CheckForValidMapExtractor();
+  }
+
+  // setup slave side converter
+  icoup_structure_slave_converter_ =
+      Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*icoup_structure_));
+  if (Meshtying3DomainIntersection())
+  {
+    icoup_structure_slave_converter_3_domain_intersection_ =
+        Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_));
+  }
+}
+
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/

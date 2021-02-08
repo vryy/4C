@@ -876,12 +876,6 @@ namespace INPAR
   {
   }  // namespace MAT
 
-  /*! \brief Input parameters for multi-level monte carlo
-   *
-   */
-  namespace MLMC
-  {
-  }  // namespace MLMC
 
   /*! \brief Input parameters for model order reduction
    *

@@ -81,6 +81,36 @@ namespace LINALG
    */
   void PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, const bool newfile = true);
 
+#ifndef TRILINOS_Q1_2015
+  /*!
+  \brief Write matrix to ASCII-file via Xpetra::IO
+
+  Write using \c Xpetra::IO<>::Write() to be compatible with \c Xpetra::IO<>::Read().
+
+  \note This is a utility function for debugging, e.g. to dump matrices and read them in some
+  other code.
+
+  @param[in] filename Name of output file
+  @param[in] matrix Matrix to be written
+  */
+  void WriteEpetraCrsMatrixAsXpetra(
+      const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix);
+
+  /*!
+  \brief Write MultiVector to ASCII-file via Xpetra::IO
+
+  Write using \c Xpetra::IO<>::Write() to be compatible with \c Xpetra::IO<>::Read().
+
+  \note This is a utility function for debugging, e.g. to dump MultiVectors and read them in some
+  other code.
+
+  @param[in] filename Name of output file
+  @param[in] vec MultiVector to be written
+  */
+  void WriteEpetraMultiVectorAsXpetra(
+      const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec);
+#endif
+
 }  // namespace LINALG
 
 #endif /* SRC_LINALG_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H_ */

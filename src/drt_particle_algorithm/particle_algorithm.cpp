@@ -199,6 +199,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::Timeloop()
     // counter and print header
     PrepareTimeStep();
 
+    // pre evaluate time step
+    PreEvaluateTimeStep();
+
     // integrate time step
     IntegrateTimeStep();
 
@@ -233,9 +236,12 @@ void PARTICLEALGORITHM::ParticleAlgorithm::PrepareTimeStep(bool print_header)
 
   // set current write result flag
   SetCurrentWriteResultFlag();
+}
 
-  // prepare time step
-  if (particleinteraction_) particleinteraction_->PrepareTimeStep();
+void PARTICLEALGORITHM::ParticleAlgorithm::PreEvaluateTimeStep()
+{
+  // pre evaluate time step
+  if (particleinteraction_) particleinteraction_->PreEvaluateTimeStep();
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
@@ -256,7 +262,21 @@ void PARTICLEALGORITHM::ParticleAlgorithm::IntegrateTimeStep()
 void PARTICLEALGORITHM::ParticleAlgorithm::PostEvaluateTimeStep()
 {
   // post evaluate time step
-  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
+  std::vector<PARTICLEENGINE::ParticleTypeToType> particlesfromphasetophase;
+  if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep(particlesfromphasetophase);
+
+  if (particlerigidbody_)
+  {
+    // have rigid body phase change
+    if (particlerigidbody_->HaveRigidBodyPhaseChange(particlesfromphasetophase))
+    {
+      // update connectivity
+      UpdateConnectivity();
+
+      // evaluate rigid body phase change
+      particlerigidbody_->EvaluateRigidBodyPhaseChange(particlesfromphasetophase);
+    }
+  }
 }
 
 void PARTICLEALGORITHM::ParticleAlgorithm::WriteOutput() const
@@ -622,8 +642,8 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   // set initial states
   if (particleinteraction_) particleinteraction_->SetInitialStates();
 
-  // set initial states
-  if (particlerigidbody_) particlerigidbody_->SetInitialStates();
+  // initialize rigid body mass quantities and orientation
+  if (particlerigidbody_) particlerigidbody_->InitializeRigidBodyMassQuantitiesAndOrientation();
 
   // set initial conditions
   SetInitialConditions();
@@ -631,19 +651,19 @@ void PARTICLEALGORITHM::ParticleAlgorithm::SetupInitialStates()
   // time integration scheme specific initialization routine
   particletimint_->SetInitialStates();
 
-  // update connectivity
-  UpdateConnectivity();
-
   // evaluate consistent initial states
   {
-    // prepare time step
-    if (particleinteraction_) particleinteraction_->PrepareTimeStep();
+    // pre evaluate time step
+    PreEvaluateTimeStep();
+
+    // update connectivity
+    UpdateConnectivity();
 
     // evaluate time step
     EvaluateTimeStep();
 
     // post evaluate time step
-    if (particleinteraction_) particleinteraction_->PostEvaluateTimeStep();
+    PostEvaluateTimeStep();
   }
 }
 
@@ -762,7 +782,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
     if (particlestored == 0) continue;
 
     // get particle state dimension
-    int statedim = container->GetParticleStateDim(PARTICLEENGINE::Position);
+    int statedim = container->GetStateDim(PARTICLEENGINE::Position);
 
     // position increment of particle
     double positionincrement[3];
@@ -771,9 +791,9 @@ void PARTICLEALGORITHM::ParticleAlgorithm::GetMaxParticlePositionIncrement(
     for (int i = 0; i < particlestored; ++i)
     {
       // get pointer to particle states
-      const double* pos = container->GetPtrToParticleState(PARTICLEENGINE::Position, i);
+      const double* pos = container->GetPtrToState(PARTICLEENGINE::Position, i);
       const double* lasttransferpos =
-          container->GetPtrToParticleState(PARTICLEENGINE::LastTransferPosition, i);
+          container->GetPtrToState(PARTICLEENGINE::LastTransferPosition, i);
 
       // position increment of particle considering periodic boundaries
       particleengine_->DistanceBetweenParticles(pos, lasttransferpos, positionincrement);

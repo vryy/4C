@@ -3238,6 +3238,15 @@ namespace LINALG
 
     /// Constructor
     /*!
+      Constructs a new Matrix from data \e d. The data is copied.
+
+      \param d
+        matrix to be copied
+     */
+    explicit Matrix(const Epetra_SerialDenseMatrix& d);
+
+    /// Constructor
+    /*!
       Constructs a new Matrix from \e source. If
       \e view==false the data is copied, otherwise a view to
       it is constructed.
@@ -4275,6 +4284,12 @@ namespace LINALG
         data_ = &datafieldsmall_[0];
       std::copy(d.A(), d.A() + rows * cols, data_);
     }
+  }
+
+  template <unsigned int rows, unsigned int cols, class value_type>
+  Matrix<rows, cols, value_type>::Matrix(const Epetra_SerialDenseMatrix& d)
+      : Matrix(const_cast<Epetra_SerialDenseMatrix&>(d), false)
+  {
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>

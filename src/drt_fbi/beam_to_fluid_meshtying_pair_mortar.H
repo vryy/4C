@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToFluidMeshtyingPairMortar(){};
+    ~BeamToFluidMeshtyingPairMortar() override = default;
 
     /**
      * \brief Evaluate the mortar matrices $D$ and $M$ for this meshtying element pair.

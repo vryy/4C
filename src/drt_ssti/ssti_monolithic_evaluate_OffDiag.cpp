@@ -33,19 +33,22 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_thermo, Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
+    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
     Teuchos::RCP<const Epetra_Map> interface_map_thermo,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo, bool meshtying_3_domain_intersection)
     : blockmapstructure_(std::move(blockmapstructure)),
       blockmapthermo_(std::move(blockmapthermo)),
       full_map_structure_(std::move(full_map_structure)),
       full_map_thermo_(std::move(full_map_thermo)),
       icoup_structure_(std::move(icoup_structure)),
+      icoup_structure_3_domain_intersection_(std::move(icoup_structure_3_domain_intersection)),
       interface_map_thermo_(std::move(interface_map_thermo)),
       meshtying_strategy_thermo_(std::move(meshtying_strategy_thermo)),
       structure_(std::move(structure)),
-      thermo_(std::move(thermo))
+      thermo_(std::move(thermo)),
+      meshtying_3_domain_intersection_(meshtying_3_domain_intersection)
 {
 }
 
@@ -263,10 +266,30 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
         LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
             ADAPTER::CouplingSlaveConverter(*icoup_structure_), mastermatrixsparse, true, true);
+
+        if (meshtying_3_domain_intersection_)
+        {
+          LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
+              ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
+              ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_),
+              mastermatrixsparse, true, true);
+        }
       }
 
-      mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
-          *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
+      // finalize auxiliary system matrix
+      if (meshtying_3_domain_intersection_)
+      {
+        mastermatrixsparse.Complete(
+            *LINALG::MultiMapExtractor::MergeMaps({icoup_structure_->MasterDofMap(),
+                icoup_structure_3_domain_intersection_->MasterDofMap()}),
+            *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
+      }
+      else
+      {
+        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
+            *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
+      }
+
 
       // split sparse matrix to block matrix
       blockmastermatrix = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
@@ -286,6 +309,15 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
           ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
           ADAPTER::CouplingSlaveConverter(*icoup_structure_), *sparsemastermatrix, true, true);
+
+      if (meshtying_3_domain_intersection_)
+      {
+        LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
+            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
+            ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_),
+            *sparsemastermatrix, true, true);
+      }
+
 
       mastermatrix->Complete(
           *full_map_structure_, *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());

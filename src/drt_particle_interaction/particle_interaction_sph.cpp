@@ -133,7 +133,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
 
   // setup surface tension handler
   if (surfacetension_)
-    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_, neighborpairs_);
+    surfacetension_->Setup(particleengineinterface, kernel_, particlematerial_,
+        equationofstatebundle_, neighborpairs_);
 
   // setup boundary particle handler
   if (boundaryparticle_) boundaryparticle_->Setup(particleengineinterface, neighborpairs_);
@@ -328,9 +329,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::SetInitialStates()
   }
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PrepareTimeStep");
+  TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PreEvaluateTimeStep");
 
   // prescribe open boundary states
   if (dirichletopenboundary_) dirichletopenboundary_->PrescribeOpenBoundaryStates(time_);
@@ -355,6 +356,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
 
   // compute pressure using equation of state and density
   pressure_->ComputePressure();
+
+  // compute interface quantities
+  if (surfacetension_) surfacetension_->ComputeInterfaceQuantities();
 
   // compute temperature field
   if (temperature_) temperature_->ComputeTemperature();
@@ -381,7 +385,8 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::EvaluateInteractions()
   if (rigidparticlecontact_) rigidparticlecontact_->AddForceContribution();
 }
 
-void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
+void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep");
 
@@ -394,7 +399,7 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::PostEvaluateTimeStep()
     neumannopenboundary_->CheckOpenBoundaryPhaseChange(MaxInteractionDistance());
 
   // evaluate phase change
-  if (phasechange_) phasechange_->EvaluatePhaseChange();
+  if (phasechange_) phasechange_->EvaluatePhaseChange(particlesfromphasetophase);
 }
 
 double PARTICLEINTERACTION::ParticleInteractionSPH::MaxInteractionDistance() const
@@ -596,14 +601,13 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitSurfaceTensionHandler()
   {
     case INPAR::PARTICLE::NoSurfaceTension:
     {
-      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionBase>(nullptr);
+      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(nullptr);
       break;
     }
     case INPAR::PARTICLE::ContinuumSurfaceForce:
     {
-      surfacetension_ =
-          std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce>(
-              new PARTICLEINTERACTION::SPHSurfaceTensionContinuumSurfaceForce(params_sph_));
+      surfacetension_ = std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension>(
+          new PARTICLEINTERACTION::SPHSurfaceTension(params_sph_));
       break;
     }
     default:

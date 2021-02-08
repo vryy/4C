@@ -98,11 +98,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
 void MIXTURE::GrowthRemodelMixtureRule::EvaluateInverseGrowthDeformationGradient(
     LINALG::Matrix<3, 3>& iFgM, int gp) const
 {
-  double current_reference_density = 0.0;
-  for (const auto& constituent : *Constituents())
-  {
-    current_reference_density += constituent->CurrentRefDensity(gp);
-  }
+  const double current_reference_density = ComputeCurrentReferenceDensity(gp);
 
   iFgM.Clear();
 
@@ -133,4 +129,34 @@ void MIXTURE::GrowthRemodelMixtureRule::EvaluateInverseGrowthDeformationGradient
       break;
     }
   }
+}
+
+double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceDensity(const int gp) const
+{
+  double current_reference_density = 0.0;
+  for (const auto& constituent : *Constituents())
+  {
+    current_reference_density += constituent->CurrentRefDensity(gp);
+  }
+  return current_reference_density;
+}
+
+void MIXTURE::GrowthRemodelMixtureRule::RegisterVtkOutputDataNames(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size[OUTPUT_CURRENT_REFERENCE_DENSITY] = 1;
+}
+
+bool MIXTURE::GrowthRemodelMixtureRule::EvaluateVtkOutputData(
+    const std::string& name, Epetra_SerialDenseMatrix& data) const
+{
+  if (name == OUTPUT_CURRENT_REFERENCE_DENSITY)
+  {
+    for (int gp = 0; gp < NumGP(); ++gp)
+    {
+      data(gp, 0) = ComputeCurrentReferenceDensity(gp);
+    }
+    return true;
+  }
+  return false;
 }

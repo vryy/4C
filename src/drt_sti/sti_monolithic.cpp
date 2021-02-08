@@ -23,8 +23,6 @@
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
-#include "../drt_scatra_ele/scatra_ele_action.H"
-
 #include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_multiply.H"
@@ -32,8 +30,6 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 09/17 |
@@ -101,8 +97,10 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   // initialize map associated with single thermo block of global system matrix
   Teuchos::RCP<const Epetra_Map> mapthermo(Teuchos::null);
   if (condensationthermo_)
+  {
     mapthermo = LINALG::MergeMap(
         *strategythermo_->InterfaceMaps()->Map(0), *strategythermo_->InterfaceMaps()->Map(2));
+  }
   else
     mapthermo = ThermoField()->DofRowMap();
 
@@ -170,9 +168,9 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
     case LINALG::MatrixType::block_condition:
     {
       // extract maps underlying main-diagonal matrix blocks associated with scalar transport field
-      const unsigned nblockmapsscatra = ScaTraField()->BlockMaps().NumMaps();
+      const int nblockmapsscatra = static_cast<int>(ScaTraField()->BlockMaps().NumMaps());
       std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps(nblockmapsscatra + 1);
-      for (unsigned iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
+      for (int iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
         blockmaps[iblockmap] = ScaTraField()->BlockMaps().Map(iblockmap);
 
       // extract map underlying single main-diagonal matrix block associated with temperature field
@@ -193,10 +191,12 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
         // build block map for scatra interface by merging slave and master side for each block
         std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapscatrainterface(
             nblockmapsscatra, Teuchos::null);
-        for (unsigned iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
+        for (int iblockmap = 0; iblockmap < nblockmapsscatra; ++iblockmap)
+        {
           partial_blockmapscatrainterface.at(iblockmap) = LINALG::MultiMapExtractor::MergeMaps(
               {strategyscatra_->BlockMapsSlave().Map(iblockmap),
                   strategyscatra_->BlockMapsMaster().Map(iblockmap)});
+        }
         blockmapscatrainterface = Teuchos::rcp(
             new LINALG::MultiMapExtractor(*interface_map_scatra, partial_blockmapscatrainterface));
         blockmapscatrainterface->CheckForValidMapExtractor();
@@ -317,8 +317,9 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       interface_map_thermo, isAle, strategyscatra_, strategythermo_, scatra_, thermo_);
 
   // instantiate appropriate equilibration class
-  equilibration_ = LINALG::BuildEquilibration(
-      matrixtype_, ScaTraField()->EquilibrationMethod(), maps_->FullMap());
+  auto equilibration_method = Teuchos::rcp(
+      new std::vector<LINALG::EquilibrationMethod>(1, ScaTraField()->EquilibrationMethod()));
+  equilibration_ = LINALG::BuildEquilibration(matrixtype_, equilibration_method, maps_->FullMap());
 }
 
 /*---------------------------------------------------------------------------------------------*
@@ -341,10 +342,12 @@ void STI::Monolithic::FDCheck()
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
   if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_) != Teuchos::null)
+  {
     sysmat_original =
         (new LINALG::SparseMatrix(
              *(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(systemmatrix_)->Merge())))
             ->EpetraMatrix();
+  }
   else
     dserror("Global system matrix must be a block sparse matrix!");
   sysmat_original->FillComplete();
@@ -503,9 +506,11 @@ void STI::Monolithic::FDCheck()
       dserror("Finite difference check failed for STI system matrix!");
     }
     else
+    {
       printf(
           "--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",
           maxabserrglobal, maxrelerrglobal);
+    }
   }
 
   // undo perturbations of state variables
@@ -516,8 +521,6 @@ void STI::Monolithic::FDCheck()
 
   // recompute system matrix and right-hand side vector based on original state variables
   AssembleMatAndRHS();
-
-  return;
 }
 
 
@@ -565,7 +568,7 @@ void STI::Monolithic::OutputMatrixToFile(
   if (comm.MyPID()) rowgids.clear();
 
   // create full row map on processor with ID 0
-  const Epetra_Map fullrowmap(-1, rowgids.size(), rowgids.size() ? &rowgids[0] : NULL, 0, comm);
+  const Epetra_Map fullrowmap(-1, rowgids.size(), rowgids.size() ? &rowgids[0] : nullptr, 0, comm);
 
   // import matrix to processor with ID 0
   Epetra_CrsMatrix crsmatrix(Copy, fullrowmap, 0);
@@ -577,10 +580,14 @@ void STI::Monolithic::OutputMatrixToFile(
   else
   {
     for (int i = 0; i < blocksparsematrix->Rows(); ++i)
+    {
       for (int j = 0; j < blocksparsematrix->Cols(); ++j)
+      {
         if (crsmatrix.Import(*blocksparsematrix->Matrix(i, j).EpetraMatrix(),
                 Epetra_Import(fullrowmap, blocksparsematrix->RangeMap(i)), Insert))
           dserror("Matrix import failed!");
+      }
+    }
   }
 
   // let processor with ID 0 output matrix to file
@@ -620,10 +627,12 @@ void STI::Monolithic::OutputMatrixToFile(
         entries[indices[j]] = values[j];
 
       // loop over all sorted entries in current matrix row
-      for (std::map<int, double>::iterator j = entries.begin(); j != entries.end(); ++j)
+      for (auto& entrie : entries)
+      {
         // write current matrix entry to file
-        if (std::abs(j->second) > tolerance)
-          file << rowgid << "," << j->first << "," << j->second << std::endl;
+        if (std::abs(entrie.second) > tolerance)
+          file << rowgid << "," << entrie.first << "," << entrie.second << std::endl;
+      }
     }
 
     // close file
@@ -635,8 +644,6 @@ void STI::Monolithic::OutputMatrixToFile(
 
   // throw error to abort simulation for debugging
   dserror("Matrix was output to *.csv file!");
-
-  return;
 }
 
 
@@ -672,7 +679,7 @@ void STI::Monolithic::OutputVectorToFile(const Epetra_MultiVector& vector,  //!<
   if (comm.MyPID()) gids.clear();
 
   // create full vector map on processor with ID 0
-  const Epetra_Map fullmap(-1, gids.size(), gids.size() ? &gids[0] : NULL, 0, comm);
+  const Epetra_Map fullmap(-1, gids.size(), gids.size() ? &gids[0] : nullptr, 0, comm);
 
   // export vector to processor with ID 0
   Epetra_MultiVector fullvector(fullmap, vector.NumVectors(), true);
@@ -727,8 +734,6 @@ void STI::Monolithic::OutputVectorToFile(const Epetra_MultiVector& vector,  //!<
 
   // throw error to abort simulation for debugging
   dserror("Vector was output to *.csv file!");
-
-  return;
 }
 
 
@@ -790,12 +795,12 @@ void STI::Monolithic::AssembleMatAndRHS()
         case LINALG::MatrixType::block_condition:
         {
           // extract number of matrix row or column blocks associated with scalar transport field
-          const unsigned nblockmapsscatra = ScaTraField()->BlockMaps().NumMaps();
+          const int nblockmapsscatra = static_cast<int>(ScaTraField()->BlockMaps().NumMaps());
 
           // construct global system matrix by assigning matrix blocks
-          for (unsigned iblock = 0; iblock < nblockmapsscatra; ++iblock)
+          for (int iblock = 0; iblock < nblockmapsscatra; ++iblock)
           {
-            for (unsigned jblock = 0; jblock < nblockmapsscatra; ++jblock)
+            for (int jblock = 0; jblock < nblockmapsscatra; ++jblock)
               blocksystemmatrix->Assign(iblock, jblock, LINALG::View,
                   ScaTraField()->BlockSystemMatrix()->Matrix(iblock, jblock));
 
@@ -807,7 +812,7 @@ void STI::Monolithic::AssembleMatAndRHS()
                       scatrathermo_domain_interface)
                       ->Matrix(iblock, 0);
               LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
-                  scatrathermoblock.RangeMap(), *maps_->Map(1), 1.0, NULL, NULL,
+                  scatrathermoblock.RangeMap(), *maps_->Map(1), 1.0, nullptr, nullptr,
                   blocksystemmatrix->Matrix(iblock, nblockmapsscatra));
 
               switch (strategyscatra_->CouplingType())
@@ -817,8 +822,8 @@ void STI::Monolithic::AssembleMatAndRHS()
                   ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
                   LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                       scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
-                      NULL, &converter, blocksystemmatrix->Matrix(iblock, nblockmapsscatra), true,
-                      true);
+                      nullptr, &converter, blocksystemmatrix->Matrix(iblock, nblockmapsscatra),
+                      true, true);
                   break;
                 }
                 case INPAR::S2I::coupling_mortar_standard:
@@ -829,7 +834,7 @@ void STI::Monolithic::AssembleMatAndRHS()
                   // fill temporary matrix for slave-side columns of current matrix block
                   LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                       scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
-                      NULL, NULL, scatrathermocolsslave);
+                      nullptr, nullptr, scatrathermocolsslave);
 
                   // finalize temporary matrix for slave-side columns of current matrix block
                   scatrathermocolsslave.Complete(
@@ -855,7 +860,7 @@ void STI::Monolithic::AssembleMatAndRHS()
                       thermoscatra_domain_interface)
                       ->Matrix(0, iblock);
               LINALG::MatrixLogicalSplitAndTransform()(thermoscatrablock, *maps_->Map(1),
-                  thermoscatrablock.DomainMap(), 1.0, NULL, NULL,
+                  thermoscatrablock.DomainMap(), 1.0, nullptr, nullptr,
                   blocksystemmatrix->Matrix(nblockmapsscatra, iblock));
             }
 
@@ -878,7 +883,7 @@ void STI::Monolithic::AssembleMatAndRHS()
           if (condensationthermo_)
           {
             LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(), *maps_->Map(1),
-                *maps_->Map(1), 1.0, NULL, NULL,
+                *maps_->Map(1), 1.0, nullptr, nullptr,
                 blocksystemmatrix->Matrix(nblockmapsscatra, nblockmapsscatra));
 
             switch (strategyscatra_->CouplingType())
@@ -887,7 +892,7 @@ void STI::Monolithic::AssembleMatAndRHS()
               {
                 ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
                 LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(),
-                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL,
+                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr,
                     &converter, blocksystemmatrix->Matrix(nblockmapsscatra, nblockmapsscatra), true,
                     true);
                 break;
@@ -899,8 +904,8 @@ void STI::Monolithic::AssembleMatAndRHS()
 
                 // fill temporary matrix for slave-side columns of thermo-thermo matrix block
                 LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(),
-                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL, NULL,
-                    thermothermocolsslave);
+                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr,
+                    nullptr, thermothermocolsslave);
 
                 // finalize temporary matrix for slave-side columns of thermo-thermo matrix block
                 thermothermocolsslave.Complete(
@@ -941,17 +946,17 @@ void STI::Monolithic::AssembleMatAndRHS()
             const auto& scatrathermoblock = *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(
                 scatrathermo_domain_interface);
             LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
-                scatrathermoblock.RangeMap(), *maps_->Map(1), 1.0, NULL, NULL,
+                scatrathermoblock.RangeMap(), *maps_->Map(1), 1.0, nullptr, nullptr,
                 blocksystemmatrix->Matrix(0, 1));
 
             LINALG::MatrixLogicalSplitAndTransform()(
                 *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(
                     thermoscatra_domain_interface),
-                *maps_->Map(1), thermoscatra_domain_interface->DomainMap(), 1.0, NULL, NULL,
+                *maps_->Map(1), thermoscatra_domain_interface->DomainMap(), 1.0, nullptr, nullptr,
                 blocksystemmatrix->Matrix(1, 0));
 
             LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(), *maps_->Map(1),
-                *maps_->Map(1), 1.0, NULL, NULL, blocksystemmatrix->Matrix(1, 1));
+                *maps_->Map(1), 1.0, nullptr, nullptr, blocksystemmatrix->Matrix(1, 1));
 
             switch (strategyscatra_->CouplingType())
             {
@@ -960,10 +965,10 @@ void STI::Monolithic::AssembleMatAndRHS()
                 ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
                 LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                     scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
-                    NULL, &converter, blocksystemmatrix->Matrix(0, 1), true, true);
+                    nullptr, &converter, blocksystemmatrix->Matrix(0, 1), true, true);
 
                 LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(),
-                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL,
+                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr,
                     &converter, blocksystemmatrix->Matrix(1, 1), true, true);
 
                 break;
@@ -978,7 +983,7 @@ void STI::Monolithic::AssembleMatAndRHS()
                 // fill temporary matrix for slave-side columns of scatra-thermo matrix block
                 LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
                     scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
-                    NULL, NULL, scatrathermocolsslave);
+                    nullptr, nullptr, scatrathermocolsslave);
 
                 // finalize temporary matrix for slave-side columns of scatra-thermo matrix block
                 scatrathermocolsslave.Complete(*strategythermo_->InterfaceMaps()->Map(1),
@@ -995,8 +1000,8 @@ void STI::Monolithic::AssembleMatAndRHS()
 
                 // fill temporary matrix for slave-side columns of thermo-thermo matrix block
                 LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(),
-                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL, NULL,
-                    thermothermocolsslave);
+                    *maps_->Map(1), *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr,
+                    nullptr, thermothermocolsslave);
 
                 // finalize temporary matrix for slave-side columns of thermo-thermo matrix block
                 thermothermocolsslave.Complete(
@@ -1037,6 +1042,10 @@ void STI::Monolithic::AssembleMatAndRHS()
           dserror("Invalid matrix type associated with scalar transport field!");
           break;
         }
+        case LINALG::MatrixType::undefined:
+        case LINALG::MatrixType::block_field:
+        case LINALG::MatrixType::block_condition_dof:
+          break;
       }
 
       break;
@@ -1057,15 +1066,15 @@ void STI::Monolithic::AssembleMatAndRHS()
         const auto& scatrathermoblock =
             *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(scatrathermo_domain_interface);
         LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock, scatrathermoblock.RangeMap(),
-            *maps_->Map(1), 1.0, NULL, NULL, *systemmatrix, true, true);
+            *maps_->Map(1), 1.0, nullptr, nullptr, *systemmatrix, true, true);
 
         LINALG::MatrixLogicalSplitAndTransform()(
             *Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(thermoscatra_domain_interface),
-            *maps_->Map(1), thermoscatra_domain_interface->DomainMap(), 1.0, NULL, NULL,
+            *maps_->Map(1), thermoscatra_domain_interface->DomainMap(), 1.0, nullptr, nullptr,
             *systemmatrix, true, true);
 
         LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(), *maps_->Map(1),
-            *maps_->Map(1), 1.0, NULL, NULL, *systemmatrix, true, true);
+            *maps_->Map(1), 1.0, nullptr, nullptr, *systemmatrix, true, true);
 
         switch (strategyscatra_->CouplingType())
         {
@@ -1073,11 +1082,11 @@ void STI::Monolithic::AssembleMatAndRHS()
           {
             ADAPTER::CouplingSlaveConverter converter(*icoupthermo_);
             LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
-                scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL,
-                &converter, *systemmatrix, true, true);
+                scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
+                nullptr, &converter, *systemmatrix, true, true);
 
             LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(), *maps_->Map(1),
-                *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL, &converter, *systemmatrix,
+                *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr, &converter, *systemmatrix,
                 true, true);
 
             break;
@@ -1090,12 +1099,12 @@ void STI::Monolithic::AssembleMatAndRHS()
 
             // fill temporary matrix for slave-side columns of global system matrix
             LINALG::MatrixLogicalSplitAndTransform()(scatrathermoblock,
-                scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL,
-                NULL, systemmatrixcolsslave);
+                scatrathermoblock.RangeMap(), *strategythermo_->InterfaceMaps()->Map(1), 1.0,
+                nullptr, nullptr, systemmatrixcolsslave);
 
             LINALG::MatrixLogicalSplitAndTransform()(*ThermoField()->SystemMatrix(), *maps_->Map(1),
-                *strategythermo_->InterfaceMaps()->Map(1), 1.0, NULL, NULL, systemmatrixcolsslave,
-                true, true);
+                *strategythermo_->InterfaceMaps()->Map(1), 1.0, nullptr, nullptr,
+                systemmatrixcolsslave, true, true);
 
             // finalize temporary matrix for slave-side columns of global system matrix
             systemmatrixcolsslave.Complete(*strategythermo_->InterfaceMaps()->Map(1), *DofRowMap());
@@ -1149,8 +1158,6 @@ void STI::Monolithic::AssembleMatAndRHS()
   else
     thermoresidual = ThermoField()->Residual();
   maps_->InsertVector(thermoresidual, 1, residual_);
-
-  return;
 }  // STI::Monolithic::AssembleMatAndRHS()
 
 
@@ -1208,8 +1215,6 @@ void STI::Monolithic::BuildNullSpaces() const
   if (condensationthermo_)
     LINALG::Solver::FixMLNullspace("Block " + iblockstr.str(),
         *ThermoField()->Discretization()->DofRowMap(), *maps_->Map(1), blocksmootherparams);
-
-  return;
 }  // STI::Monolithic::BuildBlockNullSpaces
 
 /*------------------------------------------------------------------------------------------------*
@@ -1282,8 +1287,6 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(
     mllist.set("null space: vectors", &((*ns)[0]));
     mllist.set<bool>("ML validate parameter list", false);
   }
-
-  return;
 }  // STI::Monolithic::ComputeNullSpaceIfNecessary
 
 
@@ -1406,6 +1409,7 @@ bool STI::Monolithic::ExitNewtonRaphson()
       {
         // print current line of convergence table to screen
         if (Comm().MyPID() == 0)
+        {
           std::cout << "|  " << std::setw(3) << iter_ << "/" << std::setw(3) << itermax_ << "   | "
                     << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
                     << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
@@ -1419,6 +1423,7 @@ bool STI::Monolithic::ExitNewtonRaphson()
                     << "   | (ts = " << std::setw(10) << std::setprecision(3) << dtsolve_
                     << ", te = " << std::setw(10) << std::setprecision(3) << dtele_ << ")"
                     << std::endl;
+        }
 
         // convergence check
         if (concresnorm <= itertol_ and potresnorm <= itertol_ and thermoresnorm <= itertol_ and
@@ -1453,10 +1458,12 @@ bool STI::Monolithic::ExitNewtonRaphson()
 
       // print finish line of convergence table to screen
       if (exit and Comm().MyPID() == 0)
+      {
         std::cout << "+------------+-------------------+--------------+--------------+-------------"
                      "-+--------------+--------------+--------------+"
                   << std::endl
                   << std::endl;
+      }
 
       break;
     }
@@ -1482,8 +1489,6 @@ void STI::Monolithic::PrepareTimeStep()
 
   // print time step information to screen
   ScaTraField()->PrintTimeStepInfo();
-
-  return;
 }  // STI::Monolithic::PrepareTimeStep()
 
 
@@ -1544,8 +1549,8 @@ void STI::Monolithic::Solve()
 
     // output performance statistics associated with linear solver into text file if applicable
     if (DRT::INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTLINSOLVERSTATS"))
-      ScaTraField()->OutputLinSolverStats(
-          *solver_, dtsolve_, Step(), iter_, residual_->Map().NumGlobalElements());
+      ScaTraField()->OutputLinSolverStats(*solver_, dtsolve_, Step(), static_cast<int>(iter_),
+          residual_->Map().NumGlobalElements());
 
     // update scatra field
     ScaTraField()->UpdateIter(maps_->ExtractVector(increment_, 0));
@@ -1587,8 +1592,6 @@ void STI::Monolithic::Solve()
     ThermoField()->UpdateIter(thermoincrement);
     ThermoField()->ComputeIntermediateValues();
   }  // Newton-Raphson iteration
-
-  return;
 }  // STI::Monolithic::Solve
 
 /*----------------------------------------------------------------------*
@@ -1630,8 +1633,6 @@ void STI::Monolithic::ApplyDirichletOffDiag(
       }
     }
   }
-
-  return;
 }  // STI::Monolithic::ApplyDirichletOD
 
 /*----------------------------------------------------------------------*
@@ -1787,6 +1788,4 @@ void STI::Monolithic::AssembleDomainInterfaceOffDiag(
       break;
     }
   }
-
-  return;
 }  // AssembleDomainInterfaceOD

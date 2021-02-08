@@ -603,6 +603,17 @@ namespace INPAR
       optquantity_membranethickness  ///< output of thickness of membrane finite elements
     };
 
+    /*!
+     * \brief Type of output of gauss point data
+     */
+    enum class GaussPointDataOutputType : char
+    {
+      none,            ///< No output of Gauss point data
+      element_center,  ///< Output averaged within the element
+      nodes,           ///< Output projected onto nodes
+      gauss_points     ///< Raw output at the Gauss points
+    };
+
     //!@}
 
     /// @name Time adaptivity

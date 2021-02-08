@@ -12,12 +12,12 @@ COVERAGE=0
 DEBUG_OPTIMIZED=0
 USE_ACML=0
 USE_FORCEBUILD=0
-TRILINOS_EXPERIMENTAL=0  # use experimental Trilinos version (e.g. current state of develop)
-ADDITIONAL_TESTS_PATH=""
+TRILINOS_EXPERIMENTAL=OFF  # use experimental Trilinos version (e.g. current state of develop)
 SHARED_LIBS=OFF
+CCACHE_COMMAND=ccache
 
 USE_TRILINOS_Q1_2015=OFF
-USE_TRILINOS_Q1_2019=OFF
+USE_TRILINOS_Q4_2019=OFF
 
 # activate debug version: ./do-configure --debug
 # or choose do-configure-debug which does the same
@@ -34,11 +34,11 @@ USE_TRILINOS_Q1_2019=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,additionaltests:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,ide: -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,no-ccache,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--additionaltests=testfile] [--forceBuild] [--ide=clion/eclipse/vscode]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache]"
 
 eval set -- $OPTIONS
 
@@ -50,10 +50,6 @@ while true; do
       ;;
     -c|--config)
       CONFIGURATION_FILE="$2" ;
-      shift
-      ;;
-    --additionaltests)
-      ADDITIONAL_TESTS_PATH="$2" ;
       shift
       ;;
     -d|--debug)
@@ -73,13 +69,16 @@ while true; do
       TRILINOS_BUILD_TYPE="dbg"
       ;;
     -e|--experimental)
-      TRILINOS_EXPERIMENTAL=1
+      TRILINOS_EXPERIMENTAL=ON
       ;;
     -a|--useACML)
       USE_ACML=1
       ;;
     -f|--forceBuild)
       USE_FORCEBUILD=1
+      ;;
+    --no-ccache)
+      CCACHE_COMMAND=""
       ;;
     --ide)
       ADAPT_IDE_CLION=0
@@ -146,6 +145,18 @@ fi
 
 # set valid folder for baci build
 BUILD_FOLDER=$BUILD_FOLDER_SAFE
+
+
+##############################################################
+# Check if ccache is installed
+if [[ $CCACHE_COMMAND != "" ]]; then
+    if ! command -v $CCACHE_COMMAND &> /dev/null
+    then
+        echo "ccache command: $CCACHE_COMMAND could not be found, ccache will not be used!"
+    fi
+fi
+
+
 
 ##############################################################
 # Print source and build folder locations to screen
@@ -225,7 +236,7 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D HAVE_OpenMP:BOOL=OFF \
   -D TRILINOS_DEVELOP:BOOL=$TRILINOS_EXPERIMENTAL \
   -D TRILINOS_Q1_2015:BOOL=$USE_TRILINOS_Q1_2015 \
-  -D TRILINOS_Q1_2019:BOOL=$USE_TRILINOS_Q1_2019 \
+  -D TRILINOS_Q4_2019:BOOL=$USE_TRILINOS_Q4_2019 \
   -D TRAP_FE:BOOL=ON \
   -D COLOROUTPUT:BOOL=OFF \
   -D D_ALE:BOOL=ON \
@@ -252,8 +263,9 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D BLAS_LIBRARIES:FILEPATH="$BLAS_LIBS" \
   -D LAPACK_LIBRARIES:FILEPATH="$LAPACK_LIBS" \
   -D ACMLDIR:STRING="$ACMLDIR_PATH" \
+  -D CMAKE_C_COMPILER_LAUNCHER="$CCACHE_COMMAND" \
+  -D CMAKE_CXX_COMPILER_LAUNCHER="$CCACHE_COMMAND" \
   -D AMDLIBMDIR:FILEPATH="$AMDLIBMDIR_PATH" \
-  -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
   "$EXTRA_ARGS" \
   "${BACI_HOME}")
 

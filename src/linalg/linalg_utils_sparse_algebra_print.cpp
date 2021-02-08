@@ -12,8 +12,22 @@
 
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_print.H"
+
 #include "../drt_lib/drt_dserror.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_MultiVector.h>
 #include <Ifpack_AdditiveSchwarz.h>
+#include <Kokkos_DefaultNode.hpp>
+#include <MueLu_UseDefaultTypes.hpp>
+#include <Xpetra_CrsMatrix.hpp>
+#include <Xpetra_CrsMatrixWrap.hpp>
+#ifndef TRILINOS_Q1_2015
+#include <Xpetra_IO.hpp>
+#endif
+#include <Xpetra_EpetraMultiVector.hpp>
+#include <Xpetra_Matrix.hpp>
+#include <Xpetra_MultiVector.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -231,3 +245,29 @@ void LINALG::PrintMapInMatlabFormat(std::string fname, const Epetra_Map& map, co
 
   return;
 }
+
+#ifndef TRILINOS_Q1_2015
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::WriteEpetraCrsMatrixAsXpetra(
+    const std::string& filename, Teuchos::RCP<Epetra_CrsMatrix> matrix)
+{
+#include <Xpetra_UseShortNames.hpp>  // Include in scope to avoid clash with namespace IO
+  using Teuchos::rcp;
+  using Teuchos::RCP;
+
+  RCP<CrsMatrix> ACrs = rcp(new EpetraCrsMatrix(matrix));
+  RCP<CrsMatrixWrap> ACrsWrap = rcp(new CrsMatrixWrap(ACrs));
+  RCP<Matrix> A = Teuchos::rcp_dynamic_cast<Matrix>(ACrsWrap);
+
+  Xpetra::IO<double, int, int, Node>::Write(filename, *A);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void LINALG::WriteEpetraMultiVectorAsXpetra(
+    const std::string& filename, Teuchos::RCP<Epetra_MultiVector> vec)
+{
+  Xpetra::IO<double, int, int, Node>::Write(filename, *Xpetra::toXpetra<int, Node>(vec));
+}
+#endif

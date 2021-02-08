@@ -70,12 +70,42 @@ void INPAR::SSTI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &sstidynmono);
   setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION", "none",
       "flag for equilibration of global system of equations",
-      tuple<std::string>(
-          "none", "rows_full", "rows_maindiag", "rowsandcolumns_full", "rowsandcolumns_maindiag"),
+      tuple<std::string>("none", "rows_full", "rows_maindiag", "rowsandcolumns_full",
+          "rowsandcolumns_maindiag", "local"),
       tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
           LINALG::EquilibrationMethod::rows_full, LINALG::EquilibrationMethod::rows_maindiag,
           LINALG::EquilibrationMethod::rowsandcolumns_full,
-          LINALG::EquilibrationMethod::rowsandcolumns_maindiag),
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag, LINALG::EquilibrationMethod::local),
+      &sstidynmono);
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_STRUCTURE", "none",
+      "flag for equilibration of structural equations",
+      tuple<std::string>(
+          "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          LINALG::EquilibrationMethod::symmetry),
+      &sstidynmono);
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_SCATRA", "none",
+      "flag for equilibration of scatra equations",
+      tuple<std::string>(
+          "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          LINALG::EquilibrationMethod::symmetry),
+      &sstidynmono);
+  setStringToIntegralParameter<LINALG::EquilibrationMethod>("EQUILIBRATION_THERMO", "none",
+      "flag for equilibration of scatra equations",
+      tuple<std::string>(
+          "none", "rows_maindiag", "columns_maindiag", "rowsandcolumns_maindiag", "symmetry"),
+      tuple<LINALG::EquilibrationMethod>(LINALG::EquilibrationMethod::none,
+          LINALG::EquilibrationMethod::rows_maindiag, LINALG::EquilibrationMethod::columns_maindiag,
+          LINALG::EquilibrationMethod::rowsandcolumns_maindiag,
+          LINALG::EquilibrationMethod::symmetry),
+      &sstidynmono);
+  BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
+      "use equilibration method of ScaTra to equilibrate initial calculation of potential",
       &sstidynmono);
 
   /*----------------------------------------------------------------------*/
@@ -133,4 +163,29 @@ void INPAR::SSTI::SetValidConditions(
 
   condlist.emplace_back(linesstiinterfacemeshtying);
   condlist.emplace_back(surfsstiinterfacemeshtying);
+
+  // -------------------------------------------------------------------------------
+  Teuchos::RCP<ConditionDefinition> sstiinterfacemeshtying3domainintersection =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSTI THREE DOMAIN INTERSECTION LINE CONDITIONS",
+          "SSTIMeshtying3DomainIntersection", "SSTI line where 3 domains intersect",
+          DRT::Condition::SSTIMeshtying3DomainIntersection, true, DRT::Condition::Line));
+
+  std::vector<Teuchos::RCP<ConditionComponent>> sstitriplepointmeshtying;
+  sstitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  sstitriplepointmeshtying.emplace_back(Teuchos::rcp(
+      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
+          Teuchos::tuple<std::string>("Master", "Slave"))));
+  sstitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("MeshtyingSurfSlaveID")));
+  sstitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new IntConditionComponent("MeshtyingSurfSlaveID")));
+  sstitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("MeshtyingSurfMasterID")));
+  sstitriplepointmeshtying.emplace_back(
+      Teuchos::rcp(new IntConditionComponent("MeshtyingSurfMasterID")));
+
+  for (auto& conditioncomponent : sstitriplepointmeshtying)
+    sstiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
+
+  condlist.push_back(sstiinterfacemeshtying3domainintersection);
 }

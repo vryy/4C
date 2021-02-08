@@ -13,10 +13,17 @@
 #define ADAPTER_FLUIDBEAM_IMMERSED_H
 
 #include "ad_fld_moving_boundary.H"
+#include "../drt_fluid/fluid_meshtying.H"
+
+// forward declarations
+
+namespace LINALG
+{
+  class SparseOperator;
+}
 
 namespace ADAPTER
 {
-  // forward declarations
   class Coupling;
   class Fluid;
 
@@ -115,6 +122,8 @@ namespace ADAPTER
     /// Get velocity at timestep n+1
     virtual Teuchos::RCP<const Epetra_Vector> Velnp();
 
+    virtual Teuchos::RCP<const FLD::Meshtying> GetMeshtying();
+
     /** \brief Pass in additional contributions from coupling terms for the system matrix
      *
      * To enforce weak dirichlet conditions as they arise from meshtying for example, such
@@ -124,7 +133,7 @@ namespace ADAPTER
      * \param[in] matrix (size fluid_dof x fluid_dof) matrix containing weak dirichlet entries that
      * need to be assembled into the overall fluid system matrix
      */
-    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseMatrix> matrix);
+    virtual void SetCouplingContributions(Teuchos::RCP<const LINALG::SparseOperator> matrix);
 
     /**
      * \brief Pass additional contributions to the fluid residual to the fluid class

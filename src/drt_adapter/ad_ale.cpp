@@ -81,14 +81,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
 
   // Output for these problems are not necessary because we write
   // restart data at each time step for visualization
-  bool write_output = true;
-  if (probtype == prb_uq) write_output = false;
+  output->WriteMesh(0, 0.0);
 
-
-  if (write_output)
-  {
-    output->WriteMesh(0, 0.0);
-  }
   // ---------------------------------------------------------------------------
   // set some pointers and variables
   // ---------------------------------------------------------------------------
@@ -284,11 +278,6 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
     case prb_struct_ale:
     {
       ale_ = Teuchos::rcp(new ADAPTER::AleWearWrapper(ale));
-      break;
-    }
-    case prb_uq:
-    {
-      ale_ = ale;
       break;
     }
     case prb_freesurf:

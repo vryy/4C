@@ -326,6 +326,34 @@ namespace ADAPTER
      */
     void SetupCoupling(const DRT::Discretization& masterdis, const DRT::Discretization& slavedis);
 
+    /*! \brief Setup coupling of given nodes
+     *
+     *  Setup the whole thing. Find matching nodes via octtree and build
+     *  appropriate dof maps.
+     *
+     *  \note All slave nodes are required to find a match. In contrast
+     *  master nodes do not need to have a match.
+     *
+     *  Nodes are clustered, such that coupling is performed between clusters
+     *  (e.g. masternodes_vec.at(0) <-> slavenodes_vec.at(0), masternodes_vec.at(1) <->
+     * slavenodes_vec.at(1), ...)
+     *
+     *  \param masterdis       (i) master side mesh
+     *  \param slavedis        (i) slave side mesh
+     *  \param masternodes_vec (i) gids of nodes on master side to be coupled
+     *  \param slavenodes_vec  (i) gids of nodes on slave side to be coupled
+     *  \param numdof          (i) number of dofs per node to be coupled
+     *  \param matchall        (i) flag indicating matching slave and master nodes
+     *  \param tolerance       (i) tolerance for octree for node matching
+     *  \param nds_master      (i) dofset ID of master side
+     *  \param nds_slave       (i) dofset ID of slave side
+     */
+    void SetupCoupling(const DRT::Discretization& masterdis, const DRT::Discretization& slavedis,
+        const std::vector<std::vector<int>>& masternodes_vec,
+        const std::vector<std::vector<int>>& slavenodes_vec, const int numdof,
+        const bool matchall = true, const double tolerance = 1.0e-3, const int nds_master = 0,
+        const int nds_slave = 0);
+
     //@}
 
     /** \name Conversion between master and slave */

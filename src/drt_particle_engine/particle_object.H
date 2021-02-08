@@ -90,16 +90,16 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 02/2019
      *
-     * \param[in] particletype     particle type enum
-     * \param[in] particleglobalid global id of particle
-     * \param[in] particlestates   states of particle
-     * \param[in] bingid           global id of bin the particle is located in
-     *                             optional: set to -1 if omnitted
-     * \param[in] containerindex   index of particle in container
-     *                             optional: set to -1 if omnitted
+     * \param[in] type     particle type
+     * \param[in] globalid global id of particle
+     * \param[in] states   states of particle
+     * \param[in] bingid   global id of bin the particle is located in
+     *                     optional: set to -1 if omnitted
+     * \param[in] index    index of particle in container
+     *                     optional: set to -1 if omnitted
      */
-    ParticleObject(TypeEnum particletype, int particleglobalid,
-        const ParticleStates& particlestates, int bingid = -1, int containerindex = -1);
+    ParticleObject(ParticleType type, int globalid, const ParticleStates& states, int bingid = -1,
+        int index = -1);
 
     int UniqueParObjectId() const override
     {
@@ -120,7 +120,7 @@ namespace PARTICLEENGINE
      *
      * \param[in] particleglobalid global id of particle
      */
-    inline void SetParticleGlobalID(int particleglobalid) { particleglobalid_ = particleglobalid; };
+    inline void SetParticleGlobalID(int globalid) { globalid_ = globalid; };
 
     //! @}
 
@@ -128,13 +128,13 @@ namespace PARTICLEENGINE
     //! @{
 
     /*!
-     * \brief get particle type enum
+     * \brief get particle type
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \return particle type enum
+     * \return particle type
      */
-    inline TypeEnum ReturnParticleType() const { return particletype_; };
+    inline ParticleType ReturnParticleType() const { return type_; };
 
     /*!
      * \brief get global id of particle
@@ -143,7 +143,7 @@ namespace PARTICLEENGINE
      *
      * \return global id of particle
      */
-    inline int ReturnParticleGlobalID() const { return particleglobalid_; };
+    inline int ReturnParticleGlobalID() const { return globalid_; };
 
     /*!
      * \brief get states of particle
@@ -152,7 +152,7 @@ namespace PARTICLEENGINE
      *
      * \return reference to states of particle
      */
-    inline const ParticleStates& ReturnParticleStates() const { return particlestates_; };
+    inline const ParticleStates& ReturnParticleStates() const { return states_; };
 
     /*!
      * \brief get global id of bin the particle is located in
@@ -170,25 +170,25 @@ namespace PARTICLEENGINE
      *
      * \return index of particle in container
      */
-    inline int ReturnContainerIndex() const { return containerindex_; };
+    inline int ReturnContainerIndex() const { return index_; };
 
     //! @}
 
    private:
-    //! particle type enum
-    TypeEnum particletype_;
+    //! particle type
+    ParticleType type_;
 
     //! global id of particle
-    int particleglobalid_;
+    int globalid_;
 
     //! states of particle
-    ParticleStates particlestates_;
+    ParticleStates states_;
 
     //! global id of bin the particle is located in
     int bingid_;
 
     //! index of particle in container (owned or ghosted depending on case)
-    int containerindex_;
+    int index_;
   };
 
 }  // namespace PARTICLEENGINE

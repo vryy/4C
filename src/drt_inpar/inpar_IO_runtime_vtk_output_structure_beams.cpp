@@ -108,6 +108,11 @@ namespace INPAR
         // write element GIDs
         setStringToIntegralParameter<int>("ELEMENT_GID", "No",
             "write the BACI internal element GIDs", yesnotuple, yesnovalue, &sublist_IO_VTK_beams);
+
+        // number of subsegments along a single beam element for visualization
+        IntParameter("NUMBER_SUBSEGMENTS", 5,
+            "Number of subsegments along a single beam element for visualization",
+            &sublist_IO_VTK_beams);
       }
 
     }  // namespace BEAMS

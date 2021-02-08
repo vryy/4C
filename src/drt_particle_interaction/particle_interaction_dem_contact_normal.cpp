@@ -25,7 +25,8 @@ PARTICLEINTERACTION::DEMContactNormalBase::DEMContactNormalBase(
       r_max_(params_dem_.get<double>("MAX_RADIUS")),
       v_max_(params_dem_.get<double>("MAX_VELOCITY")),
       c_(params_dem_.get<double>("REL_PENETRATION")),
-      k_normal_(params_dem_.get<double>("NORMAL_STIFF"))
+      k_normal_(params_dem_.get<double>("NORMAL_STIFF")),
+      k_normal_crit_(0.0)
 {
   // empty constructor
 }
@@ -58,6 +59,9 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpring::Setup(const double& dens
   // calculate normal stiffness from relative penetration and other input parameters
   if (c_ > 0.0)
     k_normal_ = 2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
+
+  // set critical normal contact stiffness to linear normal contact stiffness
+  k_normal_crit_ = k_normal_;
 }
 
 void PARTICLEINTERACTION::DEMContactNormalLinearSpring::NormalContactForce(const double& gap,
@@ -78,7 +82,6 @@ PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::DEMContactNormalLinearSpr
     : PARTICLEINTERACTION::DEMContactNormalLinearSpring(params),
       e_(params_dem_.get<double>("COEFF_RESTITUTION")),
       damp_reg_fac_(params_dem_.get<double>("DAMP_REG_FAC")),
-      tension_cutoff_(DRT::INPUT::IntegralValue<int>(params_dem_, "TENSION_CUTOFF")),
       d_normal_fac_(0.0)
 {
   // empty constructor
@@ -128,14 +131,11 @@ void PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp::NormalContactForce(c
 
   // evaluate normal contact force
   normalcontactforce = (k_normal_ * gap) - (d_normal * v_rel_normal * reg_fac);
-
-  // tension cutoff
-  if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }
 
 PARTICLEINTERACTION::DEMContactNormalNonlinearBase::DEMContactNormalNonlinearBase(
     const Teuchos::ParameterList& params)
-    : PARTICLEINTERACTION::DEMContactNormalBase(params), k_tcrit_(0.0)
+    : PARTICLEINTERACTION::DEMContactNormalBase(params)
 {
   // empty constructor
 }
@@ -150,12 +150,13 @@ void PARTICLEINTERACTION::DEMContactNormalNonlinearBase::Setup(const double& den
     k_normal_ = 10.0 / 3.0 * M_PI * dens_max * UTILS::pow<2>(v_max_) * std::sqrt(r_max_) /
                 std::sqrt(UTILS::pow<5>(2.0 * c_));
 
-  // calculate normal stiffness from relative penetration and other input parameters if necessary
+  // set critical normal contact stiffness to linear normal contact stiffness
   if (c_ > 0.0)
-    k_tcrit_ = 2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
+    k_normal_crit_ =
+        2.0 / 3.0 * r_max_ * M_PI * dens_max * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
   else
-    k_tcrit_ = std::pow(2048.0 / 1875.0 * dens_max * UTILS::pow<2>(v_max_) * M_PI *
-                            UTILS::pow<3>(r_max_) * UTILS::pow<4>(k_normal_),
+    k_normal_crit_ = std::pow(2048.0 / 1875.0 * dens_max * UTILS::pow<2>(v_max_) * M_PI *
+                                  UTILS::pow<3>(r_max_) * UTILS::pow<4>(k_normal_),
         0.2);
 }
 
@@ -182,8 +183,7 @@ void PARTICLEINTERACTION::DEMContactNormalHertz::NormalContactForce(const double
 PARTICLEINTERACTION::DEMContactNormalNonlinearDampBase::DEMContactNormalNonlinearDampBase(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::DEMContactNormalNonlinearBase(params),
-      d_normal_(params_dem_.get<double>("NORMAL_DAMP")),
-      tension_cutoff_(DRT::INPUT::IntegralValue<int>(params_dem_, "TENSION_CUTOFF"))
+      d_normal_(params_dem_.get<double>("NORMAL_DAMP"))
 {
   // empty constructor
 }
@@ -209,9 +209,6 @@ void PARTICLEINTERACTION::DEMContactNormalLeeHerrmann::NormalContactForce(const 
     double& normalcontactforce) const
 {
   normalcontactforce = -k_normal_ * (-gap) * std::sqrt(-gap) - m_eff * d_normal_ * v_rel_normal;
-
-  // tension cutoff
-  if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }
 
 PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::DEMContactNormalKuwabaraKono(
@@ -227,9 +224,6 @@ void PARTICLEINTERACTION::DEMContactNormalKuwabaraKono::NormalContactForce(const
 {
   normalcontactforce =
       -k_normal_ * (-gap) * std::sqrt(-gap) - d_normal_ * v_rel_normal * std::sqrt(-gap);
-
-  // tension cutoff
-  if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }
 
 PARTICLEINTERACTION::DEMContactNormalTsuji::DEMContactNormalTsuji(
@@ -245,7 +239,4 @@ void PARTICLEINTERACTION::DEMContactNormalTsuji::NormalContactForce(const double
 {
   normalcontactforce =
       -k_normal_ * (-gap) * std::sqrt(-gap) - d_normal_ * v_rel_normal * std::sqrt(std::sqrt(-gap));
-
-  // tension cutoff
-  if (tension_cutoff_ && normalcontactforce > 0.0) normalcontactforce = 0.0;
 }

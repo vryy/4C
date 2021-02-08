@@ -648,6 +648,9 @@ namespace STR
     //! Access solver, one of these have to be removed (see above)
     Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 
+    //! Access solver for contact/meshtying problems
+    Teuchos::RCP<LINALG::Solver> ContactSolver() { return contactsolver_; }
+
     //! Access output object
     Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() { return output_; }
 
@@ -1092,21 +1095,20 @@ namespace STR
     bool printlogo_;                                 //!< print the logo (or not)?
     FILE* errfile_;                                  //!< error file handle
     bool printerrfile_;                              //!< print infos to error file #errfile_
-    bool printiter_;           //!< print intermediate iterations during solution
-    bool outputeveryiter_;     //!< switch
-    int oei_filecounter_;      //!< filename counter
-    int outputcounter_;        //!< output counter for OutputEveryIter
-    int writerestartevery_;    //!< write restart every given step;
-                               //!< if 0, restart is not written
-    int writereducedrestart_;  // Write reduced Restart Data i.e no mesh for mlmc purposes
-    bool writeele_;            //!< write elements on/off
-    bool writestate_;          //!< write state on/off
-    bool writevelacc_;         //!< write velocity and acceleration on/off
-    int writeresultsevery_;    //!< write state/stress/strain every given step
-    INPAR::STR::StressType writestress_;            //!< stress output type
-    INPAR::STR::StressType writecouplstress_;       //!< output type of coupling stress
-    INPAR::STR::StrainType writestrain_;            //!< strain output type
-    INPAR::STR::StrainType writeplstrain_;          //!< plastic strain output type
+    bool printiter_;                           //!< print intermediate iterations during solution
+    bool outputeveryiter_;                     //!< switch
+    int oei_filecounter_;                      //!< filename counter
+    int outputcounter_;                        //!< output counter for OutputEveryIter
+    int writerestartevery_;                    //!< write restart every given step;
+                                               //!< if 0, restart is not written
+    bool writeele_;                            //!< write elements on/off
+    bool writestate_;                          //!< write state on/off
+    bool writevelacc_;                         //!< write velocity and acceleration on/off
+    int writeresultsevery_;                    //!< write state/stress/strain every given step
+    INPAR::STR::StressType writestress_;       //!< stress output type
+    INPAR::STR::StressType writecouplstress_;  //!< output type of coupling stress
+    INPAR::STR::StrainType writestrain_;       //!< strain output type
+    INPAR::STR::StrainType writeplstrain_;     //!< plastic strain output type
     INPAR::STR::OptQuantityType writeoptquantity_;  //!< stress output type
     int writeenergyevery_;                          //!< write system energy every given step
     bool writesurfactant_;                          //!< write surfactant output

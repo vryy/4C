@@ -354,6 +354,13 @@ namespace STR
        *  \author eichinger */
       void InitOutputRuntimeVtkStructure();
 
+      /*!
+       * \brief Initialize the gauss point data output routine
+       *
+       * This method must be called once after the input of all data.
+       */
+      void InitOutputRuntimeVtkStructureGaussPointData();
+
       /*! \brief writes output for discretization structure in VTK format
        *         at the end of a time step
        *
@@ -380,6 +387,8 @@ namespace STR
        * \brief Calculate the stress and / or strains for runtime output.
        */
       void OutputRuntimeVtkStructurePostprocessStressStrain();
+
+      void OutputRuntimeVtkStructureGaussPointData();
 
       /*! \brief writes special output for beam elements in VTK format
        *

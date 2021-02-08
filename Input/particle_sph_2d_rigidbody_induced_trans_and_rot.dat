@@ -12,11 +12,9 @@ VERBOSITY                       standard
 BIN_SIZE_LOWER_BOUND            0.33
 PERIODICONOFF                   0 0 0
 DOMAINBOUNDINGBOX               -2.35 -2.35 -0.05 2.35 2.35 0.05
-WRITEBINS                       none
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
 INTERACTION                     SPH
-OUTPUT_DATA_FORMAT              Binary
 RESULTSEVRY                     32
 RESTARTEVRY                     128 
 TIMESTEP                        1.25e-3
@@ -25,6 +23,8 @@ MAXTIME                         0.2
 PHASE_TO_DYNLOADBALFAC          phase1 1.0 boundaryphase 1.0 rigidphase 1.0
 PHASE_TO_MATERIAL_ID            phase1 1 boundaryphase 2 rigidphase 2
 RIGID_BODY_MOTION               yes
+----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
+DIRICHLET_BOUNDARY_CONDITION    boundaryphase 1
 --------------------------------------------------------PARTICLE DYNAMIC/SPH
 KERNEL                          QuinticSpline
 KERNEL_SPACE_DIM                Kernel2D
@@ -35,8 +35,6 @@ DENSITYEVALUATION               DensitySummation
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TRANSPORTVELOCITYFORMULATION    StandardTransportVelocity
-----------------------------PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS
-DIRICHLET_BOUNDARY_CONDITION    boundaryphase 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (a*x-b*y)+0.2*t
 COMPONENT 1 FUNCTION (b*x+a*y)

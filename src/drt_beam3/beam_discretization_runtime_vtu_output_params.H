@@ -136,6 +136,13 @@ namespace DRT
         return write_element_gid_;
       };
 
+      /// number of visualization subsegments.
+      unsigned int GetNumberVisualizationSubsegments() const
+      {
+        CheckInitSetup();
+        return n_subsegments_;
+      };
+
      private:
       /// get the init indicator status
       const bool& IsInit() const { return isinit_; };
@@ -198,6 +205,9 @@ namespace DRT
 
       /// whether to write the element GIDs.
       bool write_element_gid_;
+
+      /// number of visualization subsegments
+      unsigned int n_subsegments_;
 
       //@}
     };

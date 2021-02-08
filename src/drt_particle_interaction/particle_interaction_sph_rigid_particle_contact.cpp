@@ -119,18 +119,15 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
         particlecontainerbundle_->GetSpecificContainer(type_j, status_j);
 
     // get pointer to particle states
-    const double* vel_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_i);
-
-    double* force_i = nullptr;
-    if (container_i->HaveStoredState(PARTICLEENGINE::Force))
-      force_i = container_i->GetPtrToParticleState(PARTICLEENGINE::Force, particle_i);
+    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    double* force_i = container_i->CondGetPtrToState(PARTICLEENGINE::Force, particle_i);
 
     // get pointer to particle states
-    const double* vel_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Velocity, particle_j);
+    const double* vel_j = container_j->GetPtrToState(PARTICLEENGINE::Velocity, particle_j);
 
     double* force_j = nullptr;
-    if (container_j->HaveStoredState(PARTICLEENGINE::Force) and status_j == PARTICLEENGINE::Owned)
-      force_j = container_j->GetPtrToParticleState(PARTICLEENGINE::Force, particle_j);
+    if (status_j == PARTICLEENGINE::Owned)
+      force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
 
     if (particlepair.absdist_ < initialparticlespacing)
     {
@@ -139,11 +136,11 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
           UTILS::vec_dot(vel_i, particlepair.e_ij_) - UTILS::vec_dot(vel_j, particlepair.e_ij_);
 
       // magnitude of rigid particle contact force
-      const double fac = -(stiff_ * gap + damp_ * gapdot);
+      const double fac = std::min(0.0, (stiff_ * gap + damp_ * gapdot));
 
       // add contributions
-      if (force_i) UTILS::vec_addscale(force_i, fac, particlepair.e_ij_);
-      if (force_j) UTILS::vec_addscale(force_j, -fac, particlepair.e_ij_);
+      if (force_i) UTILS::vec_addscale(force_i, -fac, particlepair.e_ij_);
+      if (force_j) UTILS::vec_addscale(force_j, fac, particlepair.e_ij_);
     }
   }
 }

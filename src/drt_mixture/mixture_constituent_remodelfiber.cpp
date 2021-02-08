@@ -199,8 +199,13 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Setup(
   MixtureConstituent::Setup(params, eleGID);
 
   // Update deposition stretch / prestretch of fiber depending on time function
-  double time = params.get<double>("total time", -1.0);
-  if (time < 0)
+  double time = params.get<double>("total time", -2.0);
+  if (std::abs(time + 1) < 1e-9)
+  {
+    // Time has not yet been set by the time integrator during Setup
+    time = 0.0;
+  }
+  else if (time < 0)
   {
     dserror("The current total time is not set in the ParameterList");
   }
@@ -210,7 +215,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Setup(
     lambda_pre = EvaluateCurrentDepositionStretch(time);
   }
 
-  UpdateSigH(eleGID);
+  UpdateSigHAtAllGaussPoints(eleGID);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::Update(LINALG::Matrix<3, 3> const& defgrd,
@@ -218,6 +223,19 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Update(LINALG::Matrix<3, 3> const
 {
   MixtureConstituent::Update(defgrd, params, gp, eleGID);
 
+  UpdateFiberPrestress(params, gp, eleGID);
+}
+
+void MIXTURE::MixtureConstituent_RemodelFiber::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd,
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
+{
+  MixtureConstituent::UpdatePrestress(defgrd, params, gp, eleGID);
+  UpdateFiberPrestress(params, gp, eleGID);
+}
+
+void MIXTURE::MixtureConstituent_RemodelFiber::UpdateFiberPrestress(
+    Teuchos::ParameterList& params, const int gp, const int eleGID)
+{
   // Compute new prestretch
   double time = params.get<double>("total time", -1.0);
   if (time < 0)
@@ -228,7 +246,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Update(LINALG::Matrix<3, 3> const
   lambda_pre_[gp] = EvaluateCurrentDepositionStretch(time);
 
 
-  UpdateSigH(eleGID);
+  UpdateSigH(gp, eleGID);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::AddStressCmat(const LINALG::Matrix<3, 3>& F,
@@ -432,19 +450,23 @@ double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateCurrentDepositionStretc
       .EvaluateTime(current_time);
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiber::UpdateSigH(const int eleGID)
+void MIXTURE::MixtureConstituent_RemodelFiber::UpdateSigHAtAllGaussPoints(const int eleGID)
+{
+  for (size_t gp = 0; gp < sig_h_.size(); ++gp)
+  {
+    UpdateSigH(gp, eleGID);
+  }
+}
+
+void MIXTURE::MixtureConstituent_RemodelFiber::UpdateSigH(const int gp, const int eleGID)
 {
   LINALG::Matrix<3, 3> Id(false);
   MAT::IdentityMatrix(Id);
-
   LINALG::Matrix<3, 3> iFextin(false);
 
-  for (unsigned gp = 0; gp < sig_h_.size(); ++gp)
-  {
-    iFextin.Update(lambda_pre_[gp], fiberAnisotropyExtension_->GetStructuralTensor(gp, 0));
+  iFextin.Update(lambda_pre_[gp], fiberAnisotropyExtension_->GetStructuralTensor(gp, 0));
 
-    sig_h_[gp] = EvaluateFiberCauchyStress(Id, iFextin, gp, eleGID);
-  }
+  sig_h_[gp] = EvaluateFiberCauchyStress(Id, iFextin, gp, eleGID);
 }
 
 MIXTURE::OrthogonalAnisotropyExtension::OrthogonalAnisotropyExtension()
@@ -472,6 +494,7 @@ void MIXTURE::OrthogonalAnisotropyExtension::OnGlobalDataInitialized()
     A_orth_[gp].Update(1.0, Id, -1.0, other_->GetStructuralTensor(gp, 0));
   }
 }
+
 const LINALG::Matrix<3, 3>& MIXTURE::OrthogonalAnisotropyExtension::OrthogonalStructuralTensor(
     int gp) const
 {

@@ -637,11 +637,6 @@ void ADAPTER::StructureBaseAlgorithmNew::SetParams(Teuchos::ParameterList& iofla
   nox = *snox;
   // add extra parameters (a kind of work-around)
   xparams.set<FILE*>("err file", problem->ErrorFile()->Handle());
-  // Parameter to determine if MLMC is on/off
-  Teuchos::RCP<Teuchos::ParameterList> mlmcp =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->MultiLevelMonteCarloParams()));
-  // Needed for reduced restart output
-  xparams.set<int>("REDUCED_OUTPUT", Teuchos::getIntegralValue<int>((*mlmcp), "REDUCED_OUTPUT"));
 
   /* overrule certain parameters
    *

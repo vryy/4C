@@ -26,9 +26,6 @@
 
 #include "beam_spatial_discretization_utils.H"
 
-/* number of linear subsegments used for visualization of beam centerline
- * in vtu format (see post_drt_vtu_writer.cpp and beam_discretization_runtime_vtu_writer.cpp) */
-#define BEAMSVTUVISUALSUBSEGMENTS 5
 
 // forward declaration ...
 namespace LINALG

@@ -23,6 +23,11 @@ namespace ADAPTER
 
 }  // namespace ADAPTER
 
+namespace BEAMINTERACTION
+{
+  class BeamToFluidMeshtyingVtkOutputWriter;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -35,6 +40,7 @@ namespace FBI
 namespace LINALG
 {
   class SparseMatrix;
+  class SparseOperator;
   class MapExtractor;
 }  // namespace LINALG
 namespace ADAPTER
@@ -62,10 +68,11 @@ namespace ADAPTER
   class FBIConstraintenforcer
   {
     friend ConstraintEnforcerFactory;
+    friend class BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter;
 
    public:
     /// empty destructor
-    virtual ~FBIConstraintenforcer(){};
+    virtual ~FBIConstraintenforcer() = default;
 
     /**
      * \brief Sets up the constraint enforcer
@@ -163,7 +170,7 @@ namespace ADAPTER
      *
      * \returns coupling contributions to the fluid system matrix
      */
-    virtual Teuchos::RCP<const LINALG::SparseMatrix> AssembleFluidCouplingMatrix() const
+    virtual Teuchos::RCP<const LINALG::SparseOperator> AssembleFluidCouplingMatrix() const
     {
       dserror("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;

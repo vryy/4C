@@ -48,8 +48,12 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
     : SSIBase(comm, globaltimeparams),
       dtele_(0.0),
       dtsolve_(0.0),
-      equilibration_method_(Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
-          globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION")),
+      equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+                                globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
+          Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
+              globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
       increment_(Teuchos::null),
       map_structure_(Teuchos::null),
       maps_scatra_(Teuchos::null),
@@ -77,6 +81,59 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
+  // assemble scatra block into system matrix
+  strategy_assemble_->AssembleScatraDomain(
+      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+
+  // assemble scatra-strucutre block (domain contributions) into system matrix
+  strategy_assemble_->AssembleScatraStructureDomain(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
+
+  // assemble scatra-strucutre block (interface contributions) into system matrix
+  if (SSIInterfaceMeshtying())
+    strategy_assemble_->AssembleScatraStructureInterface(
+        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureInterface());
+
+  // assemble structure-scatra block (domain contributions) into system matrix
+  strategy_assemble_->AssembleStructureScatraDomain(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
+
+  // assemble structure block into system matrix
+  strategy_assemble_->AssembleStructureDomain(
+      ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
+
+  if (IsScaTraManifold())
+  {
+    // assemble manifold block into system matrix
+    strategy_assemble_->AssembleScaTraManifoldDomain(
+        ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
+
+    // assemble manifold-structure block into system matrix
+    strategy_assemble_->AssembleScaTraManifoldStructureDomain(
+        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
+  }
+
+  // apply meshtying
+  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
+
+  // finalize global system matrix
+  ssi_matrices_->SystemMatrix()->Complete();
+
+  // apply scatra Dirichlet
+  ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+
+  // apply structural Dirichlet conditions
+  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
+
+  // assemble monolithic RHS
+  strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS(),
+      IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::EvaluateSubproblems()
+{
   // needed to communicate to NOX state
   StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
@@ -95,6 +152,9 @@ void SSI::SSIMono::AssembleMatAndRHS()
   // build system matrix and residual for scalar transport field
   ScaTraField()->PrepareLinearSolve();
 
+  // build system matrix and residual for scalar transport field on manifold
+  if (IsScaTraManifold()) ScaTraManifold()->PrepareLinearSolve();
+
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
       ssi_matrices_->ScaTraStructureDomain());
@@ -109,41 +169,12 @@ void SSI::SSIMono::AssembleMatAndRHS()
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
       ssi_matrices_->StructureScaTraDomain());
 
-  // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatraDomain(
-      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
-
-  // assemble scatra-strucutre block (domain contributions) into system matrix
-  strategy_assemble_->AssembleScatraStructureDomain(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
-
-  // assemble scatra-strucutre block (interface contributions) into system matrix
-  if (SSIInterfaceMeshtying())
-    strategy_assemble_->AssembleScatraStructureInterface(
-        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureInterface());
-
-  // assemble structure-scatra block (domain contributions) into system matrix
-  strategy_assemble_->AssembleStructureScatraDomain(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
-
-  // assemble strucutre block into system matrix
-  strategy_assemble_->AssembleStructureDomain(
-      ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
-
-  // apply meshtying
-  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
-
-  // finalize global system matrix
-  ssi_matrices_->SystemMatrix()->Complete();
-
-  // apply scatra Dirichlet
-  ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
-
-  // apply structural Dirichlet conditions
-  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
-
-  // assemble monolithic RHS
-  strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS());
+  if (IsScaTraManifold())
+  {
+    // evaluate off-diagonal manifold-structure block of global system matrix
+    scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
+        ssi_matrices_->ScaTraManifoldStructureDomain());
+  }
 }
 
 /*-------------------------------------------------------------------------------*
@@ -158,7 +189,11 @@ void SSI::SSIMono::BuildNullSpaces() const
       // equip smoother for scatra matrix blocks with null space
       ScaTraField()->BuildBlockNullSpaces(
           solver_, GetBlockPositions(Subproblem::scalar_transport)->at(0));
-
+      if (IsScaTraManifold())
+      {
+        ScaTraManifold()->BuildBlockNullSpaces(
+            solver_, GetBlockPositions(Subproblem::manifold)->at(0));
+      }
       break;
     }
 
@@ -166,13 +201,31 @@ void SSI::SSIMono::BuildNullSpaces() const
     {
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
-      Teuchos::ParameterList& blocksmootherparams = solver_->Params().sublist("Inverse1");
-      blocksmootherparams.sublist("Aztec Parameters");
-      blocksmootherparams.sublist("MueLu Parameters");
+      std::ostringstream scatrablockstr;
+      scatrablockstr << GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
+      Teuchos::ParameterList& blocksmootherparamsscatra =
+          solver_->Params().sublist("Inverse" + scatrablockstr.str());
+      blocksmootherparamsscatra.sublist("Aztec Parameters");
+      blocksmootherparamsscatra.sublist("MueLu Parameters");
 
       // equip smoother for scatra matrix block with null space associated with all degrees of
       // freedom on scatra discretization
-      ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
+      ScaTraField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparamsscatra);
+
+      if (IsScaTraManifold())
+      {
+        std::ostringstream scatramanifoldblockstr;
+        scatramanifoldblockstr << GetBlockPositions(Subproblem::manifold)->at(0) + 1;
+        Teuchos::ParameterList& blocksmootherparamsscatramanifold =
+            solver_->Params().sublist("Inverse" + scatramanifoldblockstr.str());
+        blocksmootherparamsscatramanifold.sublist("Aztec Parameters");
+        blocksmootherparamsscatramanifold.sublist("MueLu Parameters");
+
+        // equip smoother for scatra matrix block with null space associated with all degrees of
+        // freedom on scatra discretization
+        ScaTraManifold()->Discretization()->ComputeNullSpaceIfNecessary(
+            blocksmootherparamsscatramanifold);
+      }
 
       break;
     }
@@ -186,7 +239,7 @@ void SSI::SSIMono::BuildNullSpaces() const
 
   // store number of matrix block associated with structural field as string
   std::stringstream iblockstr;
-  iblockstr << MapsSystemMatrix()->NumMaps();
+  iblockstr << GetBlockPositions(Subproblem::structure)->at(0) + 1;
 
   // equip smoother for structural matrix block with empty parameter sub lists to trigger null space
   // computation
@@ -208,287 +261,11 @@ const Teuchos::RCP<const Epetra_Map>& SSI::SSIMono::DofRowMap() const
   return MapsSubProblems()->FullMap();
 }
 
-
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-void SSI::SSIMono::FDCheck()
-{
-  // initial screen output
-  if (Comm().MyPID() == 0)
-    std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SSI SYSTEM MATRIX" << std::endl;
-
-  // create global state vector
-  Teuchos::RCP<Epetra_Vector> statenp(LINALG::CreateVector(*DofRowMap(), true));
-  MapsSubProblems()->InsertVector(
-      ScaTraField()->Phinp(), GetProblemPosition(Subproblem::scalar_transport), statenp);
-  MapsSubProblems()->InsertVector(
-      StructureField()->Dispnp(), GetProblemPosition(Subproblem::structure), statenp);
-
-  // make a copy of global state vector to undo perturbations later
-  Teuchos::RCP<Epetra_Vector> statenp_original = Teuchos::rcp(new Epetra_Vector(*statenp));
-
-  // make a copy of system matrix as Epetra_CrsMatrix
-  Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
-  if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(ssi_matrices_->SystemMatrix()) !=
-      Teuchos::null)
-  {
-    sysmat_original =
-        (new LINALG::SparseMatrix(
-             *(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(ssi_matrices_->SystemMatrix()))))
-            ->EpetraMatrix();
-  }
-  else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(
-               ssi_matrices_->SystemMatrix()) != Teuchos::null)
-  {
-    sysmat_original =
-        (new LINALG::SparseMatrix(*(
-             Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(ssi_matrices_->SystemMatrix())
-                 ->Merge())))
-            ->EpetraMatrix();
-  }
-  else
-    dserror("Type of system matrix unknown!");
-  sysmat_original->FillComplete();
-
-  // make a copy of system right-hand side vector
-  Teuchos::RCP<Epetra_Vector> rhs_original = Teuchos::rcp(new Epetra_Vector(*residual_));
-
-  // copy and zero out system increment vector if necessary
-  Teuchos::RCP<Epetra_Vector> increment_original(Teuchos::null);
-  if (IterationCount() != 1)
-  {
-    increment_original = Teuchos::rcp(new Epetra_Vector(*increment_));
-    increment_->PutScalar(0.0);
-  }
-
-  // initialize counter for system matrix entries with failing finite difference check
-  int counter(0);
-
-  // initialize tracking variable for maximum absolute and relative errors
-  double maxabserr(0.);
-  double maxrelerr(0.);
-
-  for (int colgid = 0; colgid <= sysmat_original->ColMap().MaxAllGID(); ++colgid)
-  {
-    // continue loop if current column index is not a valid global column index
-    int collid(sysmat_original->ColMap().LID(colgid));
-    int maxcollid(-1);
-    Comm().MaxAll(&collid, &maxcollid, 1);
-    if (maxcollid < 0) continue;
-
-    // continue loop if current column index is associated with slave side of structural
-    // meshtying interface
-    if (SSIInterfaceMeshtying())
-    {
-      collid = InterfaceCouplingAdapterStructure()->SlaveDofMap()->LID(colgid);
-      Comm().MaxAll(&collid, &maxcollid, 1);
-      if (maxcollid >= 0) continue;
-    }
-
-    // fill global state vector with original state variables
-    statenp->Update(1., *statenp_original, 0.);
-
-    // impose perturbation
-    if (statenp->Map().MyGID(colgid))
-      if (statenp->SumIntoGlobalValue(colgid, 0, ScaTraField()->FDCheckEps()))
-        dserror("Perturbation could not be imposed on state vector for finite difference check!");
-    if (SSIInterfaceMeshtying() and
-        InterfaceCouplingAdapterStructure()->PermMasterDofMap()->MyGID(colgid))
-    {
-      if (statenp->SumIntoGlobalValue(
-              InterfaceCouplingAdapterStructure()->SlaveDofMap()->GID(
-                  InterfaceCouplingAdapterStructure()->PermMasterDofMap()->LID(colgid)),
-              0, ScaTraField()->FDCheckEps()))
-        dserror("Perturbation could not be imposed on state vector for finite difference check!");
-    }
-    ScaTraField()->Phinp()->Update(1.0,
-        *MapsSubProblems()->ExtractVector(
-            statenp, GetProblemPosition(Subproblem::scalar_transport)),
-        0.0);
-    StructureField()->SetState(
-        MapsSubProblems()->ExtractVector(statenp, GetProblemPosition(Subproblem::structure)));
-
-    // calculate element right-hand side vector for perturbed state
-    if (IterationCount() != 1) UpdateIterStructure();
-    AssembleMatAndRHS();
-
-    // Now we compare the difference between the current entries in the system matrix
-    // and their finite difference approximations according to
-    // entries ?= (residual_perturbed - residual_original) / epsilon
-
-    // Note that the residual_ vector actually denotes the right-hand side of the linear
-    // system of equations, i.e., the negative system residual.
-    // To account for errors due to numerical cancellation, we additionally consider
-    // entries + residual_original / epsilon ?= residual_perturbed / epsilon
-
-    // Note that we still need to evaluate the first comparison as well. For small entries in
-    // the system matrix, the second comparison might yield good agreement in spite of the
-    // entries being wrong!
-    for (int rowlid = 0; rowlid < DofRowMap()->NumMyElements(); ++rowlid)
-    {
-      // get global index of current matrix row
-      const int rowgid = sysmat_original->RowMap().GID(rowlid);
-      if (rowgid < 0) dserror("Invalid global ID of matrix row!");
-
-      // skip matrix rows associated with Dirichlet boundary conditions and slave side of
-      // structural meshtying interface
-      if (ScaTraField()->DirichMaps()->CondMap()->MyGID(rowgid) or
-          StructureField()->GetDBCMapExtractor()->CondMap()->MyGID(rowgid) or
-          (SSIInterfaceMeshtying() and
-              InterfaceCouplingAdapterStructure()->SlaveDofMap()->MyGID(rowgid)))
-        continue;
-
-      // get relevant entry in current row of original system matrix
-      double entry(0.);
-      int length = sysmat_original->NumMyEntries(rowlid);
-      int numentries;
-      std::vector<double> values(length);
-      std::vector<int> indices(length);
-      sysmat_original->ExtractMyRowCopy(rowlid, length, numentries, &values[0], &indices[0]);
-      for (int ientry = 0; ientry < length; ++ientry)
-      {
-        if (sysmat_original->ColMap().GID(indices[ientry]) == colgid)
-        {
-          entry = values[ientry];
-          break;
-        }
-      }
-
-      // finite difference suggestion (first divide by epsilon and then add for better
-      // conditioning)
-      const double fdval = -(*residual_)[rowlid] / ScaTraField()->FDCheckEps() +
-                           (*rhs_original)[rowlid] / ScaTraField()->FDCheckEps();
-
-      // confirm accuracy of first comparison
-      if (abs(fdval) > 1.e-20 and abs(fdval) < 1.e-15)
-      {
-        // output warning
-        std::cout
-            << "WARNING: Finite difference check involves values very close to numerical zero!"
-            << std::endl;
-
-        // skip comparison if current entry is very small
-        if (abs(entry) < 1.e-15) continue;
-      }
-
-      // absolute and relative errors in first comparison
-      const double abserr1 = entry - fdval;
-      if (abs(abserr1) > maxabserr) maxabserr = abs(abserr1);
-      double relerr1(0.);
-      if (abs(entry) > 1.e-17)
-        relerr1 = abserr1 / abs(entry);
-      else if (abs(fdval) > 1.e-17)
-        relerr1 = abserr1 / abs(fdval);
-      if (abs(relerr1) > maxrelerr) maxrelerr = abs(relerr1);
-
-      // evaluate first comparison
-      if (abs(relerr1) > ScaTraField()->FDCheckTol())
-      {
-        std::cout << "sysmat[" << rowgid << "," << colgid << "]:  " << entry << "   ";
-        std::cout << "finite difference suggestion:  " << fdval << "   ";
-        std::cout << "absolute error:  " << abserr1 << "   ";
-        std::cout << "relative error:  " << relerr1 << std::endl;
-
-        counter++;
-      }
-
-      // first comparison OK
-      else
-      {
-        // left-hand side in second comparison
-        const double left = entry - (*rhs_original)[rowlid] / ScaTraField()->FDCheckEps();
-
-        // right-hand side in second comparison
-        const double right = -(*residual_)[rowlid] / ScaTraField()->FDCheckEps();
-
-        // confirm accuracy of second comparison
-        if (abs(right) > 1.e-20 and abs(right) < 1.e-15)
-        {
-          // output warning
-          std::cout << "WARNING: Finite difference check involves values very close to "
-                       "numerical zero!"
-                    << std::endl;
-
-          // skip comparison if current left-hand side is very small
-          if (abs(left) < 1.e-15) continue;
-        }
-
-        // absolute and relative errors in second comparison
-        const double abserr2 = left - right;
-        if (abs(abserr2) > maxabserr) maxabserr = abs(abserr2);
-        double relerr2(0.);
-        if (abs(left) > 1.e-17)
-          relerr2 = abserr2 / abs(left);
-        else if (abs(right) > 1.e-17)
-          relerr2 = abserr2 / abs(right);
-        if (abs(relerr2) > maxrelerr) maxrelerr = abs(relerr2);
-
-        // evaluate second comparison
-        if (abs(relerr2) > ScaTraField()->FDCheckTol())
-        {
-          std::cout << "sysmat[" << rowgid << "," << colgid << "]-rhs[" << rowgid
-                    << "]/eps:  " << left << "   ";
-          std::cout << "-rhs_perturbed[" << rowgid << "]/eps:  " << right << "   ";
-          std::cout << "absolute error:  " << abserr2 << "   ";
-          std::cout << "relative error:  " << relerr2 << std::endl;
-
-          counter++;
-        }
-      }
-    }
-  }
-
-  // communicate tracking variables
-  int counterglobal(0);
-  Comm().SumAll(&counter, &counterglobal, 1);
-  double maxabserrglobal(0.);
-  Comm().MaxAll(&maxabserr, &maxabserrglobal, 1);
-  double maxrelerrglobal(0.);
-  Comm().MaxAll(&maxrelerr, &maxrelerrglobal, 1);
-
-  // final screen output
-  if (Comm().MyPID() == 0)
-  {
-    if (counterglobal)
-    {
-      printf(
-          "--> FAILED AS LISTED ABOVE WITH %d CRITICAL MATRIX ENTRIES IN TOTAL\n\n", counterglobal);
-      printf(
-          "--> FAILED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR "
-          "%+12.5e\n\n",
-          maxabserrglobal, maxrelerrglobal);
-      dserror("Finite difference check failed for SSI system matrix!");
-    }
-    else
-    {
-      printf(
-          "--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR "
-          "%+12.5e\n\n",
-          maxabserrglobal, maxrelerrglobal);
-    }
-  }
-
-  // undo perturbations of state variables
-  ScaTraField()->Phinp()->Update(1.0,
-      *MapsSubProblems()->ExtractVector(
-          statenp_original, GetProblemPosition(Subproblem::scalar_transport)),
-      0.0);
-  StructureField()->SetState(MapsSubProblems()->ExtractVector(
-      statenp_original, GetProblemPosition(Subproblem::structure)));
-
-  // recompute system matrix and right-hand side vector based on original state variables
-  if (IterationCount() != 1) UpdateIterStructure();
-  AssembleMatAndRHS();
-
-  // restore system increment vector if necessary
-  if (increment_original != Teuchos::null) increment_ = increment_original;
-}
-
-/*--------------------------------------------------------------------------*
- *--------------------------------------------------------------------------*/
-int SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
+void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
-    const std::string struct_disname, const std::string scatra_disname, bool isAle)
+    const std::string& struct_disname, const std::string& scatra_disname, bool isAle)
 {
   // check input parameters for scalar transport field
   if (DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams, "VELOCITYFIELD") !=
@@ -497,15 +274,22 @@ int SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
 
   // initialize strategy for Newton-Raphson convergence check
   switch (
-      DRT::INPUT::IntegralValue<INPAR::SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
+      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
   {
-    case INPAR::SSI::scatratiminttype_elch:
+    case INPAR::SSI::ScaTraTimIntType::elch:
     {
-      strategy_convcheck_ = Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyElch(globaltimeparams));
+      if (IsScaTraManifold())
+      {
+        strategy_convcheck_ =
+            Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyElchScaTraManifold(globaltimeparams));
+      }
+      else
+        strategy_convcheck_ =
+            Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyElch(globaltimeparams));
       break;
     }
 
-    case INPAR::SSI::scatratiminttype_standard:
+    case INPAR::SSI::ScaTraTimIntType::standard:
     {
       strategy_convcheck_ = Teuchos::rcp(new SSI::SSIMono::ConvCheckStrategyStd(globaltimeparams));
       break;
@@ -519,7 +303,7 @@ int SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& gl
   }
 
   // call base class routine
-  return SSIBase::Init(
+  SSIBase::Init(
       comm, globaltimeparams, scatraparams, structparams, struct_disname, scatra_disname, isAle);
 }
 
@@ -530,6 +314,7 @@ void SSI::SSIMono::Output()
 {
   // output scalar transport field
   ScaTraField()->Output();
+  if (IsScaTraManifold()) ScaTraManifold()->Output();
 
   // output structure field
   StructureField()->Output();
@@ -547,6 +332,7 @@ void SSI::SSIMono::PrepareTimeStep()
 
   // prepare time step for scalar transport field
   ScaTraField()->PrepareTimeStep();
+  if (IsScaTraManifold()) ScaTraManifold()->PrepareTimeStep();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
   // (PrepareTimeStep() of Scatra) and pass to structure
@@ -584,13 +370,44 @@ void SSI::SSIMono::Setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
-  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+
+  const bool equilibration_scatra_initial = DRT::INPUT::IntegralValue<bool>(
+      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
+      "EQUILIBRATION_INIT_SCATRA");
+  const bool calc_initial_pot =
+      DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+
+  if (!equilibration_scatra_initial and
+      ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
   {
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
   }
+  if (equilibration_scatra_initial and
+      ScaTraField()->EquilibrationMethod() == LINALG::EquilibrationMethod::none)
+  {
+    dserror(
+        "You selected to equilibrate equations of initial potential but did not specify any "
+        "equilibration method in ScaTra.");
+  }
+  if (equilibration_scatra_initial and !calc_initial_pot)
+  {
+    dserror(
+        "You selected to equilibrate equations of initial potential but did not activate "
+        "INITPOTCALC in ELCH CONTROL");
+  }
+
+  if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
+      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
+    dserror("Either global equilibration or local equilibration");
+
+  if (matrixtype_ == LINALG::MatrixType::sparse and
+      (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
+          equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
+    dserror("Block based equilibration only for block matrices");
 
   if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
@@ -636,10 +453,20 @@ void SSI::SSIMono::SetupSystem()
   }
 
   // initialize global map extractor
-  maps_sub_problems_ = Teuchos::rcp(new LINALG::MapExtractor(
-      *LINALG::MergeMap(*ScaTraField()->DofRowMap(), *StructureField()->DofRowMap(), false),
-      StructureField()->DofRowMap(), ScaTraField()->DofRowMap()));
+  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps;
+  Teuchos::RCP<const Epetra_Map> merged_map;
+  partial_maps.emplace_back(Teuchos::rcp(new Epetra_Map(*ScaTraField()->DofRowMap())));
+  partial_maps.emplace_back(Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap())));
+  if (IsScaTraManifold())
+  {
+    partial_maps.emplace_back(Teuchos::rcp(new Epetra_Map(*ScaTraManifold()->DofRowMap())));
+    auto temp_map = LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
+    merged_map = LINALG::MergeMap(temp_map, partial_maps[2], false);
+  }
+  else
+    merged_map = LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
 
+  maps_sub_problems_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*merged_map, partial_maps));
   // check global map extractor
   maps_sub_problems_->CheckForValidMapExtractor();
 
@@ -663,16 +490,35 @@ void SSI::SSIMono::SetupSystem()
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
+      std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix;
+
       // store an RCP to the block maps of the scatra field
       maps_scatra_ = Teuchos::rcpFromRef(ScaTraField()->BlockMaps());
-
-      // safety check
       maps_scatra_->CheckForValidMapExtractor();
 
-      // extract maps underlying main-diagonal matrix blocks associated with scalar transport  field
-      std::vector<Teuchos::RCP<const Epetra_Map>> maps_systemmatrix(
-          GetBlockPositions(Subproblem::scalar_transport)->size() +
-          GetBlockPositions(Subproblem::structure)->size());
+      if (IsScaTraManifold())
+      {
+        auto maps_scatra_manifold = Teuchos::rcpFromRef(ScaTraManifold()->BlockMaps());
+        maps_scatra_manifold->CheckForValidMapExtractor();
+        maps_systemmatrix.resize(GetBlockPositions(Subproblem::scalar_transport)->size() +
+                                 GetBlockPositions(Subproblem::structure)->size() +
+                                 GetBlockPositions(Subproblem::manifold)->size());
+
+        for (int imap = 0; imap < static_cast<int>(GetBlockPositions(Subproblem::manifold)->size());
+             ++imap)
+        {
+          maps_systemmatrix[GetBlockPositions(Subproblem::manifold)->at(imap)] =
+              maps_scatra_manifold->Map(imap);
+        }
+      }
+      else
+      {
+        // extract maps underlying main-diagonal matrix blocks associated with scalar transport
+        // field
+        maps_systemmatrix.resize(GetBlockPositions(Subproblem::scalar_transport)->size() +
+                                 GetBlockPositions(Subproblem::structure)->size());
+      }
+
       for (int imap = 0;
            imap < static_cast<int>(GetBlockPositions(Subproblem::scalar_transport)->size()); ++imap)
       {
@@ -748,15 +594,29 @@ void SSI::SSIMono::SetupSystem()
       Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
   // initialize object, that performs evaluations of OD coupling
-  scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-      MapsStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-      MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
-      InterfaceCouplingAdapterStructure(), interface_map_scatra, meshtying_strategy_s2i_,
-      ScaTraBaseAlgorithm(), StructureField()));
-
+  if (IsScaTraManifold())
+  {
+    scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
+        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
+        MapStructureManifold()->Map(0), InterfaceCouplingAdapterStructure(),
+        InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
+        meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
+        StructureField(), Meshtying3DomainIntersection()));
+  }
+  else
+  {
+    scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
+        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
+        interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField(),
+        Meshtying3DomainIntersection()));
+  }
   // instantiate appropriate equilibration class
-  strategy_equilibration_ =
-      LINALG::BuildEquilibration(matrixtype_, equilibration_method_, MapsSubProblems()->FullMap());
+  strategy_equilibration_ = LINALG::BuildEquilibration(
+      matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 }
 
 /*---------------------------------------------------------------------------------*
@@ -764,11 +624,26 @@ void SSI::SSIMono::SetupSystem()
 void SSI::SSIMono::SetupModelEvaluator() const
 {
   // construct and register structural model evaluator if necessary
-  if (DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
-          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none and
-      SSIInterfaceMeshtying())
+
+  const bool do_output_stress =
+      DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
+          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none;
+  const bool smooth_output_interface_stress = DRT::INPUT::IntegralValue<bool>(
+      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
+      "SMOOTH_OUTPUT_INTERFACE_STRESS");
+
+  if (Meshtying3DomainIntersection() and smooth_output_interface_stress)
+    dserror("Smoothing of interface stresses not implemented for triple meshtying.");
+
+  if (smooth_output_interface_stress and !do_output_stress)
+    dserror("Smoothing of interface stresses only when stress output is written.");
+
+  if (do_output_stress and SSIInterfaceMeshtying())
+  {
     StructureBaseAlgorithm()->RegisterModelEvaluator("Monolithic Coupling Model",
-        Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(Teuchos::rcp(this, false))));
+        Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(
+            Teuchos::rcp(this, false), smooth_output_interface_stress)));
+  }
 }
 
 /*---------------------------------------------------------------------------------*
@@ -805,6 +680,9 @@ void SSI::SSIMono::NewtonLoop()
     // store time before evaluating elements and assembling global system of equations
     double time = timer_->WallTime();
 
+    // evaluate subproblems and get all matrices and right-hand-sides
+    EvaluateSubproblems();
+
     // assemble global system of equations
     AssembleMatAndRHS();
 
@@ -816,9 +694,6 @@ void SSI::SSIMono::NewtonLoop()
     // safety check
     if (!ssi_matrices_->SystemMatrix()->Filled())
       dserror("Complete() has not been called on global system matrix yet!");
-
-    // perform finite difference check on time integrator level
-    if ((ScaTraField()->FDCheckType() == INPAR::SCATRA::fdcheck_global) and (Step() > 1)) FDCheck();
 
     // check termination criterion for Newton-Raphson iteration
     if (strategy_convcheck_->ExitNewtonRaphson(*this)) break;
@@ -859,6 +734,7 @@ void SSI::SSIMono::Timeloop()
   {
     SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
     ScaTraField()->Output();
+    if (IsScaTraManifold()) ScaTraManifold()->Output();
   }
 
   // time loop
@@ -901,6 +777,7 @@ void SSI::SSIMono::Update()
 {
   // update scalar transport field
   ScaTraField()->Update();
+  if (IsScaTraManifold()) ScaTraManifold()->Update();
 
   // update structure field
   StructureField()->Update();
@@ -914,6 +791,13 @@ void SSI::SSIMono::UpdateIterScaTra()
   ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
       increment_, GetProblemPosition(Subproblem::scalar_transport)));
   ScaTraField()->ComputeIntermediateValues();
+
+  if (IsScaTraManifold())
+  {
+    ScaTraManifold()->UpdateIter(
+        MapsSubProblems()->ExtractVector(increment_, GetProblemPosition(Subproblem::manifold)));
+    ScaTraManifold()->ComputeIntermediateValues();
+  }
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -927,14 +811,27 @@ void SSI::SSIMono::UpdateIterStructure()
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    MapsStructure()->InsertVector(
+    MapsCoupStruct()->InsertVector(
         InterfaceCouplingAdapterStructure()->MasterToSlave(
-            MapsStructure()->ExtractVector(StructureField()->Dispnp(), 2)),
+            MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
         1, StructureField()->WriteAccessDispnp());
     StructureField()->SetState(StructureField()->WriteAccessDispnp());
-    MapsStructure()->InsertVector(InterfaceCouplingAdapterStructure()->MasterToSlave(
-                                      MapsStructure()->ExtractVector(increment_structure, 2)),
+    MapsCoupStruct()->InsertVector(InterfaceCouplingAdapterStructure()->MasterToSlave(
+                                       MapsCoupStruct()->ExtractVector(increment_structure, 2)),
         1, increment_structure);
+
+    if (Meshtying3DomainIntersection())
+    {
+      MapsCoupStruct3DomainIntersection()->InsertVector(
+          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
+              MapsCoupStruct3DomainIntersection()->ExtractVector(StructureField()->Dispnp(), 2)),
+          1, StructureField()->WriteAccessDispnp());
+      StructureField()->SetState(StructureField()->WriteAccessDispnp());
+      MapsCoupStruct3DomainIntersection()->InsertVector(
+          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
+              MapsCoupStruct3DomainIntersection()->ExtractVector(increment_structure, 2)),
+          1, increment_structure);
+    }
   }
 
   // update displacement of structure field
@@ -970,6 +867,17 @@ Teuchos::RCP<std::vector<int>> SSI::SSIMono::GetBlockPositions(Subproblem subpro
       }
       break;
     }
+    case Subproblem::manifold:
+    {
+      if (ScaTraManifold()->MatrixType() == LINALG::MatrixType::sparse)
+        block_position->emplace_back(2);
+      else
+      {
+        for (int i = 0; i < static_cast<int>(ScaTraManifold()->BlockMaps().NumMaps()); ++i)
+          block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps() + 1 + i);
+      }
+      break;
+    }
     default:
     {
       dserror("Unknown type of subproblem");
@@ -998,6 +906,11 @@ int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
       position = 0;
       break;
     }
+    case Subproblem::manifold:
+    {
+      position = 2;
+      break;
+    }
     default:
     {
       dserror("Unknown type of subproblem");
@@ -1006,4 +919,69 @@ int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
   }
 
   return position;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEquilibration()
+{
+  Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> equilibration_method_vector;
+  switch (matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+    {
+      equilibration_method_vector = Teuchos::rcp(
+          new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+      break;
+    }
+    case LINALG::MatrixType::block_field:
+    {
+      if (equilibration_method_.global != LINALG::EquilibrationMethod::local)
+      {
+        equilibration_method_vector = Teuchos::rcp(
+            new std::vector<LINALG::EquilibrationMethod>(1, equilibration_method_.global));
+      }
+      else if (equilibration_method_.structure == LINALG::EquilibrationMethod::none and
+               equilibration_method_.scatra == LINALG::EquilibrationMethod::none)
+      {
+        equilibration_method_vector = Teuchos::rcp(
+            new std::vector<LINALG::EquilibrationMethod>(1, LINALG::EquilibrationMethod::none));
+      }
+      else
+      {
+        auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
+        auto block_position_structure = GetBlockPositions(Subproblem::structure);
+        auto block_positions_scatra_manifold =
+            IsScaTraManifold() ? GetBlockPositions(Subproblem::manifold) : Teuchos::null;
+
+        equilibration_method_vector = Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(
+            block_positions_scatra->size() + block_position_structure->size() +
+                (IsScaTraManifold() ? block_positions_scatra_manifold->size() : 0),
+            LINALG::EquilibrationMethod::none));
+
+        for (const int block_position_scatra : *block_positions_scatra)
+          equilibration_method_vector->at(block_position_scatra) = equilibration_method_.scatra;
+
+        equilibration_method_vector->at(block_position_structure->at(0)) =
+            equilibration_method_.structure;
+
+        if (IsScaTraManifold())
+        {
+          for (const int block_position_scatra_manifold : *block_positions_scatra_manifold)
+          {
+            equilibration_method_vector->at(block_position_scatra_manifold) =
+                equilibration_method_.scatra;
+          }
+        }
+      }
+
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with system matrix field!");
+      break;
+    }
+  }
+  return equilibration_method_vector;
 }

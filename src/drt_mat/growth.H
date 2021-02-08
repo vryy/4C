@@ -37,7 +37,7 @@ namespace MAT
       Growth(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Growth() { ; }
+      ~Growth() override = default;
 
       /// @name material parameters
       //@{
@@ -54,7 +54,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class Growth
 
@@ -93,7 +93,7 @@ namespace MAT
 
       \sa DRT::ParObject
     */
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
     /*!
       \brief Pack this class so it can be communicated
@@ -101,7 +101,7 @@ namespace MAT
       \sa DRT::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -110,41 +110,44 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_growth_volumetric; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_growth_volumetric;
+    }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
+      if (kinem != INPAR::STR::kinem_nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const = 0;
+    Teuchos::RCP<Material> Clone() const override = 0;
 
     /// Setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse
     /// analysis)
-    void ResetAll(int numgp);
+    void ResetAll(int numgp) override;
 
     /// Update
-    void Update();
+    void Update() override;
 
     /// Reset time step
-    void ResetStep();
+    void ResetStep() override;
 
     /// Store history/internal variables
-    void StoreHistory(int timestep);
+    void StoreHistory(int timestep) override;
 
     /// Set history/internal variables
-    void SetHistory(int timestep);
+    void SetHistory(int timestep) override;
 
 
     //! @name Evaluation methods
@@ -172,7 +175,7 @@ namespace MAT
      */
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int gp, const int eleGID) = 0;
+        const int gp, const int eleGID) override = 0;
 
     /*! \brief Evaluate mass change
      *
@@ -197,7 +200,7 @@ namespace MAT
     void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int gp,
-        const int eleGID) = 0;
+        const int eleGID) override = 0;
 
     /*! \brief Evaluate elastic material stresses and cmat
      *
@@ -228,20 +231,20 @@ namespace MAT
     //@{
 
     /// Return density
-    double Density() const
+    double Density() const override
     {
       dserror("growth material needs gauss point data for density!");
       return -1.0;
     }
 
     // growth law-specific!
-    double Density(int gp) const;
+    double Density(int gp) const override;
 
     /// Return whether material has a varying material density
-    bool VaryingDensity() const;
+    bool VaryingDensity() const override;
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Growth* Parameter() const { return params_; }
+    MAT::PAR::Growth* Parameter() const override { return params_; }
 
     /// access to the elastic material
     const Teuchos::RCP<MAT::So3Material> Matelastic() const { return matelastic_; }
@@ -252,11 +255,8 @@ namespace MAT
     // read access to theta_
     Teuchos::RCP<const std::vector<double>> Theta() const { return theta_; }
 
-    /// Return theta at Gauss point
-    double Theta_atgp(int gp) const { return (*theta_)[gp]; }
-
     // Return thetaold at Gauss-point
-    double ThetaOld_atgp(int gp) const { return ThetaOld()->at(gp); }
+    double ThetaOldAtGp(int gp) const { return ThetaOld()->at(gp); }
 
     // read access to isinit_
     bool IsInit() const { return isinit_; }
@@ -297,11 +297,11 @@ namespace MAT
   class GrowthVolumetricType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "GrowthVolumetricType"; }
+    std::string Name() const override { return "GrowthVolumetricType"; }
 
     static GrowthVolumetricType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static GrowthVolumetricType instance_;
@@ -338,7 +338,10 @@ namespace MAT
 
       \sa DRT::ParObject
     */
-    int UniqueParObjectId() const { return GrowthVolumetricType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override
+    {
+      return GrowthVolumetricType::Instance().UniqueParObjectId();
+    }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -346,7 +349,7 @@ namespace MAT
       \sa DRT::ParObject
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -355,28 +358,31 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// return copy of this material object
-    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new GrowthVolumetric(*this)); }
+    Teuchos::RCP<Material> Clone() const override
+    {
+      return Teuchos::rcp(new GrowthVolumetric(*this));
+    }
 
     /// Setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// Update
-    void Update();
+    void Update() override;
 
     /// Reset internal variables to state in the beginning of the computation (needed for inverse
     /// analysis)
-    void ResetAll(int numgp);
+    void ResetAll(int numgp) override;
 
     /// Return names of visualization data
-    void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //! @name Evaluation methods
     //@{
@@ -403,7 +409,7 @@ namespace MAT
      */
     void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
-        const int gp, const int eleGID);
+        const int gp, const int eleGID) override;
 
     /// calculate stresses and elastic material tangent (both in Voigt notation)
     void GetSAndCmatdach(const double theta, const LINALG::Matrix<3, 3>* defgrd,
@@ -413,26 +419,6 @@ namespace MAT
     /// Function which reads in the given fiber value due to the FIBER1 nomenclature
     void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string specifier,
         LINALG::Matrix<3, 1>& fiber_vector);
-
-    /// pull back of a symmetric elastic 4th order tensor (in matrix/voigt notation)
-    /// via the 2th order deformation gradient (also in matrix notation)
-    static LINALG::Matrix<6, 6> PullBack4Tensor(
-        const LINALG::Matrix<3, 3>& defgr, const LINALG::Matrix<6, 6>& Cmat);
-
-    /// pull back the ijkl-th entry of a symmetric elastic 4th order tensor (in matrix/voigt
-    /// notation) via the 2th order deformation gradient (also in matrix notation)
-    static double PullBack4Tensorijkl(const LINALG::Matrix<3, 3>& defgr,
-        const double (&FourTensor)[3][3][3][3], const double& i, const double& j, const double& k,
-        const double& l);
-
-    // Setup 4-Tensor from 6x6 Voigt notation
-    static void Setup4Tensor(
-        double (&FourTensor)[3][3][3][3], const LINALG::Matrix<6, 6>& VoigtMatrix);
-
-    // Print Four Tensor
-    void PrintFourTensor(double (&FourTensor)[3][3][3][3]);
-
-
 
     /*! \brief Evaluate mass change
      *
@@ -457,7 +443,7 @@ namespace MAT
     void EvaluateNonLinMass(const LINALG::Matrix<3, 3>* defgrd,
         const LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         LINALG::Matrix<6, 1>* linmass_disp, LINALG::Matrix<6, 1>* linmass_vel, const int gp,
-        const int eleGID);
+        const int eleGID) override;
 
     /*! \brief evaluate the volumetric growth factor
      *
@@ -494,7 +480,7 @@ namespace MAT
     //@{
 
     /// Return quick accessible material parameter data
-    MAT::PAR::Growth* Parameter() const { return paramsVolumetric_; }
+    MAT::PAR::Growth* Parameter() const override { return paramsVolumetric_; }
 
     //@}
 

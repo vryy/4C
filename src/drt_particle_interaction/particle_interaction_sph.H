@@ -30,7 +30,7 @@ namespace PARTICLEINTERACTION
   class SPHPressure;
   class SPHTemperature;
   class SPHMomentum;
-  class SPHSurfaceTensionBase;
+  class SPHSurfaceTension;
   class SPHBoundaryParticleBase;
   class SPHOpenBoundaryBase;
   class SPHVirtualWallParticle;
@@ -86,14 +86,15 @@ namespace PARTICLEINTERACTION
     //! set initial states
     void SetInitialStates() override;
 
-    //! prepare time step
-    void PrepareTimeStep() override;
+    //! pre evaluate time step
+    void PreEvaluateTimeStep() override;
 
     //! evaluate particle interactions
     void EvaluateInteractions() override;
 
     //! post evaluate time step
-    void PostEvaluateTimeStep() override;
+    void PostEvaluateTimeStep(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) override;
 
     //! maximum interaction distance (on this processor)
     double MaxInteractionDistance() const override;
@@ -178,7 +179,7 @@ namespace PARTICLEINTERACTION
     std::unique_ptr<PARTICLEINTERACTION::SPHMomentum> momentum_;
 
     //! surface tension handler
-    std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTensionBase> surfacetension_;
+    std::unique_ptr<PARTICLEINTERACTION::SPHSurfaceTension> surfacetension_;
 
     //! boundary particle handler
     std::unique_ptr<PARTICLEINTERACTION::SPHBoundaryParticleBase> boundaryparticle_;

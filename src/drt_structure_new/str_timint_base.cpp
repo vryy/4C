@@ -14,7 +14,6 @@
 #include "str_factory.H"
 #include "str_model_evaluator_factory.H"
 #include "str_model_evaluator_data.H"
-#include "str_model_evaluator.H"
 #include "str_dbc.H"
 #include "str_integrator.H"
 #include "str_resulttest.H"
@@ -23,28 +22,24 @@
 #include "str_timint_basedataio_monitor_dbc.H"
 #include "str_enum_lists.H"
 
+#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
+
+#include "../drt_comm/comm_utils.H"
+
+#include "../drt_inpar/inpar_contact.H"
+
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
 
-#include "../drt_comm/comm_utils.H"
-
-#include "../drt_contact/contact_analytical.H"
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_inpar/inpar_structure.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
-#include "../drt_inpar/inpar_contact.H"
-#include "../drt_lib/drt_globalproblem.H"
-
-#include "../drt_beaminteraction/str_model_evaluator_beaminteraction.H"
-
-#include <Teuchos_ParameterList.hpp>
-
 #include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Teuchos_ParameterList.hpp>
 
 
 /*----------------------------------------------------------------------------*
@@ -88,9 +83,6 @@ void STR::TIMINT::Base::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO> dataio,
   // set isInit flag
   // ---------------------------------------------------------------------------
   isinit_ = true;
-
-  // good bye
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -150,9 +142,6 @@ void STR::TIMINT::Base::ResetStep()
   CheckInitSetup();
 
   int_ptr_->ResetStepState();
-
-  // I am gone
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -387,7 +376,7 @@ void STR::TIMINT::Base::InitializeEnergyFileStreamAndWriteHeaders()
   // write column headers to file
   dataio_->GetEnergyOutputStream() << std::setw(12) << "#timestep," << std::setw(24) << "time,";
 
-  for (auto& energy_data : evaldata.GetEnergyData())
+  for (const auto& energy_data : evaldata.GetEnergyData())
   {
     dataio_->GetEnergyOutputStream()
         << std::setw(36) << STR::EnergyType2String(energy_data.first) + ",";
@@ -419,9 +408,6 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
   // at some point we have to create a copy
   *step = dataglobalstate_->GetStepN();
   *time = dataglobalstate_->GetTimeN();
-  disnp = Teuchos::rcp(new Epetra_Vector(*dataglobalstate_->GetDisNp()));
-  velnp = Teuchos::rcp(new Epetra_Vector(*dataglobalstate_->GetVelNp()));
-  accnp = Teuchos::rcp(new Epetra_Vector(*dataglobalstate_->GetAccNp()));
   Teuchos::RCP<const DRT::Discretization> discret_ptr =
       Teuchos::rcp_dynamic_cast<const DRT::Discretization>(dataglobalstate_->GetDiscret());
   *elementdata = *(discret_ptr->PackMyElements());
@@ -431,8 +417,6 @@ void STR::TIMINT::Base::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<doub
   // hence if the model set is larger than one, we throw an error
   if (datasdyn_->GetModelTypes().size() > 1)
     dserror("The GetRestartData routine supports the structural model case ONLY!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -455,6 +439,11 @@ void STR::TIMINT::Base::PrepareOutput()
       int_ptr_->EvalData().SetElementVolumeData(elevolumes);
     }
   }
+  if (dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepNp()) or
+      dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepNp()))
+  {
+    int_ptr_->RuntimePreOutputStepState();
+  }
   // --- energy calculation ---------------------------------------------------
   if (dataio_->GetWriteEnergyEveryNStep() and
       (dataglobalstate_->GetStepNp() % dataio_->GetWriteEnergyEveryNStep() == 0))
@@ -468,7 +457,7 @@ void STR::TIMINT::Base::PrepareOutput()
     double energy_local = 0.0;
     double energy_global = 0.0;
 
-    for (auto& energy_data : evaldata.GetEnergyData())
+    for (const auto& energy_data : evaldata.GetEnergyData())
     {
       energy_local = energy_data.second;
 
@@ -541,14 +530,8 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output results during runtime ( not used for restart so far )
-  if ((dataio_->GetRuntimeVtkOutputParams() != Teuchos::null and
-          dataglobalstate_->GetStepN() %
-                  dataio_->GetRuntimeVtkOutputParams()->OutputIntervalInSteps() ==
-              0) or
-      (dataio_->GetRuntimeVtpOutputParams() != Teuchos::null and
-          dataglobalstate_->GetStepN() %
-                  dataio_->GetRuntimeVtpOutputParams()->OutputIntervalInSteps() ==
-              0))
+  if (dataio_->WriteRuntimeVtkResultsForThisStep(dataglobalstate_->GetStepN()) or
+      dataio_->WriteRuntimeVtpResultsForThisStep(dataglobalstate_->GetStepN()))
   {
     RuntimeOutputState();
   }
@@ -561,7 +544,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   }
 
   // output stress, strain and optional quantity
-  if ((forced_writerestart or dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN())) and
+  if (dataio_->WriteResultsForThisStep(dataglobalstate_->GetStepN()) and
       ((dataio_->GetStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetCouplingStressOutputType() != INPAR::STR::stress_none) or
           (dataio_->GetStrainOutputType() != INPAR::STR::strain_none) or
@@ -604,9 +587,6 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
   {
     // ToDo OutputPatspec()
   }
-
-  // what's next?
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -621,8 +601,6 @@ void STR::TIMINT::Base::NewIOStep(bool& datawritten)
 
     datawritten = true;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -664,7 +642,6 @@ void STR::TIMINT::Base::OutputState(IO::DiscretizationWriter& iowriter, bool wri
 void STR::TIMINT::Base::RuntimeOutputState()
 {
   CheckInitSetup();
-  int_ptr_->RuntimePreOutputStepState();
   int_ptr_->RuntimeOutputStepState();
 }
 
@@ -798,8 +775,6 @@ void STR::TIMINT::Base::OutputStressStrain()
   }
   // we don't need this anymore
   evaldata.MutablePlasticStrainDataPtr() = Teuchos::null;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -820,7 +795,7 @@ void STR::TIMINT::Base::OutputEnergy() const
 
     double total_energy = 0.0;
 
-    for (auto& energy_data : evaldata.GetEnergyData())
+    for (const auto& energy_data : evaldata.GetEnergyData())
     {
       energy_output_stream << std::setw(35) << energy_data.second << std::setw(1) << ",";
       total_energy += energy_data.second;
@@ -861,8 +836,6 @@ void STR::TIMINT::Base::OutputOptionalQuantity()
   }
   // we don't need this anymore
   evaldata.MutableOptQuantityDataPtr() = Teuchos::null;
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -872,22 +845,10 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
   CheckInitSetup();
 
   Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
-  // for multilevel monte carlo we do not need to write mesh in every run
-  if (dataio_->GetWriteReducedRestartEveryNStep() > 0)
-  {
-    // write restart output, please
-    NewIOStep(datawritten);
-    output_ptr->WriteVector("displacement", dataglobalstate_->GetDisN());
-    output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
-    output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());
-  }
-  else
-  {
-    // write restart output, please
-    if (dataglobalstate_->GetStepN() != 0)
-      output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
-    NewIOStep(datawritten);
-  }
+  // write restart output, please
+  if (dataglobalstate_->GetStepN() != 0)
+    output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
+  NewIOStep(datawritten);
 
   output_ptr->WriteElementData(dataio_->IsFirstOutputOfRun());
   output_ptr->WriteNodeData(dataio_->IsFirstOutputOfRun());
@@ -916,9 +877,6 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
         dataglobalstate_->GetStepN());
     fflush(dataio_->ErrorFilePtr());
   }
-
-  // we will say what we did
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -956,9 +914,6 @@ void STR::TIMINT::Base::AddRestartToOutputState()
         dataglobalstate_->GetStepN());
     fflush(dataio_->ErrorFilePtr());
   }
-
-  // we will say what we did
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1074,15 +1029,13 @@ void STR::TIMINT::Base::OutputErrorNorms()
   const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // get error calculation info
-  const INPAR::STR::CalcError calcerr =
-      DRT::INPUT::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
+  const auto calcerr = DRT::INPUT::IntegralValue<INPAR::STR::CalcError>(params, "CALCERROR");
 
   switch (calcerr)
   {
     case INPAR::STR::no_error_calculation:
     {
       return;
-      break;
     }
     case INPAR::STR::byfunct:
     {
@@ -1163,12 +1116,12 @@ void STR::TIMINT::Base::OutputErrorNorms()
       dserror("Cannot calculate error. Unknown type of analytical test problem");
       break;
   }
-
-  return;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::PostUpdate() { int_ptr_->PostUpdate(); }
+
+void STR::TIMINT::Base::PostTimeLoop() { int_ptr_->PostTimeLoop(); }
 
 bool STR::TIMINT::Base::HasFinalStateBeenWritten() const
 {

@@ -19,6 +19,7 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
 
 #include "../drt_ssi/ssi_monolithic.H"
 
@@ -29,10 +30,11 @@
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/17 |
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(const Teuchos::RCP<const SSI::SSIMono>
-        ssi_mono  //!< monolithic algorithm for scalar-structure interaction
-    )
-    : stresses_(Teuchos::null), ssi_mono_(ssi_mono)
+STR::MODELEVALUATOR::MonolithicSSI::MonolithicSSI(
+    const Teuchos::RCP<const SSI::SSIMono> ssi_mono, bool smooth_output_interface_stress)
+    : stresses_(Teuchos::null),
+      ssi_mono_(ssi_mono),
+      smooth_output_interface_stress_(smooth_output_interface_stress)
 {
 }
 
@@ -46,8 +48,7 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   const std::vector<char>& stressdata = EvalData().StressData();
 
   // initialize map for element-wise stresses
-  const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> stresses =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  const auto stresses = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
 
   // initialize position pointer
   std::vector<char>::size_type position(0);
@@ -56,8 +57,7 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   for (int i = 0; i < Discret().ElementRowMap()->NumMyElements(); ++i)
   {
     // initialize matrix for stresses associated with current element
-    const Teuchos::RCP<Epetra_SerialDenseMatrix> stresses_ele =
-        Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    const auto stresses_ele = Teuchos::rcp(new Epetra_SerialDenseMatrix);
 
     // extract stresses
     DRT::ParObject::ExtractfromPack(position, stressdata, *stresses_ele);
@@ -73,7 +73,7 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   exporter.Export(*stresses);
 
   // evaluate nodal stresses
-  stresses_->PutScalar(0.);
+  stresses_->PutScalar(0.0);
   Teuchos::ParameterList parameters;
   parameters.set("action", "postprocess_stress");
   parameters.set("gpstressmap", stresses);
@@ -82,53 +82,52 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   Discret().Evaluate(
       parameters, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
-  // initialize vectors for stresses and element numbers on slave and master sides of scatra-scatra
-  // coupling interfaces
-  const Teuchos::RCP<Epetra_MultiVector> stresses_slave(Teuchos::rcp(
-      new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2))),
-      stresses_master(Teuchos::rcp(new Epetra_MultiVector(
-          *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap(), 2)));
-  Epetra_IntVector numelement_slave(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap()),
-      numelement_master(*ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap());
-
-  // extract scatra-scatra interface coupling conditions
-  std::vector<DRT::Condition*> conditions;
-  Discret().GetCondition("S2ICoupling", conditions);
-
-  // loop over all scatra-scatra interface coupling conditions
-  for (auto& condition : conditions)
+  if (smooth_output_interface_stress_)
   {
-    // extract interface side
-    const int side = condition->GetInt("interface side");
+    // initialize vectors for stresses and element numbers on slave and master sides of
+    // scatra-scatra coupling interfaces
+    const auto stresses_slave(Teuchos::rcp(
+        new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
+    const auto stresses_master(Teuchos::rcp(new Epetra_MultiVector(
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap(), 2)));
+    Epetra_IntVector numelement_slave(
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    Epetra_IntVector numelement_master(
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap());
 
-    // set references depending on interface side
-    Epetra_MultiVector& stresses_vector =
-        side == INPAR::S2I::side_slave ? *stresses_slave : *stresses_master;
-    Epetra_IntVector& numelement_vector =
-        side == INPAR::S2I::side_slave ? numelement_slave : numelement_master;
+    // extract scatra-scatra interface coupling conditions
+    std::vector<DRT::Condition*> conditions;
+    Discret().GetCondition("S2ICoupling", conditions);
 
-    // extract nodal cloud of current condition
-    const std::vector<int>* const nodegids = condition->Nodes();
-    if (!nodegids or !nodegids->size())
-      dserror("Scatra-scatra interface coupling condition does not have a nodal cloud!");
-
-    // loop over all nodes
-    for (int nodegid : *nodegids)
+    // loop over all scatra-scatra interface coupling conditions
+    for (auto& condition : conditions)
     {
-      // extract global ID of current node
-      // process only nodes stored on calling processor
-      if (Discret().HaveGlobalNode(nodegid))
-      {
-        // extract node
-        const DRT::Node* const node = Discret().gNode(nodegid);
-        if (node == nullptr) dserror("Couldn't find node!");
+      // extract interface side
+      const int side = condition->GetInt("interface side");
 
+      // set references depending on interface side
+      Epetra_MultiVector& stresses_vector =
+          side == INPAR::S2I::side_slave ? *stresses_slave : *stresses_master;
+      Epetra_IntVector& numelement_vector =
+          side == INPAR::S2I::side_slave ? numelement_slave : numelement_master;
+
+      // extract nodal cloud of current condition
+      const std::vector<int>* const nodegids = condition->Nodes();
+      if (!nodegids or !nodegids->size())
+        dserror("Scatra-scatra interface coupling condition does not have a nodal cloud!");
+
+      // loop over all nodes
+      for (int nodegid : *nodegids)
+      {
         // process only nodes owned by calling processor
-        if (node->Owner() == Discret().Comm().MyPID())
+        if (DRT::UTILS::IsNodeGIDOnThisProc(Discret(), nodegid))
         {
           // extract local ID of current node
           const int nodelid = Discret().NodeRowMap()->LID(nodegid);
           if (nodelid < 0) dserror("Local ID not found!");
+
+          // extract node
+          const DRT::Node* const node = Discret().gNode(nodegid);
 
           // extract global ID of first degree of freedom associated with current node
           const int dofgid = Discret().Dof(0, node, 0);
@@ -155,58 +154,55 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
         }
       }
     }
-  }
 
-  // communicate vectors from master to slave side
-  const Teuchos::RCP<Epetra_MultiVector> stresses_temp(Teuchos::rcp(
-      new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
-  Epetra_IntVector numelement_temp(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
-  ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(stresses_master, stresses_temp);
-  ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(numelement_master, numelement_temp);
+    // communicate vectors from master to slave side
+    const auto stresses_master_to_slave(Teuchos::rcp(
+        new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
+    Epetra_IntVector numelement_master_to_slave(
+        *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(
+        stresses_master, stresses_master_to_slave);
+    ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(
+        numelement_master, numelement_master_to_slave);
 
-  // add stresses together
-  stresses_slave->Update(1., *stresses_temp, 1.);
+    // add stresses together
+    stresses_slave->Update(1.0, *stresses_master_to_slave, 1.0);
 
-  // unscale stresses
-  for (int lid = 0; lid < stresses_slave->MyLength(); ++lid)
-    for (int ivec = 0; ivec < 2; ++ivec)
-      (*(*stresses_slave)(ivec))[lid] /= numelement_slave[lid] + numelement_temp[lid];
+    // unscale stresses
+    for (int lid = 0; lid < stresses_slave->MyLength(); ++lid)
+      for (int ivec = 0; ivec < 2; ++ivec)
+        (*(*stresses_slave)(ivec))[lid] /= numelement_slave[lid] + numelement_master_to_slave[lid];
 
-  // communicate back
-  ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveToMaster(stresses_slave, stresses_master);
+    // communicate back
+    ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveToMaster(stresses_slave, stresses_master);
 
-  // loop over all scatra-scatra interface coupling conditions
-  for (auto& condition : conditions)
-  {
-    // extract interface side
-    const int side = condition->GetInt("interface side");
-
-    // set reference depending on interface side
-    Epetra_MultiVector& stresses_vector =
-        side == INPAR::S2I::side_slave ? *stresses_slave : *stresses_master;
-
-    // extract nodal cloud of current condition
-    const std::vector<int>* const nodegids = condition->Nodes();
-    if (!nodegids or !nodegids->size())
-      dserror("Scatra-scatra interface coupling condition does not have a nodal cloud!");
-
-    // loop over all nodes
-    for (int nodegid : *nodegids)
+    // loop over all scatra-scatra interface coupling conditions
+    for (auto& condition : conditions)
     {
-      // extract global ID of current node
-      // process only nodes stored on calling processor
-      if (Discret().HaveGlobalNode(nodegid))
-      {
-        // extract node
-        const DRT::Node* const node = Discret().gNode(nodegid);
-        if (node == nullptr) dserror("Couldn't find node!");
+      // extract interface side
+      const int side = condition->GetInt("interface side");
 
+      // set reference depending on interface side
+      Epetra_MultiVector& stresses_vector =
+          side == INPAR::S2I::side_slave ? *stresses_slave : *stresses_master;
+
+      // extract nodal cloud of current condition
+      const std::vector<int>* const nodegids = condition->Nodes();
+      if (!nodegids or !nodegids->size())
+        dserror("Scatra-scatra interface coupling condition does not have a nodal cloud!");
+
+      // loop over all nodes
+      for (int nodegid : *nodegids)
+      {
         // process only nodes owned by calling processor
-        if (node->Owner() == Discret().Comm().MyPID())
+        if (DRT::UTILS::IsNodeGIDOnThisProc(Discret(), nodegid))
         {
           // extract local ID of current node
           const int nodelid = Discret().NodeRowMap()->LID(nodegid);
           if (nodelid < 0) dserror("Local ID not found!");
+
+          // extract node
+          const DRT::Node* const node = Discret().gNode(nodegid);
 
           // extract global ID of first degree of freedom associated with current node
           const int dofgid = Discret().Dof(0, node, 0);

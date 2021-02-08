@@ -36,12 +36,9 @@ namespace FBI
   {
    private:
     /// constructor
-    PairFactory(){};
+    PairFactory() = delete;
 
    public:
-    /// destructor
-    ~PairFactory(){};
-
     /**
      *  \brief Creates the appropriate beam to fluid meshtying pair for the desired
      * discretization

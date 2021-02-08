@@ -12,6 +12,7 @@
       <PDataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="normal_averaged" NumberOfComponents="3" format="ascii"/>
       <PDataArray type="Float64" Name="normal_element" NumberOfComponents="3" format="ascii"/>
+      <PDataArray type="Float64" Name="uid_0_face_id" format="ascii"/>
     </PPointData>
     <Piece Source="beam-to-solid-surface-averaged-normals-000003-0.vtu"/>
   </PUnstructuredGrid>

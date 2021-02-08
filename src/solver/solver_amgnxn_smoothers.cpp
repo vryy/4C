@@ -443,7 +443,11 @@ void LINALG::SOLVER::AMGNXN::MueluAMGWrapper::BuildHierarchy()
   if (A_crs == Teuchos::null)
     dserror("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
+#ifdef TRILINOS_DEVELOP
+      Teuchos::rcp(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(A_crs));
+#else
       Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A_crs));
+#endif
   Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA_wrap =
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>(mueluA));
   Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluOp =

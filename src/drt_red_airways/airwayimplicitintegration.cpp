@@ -28,7 +28,6 @@
 #include "../drt_lib/drt_function.H"
 #include "../drt_io/io_control.H"
 #include "../drt_mat/maxwell_0d_acinus_Ogden.H"
-#include "../drt_mlmc/mc_utils.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 01/10|
@@ -724,12 +723,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeStep(
   // Update solution: current solution becomes old solution of next timestep
   TimeUpdate();
 
-  // Output for UQ Problemtype
-  if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
-  {
-    // CouplingTo3DParams are used to hand over UQ run information
-    OutputUQ(CouplingTo3DParams);
-  }
 
   // Normal red_airway Output
   if (!CoupledTo3D)
@@ -1965,13 +1958,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
       if (err) dserror("Export using exporter returned err=%d", err);
       output_.WriteVector("acini_v0", qexp_);
     }
-    if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
-    {
-      Epetra_Export exporter(acini_max_strain_location_->Map(), qexp_->Map());
-      int err = qexp_->Export(*acini_max_strain_location_, exporter, Zero);
-      if (err) dserror("Export using exporter returned err=%d", err);
-      output_.WriteVector("acini_max_strain_location", qexp_);
-    }
 
     if (step_ == upres_)
     {
@@ -2105,11 +2091,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
     output_.WriteVector("acini_volumetric_strain", qexp_);
     LINALG::Export(*acini_e_volume0_, *qexp_);
     output_.WriteVector("acini_v0", qexp_);
-    if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
-    {
-      LINALG::Export(*acini_max_strain_location_, *qexp_);
-      output_.WriteVector("acini_max_strain_location", qexp_);
-    }
 
     // write mesh in each restart step --- the elements are required since
     // they contain history variables (the time dependent subscales)
@@ -2132,157 +2113,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(
   }
   return;
 }  // RedAirwayImplicitTimeInt::Output
-
-
-/*----------------------------------------------------------------------*
- | Output for UQ Problemtype                                 mundt 02/15|
- *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::OutputUQ(Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
-{
-#ifdef HAVE_FFTW
-  // Calculate total lung volume
-
-
-  double lung_volume_np = 0.0;
-  bool err = this->SumAllColElemVal(acini_e_volumenp_, acini_bc_, lung_volume_np);
-  if (err)
-  {
-    dserror("Error by summing all acinar volumes");
-  }
-
-  // Calculate maximal volumetric strain
-
-  // vector for volumetric strains
-  Teuchos::RCP<std::vector<double>> vol_strain = Teuchos::rcp(new std::vector<double>);
-  // vector for kappa values
-  Teuchos::RCP<std::vector<double>> kappa = Teuchos::rcp(new std::vector<double>);
-  // vector for corresponding element ids
-  Teuchos::RCP<std::vector<int>> ele_Id = Teuchos::rcp(new std::vector<int>);
-
-  // loop over number of elements (on processor)
-  for (int i = 0; i < (discret_->NumMyColElements()); i++)
-  {
-    if ((*generations_)[i] == -1)
-    {
-      if ((*acini_e_volume0_)[i] != 0)
-      {
-        int GID = discret_->ElementColMap()->GID(i);  // global element ID
-
-        // Volumetric strain
-        vol_strain->push_back((*acini_e_volume_strain_)[i]);
-
-        // Kappa
-        Teuchos::RCP<MAT::Maxwell_0d_acinus_Ogden> mymat =
-            Teuchos::rcp_dynamic_cast<MAT::Maxwell_0d_acinus_Ogden>(
-                discret_->gElement(GID)->Material(0));
-        kappa->push_back(mymat->GetParams("kappa"));
-
-        // Global element ID
-        ele_Id->push_back(GID);  // get global element id
-      }
-      else
-      {
-        dserror("Acini with initial volume 0");
-      }
-    }
-  }
-
-  Teuchos::RCP<std::pair<double, std::pair<int, double>>> vol_strain_max =
-      Teuchos::rcp(new std::pair<double, std::pair<int, double>>);
-  Teuchos::RCP<std::pair<double, std::pair<int, double>>> vol_strain_quantile99 =
-      Teuchos::rcp(new std::pair<double, std::pair<int, double>>);
-  Teuchos::RCP<std::pair<double, std::pair<int, double>>> kappa_max =
-      Teuchos::rcp(new std::pair<double, std::pair<int, double>>);
-  Teuchos::RCP<std::pair<double, std::pair<int, double>>> kappa_quantile99 =
-      Teuchos::rcp(new std::pair<double, std::pair<int, double>>);
-  Teuchos::RCP<std::pair<double, std::pair<int, double>>> kappa_min =
-      Teuchos::rcp(new std::pair<double, std::pair<int, double>>);
-
-  // calculate total number of acini for ComputePeakAndQuantile function
-  int tot_num_elements = 0;  // total number of acini
-  for (int i = 0; i < (discret_->NumMyColElements()); i++)
-  {
-    if ((*generations_)[i] == -1)
-    {
-      ++tot_num_elements;
-    }
-  }
-
-  // Use UQ utility ComputePeakAndQuantile to compute min/max and quantile with corresponding ele
-  // Id and kappa/max strain
-  UQ::ComputePeakAndQuantile(vol_strain, kappa, ele_Id, vol_strain_max, vol_strain_quantile99,
-      tot_num_elements, "max",
-      discret_->Comm());  // maximum search mode
-  UQ::ComputePeakAndQuantile(kappa, vol_strain, ele_Id, kappa_min, kappa_quantile99,
-      tot_num_elements, "min",
-      discret_->Comm());  // minimum search mode
-  UQ::ComputePeakAndQuantile(kappa, vol_strain, ele_Id, kappa_max, kappa_quantile99,
-      tot_num_elements, "max",
-      discret_->Comm());  // maximum search mode */
-
-  // Update location of max strain
-  // first reset vector to all 0s
-  acini_max_strain_location_->PutScalar(0.0);
-  // then write 1 at location of max volumetric strain
-  acini_max_strain_location_->ReplaceGlobalValue(vol_strain_max->second.first, 0, 1);
-
-  // File Output
-  if (discret_->Comm().MyPID() == 0)
-  {
-    std::string filename = DRT::Problem::Instance()->OutputControlFile()->FileName();
-    std::stringstream outputfile;
-
-    // if the OUTPUT_BIN option in the dat file is set to no, to create only minimal output,
-    // the filename is not automatically changed to include the number of the UQ run, so
-    // this info is handed over through the CouplingParams
-    if (!DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(), "OUTPUT_BIN"))
-    {
-      int numb_run = CouplingParams->get<int>("run");
-      outputfile << filename << "_run_" << numb_run << "_volumetric_strain_max_values.txt";
-    }
-    else
-    {
-      outputfile << filename << "_volumetric_strain_max_values.txt";
-    }
-
-    filename = outputfile.str();
-    std::ofstream myfile;
-    if (step_ == 1)
-    {
-      myfile.open(filename.c_str(), std::ios::out);
-      if (myfile.is_open())
-      {
-        myfile << "Step,Time,LungVol,EleId,Strain_Max,Kappa,EleId,Strain99,Kappa,EleId,Strain,"
-                  "Kappa_Min,EleId,Strain,Kappa_Max"
-               << std::endl;
-        myfile.close();
-      }
-      else
-      {
-        dserror("Unable to open output file for volumetric strain maxima");
-      }
-    }
-    // reopen in append mode
-    myfile.open(filename.c_str(), std::ios::app);
-
-    // to be consistent with other output from red_airways simulation, all volumetric strain
-    // values are reduced by 1, all Element Ids are increased by 1. (vol_strain -= 1, eleId += 1)
-
-    myfile << step_ << "," << time_ << "," << lung_volume_np << ","
-           << vol_strain_max->second.first + 1 << "," << vol_strain_max->first << ","
-           << vol_strain_max->second.second << "," << vol_strain_quantile99->second.first + 1 << ","
-           << vol_strain_quantile99->first << "," << vol_strain_quantile99->second.second << ","
-           << kappa_min->second.first + 1 << "," << kappa_min->second.second << ","
-           << kappa_min->first << "," << kappa_max->second.first + 1 << ","
-           << kappa_max->second.second << "," << kappa_max->first << std::endl;
-    myfile.close();
-  }
-  discret_->Comm().Barrier();
-#else
-  dserror("Requires FFTW");
-#endif
-}
-
 
 /*----------------------------------------------------------------------*
  | ReadRestart (public)                                     ismail 01/10|
@@ -2317,11 +2147,6 @@ void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
   LINALG::Export(*qexp_, *acini_e_volume_strain_);
   reader.ReadVector(qexp_, "acini_v0");
   LINALG::Export(*qexp_, *acini_e_volume0_);
-  if (DRT::Problem::Instance()->GetProblemType() == prb_uq)
-  {
-    reader.ReadVector(qexp_, "acini_max_strain_location");
-    LINALG::Export(*qexp_, *acini_max_strain_location_);
-  }
 
   reader.ReadVector(qexp_, "qin_nm");
   LINALG::Export(*qexp_, *qin_nm_);

@@ -20,6 +20,7 @@ fluid-beam interaction)
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include <Epetra_Vector.h>
 
@@ -43,7 +44,7 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
   }
 }
 
-Teuchos::RCP<const LINALG::SparseMatrix>
+Teuchos::RCP<const LINALG::SparseOperator>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix

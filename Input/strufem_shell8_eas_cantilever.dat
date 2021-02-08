@@ -1,5 +1,3 @@
-//
-//
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -24,11 +22,6 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-THERM_TEMPERATURE               No
-THERM_HEATFLUX                  No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -39,9 +32,6 @@ NLNSOL                          fullnewton
 TIMESTEP                        0.0025
 NUMSTEP                         30
 MAXTIME                         0.075
-DAMPING                         No
-M_DAMP                          0.0
-K_DAMP                          0.0
 PREDICT                         ConstDisVelAcc
 NORM_DISP                       Abs
 NORM_RESF                       Abs
@@ -63,17 +53,12 @@ AZOUTPUT                        0
 AZSOLVE                         CG
 AZPREC                          ML
 AZREUSE                         10
-AZDROP                          0.0
-IFPACKFILL                      1.0
-IFPACKGFILL                     0
 AZTOL                           1.0E-3
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
 AZOMEGA                         1.0
 AZGRAPH                         1
-AZPOLY                          5
-IFPACKOVERLAP                   0
 AZSCAL                          infnorm
 ML_PRINT                        0
 ML_MAXCOARSESIZE                1
@@ -97,21 +82,23 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1.5 VALU
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1.5 VALUES 0 6 0 0
+----------------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 65 QUANTITY dispx VALUE -9.26827766664614465e-03 TOLERANCE 1.0e-7
+STRUCTURE DIS structure NODE 65 QUANTITY dispy VALUE -5.16507789497255287e-01 TOLERANCE 1.0e-7
+STRUCTURE DIS structure NODE 65 QUANTITY dispz VALUE 1.69251200674458824e-05 TOLERANCE 1.0e-7
+STRUCTURE SPECIAL QUANTITY lin_iters VALUE 25 TOLERANCE 1.0e-13
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
 NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           1
 E 3 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DLINE                           1
 E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 2 2 2 2 2 2 Live Mid
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
-// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
 DSURF                           1
 E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 -1.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
@@ -735,7 +722,6 @@ NODE 387 DSURFACE 1
 NODE 391 DSURFACE 1
 NODE 395 DSURFACE 1
 NODE 399 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
@@ -1442,7 +1428,4 @@ NODE 404 COORD 1.000000000000000e+02 0.000000000000000e+00 1.000000000000000e+01
 298 SHELL8 QUAD4 395 396 392 391 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0 VOLC XYZ
 299 SHELL8 QUAD4 399 400 396 395 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0 VOLC XYZ
 300 SHELL8 QUAD4 403 404 400 399 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0 VOLC XYZ
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
-//                              END

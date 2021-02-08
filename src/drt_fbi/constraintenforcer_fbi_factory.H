@@ -33,12 +33,9 @@ namespace ADAPTER
   {
    private:
     /// constructor
-    ConstraintEnforcerFactory(){};
+    ConstraintEnforcerFactory() = delete;
 
    public:
-    /// destructor
-    ~ConstraintEnforcerFactory(){};
-
     /**
      *  \brief Creates the appropriate constraint enforcement strategy
      *

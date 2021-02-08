@@ -82,10 +82,11 @@ namespace DRT
     \param dis_template        (i) : discretization with parallel distr., serving as template
     \param dis_to_redistribute (i) : discretization which is redistributed matching to dis_template
     \param condname_template   (i) : condition on template dis with template distribution
-    \param condname_redistribute (i) : condition on elements to be redistributed */
+    \param condname_redistribute (i) : condition on elements to be redistributed
+     \param print  (i) : print elemental and nodal redistribution */
     void MatchElementDistributionOfMatchingConditionedElements(DRT::Discretization& dis_template,
         DRT::Discretization& dis_to_redistribute, const std::string& condname_template,
-        const std::string& condname_redistribute);
+        const std::string& condname_redistribute, bool print = false);
 
     /// print information about parallel mesh distribution
     void PrintParallelDistribution(const DRT::Discretization& dis);

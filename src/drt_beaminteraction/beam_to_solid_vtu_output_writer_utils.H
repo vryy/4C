@@ -14,6 +14,7 @@
 
 
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 #include <vector>
 #include <unordered_map>
 
@@ -47,13 +48,14 @@ namespace BEAMINTERACTION
    * @param discret_ptr (in) Pointer to the discretization.
    * @param displacement (in) Global displacement vector.
    * @param force (in) Global force vector.
+   * @param write_unique_ids (in) If unique IDs should be written.
    */
   void AddBeamInteractionNodalForces(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
           output_writer_base_ptr,
       const Teuchos::RCP<const DRT::Discretization>& discret_ptr,
       const Teuchos::RCP<const Epetra_MultiVector>& displacement,
-      const Teuchos::RCP<const Epetra_MultiVector>& force);
+      const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);
 
   /**
    * \brief Add the averaged normal fields to the output writer.
@@ -62,12 +64,13 @@ namespace BEAMINTERACTION
    * writer.
    * @param condition_coupling_id (in) Id of the coupling condition that this normal filed is part
    * of.
+   * @param write_unique_ids (in) If unique IDs should be written.
    */
   void AddAveragedNodalNormals(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization>&
           output_writer_base_ptr,
       const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
-      const int condition_coupling_id);
+      const int condition_coupling_id, const bool write_unique_ids = false);
 
   /**
    * \brief Split the discrete coupling forces into beam and solid ones and then calculate the

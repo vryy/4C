@@ -51,11 +51,11 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
-      virtual ~ScaTraEleCalcElchElectrode() { return; }
+      ~ScaTraEleCalcElchElectrode() override = default;
 
       //! abbreviations
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElch<distype> myelch;
+      using my = ScaTraEleCalc<distype>;
+      using myelch = ScaTraEleCalcElch<distype>;
 
       /*========================================================================*/
       //! @name general framework
@@ -93,10 +93,7 @@ namespace DRT
           const std::vector<int>& lm,           //!< location vector
           Epetra_SerialDenseMatrix& emat,       //!< element matrix to calculate
           Epetra_SerialDenseVector& erhs        //!< element rhs to calculate
-      )
-      {
-        return;
-      };
+      ){};
 
       /*========================================================================*/
       //! @name material and related and related functions
@@ -239,10 +236,10 @@ namespace DRT
             cond_(0.0),
             derivcond_(numscal, 0.0)
       {
-        return;
       }
 
-      virtual ~ScaTraEleDiffManagerElchElectrode() { return; };
+      ~ScaTraEleDiffManagerElchElectrode() override = default;
+      ;
 
       /*========================================================================*/
       //! @name access methods
@@ -252,28 +249,19 @@ namespace DRT
       void SetDerivIsoDiffCoef(const double derivdiff, const int k, const int iscal)
       {
         (derivdiff_[k])[iscal] = derivdiff;
-        return;
       };
 
       //! Access routine for derivative of diffusion coefficients with respect to concentrations
       double GetDerivIsoDiffCoef(const int k, const int iscal) { return (derivdiff_[k])[iscal]; };
 
       //! Set conductivity of the electrolyte solution
-      void SetCond(const double cond)
-      {
-        cond_ = cond;
-        return;
-      };
+      void SetCond(const double cond) { cond_ = cond; };
 
       //! Access routine for conductivity of the electrolyte solution
       double GetCond() { return cond_; };
 
       //! Set derivative of the conductivity with respect to concentrations
-      void SetDerivCond(const double derivcond, const int k)
-      {
-        derivcond_[k] = derivcond;
-        return;
-      };
+      void SetDerivCond(const double derivcond, const int k) { derivcond_[k] = derivcond; };
 
       //! Access routine for derivative of the conductivity with respect to concentrations
       double GetDerivCond(const int k) { return derivcond_[k]; };
@@ -303,8 +291,6 @@ namespace DRT
         for (int k = 0; k < numscal; ++k)
           std::cout << "derivative of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
         std::cout << std::endl;
-
-        return;
       };
 
      protected:
@@ -332,8 +318,8 @@ namespace DRT
         : public ScaTraEleInternalVariableManagerElch<NSD, NEN>
     {
      public:
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> vm;
-      typedef ScaTraEleInternalVariableManagerElch<NSD, NEN> vmelch;
+      using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
+      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
 
       //! constructor
       ScaTraEleInternalVariableManagerElchElectrode(
@@ -341,11 +327,10 @@ namespace DRT
           : ScaTraEleInternalVariableManagerElch<NSD, NEN>(numscal, elchpara),
             invf_(1. / vmelch::parameters_->Faraday())
       {
-        return;
       }
 
       //! destructor
-      virtual ~ScaTraEleInternalVariableManagerElchElectrode() { return; };
+      ~ScaTraEleInternalVariableManagerElchElectrode() override = default;
 
       //! compute and set internal electrode-specific variables
       void SetInternalVariablesElchElectrode(
@@ -363,8 +348,27 @@ namespace DRT
       {
         // set internal variables in base variable manager
         vmelch::SetInternalVariablesElch(funct, derxy, ephinp, ephin, econvelnp, ehist);
+      };
 
-        return;
+      //! compute and set internal electrode-specific variables for evaluation of SOC and Crate
+      void SetInternalVariablesElchElectrodeSOCAndCRate(
+          const LINALG::Matrix<NEN, 1>& funct,  //!< array for shape functions
+          const LINALG::Matrix<NSD, NEN>&
+              derxy,  //!< global derivatives of shape functions w.r.t x,y,z
+          const std::vector<LINALG::Matrix<NEN, 1>>&
+              ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
+          const std::vector<LINALG::Matrix<NEN, 1>>& ephin,  //!< nodal state variables at t_(n)
+          const LINALG::Matrix<NSD, NEN>&
+              econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
+          const std::vector<LINALG::Matrix<NEN, 1>>&
+              ehist  //!< history vector of transported scalars
+      )
+      {
+        // FRT not needed for calculation of SOC and C Rate. Temperature is not extracted in case of
+        // non constant temperatures,
+        const bool do_setfrt = false;
+        // set internal variables in base variable manager
+        vmelch::SetInternalVariablesElch(funct, derxy, ephinp, ephin, econvelnp, ehist, do_setfrt);
       };
 
       //! return constant parameter 1./F
