@@ -75,39 +75,35 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
  *--------------------------------------------------------------------------*/
 void SSTI::SSTIMono::AssembleMatAndRHS()
 {
+  ssti_matrices_->SystemMatrix()->Zero();
+
   double starttime = timer_->WallTime();
 
   // assemble blocks of subproblems into system matrix
-  strategy_assemble_->AssembleScatraDomain(
+  strategy_assemble_->AssembleScatra(
       ssti_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
-  strategy_assemble_->AssembleStructureDomain(
+  strategy_assemble_->AssembleStructure(
       ssti_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
-  strategy_assemble_->AssembleThermoDomain(
+  strategy_assemble_->AssembleThermo(
       ssti_matrices_->SystemMatrix(), ThermoField()->SystemMatrixOperator());
 
   // assemble domain contributions from coupling into system matrix
-  strategy_assemble_->AssembleScatraStructureDomain(
-      ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraStructureDomain());
-  strategy_assemble_->AssembleStructureScatraDomain(
+  strategy_assemble_->AssembleScatraStructure(ssti_matrices_->SystemMatrix(),
+      ssti_matrices_->ScaTraStructureDomain(), ssti_matrices_->ScaTraStructureInterface());
+  strategy_assemble_->AssembleStructureScatra(
       ssti_matrices_->SystemMatrix(), ssti_matrices_->StructureScaTraDomain());
-  strategy_assemble_->AssembleThermoStructureDomain(
-      ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoStructureDomain());
-  strategy_assemble_->AssembleStructureThermoDomain(
+  strategy_assemble_->AssembleThermoStructure(ssti_matrices_->SystemMatrix(),
+      ssti_matrices_->ThermoStructureDomain(), ssti_matrices_->ThermoStructureInterface());
+  strategy_assemble_->AssembleStructureThermo(
       ssti_matrices_->SystemMatrix(), ssti_matrices_->StructureThermoDomain());
-  strategy_assemble_->AssembleThermoScatraDomain(
-      ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoScaTraDomain());
+  strategy_assemble_->AssembleThermoScatra(ssti_matrices_->SystemMatrix(),
+      ssti_matrices_->ThermoScaTraDomain(), ssti_matrices_->ThermoScaTraIntefrace());
 
   // assemble interface contributions from coupling into system matrix
   if (InterfaceMeshtying())
   {
-    strategy_assemble_->AssembleScatraStructureInterface(
-        ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraStructureInterface());
-    strategy_assemble_->AssembleThermoStructureInterface(
-        ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoStructureInterface());
     strategy_assemble_->AssembleScatraThermoInterface(
         ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraThermoInterface());
-    strategy_assemble_->AssembleThermoScatraInterface(
-        ssti_matrices_->SystemMatrix(), ssti_matrices_->ThermoScaTraIntefrace());
   }
 
   // apply meshtying on structural linearizations
