@@ -280,7 +280,7 @@ cd "$BACI_HOME"
 if [[ $ADAPT_IDE_CLION == 1 ]]; then
   if [ -f .idea/workspace.xml ]; then
     CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
-    ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
+    ./utilities/baci-python-venv/bin/python ./utilities/ides/adapt_clion_idea.py "$CMAKE_FULL_ARGS_STRING" "$BUILD_TYPE" ".idea/workspace.xml"
   else
     echo "The option --ide=clion is set but no .idea/workspace.xml file could be found!"
   fi
@@ -299,7 +299,7 @@ fi
 if [[ $ADAPT_IDE_VSCODE == 1 ]]; then
   if [ -d .vscode ]; then
     CMAKE_FULL_ARGS_STRING="${CMAKE_FULL_ARGS[*]}"
-    ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING"
+    ./utilities/baci-python-venv/bin/python ./utilities/ides/adapt_vscode.py "${BACI_HOME}" "$BUILD_FOLDER" "$CMAKE_FULL_ARGS_STRING"
   else
     echo "The option --ide=vscode is set but no .vscode directory could be found!"
   fi
