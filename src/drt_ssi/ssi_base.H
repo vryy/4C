@@ -390,9 +390,6 @@ namespace SSI
     //! a zero vector of full length with structure dofs
     Teuchos::RCP<Epetra_Vector> zeros_structure_;
 
-    //! a zero vector of full length with structure dofs on manifold
-    Teuchos::RCP<Epetra_Vector> zeros_structure_manifold_;
-
   };  // SSI_Base
 }  // namespace SSI
 #endif /* SSI_BASE_H_ */
