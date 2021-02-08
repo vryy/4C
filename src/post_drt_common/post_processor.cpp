@@ -820,9 +820,8 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       const int numfields = problem.num_discr();
 
-      PostField* scatrafield =
-          problem.get_discretization(0);  // remark: scalar transport discretization number is one
-                                          // for old structural time integration!
+      // remark: scalar transport discretization number is one for old structural time integration!
+      PostField* scatrafield = problem.get_discretization(0);
       ScaTraFilter scatrawriter(scatrafield, basename);
       scatrawriter.WriteFiles();
 
@@ -842,9 +841,9 @@ void runEnsightVtuFilter(PostProblem& problem)
             structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
-        PostField* scatra_surfacefiled = problem.get_discretization(1);
-        ScaTraFilter scatra_surfacefiledwrite(scatra_surfacefiled, basename);
-        scatra_surfacefiledwrite.WriteFiles();
+        PostField* scatra_manifoldfield = problem.get_discretization(1);
+        ScaTraFilter scatra_manifoldfieldwriter(scatra_manifoldfield, basename);
+        scatra_manifoldfieldwriter.WriteFiles();
       }
       else
         dserror("Unknwon number of solution fields");
