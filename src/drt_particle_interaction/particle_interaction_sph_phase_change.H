@@ -76,29 +76,7 @@ namespace PARTICLEINTERACTION
 
     //! equation of state bundle
     std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle_;
-  };
 
-  class SPHPhaseChangeTwoWayScalar : public SPHPhaseChangeBase
-  {
-   public:
-    //! constructor
-    explicit SPHPhaseChangeTwoWayScalar(const Teuchos::ParameterList& params);
-
-    //! init phase change handler
-    void Init() override;
-
-    //! setup phase change handler
-    void Setup(
-        const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-        const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-        const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
-        override;
-
-    //! evaluate phase change
-    void EvaluatePhaseChange(
-        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
-
-   private:
     //! phase below transition value
     PARTICLEENGINE::TypeEnum belowphase_;
 
@@ -110,6 +88,17 @@ namespace PARTICLEINTERACTION
 
     //! transition value of phase change
     double transitionvalue_;
+  };
+
+  class SPHPhaseChangeTwoWayScalar : public SPHPhaseChangeBase
+  {
+   public:
+    //! constructor
+    explicit SPHPhaseChangeTwoWayScalar(const Teuchos::ParameterList& params);
+
+    //! evaluate phase change
+    void EvaluatePhaseChange(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
   };
 
 }  // namespace PARTICLEINTERACTION

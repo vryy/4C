@@ -24,37 +24,7 @@
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::ParameterList& params)
-    : params_sph_(params)
-{
-  // empty constructor
-}
-
-void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
-{
-  // nothing to do
-}
-
-void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
-    const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
-    const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
-    const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
-{
-  // set interface to particle engine
-  particleengineinterface_ = particleengineinterface;
-
-  // set particle container bundle
-  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
-
-  // set particle material handler
-  particlematerial_ = particlematerial;
-
-  // set equation of state handler
-  equationofstatebundle_ = equationofstatebundle;
-}
-
-PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
-    const Teuchos::ParameterList& params)
-    : SPHPhaseChangeBase::SPHPhaseChangeBase(params),
+    : params_sph_(params),
       belowphase_(PARTICLEENGINE::Phase1),
       abovephase_(PARTICLEENGINE::Phase2),
       transitionstate_(PARTICLEENGINE::Density),
@@ -63,11 +33,8 @@ PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
   // empty constructor
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Init()
+void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
 {
-  // call base class init
-  SPHPhaseChangeBase::Init();
-
   // read from input file
   std::string word;
   std::istringstream phasechangedefinition(
@@ -84,6 +51,10 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Init()
     abovephase_ = PARTICLEENGINE::EnumFromTypeName(word);
   else
     dserror("expecting particle type for phase above transition value!");
+
+  // safety check
+  if (belowphase_ == abovephase_)
+    dserror("equal particle types for phase below and above transition value!");
 
   // get transition state of phase change
   if (phasechangedefinition >> word)
@@ -111,19 +82,35 @@ void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Init()
     dserror("expecting transition value of phase change!");
 }
 
-void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::Setup(
+void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
     const std::shared_ptr<PARTICLEINTERACTION::MaterialHandler> particlematerial,
     const std::shared_ptr<PARTICLEINTERACTION::SPHEquationOfStateBundle> equationofstatebundle)
 {
-  // call base class setup
-  SPHPhaseChangeBase::Setup(particleengineinterface, particlematerial, equationofstatebundle);
+  // set interface to particle engine
+  particleengineinterface_ = particleengineinterface;
+
+  // set particle container bundle
+  particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // set particle material handler
+  particlematerial_ = particlematerial;
+
+  // set equation of state handler
+  equationofstatebundle_ = equationofstatebundle;
 
   // safety check
   for (const auto& type_i : {belowphase_, abovephase_})
     if (not particlecontainerbundle_->GetParticleTypes().count(type_i))
       dserror("no particle container for particle type '%s' found!",
           PARTICLEENGINE::EnumToTypeName(type_i).c_str());
+}
+
+PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
+    const Teuchos::ParameterList& params)
+    : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
+{
+  // empty constructor
 }
 
 void PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::EvaluatePhaseChange(
