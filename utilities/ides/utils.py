@@ -13,7 +13,8 @@ def get_mpi_include_path():
     possible_open_mpi_dirs = [
         "/usr/include/openmpi-x86_64",
         "/usr/include/openmpi/1.2.4-gcc",
-        "/usr/include/openmpi"
+        "/usr/include/openmpi",
+        "/usr/lib/x86_64-linux-gnu/openmpi/include"
         ]
     for path in possible_open_mpi_dirs:
         if os.path.isdir(path):
