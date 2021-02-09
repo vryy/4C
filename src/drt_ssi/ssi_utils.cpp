@@ -23,6 +23,7 @@
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -437,6 +438,43 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtractor(
+    Teuchos::RCP<DRT::Discretization> dis)
+{
+  std::vector<DRT::Condition*> conditions(0, nullptr);
+  dis->GetCondition("SSISurfaceManifold", conditions);
+  if (conditions.empty()) dserror("Condition SSISurfaceManifold not found");
+
+  // Build GID vector of nodes on this proc, sort, and remove duplicates
+  std::vector<int> condition_node_vec;
+  for (auto* condition : conditions)
+  {
+    if (condition->GetInt("coupling id") != 1)
+      dserror("'coupling id' in 'SSISurfaceManifold' must be set to 1");
+
+    DRT::UTILS::AddOwnedNodeGIDVector(dis, *condition->Nodes(), condition_node_vec);
+  }
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(condition_node_vec);
+
+  // Build GID vector of dofs
+  std::vector<int> condition_dof_vec;
+  for (int condidtion_node : condition_node_vec)
+  {
+    const auto* curr_node = dis->gNode(condidtion_node);
+    for (int j = 0; j < dis->NumDof(0, curr_node); ++j)
+      condition_dof_vec.emplace_back(dis->Dof(0, curr_node, j));
+  }
+  // maps of conditioned dofs and other dofs
+  const auto condition_dof_map = Teuchos::rcp(
+      new const Epetra_Map(-1, condition_dof_vec.size(), &condition_dof_vec[0], 0, dis->Comm()));
+  const auto non_condition_dof_map = LINALG::SplitMap(*dis->DofRowMap(), *condition_dof_map);
+
+  return Teuchos::rcp(
+      new LINALG::MapExtractor(*dis->DofRowMap(), non_condition_dof_map, condition_dof_map));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(
     const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
 {
@@ -527,10 +565,10 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
       if (ssi_mono_algorithm.IsScaTraManifold())
       {
         // structure dofs on manifold discretization
-        const auto map_structure_manifold = Teuchos::rcp(
-            new LINALG::MultiMapExtractor(*ssi_mono_algorithm.MapStructureManifold()->Map(0),
-                std::vector<Teuchos::RCP<const Epetra_Map>>(
-                    1, ssi_mono_algorithm.MapStructureManifold()->Map(0))));
+        const auto map_structure_manifold = Teuchos::rcp(new LINALG::MultiMapExtractor(
+            *ssi_mono_algorithm.MapStructureOnScaTraManifold()->Map(0),
+            std::vector<Teuchos::RCP<const Epetra_Map>>(
+                1, ssi_mono_algorithm.MapStructureOnScaTraManifold()->Map(0))));
 
         scatramanifoldstructuredomain_ =
             SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraManifold()->BlockMaps()),

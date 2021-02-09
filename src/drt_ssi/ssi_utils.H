@@ -68,6 +68,10 @@ namespace SSI
     Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& sublist_manifold_params, const Epetra_Comm& comm);
 
+    //! create MultiMapExtractor with dofs on SSISurfaceManifold and others
+    Teuchos::RCP<LINALG::MultiMapExtractor> CreateManifoldMultiMapExtractor(
+        Teuchos::RCP<DRT::Discretization> dis);
+
 
     /*---------------------------------------------------------------------------------*
      *---------------------------------------------------------------------------------*/

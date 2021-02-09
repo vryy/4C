@@ -68,6 +68,8 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
       "TransportThermoConvections", "TransportThermoConvections"));
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "SSIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("SSISurfaceManifold", "SSISurfaceManifold"));
 
   return conditions_to_copy;
 }

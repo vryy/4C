@@ -176,10 +176,16 @@ namespace SSI
       return map_structure_condensed_;
     };
 
-    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureManifold() const
+    //! MultiMapExtractor with Map 0: scatra dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> MapScaTraOnScaTraManifold() const
     {
-      return map_structure_manifold_;
+      return map_scatra_on_scatra_manifold_;
+    }
+
+    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureOnScaTraManifold() const
+    {
+      return map_structure_on_scatra_manifold_;
     }
 
     //! holds slave side converter og multiple coupling adapters
@@ -233,12 +239,15 @@ namespace SSI
     //! access the scalar transport field on manifolds
     const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraManifold() const;
 
-    /// set structure solution on scatra field
+    /// set structure solution on other fields
     void SetStructSolution(
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
 
-    /// set scatra solution on structure field
+    /// set scatra solution on other fields
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi);
+
+    /// set scatra on manifold solution on other fields
+    void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
     /// set temperature field  by evaluating time dependent function
     void EvaluateAndSetTemperatureField();
@@ -351,8 +360,11 @@ namespace SSI
     //! map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
+    //! MultiMapExtractor with Map 0: scatra dofs on manifold, Map 1: others
+    Teuchos::RCP<LINALG::MultiMapExtractor> map_scatra_on_scatra_manifold_;
+
     //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_manifold_;
+    Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_on_scatra_manifold_;
 
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;

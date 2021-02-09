@@ -81,35 +81,33 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
+  // clear system matrix from previous Newton step
+  ssi_matrices_->SystemMatrix()->Zero();
+
   // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatraDomain(
+  strategy_assemble_->AssembleScatra(
       ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
 
-  // assemble scatra-strucutre block (domain contributions) into system matrix
-  strategy_assemble_->AssembleScatraStructureDomain(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
+  // assemble scatra-strucutre block into system matrix
+  strategy_assemble_->AssembleScatraStructure(ssi_matrices_->SystemMatrix(),
+      ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
 
-  // assemble scatra-strucutre block (interface contributions) into system matrix
-  if (SSIInterfaceMeshtying())
-    strategy_assemble_->AssembleScatraStructureInterface(
-        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureInterface());
-
-  // assemble structure-scatra block (domain contributions) into system matrix
-  strategy_assemble_->AssembleStructureScatraDomain(
+  // assemble structure-scatra block into system matrix
+  strategy_assemble_->AssembleStructureScatra(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
 
   // assemble structure block into system matrix
-  strategy_assemble_->AssembleStructureDomain(
+  strategy_assemble_->AssembleStructure(
       ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
 
   if (IsScaTraManifold())
   {
     // assemble manifold block into system matrix
-    strategy_assemble_->AssembleScaTraManifoldDomain(
+    strategy_assemble_->AssembleScaTraManifold(
         ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
 
     // assemble manifold-structure block into system matrix
-    strategy_assemble_->AssembleScaTraManifoldStructureDomain(
+    strategy_assemble_->AssembleScaTraManifoldStructure(
         ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
   }
 
@@ -137,11 +135,10 @@ void SSI::SSIMono::EvaluateSubproblems()
   // needed to communicate to NOX state
   StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
-  // pass structural degrees of freedom to scalar transport discretization
+  // distribute states to other fields
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
-
-  // pass scalar transport degrees of freedom to structural discretization
   SetScatraSolution(ScaTraField()->Phinp());
+  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
 
   // evaluate temperature from function and set to structural discretization
   EvaluateAndSetTemperatureField();
@@ -342,6 +339,7 @@ void SSI::SSIMono::PrepareTimeStep()
   // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
   SetScatraSolution(ScaTraField()->Phinp());
+  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
 
   // evaluate temperature from function and set to structural discretization
   EvaluateAndSetTemperatureField();
@@ -600,7 +598,7 @@ void SSI::SSIMono::SetupSystem()
         MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
-        MapStructureManifold()->Map(0), InterfaceCouplingAdapterStructure(),
+        MapStructureOnScaTraManifold()->Map(0), InterfaceCouplingAdapterStructure(),
         InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
         meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
         StructureField(), Meshtying3DomainIntersection()));

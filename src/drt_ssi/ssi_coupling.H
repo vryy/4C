@@ -52,14 +52,14 @@ namespace SSI
     virtual void AssignMaterialPointers(Teuchos::RCP<DRT::Discretization> structdis,
         Teuchos::RCP<DRT::Discretization> scatradis) = 0;
 
-    //! \brief set structure mesh displacement on scatra field
+    //! \brief set structure mesh displacement on other field
     //!
     //! \param scatra    underlying scatra problem of the SSI problem
     //! \param disp      displacement field to set
     virtual void SetMeshDisp(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> disp) = 0;
 
-    //! \brief set structure velocity fields on scatra field
+    //! \brief set structure velocity fields on other field
     //!
     //! \param scatra    underlying scatra problem of the SSI problem
     //! \param convvel   convective velocity field to set
@@ -67,12 +67,21 @@ namespace SSI
     virtual void SetVelocityFields(Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) = 0;
 
-    //! \brief set scatra solution on structure field
+    //! \brief set scatra solution on other field
     //!
-    //! \param structdis    structural discretization
-    //! \param phi          scalar field
+    //! \param dis    discretization to write scatra solution on
+    //! \param phi    scalar field solution
+    //! \param nds    number of dofset to write state on
     virtual void SetScalarField(
-        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) = 0;
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
+
+    //! \brief set scatra on manifold solution on other field
+    //!
+    //! \param dis    discretization to write scatra on manifold solution on
+    //! \param phi    scalar on manifold field solution
+    //! \param nds    number of dofset to write state on
+    virtual void SetScaTraManifoldField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
     //! set temperature field on structure field
     virtual void SetTemperatureField(
@@ -103,7 +112,10 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
-        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScaTraManifoldField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
@@ -170,7 +182,10 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
-        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScaTraManifoldField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
@@ -253,7 +268,10 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
-        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScaTraManifoldField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override
@@ -325,7 +343,10 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
-        DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> phi) override;
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScaTraManifoldField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetTemperatureField(
         DRT::Discretization& structdis, Teuchos::RCP<const Epetra_Vector> temp) override;
