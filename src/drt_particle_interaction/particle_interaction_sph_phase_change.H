@@ -62,6 +62,20 @@ namespace PARTICLEINTERACTION
         std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const = 0;
 
    protected:
+    //! evaluate phase change from below to above phase
+    virtual void EvaluatePhaseChangeFromBelowToAbovePhase(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
+        std::vector<std::set<int>>& particlestoremove,
+        std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>&
+            particlestoinsert) const final;
+
+    //! evaluate phase change from above to below phase
+    virtual void EvaluatePhaseChangeFromAboveToBelowPhase(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase,
+        std::vector<std::set<int>>& particlestoremove,
+        std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>>&
+            particlestoinsert) const final;
+
     //! smoothed particle hydrodynamics specific parameter list
     const Teuchos::ParameterList& params_sph_;
 
