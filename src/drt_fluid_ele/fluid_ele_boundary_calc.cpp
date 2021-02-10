@@ -18,20 +18,14 @@
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_material.H"
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
-#include "../drt_geometry/position_array.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/carreauyasuda.H"
@@ -44,11 +38,9 @@
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_murnaghantait.H"
-#include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/tempdepwater.H"
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/fluidporo.H"
-#include "../drt_mat/matlist.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -17,10 +17,7 @@
 #include "fluid_ele_factory.H"
 #include "fluid_ele_interface.H"
 
-#include "../drt_inpar/inpar_fpsi.H"
-
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
 
 
 /*---------------------------------------------------------------------*

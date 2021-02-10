@@ -11,24 +11,15 @@
 
 #include "fluid_ele_calc_hdg.H"
 #include "fluid_ele_calc.H"
-#include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
 #include "fluid_ele_action.H"
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_elementtype.H"
-#include "../drt_geometry/position_array.H"
 
 #include "../drt_fluid/fluid_functions.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/fluid_murnaghantait.H"
-#include "../drt_mat/fluid_weakly_compressible.H"
-
-#include "../drt_fem_general/drt_utils_polynomial.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include <Epetra_SerialDenseSolver.h>
 

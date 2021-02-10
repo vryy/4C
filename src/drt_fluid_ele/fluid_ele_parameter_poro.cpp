@@ -13,7 +13,6 @@ set all general porofluid parameter once for all elements.
 /*----------------------------------------------------------------------*/
 
 #include "fluid_ele_parameter_poro.H"
-#include "../drt_lib/drt_globalproblem.H"
 
 //----------------------------------------------------------------------*/
 //    definition of the instance

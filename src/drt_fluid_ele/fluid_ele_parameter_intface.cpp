@@ -16,7 +16,6 @@ be set in problem specific parameter lists derived from this class.
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fluid_ele_parameter_intface.H"
-#include "../drt_inpar/inpar_xfem.H"
 
 #include <string>
 #include <iostream>

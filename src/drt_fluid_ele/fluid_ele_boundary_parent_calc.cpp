@@ -41,9 +41,6 @@
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/tempdepwater.H"
 
-#include "../drt_inpar/inpar_fpsi.H"
-#include "../drt_inpar/inpar_material.H"
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryParentInterface* DRT::ELEMENTS::FluidBoundaryParentInterface::Impl(

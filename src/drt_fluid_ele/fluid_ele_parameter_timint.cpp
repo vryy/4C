@@ -16,7 +16,6 @@ with different parameters in more than one fluid field is not yet supported.
 #include <string>
 #include <iostream>
 #include "../drt_io/io_pstream.H"
-#include "../drt_lib/drt_dserror.H"
 #include "fluid_ele_parameter_timint.H"
 
 //----------------------------------------------------------------------*/

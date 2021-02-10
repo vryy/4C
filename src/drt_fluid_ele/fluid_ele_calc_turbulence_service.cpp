@@ -12,10 +12,6 @@
 #include "fluid_ele_calc.H"
 #include "fluid_ele_parameter.H"
 
-#include "../drt_inpar/inpar_turbulence.H"
-
-#include "../drt_lib/drt_elementtype.H"
-
 
 /*----------------------------------------------------------------------*
  |  compute turbulence parameters                       rasthofer 10/11 |

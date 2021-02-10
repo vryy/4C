@@ -14,8 +14,6 @@
 
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_lib/drt_discret_faces.H"
-#include "../drt_fem_general/drt_utils_polynomial.H"
 
 
 // initialize static variable
