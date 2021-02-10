@@ -104,6 +104,28 @@ namespace PARTICLEINTERACTION
     double transitionvalue_;
   };
 
+  class SPHPhaseChangeOneWayScalarBelowToAbove : public SPHPhaseChangeBase
+  {
+   public:
+    //! constructor
+    explicit SPHPhaseChangeOneWayScalarBelowToAbove(const Teuchos::ParameterList& params);
+
+    //! evaluate phase change
+    void EvaluatePhaseChange(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
+  };
+
+  class SPHPhaseChangeOneWayScalarAboveToBelow : public SPHPhaseChangeBase
+  {
+   public:
+    //! constructor
+    explicit SPHPhaseChangeOneWayScalarAboveToBelow(const Teuchos::ParameterList& params);
+
+    //! evaluate phase change
+    void EvaluatePhaseChange(
+        std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const override;
+  };
+
   class SPHPhaseChangeTwoWayScalar : public SPHPhaseChangeBase
   {
    public:

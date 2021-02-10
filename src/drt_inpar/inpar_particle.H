@@ -190,6 +190,8 @@ namespace INPAR
     enum PhaseChangeType
     {
       NoPhaseChange,
+      OneWayScalarBelowToAbovePhaseChange,
+      OneWayScalarAboveToBelowPhaseChange,
       TwoWayScalarPhaseChange
     };
 

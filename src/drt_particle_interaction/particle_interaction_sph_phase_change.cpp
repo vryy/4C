@@ -272,6 +272,62 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromAboveToBelo
   }
 }
 
+PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove::SPHPhaseChangeOneWayScalarBelowToAbove(
+    const Teuchos::ParameterList& params)
+    : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
+{
+  // empty constructor
+}
+
+void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove::EvaluatePhaseChange(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
+{
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  std::vector<std::set<int>> particlestoremove(typevectorsize);
+  std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>> particlestoinsert(
+      typevectorsize);
+
+  // evaluate phase change from below to above phase
+  EvaluatePhaseChangeFromBelowToAbovePhase(
+      particlesfromphasetophase, particlestoremove, particlestoinsert);
+
+  // hand over particles to be removed
+  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+
+  // hand over particles to be inserted
+  particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
+}
+
+PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::SPHPhaseChangeOneWayScalarAboveToBelow(
+    const Teuchos::ParameterList& params)
+    : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
+{
+  // empty constructor
+}
+
+void PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow::EvaluatePhaseChange(
+    std::vector<PARTICLEENGINE::ParticleTypeToType>& particlesfromphasetophase) const
+{
+  // determine size of vectors indexed by particle types
+  const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
+
+  std::vector<std::set<int>> particlestoremove(typevectorsize);
+  std::vector<std::vector<std::pair<int, PARTICLEENGINE::ParticleObjShrdPtr>>> particlestoinsert(
+      typevectorsize);
+
+  // evaluate phase change from above to below phase
+  EvaluatePhaseChangeFromAboveToBelowPhase(
+      particlesfromphasetophase, particlestoremove, particlestoinsert);
+
+  // hand over particles to be removed
+  particleengineinterface_->HandOverParticlesToBeRemoved(particlestoremove);
+
+  // hand over particles to be inserted
+  particleengineinterface_->HandOverParticlesToBeInserted(particlestoinsert);
+}
+
 PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar::SPHPhaseChangeTwoWayScalar(
     const Teuchos::ParameterList& params)
     : SPHPhaseChangeBase::SPHPhaseChangeBase(params)
