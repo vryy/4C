@@ -102,12 +102,15 @@ namespace LUBRICATION
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! set the nodal film height
+    void SetHeightFieldPureLub(const int nds);
+    //! set the nodal film height
     void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> height);
 
     //! set the time derivative of the height (film thickness) by OST
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
 
     //! set relative tangential interface velocity for Reynolds equation
+    void SetAverageVelocityFieldPureLub(const int nds);
     void SetRelativeVelocityField(const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel);
 
     //! set average tangential interface velocity for Reynolds equation
@@ -382,6 +385,9 @@ namespace LUBRICATION
 
     //! flag for adding squeeze term to Reynolds Equ.
     bool addsqz_;
+
+    //! flag for pure lubrication problem
+    bool purelub_;
 
 
     /*--- query and output ---------------------------------------------------*/

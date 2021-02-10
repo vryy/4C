@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_utils_createdis.H"
 
 #include "../drt_lubrication/lubrication_timint_implicit.H"
+#include "../drt_lib/drt_dofset_predefineddofnumber.H"
 
 
 /*----------------------------------------------------------------------*
@@ -47,6 +48,12 @@ void lubrication_dyn(int restart)
   // we directly use the elements from the Lubrication elements section
   if (lubricationdis->NumGlobalNodes() == 0)
     dserror("No elements in the ---LUBRICATION ELEMENTS section");
+
+  // add proxy of velocity related degrees of freedom to lubrication discretization
+  Teuchos::RCP<DRT::DofSetInterface> dofsetaux = Teuchos::rcp(
+      new DRT::DofSetPredefinedDoFNumber(DRT::Problem::Instance()->NDim(), 0, 0, true));
+  if (lubricationdis->AddDofSet(dofsetaux) != 1)
+    dserror("lub discretization has illegal number of dofsets!");
 
   // finalize discretization
   lubricationdis->FillComplete(true, false, false);

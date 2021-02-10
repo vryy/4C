@@ -55,6 +55,8 @@ namespace DRT
       bool ModifiedReynolds() const { return modified_reynolds_; };
       /// return function for the Add squeeze term in reynolds equ. flag
       bool AddSqz() const { return addsqz_; };
+      /// return function for the pure lubrication reynolds equ. flag
+      bool PureLub() const { return purelub_; };
       /// return function for surface roughness value in modified reynolds equ.
       double RoughnessDeviation() const { return roughness_deviation_; };
 
@@ -68,6 +70,8 @@ namespace DRT
       bool modified_reynolds_;
       /// Add squeeze term in reynolds equ. flag
       bool addsqz_;
+      /// pure lubrication reynolds equ. flag
+      bool purelub_;
       /// surface roughness STD value in modified reynolds equ.
       double roughness_deviation_;
 

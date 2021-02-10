@@ -23,6 +23,22 @@ namespace INPAR
       calcerror_byfunction
     };
 
+    /// compute velocity by function
+    enum VelocityField
+    {
+      velocity_zero,
+      velocity_function,
+      velocity_EHL
+    };
+
+    /// compute height by function
+    enum HeightField
+    {
+      height_zero,
+      height_function,
+      height_EHL
+    };
+
     //! type of norm to check for convergence
     enum ConvNorm
     {

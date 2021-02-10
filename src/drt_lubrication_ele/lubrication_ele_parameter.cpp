@@ -74,7 +74,12 @@ void DRT::ELEMENTS::LubricationEleParameter::Done()
 DRT::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
     const std::string& disname  //!< name of discretization
     )
-    : time_(-1.0), modified_reynolds_(true), addsqz_(true), roughness_deviation_(0.0)
+
+    : time_(-1.0),
+      modified_reynolds_(true),
+      addsqz_(true),
+      purelub_(true),
+      roughness_deviation_(0.0)
 {
   return;
 }
@@ -99,5 +104,6 @@ void DRT::ELEMENTS::LubricationEleParameter::SetGeneralParameters(
 {
   modified_reynolds_ = parameters.get<bool>("ismodifiedrey");
   addsqz_ = parameters.get<bool>("addsqz");
+  purelub_ = parameters.get<bool>("purelub");
   roughness_deviation_ = parameters.get<double>("roughnessdeviation");
 }

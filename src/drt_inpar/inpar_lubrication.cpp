@@ -36,6 +36,20 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   IntParameter(
       "CALCERRORNO", -1, "function number for lubrication error computation", &lubricationdyn);
 
+  setStringToIntegralParameter<int>("VELOCITYFIELD", "zero",
+      "type of velocity field used for lubrication problems",
+      tuple<std::string>("zero", "function", "EHL"),
+      tuple<int>(velocity_zero, velocity_function, velocity_EHL), &lubricationdyn);
+
+  IntParameter("VELFUNCNO", -1, "function number for lubrication velocity field", &lubricationdyn);
+
+  setStringToIntegralParameter<int>("HEIGHTFEILD", "zero",
+      "type of height field used for lubrication problems",
+      tuple<std::string>("zero", "function", "EHL"),
+      tuple<int>(height_zero, height_function, height_EHL), &lubricationdyn);
+
+  IntParameter("HFUNCNO", -1, "function number for lubrication height field", &lubricationdyn);
+
   BoolParameter("OUTMEAN", "No", "Output of mean values for scalars and density", &lubricationdyn);
 
   BoolParameter(
@@ -99,4 +113,7 @@ void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   /// Flag for considering the Squeeze term in Reynolds Equation
   BoolParameter("ADD_SQUEEZE_TERM", "No",
       "the squeeze term will also be considered in the Reynolds Equation", &lubricationdyn);
+
+  /// Flag for considering the pure Reynolds Equation
+  BoolParameter("PURE_LUB", "No", "the problem is pure lubrication", &lubricationdyn);
 }

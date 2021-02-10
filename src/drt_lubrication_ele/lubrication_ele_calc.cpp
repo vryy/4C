@@ -244,15 +244,27 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
     for (int idim = 0; idim < nsd_; ++idim)
       lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
 
+  // extract local vel from global state vector
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*vel, eAvTangVel_, lmvel);
 
-  // 1.1 Extract the relative tangential velocity
-  // get the global vector
-  Teuchos::RCP<const Epetra_Vector> velrel = discretization.GetState(ndsvel, "rel_tang_vel");
-  if (velrel.is_null()) dserror("got NULL pointer for \"rel_tang_vel\"");
+  if (lubricationpara_->ModifiedReynolds())
+  {
+    // 1.1 Extract the relative tangential velocity
+    // get the global vector
+    auto velrel = discretization.GetState(ndsvel, "rel_tang_vel");
+    if (velrel.is_null()) dserror("got NULL pointer for \"rel_tang_vel\"");
 
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
+    const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
+    // construct location vector for velocity related dofs
+    std::vector<int> lmvel(nsd_ * nen_, -1);
+    for (int inode = 0; inode < nen_; ++inode)
+      for (int idim = 0; idim < nsd_; ++idim)
+        lmvel[inode * nsd_ + idim] = la[ndsvel].lm_[inode * numveldofpernode + idim];
+
+    // extract local vel from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*velrel, eRelTangVel_, lmvel);
+  }
 
   // 2. In case of ale, extract the displacements of the element nodes and update the nodal
   // coordinates
@@ -282,7 +294,6 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
   }
 
   // 3. Extract the film height at the element nodes
-
   // get number of dofset associated with height dofs
   const int ndsheight = 1;  // needs further implementation: params.get<int>("ndsheight");
 
@@ -303,26 +314,28 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(*height, eheinp_, la[ndsheight].lm_);
 
   // 3.1. Extract the film height time derivative at the element node
-  const int ndsheightdot = 1;
+  if (lubricationpara_->AddSqz())
+  {
+    const int ndsheightdot = 1;
 
-  // get the global vector containing the heightdots
-  Teuchos::RCP<const Epetra_Vector> heightdot = discretization.GetState(ndsheightdot, "heightdot");
-  if (heightdot == Teuchos::null) dserror("Cannot get state vector heightdot");
+    // get the global vector containing the heightdots
+    auto heightdot = discretization.GetState(ndsheightdot, "heightdot");
+    if (heightdot == Teuchos::null) dserror("Cannot get state vector heightdot");
 
-  // determine number of heightdot related dofs per node
-  const int numheightdotdofpernode = la[ndsheightdot].lm_.size() / nen_;
+    // determine number of heightdot related dofs per node
+    const int numheightdotdofpernode = la[ndsheightdot].lm_.size() / nen_;
 
-  // construct location vector for heightdot related dofs
-  std::vector<int> lmheightdot(nsd_ * nen_, -1);
-  for (int inode = 0; inode < nen_; ++inode)
-    for (int idim = 0; idim < nsd_; ++idim)
-      lmheightdot[inode * nsd_ + idim] =
-          la[ndsheightdot].lm_[inode * numheightdotdofpernode + idim];
+    // construct location vector for heightdot related dofs
+    std::vector<int> lmheightdot(nsd_ * nen_, -1);
+    for (int inode = 0; inode < nen_; ++inode)
+      for (int idim = 0; idim < nsd_; ++idim)
+        lmheightdot[inode * nsd_ + idim] =
+            la[ndsheightdot].lm_[inode * numheightdotdofpernode + idim];
 
-  // extract local height from global state vector
-  DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(
-      *heightdot, eheidotnp_, la[ndsheightdot].lm_);
-
+    // extract local height from global state vector
+    DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_, nen_>>(
+        *heightdot, eheidotnp_, la[ndsheightdot].lm_);
+  }
   // 4. Extract the pressure field at the element nodes
 
   // get the global vector containing the pressure
@@ -401,9 +414,8 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
     // bool modifiedreynolds = lubricationpara_->ModifiedReynolds();
     if (lubricationpara_->ModifiedReynolds())
     {
-      // dserror("we should not be here");
-      // std::cout << "modified reynolds check" << lubricationpara_->ModifiedReynolds() <<
-      // std::endl;
+      if (lubricationpara_->PureLub())
+        dserror("pure lubrication is not implemented for modified Reynolds equation");
       // calculate relative surface velocity of the contacting bodies at Integration point
       LINALG::Matrix<nsd_, 1> relvel(true);  // relative surface velocity, initialized to zero
       CalcRelVelAtIntPoint(relvel);
@@ -454,8 +466,6 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
     if (lubricationpara_->AddSqz()) CalcRhsSqz(erhs, rhsfac, heightdotint);
 
   }  // end loop Gauss points
-
-  return;
 }
 
 template <DRT::Element::DiscretizationType distype, int probdim>
@@ -516,13 +526,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
       CalcRelVelAtIntPoint(relvel);
 
       // calculate pressure flow factor at Integration point
-      // LINALG::Matrix<nsd_, 1> pflowfac(true);  // Pressure flow factor, initialized to zero
-      // LINALG::Matrix<nsd_, 1> pflowfacderiv(true);
       CalcPFlowFacAtIntPoint(pflowfac_, pflowfacderiv_, heightint);
 
       // calculate shear flow factor at Integration point
-      // double sflowfac(0.0);
-      // double sflowfacderiv(0.0);
       CalcSFlowFacAtIntPoint(sflowfac_, sflowfacderiv_, heightint);
 
       // Linearization of Poiseuille term wrt the film height (first part)
@@ -635,9 +641,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
       }
     }  // end loop for linearization of Couette term wrt the velocities
 
-  }  // end gauß point loop
-
-  return;
+  }  // end gauss point loop
 }
 
 
