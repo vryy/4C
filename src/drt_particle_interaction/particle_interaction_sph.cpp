@@ -159,7 +159,9 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::Setup(
     phasechange_->Setup(particleengineinterface, particlematerial_, equationofstatebundle_);
 
   // setup rigid particle contact handler
-  if (rigidparticlecontact_) rigidparticlecontact_->Setup(particleengineinterface, neighborpairs_);
+  if (rigidparticlecontact_)
+    rigidparticlecontact_->Setup(
+        particleengineinterface, particlewallinterface, particleinteractionwriter_, neighborpairs_);
 
   // short screen output
   if ((dirichletopenboundary_ or neumannopenboundary_) and

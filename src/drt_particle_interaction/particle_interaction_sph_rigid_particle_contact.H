@@ -28,10 +28,16 @@ namespace PARTICLEENGINE
   class ParticleContainerBundle;
 }  // namespace PARTICLEENGINE
 
+namespace PARTICLEWALL
+{
+  class WallHandlerInterface;
+}
+
 namespace PARTICLEINTERACTION
 {
+  class InteractionWriter;
   class SPHNeighborPairs;
-}
+}  // namespace PARTICLEINTERACTION
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -53,10 +59,16 @@ namespace PARTICLEINTERACTION
     //! setup rigid particle contact handler
     virtual void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs);
 
     //! add rigid particle contact contribution to force field
     virtual void AddForceContribution() = 0;
+
+   private:
+    //! setup particle interaction writer
+    void SetupParticleInteractionWriter();
 
    protected:
     //! smoothed particle hydrodynamics specific parameter list
@@ -68,8 +80,17 @@ namespace PARTICLEINTERACTION
     //! particle container bundle
     PARTICLEENGINE::ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
+    //! interface to particle wall handler
+    std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface_;
+
+    //! particle interaction writer
+    std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter_;
+
     //! neighbor pair handler
     std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs_;
+
+    //! write particle-wall interaction output
+    const bool writeparticlewallinteraction_;
 
     //! set of boundary particle types
     std::set<PARTICLEENGINE::TypeEnum> boundarytypes_;
@@ -84,12 +105,20 @@ namespace PARTICLEINTERACTION
     //! setup rigid particle contact handler
     void Setup(
         const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+        const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
+        const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
         const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs) override;
 
     //! add rigid particle contact contribution to force field
     void AddForceContribution() override;
 
    private:
+    //! elastic contact (particle contribution)
+    void ElasticContactParticleContribution();
+
+    //! elastic contact (particle-wall contribution)
+    void ElasticContactParticleWallContribution();
+
     //! contact stiffness
     const double stiff_;
 

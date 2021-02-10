@@ -10,6 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "particle_interaction_sph_rigid_particle_contact.H"
 
+#include "particle_interaction_runtime_writer.H"
 #include "particle_interaction_sph_neighbor_pairs.H"
 
 #include "particle_interaction_utils.H"
@@ -17,7 +18,16 @@
 #include "../drt_particle_engine/particle_engine_interface.H"
 #include "../drt_particle_engine/particle_container.H"
 
+#include "../drt_particle_wall/particle_wall_interface.H"
+#include "../drt_particle_wall/particle_wall_datastate.H"
+
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
+#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dserror.H"
+
+#include "../drt_io/runtime_vtp_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -26,7 +36,9 @@
  *---------------------------------------------------------------------------*/
 PARTICLEINTERACTION::SPHRigidParticleContactBase::SPHRigidParticleContactBase(
     const Teuchos::ParameterList& params)
-    : params_sph_(params)
+    : params_sph_(params),
+      writeparticlewallinteraction_(
+          DRT::INPUT::IntegralValue<int>(params_sph_, "WRITE_PARTICLE_WALL_INTERACTION"))
 {
   // empty constructor
 }
@@ -39,6 +51,8 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Init()
 
 void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
+    const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
   // set interface to particle engine
@@ -46,6 +60,15 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
 
   // set particle container bundle
   particlecontainerbundle_ = particleengineinterface_->GetParticleContainerBundle();
+
+  // set interface to particle wall hander
+  particlewallinterface_ = particlewallinterface;
+
+  // set particle interaction writer
+  particleinteractionwriter_ = particleinteractionwriter;
+
+  // setup particle interaction writer
+  SetupParticleInteractionWriter();
 
   // set neighbor pair handler
   neighborpairs_ = neighborpairs;
@@ -61,6 +84,13 @@ void PARTICLEINTERACTION::SPHRigidParticleContactBase::Setup(
     dserror("no rigid particles defined but a rigid particle contact formulation is set!");
 }
 
+void PARTICLEINTERACTION::SPHRigidParticleContactBase::SetupParticleInteractionWriter()
+{
+  // register specific runtime vtp writer
+  if (writeparticlewallinteraction_)
+    particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("rigidparticle-wall-contact");
+}
+
 PARTICLEINTERACTION::SPHRigidParticleContactElastic::SPHRigidParticleContactElastic(
     const Teuchos::ParameterList& params)
     : PARTICLEINTERACTION::SPHRigidParticleContactBase(params),
@@ -72,10 +102,13 @@ PARTICLEINTERACTION::SPHRigidParticleContactElastic::SPHRigidParticleContactElas
 
 void PARTICLEINTERACTION::SPHRigidParticleContactElastic::Setup(
     const std::shared_ptr<PARTICLEENGINE::ParticleEngineInterface> particleengineinterface,
+    const std::shared_ptr<PARTICLEWALL::WallHandlerInterface> particlewallinterface,
+    const std::shared_ptr<PARTICLEINTERACTION::InteractionWriter> particleinteractionwriter,
     const std::shared_ptr<PARTICLEINTERACTION::SPHNeighborPairs> neighborpairs)
 {
   // call base class setup
-  SPHRigidParticleContactBase::Setup(particleengineinterface, neighborpairs);
+  SPHRigidParticleContactBase::Setup(
+      particleengineinterface, particlewallinterface, particleinteractionwriter, neighborpairs);
 
   // safety check
   if (not(stiff_ > 0.0)) dserror("rigid particle contact stiffness not positive!");
@@ -86,6 +119,18 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution");
+
+  // elastic contact (particle contribution)
+  ElasticContactParticleContribution();
+
+  // elastic contact (particle-wall contribution)
+  if (particlewallinterface_) ElasticContactParticleWallContribution();
+}
+
+void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticleContribution()
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticleContribution");
 
   // get initial particle spacing
   const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
@@ -99,6 +144,9 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
   {
     const SPHParticlePair& particlepair =
         neighborpairs_->GetRefToParticlePairData()[particlepairindex];
+
+    // evaluate contact condition
+    if (not(particlepair.absdist_ < initialparticlespacing)) continue;
 
     // access values of local index tuples of particle i and j
     PARTICLEENGINE::TypeEnum type_i;
@@ -129,18 +177,184 @@ void PARTICLEINTERACTION::SPHRigidParticleContactElastic::AddForceContribution()
     if (status_j == PARTICLEENGINE::Owned)
       force_j = container_j->CondGetPtrToState(PARTICLEENGINE::Force, particle_j);
 
-    if (particlepair.absdist_ < initialparticlespacing)
+    // compute normal gap and rate of normal gap
+    const double gap = particlepair.absdist_ - initialparticlespacing;
+    const double gapdot =
+        UTILS::vec_dot(vel_i, particlepair.e_ij_) - UTILS::vec_dot(vel_j, particlepair.e_ij_);
+
+    // magnitude of rigid particle contact force
+    const double fac = std::min(0.0, (stiff_ * gap + damp_ * gapdot));
+
+    // add contributions
+    if (force_i) UTILS::vec_addscale(force_i, -fac, particlepair.e_ij_);
+    if (force_j) UTILS::vec_addscale(force_j, fac, particlepair.e_ij_);
+  }
+}
+
+void PARTICLEINTERACTION::SPHRigidParticleContactElastic::ElasticContactParticleWallContribution()
+{
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "PARTICLEINTERACTION::SPHRigidParticleContactElastic::"
+      "ElasticContactParticleWallContribution");
+
+  // get initial particle spacing
+  const double initialparticlespacing = params_sph_.get<double>("INITIALPARTICLESPACING");
+
+  // get wall data state container
+  std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
+      particlewallinterface_->GetWallDataState();
+
+  // get reference to particle-wall pair data
+  const SPHParticleWallPairData& particlewallpairdata =
+      neighborpairs_->GetRefToParticleWallPairData();
+
+  // get number of particle-wall pairs
+  const int numparticlewallpairs = particlewallpairdata.size();
+
+  // write interaction output
+  const bool writeinteractionoutput =
+      particleinteractionwriter_->GetCurrentWriteResultFlag() and writeparticlewallinteraction_;
+
+  // init storage for interaction output
+  std::vector<double> attackpoints;
+  std::vector<double> contactforces;
+  std::vector<double> normaldirection;
+
+  // prepare storage for interaction output
+  if (writeinteractionoutput)
+  {
+    attackpoints.reserve(3 * numparticlewallpairs);
+    contactforces.reserve(3 * numparticlewallpairs);
+    normaldirection.reserve(3 * numparticlewallpairs);
+  }
+
+  // get relevant particle wall pair indices for specific particle types
+  std::vector<int> relindices;
+  neighborpairs_->GetRelevantParticleWallPairIndices({PARTICLEENGINE::RigidPhase}, relindices);
+
+  // iterate over relevant particle-wall pairs
+  for (const int particlewallpairindex : relindices)
+  {
+    const SPHParticleWallPair& particlewallpair = particlewallpairdata[particlewallpairindex];
+
+    // evaluate contact condition
+    if (not(particlewallpair.absdist_ < 0.5 * initialparticlespacing)) continue;
+
+    // access values of local index tuple of particle i
+    PARTICLEENGINE::TypeEnum type_i;
+    PARTICLEENGINE::StatusEnum status_i;
+    int particle_i;
+    std::tie(type_i, status_i, particle_i) = particlewallpair.tuple_i_;
+
+    // get corresponding particle container
+    PARTICLEENGINE::ParticleContainer* container_i =
+        particlecontainerbundle_->GetSpecificContainer(type_i, status_i);
+
+    // get pointer to particle states
+    const double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
+    const double* vel_i = container_i->GetPtrToState(PARTICLEENGINE::Velocity, particle_i);
+    double* force_i = container_i->CondGetPtrToState(PARTICLEENGINE::Force, particle_i);
+
+    // get pointer to column wall element
+    DRT::Element* ele = particlewallpair.ele_;
+
+    // number of nodes of wall element
+    const int numnodes = ele->NumNode();
+
+    // shape functions and location vector of wall element
+    Epetra_SerialDenseVector funct(numnodes);
+    std::vector<int> lmele;
+
+    if (walldatastate->GetVelCol() != Teuchos::null or
+        walldatastate->GetForceCol() != Teuchos::null)
     {
-      const double gap = particlepair.absdist_ - initialparticlespacing;
-      const double gapdot =
-          UTILS::vec_dot(vel_i, particlepair.e_ij_) - UTILS::vec_dot(vel_j, particlepair.e_ij_);
+      // evaluate shape functions of element at wall contact point
+      DRT::UTILS::shape_function_2D(
+          funct, particlewallpair.elecoords_[0], particlewallpair.elecoords_[1], ele->Shape());
 
-      // magnitude of rigid particle contact force
-      const double fac = std::min(0.0, (stiff_ * gap + damp_ * gapdot));
-
-      // add contributions
-      if (force_i) UTILS::vec_addscale(force_i, -fac, particlepair.e_ij_);
-      if (force_j) UTILS::vec_addscale(force_j, fac, particlepair.e_ij_);
+      // get location vector of wall element
+      lmele.reserve(numnodes * 3);
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
+      ele->LocationVector(
+          *particlewallinterface_->GetWallDiscretization(), lmele, lmowner, lmstride);
     }
+
+    // velocity of wall contact point j
+    double vel_j[3] = {0.0};
+
+    if (walldatastate->GetVelCol() != Teuchos::null)
+    {
+      // get nodal velocities
+      std::vector<double> nodal_vel(numnodes * 3);
+      DRT::UTILS::ExtractMyValues(*walldatastate->GetVelCol(), nodal_vel, lmele);
+
+      // determine velocity of wall contact point j
+      for (int node = 0; node < numnodes; ++node)
+        for (int dim = 0; dim < 3; ++dim) vel_j[dim] += funct[node] * nodal_vel[node * 3 + dim];
+    }
+
+    // compute normal gap and rate of normal gap
+    const double gap = particlewallpair.absdist_ - 0.5 * initialparticlespacing;
+    const double gapdot = UTILS::vec_dot(vel_i, particlewallpair.e_ij_) -
+                          UTILS::vec_dot(vel_j, particlewallpair.e_ij_);
+
+    // magnitude of rigid particle contact force
+    const double fac = std::min(0.0, (stiff_ * gap + damp_ * gapdot));
+
+    // add contributions
+    if (force_i) UTILS::vec_addscale(force_i, -fac, particlewallpair.e_ij_);
+
+    // calculation of wall contact force
+    double wallcontactforce[3] = {0.0};
+    if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
+      UTILS::vec_setscale(wallcontactforce, fac, particlewallpair.e_ij_);
+
+    // write interaction output
+    if (writeinteractionoutput)
+    {
+      // compute vector from wall contact point j to particle i
+      double r_ij[3];
+      UTILS::vec_setscale(r_ij, particlewallpair.absdist_, particlewallpair.e_ij_);
+
+      // calculate wall contact point
+      double wallcontactpoint[3];
+      UTILS::vec_set(wallcontactpoint, pos_i);
+      UTILS::vec_sub(wallcontactpoint, r_ij);
+
+      // set wall attack point and states
+      for (int dim = 0; dim < 3; ++dim) attackpoints.push_back(wallcontactpoint[dim]);
+      for (int dim = 0; dim < 3; ++dim) contactforces.push_back(wallcontactforce[dim]);
+      for (int dim = 0; dim < 3; ++dim) normaldirection.push_back(particlewallpair.e_ij_[dim]);
+    }
+
+    // assemble contact force acting on wall element
+    if (walldatastate->GetForceCol() != Teuchos::null)
+    {
+      // determine nodal forces
+      double nodal_force[numnodes * 3];
+      for (int node = 0; node < numnodes; ++node)
+        for (int dim = 0; dim < 3; ++dim)
+          nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
+
+      // assemble nodal forces
+      const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
+          numnodes * 3, &nodal_force[0], &(lmele)[0]);
+      if (err < 0) dserror("sum into Epetra_Vector failed!");
+    }
+  }
+
+  if (writeinteractionoutput)
+  {
+    // get specific runtime vtp writer
+    RuntimeVtpWriter* runtime_vtpwriter =
+        particleinteractionwriter_->GetSpecificRuntimeVtpWriter("rigidparticle-wall-contact");
+
+    // set wall attack points
+    runtime_vtpwriter->ResetGeometry(attackpoints);
+
+    // append states
+    runtime_vtpwriter->AppendVisualizationPointDataVector(contactforces, 3, "contact force");
+    runtime_vtpwriter->AppendVisualizationPointDataVector(normaldirection, 3, "normal direction");
   }
 }
