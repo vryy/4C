@@ -37,7 +37,7 @@ DENSITYCORRECTION               NoCorrection
 BOUNDARYPARTICLEFORMULATION     AdamiBoundaryFormulation
 BOUNDARYPARTICLEINTERACTION     NoSlipBoundaryParticle
 TEMPERATUREEVALUATION           TemperatureIntegration
-PHASECHANGETYPE                 TwoWayScalarPhaseChange
+PHASECHANGETYPE                 OneWayScalarBelowToAbovePhaseChange
 PHASECHANGEDEFINITION           rigidphase phase1 temperature 4.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10.0*(1.0-a)*heaviside(x)+10.0*a*heaviside(-x)
@@ -55,6 +55,7 @@ PARTICLE ID 25 QUANTITY density VALUE 1.00000000000000000e+00 TOLERANCE 1.0e-12
 PARTICLE ID 25 QUANTITY temperature VALUE 4.89006203783331106e+00 TOLERANCE 1.0e-12
 PARTICLE ID 26 QUANTITY density VALUE 1.00000000000000000e+00 TOLERANCE 1.0e-12
 PARTICLE ID 26 QUANTITY temperature VALUE 4.86559184033273517e+00 TOLERANCE 1.0e-12
+PARTICLE ID 50 QUANTITY density VALUE 1.00000000000000000e+00 TOLERANCE 1.0e-12
 PARTICLE ID 50 QUANTITY temperature VALUE 3.70738711151751776e-01 TOLERANCE 1.0e-12
 -------------------------------------------------------------------PARTICLES
 TYPE rigidphase POS -0.100 0.0 0.0
