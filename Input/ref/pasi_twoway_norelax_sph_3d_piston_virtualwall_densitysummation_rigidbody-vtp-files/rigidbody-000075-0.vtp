@@ -1,0 +1,52 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="PolyData" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <PolyData>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+1.875000000000001e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="1" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAIQAAAA==eNorE1nnbnu3b8/9KpF1dydN3LOsP2bTv8bP9gCfpQ2v
+        </DataArray>
+      </Points>
+
+  <PointData>
+        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAIAAAAA==eNr78/////1TVGz/AOnzTYK2az2s1JgmP7EHANLkDlM=
+        </DataArray>
+        <DataArray type="Float64" Name="angular acceleration" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAIQAAAA==eNorWrnpwIYdrnvljsnuDDjBZLtvQWPrEm12WwCgIwuA
+        </DataArray>
+        <DataArray type="Float64" Name="angular velocity" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAIQAAAA==eNrTfmz/Jjvk655v9Xmlr7mO2igfc/w2o+GqDQCoOw1B
+        </DataArray>
+        <DataArray type="Float64" Name="force" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAHQAAAA==eNpjYACCiFc2IIoh65pN0eFl/kdDV9kDAD4QByg=
+        </DataArray>
+        <DataArray type="Float64" Name="globalid" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="mass" format="binary">
+AQAAAAgAAAAIAAAAEAAAAA==eNqrF1nn/rBqiz0AEJwD1w==
+        </DataArray>
+        <DataArray type="Float64" Name="owner" format="binary">
+AQAAAAgAAAAIAAAACwAAAA==eNpjYIAAAAAIAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="torque" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAGAAAAA==eNpjYAACz317QBSDQZUNhK60AQAqCQOP
+        </DataArray>
+        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
+AQAAABgAAAAYAAAAIAAAAA==eNr7/////0rP2zb/gPTDXRf2+J9Levbv/Pb9AO5xEqA=
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </PolyData>
+</VTKFile>

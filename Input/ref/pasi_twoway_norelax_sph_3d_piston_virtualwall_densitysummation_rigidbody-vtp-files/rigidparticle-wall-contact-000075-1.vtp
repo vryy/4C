@@ -1,0 +1,31 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="PolyData" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <PolyData>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+1.875000000000001e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        </DataArray>
+      </Points>
+
+  <PointData>
+        <DataArray type="Float64" Name="contact force" NumberOfComponents="3" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="normal direction" NumberOfComponents="3" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </PolyData>
+</VTKFile>
