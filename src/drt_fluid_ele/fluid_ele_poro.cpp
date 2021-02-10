@@ -16,8 +16,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_factory.H"
 
-#include "../drt_inpar/inpar_fluid.H"
-
 DRT::ELEMENTS::FluidPoroEleType DRT::ELEMENTS::FluidPoroEleType::instance_;
 
 /*----------------------------------------------------------------------*

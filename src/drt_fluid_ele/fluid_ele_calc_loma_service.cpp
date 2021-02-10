@@ -14,8 +14,6 @@
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_parameter_timint.H"
 
-#include "../drt_lib/drt_elementtype.H"
-
 #include "../drt_mat/arrhenius_pv.H"
 #include "../drt_mat/ferech_pv.H"
 #include "../drt_mat/mixfrac.H"

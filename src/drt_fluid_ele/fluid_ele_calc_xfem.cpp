@@ -16,29 +16,17 @@
 #include "../drt_cut/cut_position.H"
 #include "../drt_cut/cut_volumecell.H"
 
-#include "../drt_geometry/position_array.H"
-
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_xfem.H"
 #include "fluid_ele_calc_xfem.H"
 
-#include "../drt_inpar/inpar_xfem.H"
-#include "../drt_inpar/inpar_cut.H"
-
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-
 #include "../drt_mat/newtonianfluid.H"
-#include "../drt_lib/drt_globalproblem.H"
 //#include "../drt_lib/drt_function.H"
 #include "../drt_fluid/fluid_functions.H"
 
 #include "../drt_lib/drt_condition_utils.H"
-
-#include "../drt_xfem/xfem_condition_manager.H"
-
-#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

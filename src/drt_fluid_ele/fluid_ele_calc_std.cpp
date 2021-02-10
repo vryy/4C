@@ -11,9 +11,6 @@
 
 #include "fluid_ele_calc_std.H"
 #include "fluid_ele_parameter_std.H"
-#include "../drt_inpar/inpar_fpsi.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
 
 
 /*----------------------------------------------------------------------*

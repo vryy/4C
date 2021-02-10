@@ -27,17 +27,11 @@
 #include "../drt_mat/elasthyper.H"
 
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
 //#include "Sacado.hpp"
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-
-#include "../drt_inpar/inpar_poroelast.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-
-#include "../drt_poroelast/poroelast_utils.H"
 
 #include "fluid_ele_calc_poro.H"
 

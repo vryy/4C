@@ -13,8 +13,6 @@
 #include "fluid_ele_action.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
-#include "fluid_ele_boundary_calc.H"
-#include "fluid_ele_boundary_factory.H"
 #include "fluid_ele_boundary_parent_calc.H"
 
 DRT::ELEMENTS::FluidXWallBoundaryType DRT::ELEMENTS::FluidXWallBoundaryType::instance_;

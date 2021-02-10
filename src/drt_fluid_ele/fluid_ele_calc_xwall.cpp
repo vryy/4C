@@ -12,13 +12,9 @@
 #include "fluid_ele_calc_xwall.H"
 
 #include "fluid_ele.H"
-#include "fluid_ele_xwall.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
-#include "../drt_lib/drt_element_integration_select.H"
 #include "fluid_ele_action.H"
-
-#include "../drt_geometry/position_array.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
 
@@ -27,8 +23,6 @@
 #include "../drt_mat/newtonianfluid.H"
 
 #include "../drt_lib/drt_condition_utils.H"
-
-#include "../drt_lib/drt_discret.H"
 
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 

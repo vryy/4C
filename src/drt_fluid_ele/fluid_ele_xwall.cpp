@@ -22,8 +22,6 @@ of errors, turbulence statistics etc.)
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_inpar/inpar_fluid.H"
-
 
 DRT::ELEMENTS::FluidXWallType DRT::ELEMENTS::FluidXWallType::instance_;
 

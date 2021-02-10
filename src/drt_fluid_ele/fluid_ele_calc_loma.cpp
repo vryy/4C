@@ -13,11 +13,6 @@
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_std.H"
 #include "fluid_ele_parameter_timint.H"
-#include "../drt_lib/drt_element_integration_select.H"
-
-#include "../drt_geometry/position_array.H"
-
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 

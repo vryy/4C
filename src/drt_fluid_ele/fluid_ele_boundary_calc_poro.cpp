@@ -15,13 +15,8 @@
 #include "fluid_ele_parameter_poro.H"
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
-
-#include "../drt_geometry/position_array.H"
 //
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 

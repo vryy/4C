@@ -13,17 +13,12 @@
 
 #include "fluid_ele.H"
 #include "fluid_ele_parameter_poro.H"
-#include "../drt_lib/drt_element_integration_select.H"
-
-#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/fluidporo.H"
 #include "../drt_mat/structporo.H"
 
 #include "../drt_fluid/fluid_rotsym_periodicbc.H"
-
-#include "../drt_geometry/position_array.H"
 
 
 /*----------------------------------------------------------------------*

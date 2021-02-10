@@ -18,8 +18,6 @@
 #include "fluid_ele_parameter_intface.H"
 #include "fluid_ele_calc_intfaces_stab.H"
 
-#include "../drt_inpar/inpar_xfem.H"
-
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 
 #include "../drt_lib/drt_discret_faces.H"

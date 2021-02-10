@@ -26,10 +26,6 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 
-#include "../drt_geometry/element_coordtrafo.H"
-
-#include "../drt_lib/drt_discret.H"
-
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_inpar/inpar_fluid.H"
@@ -39,8 +35,6 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "../drt_mat/matlist.H"
 
 #include "fluid_ele_calc_intfaces_stab.H"
-
-#include "../drt_fem_general/drt_utils_gausspoints.H"
 
 
 //-----------------------------------------------------------------

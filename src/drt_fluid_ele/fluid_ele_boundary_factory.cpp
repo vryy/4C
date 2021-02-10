@@ -15,8 +15,6 @@
 #include "fluid_ele_boundary_calc_poro.H"
 #include "fluid_ele_calc.H"
 
-#include "../drt_lib/drt_globalproblem.H"
-
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
