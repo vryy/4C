@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! ./utilities/baci-python-venv/bin/python
 import os
 import sys
 import argparse

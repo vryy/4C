@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! ./utilities/baci-python-venv/bin/python
 import sys
 import os.path
 
@@ -17,8 +17,8 @@ def adapt(cmake_cmd_line,build_type,path_to_settings):
         # user does not seem to use CLion
         return
 
-    with open(path_to_settings,"r") as f:
-        project = etree.fromstring(f.read())
+    with open(path_to_settings,"rb") as f:
+        project = etree.parse(f)
 
     found = False
     for configurations in project.iter("configurations"):
@@ -32,7 +32,7 @@ def adapt(cmake_cmd_line,build_type,path_to_settings):
         print("Warning: Could not find build config "+build_type+" in "+path_to_settings)
         return
 
-    with open(path_to_settings, "w") as fo:
+    with open(path_to_settings, "wb") as fo:
         fo.write(etree.tostring(project, encoding="UTF-8"))
 
     print("++ Update of .idea/workspace.xml file done")
