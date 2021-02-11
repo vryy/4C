@@ -322,6 +322,8 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 
 # --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
+/Input/*                           @baci/baci_developers
+
 /Input/ale*                        @baci/team_fluid
 
 /Input/beam3*                      @baci/team_structure
