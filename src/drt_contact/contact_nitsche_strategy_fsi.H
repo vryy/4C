@@ -12,6 +12,9 @@
 #define CONTACT_NITSCHE_STRATEGY_FSI_H
 
 #include "contact_nitsche_strategy.H"
+
+#include <utility>
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace CONTACT
@@ -32,7 +35,8 @@ namespace CONTACT
     CoNitscheStrategyFsi(const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+        : CoNitscheStrategy(
+              DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
           weighting_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
@@ -47,8 +51,8 @@ namespace CONTACT
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategy(
-              data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+        : CoNitscheStrategy(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
+              comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
           weighting_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
@@ -58,11 +62,7 @@ namespace CONTACT
         dserror("CoNitscheStrategyFsi: No frictional contact implemented for Nitsche FSCI!");
     }
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoNitscheStrategyFsi() {}
+    ~CoNitscheStrategyFsi() override = default;
 
     //! Evaluate and apply RHS and Stiffness Matrix for Contact
     void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
@@ -70,7 +70,7 @@ namespace CONTACT
         const int iter, bool predictor) override;
 
     //! Set Contact State and update search tree and normals
-    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec);
+    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated

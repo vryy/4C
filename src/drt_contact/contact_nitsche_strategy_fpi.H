@@ -11,7 +11,10 @@
 #ifndef CONTACT_NITSCHE_STRATEGY_FPI_H
 #define CONTACT_NITSCHE_STRATEGY_FPI_H
 
+#include <utility>
+
 #include "contact_nitsche_strategy_poro.H"
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace CONTACT
@@ -33,7 +36,7 @@ namespace CONTACT
         Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface,
         int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
         : CoNitscheStrategyPoro(
-              DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+              DofRowMap, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
           weighting_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
@@ -48,8 +51,8 @@ namespace CONTACT
         const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
         std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface, int dim,
         Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
-        : CoNitscheStrategyPoro(
-              data_ptr, DofRowMap, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
+        : CoNitscheStrategyPoro(data_ptr, DofRowMap, NodeRowMap, params, std::move(interface), dim,
+              comm, alphaf, maxdof),
           pen_n_(params.get<double>("PENALTYPARAM")),
           weighting_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
               params, "NITSCHE_WEIGHTING"))
@@ -59,14 +62,10 @@ namespace CONTACT
         dserror("CoNitscheStrategyFpi: No frictional contact implemented for Nitsche FPSCI!");
     }
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoNitscheStrategyFpi() {}
+    ~CoNitscheStrategyFpi() override = default;
 
     //! Set Contact State and update search tree and normals
-    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec);
+    void SetState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     //! The the contact state at local coord of CoElement cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated

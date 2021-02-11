@@ -8,28 +8,21 @@
 */
 /*---------------------------------------------------------------------*/
 #include "contact_nitsche_integrator_tsi.H"
-#include "contact_nitsche_integrator.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "contact_node.H"
 #include "contact_element.H"
-#include "contact_defines.H"
+#include "contact_nitsche_integrator.H"
+#include "contact_nitsche_utils.H"
+#include "contact_node.H"
 #include "contact_paramsinterface.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_inpar/inpar_contact.H"
+
+#include <Epetra_FEVector.h>
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
 
+#include "../drt_mat/elasthyper.H"
+
 #include "../drt_so3/so_base.H"
 #include "../drt_so3/so3_plast/so3_ssn_plast.H"
-
-#include "../drt_mat/elasthyper.H"
-#include <Epetra_FEVector.h>
-#include <Epetra_CrsMatrix.h>
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "contact_nitsche_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
 
 
 /*----------------------------------------------------------------------*
@@ -45,10 +38,8 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateGP_3D(MORTAR::MortarElement& sele
     std::vector<GEN::pairedvector<int, double>>& derivsxi,
     std::vector<GEN::pairedvector<int, double>>& derivmxi)
 {
-  GPTS_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
-      gap, deriv_gap, normal, dnmap_unit, sxi, mxi);
-
-  return;
+  GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
+      deriv_gap, normal, dnmap_unit, sxi, mxi);
 }
 
 
@@ -66,24 +57,22 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateGP_2D(MORTAR::MortarElement& sele
     std::vector<GEN::pairedvector<int, double>>& derivsxi,
     std::vector<GEN::pairedvector<int, double>>& derivmxi)
 {
-  GPTS_forces<2>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
-      gap, deriv_gap, normal, dnmap_unit, sxi, mxi);
-
-  return;
+  GPTSForces<2>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
+      deriv_gap, normal, dnmap_unit, sxi, mxi);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitscheTsi::GPTSForces(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
     const std::vector<GEN::pairedvector<int, double>>& dsxi, const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& mderiv,
     const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
     const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+    const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
     std::vector<GEN::pairedvector<int, double>>& deriv_contact_normal, double* sxi, double* mxi)
 {
   if (sele.Owner() != Comm_.MyPID()) return;
@@ -122,7 +111,6 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
 
   double pen = ppn_;
   double pet = ppt_;
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   const LINALG::Matrix<dim, 1> contact_normal(gpn, true);
   double cauchy_nn_weighted_average = 0.;
@@ -231,11 +219,8 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
   const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
   GEN::pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv.size() + dgapgp.size());
-  for (_CI p = cauchy_nn_weighted_average_deriv.begin();
-       p != cauchy_nn_weighted_average_deriv.end(); ++p)
-    d_snn_av_pen_gap[p->first] += p->second;
-  for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p)
-    d_snn_av_pen_gap[p->first] += pen * p->second;
+  for (const auto& p : cauchy_nn_weighted_average_deriv) d_snn_av_pen_gap[p.first] += p.second;
+  for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
 
   // evaluation of tangential stuff
   if (frtype_)
@@ -351,32 +336,39 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
           double fr_temp_fac = std::pow((std::max(s_gp_temp, m_gp_temp) - temp_damage_), 2.) /
                                std::pow((temp_damage_ - temp_ref_), 2.);
           fr = frcoeff_ * (-1.) * (snn_av_pen_gap)*fr_temp_fac;
-          for (_CI p = d_snn_av_pen_gap.begin(); p != d_snn_av_pen_gap.end(); ++p)
-            d_fr_d[p->first] += frcoeff_ * (-1.) * p->second * fr_temp_fac;
-          for (_CI p = cauchy_nn_weighted_average_deriv_T.begin();
-               p != cauchy_nn_weighted_average_deriv_T.end(); ++p)
-            d_fr_T[p->first] += frcoeff_ * (-1.) * p->second * fr_temp_fac;
+          for (const auto& p : d_snn_av_pen_gap)
+            d_fr_d[p.first] += frcoeff_ * (-1.) * p.second * fr_temp_fac;
+          for (const auto& p : cauchy_nn_weighted_average_deriv_T)
+            d_fr_T[p.first] += frcoeff_ * (-1.) * p.second * fr_temp_fac;
           if (s_gp_temp >= m_gp_temp)
           {
-            for (_CI p = d_s_gp_temp_dd.begin(); p != d_s_gp_temp_dd.end(); ++p)
-              d_fr_d[p->first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
-                                  (s_gp_temp - temp_damage_) /
-                                  std::pow((temp_damage_ - temp_ref_), 2.) * p->second;
-            for (_CI p = d_s_gp_temp_dT.begin(); p != d_s_gp_temp_dT.end(); ++p)
-              d_fr_T[p->first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
-                                  (s_gp_temp - temp_damage_) /
-                                  std::pow((temp_damage_ - temp_ref_), 2.) * p->second;
+            for (const auto& p : d_s_gp_temp_dd)
+            {
+              d_fr_d[p.first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
+                                 (s_gp_temp - temp_damage_) /
+                                 std::pow((temp_damage_ - temp_ref_), 2.) * p.second;
+            }
+            for (const auto& p : d_s_gp_temp_dT)
+            {
+              d_fr_T[p.first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
+                                 (s_gp_temp - temp_damage_) /
+                                 std::pow((temp_damage_ - temp_ref_), 2.) * p.second;
+            }
           }
           else
           {
-            for (_CI p = d_m_gp_temp_dd.begin(); p != d_m_gp_temp_dd.end(); ++p)
-              d_fr_d[p->first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
-                                  (m_gp_temp - temp_damage_) /
-                                  std::pow((temp_damage_ - temp_ref_), 2.) * p->second;
-            for (_CI p = d_m_gp_temp_dT.begin(); p != d_m_gp_temp_dT.end(); ++p)
-              d_fr_T[p->first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
-                                  (m_gp_temp - temp_damage_) /
-                                  std::pow((temp_damage_ - temp_ref_), 2.) * p->second;
+            for (const auto& p : d_m_gp_temp_dd)
+            {
+              d_fr_d[p.first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
+                                 (m_gp_temp - temp_damage_) /
+                                 std::pow((temp_damage_ - temp_ref_), 2.) * p.second;
+            }
+            for (const auto& p : d_m_gp_temp_dT)
+            {
+              d_fr_T[p.first] += frcoeff_ * (-1.) * (snn_av_pen_gap)*2. *
+                                 (m_gp_temp - temp_damage_) /
+                                 std::pow((temp_damage_ - temp_ref_), 2.) * p.second;
+            }
           }
           break;
         }
@@ -397,24 +389,18 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
       if (tan_tr < fr)
       {
         sigma_nt1_pen_vt1 = cauchy_nt1_weighted_average + pet * vt1;
-        for (_CI p = dvt1.begin(); p != dvt1.end(); ++p)
-          d_sigma_nt1_pen_vt1[p->first] += pet * p->second;
-        for (_CI p = cauchy_nt1_weighted_average_deriv.begin();
-             p != cauchy_nt1_weighted_average_deriv.end(); ++p)
-          d_sigma_nt1_pen_vt1[p->first] += p->second;
-        for (_CI p = cauchy_nt1_weighted_average_deriv_T.begin();
-             p != cauchy_nt1_weighted_average_deriv_T.end(); ++p)
-          d_sigma_nt1_pen_vt1_T[p->first] += p->second;
+        for (const auto& p : dvt1) d_sigma_nt1_pen_vt1[p.first] += pet * p.second;
+        for (const auto& p : cauchy_nt1_weighted_average_deriv)
+          d_sigma_nt1_pen_vt1[p.first] += p.second;
+        for (const auto& p : cauchy_nt1_weighted_average_deriv_T)
+          d_sigma_nt1_pen_vt1_T[p.first] += p.second;
 
         sigma_nt2_pen_vt2 = cauchy_nt2_weighted_average + pet * vt2;
-        for (_CI p = dvt2.begin(); p != dvt2.end(); ++p)
-          d_sigma_nt2_pen_vt2[p->first] += pet * p->second;
-        for (_CI p = cauchy_nt2_weighted_average_deriv.begin();
-             p != cauchy_nt2_weighted_average_deriv.end(); ++p)
-          d_sigma_nt2_pen_vt2[p->first] += p->second;
-        for (_CI p = cauchy_nt2_weighted_average_deriv_T.begin();
-             p != cauchy_nt2_weighted_average_deriv_T.end(); ++p)
-          d_sigma_nt2_pen_vt2_T[p->first] += p->second;
+        for (const auto& p : dvt2) d_sigma_nt2_pen_vt2[p.first] += pet * p.second;
+        for (const auto& p : cauchy_nt2_weighted_average_deriv)
+          d_sigma_nt2_pen_vt2[p.first] += p.second;
+        for (const auto& p : cauchy_nt2_weighted_average_deriv_T)
+          d_sigma_nt2_pen_vt2_T[p.first] += p.second;
       }
       // slip
       else
@@ -427,64 +413,52 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
             sele.ParentElement()->NumNode() + mele.ParentElement()->NumNode());
         if (frtype_ == INPAR::CONTACT::friction_coulomb)
         {
-          for (_CI p = d_fr_d.begin(); p != d_fr_d.end(); ++p)
-            tmp_d[p->first] += p->second / tan_tr;
-          for (_CI p = d_fr_T.begin(); p != d_fr_T.end(); ++p)
-            tmp_T[p->first] += p->second / tan_tr;
+          for (const auto& p : d_fr_d) tmp_d[p.first] += p.second / tan_tr;
+          for (const auto& p : d_fr_T) tmp_T[p.first] += p.second / tan_tr;
         }
-        for (_CI p = cauchy_nt1_weighted_average_deriv.begin();
-             p != cauchy_nt1_weighted_average_deriv.end(); ++p)
-          tmp_d[p->first] += -fr / (tan_tr * tan_tr * tan_tr) *
-                             (cauchy_nt1_weighted_average + pet * vt1) * p->second;
-        for (_CI p = dvt1.begin(); p != dvt1.end(); ++p)
-          tmp_d[p->first] += -fr / (tan_tr * tan_tr * tan_tr) *
-                             (cauchy_nt1_weighted_average + pet * vt1) * (+pet) * p->second;
-        for (_CI p = cauchy_nt1_weighted_average_deriv_T.begin();
-             p != cauchy_nt1_weighted_average_deriv_T.end(); ++p)
-          tmp_T[p->first] += -fr / (tan_tr * tan_tr * tan_tr) *
-                             (cauchy_nt1_weighted_average + pet * vt1) * p->second;
+        for (const auto& p : cauchy_nt1_weighted_average_deriv)
+          tmp_d[p.first] += -fr / (tan_tr * tan_tr * tan_tr) *
+                            (cauchy_nt1_weighted_average + pet * vt1) * p.second;
+        for (const auto& p : dvt1)
+          tmp_d[p.first] += -fr / (tan_tr * tan_tr * tan_tr) *
+                            (cauchy_nt1_weighted_average + pet * vt1) * (+pet) * p.second;
+        for (const auto& p : cauchy_nt1_weighted_average_deriv_T)
+          tmp_T[p.first] += -fr / (tan_tr * tan_tr * tan_tr) *
+                            (cauchy_nt1_weighted_average + pet * vt1) * p.second;
 
-        for (_CI p = cauchy_nt2_weighted_average_deriv.begin();
-             p != cauchy_nt2_weighted_average_deriv.end(); ++p)
-          tmp_d[p->first] += -fr / (tan_tr * tan_tr * tan_tr) *
-                             (cauchy_nt2_weighted_average + pet * vt2) * p->second;
-        for (_CI p = dvt2.begin(); p != dvt2.end(); ++p)
-          tmp_d[p->first] += -fr / (tan_tr * tan_tr * tan_tr) *
-                             (cauchy_nt2_weighted_average + pet * vt2) * (+pet) * p->second;
-        for (_CI p = cauchy_nt2_weighted_average_deriv_T.begin();
-             p != cauchy_nt2_weighted_average_deriv_T.end(); ++p)
-          tmp_T[p->first] += -fr / (tan_tr * tan_tr * tan_tr) *
-                             (cauchy_nt2_weighted_average + pet * vt2) * p->second;
+        for (const auto& p : cauchy_nt2_weighted_average_deriv)
+          tmp_d[p.first] += -fr / (tan_tr * tan_tr * tan_tr) *
+                            (cauchy_nt2_weighted_average + pet * vt2) * p.second;
+        for (const auto& p : dvt2)
+          tmp_d[p.first] += -fr / (tan_tr * tan_tr * tan_tr) *
+                            (cauchy_nt2_weighted_average + pet * vt2) * (+pet) * p.second;
+        for (const auto& p : cauchy_nt2_weighted_average_deriv_T)
+          tmp_T[p.first] += -fr / (tan_tr * tan_tr * tan_tr) *
+                            (cauchy_nt2_weighted_average + pet * vt2) * p.second;
 
         sigma_nt1_pen_vt1 = fr / tan_tr * (cauchy_nt1_weighted_average + pet * vt1);
-        for (_CI p = tmp_d.begin(); p != tmp_d.end(); ++p)
-          d_sigma_nt1_pen_vt1[p->first] += p->second * (cauchy_nt1_weighted_average + pet * vt1);
-        for (_CI p = cauchy_nt1_weighted_average_deriv.begin();
-             p != cauchy_nt1_weighted_average_deriv.end(); ++p)
-          d_sigma_nt1_pen_vt1[p->first] += fr / tan_tr * p->second;
-        for (_CI p = dvt1.begin(); p != dvt1.end(); ++p)
-          d_sigma_nt1_pen_vt1[p->first] += fr / tan_tr * pet * p->second;
+        for (const auto& p : tmp_d)
+          d_sigma_nt1_pen_vt1[p.first] += p.second * (cauchy_nt1_weighted_average + pet * vt1);
+        for (const auto& p : cauchy_nt1_weighted_average_deriv)
+          d_sigma_nt1_pen_vt1[p.first] += fr / tan_tr * p.second;
+        for (const auto& p : dvt1) d_sigma_nt1_pen_vt1[p.first] += fr / tan_tr * pet * p.second;
 
-        for (_CI p = tmp_T.begin(); p != tmp_T.end(); ++p)
-          d_sigma_nt1_pen_vt1_T[p->first] += p->second * (cauchy_nt1_weighted_average + pet * vt1);
-        for (_CI p = cauchy_nt1_weighted_average_deriv_T.begin();
-             p != cauchy_nt1_weighted_average_deriv_T.end(); ++p)
-          d_sigma_nt1_pen_vt1_T[p->first] += fr / tan_tr * p->second;
+        for (const auto& p : tmp_T)
+          d_sigma_nt1_pen_vt1_T[p.first] += p.second * (cauchy_nt1_weighted_average + pet * vt1);
+        for (const auto& p : cauchy_nt1_weighted_average_deriv_T)
+          d_sigma_nt1_pen_vt1_T[p.first] += fr / tan_tr * p.second;
 
         sigma_nt2_pen_vt2 = fr / tan_tr * (cauchy_nt2_weighted_average + pet * vt2);
-        for (_CI p = tmp_d.begin(); p != tmp_d.end(); ++p)
-          d_sigma_nt2_pen_vt2[p->first] += p->second * (cauchy_nt2_weighted_average + pet * vt2);
-        for (_CI p = cauchy_nt2_weighted_average_deriv.begin();
-             p != cauchy_nt2_weighted_average_deriv.end(); ++p)
-          d_sigma_nt2_pen_vt2[p->first] += fr / tan_tr * p->second;
-        for (_CI p = dvt2.begin(); p != dvt2.end(); ++p)
-          d_sigma_nt2_pen_vt2[p->first] += fr / tan_tr * pet * p->second;
+        for (const auto& p : tmp_d)
+          d_sigma_nt2_pen_vt2[p.first] += p.second * (cauchy_nt2_weighted_average + pet * vt2);
+        for (const auto& p : cauchy_nt2_weighted_average_deriv)
+          d_sigma_nt2_pen_vt2[p.first] += fr / tan_tr * p.second;
+        for (const auto& p : dvt2) d_sigma_nt2_pen_vt2[p.first] += fr / tan_tr * pet * p.second;
 
-        for (_CI p = tmp_T.begin(); p != tmp_T.end(); ++p)
-          d_sigma_nt2_pen_vt2_T[p->first] += p->second * (cauchy_nt2_weighted_average + pet * vt2);
-        for (_CI p = cauchy_nt2_weighted_average_deriv_T.begin();
-             p != cauchy_nt2_weighted_average_deriv_T.end(); ++p)
-          d_sigma_nt2_pen_vt2_T[p->first] += fr / tan_tr * p->second;
+        for (const auto& p : tmp_T)
+          d_sigma_nt2_pen_vt2_T[p.first] += p.second * (cauchy_nt2_weighted_average + pet * vt2);
+        for (const auto& p : cauchy_nt2_weighted_average_deriv_T)
+          d_sigma_nt2_pen_vt2_T[p.first] += fr / tan_tr * p.second;
       }
       IntegrateTest<dim>(-theta_2_, sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
           sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1, d_sigma_nt1_pen_vt1_T, t1, dt1);
@@ -524,18 +498,12 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
     {
       diss = (sigma_nt1_pen_vt1 * vt1 + sigma_nt2_pen_vt2 * vt2) / dt_;
 
-      for (_CI p = d_sigma_nt1_pen_vt1.begin(); p != d_sigma_nt1_pen_vt1.end(); ++p)
-        d_diss_d[p->first] += vt1 * p->second / dt_;
-      for (_CI p = d_sigma_nt2_pen_vt2.begin(); p != d_sigma_nt2_pen_vt2.end(); ++p)
-        d_diss_d[p->first] += vt2 * p->second / dt_;
-      for (_CI p = dvt1.begin(); p != dvt1.end(); ++p)
-        d_diss_d[p->first] += sigma_nt1_pen_vt1 * p->second / dt_;
-      for (_CI p = dvt2.begin(); p != dvt2.end(); ++p)
-        d_diss_d[p->first] += sigma_nt2_pen_vt2 * p->second / dt_;
-      for (_CI p = d_sigma_nt1_pen_vt1_T.begin(); p != d_sigma_nt1_pen_vt1_T.end(); ++p)
-        d_diss_T[p->first] += vt1 * p->second / dt_;
-      for (_CI p = d_sigma_nt2_pen_vt2_T.begin(); p != d_sigma_nt2_pen_vt2_T.end(); ++p)
-        d_diss_T[p->first] += vt2 * p->second / dt_;
+      for (const auto& p : d_sigma_nt1_pen_vt1) d_diss_d[p.first] += vt1 * p.second / dt_;
+      for (const auto& p : d_sigma_nt2_pen_vt2) d_diss_d[p.first] += vt2 * p.second / dt_;
+      for (const auto& p : dvt1) d_diss_d[p.first] += sigma_nt1_pen_vt1 * p.second / dt_;
+      for (const auto& p : dvt2) d_diss_d[p.first] += sigma_nt2_pen_vt2 * p.second / dt_;
+      for (const auto& p : d_sigma_nt1_pen_vt1_T) d_diss_T[p.first] += vt1 * p.second / dt_;
+      for (const auto& p : d_sigma_nt2_pen_vt2_T) d_diss_T[p.first] += vt2 * p.second / dt_;
     }
 
     switch (nit_thr_)
@@ -547,22 +515,17 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
 
         GEN::pairedvector<int, double> d_q1_d(
             d_snn_av_pen_gap.size() + d_s_gp_temp_dd.size() + d_m_gp_temp_dd.size());
-        for (_CI p = d_snn_av_pen_gap.begin(); p != d_snn_av_pen_gap.end(); ++p)
-          d_q1_d[p->first] += beta * (-p->second) * (s_gp_temp - m_gp_temp);
-        for (_CI p = d_s_gp_temp_dd.begin(); p != d_s_gp_temp_dd.end(); ++p)
-          d_q1_d[p->first] += beta_bar * p->second;
-        for (_CI p = d_m_gp_temp_dd.begin(); p != d_m_gp_temp_dd.end(); ++p)
-          d_q1_d[p->first] += beta_bar * (-p->second);
+        for (const auto& p : d_snn_av_pen_gap)
+          d_q1_d[p.first] += beta * (-p.second) * (s_gp_temp - m_gp_temp);
+        for (const auto& p : d_s_gp_temp_dd) d_q1_d[p.first] += beta_bar * p.second;
+        for (const auto& p : d_m_gp_temp_dd) d_q1_d[p.first] += beta_bar * (-p.second);
 
         GEN::pairedvector<int, double> d_q1_T(cauchy_nn_weighted_average_deriv_T.size() +
                                               d_s_gp_temp_dT.size() + d_m_gp_temp_dT.size());
-        for (_CI p = cauchy_nn_weighted_average_deriv_T.begin();
-             p != cauchy_nn_weighted_average_deriv_T.end(); ++p)
-          d_q1_T[p->first] += beta * (-p->second) * (s_gp_temp - m_gp_temp);
-        for (_CI p = d_s_gp_temp_dT.begin(); p != d_s_gp_temp_dT.end(); ++p)
-          d_q1_T[p->first] += beta_bar * p->second;
-        for (_CI p = d_m_gp_temp_dT.begin(); p != d_m_gp_temp_dT.end(); ++p)
-          d_q1_T[p->first] += beta_bar * (-p->second);
+        for (const auto& p : cauchy_nn_weighted_average_deriv_T)
+          d_q1_T[p.first] += beta * (-p.second) * (s_gp_temp - m_gp_temp);
+        for (const auto& p : d_s_gp_temp_dT) d_q1_T[p.first] += beta_bar * p.second;
+        for (const auto& p : d_m_gp_temp_dT) d_q1_T[p.first] += beta_bar * (-p.second);
 
         IntegrateThermalTest<dim>(
             +1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, q1, d_q1_d, d_q1_T);
@@ -657,46 +620,47 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
           test_val += +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * (s_gp_temp - m_gp_temp);
           test_val += -(beta_bar) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * diss;
 
-          for (_CI p = deriv_qn_weighted_average_d.begin(); p != deriv_qn_weighted_average_d.end();
-               ++p)
-            deriv_test_val_d[p->first] += +(beta_bar) / (pen_thermo + beta_bar) * p->second;
-          for (_CI p = deriv_qn_weighted_average_T.begin(); p != deriv_qn_weighted_average_T.end();
-               ++p)
-            deriv_test_val_T[p->first] += +(beta_bar) / (pen_thermo + beta_bar) * p->second;
+          for (const auto& p : deriv_qn_weighted_average_d)
+            deriv_test_val_d[p.first] += +(beta_bar) / (pen_thermo + beta_bar) * p.second;
+          for (const auto& p : deriv_qn_weighted_average_T)
+            deriv_test_val_T[p.first] += +(beta_bar) / (pen_thermo + beta_bar) * p.second;
 
-          for (_CI p = d_s_gp_temp_dd.begin(); p != d_s_gp_temp_dd.end(); ++p)
-            deriv_test_val_d[p->first] +=
-                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * p->second;
-          for (_CI p = d_m_gp_temp_dd.begin(); p != d_m_gp_temp_dd.end(); ++p)
-            deriv_test_val_d[p->first] +=
-                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * (-p->second);
-          for (_CI p = d_s_gp_temp_dT.begin(); p != d_s_gp_temp_dT.end(); ++p)
-            deriv_test_val_T[p->first] +=
-                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * p->second;
-          for (_CI p = d_m_gp_temp_dT.begin(); p != d_m_gp_temp_dT.end(); ++p)
-            deriv_test_val_T[p->first] +=
-                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * (-p->second);
+          for (const auto& p : d_s_gp_temp_dd)
+            deriv_test_val_d[p.first] +=
+                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * p.second;
+          for (const auto& p : d_m_gp_temp_dd)
+            deriv_test_val_d[p.first] +=
+                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * (-p.second);
+          for (const auto& p : d_s_gp_temp_dT)
+            deriv_test_val_T[p.first] +=
+                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * p.second;
+          for (const auto& p : d_m_gp_temp_dT)
+            deriv_test_val_T[p.first] +=
+                +(beta_bar * pen_thermo) / (pen_thermo + beta_bar) * (-p.second);
 
-          for (_CI p = d_diss_d.begin(); p != d_diss_d.end(); ++p)
-            deriv_test_val_d[p->first] +=
-                -(beta_bar) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p->second;
-          for (_CI p = d_diss_T.begin(); p != d_diss_T.end(); ++p)
-            deriv_test_val_T[p->first] +=
-                -(beta_bar) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p->second;
+          for (const auto& p : d_diss_d)
+            deriv_test_val_d[p.first] +=
+                -(beta_bar) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p.second;
+          for (const auto& p : d_diss_T)
+            deriv_test_val_T[p.first] +=
+                -(beta_bar) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p.second;
 
-          for (_CI p = d_snn_av_pen_gap.begin(); p != d_snn_av_pen_gap.end(); ++p)
-            deriv_test_val_d[p->first] += beta * (-p->second) /
-                                          (std::pow(pen_thermo + beta_bar, 2.)) *
-                                          (+pen_thermo * qn_weighted_average +
-                                              pen_thermo * pen_thermo * (s_gp_temp - m_gp_temp) -
-                                              pen_thermo * (1. - delta_c - ws_thermo) * diss);
-          for (_CI p = cauchy_nn_weighted_average_deriv_T.begin();
-               p != cauchy_nn_weighted_average_deriv_T.end(); ++p)
-            deriv_test_val_T[p->first] += beta * (-p->second) /
-                                          (std::pow(pen_thermo + beta_bar, 2.)) *
-                                          (+pen_thermo * qn_weighted_average +
-                                              pen_thermo * pen_thermo * (s_gp_temp - m_gp_temp) -
-                                              pen_thermo * (1. - delta_c - ws_thermo) * diss);
+          for (const auto& p : d_snn_av_pen_gap)
+          {
+            deriv_test_val_d[p.first] += beta * (-p.second) /
+                                         (std::pow(pen_thermo + beta_bar, 2.)) *
+                                         (+pen_thermo * qn_weighted_average +
+                                             pen_thermo * pen_thermo * (s_gp_temp - m_gp_temp) -
+                                             pen_thermo * (1. - delta_c - ws_thermo) * diss);
+          }
+          for (const auto& p : cauchy_nn_weighted_average_deriv_T)
+          {
+            deriv_test_val_T[p.first] += beta * (-p.second) /
+                                         (std::pow(pen_thermo + beta_bar, 2.)) *
+                                         (+pen_thermo * qn_weighted_average +
+                                             pen_thermo * pen_thermo * (s_gp_temp - m_gp_temp) -
+                                             pen_thermo * (1. - delta_c - ws_thermo) * diss);
+          }
 
           IntegrateThermalTest<dim>(+1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt,
               test_val, deriv_test_val_d, deriv_test_val_T);
@@ -723,41 +687,42 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
           test_val += +(beta_bar) / (pen_thermo + beta_bar) * (s_gp_temp - m_gp_temp);
           test_val += +(1.) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * diss;
 
-          for (_CI p = deriv_qn_weighted_average_d.begin(); p != deriv_qn_weighted_average_d.end();
-               ++p)
-            deriv_test_val_d[p->first] += -(1.) / (pen_thermo + beta_bar) * p->second;
-          for (_CI p = deriv_qn_weighted_average_T.begin(); p != deriv_qn_weighted_average_T.end();
-               ++p)
-            deriv_test_val_T[p->first] += -(1.) / (pen_thermo + beta_bar) * p->second;
+          for (const auto& p : deriv_qn_weighted_average_d)
+            deriv_test_val_d[p.first] += -(1.) / (pen_thermo + beta_bar) * p.second;
+          for (const auto& p : deriv_qn_weighted_average_T)
+            deriv_test_val_T[p.first] += -(1.) / (pen_thermo + beta_bar) * p.second;
 
-          for (_CI p = d_s_gp_temp_dd.begin(); p != d_s_gp_temp_dd.end(); ++p)
-            deriv_test_val_d[p->first] += +(beta_bar) / (pen_thermo + beta_bar) * p->second;
-          for (_CI p = d_s_gp_temp_dT.begin(); p != d_s_gp_temp_dT.end(); ++p)
-            deriv_test_val_T[p->first] += +(beta_bar) / (pen_thermo + beta_bar) * p->second;
-          for (_CI p = d_m_gp_temp_dd.begin(); p != d_m_gp_temp_dd.end(); ++p)
-            deriv_test_val_d[p->first] += +(beta_bar) / (pen_thermo + beta_bar) * (-p->second);
-          for (_CI p = d_m_gp_temp_dT.begin(); p != d_m_gp_temp_dT.end(); ++p)
-            deriv_test_val_T[p->first] += +(beta_bar) / (pen_thermo + beta_bar) * (-p->second);
+          for (const auto& p : d_s_gp_temp_dd)
+            deriv_test_val_d[p.first] += +(beta_bar) / (pen_thermo + beta_bar) * p.second;
+          for (const auto& p : d_s_gp_temp_dT)
+            deriv_test_val_T[p.first] += +(beta_bar) / (pen_thermo + beta_bar) * p.second;
+          for (const auto& p : d_m_gp_temp_dd)
+            deriv_test_val_d[p.first] += +(beta_bar) / (pen_thermo + beta_bar) * (-p.second);
+          for (const auto& p : d_m_gp_temp_dT)
+            deriv_test_val_T[p.first] += +(beta_bar) / (pen_thermo + beta_bar) * (-p.second);
 
-          for (_CI p = d_diss_d.begin(); p != d_diss_d.end(); ++p)
-            deriv_test_val_d[p->first] +=
-                +(1.) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p->second;
-          for (_CI p = d_diss_T.begin(); p != d_diss_T.end(); ++p)
-            deriv_test_val_T[p->first] +=
-                +(1.) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p->second;
+          for (const auto& p : d_diss_d)
+            deriv_test_val_d[p.first] +=
+                +(1.) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p.second;
+          for (const auto& p : d_diss_T)
+            deriv_test_val_T[p.first] +=
+                +(1.) / (pen_thermo + beta_bar) * (1. - delta_c - ws_thermo) * p.second;
 
-          for (_CI p = d_snn_av_pen_gap.begin(); p != d_snn_av_pen_gap.end(); ++p)
-            deriv_test_val_d[p->first] +=
+          for (const auto& p : d_snn_av_pen_gap)
+          {
+            deriv_test_val_d[p.first] +=
                 (+1. * qn_weighted_average + pen_thermo * (s_gp_temp - m_gp_temp) -
                     1. * (1. - delta_c - ws_thermo) * diss) /
-                std::pow(pen_thermo + beta_bar, 2) * beta * (-p->second);
+                std::pow(pen_thermo + beta_bar, 2) * beta * (-p.second);
+          }
 
-          for (_CI p = cauchy_nn_weighted_average_deriv_T.begin();
-               p != cauchy_nn_weighted_average_deriv_T.end(); ++p)
-            deriv_test_val_T[p->first] +=
+          for (const auto& p : cauchy_nn_weighted_average_deriv_T)
+          {
+            deriv_test_val_T[p.first] +=
                 (+1. * qn_weighted_average + pen_thermo * (s_gp_temp - m_gp_temp) -
                     1. * (1. - delta_c - ws_thermo) * diss) /
-                std::pow(pen_thermo + beta_bar, 2) * beta * (-p->second);
+                std::pow(pen_thermo + beta_bar, 2) * beta * (-p.second);
+          }
 
           IntegrateThermalAdjointTest<dim>(theta_thermo_, jac, jacintcellmap, wgt, test_val,
               deriv_test_val_d, deriv_test_val_T, sele, thermo_adjoint_test_slave,
@@ -773,8 +738,6 @@ void CONTACT::CoIntegratorNitscheTsi::GPTS_forces(MORTAR::MortarElement& sele,
         break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -829,22 +792,28 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(MORTAR::MortarElement& moEle,
     deriv_sigma_nt_d[moEle.MoData().ParentDof().at(i)] += w * dsntdd(i, 0);
 
   for (int i = 0; i < dim - 1; ++i)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = boundary_gpcoord_lin[i].begin();
          p != boundary_gpcoord_lin[i].end(); ++p)
     {
       double& ref = deriv_sigma_nt_d[p->first];
       for (int k = 0; k < dim; ++k) ref += dsntdpxi(k) * derivtravo_slave(k, i) * p->second * w;
     }
+  }
 
   for (int d = 0; d < dim; ++d)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
          p != normal_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdn(d) * p->second * w;
+  }
 
   for (int d = 0; d < dim; ++d)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = direction_deriv[d].begin();
          p != direction_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdt(d) * p->second * w;
+  }
 
   if (moEle.MoData().ParentTempDof().size() != 0)
     for (int i = 0; i < moEle.ParentElement()->NumNode(); ++i)
@@ -857,8 +826,6 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(MORTAR::MortarElement& moEle,
         deriv_adjoint_test_d);
     BuildAdjointTestTsi<dim>(moEle, w, d2sntDdDT, deriv_adjoint_test_T);
   }
-
-  return;
 }
 template <int dim>
 void CONTACT::CoIntegratorNitscheTsi::IntegrateTest(const double fac, MORTAR::MortarElement& ele,
@@ -872,16 +839,19 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateTest(const double fac, MORTAR::Mo
   CONTACT::CoIntegratorNitsche::IntegrateTest<dim>(fac, ele, shape, deriv, dxi, jac, jacintcellmap,
       wgt, test_val, test_deriv_d, test_dir, test_dir_deriv);
 
-  for (GEN::pairedvector<int, double>::const_iterator p = test_deriv_T.begin();
-       p != test_deriv_T.end(); ++p)
+  for (const auto& p : test_deriv_T)
   {
-    double* row = ele.GetNitscheContainer().k_dt(p->first);
+    double* row = ele.GetNitscheContainer().Kdt(p.first);
     for (int s = 0; s < ele.NumNode(); ++s)
+    {
       for (int d = 0; d < Dim(); ++d)
+      {
         row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
-            d] += fac * jac * wgt * test_dir(d) * p->second * shape(s);
+            d] += fac * jac * wgt * test_dir(d) * p.second * shape(s);
+      }
+    }
   }
 }
 
@@ -899,18 +869,19 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateAdjointTest(const double fac, con
   CONTACT::CoIntegratorNitsche::IntegrateAdjointTest<dim>(
       fac, jac, jacintcellmap, wgt, test, deriv_test_d, moEle, adjoint_test, deriv_adjoint_test_d);
 
-  for (GEN::pairedvector<int, double>::const_iterator p = deriv_test_T.begin();
-       p != deriv_test_T.end(); ++p)
+  for (const auto& p : deriv_test_T)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_dt(p->first), moEle.MoData().ParentDof().size())
-        .Update(fac * jac * wgt * p->second, adjoint_test, 1.);
+        View, moEle.GetNitscheContainer().Kdt(p.first), moEle.MoData().ParentDof().size())
+        .Update(fac * jac * wgt * p.second, adjoint_test, 1.);
+  }
 
-  for (GEN::pairedvector<int, LINALG::SerialDenseVector>::const_iterator p =
-           deriv_adjoint_test_T.begin();
-       p != deriv_adjoint_test_T.end(); ++p)
+  for (const auto& p : deriv_adjoint_test_T)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_dt(p->first), moEle.MoData().ParentDof().size())
-        .Update(fac * jac * wgt * test, p->second, 1.);
+        View, moEle.GetNitscheContainer().Kdt(p.first), moEle.MoData().ParentDof().size())
+        .Update(fac * jac * wgt * test, p.second, 1.);
+  }
 }
 
 
@@ -922,46 +893,42 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalTest(const double fac,
     const double test_val, const GEN::pairedvector<int, double>& test_deriv_d,
     const GEN::pairedvector<int, double>& test_deriv_T)
 {
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
-
   double val = fac * jac * wgt * test_val;
 
   for (int s = 0; s < ele.NumNode(); ++s)
-    *(ele.GetNitscheContainer().rhs_t(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+    *(ele.GetNitscheContainer().RhsT(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) += val * shape(s);
 
   GEN::pairedvector<int, double> val_deriv_d(jacintcellmap.size() + test_deriv_d.size());
-  for (_CI p = jacintcellmap.begin(); p != jacintcellmap.end(); ++p)
-    val_deriv_d[p->first] += fac * p->second * wgt * test_val;
-  for (_CI p = test_deriv_d.begin(); p != test_deriv_d.end(); ++p)
-    val_deriv_d[p->first] += fac * jac * wgt * p->second;
+  for (const auto& p : jacintcellmap) val_deriv_d[p.first] += fac * p.second * wgt * test_val;
+  for (const auto& p : test_deriv_d) val_deriv_d[p.first] += fac * jac * wgt * p.second;
 
-  for (_CI p = val_deriv_d.begin(); p != val_deriv_d.end(); ++p)
+  for (const auto& p : val_deriv_d)
   {
-    double* row = ele.GetNitscheContainer().k_td(p->first);
+    double* row = ele.GetNitscheContainer().Ktd(p.first);
     for (int s = 0; s < ele.NumNode(); ++s)
       row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] += p->second * shape(s);
+          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] += p.second * shape(s);
   }
 
   for (int e = 0; e < Dim() - 1; ++e)
-    for (_CI p = dxi[e].begin(); p != dxi[e].end(); ++p)
+  {
+    for (auto p = dxi[e].begin(); p != dxi[e].end(); ++p)
     {
-      double* row = ele.GetNitscheContainer().k_td(p->first);
+      double* row = ele.GetNitscheContainer().Ktd(p->first);
       for (int s = 0; s < ele.NumNode(); ++s)
         row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
             ele.FaceParentNumber(), s)] += val * deriv(s, e) * p->second;
     }
-
-  for (_CI p = test_deriv_T.begin(); p != test_deriv_T.end(); ++p)
-  {
-    double* row = ele.GetNitscheContainer().k_tt(p->first);
-    for (int s = 0; s < ele.NumNode(); ++s)
-      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
-          ele.FaceParentNumber(), s)] += fac * jac * wgt * p->second * shape(s);
   }
 
-  return;
+  for (const auto& p : test_deriv_T)
+  {
+    double* row = ele.GetNitscheContainer().Ktt(p.first);
+    for (int s = 0; s < ele.NumNode(); ++s)
+      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+          ele.FaceParentNumber(), s)] += fac * jac * wgt * p.second * shape(s);
+  }
 }
 
 template <int dim>
@@ -976,40 +943,43 @@ void CONTACT::CoIntegratorNitscheTsi::IntegrateThermalAdjointTest(const double f
   if (abs(fac) < 1.e-16) return;
 
   LINALG::SerialDenseVector(
-      View, moEle.GetNitscheContainer().rhs_t(), moEle.ParentElement()->NumNode())
+      View, moEle.GetNitscheContainer().RhsT(), moEle.ParentElement()->NumNode())
       .Update(fac * jac * wgt * test, adjoint_test, 1.);
 
-  for (GEN::pairedvector<int, LINALG::SerialDenseVector>::const_iterator p =
-           deriv_adjoint_test_d.begin();
-       p != deriv_adjoint_test_d.end(); ++p)
+  for (const auto& p : deriv_adjoint_test_d)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_td(p->first), moEle.ParentElement()->NumNode())
-        .Update(fac * jac * wgt * test, p->second, 1.);
+        View, moEle.GetNitscheContainer().Ktd(p.first), moEle.ParentElement()->NumNode())
+        .Update(fac * jac * wgt * test, p.second, 1.);
+  }
 
-  for (GEN::pairedvector<int, double>::const_iterator p = jacintcellmap.begin();
-       p != jacintcellmap.end(); ++p)
+  for (const auto& p : jacintcellmap)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_td(p->first), moEle.ParentElement()->NumNode())
-        .Update(fac * p->second * wgt * test, adjoint_test, 1.);
+        View, moEle.GetNitscheContainer().Ktd(p.first), moEle.ParentElement()->NumNode())
+        .Update(fac * p.second * wgt * test, adjoint_test, 1.);
+  }
 
-  for (GEN::pairedvector<int, double>::const_iterator p = deriv_test_d.begin();
-       p != deriv_test_d.end(); ++p)
+  for (const auto& p : deriv_test_d)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_td(p->first), moEle.ParentElement()->NumNode())
-        .Update(fac * jac * wgt * p->second, adjoint_test, 1.);
+        View, moEle.GetNitscheContainer().Ktd(p.first), moEle.ParentElement()->NumNode())
+        .Update(fac * jac * wgt * p.second, adjoint_test, 1.);
+  }
 
-  for (GEN::pairedvector<int, LINALG::SerialDenseVector>::const_iterator p =
-           deriv_adjoint_test_T.begin();
-       p != deriv_adjoint_test_T.end(); ++p)
+  for (const auto& p : deriv_adjoint_test_T)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_tt(p->first), moEle.ParentElement()->NumNode())
-        .Update(fac * jac * wgt * test, p->second, 1.);
+        View, moEle.GetNitscheContainer().Ktt(p.first), moEle.ParentElement()->NumNode())
+        .Update(fac * jac * wgt * test, p.second, 1.);
+  }
 
-  for (GEN::pairedvector<int, double>::const_iterator p = deriv_test_T.begin();
-       p != deriv_test_T.end(); ++p)
+  for (const auto& p : deriv_test_T)
+  {
     LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().k_tt(p->first), moEle.ParentElement()->NumNode())
-        .Update(fac * jac * wgt * p->second, adjoint_test, 1.);
+        View, moEle.GetNitscheContainer().Ktt(p.first), moEle.ParentElement()->NumNode())
+        .Update(fac * jac * wgt * p.second, adjoint_test, 1.);
+  }
 }
 
 template <int dim>
@@ -1018,18 +988,20 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestTsi(MORTAR::MortarElement&
     GEN::pairedvector<int, LINALG::SerialDenseVector>& deriv_adjoint_test_T)
 {
   if (moEle.MoData().ParentTempDof().size())
+  {
     for (int p = 0; p < moEle.ParentElement()->NumNode(); ++p)
     {
       LINALG::SerialDenseVector& at = deriv_adjoint_test_T[moEle.MoData().ParentTempDof()[p]];
       for (int i = 0; i < moEle.ParentElement()->NumNode() * dim; ++i)
         at(i) += fac * d2sntDdDT(i, p);
     }
+  }
 }
 
 template <int dim>
 void CONTACT::CoIntegratorNitscheTsi::SetupGpTemp(MORTAR::MortarElement& moEle,
     const LINALG::SerialDenseVector& val, const LINALG::SerialDenseMatrix& deriv,
-    const std::vector<GEN::pairedvector<int, double>> dxi, double& temp,
+    const std::vector<GEN::pairedvector<int, double>>& dxi, double& temp,
     GEN::pairedvector<int, double>& d_temp_dT, GEN::pairedvector<int, double>& d_temp_dd)
 {
   if (moEle.MoData().ParentTemp().size() == 0)
@@ -1040,9 +1012,11 @@ void CONTACT::CoIntegratorNitscheTsi::SetupGpTemp(MORTAR::MortarElement& moEle,
 
   LINALG::SerialDenseVector moele_temp(val.Length());
   for (int i = 0; i < moEle.NumNode(); ++i)
+  {
     moele_temp(i) =
         moEle.MoData().ParentTemp().at(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
             moEle.ParentElement()->Shape(), moEle.FaceParentNumber(), i));
+  }
   temp = val.Dot(moele_temp);
 
   d_temp_dT.resize(val.Length());
@@ -1056,12 +1030,13 @@ void CONTACT::CoIntegratorNitscheTsi::SetupGpTemp(MORTAR::MortarElement& moEle,
   d_temp_dd.resize(deriv_size);
   d_temp_dd.clear();
   for (int i = 0; i < dim - 1; ++i)
-    for (GEN::pairedvector<int, double>::const_iterator p = dxi.at(i).begin(); p != dxi.at(i).end();
-         ++p)
+  {
+    for (auto p = dxi.at(i).begin(); p != dxi.at(i).end(); ++p)
     {
       double& a = d_temp_dd[p->first];
       for (int n = 0; n < moEle.NumNode(); ++n) a += moele_temp(n) * deriv(n, i) * p->second;
     }
+  }
 }
 
 
@@ -1101,7 +1076,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
   {
     case DRT::Element::hex8:
     {
-      DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* parent_ele =
+      auto* parent_ele =
           dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
@@ -1113,7 +1088,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
     }
     case DRT::Element::hex27:
     {
-      DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* parent_ele =
+      auto* parent_ele =
           dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
@@ -1125,7 +1100,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
     }
     case DRT::Element::tet4:
     {
-      DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>* parent_ele =
+      auto* parent_ele =
           dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
@@ -1146,25 +1121,30 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
     dq_dd[moEle.MoData().ParentDof().at(i)] += w * dq_dd_ele(i, 0);
 
   for (int i = 0; i < dim - 1; ++i)
-    for (GEN::pairedvector<int, double>::const_iterator p = boundary_gpcoord_lin[i].begin();
-         p != boundary_gpcoord_lin[i].end(); ++p)
+  {
+    for (auto p = boundary_gpcoord_lin[i].begin(); p != boundary_gpcoord_lin[i].end(); ++p)
     {
       double& ref = dq_dd[p->first];
       for (int k = 0; k < dim; ++k) ref += dq_dpxi(k) * derivtravo_slave(k, i) * p->second * w;
     }
+  }
 
   for (int d = 0; d < dim; ++d)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
          p != normal_deriv[d].end(); ++p)
       dq_dd[p->first] += dq_dn(d) * p->second * w;
+  }
 
   for (int i = 0; i < moEle.ParentElement()->NumNode(); ++i)
     dq_dT[moEle.MoData().ParentTempDof().at(i)] += w * dq_dT_ele(i, 0);
 
   if (abs(theta_thermo_) > 1.e-12)
+  {
     BuildAdjointTestThermo<dim>(moEle, w, dq_dT_ele, d2q_dT_dd, d2q_dT_dn, d2q_dT_dpxi,
         normal_deriv, boundary_gpcoord_lin, derivtravo_slave, adjoint_test, deriv_adjoint_test_d,
         deriv_adjoint_test_T);
+  }
 }
 
 
@@ -1189,6 +1169,7 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::MortarEleme
   }
 
   for (int d = 0; d < dim; ++d)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
          p != normal_deriv[d].end(); ++p)
     {
@@ -1196,17 +1177,19 @@ void CONTACT::CoIntegratorNitscheTsi::BuildAdjointTestThermo(MORTAR::MortarEleme
       for (int i = 0; i < moEle.ParentElement()->NumNode(); ++i)
         at(i) += fac * d2q_dT_dn(i, d) * p->second;
     }
+  }
 
   Epetra_SerialDenseMatrix tmp(moEle.ParentElement()->NumNode(), dim, false);
   Epetra_SerialDenseMatrix deriv_trafo(::View, derivtravo_slave.A(), derivtravo_slave.Rows(),
       derivtravo_slave.Rows(), derivtravo_slave.Columns());
   if (tmp.Multiply('N', 'N', 1., d2q_dT_dpxi, deriv_trafo, 0.)) dserror("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
-    for (GEN::pairedvector<int, double>::const_iterator p = boundary_gpcoord_lin[d].begin();
-         p != boundary_gpcoord_lin[d].end(); ++p)
+  {
+    for (auto p = boundary_gpcoord_lin[d].begin(); p != boundary_gpcoord_lin[d].end(); ++p)
     {
       LINALG::SerialDenseVector& at = deriv_adjoint_test_d[p->first];
       for (int i = 0; i < moEle.ParentElement()->NumNode(); ++i)
         at(i) += fac * tmp(i, d) * p->second;
     }
+  }
 }

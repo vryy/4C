@@ -9,6 +9,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_nitsche_strategy_poro.H"
+
 #include "contact_interface.H"
 #include "contact_nitsche_utils.H"
 #include "contact_paramsinterface.H"

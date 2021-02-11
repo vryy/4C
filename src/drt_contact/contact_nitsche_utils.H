@@ -10,23 +10,28 @@
 #ifndef CONTACT_NITSCHE_UTILS_H
 #define CONTACT_NITSCHE_UTILS_H
 
-#include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
+#include <unordered_map>
+
+#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+
+#include "../drt_lib/drt_utils_matrix_vector_enums.H"
+
+#include "../drt_mortar/mortar_element.H"
+
+#include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_sparsematrix.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_mortar/mortar_element.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include "../drt_lib/drt_utils_matrix_vector_enums.H"
-#include <unordered_map>
+
 
 namespace MORTAR
 {
   class MortarElementNitscheContainer
   {
    public:
-    MortarElementNitscheContainer(){};
+    MortarElementNitscheContainer() = default;
 
     virtual void Clear() = 0;
 
@@ -36,28 +41,28 @@ namespace MORTAR
     virtual void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
         Teuchos::RCP<LINALG::SparseMatrix> kc) = 0;
 
-    virtual double* rhs(int dof) = 0;
-    virtual double* rhs() = 0;
-    virtual double* k(int col) = 0;
-    virtual double* k(int col, int dof) = 0;
+    virtual double* Rhs(int dof) = 0;
+    virtual double* Rhs() = 0;
+    virtual double* K(int col) = 0;
+    virtual double* K(int col, int dof) = 0;
 
-    virtual double* rhs_t(int dof) = 0;
-    virtual double* rhs_t() = 0;
-    virtual double* k_tt(int col) = 0;
-    virtual double* k_tt(int col, int dof) = 0;
-    virtual double* k_td(int col) = 0;
-    virtual double* k_td(int col, int dof) = 0;
-    virtual double* k_dt(int col) = 0;
-    virtual double* k_dt(int col, int dof) = 0;
+    virtual double* RhsT(int dof) = 0;
+    virtual double* RhsT() = 0;
+    virtual double* Ktt(int col) = 0;
+    virtual double* Ktt(int col, int dof) = 0;
+    virtual double* Ktd(int col) = 0;
+    virtual double* Ktd(int col, int dof) = 0;
+    virtual double* Kdt(int col) = 0;
+    virtual double* Kdt(int col, int dof) = 0;
 
-    virtual double* rhs_p(int dof) = 0;
-    virtual double* rhs_p() = 0;
-    virtual double* k_pp(int col) = 0;
-    virtual double* k_pp(int col, int dof) = 0;
-    virtual double* k_pd(int col) = 0;
-    virtual double* k_pd(int col, int dof) = 0;
-    virtual double* k_dp(int col) = 0;
-    virtual double* k_dp(int col, int dof) = 0;
+    virtual double* RhsP(int dof) = 0;
+    virtual double* RhsP() = 0;
+    virtual double* Kpp(int col) = 0;
+    virtual double* Kpp(int col, int dof) = 0;
+    virtual double* Kpd(int col) = 0;
+    virtual double* Kpd(int col, int dof) = 0;
+    virtual double* Kdp(int col) = 0;
+    virtual double* Kdp(int col, int dof) = 0;
   };
 
   template <DRT::Element::DiscretizationType parent_distype>
@@ -114,34 +119,34 @@ namespace MORTAR
   class MortarElementNitscheData : public MortarElementNitscheContainer
   {
    public:
-    virtual double* rhs(int dof) { return &rhs_(dof); }
-    virtual double* rhs() { return rhs_.A(); }
-    virtual double* k(int col) { return k_[col].A(); }
-    virtual double* k(int col, int dof) { return &k_[col](dof); }
+    double* Rhs(int dof) override { return &rhs_(dof); }
+    double* Rhs() override { return rhs_.A(); }
+    double* K(int col) override { return k_[col].A(); }
+    double* K(int col, int dof) override { return &k_[col](dof); }
 
-    virtual double* rhs_t(int dof) { return &tsi_data_.rhs_t_(dof); }
-    virtual double* rhs_t() { return tsi_data_.rhs_t_.A(); }
-    virtual double* k_tt(int col) { return tsi_data_.k_tt_[col].A(); }
-    virtual double* k_tt(int col, int dof) { return &tsi_data_.k_tt_[col](dof); }
-    virtual double* k_td(int col) { return tsi_data_.k_td_[col].A(); }
-    virtual double* k_td(int col, int dof) { return &tsi_data_.k_td_[col](dof); }
-    virtual double* k_dt(int col) { return tsi_data_.k_dt_[col].A(); }
-    virtual double* k_dt(int col, int dof) { return &tsi_data_.k_dt_[col](dof); }
+    double* RhsT(int dof) override { return &tsi_data_.rhs_t_(dof); }
+    double* RhsT() override { return tsi_data_.rhs_t_.A(); }
+    double* Ktt(int col) override { return tsi_data_.k_tt_[col].A(); }
+    double* Ktt(int col, int dof) override { return &tsi_data_.k_tt_[col](dof); }
+    double* Ktd(int col) override { return tsi_data_.k_td_[col].A(); }
+    double* Ktd(int col, int dof) override { return &tsi_data_.k_td_[col](dof); }
+    double* Kdt(int col) override { return tsi_data_.k_dt_[col].A(); }
+    double* Kdt(int col, int dof) override { return &tsi_data_.k_dt_[col](dof); }
 
-    virtual double* rhs_p(int dof) { return &poro_data_.rhs_p_(dof); }
-    virtual double* rhs_p() { return poro_data_.rhs_p_.A(); }
-    virtual double* k_pp(int col) { return poro_data_.k_pp_[col].A(); }
-    virtual double* k_pp(int col, int dof) { return &poro_data_.k_pp_[col](dof); }
-    virtual double* k_pd(int col) { return poro_data_.k_pd_[col].A(); }
-    virtual double* k_pd(int col, int dof) { return &poro_data_.k_pd_[col](dof); }
-    virtual double* k_dp(int col) { return poro_data_.k_dp_[col].A(); }
-    virtual double* k_dp(int col, int dof) { return &poro_data_.k_dp_[col](dof); }
+    double* RhsP(int dof) override { return &poro_data_.rhs_p_(dof); }
+    double* RhsP() override { return poro_data_.rhs_p_.A(); }
+    double* Kpp(int col) override { return poro_data_.k_pp_[col].A(); }
+    double* Kpp(int col, int dof) override { return &poro_data_.k_pp_[col](dof); }
+    double* Kpd(int col) override { return poro_data_.k_pd_[col].A(); }
+    double* Kpd(int col, int dof) override { return &poro_data_.k_pd_[col](dof); }
+    double* Kdp(int col) override { return poro_data_.k_dp_[col].A(); }
+    double* Kdp(int col, int dof) override { return &poro_data_.k_dp_[col](dof); }
 
-    virtual void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
-        Teuchos::RCP<Epetra_FEVector> fc);
+    void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
+        Teuchos::RCP<Epetra_FEVector> fc) override;
 
-    virtual void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
-        Teuchos::RCP<LINALG::SparseMatrix> kc);
+    void AssembleMatrix(MORTAR::MortarElement* mele, DRT::UTILS::MatBlockType block,
+        Teuchos::RCP<LINALG::SparseMatrix> kc) override;
 
     template <int num_dof_per_node>
     void AssembleRHS(MORTAR::MortarElement* mele,
@@ -159,7 +164,7 @@ namespace MORTAR
         std::vector<int>& dofs, Teuchos::RCP<LINALG::SparseMatrix> kc);
 
 
-    virtual void Clear()
+    void Clear() override
     {
       rhs_.Clear();
       k_.clear();

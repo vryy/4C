@@ -8,7 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 #include "contact_nitsche_utils.H"
-#include "../drt_mortar/mortar_element.H"
+
 #include <Epetra_FECrsMatrix.h>
 #include <Teuchos_RCP.hpp>
 
@@ -23,15 +23,16 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(MORTAR::Morta
     std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc)
 {
   const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
-  // const int nsd = DRT::UTILS::DisTypeToDim<parent_distype>::dim;
 
   if (num_dof_per_node * nen > dofs.size())
     dserror("num_dof_per_node*nen>dofs.size() %d > %d", num_dof_per_node * nen, dofs.size());
 
   if (fc != Teuchos::null)
+  {
     for (int n = 0; n < nen; ++n)
       fc->SumIntoGlobalValues(
           num_dof_per_node, &dofs.at(n * num_dof_per_node), &rhs.A()[n * num_dof_per_node]);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -48,18 +49,20 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
   const int nen = DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement;
 
   if (kc != Teuchos::null)
-    for (typename std::unordered_map<int, LINALG::Matrix<nen * num_dof_per_node, 1>>::const_iterator
-             p = k.begin();
-         p != k.end(); ++p)
+  {
+    for (auto& p : k)
+    {
       for (int n = 0; n < nen; ++n)
       {
-        if (LINALG::Matrix<num_dof_per_node, 1>(&(p->second.A()[n * num_dof_per_node]), true)
+        if (LINALG::Matrix<num_dof_per_node, 1>(&(p.second.A()[n * num_dof_per_node]), true)
                 .NormInf() < 1e-16)
           continue;
         for (int d = 0; d < num_dof_per_node; ++d)
           kc->FEAssemble(
-              p->second(n * num_dof_per_node + d), dofs.at(n * num_dof_per_node + d), p->first);
+              p.second(n * num_dof_per_node + d), dofs.at(n * num_dof_per_node + d), p.first);
       }
+    }
+  }
 }
 
 

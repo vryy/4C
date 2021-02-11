@@ -95,8 +95,9 @@ namespace CONTACT
      (i.e. M, g, LinM, Ling and possibly D, LinD)
 
      */
-    void IntegrateDerivEle2D(MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
-        bool* boundary_ele, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
+        std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
+        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
     virtual void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
         std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
         const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
@@ -113,7 +114,7 @@ namespace CONTACT
      wear)
 
      */
-    void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+    virtual void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
         MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
         const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
     virtual void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
@@ -125,9 +126,9 @@ namespace CONTACT
      (i.e. M, g, LinM, Ling and possibly D, LinD)
 
      */
-    void IntegrateDerivEle3D(MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
-        bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
+        std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
+        const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
     virtual void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
         std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
         const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
@@ -138,9 +139,9 @@ namespace CONTACT
      for the auxiliary plane coupling case
 
      */
-    void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
-        Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
-        const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    virtual void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
+        MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
+        const Epetra_Comm& comm, const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
     virtual void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
         MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
         const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);

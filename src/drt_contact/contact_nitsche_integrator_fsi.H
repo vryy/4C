@@ -12,6 +12,7 @@
 #define CONTACT_INTEGRATOR_NITSCHE_FSI_H
 
 #include "contact_nitsche_integrator.H"
+
 #include "../linalg/linalg_fixedsizematrix.H"
 
 namespace XFEM
@@ -40,11 +41,7 @@ namespace CONTACT
     CoIntegratorNitscheFsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
         const Epetra_Comm& comm);
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoIntegratorNitscheFsi() {}
+    ~CoIntegratorNitscheFsi() override = default;
 
     //! @name Derived functions
     //! @{
@@ -117,7 +114,6 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& derivmxi) override
     {
       dserror("2d problems not available for CoIntegratorNitscheFsi, as CutFEM is only 3D!");
-      return;
     }
 
    private:
@@ -125,13 +121,13 @@ namespace CONTACT
     \brief evaluate GPTS forces and linearization at this gp
     */
     template <int dim>
-    void GPTS_forces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
         const std::vector<GEN::pairedvector<int, double>>& dsxi,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
         const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
         const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-        const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+        const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
     /// Update Element contact state -2...not_specified, -1...no_contact, 0...mixed, 1...contact
@@ -152,11 +148,6 @@ namespace CONTACT
         const LINALG::Matrix<3, 1>& n,                ///< normal n
         const LINALG::Matrix<3, 1>& dir               ///< second directional vector
     );
-
-    /// templated version of MapGPtoParent
-    template <DRT::Element::DiscretizationType parentdistype, int dim>
-    void inline SoEleGP(MORTAR::MortarElement& sele, const double wgt, const double* gpcoord,
-        LINALG::Matrix<dim, 1>& pxsi, LINALG::Matrix<dim, dim>& derivtrafo);
   }  // namespace UTILS
 }  // namespace CONTACT
 #endif  // CONTACT_INTEGRATOR_NITSCHE_FSI_H

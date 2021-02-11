@@ -266,12 +266,14 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
   Teuchos::RCP<Epetra_FEVector> fc = SetupRhsBlockVec(bt);
 
   for (const auto& interface : interface_)
+  {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleRHS(mele, bt, fc);
     }
+  }
   if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
 
   return fc;
@@ -334,12 +336,14 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlock
   Teuchos::RCP<LINALG::SparseMatrix> kc = SetupMatrixBlockPtr(bt);
 
   for (const auto& interface : interface_)
+  {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleMatrix(mele, bt, kc);
     }
+  }
 
   CompleteMatrixBlockPtr(bt, kc);
 
@@ -382,6 +386,7 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
   auto NitWgt =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
   for (const auto& interface : interface_)
+  {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
@@ -390,6 +395,7 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
       if (NitWgt == INPAR::CONTACT::NitWgt_master && mele->IsSlave()) continue;
       mele->EstimateNitscheTraceMaxEigenvalueCombined();
     }
+  }
 }
 
 void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
