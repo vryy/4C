@@ -1,0 +1,31 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="PolyData" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <PolyData>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+1.875000000000001e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="12" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAgAAAAA==eNqbtJNvfnPR4f0TofS9ni/HTuq9t68J+aknOvXwfu/MpqnL1q7a/+nMtDY2nvf2vlB+FVT+A1RcHyJuXw0Vh6mfADHXfhKa+ZUQdfYw8z9C1RtBzYGabw8zpwLK14PKw9T3Qc2H0XfR3G+Iph7mjn409R5Qd8DcBVMPALY+mCs=
+        </DataArray>
+      </Points>
+
+  <PointData>
+        <DataArray type="Float64" Name="contact force" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAnwAAAA==eNq7/L7p3CLLxP19UNqQi+PJsk8r9vvF5F3tqzfd/+TQQ8F5AXr7c868LZzOU7bfZSuEzxsEkS8/BBHfA1FnrwjVVwFVfxVirj2U3m8CNd8+HKzOXnAPxLyW4xD126HmSEHMsbeAmsMJVX9gN0S+Dar+wjuI+TB6KifE/HSI+v2/oepLoOqjoO4QgbprMlT9IYi6/c5Qezqg6gEmP5W1
+        </DataArray>
+        <DataArray type="Float64" Name="normal direction" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAhAAAAA==eNorDvszYwHvMnspKJ24Zsv8kx/e28uougqayq63PyPT//z5+6X25zceXxX08r39DSg/SAUiDxNfDBHffxpNvBhi7v5iNPO3Q9Tt34dm/n2oOdIQ+/efg4qnQdU3QuVh6jeGQsyH0QlQ8zmg7t+Hpj4Z6g6uMFT1UHPh7oKpBwDbAJ4R
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </PolyData>
+</VTKFile>
