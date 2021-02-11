@@ -365,8 +365,12 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
 
   // type of phase change
   setStringToIntegralParameter<int>("PHASECHANGETYPE", "NoPhaseChange", "type of phase change",
-      tuple<std::string>("NoPhaseChange", "TwoWayScalarPhaseChange"),
-      tuple<int>(INPAR::PARTICLE::NoPhaseChange, INPAR::PARTICLE::TwoWayScalarPhaseChange),
+      tuple<std::string>("NoPhaseChange", "OneWayScalarBelowToAbovePhaseChange",
+          "OneWayScalarAboveToBelowPhaseChange", "TwoWayScalarPhaseChange"),
+      tuple<int>(INPAR::PARTICLE::NoPhaseChange,
+          INPAR::PARTICLE::OneWayScalarBelowToAbovePhaseChange,
+          INPAR::PARTICLE::OneWayScalarAboveToBelowPhaseChange,
+          INPAR::PARTICLE::TwoWayScalarPhaseChange),
       &particledynsph);
 
   // definition of phase change

@@ -763,6 +763,18 @@ void PARTICLEINTERACTION::ParticleInteractionSPH::InitPhaseChangeHandler()
       phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeBase>(nullptr);
       break;
     }
+    case INPAR::PARTICLE::OneWayScalarBelowToAbovePhaseChange:
+    {
+      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove>(
+          new PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarBelowToAbove(params_sph_));
+      break;
+    }
+    case INPAR::PARTICLE::OneWayScalarAboveToBelowPhaseChange:
+    {
+      phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow>(
+          new PARTICLEINTERACTION::SPHPhaseChangeOneWayScalarAboveToBelow(params_sph_));
+      break;
+    }
     case INPAR::PARTICLE::TwoWayScalarPhaseChange:
     {
       phasechange_ = std::unique_ptr<PARTICLEINTERACTION::SPHPhaseChangeTwoWayScalar>(
