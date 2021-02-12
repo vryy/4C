@@ -2035,8 +2035,8 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_st->Add(
-        *contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::block_displ_temp), false, 1., 1.);
+    k_st->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_temp),
+        false, 1., 1.);
 
   // TODO 2013-11-11 move scaling to the so3_thermo element
   // --> consistent with thermo element and clearer, more consistent
@@ -2186,8 +2186,8 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_ts->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::block_temp_displ), false,
-        timefac, 1.);
+    k_ts->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::temp_displ),
+        false, timefac, 1.);
 }  // ApplyThrCouplMatrix()
 
 

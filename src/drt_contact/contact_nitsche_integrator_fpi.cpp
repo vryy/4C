@@ -33,14 +33,14 @@ void CONTACT::CoIntegratorNitscheFpi::IntegrateDerivEle3D(MORTAR::MortarElement&
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  CONTACT::CoElement* csele = dynamic_cast<CONTACT::CoElement*>(&sele);
+  auto* csele = dynamic_cast<CONTACT::CoElement*>(&sele);
   if (!csele) dserror("Could cast to Contact Element!");
 
   // do quick orientation check
   LINALG::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
   sele.ComputeUnitNormalAtXi(center, sn.A());
-  for (std::vector<MORTAR::MortarElement*>::iterator mit = meles.begin(); mit != meles.end(); ++mit)
+  for (auto mit = meles.begin(); mit != meles.end(); ++mit)
   {
     (*mit)->ComputeUnitNormalAtXi(center, mn.A());
     if (sn.Dot(mn) > -1e-1)
@@ -79,23 +79,21 @@ void CONTACT::CoIntegratorNitscheFpi::IntegrateGP_3D(MORTAR::MortarElement& sele
   std::vector<GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
   dynamic_cast<CONTACT::CoElement&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
-  GPTS_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
-      gap, deriv_gap, n, dn, sxi, mxi);
-
-  return;
+  GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
+      deriv_gap, n, dn, sxi, mxi);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitscheFpi::GPTSForces(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
     const std::vector<GEN::pairedvector<int, double>>& dsxi, const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& mderiv,
     const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
     const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+    const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
     std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
@@ -113,8 +111,6 @@ void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
   double wm = 0.;
   CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
-
-  double normal_contact_transition = 0.;
   bool FSI_integrated = true;  // bool indicates if fsi condition is already evaluated ... --> if
                                // true no contribution here ...
 
@@ -122,15 +118,9 @@ void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
   LINALG::Matrix<dim, dim> derivtravo_slave;
   CONTACT::UTILS::MapGPtoParent<dim>(sele, sxi, wgt, pxsi, derivtravo_slave);
 
-  double poropressure;
   bool gp_on_this_proc;
-  if (GetPoroPressure(sele, sval, mele, mval, poropressure))
-    normal_contact_transition =
-        xf_c_comm_->Get_FSI_Traction(&sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal,
-            FSI_integrated, gp_on_this_proc, &poropressure);
-  else
-    normal_contact_transition = xf_c_comm_->Get_FSI_Traction(&sele, pxsi,
-        LINALG::Matrix<dim - 1, 1>(sxi, false), normal, FSI_integrated, gp_on_this_proc);
+  double normal_contact_transition = GetNormalContactTransition<dim>(
+      sele, mele, sval, mval, sxi, pxsi, normal, FSI_integrated, gp_on_this_proc);
 
 #ifdef WRITE_GMSH
   {
@@ -240,9 +230,6 @@ void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
     return;
   }
 
-
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
-
   double cauchy_nn_weighted_average = 0.;
   GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
@@ -260,11 +247,8 @@ void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
   const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
   GEN::pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv_d.size() + dgapgp.size());
-  for (_CI p = cauchy_nn_weighted_average_deriv_d.begin();
-       p != cauchy_nn_weighted_average_deriv_d.end(); ++p)
-    d_snn_av_pen_gap[p->first] += p->second;
-  for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p)
-    d_snn_av_pen_gap[p->first] += pen * p->second;
+  for (const auto& p : cauchy_nn_weighted_average_deriv_d) d_snn_av_pen_gap[p.first] += p.second;
+  for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
 
   // test in normal contact direction
   IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
@@ -283,8 +267,6 @@ void CONTACT::CoIntegratorNitscheFpi::GPTS_forces(MORTAR::MortarElement& sele,
   }
 #endif
   xf_c_comm_->Inc_GP(0);
-
-  return;
 }
 
 void CONTACT::CoIntegratorNitscheFpi::UpdateEleContactState(MORTAR::MortarElement& sele, int state)
@@ -301,4 +283,23 @@ void CONTACT::CoIntegratorNitscheFpi::UpdateEleContactState(MORTAR::MortarElemen
     ele_contact_state_ = 0;
     xf_c_comm_->RegisterContactElementforHigherIntegration(sele.Id());
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+double CONTACT::CoIntegratorNitscheFpi::GetNormalContactTransition(MORTAR::MortarElement& sele,
+    MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
+    const LINALG::SerialDenseVector& mval, const double* sxi, const LINALG::Matrix<dim, 1>& pxsi,
+    const LINALG::Matrix<dim, 1>& normal, bool& FSI_integrated, bool& gp_on_this_proc)
+{
+  double poropressure(0.0);
+  if (GetPoroPressure(sele, sval, mele, mval, poropressure))
+  {
+    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal,
+        FSI_integrated, gp_on_this_proc, &poropressure);
+  }
+  else
+    return xf_c_comm_->Get_FSI_Traction(&sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal,
+        FSI_integrated, gp_on_this_proc);
 }

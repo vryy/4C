@@ -49,8 +49,8 @@ void CONTACT::CoNitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> 
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
-      mele->GetNitscheContainer().AssembleRHS(mele, DRT::UTILS::block_displ, fc);
-      mele->GetNitscheContainer().AssembleMatrix(mele, DRT::UTILS::block_displ_displ, kc);
+      mele->GetNitscheContainer().AssembleRHS(mele, DRT::UTILS::VecBlockType::displ, fc);
+      mele->GetNitscheContainer().AssembleMatrix(mele, DRT::UTILS::MatBlockType::displ_displ, kc);
     }
   }
 
@@ -239,8 +239,8 @@ void CONTACT::CoNitscheStrategy::Integrate(CONTACT::ParamsInterface& cparams)
   curr_state_eval_ = true;
 
   // ... and we can assemble the matric and rhs
-  fc_ = CreateRhsBlockPtr(DRT::UTILS::block_displ);
-  kc_ = CreateMatrixBlockPtr(DRT::UTILS::block_displ_displ);
+  fc_ = CreateRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
+  kc_ = CreateMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
 }
 
 Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::SetupRhsBlockVec(
@@ -248,7 +248,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::SetupRhsBlockVec(
 {
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap()));
     default:
@@ -266,12 +266,14 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategy::CreateRhsBlockPtr(
   Teuchos::RCP<Epetra_FEVector> fc = SetupRhsBlockVec(bt);
 
   for (const auto& interface : interface_)
+  {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleRHS(mele, bt, fc);
     }
+  }
   if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
 
   return fc;
@@ -283,9 +285,9 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategy::GetRhsBlockPtr(
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
       return Teuchos::null;
     default:
       dserror("GetRhsBlockPtr: your type is no treated properly!");
@@ -300,7 +302,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::SetupMatrixBlockP
 {
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
       return Teuchos::rcp(
           new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
                                        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
@@ -317,7 +319,7 @@ void CONTACT::CoNitscheStrategy::CompleteMatrixBlockPtr(
 {
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
       kc->Complete();
       break;
     default:
@@ -334,12 +336,14 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::CreateMatrixBlock
   Teuchos::RCP<LINALG::SparseMatrix> kc = SetupMatrixBlockPtr(bt);
 
   for (const auto& interface : interface_)
+  {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
           interface->Discret().gElement(interface->Discret().ElementColMap()->GID(e)));
       mele->GetNitscheContainer().AssembleMatrix(mele, bt, kc);
     }
+  }
 
   CompleteMatrixBlockPtr(bt, kc);
 
@@ -351,7 +355,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategy::GetMatrixBlockPtr
 {
   if (!curr_state_eval_) dserror("you didn't evaluate this contact state first");
 
-  if (bt == DRT::UTILS::block_displ_displ)
+  if (bt == DRT::UTILS::MatBlockType::displ_displ)
     return kc_;
   else
     dserror("GetMatrixBlockPtr: your type is no treated properly!");
@@ -382,6 +386,7 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
   auto NitWgt =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(Params(), "NITSCHE_WEIGHTING");
   for (const auto& interface : interface_)
+  {
     for (int e = 0; e < interface->Discret().ElementColMap()->NumMyElements(); ++e)
     {
       auto* mele = dynamic_cast<MORTAR::MortarElement*>(
@@ -390,6 +395,7 @@ void CONTACT::CoNitscheStrategy::UpdateTraceIneqEtimates()
       if (NitWgt == INPAR::CONTACT::NitWgt_master && mele->IsSlave()) continue;
       mele->EstimateNitscheTraceMaxEigenvalueCombined();
     }
+  }
 }
 
 void CONTACT::CoNitscheStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)

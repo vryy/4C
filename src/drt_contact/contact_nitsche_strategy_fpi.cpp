@@ -10,9 +10,10 @@
 /*---------------------------------------------------------------------*/
 
 #include "contact_nitsche_strategy_fpi.H"
-#include "contact_nitsche_strategy_fsi.H"
 
 #include "contact_interface.H"
+#include "contact_nitsche_strategy_fsi.H"
+
 
 void CONTACT::CoNitscheStrategyFpi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
@@ -26,12 +27,12 @@ void CONTACT::CoNitscheStrategyFpi::SetState(
 
 void CONTACT::CoNitscheStrategyFpi::DoContactSearch()
 {
-  for (int i = 0; i < (int)interface_.size(); ++i)
+  for (auto& interface : interface_)
   {
-    interface_[i]->Initialize();
-    interface_[i]->EvaluateSearchBinarytree();
-    interface_[i]->EvaluateNodalNormals();
-    interface_[i]->ExportNodalNormals();
+    interface->Initialize();
+    interface->EvaluateSearchBinarytree();
+    interface->EvaluateNodalNormals();
+    interface->ExportNodalNormals();
   }
 }
 

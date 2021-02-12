@@ -143,7 +143,7 @@ namespace CONTACT
      * @param[in] mxi         master side Gauss point coordinates
      */
     template <int dim>
-    void GPTS_forces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
         const std::vector<GEN::pairedvector<int, double>>& dsxi,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
@@ -238,7 +238,7 @@ namespace CONTACT
         const std::vector<GEN::pairedvector<int, double>>& v2d, double& val,
         GEN::pairedvector<int, double>& val_deriv);
 
-    void BuildTangentVectors_3D(const double* np,
+    void BuildTangentVectors3D(const double* np,
         const std::vector<GEN::pairedvector<int, double>>& dn, double* t1p,
         std::vector<GEN::pairedvector<int, double>>& dt1, double* t2p,
         std::vector<GEN::pairedvector<int, double>>& dt2);

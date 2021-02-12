@@ -194,10 +194,10 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
 
   // access the full stiffness matrix
   LINALG::SparseMatrix full_stiff(
-      *cmodel.GetJacobianBlock(DRT::UTILS::block_displ_displ), LINALG::Copy);
+      *cmodel.GetJacobianBlock(DRT::UTILS::MatBlockType::displ_displ), LINALG::Copy);
 
   Teuchos::RCP<LINALG::SparseMatrix> kdd_ptr =
-      strategy_->GetMatrixBlockPtr(DRT::UTILS::block_displ_displ);
+      strategy_->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_displ);
 
   // undo matrix contributions
   full_stiff.Add(*kdd_ptr, false, -1.0, 1.0);

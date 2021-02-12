@@ -471,12 +471,12 @@ Teuchos::RCP<const Epetra_Vector> XCONTACT::Strategy::GetRhsBlockPtr(
   // Switch between vector blocks
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       vec_ptr = Data().StrContactRhsPtr();
       break;
     }
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
     {
       vec_ptr = Data().ConstrRhsPtr();
       break;
@@ -495,14 +495,14 @@ Teuchos::RCP<const Epetra_Vector> XCONTACT::Strategy::GetRhsBlockPtr(
     std::cout << "---------------------------" << std::endl;
     switch (bt)
     {
-      case DRT::UTILS::block_displ:
+      case DRT::UTILS::VecBlockType::displ:
       {
         std::cout << "block_displ" << std::endl;
         break;
       }
-      case DRT::UTILS::block_constraint:
+      case DRT::UTILS::VecBlockType::constraint:
       {
-        std::cout << "block_constraint" << std::endl;
+        std::cout << "constraint" << std::endl;
         break;
       }
       default:
@@ -534,7 +534,7 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
   // Switch between matrix blocks
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
     {
       mat_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
 
@@ -554,7 +554,7 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
       }
       break;
     }
-    case DRT::UTILS::block_displ_lm:
+    case DRT::UTILS::MatBlockType::displ_lm:
     {
       // Build matrix Wc_u_lm
       Teuchos::RCP<LINALG::SparseMatrix> kdz_ptr =
@@ -577,7 +577,7 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
       }
       break;
     }
-    case DRT::UTILS::block_lm_displ:
+    case DRT::UTILS::MatBlockType::lm_displ:
     {
       // Build matrix Wc_lm_u
       Teuchos::RCP<LINALG::SparseMatrix> kzd_ptr =
@@ -600,7 +600,7 @@ Teuchos::RCP<LINALG::SparseMatrix> XCONTACT::Strategy::GetMatrixBlockPtr(
       }
       break;
     }
-    case DRT::UTILS::block_lm_lm:
+    case DRT::UTILS::MatBlockType::lm_lm:
     {
       // Build matrix Wc_lm_lm
       Teuchos::RCP<LINALG::SparseMatrix> kzz_ptr =

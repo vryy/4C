@@ -2133,14 +2133,18 @@ void POROELAST::Monolithic::EvalPoroMortar()
 
           systemmatrix_->UnComplete();
           systemmatrix_->Matrix(0, 1).Add(
-              *pstrat->GetMatrixBlockPtr(DRT::UTILS::block_displ_porofluid), false, 1.0, 1.0);
+              *pstrat->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_porofluid), false, 1.0,
+              1.0);
           systemmatrix_->Matrix(1, 1).Add(
-              *pstrat->GetMatrixBlockPtr(DRT::UTILS::block_porofluid_porofluid), false, 1.0, 1.0);
+              *pstrat->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::porofluid_porofluid), false, 1.0,
+              1.0);
           systemmatrix_->Matrix(1, 0).Add(
-              *pstrat->GetMatrixBlockPtr(DRT::UTILS::block_porofluid_displ), false, 1.0, 1.0);
+              *pstrat->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::porofluid_displ), false, 1.0,
+              1.0);
           systemmatrix_->Complete();
 
-          Extractor()->AddVector(*pstrat->GetRhsBlockPtr(DRT::UTILS::block_porofluid), 1, *rhs_);
+          Extractor()->AddVector(
+              *pstrat->GetRhsBlockPtr(DRT::UTILS::VecBlockType::porofluid), 1, *rhs_);
         }
       }
       else if (StructureField()->MeshtyingContactBridge()->HaveMeshtying())

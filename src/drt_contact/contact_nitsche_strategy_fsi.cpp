@@ -11,13 +11,13 @@
 
 #include "contact_nitsche_strategy_fsi.H"
 
-#include "contact_nitsche_integrator_fsi.H"
 #include "contact_element.H"
 #include "contact_interface.H"
-
-#include "../drt_mortar/mortar_projector.H"
+#include "contact_nitsche_integrator_fsi.H"
 
 #include "../drt_lib/drt_discret.H"
+
+#include "../drt_mortar/mortar_projector.H"
 
 void CONTACT::CoNitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
@@ -39,12 +39,12 @@ void CONTACT::CoNitscheStrategyFsi::SetState(
 
 void CONTACT::CoNitscheStrategyFsi::DoContactSearch()
 {
-  for (int i = 0; i < (int)interface_.size(); ++i)
+  for (auto& interface : interface_)
   {
-    interface_[i]->Initialize();
-    interface_[i]->EvaluateSearchBinarytree();
-    interface_[i]->EvaluateNodalNormals();
-    interface_[i]->ExportNodalNormals();
+    interface->Initialize();
+    interface->EvaluateSearchBinarytree();
+    interface->EvaluateNodalNormals();
+    interface->ExportNodalNormals();
   }
 }
 
@@ -70,7 +70,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     dserror("This element shape is not yet implemented!");
 
   // find the corresponding master element
-  CONTACT::CoElement* other_cele = NULL;
+  CONTACT::CoElement* other_cele = nullptr;
   double mxi[2] = {0.0, 0.0};
   double projalpha = 0.0;
   static const double tol = 1e-4;
@@ -79,7 +79,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
   for (int m = 0; m < cele->MoData().NumSearchElements(); ++m)
   {
     if (other_cele) break;
-    CONTACT::CoElement* test_ele = dynamic_cast<CONTACT::CoElement*>(
+    auto* test_ele = dynamic_cast<CONTACT::CoElement*>(
         contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
     if (!test_ele)
       dserror("ERROR: Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
@@ -107,7 +107,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
       other_cele->LocalToGlobal(center, mc.A(), 0);
       near = 2. * std::max(cele->MaxEdgeSize(), other_cele->MaxEdgeSize());
       sc.Update(-1., mc, 1.);
-      if (sc.Norm2() > std::max(near, max_relevant_gap)) other_cele = NULL;
+      if (sc.Norm2() > std::max(near, max_relevant_gap)) other_cele = nullptr;
     }
   }
   // orientation check
@@ -117,10 +117,10 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     LINALG::Matrix<3, 1> sn, mn;
     cele->ComputeUnitNormalAtXi(center, sn.A());
     other_cele->ComputeUnitNormalAtXi(center, mn.A());
-    if (sn.Dot(mn) > 0.) other_cele = NULL;
+    if (sn.Dot(mn) > 0.) other_cele = nullptr;
   }
   // no master element hit
-  if (other_cele == NULL)
+  if (other_cele == nullptr)
   {
     gap = 1e12;
     return true;

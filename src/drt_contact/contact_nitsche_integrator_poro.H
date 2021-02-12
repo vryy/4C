@@ -11,9 +11,11 @@
 #define CONTACT_INTEGRATOR_NITSCHE_PORO_H
 
 #include "contact_nitsche_integrator.H"
-#include "../headers/pairedvector.H"
+
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
+
+#include "../headers/pairedvector.H"
 
 // forward declarations
 namespace LINALG
@@ -40,11 +42,7 @@ namespace CONTACT
     CoIntegratorNitschePoro(Teuchos::ParameterList& params,
         DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoIntegratorNitschePoro() {}
+    ~CoIntegratorNitschePoro() override = default;
 
    protected:
     /*!
@@ -52,7 +50,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -61,14 +59,14 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -77,7 +75,7 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
     \brief Evaluate cauchy stress component and its derivatives
@@ -97,13 +95,13 @@ namespace CONTACT
     \brief evaluate GPTS forces and linearization at this gp
     */
     template <int dim>
-    void GPTS_forces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
         const std::vector<GEN::pairedvector<int, double>>& dsxi,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
         const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
         const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-        const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+        const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
    protected:

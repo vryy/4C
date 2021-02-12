@@ -90,29 +90,29 @@ CONTACT::AUG::DataContainer::DataContainer()
 void CONTACT::AUG::DataContainer::InitMatrixRowColTransformer()
 {
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs redistributed_row(4);
-  redistributed_row[DRT::UTILS::block_displ_displ] = &GSlMaDofRowMapPtr();
-  redistributed_row[DRT::UTILS::block_displ_lm] = &GDispDofRowMapPtr();
-  redistributed_row[DRT::UTILS::block_lm_displ] = &GLmDofRowMapPtr();
-  redistributed_row[DRT::UTILS::block_lm_lm] = &GLmDofRowMapPtr();
+  redistributed_row[DRT::UTILS::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
+  redistributed_row[DRT::UTILS::MatBlockType::displ_lm] = &GDispDofRowMapPtr();
+  redistributed_row[DRT::UTILS::MatBlockType::lm_displ] = &GLmDofRowMapPtr();
+  redistributed_row[DRT::UTILS::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
 
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs redistributed_col(4);
-  redistributed_col[DRT::UTILS::block_displ_displ] = &GSlMaDofRowMapPtr();
-  redistributed_col[DRT::UTILS::block_displ_lm] = &GLmDofRowMapPtr();
-  redistributed_col[DRT::UTILS::block_lm_displ] = &GDispDofRowMapPtr();
-  redistributed_col[DRT::UTILS::block_lm_lm] = &GLmDofRowMapPtr();
+  redistributed_col[DRT::UTILS::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
+  redistributed_col[DRT::UTILS::MatBlockType::displ_lm] = &GLmDofRowMapPtr();
+  redistributed_col[DRT::UTILS::MatBlockType::lm_displ] = &GDispDofRowMapPtr();
+  redistributed_col[DRT::UTILS::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
 
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs unredistributed_row(4);
-  unredistributed_row[DRT::UTILS::block_displ_displ] = &PGSlMaDofRowMapPtr();
-  unredistributed_row[DRT::UTILS::block_displ_lm] = &ProbDofsPtr();
-  unredistributed_row[DRT::UTILS::block_lm_displ] = &PGLmDofRowMapPtr();
-  unredistributed_row[DRT::UTILS::block_lm_lm] = &PGLmDofRowMapPtr();
+  unredistributed_row[DRT::UTILS::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
+  unredistributed_row[DRT::UTILS::MatBlockType::displ_lm] = &ProbDofsPtr();
+  unredistributed_row[DRT::UTILS::MatBlockType::lm_displ] = &PGLmDofRowMapPtr();
+  unredistributed_row[DRT::UTILS::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
 
 
   MORTAR::MatrixRowColTransformer::plain_block_map_pairs unredistributed_col(4);
-  unredistributed_col[DRT::UTILS::block_displ_displ] = &PGSlMaDofRowMapPtr();
-  unredistributed_col[DRT::UTILS::block_displ_lm] = &PGLmDofRowMapPtr();
-  unredistributed_col[DRT::UTILS::block_lm_displ] = &ProbDofsPtr();
-  unredistributed_col[DRT::UTILS::block_lm_lm] = &PGLmDofRowMapPtr();
+  unredistributed_col[DRT::UTILS::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
+  unredistributed_col[DRT::UTILS::MatBlockType::displ_lm] = &PGLmDofRowMapPtr();
+  unredistributed_col[DRT::UTILS::MatBlockType::lm_displ] = &ProbDofsPtr();
+  unredistributed_col[DRT::UTILS::MatBlockType::lm_lm] = &PGLmDofRowMapPtr();
 
   mat_row_col_transformer_->Init(
       redistributed_row, redistributed_col, unredistributed_row, unredistributed_col);
@@ -1538,7 +1538,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ:
+    case DRT::UTILS::VecBlockType::displ:
     {
       vec_ptr = Data().StrContactRhsPtr();
 
@@ -1546,26 +1546,27 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::AUG::Strategy::GetRhsBlockPtr(
       {
         double vec_nrm2 = 0.0;
         vec_ptr->Norm2(&vec_nrm2);
-        IO::cout << __FUNCTION__ << " [DRT::UTILS::block_displ] = " << vec_nrm2 << IO::endl;
+        IO::cout << __FUNCTION__ << " [DRT::UTILS::VecBlockType::displ] = " << vec_nrm2 << IO::endl;
       }
 
       break;
     }
-    case DRT::UTILS::block_constraint:
+    case DRT::UTILS::VecBlockType::constraint:
     {
       vec_ptr = Data().ConstrRhsPtr();
       if (IO::cout.RequestedOutputLevel() >= IO::debug)
       {
         double vec_nrm2 = 0.0;
         vec_ptr->Norm2(&vec_nrm2);
-        IO::cout << __FUNCTION__ << " [DRT::UTILS::block_constraint] = " << vec_nrm2 << IO::endl;
+        IO::cout << __FUNCTION__ << " [DRT::UTILS::VecBlockType::constraint] = " << vec_nrm2
+                 << IO::endl;
       }
 
       break;
     }
     default:
     {
-      dserror("Unknown STR::VecBlockType!");
+      dserror("Unknown DRT::UTILS::VecBlockType!");
       break;
     }
   }
@@ -1586,7 +1587,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockPtr(
   Teuchos::RCP<LINALG::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
   {
-    case DRT::UTILS::block_displ_displ:
+    case DRT::UTILS::MatBlockType::displ_displ:
     {
       Teuchos::RCP<LINALG::SparseMatrix>& kdd_ptr = mat_ptr;
       kdd_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
@@ -1597,7 +1598,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockPtr(
 
       break;
     }
-    case DRT::UTILS::block_displ_lm:
+    case DRT::UTILS::MatBlockType::displ_lm:
     {
       Teuchos::RCP<LINALG::SparseMatrix>& kdz_ptr = mat_ptr;
       kdz_ptr =
@@ -1613,7 +1614,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockPtr(
 
       break;
     }
-    case DRT::UTILS::block_lm_displ:
+    case DRT::UTILS::MatBlockType::lm_displ:
     {
       Teuchos::RCP<LINALG::SparseMatrix>& kzd_ptr = mat_ptr;
       kzd_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true), 100, false, true));
@@ -1627,7 +1628,7 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetMatrixBlockPtr(
 
       break;
     }
-    case DRT::UTILS::block_lm_lm:
+    case DRT::UTILS::MatBlockType::lm_lm:
     {
       Teuchos::RCP<LINALG::SparseMatrix>& kzz_ptr = mat_ptr;
       kzz_ptr = Teuchos::rcp(new LINALG::SparseMatrix(SlDoFRowMap(true), 100, false, true));

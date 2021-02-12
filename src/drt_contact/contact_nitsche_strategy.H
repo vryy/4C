@@ -11,6 +11,7 @@
 #define CONTACT_NITSCHE_STRATEGY_H
 
 #include "contact_abstract_strategy.H"
+
 #include <Epetra_FEVector.h>
 #include <utility>
 

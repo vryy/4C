@@ -11,9 +11,11 @@
 #define CONTACT_INTEGRATOR_NITSCHE_TSI_H
 
 #include "contact_nitsche_integrator.H"
-#include "../headers/pairedvector.H"
+
 #include <Epetra_FEVector.h>
 #include <Epetra_CrsMatrix.h>
+
+#include "../headers/pairedvector.H"
 
 // forward declarations
 namespace LINALG
@@ -41,8 +43,6 @@ namespace CONTACT
         const Epetra_Comm& comm)
         : CoIntegratorNitsche(params, eletype, comm),
           theta_thermo_(params.get<double>("NITSCHE_THETA_TSI")),
-          nit_wgt_thermo_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheWeighting>(
-              params, "NITSCHE_WEIGHTING_TSI")),
           nit_thr_(DRT::INPUT::IntegralValue<INPAR::CONTACT::NitscheThermoMethod>(
               params, "NITSCHE_METHOD_TSI")),
           pp_thermo_(params.get<double>("PENALTYPARAM_THERMO")),
@@ -53,11 +53,7 @@ namespace CONTACT
     {
     }
 
-    /*!
-     \brief Destructor
-
-     */
-    virtual ~CoIntegratorNitscheTsi() {}
+    ~CoIntegratorNitscheTsi() override = default;
 
    protected:
     /*!
@@ -65,7 +61,7 @@ namespace CONTACT
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -74,14 +70,14 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
             This is where the distinction between methods should be,
             i.e. mortar, augmented, gpts,...
      */
-    virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
         LINALG::SerialDenseMatrix& mderiv, LINALG::SerialDenseMatrix& lmderiv,
@@ -90,20 +86,20 @@ namespace CONTACT
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<GEN::pairedvector<int, double>>& derivmxi) override;
 
    private:
     /*!
     \brief evaluate GPTS forces and linearization at this gp
     */
     template <int dim>
-    void GPTS_forces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void GPTSForces(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         const LINALG::SerialDenseVector& sval, const LINALG::SerialDenseMatrix& sderiv,
         const std::vector<GEN::pairedvector<int, double>>& dsxi,
         const LINALG::SerialDenseVector& mval, const LINALG::SerialDenseMatrix& mderiv,
         const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
         const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-        const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+        const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
         std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
 
     template <int dim>
@@ -187,12 +183,11 @@ namespace CONTACT
     template <int dim>
     void SetupGpTemp(MORTAR::MortarElement& moEle, const LINALG::SerialDenseVector& val,
         const LINALG::SerialDenseMatrix& deriv,
-        const std::vector<GEN::pairedvector<int, double>> dxi, double& temp,
+        const std::vector<GEN::pairedvector<int, double>>& dxi, double& temp,
         GEN::pairedvector<int, double>& d_temp_dT, GEN::pairedvector<int, double>& d_temp_dd);
 
    private:
     double theta_thermo_;
-    INPAR::CONTACT::NitscheWeighting nit_wgt_thermo_;
     INPAR::CONTACT::NitscheThermoMethod nit_thr_;
     double pp_thermo_;
     double temp_ref_;

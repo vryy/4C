@@ -8,30 +8,25 @@
 */
 /*---------------------------------------------------------------------*/
 #include "contact_nitsche_integrator_poro.H"
-#include "contact_integrator.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "contact_node.H"
 #include "contact_element.H"
-#include "contact_defines.H"
+#include "contact_integrator.H"
+#include "contact_nitsche_utils.H"
+#include "contact_node.H"
 #include "contact_paramsinterface.H"
-#include "../drt_mortar/mortar_defines.H"
-#include "../drt_inpar/inpar_contact.H"
+
+#include <Epetra_FEVector.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
+
+#include "../drt_mat/elasthyper.H"
+#include "../drt_mat/structporo.H"
 
 #include "../drt_so3/so_base.H"
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so3_poro.H"
 
-#include "../drt_mat/elasthyper.H"
-#include <Epetra_FEVector.h>
-#include <Epetra_CrsMatrix.h>
-#include "../linalg/linalg_utils_densematrix_inverse.H"
-#include "contact_nitsche_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
-#include "../drt_mat/structporo.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -66,13 +61,11 @@ void CONTACT::CoIntegratorNitschePoro::IntegrateGP_3D(MORTAR::MortarElement& sel
     std::vector<GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
     dynamic_cast<CONTACT::CoElement&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
-    GPTS_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
+    GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
         gap, deriv_gap, n, dn, sxi, mxi);
   }
   //  else if (nit_normal_==INPAR::CONTACT::NitNor_sm)
   //    dserror("Want to use the element normal!");
-
-  return;
 }
 
 
@@ -91,24 +84,20 @@ void CONTACT::CoIntegratorNitschePoro::IntegrateGP_2D(MORTAR::MortarElement& sel
     std::vector<GEN::pairedvector<int, double>>& derivmxi)
 {
   dserror("2D is not implemented!");
-  //    GPTS_forces<2>(sele,mele,sval,sderiv,derivsxi,mval,mderiv,derivmxi,
-  //        jac,derivjac,wgt,gap,deriv_gap,normal,dnmap_unit,sxi,mxi);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitschePoro::GPTS_forces(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitschePoro::GPTSForces(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
     const std::vector<GEN::pairedvector<int, double>>& dsxi, const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& mderiv,
     const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
     const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+    const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
     std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   if (sele.Owner() != Comm_.MyPID()) return;
@@ -137,9 +126,6 @@ void CONTACT::CoIntegratorNitschePoro::GPTS_forces(MORTAR::MortarElement& sele,
   double wm = 0.;
   CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
-
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
-
   double cauchy_nn_weighted_average = 0.;
   GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
@@ -157,11 +143,8 @@ void CONTACT::CoIntegratorNitschePoro::GPTS_forces(MORTAR::MortarElement& sele,
   const double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
   GEN::pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv_d.size() + dgapgp.size());
-  for (_CI p = cauchy_nn_weighted_average_deriv_d.begin();
-       p != cauchy_nn_weighted_average_deriv_d.end(); ++p)
-    d_snn_av_pen_gap[p->first] += p->second;
-  for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p)
-    d_snn_av_pen_gap[p->first] += pen * p->second;
+  for (const auto& p : cauchy_nn_weighted_average_deriv_d) d_snn_av_pen_gap[p.first] += p.second;
+  for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
 
   if (snn_av_pen_gap < 0.)
   {
@@ -176,7 +159,6 @@ void CONTACT::CoIntegratorNitschePoro::GPTS_forces(MORTAR::MortarElement& sele,
     IntegratePoroNoOutFlow<dim>(
         +1, mele, mxi, mval, mderiv, jac, jacintcellmap, wgt, normal, dnmap_unit, sele, sval);
   }
-  return;
 }
 
 
@@ -219,22 +201,24 @@ void CONTACT::CoIntegratorNitschePoro::SoEleCauchy(MORTAR::MortarElement& moEle,
     deriv_sigma_nt_d[moEle.MoData().ParentDof().at(i)] += w * dsntdd(i, 0);
 
   for (int d = 0; d < dim; ++d)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
          p != normal_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdn(d) * p->second * w;
+  }
 
   for (int d = 0; d < dim; ++d)
+  {
     for (GEN::pairedvector<int, double>::const_iterator p = direction_deriv[d].begin();
          p != direction_deriv[d].end(); ++p)
       deriv_sigma_nt_d[p->first] += dsntdt(d) * p->second * w;
+  }
 
   if (moEle.MoData().ParentPFPres().size())
   {
     for (int i = 0; i < moEle.ParentElement()->NumNode(); ++i)
       deriv_sigma_nt_p[moEle.MoData().ParentPFDof()[i * (dim + 1) + 3]] += dsntdp(i, 0) * w;
   }
-
-  return;
 }
 
 template <int dim>
@@ -251,16 +235,19 @@ void CONTACT::CoIntegratorNitschePoro::IntegrateTest(const double fac, MORTAR::M
   CONTACT::CoIntegratorNitsche::IntegrateTest<dim>(fac, ele, shape, deriv, dxi, jac, jacintcellmap,
       wgt, test_val, test_deriv_d, test_dir, test_dir_deriv);
 
-  for (GEN::pairedvector<int, double>::const_iterator p = test_deriv_p.begin();
-       p != test_deriv_p.end(); ++p)
+  for (const auto& p : test_deriv_p)
   {
-    double* row = ele.GetNitscheContainer().k_dp(p->first);
+    double* row = ele.GetNitscheContainer().Kdp(p.first);
     for (int s = 0; s < ele.NumNode(); ++s)
+    {
       for (int d = 0; d < Dim(); ++d)
+      {
         row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
                 ele.ParentElement()->Shape(), ele.FaceParentNumber(), s) *
                 dim +
-            d] -= fac * jac * wgt * test_dir(d) * p->second * shape(s);
+            d] -= fac * jac * wgt * test_dir(d) * p.second * shape(s);
+      }
+    }
   }
 }
 
@@ -328,46 +315,47 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
           ele.ParentElement()->Shape(), ele.FaceParentNumber(), j);
       for (int d = 0; d < dim; ++d)
       {
-        (*ele.GetNitscheContainer().rhs_p(pi * (dim + 1) + d)) +=
+        (*ele.GetNitscheContainer().RhsP(pi * (dim + 1) + d)) +=
             shape(i) * ele.MoData().ParentPFPres()[pj] * shape(j) * normal(d) * val *
             sweight;  //(v,k1 p1 n)
-        ele.GetNitscheContainer().k_pp(
+        ele.GetNitscheContainer().Kpp(
             ele.MoData().ParentPFDof()[pj * (dim + 1) + dim])[(pi * (dim + 1) + d)] -=
             shape(i) * shape(j) * normal(d) * val * sweight;  //(v,k1 dp1/dp n)
-        for (GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
-             p != normal_deriv[d].end(); ++p)
+        for (auto p = normal_deriv[d].begin(); p != normal_deriv[d].end(); ++p)
         {
-          ele.GetNitscheContainer().k_pd(p->first)[(pi * (dim + 1) + d)] -=
+          ele.GetNitscheContainer().Kpd(p->first)[(pi * (dim + 1) + d)] -=
               shape(i) * shape(j) * ele.MoData().ParentPFPres()[pj] * p->second * val *
               sweight;  //(v,k1 p1 dn/dd)
 
-          ele.GetNitscheContainer().k_pd(p->first)[(pi * (dim + 1) + dim)] +=
+          ele.GetNitscheContainer().Kpd(p->first)[(pi * (dim + 1) + dim)] +=
               shape(i) * sporosity * p->second *
               (ele.MoData().ParentPFVel()[pj * dim + d] - ele.MoData().ParentVel()[pj * dim + d]) *
               shape(j) * val * sweight;  // (k1 q1, phi (vF-vS) dn/dd)
         }
-        ele.GetNitscheContainer().k_pd(ele.MoData().ParentDof()[pj * dim + d])[(
+        ele.GetNitscheContainer().Kpd(ele.MoData().ParentDof()[pj * dim + d])[(
             pi * (dim + 1) + dim)] -=  // (k1 q1, phi (vF-dvS/dd) n)
             shape(i) * sporosity * normal(d) * shape(j) * val * dv_dd_ * sweight;
 
-        ele.GetNitscheContainer().k_pp(ele.MoData().ParentPFDof()[pj * (dim + 1) + d])[(
+        ele.GetNitscheContainer().Kpp(ele.MoData().ParentPFDof()[pj * (dim + 1) + d])[(
             pi * (dim + 1) + dim)] +=  // (k1 q1, phi (dvF/dvF-vS) n)
             shape(i) * sporosity * normal(d) * shape(j) * val * sweight;
 
-        (*ele.GetNitscheContainer().rhs_p(pi * (dim + 1) + (dim))) -=
+        (*ele.GetNitscheContainer().RhsP(pi * (dim + 1) + (dim))) -=
             shape(i) * sporosity * normal(d) *
             (ele.MoData().ParentPFVel()[pj * dim + d] - ele.MoData().ParentVel()[pj * dim + d]) *
             shape(j) * val * sweight;  // (k1 q1, phi (vF-vS) n)
       }
-      ele.GetNitscheContainer().k_pp(
+      ele.GetNitscheContainer().Kpp(
           ele.MoData().ParentPFDof()[pj * (dim + 1) + dim])[(pi * (dim + 1) + dim)] +=
           val * srelveln * shape(i) * sdphi_dp * shape(j) * sweight;  // (k1 q1, phi/dp (vF-vS) n)
     }
 
-    for (std::map<int, double>::iterator dJit = sJLin.begin(); dJit != sJLin.end(); ++dJit)
-      ele.GetNitscheContainer().k_pd(dJit->first)[(pi * (dim + 1) + dim)] +=
-          val * srelveln * shape(i) * sdphi_dJ * dJit->second *
+    for (auto& dJit : sJLin)
+    {
+      ele.GetNitscheContainer().Kpd(dJit.first)[(pi * (dim + 1) + dim)] +=
+          val * srelveln * shape(i) * sdphi_dJ * dJit.second *
           sweight;  // (k1 q1, phi/dd (vF-vS) n)
+    }
   }
 
   if (oweight > 1e-16)
@@ -382,40 +370,39 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
             otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
         for (int d = 0; d < dim; ++d)
         {
-          (*ele.GetNitscheContainer().rhs_p(pi * (dim + 1) + d)) +=
+          (*ele.GetNitscheContainer().RhsP(pi * (dim + 1) + d)) +=
               shape(i) * otherele.MoData().ParentPFPres()[pj] * othershape(j) * normal(d) * val *
               oweight;  //(v,k2 p2 n)
-          ele.GetNitscheContainer().k_pp(
+          ele.GetNitscheContainer().Kpp(
               otherele.MoData().ParentPFDof()[pj * (dim + 1) + dim])[(pi * (dim + 1) + d)] -=
               shape(i) * othershape(j) * normal(d) * val * oweight;  //(v,k2 dp2/dp n)
-          for (GEN::pairedvector<int, double>::const_iterator p = normal_deriv[d].begin();
-               p != normal_deriv[d].end(); ++p)
+          for (auto p = normal_deriv[d].begin(); p != normal_deriv[d].end(); ++p)
           {
-            ele.GetNitscheContainer().k_pd(p->first)[(pi * (dim + 1) + d)] -=
+            ele.GetNitscheContainer().Kpd(p->first)[(pi * (dim + 1) + d)] -=
                 shape(i) * othershape(j) * otherele.MoData().ParentPFPres()[pj] * p->second * val *
                 oweight;  //(v,k2 p2 dn/dd)
 
-            otherele.GetNitscheContainer().k_pd(p->first)[(pj * (dim + 1) + dim)] +=
+            otherele.GetNitscheContainer().Kpd(p->first)[(pj * (dim + 1) + dim)] +=
                 othershape(j) * sporosity * p->second *
                 (ele.MoData().ParentPFVel()[pi * dim + d] -
                     ele.MoData().ParentVel()[pi * dim + d]) *
                 shape(i) * val * oweight;  // (k2 q2, phi (vF-vS) dn/dd)
           }
 
-          otherele.GetNitscheContainer().k_pd(ele.MoData().ParentDof()[pi * dim + d])[(
+          otherele.GetNitscheContainer().Kpd(ele.MoData().ParentDof()[pi * dim + d])[(
               pj * (dim + 1) + dim)] -=  // (k2 q2, phi (vF-dvS/dd) n)
               othershape(j) * sporosity * normal(d) * shape(i) * val * dv_dd_ * oweight;
 
-          otherele.GetNitscheContainer().k_pp(ele.MoData().ParentPFDof()[pi * (dim + 1) + d])[(
+          otherele.GetNitscheContainer().Kpp(ele.MoData().ParentPFDof()[pi * (dim + 1) + d])[(
               pj * (dim + 1) + dim)] +=  // (k2 q2, phi (dvF/dvF-vS) n)
               othershape(j) * sporosity * normal(d) * shape(i) * val * oweight;
 
-          (*otherele.GetNitscheContainer().rhs_p(pj * (dim + 1) + (dim))) -=
+          (*otherele.GetNitscheContainer().RhsP(pj * (dim + 1) + (dim))) -=
               othershape(j) * sporosity * normal(d) *
               (ele.MoData().ParentPFVel()[pi * dim + d] - ele.MoData().ParentVel()[pi * dim + d]) *
               shape(i) * val * oweight;  // (k2 q2, phi (vF-vS) n)
         }
-        otherele.GetNitscheContainer().k_pp(
+        otherele.GetNitscheContainer().Kpp(
             ele.MoData().ParentPFDof()[pi * (dim + 1) + dim])[(pj * (dim + 1) + dim)] +=
             val * srelveln * othershape(j) * sdphi_dp * shape(i) *
             oweight;  // (k2 q2, phi/dp (vF-vS) n)
@@ -425,10 +412,12 @@ void CONTACT::CoIntegratorNitschePoro::IntegratePoroNoOutFlow(const double fac,
     {
       int pj = DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
           otherele.ParentElement()->Shape(), otherele.FaceParentNumber(), j);
-      for (std::map<int, double>::iterator dJit = sJLin.begin(); dJit != sJLin.end(); ++dJit)
-        otherele.GetNitscheContainer().k_pd(dJit->first)[(pj * (dim + 1) + dim)] +=
-            val * srelveln * othershape(j) * sdphi_dJ * dJit->second *
+      for (auto& dJit : sJLin)
+      {
+        otherele.GetNitscheContainer().Kpd(dJit.first)[(pj * (dim + 1) + dim)] +=
+            val * srelveln * othershape(j) * sdphi_dJ * dJit.second *
             oweight;  // (k2 q2, phi/dd (vF-vS) n)
+      }
     }
   }
 }
@@ -489,7 +478,7 @@ void CONTACT::CoIntegratorNitschePoro::GetPoroQuantitiesatGP(MORTAR::MortarEleme
     sstructmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(ele.ParentElement()->Material(1));
   if (sstructmat == Teuchos::null) dserror("Cast to StructPoro failed!");
   sstructmat->ComputeSurfPorosity(sparams, spresgp, sJ, ele.FaceParentNumber(), 1, sporosity,
-      &sdphi_dp, &sdphi_dJ, NULL, NULL, NULL, false);
+      &sdphi_dp, &sdphi_dJ, nullptr, nullptr, nullptr, false);
 }
 
 template void CONTACT::CoIntegratorNitschePoro::IntegrateTest<2>(const double,

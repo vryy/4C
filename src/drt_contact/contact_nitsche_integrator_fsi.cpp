@@ -11,15 +11,15 @@
 #include "contact_nitsche_integrator_fsi.H"
 
 #include "contact_element.H"
-
 #include "contact_node.H"
+
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 
 #include "../drt_so3/so_hex8.H"
 #include "../drt_so3/so3_poro.H"
 
 #include "../drt_xfem/xfem_xfluid_contact_communicator.H"
 
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CoIntegratorNitscheFsi::CoIntegratorNitscheFsi(Teuchos::ParameterList& params,
@@ -41,14 +41,14 @@ void CONTACT::CoIntegratorNitscheFsi::IntegrateDerivEle3D(MORTAR::MortarElement&
     std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  CONTACT::CoElement* csele = dynamic_cast<CONTACT::CoElement*>(&sele);
+  auto* csele = dynamic_cast<CONTACT::CoElement*>(&sele);
   if (!csele) dserror("Could cast to Contact Element!");
 
   // do quick orientation check
   LINALG::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
   sele.ComputeUnitNormalAtXi(center, sn.A());
-  for (std::vector<MORTAR::MortarElement*>::iterator mit = meles.begin(); mit != meles.end(); ++mit)
+  for (auto mit = meles.begin(); mit != meles.end(); ++mit)
   {
     (*mit)->ComputeUnitNormalAtXi(center, mn.A());
     if (sn.Dot(mn) > -1e-1)
@@ -87,23 +87,21 @@ void CONTACT::CoIntegratorNitscheFsi::IntegrateGP_3D(MORTAR::MortarElement& sele
   std::vector<GEN::pairedvector<int, double>> dn(3, sele.NumNode() * 3);
   dynamic_cast<CONTACT::CoElement&>(sele).DerivUnitNormalAtXi(sxi, dn);
 
-  GPTS_forces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt,
-      gap, deriv_gap, n, dn, sxi, mxi);
-
-  return;
+  GPTSForces<3>(sele, mele, sval, sderiv, derivsxi, mval, mderiv, derivmxi, jac, derivjac, wgt, gap,
+      deriv_gap, n, dn, sxi, mxi);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
+void CONTACT::CoIntegratorNitscheFsi::GPTSForces(MORTAR::MortarElement& sele,
     MORTAR::MortarElement& mele, const LINALG::SerialDenseVector& sval,
     const LINALG::SerialDenseMatrix& sderiv,
     const std::vector<GEN::pairedvector<int, double>>& dsxi, const LINALG::SerialDenseVector& mval,
     const LINALG::SerialDenseMatrix& mderiv,
     const std::vector<GEN::pairedvector<int, double>>& dmxi, const double jac,
     const GEN::pairedvector<int, double>& jacintcellmap, const double wgt, const double gap,
-    const GEN::pairedvector<int, double>& dgapgp, double* gpn,
+    const GEN::pairedvector<int, double>& dgapgp, const double* gpn,
     std::vector<GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi)
 {
   // first rough check
@@ -121,8 +119,6 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
   double wm = 0.;
   CONTACT::UTILS::NitscheWeightsAndScaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
-
-  double normal_contact_transition = 0.;
   bool FSI_integrated = true;  // bool indicates if fsi condition is already evaluated ... --> if
                                // true no contribution here ...
 
@@ -132,7 +128,7 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
 
   bool gp_on_this_proc;
 
-  normal_contact_transition = xf_c_comm_->Get_FSI_Traction(
+  double normal_contact_transition = xf_c_comm_->Get_FSI_Traction(
       &sele, pxsi, LINALG::Matrix<dim - 1, 1>(sxi, false), normal, FSI_integrated, gp_on_this_proc);
 #ifdef WRITE_GMSH
   {
@@ -202,9 +198,6 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
     return;
   }
 
-
-  typedef GEN::pairedvector<int, double>::const_iterator _CI;
-
   double cauchy_nn_weighted_average = 0.;
   GEN::pairedvector<int, double> cauchy_nn_weighted_average_deriv(
       sele.NumNode() * 3 * 12 + sele.MoData().ParentDisp().size() +
@@ -230,11 +223,8 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
   double snn_av_pen_gap = cauchy_nn_weighted_average + pen * gap;
   GEN::pairedvector<int, double> d_snn_av_pen_gap(
       cauchy_nn_weighted_average_deriv.size() + dgapgp.size());
-  for (_CI p = cauchy_nn_weighted_average_deriv.begin();
-       p != cauchy_nn_weighted_average_deriv.end(); ++p)
-    d_snn_av_pen_gap[p->first] += p->second;
-  for (_CI p = dgapgp.begin(); p != dgapgp.end(); ++p)
-    d_snn_av_pen_gap[p->first] += pen * p->second;
+  for (const auto& p : cauchy_nn_weighted_average_deriv) d_snn_av_pen_gap[p.first] += p.second;
+  for (const auto& p : dgapgp) d_snn_av_pen_gap[p.first] += pen * p.second;
 
   // test in normal contact direction
   IntegrateTest<dim>(-1., sele, sval, sderiv, dsxi, jac, jacintcellmap, wgt, snn_av_pen_gap,
@@ -253,8 +243,6 @@ void CONTACT::CoIntegratorNitscheFsi::GPTS_forces(MORTAR::MortarElement& sele,
   }
 #endif
   xf_c_comm_->Inc_GP(0);
-
-  return;
 }
 
 void CONTACT::CoIntegratorNitscheFsi::UpdateEleContactState(MORTAR::MortarElement& sele, int state)
@@ -286,14 +274,18 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele, const LINALG::M
   double sigma_nt;
 
   if (!cele->MoData().ParentPFPres().size())
+  {
     dynamic_cast<DRT::ELEMENTS::So_base*>(cele->ParentElement())
-        ->GetCauchyAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt, NULL, NULL, NULL, NULL,
-            NULL, NULL, NULL, NULL);
+        ->GetCauchyAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt, nullptr, nullptr,
+            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+  }
   else
+  {
     dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
         cele->ParentElement())
         ->GetCauchyAtXi(
             pxsi, cele->MoData().ParentDisp(), cele->MoData().ParentPFPres(), n, dir, sigma_nt);
+  }
   return sigma_nt;
 }
 
