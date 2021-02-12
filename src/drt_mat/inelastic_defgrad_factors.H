@@ -32,9 +32,6 @@ namespace MAT
        */
       explicit InelasticDeformationDirection(std::vector<double> growthdirection);
 
-      /// destructor
-      virtual ~InelasticDeformationDirection() = default;
-
       /// return reference to matrix that determines growth direction
       const LINALG::Matrix<3, 3>& Growthdirmat() const { return growthdirmat_; }
 
@@ -55,8 +52,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~InelasticDefgradScalar() override = default;
 
       Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
 
@@ -81,8 +76,6 @@ namespace MAT
       /// standard constructor
       explicit InelasticDefgradLinScalarAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      ~InelasticDefgradLinScalarAniso() override = default;
-
       /// return reference to matrix that determines growth direction
       const LINALG::Matrix<3, 3>& Growthdirmat() { return growthdir_->Growthdirmat(); }
 
@@ -103,8 +96,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit InelasticDefgradIntercalFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~InelasticDefgradIntercalFrac() override = default;
 
       /// return saturation concentration of material
       double Cmax() const { return Cmax_; }
@@ -130,8 +121,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit InelasticDefgradPolyIntercalFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~InelasticDefgradPolyIntercalFrac() override = default;
 
       /// return value of polynomial at reference intercalation fraction
       double GetPolynomReferenceValue() const { return PolynomReferenceValue_; }
@@ -160,8 +149,6 @@ namespace MAT
       /// standard constructor
       explicit InelasticDefgradPolyIntercalFracAniso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      ~InelasticDefgradPolyIntercalFracAniso() override = default;
-
       /// return reference to matrix that determines growth direction
       const LINALG::Matrix<3, 3>& Growthdirmat() const { return growthdir_->Growthdirmat(); };
 
@@ -180,8 +167,6 @@ namespace MAT
     {
      public:
       explicit InelasticDefgradLinTempIso(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~InelasticDefgradLinTempIso() override = default;
 
       Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
@@ -215,9 +200,6 @@ namespace MAT
      * @param[in] ReferenceValue  reference value
      */
     explicit InelasticDefgradLinearShape(double GrowthFac, double ReferenceValue);
-
-    /// destructor
-    ~InelasticDefgradLinearShape() = default;
 
     /*!
      * @brief evaluation of the linear growth law
@@ -254,9 +236,6 @@ namespace MAT
      */
     explicit InelasticDefgradPolynomialShape(
         std::vector<double> PolyCoeffs, double Xmin, double Xmax);
-
-    /// destructor
-    ~InelasticDefgradPolynomialShape() = default;
 
     /*!
      * @brief checks the bounds of validity of the polynomial and writes a warning to screen if
@@ -309,14 +288,8 @@ namespace MAT
   class InelasticDefgradFactors
   {
    public:
-    /// construct empty material
-    InelasticDefgradFactors();
-
     /// construct material with specific material params
     explicit InelasticDefgradFactors(MAT::PAR::Parameter* params);
-
-    /// destructor
-    virtual ~InelasticDefgradFactors() = default;
 
     /*!
      * @brief create object by input parameter ID
@@ -402,16 +375,12 @@ namespace MAT
   class InelasticDefgradScalar : public InelasticDefgradFactors
   {
    public:
-    InelasticDefgradScalar() = default;
-
     /*!
      * @brief construct material with required inputs
      *
      * @param[in] params           pointer to material specific parameters
      */
     explicit InelasticDefgradScalar(MAT::PAR::Parameter* params);
-
-    ~InelasticDefgradScalar() override = default;
 
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
@@ -450,8 +419,6 @@ namespace MAT
   class InelasticDefgradPolyIntercalFrac : public InelasticDefgradScalar
   {
    public:
-    InelasticDefgradPolyIntercalFrac() = default;
-
     /*!
      * @brief construct material with required inputs
      *
@@ -460,9 +427,7 @@ namespace MAT
      *            the input file
      */
     explicit InelasticDefgradPolyIntercalFrac(MAT::PAR::Parameter* params,
-        const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
-
-    ~InelasticDefgradPolyIntercalFrac() override = default;
+        Teuchos::RCP<InelasticDefgradPolynomialShape> PolynomialGrowth);
 
     /*!
      * @brief evaluate polynomial describing growth of material with regard to intercalation
@@ -521,8 +486,6 @@ namespace MAT
   class InelasticDefgradLinScalarIso : public InelasticDefgradScalar
   {
    public:
-    InelasticDefgradLinScalarIso();
-
     /*!
      * @brief construct material with required inputs
      *
@@ -531,9 +494,7 @@ namespace MAT
      *                            in the input file
      */
     explicit InelasticDefgradLinScalarIso(
-        MAT::PAR::Parameter* params, const Teuchos::RCP<InelasticDefgradLinearShape>& LinearGrowth);
-
-    ~InelasticDefgradLinScalarIso() override = default;
+        MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> LinearGrowth);
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -583,8 +544,6 @@ namespace MAT
   class InelasticDefgradLinScalarAniso : public InelasticDefgradScalar
   {
    public:
-    InelasticDefgradLinScalarAniso();
-
     /*!
      * @brief construct material with required inputs
      *
@@ -593,9 +552,7 @@ namespace MAT
      *                            in the input file
      */
     explicit InelasticDefgradLinScalarAniso(
-        MAT::PAR::Parameter* params, const Teuchos::RCP<InelasticDefgradLinearShape>& LinearGrowth);
-
-    ~InelasticDefgradLinScalarAniso() override = default;
+        MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> LinearGrowth);
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -640,8 +597,6 @@ namespace MAT
   class InelasticDefgradPolyIntercalFracIso : public InelasticDefgradPolyIntercalFrac
   {
    public:
-    InelasticDefgradPolyIntercalFracIso();
-
     /*!
      * @brief construct material with required inputs
      *
@@ -651,9 +606,6 @@ namespace MAT
      */
     explicit InelasticDefgradPolyIntercalFracIso(MAT::PAR::Parameter* params,
         const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
-
-
-    ~InelasticDefgradPolyIntercalFracIso() override = default;
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -697,8 +649,6 @@ namespace MAT
   class InelasticDefgradPolyIntercalFracAniso : public InelasticDefgradPolyIntercalFrac
   {
    public:
-    InelasticDefgradPolyIntercalFracAniso();
-
     /*!
      * @brief construct material with required inputs
      *
@@ -708,8 +658,6 @@ namespace MAT
      */
     explicit InelasticDefgradPolyIntercalFracAniso(MAT::PAR::Parameter* params,
         const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
-
-    ~InelasticDefgradPolyIntercalFracAniso() override = default;
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -744,22 +692,17 @@ namespace MAT
   class InelasticDefgradLinTempIso : public InelasticDefgradFactors
   {
    public:
-    InelasticDefgradLinTempIso();
-
     explicit InelasticDefgradLinTempIso(MAT::PAR::Parameter* params);
 
-    ~InelasticDefgradLinTempIso() override = default;
-
-    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* const defgrad,
+    void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) final;
 
     void EvaluateInverseInelasticDefGrad(
         const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) final;
 
-    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* const defgrad,
-        const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
-        LINALG::Matrix<6, 1>& dstressdT) final;
+    void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdT) final;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 

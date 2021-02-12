@@ -11,9 +11,12 @@
 #define SO3MATERIAL_H
 
 #include "material.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_inpar/inpar_structure.H"
+
 #include <unordered_map>
+
+#include "../drt_inpar/inpar_structure.H"
+
+#include "../drt_lib/drt_linedefinition.H"
 
 namespace MAT
 {
@@ -22,21 +25,28 @@ namespace MAT
    public:
     //! @name Packing and Unpacking
 
-    /// Return unique ParObject ID
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
-    /// Pack this class so it can be communicated
-    virtual void Pack(DRT::PackBuffer& data) const = 0;
+    void Pack(DRT::PackBuffer& data) const override = 0;
 
-    /// Unpack data from a char vector into this class
-    virtual void Unpack(const std::vector<char>& data) = 0;
+    void Unpack(const std::vector<char>& data) override = 0;
 
     //@}
 
     //! @name Evaluation methods
 
-    /// Evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+    /*!
+     * @brief Evaluate the material law, i.e. the stress tensor and the constitutive tensor
+     *
+     * @param[in]  defgrad   Deformation gradient
+     * @param[in]  glstrain  Green-Lagrange strain
+     * @param[in]  params    Container for additional information
+     * @param[out] stress    2nd Piola-Kirchhoff stresses
+     * @param[out] cmat      Constitutive matrix
+     * @param[in]  gp        current gauss point
+     * @param[in]  eleGID    Element ID
+     */
+    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<6, 1>* glstrain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
         int gp, int eleGID) = 0;
 
@@ -107,10 +117,10 @@ namespace MAT
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
         LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int gp, int eleGID,
-        const double* temp = NULL, double* DsntDT = NULL, LINALG::Matrix<9, 1>* D2sntDFDT = NULL)
+        const double* temp = nullptr, double* DsntDT = nullptr,
+        LINALG::Matrix<9, 1>* D2sntDFDT = nullptr)
     {
       dserror("EvaluateCauchy not implementend for this material");
-      return;
     }
 
     //@}
