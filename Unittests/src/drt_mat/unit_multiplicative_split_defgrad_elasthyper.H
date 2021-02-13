@@ -407,7 +407,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
     multiplicative_split_defgrad_->PreEvaluate(params_lin, 0);
 
     // do the actual call that is tested
-    auto source(PAR::InelasticSource::inelastic_concentration);
+    auto source(PAR::InelasticSource::concentration);
     LINALG::Matrix<6, 1> dSdx(true);
     // reference solution
     LINALG::Matrix<6, 1> dSdx_ref;
