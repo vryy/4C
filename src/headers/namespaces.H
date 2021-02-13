@@ -889,6 +889,12 @@ namespace INPAR
    */
   namespace MORTAR
   {
+    /*! \brief Utilities for the MORTAR::MortarInterface class
+     *
+     */
+    namespace INTERFACEUTILS
+    {
+    }
   }  // namespace MORTAR
 
   /*! \brief Input parameters for particle dynamics

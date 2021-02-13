@@ -1717,6 +1717,7 @@ set(OBJS_DRT_MORTAR
   src/drt_mortar/mortar_integrator.cpp
   src/drt_mortar/mortar_interface.cpp
   src/drt_mortar/mortar_interface_tools.cpp
+  src/drt_mortar/mortar_interface_utils.cpp
   src/drt_mortar/mortar_manager_base.cpp
   src/drt_mortar/mortar_strategy_factory.cpp
   src/drt_mortar/mortar_projector.cpp
