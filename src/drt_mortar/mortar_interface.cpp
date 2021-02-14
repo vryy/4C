@@ -426,11 +426,16 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
                   << "    Statistics of parallel distribution across " << numproc
                   << " ranks:" << std::endl;
         printf(
-            "    +----------------------+----------------+----------------+-----------------+\n");
+            "    "
+            "+----------------------+----------------+----------------+-----------------+----------"
+            "--------+\n");
         printf(
-            "    | Type                 | min over procs | max over procs | mean over procs |\n");
+            "    | Type                 | min over procs | max over procs | mean over procs | "
+            "max-to-min ratio |\n");
         printf(
-            "    +----------------------+----------------+----------------+-----------------+\n");
+            "    "
+            "+----------------------+----------------+----------------+-----------------+----------"
+            "--------+\n");
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
             "nodes (s+m)", n_nodes, myrank == 0);
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
@@ -440,7 +445,9 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
             "ghost elements (s+m)", n_ghostele, myrank == 0);
         printf(
-            "    +----------------------+----------------+----------------+-----------------+\n");
+            "    "
+            "+----------------------+----------------+----------------+-----------------+----------"
+            "--------+\n");
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
             "nodes (s)", s_nodes, myrank == 0);
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
@@ -450,7 +457,9 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
             "ghost elements (s)", s_ghostele, myrank == 0);
         printf(
-            "    +----------------------+----------------+----------------+-----------------+\n");
+            "    "
+            "+----------------------+----------------+----------------+-----------------+----------"
+            "--------+\n");
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
             "nodes (m)", m_nodes, myrank == 0);
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
@@ -460,7 +469,9 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
         MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
             "ghost elements (m)", m_ghostele, myrank == 0);
         printf(
-            "    +----------------------+----------------+----------------+-----------------+\n");
+            "    "
+            "+----------------------+----------------+----------------+-----------------+----------"
+            "--------+\n");
       }
 
       // Print details of parallel distribution for each proc if requested by the user

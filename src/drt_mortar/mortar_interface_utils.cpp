@@ -8,6 +8,7 @@
 /*-----------------------------------------------------------------------*/
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 #include <vector>
 
 #include "mortar_interface_utils.H"
@@ -37,7 +38,14 @@ void MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics
 
     MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
         quantityAcrossAllRanks, minOverAllRanks, maxOverAllRanks, meanOverAllRanks);
-    printf("    | %20s | %14d | %14d | %15.1f |\n", nameOfQuantity.c_str(), minOverAllRanks,
-        maxOverAllRanks, meanOverAllRanks);
+
+    std::stringstream maxToMinRatio;
+    if (minOverAllRanks > 0)
+      maxToMinRatio << static_cast<double>(maxOverAllRanks) / static_cast<double>(minOverAllRanks);
+    else
+      maxToMinRatio << "---";
+
+    printf("    | %20s | %14d | %14d | %15.1f | %16s |\n", nameOfQuantity.c_str(), minOverAllRanks,
+        maxOverAllRanks, meanOverAllRanks, maxToMinRatio.str().c_str());
   }
 }
