@@ -59,7 +59,7 @@ void CONTACT::SelfBinaryTreeNode::CompleteTree(int layer, double& enlarge)
     if (type_ == SELFCO_INNER)
       treenodes_[layer].push_back(Teuchos::rcp(this, false));
     else
-      dserror("ERROR: root must be inner node in treenodes scheme");
+      dserror("root must be inner node in treenodes scheme");
   }
 
   // build tree node storage recursively
@@ -89,7 +89,7 @@ void CONTACT::SelfBinaryTreeNode::CompleteTree(int layer, double& enlarge)
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
 {
-  if (type_ != SELFCO_LEAF) dserror("ERROR: Calculate qual. vec. called for non-leaf node!");
+  if (type_ != SELFCO_LEAF) dserror("Calculate qual. vec. called for non-leaf node!");
 
   // resize qualified vectors
   qualifiedvectors_.resize(nvectors_);
@@ -113,7 +113,7 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
     loccenter[1] = 0.0;
   }
   else
-    dserror("ERROR: CalculateQualifiedVectors called for unknown element type");
+    dserror("CalculateQualifiedVectors called for unknown element type");
 
   // now get the element center normal
   double normal[3] = {0.0, 0.0, 0.0};
@@ -146,7 +146,7 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::UpdateQualifiedVectorsBottomUp()
 {
-  if (type_ == SELFCO_LEAF) dserror("ERROR: Update qual. vec. called for leaf node!");
+  if (type_ == SELFCO_LEAF) dserror("Update qual. vec. called for leaf node!");
 
   // calculate the qualified vectors (= valid sample vectors) of an inner tree node by comparing the
   // qualified vectors of the children
@@ -164,7 +164,7 @@ void CONTACT::SelfBinaryTreeNode::UpdateQualifiedVectorsBottomUp()
  *----------------------------------------------------------------------*/
 void CONTACT::SelfBinaryTreeNode::UpdateEndnodes()
 {
-  if (type_ == SELFCO_LEAF) dserror("ERROR: Update endnodes. called for leaf node!");
+  if (type_ == SELFCO_LEAF) dserror("Update endnodes. called for leaf node!");
 
   // reset endnodes
   endnodes_.clear();
@@ -557,7 +557,7 @@ void CONTACT::SelfBinaryTree::InitInternalVariables()
     // not 2D or 3D
     default:
     {
-      dserror("ERROR: Problem dimension must be 2D or 3D!");
+      dserror("Problem dimension must be 2D or 3D!");
       break;
     }
   }
@@ -577,7 +577,7 @@ void CONTACT::SelfBinaryTree::InitLeafNodesAndMap(std::vector<int>& elelist)
     elelist.push_back(gid);
   }
 
-  if (elelist.size() <= 1) dserror("ERROR: Less than 2 elements for binary tree initialization!");
+  if (elelist.size() <= 1) dserror("Less than 2 elements for binary tree initialization!");
 
   // check for non-smooth contact surface
   bool nonsmoothsurface(false);
@@ -598,7 +598,7 @@ void CONTACT::SelfBinaryTree::InitLeafNodesAndMap(std::vector<int>& elelist)
   }
 
   // double-check if there is at the least one leaf node in tree now
-  if (leafsmap_.size() == 0) dserror("ERROR: SelfBinaryTree: No contact elements defined!");
+  if (leafsmap_.size() == 0) dserror("SelfBinaryTree: No contact elements defined!");
 
   return;
 }
@@ -637,7 +637,7 @@ int CONTACT::SelfBinaryTree::GetEleSpecificNumNodes(DRT::Element* element)
     }
     default:
     {
-      dserror("ERROR: Unknown mortar element type");
+      dserror("Unknown mortar element type");
       break;
     }
   }
@@ -802,9 +802,9 @@ void CONTACT::SelfBinaryTree::CalculateDualGraph(
 
     // get current elements and its nodes
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+    if (!element) dserror("Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
-    if (!nodes) dserror("ERROR: Null pointer!");
+    if (!nodes) dserror("Null pointer!");
 
     // first tree node of one dual edge which includes current element is the element itself saved
     // as a tree node
@@ -828,12 +828,12 @@ void CONTACT::SelfBinaryTree::CalculateDualGraph(
     for (int j = 0; j < numnode; ++j)
     {
       DRT::Node* node = nodes[j];
-      if (!node) dserror("ERROR: Null pointer!");
+      if (!node) dserror("Null pointer!");
 
       // adjacent elements of current node
       int numE = node->NumElement();
       DRT::Element** adjElements = node->Elements();
-      if (!adjElements) dserror("ERROR: Null pointer!");
+      if (!adjElements) dserror("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
@@ -924,13 +924,13 @@ void CONTACT::SelfBinaryTree::SetEnlarge()
   {
     int gid = elements_->GID(i);
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+    if (!element) dserror("Cannot find element with gid %\n", gid);
     CONTACT::CoElement* celement = dynamic_cast<CoElement*>(element);
     double mincurrent = celement->MinEdgeSize();
     if (mincurrent < lmin) lmin = mincurrent;
   }
 
-  if (lmin <= 0.0) dserror("ERROR: Minimal element length < 0!");
+  if (lmin <= 0.0) dserror("Minimal element length < 0!");
 
   // set the class variable
   Enlarge() = Eps() * lmin;
@@ -983,7 +983,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(
   //**********************************************************************
 
   // complete the tree starting from its roots (top-down)
-  if (roots_.size() == 0) dserror("ERROR: No root tree node found!");
+  if (roots_.size() == 0) dserror("No root tree node found!");
   for (unsigned k = 0; k < roots_.size(); ++k) roots_[k]->CompleteTree(0, Enlarge());
 
   // output to screen
@@ -1497,8 +1497,8 @@ void CONTACT::SelfBinaryTree::MasterSlaveSorting(int eleID, bool isslave)
 void CONTACT::SelfBinaryTree::SearchContact()
 {
   // check is root node available
-  if ((int)roots_.size() == 0) dserror("ERROR: No root node for search!");
-  if (roots_[0] == Teuchos::null) dserror("ERROR: No root node for search!");
+  if ((int)roots_.size() == 0) dserror("No root node for search!");
+  if (roots_[0] == Teuchos::null) dserror("No root node for search!");
 
   // reset contact pairs from last iteration
   contactpairs_.clear();
@@ -1628,7 +1628,7 @@ void CONTACT::SelfBinaryTree::SearchContact()
   {
     int gid1 = elements_->GID(i);
     DRT::Element* ele1 = Discret().gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find element with gid %", gid1);
+    if (!ele1) dserror("Cannot find element with gid %", gid1);
     MORTAR::MortarElement* element1 = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
     // only slave elements store search candidates
@@ -1639,12 +1639,12 @@ void CONTACT::SelfBinaryTree::SearchContact()
     {
       int gid2 = element1->MoData().SearchElements()[j];
       DRT::Element* ele2 = Discret().gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find element with gid %", gid2);
+      if (!ele2) dserror("Cannot find element with gid %", gid2);
       MORTAR::MortarElement* element2 = dynamic_cast<MORTAR::MortarElement*>(ele2);
 
       // error if this is a slave element (this happens if individual self contact patches are
       // connected, because our sorting algorithm still fails in that case)
-      if (element2->IsSlave()) dserror("ERROR: Slave / master inconsistency in self contact");
+      if (element2->IsSlave()) dserror("Slave / master inconsistency in self contact");
     }
   }
 
@@ -1704,7 +1704,7 @@ void CONTACT::SelfBinaryTree::UpdateDualGraph(Teuchos::RCP<SelfDualEdge>& contra
       newEdge = Teuchos::rcp(new SelfDualEdge(newNode, adjEdges[j]->GetNode2(), Dim()));
 
     else
-      dserror("ERROR: Tried to contract identical tree nodes!!");
+      dserror("Tried to contract identical tree nodes!!");
 
     // get the neighbors of the new edges
     std::vector<Teuchos::RCP<SelfDualEdge>> adjEdgesOfNeighbor = (*dualgraph)[adjEdges[j]];
@@ -1866,7 +1866,7 @@ void CONTACT::SelfBinaryTree::UpdateDualGraph(Teuchos::RCP<SelfDualEdge>& contra
         (node1 == bnode2 && node2 == anode2 && bnode1 == anode1))
     {
       // check for inconsistency
-      if (newAdjEdges.size() != 1) dserror("ERROR: Inconsistent 3D ring in dual graph");
+      if (newAdjEdges.size() != 1) dserror("Inconsistent 3D ring in dual graph");
 
       // check if the resulting edge already exists in dual graph
       std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator

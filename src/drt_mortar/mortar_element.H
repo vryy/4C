@@ -525,7 +525,7 @@ namespace MORTAR
           break;
         }
         default:
-          dserror("ERROR: Unknown mortar element type identifier");
+          dserror("Unknown mortar element type identifier");
       }
       return isquad;
     }
@@ -560,7 +560,7 @@ namespace MORTAR
         }
         default:
         {
-          dserror("ERROR: Unknown mortar element type identifier");
+          dserror("Unknown mortar element type identifier");
           return 0;
         }
       }
@@ -709,7 +709,7 @@ namespace MORTAR
     {
 #ifdef DEBUG
       MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Points()[node]);
-      if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+      if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
       return mymrtrnode->xspatial()[direction];
 #else
       return static_cast<MortarNode*>(Points()[node])->xspatial()[direction];
@@ -727,7 +727,7 @@ namespace MORTAR
     {
 #ifdef DEBUG
       MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(Points()[node]);
-      if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+      if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
       return mymrtrnode->X()[direction] + mymrtrnode->uold()[direction];
 #else
       return (static_cast<MortarNode*>(Points()[node])->X()[direction] +

@@ -316,8 +316,8 @@ void MORTAR::MortarNode::Unpack(const std::vector<char>& data)
 void MORTAR::MortarNode::AddDValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddDValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("ERROR: AddDValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddDValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddDValue: function called for boundary node %i", Id());
 
   // check if this has been called before
   if ((int)MoData().GetD().size() == 0) MoData().GetD().resize(dentries_);
@@ -362,8 +362,8 @@ void MORTAR::MortarNode::AddDltsValue(const int& colnode, const double& val)
 void MORTAR::MortarNode::AddDltlValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddDValue: function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("ERROR: function called for non-edge node %i", Id());
+  if (IsSlave() == false) dserror("AddDValue: function called for master node %i", Id());
+  if (!IsOnEdge()) dserror("function called for non-edge node %i", Id());
 
   // check if this has been called before
   if ((int)MoData().GetDltl().size() == 0) MoData().GetDltl().resize(dentries_);
@@ -381,9 +381,8 @@ void MORTAR::MortarNode::AddDltlValue(const int& colnode, const double& val)
 void MORTAR::MortarNode::AddMValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddMValue: function called for master node %i", Id());
-  if (IsOnBoundorCE() == true)
-    dserror("ERROR: AddMValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddMValue: function called for master node %i", Id());
+  if (IsOnBoundorCE() == true) dserror("AddMValue: function called for boundary node %i", Id());
 
   // add the pair (col,val) to the given row
   MoData().GetM()[colnode] += val;
@@ -419,8 +418,8 @@ void MORTAR::MortarNode::AddMltsValue(const int& colnode, const double& val)
 void MORTAR::MortarNode::AddMltlValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddMValue: function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("ERROR: function called for non-edge node %i", Id());
+  if (IsSlave() == false) dserror("AddMValue: function called for master node %i", Id());
+  if (!IsOnEdge()) dserror("function called for non-edge node %i", Id());
 
   // add the pair (col,val) to the given row
   MoData().GetMltl()[colnode] += val;
@@ -435,9 +434,8 @@ void MORTAR::MortarNode::AddMltlValue(const int& colnode, const double& val)
 void MORTAR::MortarNode::AddMmodValue(const int& colnode, const double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddMmodValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddMmodValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddMmodValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddMmodValue: function called for boundary node %i", Id());
 
   // add the pair (col,val) to the given row
   MoData().GetMmod()[colnode] += val;
@@ -521,7 +519,7 @@ void MORTAR::MortarNode::BuildAveragedNormal()
   double length = sqrt(MoData().n()[0] * MoData().n()[0] + MoData().n()[1] * MoData().n()[1] +
                        MoData().n()[2] * MoData().n()[2]);
   if (length == 0.0)
-    dserror("ERROR: Nodal normal length 0, node ID %i", Id());
+    dserror("Nodal normal length 0, node ID %i", Id());
   else
     for (int j = 0; j < 3; ++j) MoData().n()[j] /= length;
 
@@ -543,7 +541,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
   {
     int gid = nodesearchmap->GID(i);
     DRT::Node* node = intdis->gNode(gid);
-    if (!node) dserror("ERROR: FindClosestNode: Cannot find node with gid %", gid);
+    if (!node) dserror("FindClosestNode: Cannot find node with gid %", gid);
     MortarNode* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // build distance between the two nodes
@@ -562,7 +560,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
     }
   }
 
-  if (!closestnode) dserror("ERROR: FindClosestNode: No closest node found at all!");
+  if (!closestnode) dserror("FindClosestNode: No closest node found at all!");
 
   return closestnode;
 }
@@ -580,7 +578,7 @@ bool MORTAR::MortarNode::CheckMeshDistortion(double& relocation, const double& l
   {
     // get the current element
     DRT::Element* ele = Elements()[i];
-    if (!ele) dserror("ERROR: Cannot find element with lid %", i);
+    if (!ele) dserror("Cannot find element with lid %", i);
     MortarElement* mrtrele = dynamic_cast<MortarElement*>(ele);
 
     // minimal edge size of the current element

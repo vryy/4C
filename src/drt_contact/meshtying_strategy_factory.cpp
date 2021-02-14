@@ -96,26 +96,26 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_penalty &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
+    dserror("Penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("ERROR: Penalty parameter eps = 0, must be greater than 0");
+    dserror("Penalty parameter eps = 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<int>("UZAWAMAXSTEPS") < 2)
-    dserror("ERROR: Maximum number of Uzawa / Augmentation steps must be at least 2");
+    dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
-    dserror("ERROR: Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
   if (onlymeshtying && DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(
                            meshtying, "FRICTION") != INPAR::CONTACT::friction_none)
-    dserror("ERROR: Friction law supplied for mortar meshtying");
+    dserror("Friction law supplied for mortar meshtying");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_lagmult &&
@@ -125,12 +125,12 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
               INPAR::CONTACT::system_condensed ||
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
               INPAR::CONTACT::system_condensed_lagmult))
-    dserror("ERROR: Condensation of linear system only possible for dual Lagrange multipliers");
+    dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
       onlymeshtying)
-    dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
+    dserror("Dynamic parallel redistribution not possible for meshtying");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
@@ -161,22 +161,22 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
     // not (yet) implemented combinations
     // *********************************************************************
     if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
-      dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
+      dserror("Crosspoints / edge node modification not yet implemented for 3D");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
           INPAR::MORTAR::lagmult_lin)
-    dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
+    dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
-    dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
+    dserror("Crosspoints and parallel redistribution not yet compatible");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           INPAR::MORTAR::shape_petrovgalerkin and
       onlymeshtying)
-    dserror("ERROR: Petrov-Galerkin approach makes no sense for meshtying");
+    dserror("Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
@@ -196,7 +196,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
   if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
-    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     dserror(
@@ -210,7 +210,7 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
   if ((inttype == INPAR::MORTAR::inttype_elements ||
           inttype == INPAR::MORTAR::inttype_elements_BS) &&
       mortar.get<int>("NUMGP_PER_DIM") <= 1)
-    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   // *********************************************************************
   // warnings
@@ -324,8 +324,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
   Discret().GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
-  if ((int)contactconditions.size() < 2)
-    dserror("ERROR: Not enough contact conditions in discretization");
+  if ((int)contactconditions.size() < 2) dserror("Not enough contact conditions in discretization");
 
   // find all pairs of matching meshtying conditions
   // there is a maximum of (conditions / 2) groups
@@ -349,7 +348,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
@@ -358,7 +357,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
       const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
@@ -366,7 +365,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     }
 
     // now we should have found a group of conds
-    if (!foundit) dserror("ERROR: Cannot find matching contact condition for id %d", groupid1);
+    if (!foundit) dserror("Cannot find matching contact condition for id %d", groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
@@ -405,12 +404,12 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown contact side qualifier!");
+        dserror("MtManager: Unknown contact side qualifier!");
       }
     }
 
-    if (!hasslave) dserror("ERROR: Slave side missing in contact condition group!");
-    if (!hasmaster) dserror("ERROR: Master side missing in contact condition group!");
+    if (!hasslave) dserror("Slave side missing in contact condition group!");
+    if (!hasmaster) dserror("Master side missing in contact condition group!");
 
     // find out which sides are initialized as Active
     std::vector<const std::string*> active((int)currentgroup.size());
@@ -425,23 +424,23 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         if (*active[j] == "Active")
           isactive[j] = true;
         else if (*active[j] == "Inactive")
-          dserror("ERROR: Slave side must be active for meshtying!");
+          dserror("Slave side must be active for meshtying!");
         else
-          dserror("ERROR: Unknown contact init qualifier!");
+          dserror("Unknown contact init qualifier!");
       }
       else if (*sides[j] == "Master")
       {
         // master sides must NOT be initialized as "Active" as this makes no sense
         if (*active[j] == "Active")
-          dserror("ERROR: Master side cannot be active!");
+          dserror("Master side cannot be active!");
         else if (*active[j] == "Inactive")
           isactive[j] = false;
         else
-          dserror("ERROR: Unknown contact init qualifier!");
+          dserror("Unknown contact init qualifier!");
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown contact side qualifier!");
+        dserror("MtManager: Unknown contact side qualifier!");
       }
     }
 
@@ -463,7 +462,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
-      if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
+      if (!nodeids) dserror("Condition does not have Node Ids");
       for (int k = 0; k < (int)(*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
@@ -471,7 +470,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         if (!Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr_)->NodeColMap()->MyGID(gid))
           continue;
         DRT::Node* node = Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
 
         // create MortarNode object
         Teuchos::RCP<MORTAR::MortarNode> mtnode =
@@ -619,7 +618,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> MORTAR::STRATEGY::FactoryMT::BuildStra
     strategy_ptr = Teuchos::rcp(new CONTACT::MtPenaltyStrategy(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   else
-    dserror("ERROR: Unrecognized strategy");
+    dserror("Unrecognized strategy");
 
   if (comm_ptr->MyPID() == 0) std::cout << "done!" << std::endl;
   return strategy_ptr;

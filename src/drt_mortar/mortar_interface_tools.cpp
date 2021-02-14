@@ -581,9 +581,9 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       {
         int gid = snoderowmap_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         MortarNode* mtrnode = dynamic_cast<MortarNode*>(node);
-        if (!mtrnode) dserror("ERROR: Static Cast to MortarNode* failed");
+        if (!mtrnode) dserror("Static Cast to MortarNode* failed");
 
         double nc[3];
         double nn[3];
@@ -858,7 +858,7 @@ void MORTAR::MortarInterface::VisualizeGmsh(const int step, const int iter)
       {
         if ((int)(binarytree_->CouplingMap()[0]).size() !=
             (int)(binarytree_->CouplingMap()[1]).size())
-          dserror("ERROR: Binarytree CouplingMap does not have right size!");
+          dserror("Binarytree CouplingMap does not have right size!");
 
         for (int j = 0; j < (int)((binarytree_->CouplingMap()[0]).size()); j++)
         {

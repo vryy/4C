@@ -445,7 +445,7 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
       const int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = contact_interface->Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) dserror("Cannot find element with gid %", gid);
       auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 
       const int volgid = faceele->ParentElementId();
@@ -454,7 +454,7 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
             "CoManager::ReconnectParentElements: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis->gElement(volgid);
-      if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+      if (!vele) dserror("Cannot find element with gid %", volgid);
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 

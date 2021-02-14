@@ -522,7 +522,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(
       {
         xi[0] = 1.0e12;
         return false;
-        dserror("ERROR: Singular Jacobian for projection");
+        dserror("Singular Jacobian for projection");
       }
       eta[0] += (-f) / df;
     }
@@ -554,7 +554,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectNodalNormal(
   }
 
   else
-    dserror("ERROR: ProjectNodalNormal: Called 2D version for 3D problem!");
+    dserror("ProjectNodalNormal: Called 2D version for 3D problem!");
 
   return ok;
 }
@@ -585,7 +585,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(
         ok = false;
         xi[0] = 1.0e12;
         return ok;
-        dserror("ERROR: Singular Jacobian for projection");
+        dserror("Singular Jacobian for projection");
       }
       eta[0] += (-f) / df;
     }
@@ -617,7 +617,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectElementNormal(
   }
 
   else
-    dserror("ERROR: ProjectElementNormal: Called 2D version for 3D problem!");
+    dserror("ProjectElementNormal: Called 2D version for 3D problem!");
 
   return ok;
 }
@@ -636,7 +636,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     LINALG::Matrix<ndim_, ns_> coord;
 
     DRT::Node** mynodes = gpele.Nodes();
-    if (!mynodes) dserror("ERROR: ProjectGaussPoint: Null pointer!");
+    if (!mynodes) dserror("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
     if (distypeS == DRT::Element::nurbs2 || distypeS == DRT::Element::nurbs3)
@@ -684,7 +684,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
       f = EvaluateFGaussPoint2D(gpx, gpn, ele, eta);
       if (abs(f) < MORTARCONVTOL) break;
       df = EvaluateGradFGaussPoint2D(gpn, ele, eta);
-      if (abs(df) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+      if (abs(df) < 1.0e-12) dserror("Singular Jacobian for projection");
       eta[0] += (-f) / df;
     }
 
@@ -699,13 +699,13 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
       return ok;
 
-      //      dserror("ERROR: ProjectGaussPoint: Newton unconverged for GP at xi=%d"
+      //      dserror("ProjectGaussPoint: Newton unconverged for GP at xi=%d"
       //          " from MortarElementID %i", gpeta[0], gpele.Id());
     }
   }
 
   else
-    dserror("ERROR: ProjectGaussPoint: Called 2D version for 3D problem!");
+    dserror("ProjectGaussPoint: Called 2D version for 3D problem!");
 
   return ok;
 }
@@ -726,7 +726,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
 
   int nnode = ele.NumNode();
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) dserror("ERROR: Project: Null pointer!");
+  if (!mynodes) dserror("Project: Null pointer!");
 
   // compute base-vectors
   std::vector<double> t0(3);
@@ -751,35 +751,35 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
     if (i == 0)
     {
       mycnode_1 = dynamic_cast<MortarNode*>(mynodes[0]);
-      if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_1) dserror("Project: Null pointer!");
 
       mycnode_0 = dynamic_cast<MortarNode*>(mynodes[3]);
-      if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_0) dserror("Project: Null pointer!");
 
       mycnode_2 = dynamic_cast<MortarNode*>(mynodes[1]);
-      if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_2) dserror("Project: Null pointer!");
     }
     if (i == 3)
     {
       mycnode_1 = dynamic_cast<MortarNode*>(mynodes[3]);
-      if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_1) dserror("Project: Null pointer!");
 
       mycnode_0 = dynamic_cast<MortarNode*>(mynodes[2]);
-      if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_0) dserror("Project: Null pointer!");
 
       mycnode_2 = dynamic_cast<MortarNode*>(mynodes[0]);
-      if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_2) dserror("Project: Null pointer!");
     }
     if (i == 1 || i == 2)
     {
       mycnode_1 = dynamic_cast<MortarNode*>(mynodes[i]);
-      if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_1) dserror("Project: Null pointer!");
 
       mycnode_0 = dynamic_cast<MortarNode*>(mynodes[i - 1]);
-      if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_0) dserror("Project: Null pointer!");
 
       mycnode_2 = dynamic_cast<MortarNode*>(mynodes[i + 1]);
-      if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
+      if (!mycnode_2) dserror("Project: Null pointer!");
     }
 
     // span vectors -- edges
@@ -883,7 +883,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
     DRT::Node** mypoints = gpele.Points();
     DRT::Node** mynodes = gpele.Nodes();
-    if (!mypoints) dserror("ERROR: ProjectGaussPoint: Null pointer!");
+    if (!mypoints) dserror("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
     if (distypeS == DRT::Element::nurbs4 || distypeS == DRT::Element::nurbs8 ||
@@ -972,7 +972,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
 
       // solve deta = - inv(df) * f
       double jacdet = df.Invert();
-      if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+      if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
       // update eta and alpha
       eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
@@ -1007,7 +1007,7 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
   }
 
   else
-    dserror("ERROR: ProjectGaussPoint: Called 3D version for 2D problem!");
+    dserror("ProjectGaussPoint: Called 3D version for 2D problem!");
 
   return true;
 }
@@ -1064,7 +1064,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
       double jacdet = df.Invert();
       if (abs(jacdet) < 1.0e-12)
       {
-        dserror("ERROR: Singular Jacobian for projection");
+        dserror("Singular Jacobian for projection");
       }
 
       // update eta and alpha
@@ -1077,7 +1077,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
     if (conv > MORTARCONVTOL)
     {
       //      std::cout << "res= " << conv << std::endl;
-      //      dserror("ERROR: ProjectGaussPointAuxn3D: Newton unconverged for GP"
+      //      dserror("ProjectGaussPointAuxn3D: Newton unconverged for GP"
       //          "at xi = (%f,%f,%f) onto MortarElementID %i", globgp[0], globgp[1],
       //          globgp[2], ele.Id());
       xi[0] = 1e12;
@@ -1096,7 +1096,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
   }
 
   else
-    dserror("ERROR: ProjectGaussPoint: Called 3D version for 2D problem!");
+    dserror("ProjectGaussPoint: Called 3D version for 2D problem!");
 
   return true;
 }
@@ -1109,7 +1109,7 @@ template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
 {
-  if (ndim_ != 3) dserror("ERROR: ProjectSNodeByMNormal3D is only for 3D problems!");
+  if (ndim_ != 3) dserror("ProjectSNodeByMNormal3D is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1191,7 +1191,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
     for (int i = 0; i < n_; ++i)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d)
       {
         meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
@@ -1249,7 +1249,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
-    if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+    if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
     // update eta and alpha
     eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
@@ -1258,7 +1258,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
   }  // end newton loop
 
   // Newton iteration unconverged
-  if (conv > MORTARCONVTOL) dserror("ERROR: Projector not converged!");
+  if (conv > MORTARCONVTOL) dserror("Projector not converged!");
 
   // Newton iteration converged
   xi[0] = eta[0];
@@ -1279,7 +1279,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
     std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 3) dserror("ERROR: ProjectSNodeByMNormal3D is only for 3D problems!");
+  if (ndim_ != 3) dserror("ProjectSNodeByMNormal3D is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1354,7 +1354,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     for (int i = 0; i < n_; ++i)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d)
       {
         meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
@@ -1412,7 +1412,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
-    if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+    if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
     // update eta and alpha
     eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
@@ -1421,7 +1421,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
   }  // end newton loop
 
   // Newton iteration unconverged
-  if (conv > MORTARCONVTOL) dserror("ERROR: Projector not converged!");
+  if (conv > MORTARCONVTOL) dserror("Projector not converged!");
 
   // Newton iteration converged
   xi[0] = eta[0];
@@ -1442,7 +1442,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
     double& dist, std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 3) dserror("ERROR: ProjectSNodeByMNormal3DLin is only for 3D problems!");
+  if (ndim_ != 3) dserror("ProjectSNodeByMNormal3DLin is only for 3D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1482,7 +1482,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
         xm[i] += mval(j) * mymnode->xspatial()[i];
@@ -1496,7 +1496,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
         normalnewton[i] += mval(j) * mymnode->MoData().n()[i];
@@ -1524,7 +1524,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 3; ++i)
       {
         meta0[i] += mderiv(0, j) * mymnode->xspatial()[i];
@@ -1539,7 +1539,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
 
       for (int i = 0; i < 3; ++i)
       {
@@ -1560,7 +1560,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
-    if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+    if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
     // update eta and alpha
     eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
@@ -1572,7 +1572,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   if (conv > MORTARCONVTOL)
   {
     return false;
-    dserror("ERROR: Projector not converged!");
+    dserror("Projector not converged!");
   }
 
   //**********************************************
@@ -1597,7 +1597,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   for (int j = 0; j < n_; ++j)
   {
     MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-    if (!mymnode) dserror("ERROR: Null pointer!");
+    if (!mymnode) dserror("Null pointer!");
 
     for (int i = 0; i < 3; ++i)
     {
@@ -1616,7 +1616,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   for (int i = 0; i < n_; ++i)
   {
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
     linsize += mnode->GetLinsize();
   }
@@ -1637,7 +1637,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     MortarNode* mnode = dynamic_cast<MortarNode*>(node);
 
     for (int k = 0; k < 3; ++k) (xmLin[k])[mnode->Dofs()[k]] += mval(i);
@@ -1649,7 +1649,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     for (int k = 0; k < 3; ++k)
@@ -1704,7 +1704,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal3DLin(
   {
     // get master node
     DRT::Node* node = mele.Nodes()[k];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     for (_CI p = etaLin[0].begin(); p != etaLin[0].end(); ++p)
@@ -1756,7 +1756,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     MORTAR::MortarNode& snode, MORTAR::MortarElement& mele, double* xi, double* normal,
     double& dist, std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 2) dserror("ERROR: ProjectSNodeByMNormal2DLin is only for 2D problems!");
+  if (ndim_ != 2) dserror("ProjectSNodeByMNormal2DLin is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -1796,7 +1796,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
         xm[i] += mval(j) * mymnode->xspatial()[i];
@@ -1810,7 +1810,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
         normalnewton[i] += mval(j) * mymnode->MoData().n()[i];
@@ -1837,7 +1837,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int i = 0; i < 2; ++i)
       {
         meta0[i] += mderiv(0, j) * mymnode->xspatial()[i];
@@ -1850,7 +1850,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     for (int j = 0; j < n_; ++j)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
 
       for (int i = 0; i < 2; ++i)
       {
@@ -1869,7 +1869,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
-    if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+    if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
     // update eta and alpha
     eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1];
@@ -1880,7 +1880,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   if (conv > MORTARCONVTOL)
   {
     return false;
-    dserror("ERROR: Projector not converged!");
+    dserror("Projector not converged!");
   }
 
   //**********************************************
@@ -1905,7 +1905,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   for (int j = 0; j < n_; ++j)
   {
     MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[j]);
-    if (!mymnode) dserror("ERROR: Null pointer!");
+    if (!mymnode) dserror("Null pointer!");
 
     for (int i = 0; i < 2; ++i)
     {
@@ -1931,7 +1931,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     MortarNode* mnode = dynamic_cast<MortarNode*>(node);
 
     for (int k = 0; k < 3; ++k) (xmLin[k])[mnode->Dofs()[k]] += mval(i);
@@ -1947,7 +1947,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     for (int k = 0; k < 3; ++k)
@@ -2003,7 +2003,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormal2DLin(
   {
     // get master node
     DRT::Node* node = mele.Nodes()[k];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     for (_CI p = etaLin[0].begin(); p != etaLin[0].end(); ++p)
@@ -2046,7 +2046,7 @@ template <DRT::Element::DiscretizationType distype>
 bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::MortarNode& snode,
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist)
 {
-  if (ndim_ != 2) dserror("ERROR: ProjectSNodeByMNormal2D is only for 2D problems!");
+  if (ndim_ != 2) dserror("ProjectSNodeByMNormal2D is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2116,7 +2116,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
     for (int i = 0; i < n_; ++i)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
 
@@ -2169,7 +2169,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
-    if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+    if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
     // update eta and alpha
     eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
@@ -2178,7 +2178,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2D(MORTAR::Morta
   }  // end newton loop
 
   // Newton iteration unconverged
-  if (conv > MORTARCONVTOL) dserror("ERROR: Projector not converged!");
+  if (conv > MORTARCONVTOL) dserror("Projector not converged!");
 
   // Newton iteration converged
   xi[0] = eta[0];
@@ -2197,7 +2197,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     MORTAR::MortarElement& mele, double* xi, double* normal, double& dist,
     std::vector<GEN::pairedvector<int, double>>& normaltolineLin)
 {
-  if (ndim_ != 2) dserror("ERROR: ProjectSNodeByMNormal2D is only for 2D problems!");
+  if (ndim_ != 2) dserror("ProjectSNodeByMNormal2D is only for 2D problems!");
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
@@ -2267,7 +2267,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     for (int i = 0; i < n_; ++i)
     {
       MortarNode* mymnode = dynamic_cast<MortarNode*>(mele.Nodes()[i]);
-      if (!mymnode) dserror("ERROR: Null pointer!");
+      if (!mymnode) dserror("Null pointer!");
       for (int d = 0; d < 3; ++d) meta00[d] += secderiv(0, i) * mymnode->xspatial()[d];
     }
 
@@ -2320,7 +2320,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
     //   solve deta = - inv(dF) * F               //
     //**********************************************
     double jacdet = df.Invert();
-    if (abs(jacdet) < 1.0e-12) dserror("ERROR: Singular Jacobian for projection");
+    if (abs(jacdet) < 1.0e-12) dserror("Singular Jacobian for projection");
 
     // update eta and alpha
     eta[0] += -df(0, 0) * f[0] - df(0, 1) * f[1] - df(0, 2) * f[2];
@@ -2329,7 +2329,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   }  // end newton loop
 
   // Newton iteration unconverged
-  if (conv > MORTARCONVTOL) dserror("ERROR: Projector not converged!");
+  if (conv > MORTARCONVTOL) dserror("Projector not converged!");
 
   //**********************************************
   //   Get stuff                                //
@@ -2361,7 +2361,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     MortarNode* mnode = dynamic_cast<MortarNode*>(node);
 
     for (int k = 0; k < 2; ++k) (xmLin[k])[mnode->Dofs()[k]] += val(i);
@@ -2379,7 +2379,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     MortarNode* mnode = dynamic_cast<MortarNode*>(node);
 
     for (int k = 0; k < 2; ++k) (x_0Lin[k])[mnode->Dofs()[k]] += deriv1(i);
@@ -2470,7 +2470,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal2DLin(MORTAR::Mo
   {
     // get master node
     DRT::Node* node = mele.Nodes()[i];
-    if (!node) dserror("ERROR: Cannot find master node");
+    if (!node) dserror("Cannot find master node");
     MortarNode* mnode = dynamic_cast<MortarNode*>(node);
 
     for (int k = 0; k < 2; ++k) (x_0Linnew[k])[mnode->Dofs()[k]] += deriv(i);
@@ -2535,7 +2535,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal(MORTAR::MortarN
   }
   else
   {
-    dserror("ERROR: wrong dimension!");
+    dserror("wrong dimension!");
   }
 
   return true;
@@ -2562,7 +2562,7 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNodalNormalLin(MORTAR:
   }
   else
   {
-    dserror("ERROR: wrong dimension!");
+    dserror("wrong dimension!");
   }
 
   return success;
@@ -2582,11 +2582,11 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormalLin(MORTAR::Mort
   }
   else if (ndim_ == 3)
   {
-    dserror("ERROR: Not yet implemented!");
+    dserror("Not yet implemented!");
   }
   else
   {
-    dserror("ERROR: wrong dimension!");
+    dserror("wrong dimension!");
   }
 
   return true;
@@ -2667,7 +2667,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
 
   // collect necessary data (slave side)
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) dserror("ERROR: EvaluateFElementNormal: Null pointer!");
+  if (!mynodes) dserror("EvaluateFElementNormal: Null pointer!");
 
   LINALG::Matrix<n_, 1> val;
   LINALG::Matrix<ndim_, n_> coord;
@@ -2744,7 +2744,7 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
   LINALG::Matrix<ndim_, n_> coord;
 
   DRT::Node** mynodes = ele.Nodes();
-  if (!mynodes) dserror("ERROR: EvaluateGradFElementNormal: Null pointer!");
+  if (!mynodes) dserror("EvaluateGradFElementNormal: Null pointer!");
 
   // get shape function values and derivatives at gpeta
   if (distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3)

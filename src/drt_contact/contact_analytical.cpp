@@ -39,7 +39,7 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
   //----------------------------------------------------------------------
   if (entype == INPAR::CONTACT::errornorms_none)
   {
-    dserror("ERROR: Error norm computation switched off. You should not be here.");
+    dserror("Error norm computation switched off. You should not be here.");
   }
 
   //----------------------------------------------------------------------
@@ -175,7 +175,7 @@ void CONTACT::AnalyticalSolutions2D(const LINALG::Matrix<2, 1>& pos, LINALG::Mat
   //----------------------------------------------------------------------
   else
   {
-    dserror("ERROR: Other 2D analytical solutions not yet implemented");
+    dserror("Other 2D analytical solutions not yet implemented");
   }
 
   return;
@@ -207,7 +207,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
   //----------------------------------------------------------------------
   if (entype == INPAR::CONTACT::errornorms_none)
   {
-    dserror("ERROR: Error norm computation switched off. You should not be here.");
+    dserror("Error norm computation switched off. You should not be here.");
   }
 
   //----------------------------------------------------------------------
@@ -447,7 +447,7 @@ void CONTACT::AnalyticalSolutions3D(const LINALG::Matrix<3, 1>& pos, LINALG::Mat
   //----------------------------------------------------------------------
   else
   {
-    dserror("ERROR: Other 3D analytical solutions not yet implemented");
+    dserror("Other 3D analytical solutions not yet implemented");
   }
 
   return;

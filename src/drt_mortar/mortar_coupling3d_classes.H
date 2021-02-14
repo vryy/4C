@@ -198,7 +198,7 @@ namespace MORTAR
     */
     const int& GetSlaveId() const
     {
-      if (slaveId_ < 0) dserror("ERROR: Invalid slave element ID for this integration cell!");
+      if (slaveId_ < 0) dserror("Invalid slave element ID for this integration cell!");
 
       return slaveId_;
     }
@@ -218,7 +218,7 @@ namespace MORTAR
     */
     const int& GetMasterId() const
     {
-      if (masterId_ < 0) dserror("ERROR: Invalid master element ID for this integration cell!");
+      if (masterId_ < 0) dserror("Invalid master element ID for this integration cell!");
 
       return masterId_;
     }
@@ -267,12 +267,12 @@ namespace MORTAR
     {
       if (shape_ == DRT::Element::line2)
       {
-        if (i < 0 || i > 1) dserror("ERROR: IntLine has 2 vertex linearizations only!");
+        if (i < 0 || i > 1) dserror("IntLine has 2 vertex linearizations only!");
         return linvertex_[i];
       }
       else
       {
-        if (i < 0 || i > 2) dserror("ERROR: IntCell has 3 vertex linearizations only!");
+        if (i < 0 || i > 2) dserror("IntCell has 3 vertex linearizations only!");
         return linvertex_[i];
       }
     }

@@ -61,7 +61,7 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
       rule2d = Teuchos::rcp(new DRT::UTILS::IntegrationPoints2D(DRT::UTILS::intrule_quad_25point));
       break;
     default:
-      dserror("ERROR: ElementIntegrator: This contact element type is not implemented!");
+      dserror("ElementIntegrator: This contact element type is not implemented!");
   }  // switch(eletype)
 
   // save Gauss points for all 2D rules

@@ -135,7 +135,7 @@ MORTAR::MortarElement::MortarElement(const MORTAR::MortarElement& old)
     : DRT::FaceElement(old), shape_(old.shape_), isslave_(old.isslave_)
 {
   // not yet used and thus not necessarily consistent
-  dserror("ERROR: MortarElement copy-ctor not yet implemented");
+  dserror("MortarElement copy-ctor not yet implemented");
 
   return;
 }
@@ -395,7 +395,7 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
           break;
         }
         default:
-          dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range", lid, Id());
+          dserror("LocCoordsOfNode: Node number % in segment % out of range", lid, Id());
       }
 
       break;
@@ -465,7 +465,7 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
           break;
         }
         default:
-          dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range", lid, Id());
+          dserror("LocCoordsOfNode: Node number % in segment % out of range", lid, Id());
       }
 
       break;
@@ -564,14 +564,14 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
           break;
         }
         default:
-          dserror("ERROR: LocCoordsOfNode: Node number % in segment % out of range", lid, Id());
+          dserror("LocCoordsOfNode: Node number % in segment % out of range", lid, Id());
       }
 
       break;
     }
     // unknown case
     default:
-      dserror("ERROR: LocalCoordinatesOfNode called for unknown element type");
+      dserror("LocalCoordinatesOfNode called for unknown element type");
       exit(EXIT_FAILURE);
   }
   return true;
@@ -592,7 +592,7 @@ int MORTAR::MortarElement::GetLocalNodeId(int nid) const
       break;
     }
 
-  if (lid < 0) dserror("ERROR: Cannot find node % in segment %", nid, Id());
+  if (lid < 0) dserror("Cannot find node % in segment %", nid, Id());
 
   return lid;
 }
@@ -636,7 +636,7 @@ void MORTAR::MortarElement::ComputeNormalAtXi(
   // store length of normal and other information into elens
   elens(4, i) =
       sqrt(elens(0, i) * elens(0, i) + elens(1, i) * elens(1, i) + elens(2, i) * elens(2, i));
-  if (elens(4, i) < 1e-12) dserror("ERROR: ComputeNormalAtXi gives normal of length 0!");
+  if (elens(4, i) < 1e-12) dserror("ComputeNormalAtXi gives normal of length 0!");
   elens(3, i) = Id();
   elens(5, i) = MoData().Area();
 
@@ -649,8 +649,8 @@ void MORTAR::MortarElement::ComputeNormalAtXi(
 double MORTAR::MortarElement::ComputeUnitNormalAtXi(const double* xi, double* n)
 {
   // check input
-  if (!xi) dserror("ERROR: ComputeUnitNormalAtXi called with xi=NULL");
-  if (!n) dserror("ERROR: ComputeUnitNormalAtXi called with n=NULL");
+  if (!xi) dserror("ComputeUnitNormalAtXi called with xi=NULL");
+  if (!n) dserror("ComputeUnitNormalAtXi called with n=NULL");
 
   // empty local basis vectors
   double gxi[3];
@@ -666,7 +666,7 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(const double* xi, double* n)
 
   // build unit normal
   const double length = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-  if (length < 1e-12) dserror("ERROR: Normal of length zero!");
+  if (length < 1e-12) dserror("Normal of length zero!");
   for (int i = 0; i < 3; ++i) n[i] /= length;
 
   return length;
@@ -679,8 +679,8 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(const double* xi, double* n)
 double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(const double* xi, double* n)
 {
   // check input
-  if (!xi) dserror("ERROR: ComputeUnitNormalAtXi called with xi=NULL");
-  if (!n) dserror("ERROR: ComputeUnitNormalAtXi called with n=NULL");
+  if (!xi) dserror("ComputeUnitNormalAtXi called with xi=NULL");
+  if (!n) dserror("ComputeUnitNormalAtXi called with n=NULL");
 
   int nnodes = NumPoint();
   LINALG::SerialDenseVector val(nnodes);
@@ -704,7 +704,7 @@ double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(const double* xi, do
   }
 
   const double length = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-  if (length < 1e-12) dserror("ERROR: Normal of length zero!");
+  if (length < 1e-12) dserror("Normal of length zero!");
   for (int i = 0; i < 3; ++i) n[i] /= length;
 
   return length;
@@ -719,7 +719,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
   // initialize variables
   const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
+  if (!mynodes) dserror("DerivUnitNormalAtXi: Null pointer!");
 
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
@@ -741,7 +741,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
 
   // build unit normal
   const double length = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]);
-  if (length < 1e-12) dserror("ERROR: Normal of length zero!");
+  if (length < 1e-12) dserror("Normal of length zero!");
   for (int i = 0; i < 3; ++i) n[i] /= length;
 
   // check if this mortar ele is an IntEle
@@ -764,7 +764,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
   for (int n = 0; n < nnodes; ++n)
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[n]);
-    if (!mymrtrnode) dserror("ERROR: DerivUnitNormalAtXi: Null pointer!");
+    if (!mymrtrnode) dserror("DerivUnitNormalAtXi: Null pointer!");
     int ndof = mymrtrnode->NumDof();
 
     // derivative weighting matrix for current node
@@ -830,13 +830,13 @@ void MORTAR::MortarElement::GetNodalCoords(LINALG::SerialDenseMatrix& coord)
 {
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
-  if (!mynodes) dserror("ERROR: GetNodalCoords: Null pointer!");
-  if (coord.M() != 3 || coord.N() != nnodes) dserror("ERROR: GetNodalCoords: Dimensions!");
+  if (!mynodes) dserror("GetNodalCoords: Null pointer!");
+  if (coord.M() != 3 || coord.N() != nnodes) dserror("GetNodalCoords: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+    if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
 
     const double* x = mymrtrnode->xspatial();
     std::copy(x, x + 3, &coord(0, i));
@@ -852,13 +852,13 @@ void MORTAR::MortarElement::GetNodalCoordsOld(LINALG::SerialDenseMatrix& coord, 
 {
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
-  if (!mynodes) dserror("ERROR: GetNodalCoordsOld: Null pointer!");
-  if (coord.M() != 3 || coord.N() != nnodes) dserror("ERROR: GetNodalCoordsOld: Dimensions!");
+  if (!mynodes) dserror("GetNodalCoordsOld: Null pointer!");
+  if (coord.M() != 3 || coord.N() != nnodes) dserror("GetNodalCoordsOld: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mymrtrnode) dserror("ERROR: GetNodalCoordsOld: Null pointer!");
+    if (!mymrtrnode) dserror("GetNodalCoordsOld: Null pointer!");
 
     coord(0, i) = mymrtrnode->X()[0] + mymrtrnode->uold()[0];
     coord(1, i) = mymrtrnode->X()[1] + mymrtrnode->uold()[1];
@@ -875,13 +875,13 @@ void MORTAR::MortarElement::GetNodalLagMult(LINALG::SerialDenseMatrix& lagmult, 
 {
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: GetNodalLagMult: Null pointer!");
-  if (lagmult.M() != 3 || lagmult.N() != nnodes) dserror("ERROR: GetNodalLagMult: Dimensions!");
+  if (!mynodes) dserror("GetNodalLagMult: Null pointer!");
+  if (lagmult.M() != 3 || lagmult.N() != nnodes) dserror("GetNodalLagMult: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mymrtrnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mymrtrnode) dserror("ERROR: GetNodalCoords: Null pointer!");
+    if (!mymrtrnode) dserror("GetNodalCoords: Null pointer!");
 
     lagmult(0, i) = mymrtrnode->MoData().lm()[0];
     lagmult(1, i) = mymrtrnode->MoData().lm()[1];
@@ -926,7 +926,7 @@ void MORTAR::MortarElement::Metrics(const double* xi, double* gxi, double* geta)
       break;
     }
     default:
-      dserror("ERROR: Metrics called for unknown element type");
+      dserror("Metrics called for unknown element type");
       exit(EXIT_FAILURE);
   }
 
@@ -1003,7 +1003,7 @@ double MORTAR::MortarElement::Jacobian(const double* xi)
 
   // unknown case
   else
-    dserror("ERROR: Jacobian called for unknown element type!");
+    dserror("Jacobian called for unknown element type!");
 
   return jac;
 }
@@ -1020,7 +1020,7 @@ void MORTAR::MortarElement::DerivJacobian(
   DRT::Node** mynodes = NULL;  // Nodes();
   mynodes = Nodes();
 
-  if (!mynodes) dserror("ERROR: DerivJacobian: Null pointer!");
+  if (!mynodes) dserror("DerivJacobian: Null pointer!");
 
   // the inverse Jacobian
   double jacinv = 0.0;
@@ -1079,7 +1079,7 @@ void MORTAR::MortarElement::DerivJacobian(
       break;
     }
     default:
-      dserror("ERROR: Jac. derivative not implemented for this type of CoElement");
+      dserror("Jac. derivative not implemented for this type of CoElement");
       exit(EXIT_FAILURE);
   }
 
@@ -1095,7 +1095,7 @@ void MORTAR::MortarElement::DerivJacobian(
   for (int i = 0; i < nnodes; ++i)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[i]);
-    if (!mymrtrnode) dserror("ERROR: DerivJacobian: Null pointer!");
+    if (!mymrtrnode) dserror("DerivJacobian: Null pointer!");
 
     derivjac[mymrtrnode->Dofs()[0]] +=
         jacinv * (cross[2] * geta[1] - cross[1] * geta[2]) * deriv(i, 0);
@@ -1189,7 +1189,7 @@ double MORTAR::MortarElement::ComputeArea()
 
   // other cases not implemented yet
   else
-    dserror("ERROR: Area computation not implemented for this type of MortarElement");
+    dserror("Area computation not implemented for this type of MortarElement");
 
   return area;
 }
@@ -1272,7 +1272,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(GEN::pairedvector<int, double>& a
 
   // other cases not implemented yet
   else
-    dserror("ERROR: Area computation not implemented for this type of MortarElement");
+    dserror("Area computation not implemented for this type of MortarElement");
 
   return area;
 }
@@ -1284,14 +1284,14 @@ double MORTAR::MortarElement::ComputeAreaDeriv(GEN::pairedvector<int, double>& a
 bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord, int inttype)
 {
   // check input
-  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+  if (!xi) dserror("LocalToGlobal called with xi=NULL");
+  if (!globcoord) dserror("LocalToGlobal called with globcoord=NULL");
 
   // collect fundamental data
   const int nnodes = NumNode();
 
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: LocalToGlobal: Null pointer!");
+  if (!mynodes) dserror("LocalToGlobal: Null pointer!");
   LINALG::SerialDenseMatrix coord(3, nnodes);
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
@@ -1327,7 +1327,7 @@ bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord, i
       globcoord[2] += deriv(i, 1) * coord(2, i);
     }
     else
-      dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
+      dserror("Invalid interpolation type requested, only 0,1,2!");
   }
 
   return true;
@@ -1613,7 +1613,7 @@ void MORTAR::MortarElement::ResetDataContainer()
 bool MORTAR::MortarElement::AddSearchElements(const int& gid)
 {
   // check calling element type
-  if (!IsSlave()) dserror("ERROR: AddSearchElements called for infeasible MortarElement!");
+  if (!IsSlave()) dserror("AddSearchElements called for infeasible MortarElement!");
 
   // add new gid to vector of search candidates
   MoData().SearchElements().push_back(gid);
@@ -1627,7 +1627,7 @@ bool MORTAR::MortarElement::AddSearchElements(const int& gid)
 void MORTAR::MortarElement::DeleteSearchElements()
 {
   // check calling element type
-  if (!IsSlave()) dserror("ERROR: DeleteSearchElements called for infeasible MortarElement!");
+  if (!IsSlave()) dserror("DeleteSearchElements called for infeasible MortarElement!");
 
   // add new gid to vector of search candidates
   MoData().SearchElements().clear();

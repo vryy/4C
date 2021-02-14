@@ -245,7 +245,7 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
     {
       int gid = Discret().NodeColMap()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* mrtrnode = dynamic_cast<CoNode*>(node);
       bool isslave = mrtrnode->IsSlave();
 
@@ -277,7 +277,7 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
         }
         else
         {
-          dserror("ERROR: unknown case!");
+          dserror("unknown case!");
         }
       }
     }
@@ -305,14 +305,14 @@ void CONTACT::CoInterface::SetCnCtValues(const int& iter)
   // set all nodal cn-values to the input value
   GetCn() = LINALG::CreateVector(*SlaveRowNodes(), true);
   int err = GetCn()->PutScalar(cn);
-  if (err != 0) dserror("ERROR: cn definition failed!");
+  if (err != 0) dserror("cn definition failed!");
 
   // set all nodal ct-values to the input value
   if (friction_)
   {
     GetCt() = LINALG::CreateVector(*SlaveRowNodes(), true);
     err = GetCt()->PutScalar(ct);
-    if (err != 0) dserror("ERROR: cn definition failed!");
+    if (err != 0) dserror("cn definition failed!");
   }
 
   // modification for edge/corner nodes
@@ -320,7 +320,7 @@ void CONTACT::CoInterface::SetCnCtValues(const int& iter)
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %i", gid);
+    if (!node) dserror("Cannot find node with gid %i", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // calculate characteristic edge length:
@@ -716,7 +716,7 @@ void CONTACT::CoInterface::Redistribute()
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_none)
     dserror(
-        "ERROR: You are not supposed to be here since you did not enable PARALLEL_REDIST in the "
+        "You are not supposed to be here since you did not enable PARALLEL_REDIST in the "
         "input file. ");
 
   // some local variables
@@ -740,7 +740,7 @@ void CONTACT::CoInterface::Redistribute()
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("ERROR: Invalid search algorithm");
+    dserror("Invalid search algorithm");
 
   // split slave element row map and build redundant vector of
   // all close / non-close slave node ids on all procs
@@ -756,7 +756,7 @@ void CONTACT::CoInterface::Redistribute()
   {
     int gid = SlaveColElements()->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!ele) dserror("Cannot find ele with gid %i", gid);
     MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     mele->MoData().SearchElements().resize(0);
@@ -771,7 +771,7 @@ void CONTACT::CoInterface::Redistribute()
 
   // check for consistency
   if (slaveCloseRowEles->NumGlobalElements() == 0 && slaveNonCloseRowEles->NumGlobalElements() == 0)
-    dserror("ERROR: CONTACT Redistribute: Both slave sets (close/non-close) are empty");
+    dserror("CONTACT Redistribute: Both slave sets (close/non-close) are empty");
 
   //**********************************************************************
   // (2) SPECIAL CASES and output to screen
@@ -848,7 +848,7 @@ void CONTACT::CoInterface::Redistribute()
   {
     int gid = SlaveRowNodes()->GID(k);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
 
     // find adjacent elements first
     for (int k = 0; k < node->NumElement(); ++k)
@@ -930,7 +930,7 @@ void CONTACT::CoInterface::Redistribute()
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
   if (slaveCloseRowNodes == Teuchos::null || slaveNonCloseRowNodes == Teuchos::null)
   {
-    dserror("ERROR: CONTACT Redistribute: Both slave sets (close/non-close) are empty");
+    dserror("CONTACT Redistribute: Both slave sets (close/non-close) are empty");
   }
   //-------------------------------------CASE 2: BOTH SLAVE SETS NON-EMPTY
   else
@@ -1047,7 +1047,7 @@ void CONTACT::CoInterface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
       // get element
       int gid = SlaveRowElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) dserror("Cannot find element with gid %", gid);
       MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       // store element id and adjacent node ids
@@ -1072,7 +1072,7 @@ void CONTACT::CoInterface::SplitIntoFarAndCloseSets(std::vector<int>& closeele,
       // get element
       int gid = SlaveRowElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) dserror("Cannot find element with gid %", gid);
       MORTAR::MortarElement* cele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       // store element id and adjacent node ids
@@ -1092,7 +1092,7 @@ void CONTACT::CoInterface::CollectDistributionData(int& numColElements, int& num
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* slaveElement = dynamic_cast<CoElement*>(ele1);
 
     // bool indicating coupling partners
@@ -1198,7 +1198,7 @@ void CONTACT::CoInterface::CreateSearchTree()
   // no binary tree search
   else
   {
-    if (SelfContact()) dserror("ERROR: Binarytree search needed for self contact");
+    if (SelfContact()) dserror("Binarytree search needed for self contact");
   }
 
   return;
@@ -1226,7 +1226,7 @@ void CONTACT::CoInterface::InitializeDataContainer()
     {
       int gid = masternodes->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %i", gid);
+      if (!node) dserror("Cannot find node with gid %i", gid);
       CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
       mnode->InitializeDataContainer();
     }
@@ -1260,7 +1260,7 @@ void CONTACT::CoInterface::Initialize()
     {
       int gid = MasterColNodes()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // reset derivative maps of normal vector
@@ -1288,7 +1288,7 @@ void CONTACT::CoInterface::Initialize()
   {
     int gid = SlaveColNodesBound()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // reset nodal Mortar maps
@@ -1426,7 +1426,7 @@ void CONTACT::CoInterface::Initialize()
     {
       int gid = SlaveColElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+      if (!ele) dserror("Cannot find ele with gid %i", gid);
       MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
       mele->MoData().SearchElements().resize(0);
@@ -1504,7 +1504,7 @@ void CONTACT::CoInterface::PreEvaluate(const int& step, const int& iter)
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("ERROR: Invalid search algorithm");
+    dserror("Invalid search algorithm");
 
     // TODO: maybe we can remove this debug functionality
 #ifdef MORTARGMSHCELLS
@@ -1562,7 +1562,7 @@ void CONTACT::CoInterface::StoreNTSvalues()
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // check if integration is done
@@ -1634,7 +1634,7 @@ void CONTACT::CoInterface::StoreNTSvalues()
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderivnts.end())
-          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+          dserror("StoreNTS: Not all derivative entries of DerivM considered!");
       }
     }
   }  // end node loop
@@ -1661,7 +1661,7 @@ void CONTACT::CoInterface::StoreLTSvalues()
 
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // check if this is an edge or a corner and nonsmooth contact is activated
@@ -1736,7 +1736,7 @@ void CONTACT::CoInterface::StoreLTSvalues()
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderivnts.end())
-          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+          dserror("StoreNTS: Not all derivative entries of DerivM considered!");
       }
     }
 
@@ -1774,12 +1774,12 @@ void CONTACT::CoInterface::StoreLTSvalues()
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderivnts.end())
-          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+          dserror("StoreNTS: Not all derivative entries of DerivM considered!");
       }
     }
     //    std::cout << "ssum = " << ssum << "  msum = " << msum << "  balance= " << ssum-msum <<
     //    std::endl;
-    if (abs(ssum - msum) > 1e-12) dserror("ERROR: no slave master balance!");
+    if (abs(ssum - msum) > 1e-12) dserror("no slave master balance!");
 
   }  // end node loop
 
@@ -1794,7 +1794,7 @@ void CONTACT::CoInterface::StoreLTSvalues()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::StoreLTLvalues()
 {
-  dserror("ERROR: StoreLTLvalues() is outdated!");
+  dserror("StoreLTLvalues() is outdated!");
   return;
   //  // create iterators for data types
   //  typedef GEN::pairedvector<int,double>::const_iterator CI;
@@ -1806,7 +1806,7 @@ void CONTACT::CoInterface::StoreLTLvalues()
   //    int gid = SlaveRowNodes()->GID(i);
   //    DRT::Node* node = idiscret_->gNode(gid);
   //    if (!node)
-  //      dserror("ERROR: Cannot find node with gid %",gid);
+  //      dserror("Cannot find node with gid %",gid);
   //    CoNode* cnode = dynamic_cast<CoNode*>(node);
   //
   //    if(!cnode->IsOnEdge())
@@ -1876,7 +1876,7 @@ void CONTACT::CoInterface::StoreLTLvalues()
   //
   //        // check for completeness of DerivM-Derivatives-iteration
   //        if (mcolcurr!=thismderivnts.end())
-  //          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+  //          dserror("StoreNTS: Not all derivative entries of DerivM considered!");
   //      }
   //    }
   //
@@ -1914,7 +1914,7 @@ void CONTACT::CoInterface::StoreLTLvalues()
   //
   //        // check for completeness of DerivM-Derivatives-iteration
   //        if (mcolcurr!=thismderivnts.end())
-  //          dserror("ERROR: StoreNTS: Not all derivative entries of DerivM considered!");
+  //          dserror("StoreNTS: Not all derivative entries of DerivM considered!");
   //      }
   //    }
   //  }// end node loop
@@ -1943,7 +1943,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double x = cnode->FriData().tractionoldLTL()[0] * cnode->FriData().tractionoldLTL()[0];
@@ -1966,7 +1966,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // check if this is active node
@@ -2018,7 +2018,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2033,7 +2033,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
 
       /**************************************************** M-matrix ******/
@@ -2046,7 +2046,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2062,7 +2062,7 @@ void CONTACT::CoInterface::AddLTLforcesFric(Teuchos::RCP<Epetra_FEVector> feff)
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
 
       break;
@@ -2096,7 +2096,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     double x = cnode->FriData().tractionoldLTL()[0] * cnode->FriData().tractionoldLTL()[0];
@@ -2119,7 +2119,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // check if this is active node
@@ -2231,7 +2231,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         ++scurr;
 
         DRT::Node* snode = idiscret_->gNode(sgid);
-        if (!snode) dserror("ERROR: Cannot find node with gid %", sgid);
+        if (!snode) dserror("Cannot find node with gid %", sgid);
         CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
         // Mortar matrix D derivatives
@@ -2256,7 +2256,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
 
           // check for completeness of DerivD-Derivatives-iteration
           if (scolcurr != thisdderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivD considered!");
         }
       }
 
@@ -2275,7 +2275,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         ++mcurr;
 
         DRT::Node* mnode = idiscret_->gNode(mgid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", mgid);
+        if (!mnode) dserror("Cannot find node with gid %", mgid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
         // Mortar matrix M derivatives
@@ -2300,7 +2300,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
 
           // check for completeness of DerivM-Derivatives-iteration
           if (mcolcurr != thismderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivM considered!");
         }
       }
 
@@ -2319,7 +2319,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             // node id
             int gid3 = p->first;
             DRT::Node* snode = idiscret_->gNode(gid3);
-            if (!snode) dserror("ERROR: Cannot find node with gid");
+            if (!snode) dserror("Cannot find node with gid");
             CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
             for (int dim = 0; dim < Dim(); ++dim)
@@ -2335,7 +2335,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         }
         else
         {
-          dserror("ERROR: no d matrix entries available for ltlt contact");
+          dserror("no d matrix entries available for ltlt contact");
         }
         /**************************************************** D-matrix ******/
         if ((cnode->MoData().GetMltl()).size() > 0)
@@ -2347,7 +2347,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             // node id
             int gid3 = p->first;
             DRT::Node* snode = idiscret_->gNode(gid3);
-            if (!snode) dserror("ERROR: Cannot find node with gid");
+            if (!snode) dserror("Cannot find node with gid");
             CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
             for (int dim = 0; dim < Dim(); ++dim)
@@ -2363,7 +2363,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         }
         else
         {
-          dserror("ERROR: no m matrix entries available for ltlt contact");
+          dserror("no m matrix entries available for ltlt contact");
         }
       }
       // ****************************************************************
@@ -2381,7 +2381,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             // node id
             int gid3 = p->first;
             DRT::Node* snode = idiscret_->gNode(gid3);
-            if (!snode) dserror("ERROR: Cannot find node with gid");
+            if (!snode) dserror("Cannot find node with gid");
             CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
             for (int dim = 0; dim < Dim(); ++dim)
@@ -2397,7 +2397,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         }
         else
         {
-          dserror("ERROR: no d matrix entries available for ltlt contact");
+          dserror("no d matrix entries available for ltlt contact");
         }
 
         /**************************************************** D-matrix ******/
@@ -2410,7 +2410,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             // node id
             int gid3 = p->first;
             DRT::Node* snode = idiscret_->gNode(gid3);
-            if (!snode) dserror("ERROR: Cannot find node with gid");
+            if (!snode) dserror("Cannot find node with gid");
             CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
             for (int dim = 0; dim < Dim(); ++dim)
@@ -2425,7 +2425,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         }
         else
         {
-          dserror("ERROR: no d matrix entries available for ltlt contact");
+          dserror("no d matrix entries available for ltlt contact");
         }
 
         /**************************************************** D-matrix ******/
@@ -2438,7 +2438,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             // node id
             int gid3 = p->first;
             DRT::Node* snode = idiscret_->gNode(gid3);
-            if (!snode) dserror("ERROR: Cannot find node with gid");
+            if (!snode) dserror("Cannot find node with gid");
             CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
             for (int dim = 0; dim < Dim(); ++dim)
@@ -2454,7 +2454,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         }
         else
         {
-          dserror("ERROR: no m matrix entries available for ltlt contact");
+          dserror("no m matrix entries available for ltlt contact");
         }
         if ((cnode->MoData().GetMltl()).size() > 0)
         {
@@ -2465,7 +2465,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
             // node id
             int gid3 = p->first;
             DRT::Node* snode = idiscret_->gNode(gid3);
-            if (!snode) dserror("ERROR: Cannot find node with gid");
+            if (!snode) dserror("Cannot find node with gid");
             CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
             for (int dim = 0; dim < Dim(); ++dim)
@@ -2480,7 +2480,7 @@ void CONTACT::CoInterface::AddLTLstiffnessFric(Teuchos::RCP<LINALG::SparseMatrix
         }
         else
         {
-          dserror("ERROR: no m matrix entries available for ltlt contact");
+          dserror("no m matrix entries available for ltlt contact");
         }
       }
     }
@@ -2504,7 +2504,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
   {
     int gid = mnoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // only for corners
@@ -2523,7 +2523,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2538,7 +2538,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
 
       /**************************************************** M-matrix ******/
@@ -2551,7 +2551,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2566,7 +2566,7 @@ void CONTACT::CoInterface::AddNTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
     }
   }
@@ -2588,7 +2588,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
   {
     int gid = mnoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // only for edges (without corner)
@@ -2611,7 +2611,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2626,7 +2626,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
 
       /**************************************************** M-matrix ******/
@@ -2639,7 +2639,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2654,7 +2654,7 @@ void CONTACT::CoInterface::AddLTSforcesMaster(Teuchos::RCP<Epetra_FEVector> feff
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
     }
   }
@@ -2681,7 +2681,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // check if this is valid node
@@ -2698,7 +2698,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2713,7 +2713,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
 
       /**************************************************** M-matrix ******/
@@ -2726,7 +2726,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2741,7 +2741,7 @@ void CONTACT::CoInterface::AddLTLforces(Teuchos::RCP<Epetra_FEVector> feff)
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
     }
   }
@@ -2768,7 +2768,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
   {
     int gid = mnoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // only for edges (without corner)
@@ -2800,7 +2800,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
         ++scurr;
 
         DRT::Node* snode = idiscret_->gNode(sgid);
-        if (!snode) dserror("ERROR: Cannot find node with gid %", sgid);
+        if (!snode) dserror("Cannot find node with gid %", sgid);
         CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
         // Mortar matrix D derivatives
@@ -2825,7 +2825,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 
           // check for completeness of DerivD-Derivatives-iteration
           if (scolcurr != thisdderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivD considered!");
         }
       }
 
@@ -2844,7 +2844,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
         ++mcurr;
 
         DRT::Node* mnode = idiscret_->gNode(mgid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", mgid);
+        if (!mnode) dserror("Cannot find node with gid %", mgid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
         // Mortar matrix M derivatives
@@ -2869,7 +2869,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 
           // check for completeness of DerivM-Derivatives-iteration
           if (mcolcurr != thismderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivM considered!");
         }
       }
 
@@ -2883,7 +2883,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2909,7 +2909,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetMlts()).size() > 0)
@@ -2921,7 +2921,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2946,7 +2946,7 @@ void CONTACT::CoInterface::AddLTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
     }
   }
@@ -2969,7 +2969,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
   {
     int gid = mnoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // only for corners
@@ -2998,7 +2998,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
         ++mcurr;
 
         DRT::Node* mnode = idiscret_->gNode(mgid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", mgid);
+        if (!mnode) dserror("Cannot find node with gid %", mgid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
         // Mortar matrix M derivatives
@@ -3023,7 +3023,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
 
           // check for completeness of DerivM-Derivatives-iteration
           if (mcolcurr != thismderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivM considered!");
         }
       }
 
@@ -3037,7 +3037,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -3061,7 +3061,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetMnts()).size() > 0)
@@ -3073,7 +3073,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -3096,7 +3096,7 @@ void CONTACT::CoInterface::AddNTSstiffnessMaster(Teuchos::RCP<LINALG::SparseMatr
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
     }
   }
@@ -3119,7 +3119,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // check if this is valid node
@@ -3145,7 +3145,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
         ++scurr;
 
         DRT::Node* snode = idiscret_->gNode(sgid);
-        if (!snode) dserror("ERROR: Cannot find node with gid %", sgid);
+        if (!snode) dserror("Cannot find node with gid %", sgid);
         CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
         // Mortar matrix D derivatives
@@ -3170,7 +3170,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
 
           // check for completeness of DerivD-Derivatives-iteration
           if (scolcurr != thisdderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivD considered!");
         }
       }
 
@@ -3189,7 +3189,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
         ++mcurr;
 
         DRT::Node* mnode = idiscret_->gNode(mgid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", mgid);
+        if (!mnode) dserror("Cannot find node with gid %", mgid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
         // Mortar matrix M derivatives
@@ -3214,7 +3214,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
 
           // check for completeness of DerivM-Derivatives-iteration
           if (mcolcurr != thismderiv.end())
-            dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+            dserror("AssembleLinDM: Not all derivative entries of DerivM considered!");
         }
       }
 
@@ -3228,7 +3228,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -3244,7 +3244,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
       }
       else
       {
-        dserror("ERROR: no d matrix entries available for ltlt contact");
+        dserror("no d matrix entries available for ltlt contact");
       }
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetMltl()).size() > 0)
@@ -3256,7 +3256,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_->gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -3272,7 +3272,7 @@ void CONTACT::CoInterface::AddLTLstiffness(Teuchos::RCP<LINALG::SparseMatrix> kt
       }
       else
       {
-        dserror("ERROR: no m matrix entries available for ltlt contact");
+        dserror("no m matrix entries available for ltlt contact");
       }
     }
   }
@@ -3348,7 +3348,7 @@ void CONTACT::CoInterface::PostEvaluate(const int step, const int iter)
     //*********************************
     case INPAR::MORTAR::algorithm_ntl:
     {
-      dserror("ERROR: not yet implemented!");
+      dserror("not yet implemented!");
       break;
     }
     //*********************************
@@ -3365,7 +3365,7 @@ void CONTACT::CoInterface::PostEvaluate(const int step, const int iter)
     //*********************************
     default:
     {
-      dserror("ERROR: Unknown discr. type for constraints!");
+      dserror("Unknown discr. type for constraints!");
       break;
     }
   }
@@ -3433,7 +3433,7 @@ void CONTACT::CoInterface::ScaleTerms()
 void CONTACT::CoInterface::ScaleTermsLTL()
 {
   std::cout << "ScaleTerms LTL" << std::endl;
-  dserror("ERROR: ScaleTermsLTL() is outdated");
+  dserror("ScaleTermsLTL() is outdated");
 
   return;
   //  // create iterators for data types
@@ -3446,7 +3446,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //    int gid = snoderowmap_->GID(i);
   //    DRT::Node* node = idiscret_->gNode(gid);
   //    if (!node)
-  //      dserror("ERROR: Cannot find node with gid %",gid);
+  //      dserror("Cannot find node with gid %",gid);
   //    CoNode* cnode = dynamic_cast<CoNode*>(node);
   //
   //    // only for edge nodes
@@ -3535,7 +3535,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //
   //            // check for completeness of DerivM-Derivatives-iteration
   //            if (mcolcurr!=thismderiv.end())
-  //              dserror("ERROR: ScaleTerms: Not all derivative entries of DerivM considered!");
+  //              dserror("ScaleTerms: Not all derivative entries of DerivM considered!");
   //          }
   //        }
   //      }
@@ -3573,7 +3573,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //      const double alphaNew = 1.0 - cnode->CoData().GetAlphaN();
   //
   //      if(cnode->MoData().GetDlts().size()>1)
-  //        dserror("ERROR: D matrix must be diagonal!");
+  //        dserror("D matrix must be diagonal!");
   //
   //      //-------------------------------------------------------------------------------------
   //      const double dvalue = d_lts.begin()->second;
@@ -3606,7 +3606,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //        ++scurr;
   //
   //        DRT::Node* snode = idiscret_->gNode(sgid);
-  //        if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
+  //        if (!snode) dserror("Cannot find node with gid %",sgid);
   //
   //        // Mortar matrix D derivatives
   //        std::map<int,double>& thisdderivD        = derivd_lts[sgid];
@@ -3635,7 +3635,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //
   //          // check for completeness of DerivD-Derivatives-iteration
   //          if (scolcurrD!=thisdderivD.end())
-  //            dserror("ERROR: ScaleTerms: Not all derivative entries of DerivD considered!");
+  //            dserror("ScaleTerms: Not all derivative entries of DerivD considered!");
   //        //}
   //      }
   //
@@ -3677,7 +3677,7 @@ void CONTACT::CoInterface::ScaleTermsLTL()
   //
   //            // check for completeness of DerivM-Derivatives-iteration
   //            if (mcolcurr!=thismderivnts.end())
-  //              dserror("ERROR: ScaleTerms: Not all derivative entries of DerivM considered!");
+  //              dserror("ScaleTerms: Not all derivative entries of DerivM considered!");
   ////          }
   //        }
   //      }
@@ -3731,7 +3731,7 @@ void CONTACT::CoInterface::EvaluateSTS(
   //    int gid1 = selecolmap_->GID(i);
   //    DRT::Element* ele1 = idiscret_->gElement(gid1);
   //    if (!ele1)
-  //      dserror("ERROR: Cannot find slave element with gid %", gid1);
+  //      dserror("Cannot find slave element with gid %", gid1);
   //    MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
   //
   //    // loop over all slave nodes of this element to check for active nodes
@@ -3759,7 +3759,7 @@ void CONTACT::CoInterface::EvaluateSTS(
   //      int gid2 = selement->MoData().SearchElements()[j];
   //      DRT::Element* ele2 = idiscret_->gElement(gid2);
   //      if (!ele2)
-  //        dserror("ERROR: Cannot find master element with gid %", gid2);
+  //        dserror("Cannot find master element with gid %", gid2);
   //      MORTAR::MortarElement* melement = dynamic_cast<MORTAR::MortarElement*>(ele2);
   //
   //      // skip zero-sized nurbs elements (master)
@@ -3871,7 +3871,7 @@ void CONTACT::CoInterface::EvaluateCoupling(const Epetra_Map& selecolmap,
     }
     else
     {
-      dserror("ERROR: Wrong dimension!");
+      dserror("Wrong dimension!");
     }
   }
   else
@@ -3905,7 +3905,7 @@ void CONTACT::CoInterface::InitializeCornerEdge()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::DetectNonSmoothGeometries()
 {
-  dserror("ERROR: outdated!");
+  dserror("outdated!");
 
   std::vector<int> nonsmoothnodegids(0);
   std::vector<int> smoothnodegids(0);
@@ -3915,10 +3915,10 @@ void CONTACT::CoInterface::DetectNonSmoothGeometries()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     if (cnode->NumElement() < 2)
     {
@@ -4011,7 +4011,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
   t2[2] = node2->MoData().EdgeTangent()[2];
 
   double test = t1[0] * t2[0] + t1[1] * t2[1] + t1[2] * t2[2];
-  if (test < tol) dserror("ERROR: tangents have wrong direction!");
+  if (test < tol) dserror("tangents have wrong direction!");
 
 
   double f = 0.0;
@@ -4094,7 +4094,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
         tangent[0] * linmaster[0] + tangent[1] * linmaster[1] + tangent[2] * linmaster[2];
 
     df = lintangentSlave - lintangentMaster - tangentlinMaster;
-    if (abs(df) < 1e-12) dserror("ERROR: df zero");
+    if (abs(df) < 1e-12) dserror("df zero");
     xi[0] += -f / df;
   }
 
@@ -4299,7 +4299,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToEdge(MORTAR::MortarNode& snode,
            slavebasednormal[2] * slavebasednormal[2]);
   if (abs(length) < 1e-12)
   {
-    dserror("ERROR: Nodal normal length 0, node ID %i", snode.Id());
+    dserror("Nodal normal length 0, node ID %i", snode.Id());
   }
   else
   {
@@ -4427,7 +4427,7 @@ double CONTACT::CoInterface::ComputeNormalNodeToNode(MORTAR::MortarNode& snode,
            slavebasednormal[2] * slavebasednormal[2]);
   if (abs(length) < 1e-12)
   {
-    dserror("ERROR: Nodal normal length 0, node ID %i", snode.Id());
+    dserror("Nodal normal length 0, node ID %i", snode.Id());
   }
   else
   {
@@ -4472,7 +4472,7 @@ void CONTACT::CoInterface::EvaluateCPPNormals()
   {
     int gid = MasterRowNodes()->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* mrtrnode = dynamic_cast<CoNode*>(node);
 
     // build averaged normal at each master node
@@ -4490,10 +4490,10 @@ void CONTACT::CoInterface::EvaluateCPPNormals()
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // vector with possible contacting master eles/nodes
     std::vector<MORTAR::MortarElement*> meles;
@@ -4575,7 +4575,7 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
   {
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // fill nodal matrix
@@ -4677,7 +4677,7 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
     // only do something for ghosted nodes
     int gid = masternodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
 
@@ -4773,9 +4773,9 @@ void CONTACT::CoInterface::ExportMasterNodalNormals()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::EvaluateAveragedNodalNormals()
 {
-  dserror("ERROR: outdated function!");
+  dserror("outdated function!");
   // safety
-  if (smoothnodes_ == Teuchos::null) dserror("ERROR: map of non smooth nodes is wrong!");
+  if (smoothnodes_ == Teuchos::null) dserror("map of non smooth nodes is wrong!");
 
   // loop over proc's slave nodes of the interface
   // use row map and export to column map later
@@ -4784,7 +4784,7 @@ void CONTACT::CoInterface::EvaluateAveragedNodalNormals()
   {
     int gid = smoothnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* mrtrnode = dynamic_cast<CoNode*>(node);
 
     // build averaged normal at each slave node
@@ -4826,8 +4826,8 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   const double maxAngle = InterfaceParams().get<double>("HYBRID_ANGLE_MAX");
 
   // check
-  if (minAngle < 0.0 or maxAngle < 0.0) dserror("ERROR: invalid hybrid angle!");
-  if (minAngle >= maxAngle) dserror("ERROR: invalid hybrid angle!");
+  if (minAngle < 0.0 or maxAngle < 0.0) dserror("invalid hybrid angle!");
+  if (minAngle >= maxAngle) dserror("invalid hybrid angle!");
 
   // angle in rad
   const double alphaMin = minAngle * (M_PI / 180.0);  // min angle in rad
@@ -4844,7 +4844,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // empty vector of slave element pointers
@@ -4930,7 +4930,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
       }  // end edge loop
     }
     else
-      dserror("ERROR: LTL only for quad4!");
+      dserror("LTL only for quad4!");
 
     // guarantee uniquness of master edges
     std::set<std::pair<int, int>> donebeforeM;
@@ -4944,7 +4944,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
     {
       int gid2 = selement->MoData().SearchElements()[k];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       if (melement->Shape() == DRT::Element::quad4)
@@ -5027,7 +5027,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
         }  // end edge loop
       }
       else
-        dserror("ERROR: LTL only for quad4!");
+        dserror("LTL only for quad4!");
     }  // end found mele loop
 
     // loop over slave edges
@@ -5047,7 +5047,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
         if (parallel)
         {
           continue;
-          //          dserror("ERROR: edges parallel");
+          //          dserror("edges parallel");
           break;
         }
         // create empty points
@@ -5152,11 +5152,11 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //    int gid = smoothnodes_->GID(i);
   //    DRT::Node* node = idiscret_->gNode(gid);
   //    if (!node)
-  //      dserror("ERROR: Cannot find node with gid %", gid);
+  //      dserror("Cannot find node with gid %", gid);
   //    CoNode* cnode = dynamic_cast<CoNode*>(node);
   //
   //    if (cnode->Owner() != Comm().MyPID())
-  //      dserror("ERROR: Node ownership inconsistency!");
+  //      dserror("Node ownership inconsistency!");
   //
   //    // MORTAR
   //    cnode->CoData().GetAlphaN() = -1.0;
@@ -5169,11 +5169,11 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //    int gid = nonsmoothnodes_->GID(i);
   //    DRT::Node* node = idiscret_->gNode(gid);
   //    if (!node)
-  //      dserror("ERROR: Cannot find node with gid %", gid);
+  //      dserror("Cannot find node with gid %", gid);
   //    CoNode* cnode = dynamic_cast<CoNode*>(node);
   //
   //    if (cnode->Owner() != Comm().MyPID())
-  //      dserror("ERROR: Node ownership inconsistency!");
+  //      dserror("Node ownership inconsistency!");
   //
   //    // clear old data
   //    if(cnode->CoData().GetAlpha().size() == 0)
@@ -5189,7 +5189,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //    // calc element normal
   //    const int eles = cnode->NumElement();
   //    if(eles>2)
-  //      dserror("ERROR: element number to high!");
+  //      dserror("element number to high!");
   //
   //    // calc smallest angle between cpp and nele
   //    double gR = 1e12;
@@ -5213,7 +5213,7 @@ void CONTACT::CoInterface::ComputeScalingLTL()
   //      normalsele[2] * normalcpp[2]; double Rl = acos(dotcpp); // current angle in rad
   //
   //      if(Rl<0.0)
-  //        dserror("ERROR: angle less than 0.0");
+  //        dserror("angle less than 0.0");
   //
   //      //======================================================
   //      // lin angle
@@ -5310,14 +5310,14 @@ void CONTACT::CoInterface::ComputeScalingLTL()
  *----------------------------------------------------------------------*/
 void CONTACT::CoInterface::ScaleNormals()
 {
-  dserror("ERROR: outdated!");
+  dserror("outdated!");
 
   if (Dim() == 2)
     ScaleNormals2D();
   else if (Dim() == 3)
     ScaleNormals3D();
   else
-    dserror("ERROR: Wrong dimension!");
+    dserror("Wrong dimension!");
 }
 
 /*----------------------------------------------------------------------*
@@ -5334,10 +5334,10 @@ void CONTACT::CoInterface::ScaleNormals2D()
   {
     int gid = nonsmoothnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // get cpp normal
     double normalcpp[3] = {0.0, 0.0, 0.0};
@@ -5361,7 +5361,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
 
     // calc element normal
     const int eles = cnode->NumElement();
-    if (eles > 2) dserror("ERROR: element number to high!");
+    if (eles > 2) dserror("element number to high!");
 
     double gR = 1e12;
     int localid = -1;
@@ -5395,7 +5395,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
       }
 
 
-      if (Rl < 0.0) dserror("ERROR: angle less than 0.0");
+      if (Rl < 0.0) dserror("angle less than 0.0");
 
 
 
@@ -5484,7 +5484,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
         (cnode->CoData().GetDerivTxi()[1])[p->first] += (p->second);
     }
     else
-      dserror("ERROR: only 2D");
+      dserror("only 2D");
 
 
 
@@ -5507,7 +5507,7 @@ void CONTACT::CoInterface::ScaleNormals2D()
 /*----------------------------------------------------------------------*
  |  scale normals for hybrid formulation                    farah 05/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::CoInterface::ScaleNormals3D() { dserror("ERROR: not yet implemented!"); }
+void CONTACT::CoInterface::ScaleNormals3D() { dserror("not yet implemented!"); }
 
 
 /*----------------------------------------------------------------------*
@@ -5574,7 +5574,7 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
       for (int i = 0; i < meles[ele]->NumNode(); ++i)
       {
         DRT::Node* node = meles[ele]->Nodes()[i];
-        if (!node) dserror("ERROR: Cannot find master node");
+        if (!node) dserror("Cannot find master node");
         CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
         linsize += mnode->GetLinsize();
 
@@ -5639,7 +5639,7 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
     for (int i = 0; i < meles[ele]->NumNode(); ++i)
     {
       DRT::Node* node = meles[ele]->Nodes()[i];
-      if (!node) dserror("ERROR: Cannot find master node");
+      if (!node) dserror("Cannot find master node");
       CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
       linsize += mnode->GetLinsize();
 
@@ -5673,7 +5673,7 @@ double CONTACT::CoInterface::ComputeCPPNormal2D(MORTAR::MortarNode& mrtrnode,
     }
     else
     {
-      dserror("ERROR: Unknown ele type!");
+      dserror("Unknown ele type!");
     }
 
     // angle between trajectory and normal
@@ -5790,7 +5790,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
     }
     else
     {
-      dserror("ERROR: Unknown ele type!");
+      dserror("Unknown ele type!");
     }
 
     // angle between trajectory and normal
@@ -5867,7 +5867,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
             nodeLIds[1] = 0;
           }
           else
-            dserror("ERROR: loop counter and edge number do not match!");
+            dserror("loop counter and edge number do not match!");
         }
 
         // check if both nodes on edge geometry
@@ -5955,7 +5955,7 @@ double CONTACT::CoInterface::ComputeCPPNormal3D(MORTAR::MortarNode& mrtrnode,
       for (int i = 0; i < meles[ele]->NumNode(); ++i)
       {
         DRT::Node* node = meles[ele]->Nodes()[i];
-        if (!node) dserror("ERROR: Cannot find master node");
+        if (!node) dserror("Cannot find master node");
         CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
         linsize += mnode->GetLinsize();
 
@@ -6053,7 +6053,7 @@ double CONTACT::CoInterface::ComputeCPPNormal(MORTAR::MortarNode& mrtrnode,
   //===================================================================
   else
   {
-    dserror("ERROR: invalid dimension!");
+    dserror("invalid dimension!");
   }
 
   // return distance
@@ -6069,7 +6069,7 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
   CoNode& cnode = dynamic_cast<CoNode&>(snode);
 
   const double length = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
-  if (length < 1e-12) dserror("ERROR: normal length is zero!!!");
+  if (length < 1e-12) dserror("normal length is zero!!!");
 
   // negative sign because it is a master normal!
   cnode.MoData().n()[0] = -normal[0] / length;
@@ -6124,7 +6124,7 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
     ltxi = sqrt(cnode.CoData().txi()[0] * cnode.CoData().txi()[0] +
                 cnode.CoData().txi()[1] * cnode.CoData().txi()[1] +
                 cnode.CoData().txi()[2] * cnode.CoData().txi()[2]);
-    if (ltxi < 1e-12) dserror("ERROR: tangent txi length is zero!!!");
+    if (ltxi < 1e-12) dserror("tangent txi length is zero!!!");
     for (int j = 0; j < 3; ++j) cnode.CoData().txi()[j] /= ltxi;
 
     // teta follows from corkscrew rule (teta = n x txi)
@@ -6248,7 +6248,7 @@ void CONTACT::CoInterface::SetCPPNormal(MORTAR::MortarNode& snode, double* norma
       for (CI p = derivny.begin(); p != derivny.end(); ++p) derivtxiz[p->first] += (p->second);
     }
 
-    if (ltxi < 1e-12) dserror("ERROR: tangent txi length is zero!!!");
+    if (ltxi < 1e-12) dserror("tangent txi length is zero!!!");
 
     // normalize txi directional derivative
     // (identical to normalization of normal derivative)
@@ -6468,7 +6468,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
   {
     int gid = snoderowmapbound_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // fill nodal matrix
@@ -6574,7 +6574,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
     if (snoderowmapbound_->MyGID(gid)) continue;
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     int linsize = cnode->GetLinsize() + (int)(n_x_key[gid].size());
 
@@ -6661,7 +6661,7 @@ void CONTACT::CoInterface::ExportNodalNormals() const
       {
         int gid = snodecolmapbound_->GID(i);
         DRT::Node* node = idiscret_->gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %",gid);
+        if (!node) dserror("Cannot find node with gid %",gid);
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // print normal and tangents at each slave node
@@ -6728,7 +6728,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
     {
       int gid = SlaveColNodesBound()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %i", gid);
+      if (!node) dserror("Cannot find node with gid %i", gid);
       MORTAR::MortarNode* mnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
       // initialize container if not yet initialized before
@@ -6755,7 +6755,7 @@ bool CONTACT::CoInterface::EvaluateSearchBinarytree()
 void CONTACT::CoInterface::EvaluateSTL()
 {
   // check
-  if (Dim() == 2) dserror("ERROR: LTS algorithm only for 3D simulations!");
+  if (Dim() == 2) dserror("LTS algorithm only for 3D simulations!");
 
   // counter
   int count = 0;
@@ -6765,7 +6765,7 @@ void CONTACT::CoInterface::EvaluateSTL()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // guarantee uniquness
@@ -6776,7 +6776,7 @@ void CONTACT::CoInterface::EvaluateSTL()
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       if (melement->Shape() == DRT::Element::quad4)
@@ -6861,7 +6861,7 @@ void CONTACT::CoInterface::EvaluateSTL()
         }  // end edge loop
       }
       else
-        dserror("ERROR: LTS only for quad4!");
+        dserror("LTS only for quad4!");
 
     }  // end found mele loop
   }    // end slave ele loop
@@ -6886,7 +6886,7 @@ void CONTACT::CoInterface::EvaluateNTSMaster()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // skip zero-sized nurbs elements (slave)
@@ -6898,7 +6898,7 @@ void CONTACT::CoInterface::EvaluateNTSMaster()
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       // skip zero-sized nurbs elements (master)
@@ -6936,7 +6936,7 @@ void CONTACT::CoInterface::EvaluateNTSMaster()
 void CONTACT::CoInterface::EvaluateLTSMaster()
 {
   // check
-  if (Dim() == 2) dserror("ERROR: LTS algorithm only for 3D simulations!");
+  if (Dim() == 2) dserror("LTS algorithm only for 3D simulations!");
 
   // counter
   int count = 0;
@@ -6949,12 +6949,12 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // ele check
     if (selement->Shape() != DRT::Element::quad4 and selement->Shape() != DRT::Element::tri3)
-      dserror("ERROR: LTS algorithm only for tri3/quad4!");
+      dserror("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElements;
@@ -6976,7 +6976,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
       loccenter[1] = 0.0;
     }
     else
-      dserror("ERROR: AuxiliaryPlane called for unknown element type");
+      dserror("AuxiliaryPlane called for unknown element type");
 
     // we then compute the unit normal vector at the element center
     selement->ComputeUnitNormalAtXi(loccenter, slaveN);
@@ -6987,7 +6987,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       // check orientation
@@ -7007,7 +7007,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
         loccenterM[1] = 0.0;
       }
       else
-        dserror("ERROR: AuxiliaryPlane called for unknown element type");
+        dserror("AuxiliaryPlane called for unknown element type");
 
       // we then compute the unit normal vector at the element center
       melement->ComputeUnitNormalAtXi(loccenterM, masterN);
@@ -7070,7 +7070,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
             nodeLIds[1] = 0;
           }
           else
-            dserror("ERROR: loop counter and edge number do not match!");
+            dserror("loop counter and edge number do not match!");
         }
         else if (meleElements[m]->Shape() == DRT::Element::tri3)
         {
@@ -7099,7 +7099,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
             nodeLIds[1] = 0;
           }
           else
-            dserror("ERROR: loop counter and edge number do not match!");
+            dserror("loop counter and edge number do not match!");
         }
 
         // check if both nodes on edge geometry
@@ -7185,7 +7185,7 @@ void CONTACT::CoInterface::EvaluateLTSMaster()
 void CONTACT::CoInterface::EvaluateLTS()
 {
   // check
-  if (Dim() == 2) dserror("ERROR: LTS algorithm only for 3D simulations!");
+  if (Dim() == 2) dserror("LTS algorithm only for 3D simulations!");
 
   // counter
   int count = 0;
@@ -7198,12 +7198,12 @@ void CONTACT::CoInterface::EvaluateLTS()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // ele check
     if (selement->Shape() != DRT::Element::quad4 and selement->Shape() != DRT::Element::tri3)
-      dserror("ERROR: LTS algorithm only for tri3/quad4!");
+      dserror("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> lineElements;
@@ -7225,7 +7225,7 @@ void CONTACT::CoInterface::EvaluateLTS()
       loccenter[1] = 0.0;
     }
     else
-      dserror("ERROR: AuxiliaryPlane called for unknown element type");
+      dserror("AuxiliaryPlane called for unknown element type");
 
     // we then compute the unit normal vector at the element center
     selement->ComputeUnitNormalAtXi(loccenter, slaveN);
@@ -7236,7 +7236,7 @@ void CONTACT::CoInterface::EvaluateLTS()
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       // check orientation
@@ -7256,7 +7256,7 @@ void CONTACT::CoInterface::EvaluateLTS()
         loccenterM[1] = 0.0;
       }
       else
-        dserror("ERROR: AuxiliaryPlane called for unknown element type");
+        dserror("AuxiliaryPlane called for unknown element type");
 
       // we then compute the unit normal vector at the element center
       melement->ComputeUnitNormalAtXi(loccenterM, masterN);
@@ -7317,7 +7317,7 @@ void CONTACT::CoInterface::EvaluateLTS()
           nodeLIds[1] = 0;
         }
         else
-          dserror("ERROR: loop counter and edge number do not match!");
+          dserror("loop counter and edge number do not match!");
       }
       else if (selement->Shape() == DRT::Element::tri3)
       {
@@ -7346,7 +7346,7 @@ void CONTACT::CoInterface::EvaluateLTS()
           nodeLIds[1] = 0;
         }
         else
-          dserror("ERROR: loop counter and edge number do not match!");
+          dserror("loop counter and edge number do not match!");
       }
 
       // check if both nodes on edge geometry
@@ -7413,7 +7413,7 @@ void CONTACT::CoInterface::EvaluateLTS()
 void CONTACT::CoInterface::EvaluateLTL()
 {
   // check
-  if (Dim() == 2) dserror("ERROR: LTL algorithm only for 3D simulations!");
+  if (Dim() == 2) dserror("LTL algorithm only for 3D simulations!");
 
   // guarantee uniquness of slave edges
   std::set<std::pair<int, int>> donebeforeS;
@@ -7423,7 +7423,7 @@ void CONTACT::CoInterface::EvaluateLTL()
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
     // empty vector of slave element pointers
@@ -7580,7 +7580,7 @@ void CONTACT::CoInterface::EvaluateLTL()
       }  // end edge loop
     }
     else
-      dserror("ERROR: LTL only for quad4 and tri3!");
+      dserror("LTL only for quad4 and tri3!");
 
     // guarantee uniquness of master edges
     std::set<std::pair<int, int>> donebeforeM;
@@ -7594,7 +7594,7 @@ void CONTACT::CoInterface::EvaluateLTL()
     {
       int gid2 = selement->MoData().SearchElements()[k];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       if (melement->Shape() == DRT::Element::quad4)
@@ -7748,7 +7748,7 @@ void CONTACT::CoInterface::EvaluateLTL()
         }  // end edge loop
       }
       else
-        dserror("ERROR: LTL only for quad4 and tri3!");
+        dserror("LTL only for quad4 and tri3!");
     }  // end found mele loop
 
     // loop over slave edges
@@ -7786,12 +7786,12 @@ void CONTACT::CoInterface::EvaluateNTS()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     MORTAR::MortarNode* mrtrnode = dynamic_cast<MORTAR::MortarNode*>(node);
 
     if (!mrtrnode->IsOnCorner() and nonSmoothContact_) continue;
 
-    if (mrtrnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
+    if (mrtrnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     // vector with possible contacting master eles
     std::vector<MORTAR::MortarElement*> meles;
@@ -7877,7 +7877,7 @@ bool CONTACT::CoInterface::MortarCoupling(MORTAR::MortarElement* sele,
     }  // quadratic
   }    // 3D
   else
-    dserror("ERROR: Dimension for Mortar coupling must be 2D or 3D!");
+    dserror("Dimension for Mortar coupling must be 2D or 3D!");
   // *********************************************************************
 
   // do stuff after the coupling evaluation
@@ -7957,7 +7957,7 @@ bool CONTACT::CoInterface::IntegrateKappaPenalty(CONTACT::CoElement& sele)
 
     else
     {
-      dserror("ERROR: IntegrateKappaPenalty: Invalid case for 3D mortar contact LM interpolation");
+      dserror("IntegrateKappaPenalty: Invalid case for 3D mortar contact LM interpolation");
     }
   }
 
@@ -7997,7 +7997,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
     double cn = GetCnRef()[GetCnRef().Map().LID(cnode->Id())];
 
@@ -8068,7 +8068,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       {
         int gid = *scurr;
         DRT::Node* snode = idiscret_->gNode(gid);
-        if (!snode) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!snode) dserror("Cannot find node with gid %", gid);
         CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
         double dik = dmap[csnode->Id()];
@@ -8110,7 +8110,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       {
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!mnode) dserror("Cannot find node with gid %", gid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
         double mik = mmap[cmnode->Id()];
@@ -8143,7 +8143,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
         {
           int gid = *scurr;
           DRT::Node* snode = idiscret_->gNode(gid);
-          if (!snode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!snode) dserror("Cannot find node with gid %", gid);
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           double dik = dmap[csnode->Id()];
@@ -8217,7 +8217,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       {
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!mnode) dserror("Cannot find node with gid %", gid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
         double mik = mmap[cmnode->Id()];
@@ -8241,7 +8241,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       {
         int gid = dscurr->first;
         DRT::Node* snode = idiscret_->gNode(gid);
-        if (!snode) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!snode) dserror("Cannot find node with gid %", gid);
         CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
         // compute entry of the current stick node / slave node pair
@@ -8272,7 +8272,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
       {
         int gid = dmcurr->first;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!mnode) dserror("Cannot find node with gid %", gid);
         CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
         double* mxi = cmnode->xspatial();
 
@@ -8316,7 +8316,7 @@ void CONTACT::CoInterface::AssembleSlaveCoord(Teuchos::RCP<Epetra_Vector>& xsmod
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     int dim = cnode->NumDof();
@@ -8351,8 +8351,7 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
   Initialize();
 
   // interface needs to be complete
-  if (!Filled() && Comm().MyPID() == 0)
-    dserror("ERROR: FillComplete() not called on interface %", id_);
+  if (!Filled() && Comm().MyPID() == 0) dserror("FillComplete() not called on interface %", id_);
 
   // create an interpolator instance
   Teuchos::RCP<NTS::CoInterpolator> interpolator =
@@ -8369,7 +8368,7 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
   {
     int gid1 = selecolmap_->GID(i);
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     CONTACT::CoElement* selement = dynamic_cast<CONTACT::CoElement*>(ele1);
 
     if (selement->MoData().NumSearchElements() < 1)
@@ -8390,7 +8389,7 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
     {
       int gid2 = selement->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CONTACT::CoElement* melement = dynamic_cast<CONTACT::CoElement*>(ele2);
 
       // skip zero-sized nurbs elements (master)
@@ -8516,7 +8515,7 @@ void CONTACT::CoInterface::EvaluateDistances(const Teuchos::RCP<const Epetra_Vec
       }
       else
       {
-        dserror("ERROR: Chosen element type not supported for NTS!");
+        dserror("Chosen element type not supported for NTS!");
       }
 
       //**************************************************************
@@ -8628,7 +8627,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some information from node
@@ -8721,7 +8720,7 @@ void CONTACT::CoInterface::AssembleRegNormalForces(
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     int dim = cnode->NumDof();
@@ -8860,7 +8859,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
@@ -9216,7 +9215,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     // get some informatiom form the node
@@ -9572,11 +9571,10 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleLinZ: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleLinZ: Node ownership inconsistency!");
 
     // derivz is the std::vector<map> we want to assemble
     std::vector<std::map<int, double>>& derivz = cnode->CoData().GetDerivZ();
@@ -9589,7 +9587,7 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
       // consistency check
       for (int j = 0; j < rowsize - 1; ++j)
         if ((int)derivz[j].size() != (int)derivz[j + 1].size())
-          dserror("ERROR: AssembleLinZ: Column dim. of nodal derivz-map is inconsistent!");
+          dserror("AssembleLinZ: Column dim. of nodal derivz-map is inconsistent!");
 
       std::map<int, double>::iterator colcurr;
 
@@ -9609,7 +9607,7 @@ void CONTACT::CoInterface::AssembleLinZ(LINALG::SparseMatrix& linzglobal)
           l++;
         }
 
-        if (l != colsize) dserror("ERROR: AssembleLinZ: l = %i but colsize = %i", k, colsize);
+        if (l != colsize) dserror("AssembleLinZ: l = %i but colsize = %i", k, colsize);
       }
     }
   }
@@ -9626,18 +9624,17 @@ void CONTACT::CoInterface::AssembleTN(
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
-  if (Dim() != 2 && Dim() != 3) dserror("ERROR: Dim() must be either 2 or 3!");
+  if (Dim() != 2 && Dim() != 3) dserror("Dim() must be either 2 or 3!");
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleTN: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTN: Node ownership inconsistency!");
 
     if (tglobal != Teuchos::null)
     {
@@ -9685,7 +9682,7 @@ void CONTACT::CoInterface::AssembleTN(
           tglobal->Assemble(-1, Tnode, lmrowT, lmrowownerT, lmcol);
         }
         else
-          dserror("ERROR: Dim() must be either 2D or 3D");
+          dserror("Dim() must be either 2D or 3D");
       }
       else
       {
@@ -9740,7 +9737,7 @@ void CONTACT::CoInterface::AssembleTN(
           tglobal->Assemble(-1, Tnode, lmrowT, lmrowownerT, lmcol);
         }
         else
-          dserror("ERROR: Dim() must be either 2D or 3D");
+          dserror("Dim() must be either 2D or 3D");
       }
     }
 
@@ -9776,11 +9773,10 @@ void CONTACT::CoInterface::AssembleS(LINALG::SparseMatrix& sglobal)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleS: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
     // prepare assembly
     std::map<int, double>& dgmap = cnode->CoData().GetDerivG();
@@ -9816,18 +9812,18 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
   // nothing to do if no active nodes
   if (activenodes_ == Teuchos::null) return;
 
-  if (Dim() != 2 && Dim() != 3) dserror("ERROR: Dim() must be either 2 or 3!");
+  if (Dim() != 2 && Dim() != 3) dserror("Dim() must be either 2 or 3!");
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())  // move this check into debug?
-      dserror("ERROR: AssembleTNderiv: Node ownership inconsistency!");
+      dserror("AssembleTNderiv: Node ownership inconsistency!");
 
     if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
     {
@@ -9850,7 +9846,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
           {
             std::cout << "size j = " << dtmap[j].size() << "   size j+1 = " << dtmap[j + 1].size()
                       << std::endl;
-            dserror("ERROR: AssembleTNderiv: Column dim. of nodal DerivT-map is inconsistent!");
+            dserror("AssembleTNderiv: Column dim. of nodal DerivT-map is inconsistent!");
           }
 
         // begin assembly of Tderiv-matrix
@@ -9895,7 +9891,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
             ++k;
           }
 
-          if (k != colsize) dserror("ERROR: AssembleTNderiv: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) dserror("AssembleTNderiv: k = %i but colsize = %i", k, colsize);
         }
       }
     }
@@ -9914,7 +9910,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
 
       for (int j = 0; j < mapsize - 1; ++j)  // move this check into debug?
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("ERROR: AssembleTNderiv: Column dim. of nodal DerivN-map is inconsistent!");
+          dserror("AssembleTNderiv: Column dim. of nodal DerivN-map is inconsistent!");
 
       // loop over all derivative maps (=dimensions)
       for (int j = 0; j < mapsize; ++j)
@@ -9944,7 +9940,7 @@ void CONTACT::CoInterface::AssembleTNderiv(Teuchos::RCP<LINALG::SparseMatrix> td
           ++k;
         }
 
-        if (k != colsize) dserror("ERROR: AssembleTNderiv: k = %i but colsize = %i", k, colsize);
+        if (k != colsize) dserror("AssembleTNderiv: k = %i but colsize = %i", k, colsize);
       }
     }
 
@@ -9973,7 +9969,7 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool u
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     int dim = cnode->NumDof();
 
@@ -9999,7 +9995,7 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool u
       ++scurr;
 
       DRT::Node* snode = idiscret_->gNode(sgid);
-      if (!snode) dserror("ERROR: Cannot find node with gid %", sgid);
+      if (!snode) dserror("Cannot find node with gid %", sgid);
       CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
       // Mortar matrix D derivatives
@@ -10028,13 +10024,13 @@ void CONTACT::CoInterface::AssembleLinD(LINALG::SparseMatrix& lindglobal, bool u
 
         // check for completeness of DerivD-Derivatives-iteration
         if (scolcurr != thisdderiv.end())
-          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivD considered!");
+          dserror("AssembleLinDM: Not all derivative entries of DerivD considered!");
       }
     }
 
     // check for completeness of DerivD-Slave-iteration
     if (scurr != dderiv.end())
-      dserror("ERROR: AssembleLinDM: Not all DISP slave entries of DerivD considered!");
+      dserror("AssembleLinDM: Not all DISP slave entries of DerivD considered!");
     /******************************** Finished with LinDMatrix **********/
   }
 
@@ -10061,7 +10057,7 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool u
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     int dim = cnode->NumDof();
 
@@ -10087,7 +10083,7 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool u
       ++mcurr;
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
-      if (!mnode) dserror("ERROR: Cannot find node with gid %", mgid);
+      if (!mnode) dserror("Cannot find node with gid %", mgid);
       CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
       // Mortar matrix M derivatives
@@ -10116,13 +10112,13 @@ void CONTACT::CoInterface::AssembleLinM(LINALG::SparseMatrix& linmglobal, bool u
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderiv.end())
-          dserror("ERROR: AssembleLinDM: Not all derivative entries of DerivM considered!");
+          dserror("AssembleLinDM: Not all derivative entries of DerivM considered!");
       }
     }
 
     // check for completeness of DerivM-Master-iteration
     if (mcurr != mderiv.end())
-      dserror("ERROR: AssembleLinDM: Not all master entries of DerivM considered!");
+      dserror("AssembleLinDM: Not all master entries of DerivM considered!");
     /******************************** Finished with LinMMatrix **********/
   }
 
@@ -10155,11 +10151,10 @@ void CONTACT::CoInterface::AssembleG(Epetra_Vector& gglobal)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleG: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleG: Node ownership inconsistency!");
 
     /**************************************************** g-vector ******/
     if (cnode->CoData().Getg() != 0.0)
@@ -10254,11 +10249,11 @@ void CONTACT::CoInterface::AssembleInactiverhs(Epetra_Vector& inactiverhs)
   {
     int gid = inactivenodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleInactiverhs: Node ownership inconsistency!");
+      dserror("AssembleInactiverhs: Node ownership inconsistency!");
     if (Dim() == 2)
     {
       // calculate the tangential rhs
@@ -10302,11 +10297,10 @@ void CONTACT::CoInterface::AssembleTangrhs(Epetra_Vector& tangrhs)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleTangrhs: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleTangrhs: Node ownership inconsistency!");
     if (constr_direction_ == INPAR::CONTACT::constr_xyz)
     {
       if (Dim() == 2)
@@ -10430,11 +10424,11 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
   {
     int gid = sticknodes->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     FriNode* cnode = dynamic_cast<FriNode*>(node);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleLinStick: Node ownership inconsistency!");
+      dserror("AssembleLinStick: Node ownership inconsistency!");
 
     // get friction coefficient for this node
     // in case of TSI, the nodal temperature influences the local friction coefficient
@@ -10483,7 +10477,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       row[1] = stickt->GID(2 * i) + 1;
     }
     else
-      dserror("ERROR: AssemblelinStick: Dimension not correct");
+      dserror("AssemblelinStick: Dimension not correct");
 
     //****************************************************************
     // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
@@ -10631,17 +10625,17 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivN-map is inconsistent!");
+          dserror("AssembleLinStick: Column dim. of nodal DerivN-map is inconsistent!");
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
+          dserror("AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
+            dserror("AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       double cn = cn_input;
@@ -10674,7 +10668,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
       // check for dimensions
       if (Dim() == 2 and (jumpteta != 0.0))
-        dserror("ERROR: AssembleLinStick: jumpteta must be zero in 2D");
+        dserror("AssembleLinStick: jumpteta must be zero in 2D");
 
       //**************************************************************
       // calculation of matrix entries of linearized stick condition
@@ -10992,13 +10986,13 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
     {
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
+          dserror("AssembleLinStick: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("ERROR: AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
+            dserror("AssembleLinStick: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       // evaluation of specific components of entries to assemble
@@ -11025,7 +11019,7 @@ void CONTACT::CoInterface::AssembleLinStick(LINALG::SparseMatrix& linstickLMglob
 
       // check for dimensions
       if (Dim() == 2 and (jumpteta != 0.0))
-        dserror("ERROR: AssembleLinStick: jumpteta must be zero in 2D");
+        dserror("AssembleLinStick: jumpteta must be zero in 2D");
 
       // Entries on right hand side
       /************************************************ (-utxi, -uteta) ***/
@@ -11249,11 +11243,11 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+        dserror("AssembleLinSlip: Node ownership inconsistency!");
 
       // get friction coefficient for this node
       // in case of TSI, the nodal temperature influences the local friction coefficient
@@ -11273,17 +11267,17 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
+            dserror("AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       // more information from node
@@ -11309,7 +11303,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         row[1] = slipt_->GID(2 * i) + 1;
       }
       else
-        dserror("ERROR: AssemblelinSlip: Dimension not correct");
+        dserror("AssemblelinSlip: Dimension not correct");
 
       // evaluation of specific components of entries to assemble
       double znor = 0.0;
@@ -11354,7 +11348,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       // check of dimensions
       if (Dim() == 2 and (zteta != 0.0 or jumpteta != 0.0))
-        dserror("ERROR: AssemblelinSlip: zteta and jumpteta must be zero in 2D");
+        dserror("AssemblelinSlip: zteta and jumpteta must be zero in 2D");
 
       //****************************************************************
       // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
@@ -12281,11 +12275,11 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+        dserror("AssembleLinSlip: Node ownership inconsistency!");
 
       double ct = GetCtRef()[GetCtRef().Map().LID(cnode->Id())];
 
@@ -12323,7 +12317,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
 
       for (int j = 0; j < mapsize - 1; ++j)
         if ((int)dtmap[j].size() != (int)dtmap[j + 1].size())
-          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
+          dserror("AssembleLinSlip: Column dim. of nodal DerivT-map is inconsistent!");
 
       // calculation of parts of the complementary function
       double ztan = txi[0] * z[0] + txi[1] * z[1];
@@ -12527,7 +12521,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -12582,7 +12576,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -12635,7 +12629,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             ++k;
           }
 
-          if (k != colsize) dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /*********************************** Deriv(abs)*DerivT.z*ztan ***/
@@ -12666,7 +12660,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             ++k;
           }
 
-          if (k != colsize) dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /******************************* Deriv(abs)*DerivT.jump+*ztan ***/
@@ -12697,7 +12691,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             ++k;
           }
 
-          if (k != colsize) dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /*************************** -Deriv(abs).ct.tan.DerivD.x*ztan ***/
@@ -12739,7 +12733,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = dmcurr->first;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
 
@@ -12798,7 +12792,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             ++k;
           }
 
-          if (k != colsize) dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /************************************ -frbound.ct.DerivT.jump ***/
@@ -12829,7 +12823,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
             ++k;
           }
 
-          if (k != colsize) dserror("ERROR: AssembleLinSlip: k = %i but colsize = %i", k, colsize);
+          if (k != colsize) dserror("AssembleLinSlip: k = %i but colsize = %i", k, colsize);
         }
 
         /************************************* +frbound.ct.T.DerivD.x ***/
@@ -12864,7 +12858,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = dmcurr->first;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           FriNode* cmnode = dynamic_cast<FriNode*>(mnode);
           double* mxi = cmnode->xspatial();
 
@@ -13009,11 +13003,11 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
     {
       int gid = slipnodes_->GID(i);
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       FriNode* cnode = dynamic_cast<FriNode*>(node);
 
       if (cnode->Owner() != Comm().MyPID())
-        dserror("ERROR: AssembleLinSlip: Node ownership inconsistency!");
+        dserror("AssembleLinSlip: Node ownership inconsistency!");
 
       // get friction coefficient for this node
       // in case of TSI, the nodal temperature influences the local friction coefficient
@@ -13030,17 +13024,17 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
       // check for Dimension of derivative maps
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dnmap[j].size() != (int)dnmap[j + 1].size())
-          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       for (int j = 0; j < Dim() - 1; ++j)
         if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-          dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
+          dserror("AssembleLinSlip: Column dim. of nodal DerivTxi-map is inconsistent!");
 
       if (Dim() == 3)
       {
         for (int j = 0; j < Dim() - 1; ++j)
           if ((int)dtximap[j].size() != (int)dtximap[j + 1].size())
-            dserror("ERROR: AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
+            dserror("AssembleLinSlip: Column dim. of nodal DerivTeta-map is inconsistent!");
       }
 
       // more information from node
@@ -13066,7 +13060,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
         row[1] = slipt_->GID(2 * i) + 1;
       }
       else
-        dserror("ERROR: AssemblelinSlip: Dimension not correct");
+        dserror("AssemblelinSlip: Dimension not correct");
 
       // evaluation of specific components of entries to assemble
       double znor = 0.0;
@@ -13113,7 +13107,7 @@ void CONTACT::CoInterface::AssembleLinSlipNormalRegularization(
 
       // check of dimensions
       if (Dim() == 2 and (zteta != 0.0 or jumpteta != 0.0))
-        dserror("ERROR: AssemblelinSlip: zteta and jumpteta must be zero in 2D");
+        dserror("AssemblelinSlip: zteta and jumpteta must be zero in 2D");
 
       //****************************************************************
       // CONSISTENT TREATMENT OF CASE FRCOEFF=0 (FRICTIONLESS)
@@ -13807,7 +13801,7 @@ bool CONTACT::CoInterface::UpdateActiveSetSemiSmooth()
   {
     int gid = SlaveRowNodes()->GID(j);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
 
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
@@ -14022,7 +14016,7 @@ void CONTACT::CoInterface::UpdateActiveSetInitialStatus() const
     // Grab the current slave node
     const int gid = my_slave_row_node_gids[j];
     CoNode* cnode = dynamic_cast<CoNode*>(Discret().gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!cnode) dserror("Cannot find node with gid %", gid);
 
     SetNodeInitiallyActive(*cnode);
   }
@@ -14050,7 +14044,7 @@ bool CONTACT::CoInterface::BuildActiveSet(bool init)
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     const int numdof = cnode->NumDof();
 
@@ -14209,14 +14203,14 @@ bool CONTACT::CoInterface::SplitActiveDofs()
 
   // dimension check
   double dimcheck = (activedofs_->NumGlobalElements()) / (activenodes_->NumGlobalElements());
-  if (dimcheck != Dim()) dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all active row nodes
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     const int numdof = cnode->NumDof();
 
@@ -14243,7 +14237,7 @@ bool CONTACT::CoInterface::SplitActiveDofs()
 
   // check global dimensions
   if ((gcountN + gcountT) != activedofs_->NumGlobalElements())
-    dserror("ERROR: SplitActiveDofs: Splitting went wrong!");
+    dserror("SplitActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
   activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, &myNgids[0], 0, Comm()));
@@ -14275,14 +14269,14 @@ bool CONTACT::CoInterface::SplitActiveDofs()
 
   // dimension check
   dimcheck = (slipdofs_->NumGlobalElements()) / (slipnodes_->NumGlobalElements());
-  if (dimcheck != Dim()) dserror("ERROR: SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("SplitActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all slip row nodes
   for (int i = 0; i < slipnodes_->NumMyElements(); ++i)
   {
     int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     const int numdof = cnode->NumDof();
 
@@ -14453,11 +14447,10 @@ void CONTACT::CoInterface::AssembleNCoup(Epetra_Vector& gglobal)
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* mrtnode = dynamic_cast<CoNode*>(node);
 
-    if (mrtnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDMG: Node ownership inconsistency!");
+    if (mrtnode->Owner() != Comm().MyPID()) dserror("AssembleDMG: Node ownership inconsistency!");
 
     /**************************************************** nCoup-vector ******/
     if (mrtnode->CoPoroData().GetnCoup() != 0.0)
@@ -14504,11 +14497,10 @@ void CONTACT::CoInterface::AssembleNCoupLin(
   {
     int gid = activenodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleS: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleS: Node ownership inconsistency!");
 
     std::map<int, double>::iterator colcurr;
     int row = activen_->GID(i);
@@ -14574,7 +14566,7 @@ void CONTACT::CoInterface::AssembleCoupLinD(
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // Mortar matrix D derivatives
@@ -14592,7 +14584,7 @@ void CONTACT::CoInterface::AssembleCoupLinD(
       ++scurr;
 
       DRT::Node* snode = idiscret_->gNode(sgid);
-      if (!snode) dserror("ERROR: Cannot find node with gid %", sgid);
+      if (!snode) dserror("Cannot find node with gid %", sgid);
       CoNode* csnode = dynamic_cast<CoNode*>(snode);  // current slave node
 
       // Mortar matrix D derivatives
@@ -14600,7 +14592,7 @@ void CONTACT::CoInterface::AssembleCoupLinD(
       int mapsize = (int)(thisdderiv.size());
 
       if (cnode->NumDof() != csnode->NumDof())
-        dserror("ERROR: Mortar Nodes on interface must have same number of dofs!");
+        dserror("Mortar Nodes on interface must have same number of dofs!");
 
       // inner product D_{jk,c} * z_j for index j
       for (int prodj = 0; prodj < (cnode->NumDof()); ++prodj)
@@ -14626,12 +14618,12 @@ void CONTACT::CoInterface::AssembleCoupLinD(
         }
         // check for completeness of DerivD-Derivatives-iteration
         if (scolcurr != thisdderiv.end())
-          dserror("ERROR: AssembleCoupLin: Not all derivative entries of Lin(D*z_s) considered!");
+          dserror("AssembleCoupLin: Not all derivative entries of Lin(D*z_s) considered!");
       }
     }
 
     if (scurr != dderiv.end())
-      dserror("ERROR: AssembleCoupLin: Not all connected slave nodes to Lin(D*z_s) considered!");
+      dserror("AssembleCoupLin: Not all connected slave nodes to Lin(D*z_s) considered!");
   }
 
   return;
@@ -14653,7 +14645,7 @@ void CONTACT::CoInterface::AssembleCoupLinM(
   {
     int gid = snoderowmap_->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     // Mortar matrix M derivatives
@@ -14671,7 +14663,7 @@ void CONTACT::CoInterface::AssembleCoupLinM(
       ++mcurr;
 
       DRT::Node* mnode = idiscret_->gNode(mgid);
-      if (!mnode) dserror("ERROR: Cannot find node with gid %", mgid);
+      if (!mnode) dserror("Cannot find node with gid %", mgid);
       CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
       // Mortar matrix M derivatives
@@ -14679,7 +14671,7 @@ void CONTACT::CoInterface::AssembleCoupLinM(
       int mapsize = (int)(thismderiv.size());
 
       if (cnode->NumDof() != cmnode->NumDof())
-        dserror("ERROR: Mortar Nodes on interface must have same number of dofs!");
+        dserror("Mortar Nodes on interface must have same number of dofs!");
 
       // inner product M_{jl,c} * z_j for index j
       for (int prodj = 0; prodj < (cmnode->NumDof()); ++prodj)
@@ -14704,13 +14696,13 @@ void CONTACT::CoInterface::AssembleCoupLinM(
 
         // check for completeness of DerivM-Derivatives-iteration
         if (mcolcurr != thismderiv.end())
-          dserror("ERROR: AssembleCoupLin: Not all derivative entries of DerivM considered!");
+          dserror("AssembleCoupLin: Not all derivative entries of DerivM considered!");
       }
     }  // loop over all master nodes, connected to this slave node => Lin(M*z_s) finished
 
     // check for completeness of DerivM-Master-iteration
     if (mcurr != mderiv.end())
-      dserror("ERROR: AssembleCoupLin: Not all master entries of Lin(M*z_s) considered!");
+      dserror("AssembleCoupLin: Not all master entries of Lin(M*z_s) considered!");
 
     /*********************************************************************/
     /*******************       Finished with Lin(M*z_s)         **********/
@@ -14728,7 +14720,7 @@ void CONTACT::CoInterface::StoreToOld(MORTAR::StrategyBase::QuantityType type)
   {
     int gid = SlaveColNodes()->GID(j);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
 
     switch (type)
     {
@@ -14755,7 +14747,7 @@ void CONTACT::CoInterface::StoreToOld(MORTAR::StrategyBase::QuantityType type)
         break;
       }
       default:
-        dserror("ERROR: StoreDMToNodes: Unknown state std::string variable!");
+        dserror("StoreDMToNodes: Unknown state std::string variable!");
         break;
     }  // switch
   }

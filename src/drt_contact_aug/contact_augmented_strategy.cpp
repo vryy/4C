@@ -1017,7 +1017,7 @@ void CONTACT::AUG::Strategy::EvalStrContactRHS()
 
   // For self contact, slave and master sets may have changed,
   if (IsSelfContact())
-    dserror("ERROR: Augmented Lagrange Formulation: Self contact is not yet considered!");
+    dserror("Augmented Lagrange Formulation: Self contact is not yet considered!");
 
   // --- add contact force terms ----------------------------------------------
   // *** Slave side ***
@@ -1451,13 +1451,13 @@ void CONTACT::AUG::Strategy::ComputeContactStresses()
     {
       int gid = interface.SlaveRowNodes()->GID(j);
       DRT::Node* node = interface.Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
       int numdof = cnode->NumDof();
-      if (dim != numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+      if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
       // get nodal normal and tangential directions
       double* nn = cnode->MoData().n();

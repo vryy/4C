@@ -884,7 +884,7 @@ void CONTACT::CoTSILagrangeStrategy::StoreNodalQuantities(
         {
           int gid = snodemap->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!node) dserror("Cannot find node with gid %", gid);
           CoNode* cnode = dynamic_cast<CoNode*>(node);
 
           cnode->CoTSIData().ThermoLM() =

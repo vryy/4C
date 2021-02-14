@@ -170,7 +170,7 @@ void WEAR::Partitioned::TimeLoop()
              INPAR::WEAR::wear_iterstagg)
       TimeLoopIterStagg();
     else
-      dserror("ERROR: WEAR::TimeLoop: Algorithm not provided!");
+      dserror("WEAR::TimeLoop: Algorithm not provided!");
 
     alestep = false;
   }  // time loop
@@ -430,7 +430,7 @@ void WEAR::Partitioned::UpdateSpatConf()
     int err = 0;
     // update per absolute vector
     err = dispnp->Update(1.0, *disalenp, 0.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
   }
   // for shape evol in mat conf
   else if (wconf == INPAR::WEAR::wear_se_mat)
@@ -477,7 +477,7 @@ void WEAR::Partitioned::UpdateSpatConf()
   }
   else
   {
-    dserror("ERROR: Unknown wear configuration!");
+    dserror("Unknown wear configuration!");
   }
 
   return;
@@ -537,7 +537,7 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
   std::vector<Teuchos::RCP<CONTACT::CoInterface>> interface = cstrategy.ContactInterfaces();
   Teuchos::RCP<WEAR::WearInterface> winterface =
       Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interface[0]);
-  if (winterface == Teuchos::null) dserror("ERROR: Casting to WearInterface returned null!");
+  if (winterface == Teuchos::null) dserror("Casting to WearInterface returned null!");
 
   disinterface_g = Teuchos::rcp(new Epetra_Vector(*winterface->Discret().DofRowMap()), true);
   Teuchos::RCP<Epetra_Vector> auxvector =
@@ -548,7 +548,7 @@ void WEAR::Partitioned::MergeWear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
 
   int err = 0;
   err = disinterface_g->Update(1.0, *auxvector, true);
-  if (err != 0) dserror("ERROR: update wrong!");
+  if (err != 0) dserror("update wrong!");
 
   return;
 }
@@ -574,7 +574,7 @@ void WEAR::Partitioned::InterfaceDisp(
       DRT::Problem::Instance()->WearParams(), "WEARCOEFF_CONF");
 
   if (interfaces_.size() > 1)
-    dserror("ERROR: Wear algorithm not able to handle more than 1 interface yet!");
+    dserror("Wear algorithm not able to handle more than 1 interface yet!");
 
   //------------------------------------------------
   // Wear coefficient constant in material config: -
@@ -629,7 +629,7 @@ void WEAR::Partitioned::InterfaceDisp(
   //------------------------------------------------
   else
   {
-    dserror("ERROR: Chosen wear configuration not supported!");
+    dserror("Chosen wear configuration not supported!");
   }
 
   return;
@@ -642,7 +642,7 @@ void WEAR::Partitioned::InterfaceDisp(
 void WEAR::Partitioned::WearSpatialMasterMap(
     Teuchos::RCP<Epetra_Vector>& disinterface_s, Teuchos::RCP<Epetra_Vector>& disinterface_m)
 {
-  if (disinterface_s == Teuchos::null) dserror("ERROR: no slave wear for mapping!");
+  if (disinterface_s == Teuchos::null) dserror("no slave wear for mapping!");
 
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
@@ -652,7 +652,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
   {
     Teuchos::RCP<WEAR::WearInterface> winterface =
         Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfacesMat_[i]);
-    if (winterface == Teuchos::null) dserror("ERROR: Casting to WearInterface returned null!");
+    if (winterface == Teuchos::null) dserror("Casting to WearInterface returned null!");
 
     Teuchos::RCP<Epetra_Map> masterdofs = interfaces_[i]->MasterRowDofs();
     Teuchos::RCP<Epetra_Map> slavedofs = interfaces_[i]->SlaveRowDofs();
@@ -663,7 +663,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     // different wear coefficients on both sides...
     double wearcoeff_s = interfaces_[i]->InterfaceParams().get<double>("WEARCOEFF", 0.0);
     double wearcoeff_m = interfaces_[i]->InterfaceParams().get<double>("WEARCOEFF_MASTER", 0.0);
-    if (wearcoeff_s < 1e-12) dserror("ERROR: wcoeff negative!!!");
+    if (wearcoeff_s < 1e-12) dserror("wcoeff negative!!!");
 
     double fac = wearcoeff_m / (wearcoeff_s);
 
@@ -690,7 +690,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     {
       int gid = masternodesmat->GID(i);
       DRT::Node* node = winterface->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
       if (cnode->IsSlave() == false)
@@ -711,7 +711,7 @@ void WEAR::Partitioned::WearSpatialMasterMap(
     {
       int gid = winterface->MasterColElements()->GID(j);
       DRT::Element* ele = winterface->Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
+      if (!ele) dserror("Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
       Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
@@ -756,12 +756,12 @@ void WEAR::Partitioned::WearSpatialMaster(Teuchos::RCP<Epetra_Vector>& disinterf
     {
       int gid = interfaces_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interfaces_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
       // be aware of problem dimension
       int numdof = frinode->NumDof();
-      if (dim_ != numdof) dserror("ERROR: Inconsistency Dim <-> NumDof");
+      if (dim_ != numdof) dserror("Inconsistency Dim <-> NumDof");
 
       // nodal normal vector and wear
       double nn[3];
@@ -837,12 +837,12 @@ void WEAR::Partitioned::WearSpatialSlave(Teuchos::RCP<Epetra_Vector>& disinterfa
     {
       int gid = interfaces_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interfaces_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
       // be aware of problem dimension
       int numdof = frinode->NumDof();
-      if (dim_ != numdof) dserror("ERROR: Inconsistency Dim <-> NumDof");
+      if (dim_ != numdof) dserror("Inconsistency Dim <-> NumDof");
 
       // nodal normal vector and wear
       double nn[3];
@@ -1000,7 +1000,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
   {
     Teuchos::RCP<WEAR::WearInterface> winterface =
         Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfaces_[m]);
-    if (winterface == Teuchos::null) dserror("ERROR: Casting to WearInterface returned null!");
+    if (winterface == Teuchos::null) dserror("Casting to WearInterface returned null!");
 
     // get slave row dofs as map
     Teuchos::RCP<Epetra_Map> slavedofs = winterface->SlaveRowDofs();
@@ -1023,17 +1023,17 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
     {
       int gid = winterface->SlaveRowNodes()->GID(j);
       DRT::Node* node = winterface->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
       int gidm = interfacesMat_[m]->SlaveRowNodes()->GID(j);
       DRT::Node* nodem = interfacesMat_[m]->Discret().gNode(gidm);
-      if (!nodem) dserror("ERROR: Cannot find node with gid %", gidm);
+      if (!nodem) dserror("Cannot find node with gid %", gidm);
       CONTACT::FriNode* frinodem = dynamic_cast<CONTACT::FriNode*>(nodem);
 
       // be aware of problem dimension
       int numdof = frinode->NumDof();
-      if (dim_ != numdof) dserror("ERROR: Inconsistency Dim <-> NumDof");
+      if (dim_ != numdof) dserror("Inconsistency Dim <-> NumDof");
 
       // nodal normal vector and wear
       double nn[3];
@@ -1085,7 +1085,7 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
     {
       int gid = interfacesMat_[m]->SlaveColElements()->GID(j);
       DRT::Element* ele = interfacesMat_[m]->Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
+      if (!ele) dserror("Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
       Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
@@ -1131,14 +1131,14 @@ void WEAR::Partitioned::WearPullBackSlave(Teuchos::RCP<Epetra_Vector>& disinterf
       // different wear coefficients on both sides...
       double wearcoeff_s = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF", 0.0);
       double wearcoeff_m = interfaces_[0]->InterfaceParams().get<double>("WEARCOEFF_MASTER", 0.0);
-      if (wearcoeff_s < 1e-12) dserror("ERROR: wcoeff negative!!!");
+      if (wearcoeff_s < 1e-12) dserror("wcoeff negative!!!");
 
       double fac = wearcoeff_s / (wearcoeff_s + wearcoeff_m);
       disinterface_s->Scale(fac);
     }
     else
     {
-      dserror("ERROR: wrong wear type!");
+      dserror("wrong wear type!");
     }
   }
 
@@ -1163,11 +1163,11 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
   {
     Teuchos::RCP<WEAR::WearInterface> winterface =
         Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfaces_[m]);
-    if (winterface == Teuchos::null) dserror("ERROR: Casting to WearInterface returned null!");
+    if (winterface == Teuchos::null) dserror("Casting to WearInterface returned null!");
 
     Teuchos::RCP<WEAR::WearInterface> winterfaceMat =
         Teuchos::rcp_dynamic_cast<WEAR::WearInterface>(interfacesMat_[m]);
-    if (winterfaceMat == Teuchos::null) dserror("ERROR: Casting to WearInterface returned null!");
+    if (winterfaceMat == Teuchos::null) dserror("Casting to WearInterface returned null!");
 
     // get slave row dofs as map
     Teuchos::RCP<Epetra_Map> masterdofs = winterface->MasterRowDofs();
@@ -1190,17 +1190,17 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     {
       int gid = winterface->MasterRowNodes()->GID(j);
       DRT::Node* node = winterface->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
       int gidm = interfacesMat_[m]->MasterRowNodes()->GID(j);
       DRT::Node* nodem = interfacesMat_[m]->Discret().gNode(gidm);
-      if (!nodem) dserror("ERROR: Cannot find node with gid %", gidm);
+      if (!nodem) dserror("Cannot find node with gid %", gidm);
       CONTACT::FriNode* frinodem = dynamic_cast<CONTACT::FriNode*>(nodem);
 
       // be aware of problem dimension
       int numdof = frinode->NumDof();
-      if (dim_ != numdof) dserror("ERROR: Inconsistency Dim <-> NumDof");
+      if (dim_ != numdof) dserror("Inconsistency Dim <-> NumDof");
 
       // nodal normal vector and wear
       double nn[3];
@@ -1251,7 +1251,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     {
       int gid = masternodes->GID(i);
       DRT::Node* node = winterface->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
       if (cnode->IsSlave() == false)
@@ -1273,7 +1273,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     {
       int gid = masternodesmat->GID(i);
       DRT::Node* node = winterfaceMat->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
       if (cnode->IsSlave() == false)
@@ -1293,7 +1293,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     {
       int gid = winterface->MasterColElements()->GID(j);
       DRT::Element* ele = winterface->Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
+      if (!ele) dserror("Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
       Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
@@ -1310,7 +1310,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     {
       int gid = winterfaceMat->MasterColElements()->GID(j);
       DRT::Element* ele = winterfaceMat->Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find ele with gid %", gid);
+      if (!ele) dserror("Cannot find ele with gid %", gid);
       CONTACT::CoElement* cele = dynamic_cast<CONTACT::CoElement*>(ele);
 
       Teuchos::RCP<CONTACT::CoIntegrator> integrator = Teuchos::rcp(
@@ -1350,7 +1350,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     }
     else if (wtype == INPAR::WEAR::wear_intstate)
     {
-      dserror("ERROR: not working yet!");
+      dserror("not working yet!");
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*masterdofs));
 
       // solve with default solver
@@ -1362,7 +1362,7 @@ void WEAR::Partitioned::WearPullBackMaster(Teuchos::RCP<Epetra_Vector>& disinter
     }
     else
     {
-      dserror("ERROR: wrong wear type!");
+      dserror("wrong wear type!");
     }
   }
 
@@ -1404,11 +1404,11 @@ void WEAR::Partitioned::UpdateMatConf()
     // just information for user
     int err = 0;
     err = delta_ale_->Update(-1.0, *ale_i_, 0.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
     err = delta_ale_->Update(1.0, *AleField().Dispnp(), 1.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
     err = ale_i_->Update(1.0, *AleField().Dispnp(), 0.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
 
     // important vector to update mat conf
     Teuchos::RCP<Epetra_Vector> dismat_struct =
@@ -1417,16 +1417,16 @@ void WEAR::Partitioned::UpdateMatConf()
     LINALG::Export(*disalenp, *dismat_struct);
 
     err = dismat->Update(1.0, *dismat_struct, 0.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
   }
   // if shape evol. in spat conf: advection map!
   else if (wconf == INPAR::WEAR::wear_se_sp)
   {
     int err = 0;
     err = disalenp->Update(-1.0, *dispnp, 1.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
     err = delta_ale_->Update(1.0, *StructureToAle(disalenp), 0.0);
-    if (err != 0) dserror("ERROR: update wrong!");
+    if (err != 0) dserror("update wrong!");
 
     // loop over all row nodes to fill graph
     for (int k = 0; k < StructureField()->Discretization()->NumMyRowNodes(); ++k)
@@ -1542,7 +1542,7 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
         WEAR::UTILS::av<DRT::Element::tri6>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
-        dserror("ERROR: shape function not supported!");
+        dserror("shape function not supported!");
 
       // checks if the spatial coordinate lies within this element
       // if yes, returns the material displacements
@@ -1582,7 +1582,7 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
         WEAR::UTILS::av<DRT::Element::tet10>(
             actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
       else
-        dserror("ERROR: element type not supported!");
+        dserror("element type not supported!");
 
       // if parameter space coord. 'e' does not lie within any element (i.e. found = false),
       // then 'gele = jele' is the element lying closest near the considered spatial point.
@@ -1638,7 +1638,7 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
       WEAR::UTILS::av<DRT::Element::tri6>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else
-      dserror("ERROR: shape function not supported!");
+      dserror("shape function not supported!");
   }
   else
   {
@@ -1658,7 +1658,7 @@ void WEAR::Partitioned::AdvectionMap(double* Xtarget,  // out
       WEAR::UTILS::av<DRT::Element::tet10>(
           actele, Xtarget, Xsource, dispsource, disptarget, la[0].lm_, found, e);
     else
-      dserror("ERROR: element type not supported!");
+      dserror("element type not supported!");
   }
 
   // bye
@@ -1722,7 +1722,7 @@ void WEAR::Partitioned::AleStep(Teuchos::RCP<Epetra_Vector> idisale_global)
     AleField().TimeStep(ALE::UTILS::MapExtractor::dbc_set_wear);
   }
   else
-    dserror("ERROR: Chosen wear configuration not supported!");
+    dserror("Chosen wear configuration not supported!");
 
   return;
 }

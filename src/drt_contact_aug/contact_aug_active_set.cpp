@@ -56,7 +56,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
       {
         int gid = interface.SlaveRowNodes()->GID(j);
         DRT::Node* node = interface.Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CoNode* cnode = static_cast<CoNode*>(node);
 
         /* The nested active set strategy cannot deal with the case of
@@ -68,7 +68,7 @@ bool CONTACT::AUG::ActiveSet::SkipUpdate() const
          * updates the active set after EACH Newton step, see below, and thus
          * would always set the corresponding nodes to INACTIVE.) */
         if (cnode->Active() && !cnode->HasSegment())
-          dserror("ERROR: Active node %i without any segment/cell attached", cnode->Id());
+          dserror("Active node %i without any segment/cell attached", cnode->Id());
       }
     }
     return true;
@@ -258,7 +258,7 @@ CONTACT::AUG::ActiveSet::Status CONTACT::AUG::ActiveSet::UpdateInitialStatus(
       {
         const int sgid = my_slave_gids[j];
         CoNode* cnode = dynamic_cast<CoNode*>(interface.Discret().gNode(sgid));
-        if (!cnode) dserror("ERROR: Cannot find node with gid %", sgid);
+        if (!cnode) dserror("Cannot find node with gid %", sgid);
 
         const std::pair<int, bool>& active_pair = my_active_node_list[j];
         if (cnode->Id() != active_pair.first) dserror("GID mismatch!");

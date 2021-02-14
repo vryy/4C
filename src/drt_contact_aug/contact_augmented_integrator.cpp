@@ -42,8 +42,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Mort
     MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  if (cparams_ptr.is_null())
-    dserror("ERROR: The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
@@ -60,7 +59,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivCell3DAuxPlane(MORTAR::Mort
         "ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of "
         "MortarElement pair!");
   if (cell == Teuchos::null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+    dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
   if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror(
@@ -96,7 +95,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle3D(MORTAR::MortarElement
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3D: Null pointer!");
+  if (!mynodes) dserror("IntegrateDerivCell3D: Null pointer!");
 
   // check input data
   for (unsigned test = 0; test < meles.size(); ++test)
@@ -154,8 +153,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::Mortar
 void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSlaveElement(MORTAR::MortarElement& sele,
     const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
-  if (cparams_ptr.is_null())
-    dserror("ERROR: The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
 
   integrator_ = IntegratorGeneric::Create(Dim(), sele.Shape(), sele.Shape(), *cparams_ptr, this);
   integrator_->IntegrateDerivSlaveElement(sele);
@@ -172,28 +170,27 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarEle
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  if (cparams_ptr.is_null())
-    dserror("ERROR: The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
+    dserror("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == MORTAR::MortarElement::line3 ||
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("ERROR: Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
+    dserror("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
 
   // check for problem dimension
   dsassert(Dim() == 2, "ERROR: 2D integration method called for non-2D problem");
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+    dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
-    dserror("ERROR: IntegrateAndDerivSegment called with infeasible slave limits!");
+    dserror("IntegrateAndDerivSegment called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
-    dserror("ERROR: IntegrateAndDerivSegment called with infeasible master limits!");
+    dserror("IntegrateAndDerivSegment called with infeasible master limits!");
 
   GlobalTimeMonitor* timer_ptr = cparams_ptr->GetTimer<GlobalTimeID>(0);
   timer_ptr->start(GlobalTimeID::IntegrateDerivSegment2D);
@@ -217,25 +214,24 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
   // *********************************************************************
   // Check integrator input for non-reasonable quantities
   // *********************************************************************
-  if (cparams_ptr.is_null())
-    dserror("ERROR: The contact parameter interface pointer is undefined!");
+  if (cparams_ptr.is_null()) dserror("The contact parameter interface pointer is undefined!");
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
+    dserror("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // check for problem dimension
-  if (Dim() != 2) dserror("ERROR: 2D integration method called for non-2D problem");
+  if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // check input data
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("ERROR: IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
+      dserror("IntegrateAndDerivSegment called on a wrong type of MortarElement pair!");
   }
 
   // number of nodes (slave) and problem dimension
@@ -247,7 +243,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivEle2D(MORTAR::MortarElement
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 

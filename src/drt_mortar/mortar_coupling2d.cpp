@@ -91,9 +91,9 @@ bool MORTAR::Coupling2d::Project()
 
   // get slave and master element nodes
   DRT::Node** mysnodes = SlaveElement().Nodes();
-  if (!mysnodes) dserror("ERROR: IntegrateOverlap: Null pointer for mysnodes!");
+  if (!mysnodes) dserror("IntegrateOverlap: Null pointer for mysnodes!");
   DRT::Node** mymnodes = MasterElement().Nodes();
-  if (!mymnodes) dserror("ERROR: IntegrateOverlap: Null pointer for mymnodes!");
+  if (!mymnodes) dserror("IntegrateOverlap: Null pointer for mymnodes!");
 
   // project slave nodes onto master element
   for (int i = 0; i < SlaveElement().NumNode(); ++i)
@@ -270,7 +270,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << (MasterElement().Nodes()[1])->Id() << std::endl;
       std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << std::endl;
       std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << std::endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
+      dserror("IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
           MasterElement().Id());
     }
   }
@@ -285,7 +285,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << (MasterElement().Nodes()[1])->Id() << std::endl;
       std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << std::endl;
       std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << std::endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
+      dserror("IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
           MasterElement().Id());
     }
   }
@@ -300,7 +300,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << (MasterElement().Nodes()[1])->Id() << std::endl;
       std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << std::endl;
       std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << std::endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
+      dserror("IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
           MasterElement().Id());
     }
   }
@@ -315,7 +315,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << (MasterElement().Nodes()[1])->Id() << std::endl;
       std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << std::endl;
       std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << std::endl;
-      dserror("ERROR: IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
+      dserror("IntegrateOverlap: Significant overlap ignored S%i M%i!", SlaveElement().Id(),
           MasterElement().Id());
     }
   }
@@ -387,7 +387,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                   << (MasterElement().Nodes()[1])->Id() << std::endl;
         std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << std::endl;
         std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << std::endl;
-        dserror("ERROR: DetectOverlap: Unknown overlap case found in global case 6!");
+        dserror("DetectOverlap: Unknown overlap case found in global case 6!");
       }
     }
 
@@ -436,7 +436,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                   << (MasterElement().Nodes()[1])->Id() << std::endl;
         std::cout << "SPROJXI_0: " << sprojxi[0] << " SPROJXI_1: " << sprojxi[1] << std::endl;
         std::cout << "MPROJXI_0: " << mprojxi[0] << " MPROJXI_1: " << mprojxi[1] << std::endl;
-        dserror("ERROR: DetectOverlap: Unknown overlap case found in global case 6!");
+        dserror("DetectOverlap: Unknown overlap case found in global case 6!");
       }
     }
   }
@@ -504,7 +504,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << MasterElement().NodeIds()[1] << std::endl;
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
-      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+      dserror("IntegrateOverlap: Unknown overlap case found!");
     }
   }
 
@@ -527,7 +527,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << MasterElement().NodeIds()[1] << std::endl;
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
-      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+      dserror("IntegrateOverlap: Unknown overlap case found!");
     }
   }
 
@@ -730,7 +730,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << MasterElement().NodeIds()[1] << std::endl;
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
-      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+      dserror("IntegrateOverlap: Unknown overlap case found!");
     }
     if (sprojxi[0] < -1. || mprojxi[0] > 1.)
       overlap = false;
@@ -755,7 +755,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
                 << MasterElement().NodeIds()[1] << std::endl;
       std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
       std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
-      dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+      dserror("IntegrateOverlap: Unknown overlap case found!");
     }
     if (sprojxi[0] > 1.)
       overlap = false;
@@ -778,7 +778,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
               << std::endl;
     std::cout << "s0: " << s0hasproj << " s1: " << s1hasproj << std::endl;
     std::cout << "m0: " << m0hasproj << " m1: " << m1hasproj << std::endl;
-    dserror("ERROR: IntegrateOverlap: Unknown overlap case found!");
+    dserror("IntegrateOverlap: Unknown overlap case found!");
   }
 
   // check for 1:1 node projections and for infeasible limits
@@ -793,7 +793,7 @@ bool MORTAR::Coupling2d::DetectOverlap()
     {
       //      std::cout << "Slave: " << sxia << " " << sxib << std::endl;
       //      std::cout << "Master: " << mxia << " " << mxib << std::endl;
-      //      dserror("ERROR: IntegrateOverlap: Determined infeasible limits!");
+      //      dserror("IntegrateOverlap: Determined infeasible limits!");
       std::cout << "WARNING: IntegrateOverlap: Determined infeasible limits!" << std::endl;
       overlap = false;
     }
@@ -818,7 +818,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
+    dserror("IntegrateOverlap called without specific shape function defined!");
 
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -834,11 +834,11 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   // is integrated that contributes to this slave node)
   int nnodes = SlaveElement().NumNode();
   DRT::Node** mynodes = SlaveElement().Nodes();
-  if (!mynodes) dserror("ERROR: Null pointer!");
+  if (!mynodes) dserror("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
     MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mycnode) dserror("ERROR: Null pointer!");
+    if (!mycnode) dserror("Null pointer!");
     mycnode->HasSegment() = true;
   }
 
@@ -875,7 +875,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   // *******************************************************************
   else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
   {
-    dserror("ERROR: Piecewise linear LM interpolation not (yet?) implemented in 2D");
+    dserror("Piecewise linear LM interpolation not (yet?) implemented in 2D");
   }
 
   // *******************************************************************
@@ -894,7 +894,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInter
   // *******************************************************************
   else
   {
-    dserror("ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    dserror("IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
   }
 
   /*----------------------------------------------------------------------
@@ -1086,7 +1086,7 @@ void MORTAR::Coupling2dManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("ERROR: Invalid type of numerical integration");
+    dserror("Invalid type of numerical integration");
   }
 
   // free memory of consistent dual shape function coefficient matrix
@@ -1119,7 +1119,7 @@ bool MORTAR::Coupling2dManager::EvaluateCoupling(
   // Error
   //*********************************
   else
-    dserror("ERROR: chose contact algorithm not supported!");
+    dserror("chose contact algorithm not supported!");
 
   return true;
 }

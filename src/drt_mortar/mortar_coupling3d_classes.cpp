@@ -37,8 +37,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement
   // discretization, so just skip that part.
   if (ParShape() != DRT::Element::nurbs9)
     for (int i = 0; i < numnode; ++i)
-      if (nodes[i]->Id() != nodeids[i])
-        dserror("ERROR: IntElement: Inconsistency Nodes and NodeIds!");
+      if (nodes[i]->Id() != nodeids[i]) dserror("IntElement: Inconsistency Nodes and NodeIds!");
 
   nodes_.clear();
   nodes_ptr_.clear();
@@ -67,7 +66,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
   // outdated (popp 05/2016)
   // - affine mapping is only correct for undistorted planar elements
   // - in general we need nonlinear projection procedure
-  dserror("ERROR: MapToParent() function is outdated");
+  dserror("MapToParent() function is outdated");
 
   // *********************************************************************
   // do mapping for given IntElement and Element
@@ -103,7 +102,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -146,7 +145,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -183,7 +182,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -202,7 +201,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -221,7 +220,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -252,7 +251,7 @@ bool MORTAR::IntElement::MapToParent(const double* xi, double* parxi)
 
   // ********************************************************* invalid ***
   else
-    dserror("ERROR: MapToParent called for invalid parent element type!");
+    dserror("MapToParent called for invalid parent element type!");
   // *********************************************************************
 
   return true;
@@ -267,7 +266,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
   // outdated (popp 05/2016)
   // - affine mapping is only correct for undistorted planar elements
   // - in general we need nonlinear projection procedure
-  dserror("ERROR: MapToParent() function is outdated");
+  dserror("MapToParent() function is outdated");
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator CI;
@@ -314,7 +313,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -365,7 +364,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -410,7 +409,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -429,7 +428,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -448,7 +447,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
       }
       default:
       {
-        dserror("ERROR: MapToParent: Invalid local IntElement Id!");
+        dserror("MapToParent: Invalid local IntElement Id!");
         break;
       }
     }
@@ -472,7 +471,7 @@ bool MORTAR::IntElement::MapToParent(const std::vector<GEN::pairedvector<int, do
 
   // ********************************************************* invalid ***
   else
-    dserror("ERROR: MapToParent called for invalid parent element type!");
+    dserror("MapToParent called for invalid parent element type!");
   // *********************************************************************
 
   return true;
@@ -611,7 +610,7 @@ MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, do
                 << std::endl;
       std::cout << "v1 = " << Coords()(0, 1) << "  " << Coords()(1, 1) << "  " << Coords()(2, 1)
                 << std::endl;
-      dserror("ERROR: INTCELL has no length!");
+      dserror("INTCELL has no length!");
     }
   }
 
@@ -632,8 +631,8 @@ MORTAR::IntCell::IntCell(int id, int nvertices, LINALG::Matrix<3, 3>& coords, do
 bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int inttype)
 {
   // check input
-  if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-  if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+  if (!xi) dserror("LocalToGlobal called with xi=NULL");
+  if (!globcoord) dserror("LocalToGlobal called with globcoord=NULL");
 
   if (Shape() == DRT::Element::tri3 or Shape() == DRT::Element::line2)
   {
@@ -664,7 +663,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
       else if (inttype == 2)
       {
         if (Shape() == DRT::Element::line2)
-          dserror("ERROR: for line2 elements only 1 parameter space coordinate");
+          dserror("for line2 elements only 1 parameter space coordinate");
 
         // use shape function derivatives eta for interpolation
         globcoord[0] += deriv(i, 1) * Coords()(0, i);
@@ -672,7 +671,7 @@ bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
         globcoord[2] += deriv(i, 1) * Coords()(2, i);
       }
       else
-        dserror("ERROR: Invalid interpolation type requested, only 0,1,2!");
+        dserror("Invalid interpolation type requested, only 0,1,2!");
     }
   }
 
@@ -704,7 +703,7 @@ void MORTAR::IntCell::Print()
 bool MORTAR::IntCell::EvaluateShape(
     const double* xi, LINALG::Matrix<3, 1>& val, LINALG::Matrix<3, 2>& deriv)
 {
-  if (!xi) dserror("ERROR: EvaluateShape (IntCell) called with xi=NULL");
+  if (!xi) dserror("EvaluateShape (IntCell) called with xi=NULL");
 
   // 3noded triangular element
   if (Shape() == DRT::Element::tri3)
@@ -729,7 +728,7 @@ bool MORTAR::IntCell::EvaluateShape(
 
   // unknown case
   else
-    dserror("ERROR: EvaluateShape (IntCell) called for type != tri3/line2");
+    dserror("EvaluateShape (IntCell) called for type != tri3/line2");
 
   return true;
 }
@@ -748,7 +747,7 @@ double MORTAR::IntCell::Jacobian()
     jac = Area() * 0.5;
   // unknown case
   else
-    dserror("ERROR: Jacobian (IntCell) called for unknown ele type!");
+    dserror("Jacobian (IntCell) called for unknown ele type!");
 
   return jac;
 }
@@ -898,7 +897,7 @@ void MORTAR::IntCell::DerivJacobian(GEN::pairedvector<int, double>& derivjac)
 
   // unknown case
   else
-    dserror("ERROR: DerivJacobian (IntCell) called for unknown ele type!");
+    dserror("DerivJacobian (IntCell) called for unknown ele type!");
 
   return;
 }

@@ -66,7 +66,7 @@ void CONTACT::ConstitutivelawInterface::AssembleRegNormalForces(
   {
     int gid = SlaveRowNodes()->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
     int dim = cnode->NumDof();

@@ -75,12 +75,12 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd_->ReplaceDiagonalValues(*diag);
   // we cannot use this check, as we deliberately replaced zero entries
-  // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  // if (err>0) dserror("ReplaceDiagonalValues: Missing diagonal entry!");
 
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
@@ -306,7 +306,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
 
   Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
   LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -317,7 +317,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
   // re-insert inverted diagonal into invd
   err = invd_->ReplaceDiagonalValues(*diag);
   // we cannot use this check, as we deliberately replaced zero entries
-  // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  // if (err>0) dserror("ReplaceDiagonalValues: Missing diagonal entry!");
 
   // do the multiplication M^ = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd_, false, *mmatrix_, false, false, false, true);
@@ -809,7 +809,7 @@ void CONTACT::MtLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Sp
   // invalid system types
   //**********************************************************************
   else
-    dserror("ERROR: Invalid system type in SaddlePontSolve");
+    dserror("Invalid system type in SaddlePontSolve");
 
   return;
 }
