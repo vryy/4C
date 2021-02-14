@@ -48,10 +48,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
   // read and check meshtying input parameters
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "Checking meshtying input parameters...........";
-    fflush(stdout);
-  }
+    std::cout << "Checking meshtying input parameters..........." << std::endl;
+
   ReadAndCheckInput(mtparams, discret);
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
@@ -62,17 +60,13 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // and detect groups of matching conditions
   // for each group, create a contact interface and store it
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "Building meshtying interface(s)...............";
-    fflush(stdout);
-  }
+    std::cout << "Building meshtying interface(s)..............." << std::endl;
 
   std::vector<DRT::Condition*> contactconditions(0);
   discret.GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
-  if ((int)contactconditions.size() < 2)
-    dserror("ERROR: Not enough contact conditions in discretization");
+  if ((int)contactconditions.size() < 2) dserror("Not enough contact conditions in discretization");
 
   // find all pairs of matching meshtying conditions
   // there is a maximum of (conditions / 2) groups
@@ -96,7 +90,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
@@ -105,7 +99,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
       const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
@@ -113,7 +107,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     }
 
     // now we should have found a group of conds
-    if (!foundit) dserror("ERROR: Cannot find matching contact condition for id %d", groupid1);
+    if (!foundit) dserror("Cannot find matching contact condition for id %d", groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
@@ -152,12 +146,12 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown mortar side qualifier!");
+        dserror("MtManager: Unknown mortar side qualifier!");
       }
     }
 
-    if (!hasslave) dserror("ERROR: Slave side missing in contact condition group!");
-    if (!hasmaster) dserror("ERROR: Master side missing in contact condition group!");
+    if (!hasslave) dserror("Slave side missing in contact condition group!");
+    if (!hasmaster) dserror("Master side missing in contact condition group!");
 
     // find out which sides are initialized as Active
     std::vector<const std::string*> active((int)currentgroup.size());
@@ -172,27 +166,24 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         if (*active[j] == "Active")
           isactive[j] = true;
         else if (*active[j] == "Inactive")
-          dserror("ERROR: Slave side must be active for meshtying!");
+          dserror(" Slave side must be active for meshtying!");
         else
-          dserror(
-              "ERROR: Unknown initialization qualifier for slave side of mortar meshtying "
-              "interface!");
+          dserror("Unknown initialization qualifier for slave side of mortar meshtying interface!");
       }
       else if (*sides[j] == "Master")
       {
         // master sides must NOT be initialized as "Active" as this makes no sense
         if (*active[j] == "Active")
-          dserror("ERROR: Master side cannot be active!");
+          dserror("Master side cannot be active!");
         else if (*active[j] == "Inactive")
           isactive[j] = false;
         else
           dserror(
-              "ERROR: Unknown initialization qualifier for master side of mortar meshtying "
-              "interface!");
+              "Unknown initialization qualifier for master side of mortar meshtying interface!");
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown contact side qualifier!");
+        dserror("MtManager: Unknown contact side qualifier!");
       }
     }
 
@@ -213,14 +204,14 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
-      if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
+      if (!nodeids) dserror("Condition does not have Node Ids");
       for (int k = 0; k < (int)(*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!discret.NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = discret.gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
 
         // create MortarNode object
         Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
@@ -336,10 +327,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // create the solver strategy object
   // and pass all necessary data to it
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "Building meshtying strategy object............";
-    fflush(stdout);
-  }
+    std::cout << "Building meshtying strategy object............" << std::endl;
 
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
 
@@ -364,7 +352,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.DofRowMap(), discret.NodeRowMap(),
         mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
-    dserror("ERROR: Unrecognized strategy");
+    dserror("Unrecognized strategy");
 
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
