@@ -155,9 +155,10 @@ namespace CONTACT
     */
     bool ParRedist() const
     {
-      INPAR::MORTAR::ParRedist partype = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
-      if (partype != INPAR::MORTAR::parredist_none)
+      INPAR::MORTAR::ParallelRedist partype =
+          Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
+              Params().sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
+      if (partype != INPAR::MORTAR::ParallelRedist::redist_none)
         return true;
       else
         return false;

@@ -1484,9 +1484,9 @@ void STR::TimInt::UpdateStepContactVUM()
           Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
       Teuchos::RCP<LINALG::SparseMatrix> D =
           Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+      if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
               cmtbridge_->GetStrategy().Params().sublist("PARALLEL REDISTRIBUTION"),
-              "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+              "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       {
         M = MORTAR::MatrixColTransform(Mmat, notredistmasterdofmap);
         D = MORTAR::MatrixColTransform(Dmat, notredistslavedofmap);

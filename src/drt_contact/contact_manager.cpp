@@ -696,21 +696,21 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   const Teuchos::ParameterList& mortarParallelRedistParams =
       mortar.sublist("PARALLEL REDISTRIBUTION");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic &&
       mortarParallelRedistParams.get<double>("MAX_BALANCE") < 1.0)
     dserror(
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
 
   if (problemtype == prb_tsi &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror("Parallel redistribution not yet implemented for TSI problems");
 
   // *********************************************************************
@@ -906,8 +906,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     }
 
     if (self == true &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-            mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+        Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+            "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       dserror("Self contact and parallel redistribution not yet compatible");
 
     if (DRT::INPUT::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
@@ -1013,8 +1013,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
               INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-              mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+      if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+              "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror(

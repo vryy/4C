@@ -127,13 +127,13 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
               INPAR::CONTACT::system_condensed_lagmult))
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic and
       onlymeshtying)
     dserror("Dynamic parallel redistribution not possible for meshtying");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     dserror(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
@@ -169,8 +169,8 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
     dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror("Crosspoints and parallel redistribution not yet compatible");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
@@ -271,8 +271,8 @@ void MORTAR::STRATEGY::FactoryMT::ReadAndCheckInput(Teuchos::ParameterList& para
     dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
   if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror(
         "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers to
                                                                        // Parent Elements, which are

@@ -513,8 +513,8 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
 {
   const Teuchos::ParameterList& input =
       DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-  const INPAR::MORTAR::ParRedist parallelRedist =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST");
+  const INPAR::MORTAR::ParallelRedist parallelRedist =
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST");
 
   /* Finalize the interface construction
    *
@@ -525,7 +525,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
    */
   {
     bool isFinalDistribution = false;
-    if (parallelRedist == INPAR::MORTAR::parredist_none or comm_->NumProc() == 1)
+    if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm_->NumProc() == 1)
       isFinalDistribution = true;
 
     interface->FillComplete(isFinalDistribution);
@@ -545,7 +545,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
 
   // check for parallel redistribution
   bool parredist = false;
-  if (parallelRedist != INPAR::MORTAR::parredist_none) parredist = true;
+  if (parallelRedist != INPAR::MORTAR::ParallelRedist::redist_none) parredist = true;
 
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
@@ -738,8 +738,8 @@ void ADAPTER::CouplingNonLinMortar::SetupSpringDashpot(Teuchos::RCP<DRT::Discret
     bool isFinalDistribution = false;
     const Teuchos::ParameterList& input =
         DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-    if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") ==
-            INPAR::MORTAR::parredist_none or
+    if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") ==
+            INPAR::MORTAR::ParallelRedist::redist_none or
         comm_->NumProc() == 1)
       isFinalDistribution = true;
 
@@ -825,8 +825,8 @@ void ADAPTER::CouplingNonLinMortar::IntegrateLinD(const std::string& statename,
   bool parredist = false;
   const Teuchos::ParameterList& input =
       DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
-      INPAR::MORTAR::parredist_none)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
+      INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
 
   // only for parallel redistribution case
@@ -903,8 +903,8 @@ void ADAPTER::CouplingNonLinMortar::MatrixRowColTransform()
   bool parredist = false;
   const Teuchos::ParameterList& input =
       DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
-      INPAR::MORTAR::parredist_none)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
+      INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
 
   // transform everything back to old distribution

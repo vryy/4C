@@ -139,10 +139,13 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   IntParameter("MIN_ELEPROC", 0,
       "Minimum no. of elements per processor for parallel redistribution", &parallelRedist);
 
-  setStringToIntegralParameter<int>("PARALLEL_REDIST", "Static", "Type of redistribution algorithm",
+  setStringToIntegralParameter<ParallelRedist>("PARALLEL_REDIST", "Static",
+      "Type of redistribution algorithm",
       tuple<std::string>("None", "none", "No", "no", "Static", "static", "Dynamic", "dynamic"),
-      tuple<int>(parredist_none, parredist_none, parredist_none, parredist_none, parredist_static,
-          parredist_static, parredist_dynamic, parredist_dynamic),
+      tuple<ParallelRedist>(ParallelRedist::redist_none, ParallelRedist::redist_none,
+          ParallelRedist::redist_none, ParallelRedist::redist_none, ParallelRedist::redist_static,
+          ParallelRedist::redist_static, ParallelRedist::redist_dynamic,
+          ParallelRedist::redist_dynamic),
       &parallelRedist);
 
   BoolParameter("PRINT_DISTRIBUTION", "Yes",

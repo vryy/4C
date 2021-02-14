@@ -69,7 +69,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       pgmdofrowmap_(Teuchos::null),
       pgsmdofrowmap_(Teuchos::null),
       pgsdirichtoggle_(Teuchos::null),
-      partype_(INPAR::MORTAR::parredist_none),
+      partype_(INPAR::MORTAR::ParallelRedist::redist_none),
       initial_elecolmap_(Teuchos::null),
       dmatrix_(Teuchos::null),
       mmatrix_(Teuchos::null),
@@ -195,7 +195,7 @@ CONTACT::CoAbstractStrategy::CoAbstractStrategy(
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
   data_ptr_->ConstrDirection() = DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
       params, "CONSTRAINT_DIRECTIONS");
-  data_ptr_->ParType() = DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+  data_ptr_->ParType() = Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
       params.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
 
   INPAR::CONTACT::FrictionType ftype =
@@ -249,11 +249,11 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
 
   switch (WhichParRedist())
   {
-    case INPAR::MORTAR::parredist_none:
+    case INPAR::MORTAR::ParallelRedist::redist_none:
     {
       break;
     }
-    case INPAR::MORTAR::parredist_static:
+    case INPAR::MORTAR::ParallelRedist::redist_static:
     {
       // Static redistribution: ONLY at time t=0 or after restart
       if (first_time_step)
@@ -264,7 +264,7 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
 
       break;
     }
-    case INPAR::MORTAR::parredist_dynamic:
+    case INPAR::MORTAR::ParallelRedist::redist_dynamic:
     {
       // Dynamic redistribution: whenever system is out of balance
 

@@ -427,8 +427,8 @@ namespace CONTACT
     INPAR::CONTACT::ConstraintDirection& ConstrDirection() { return constr_direction_; };
     INPAR::CONTACT::ConstraintDirection ConstrDirection() const { return constr_direction_; };
 
-    INPAR::MORTAR::ParRedist& ParType() { return partype_; };
-    INPAR::MORTAR::ParRedist ParType() const { return partype_; };
+    INPAR::MORTAR::ParallelRedist& ParType() { return partype_; };
+    INPAR::MORTAR::ParallelRedist ParType() const { return partype_; };
 
     //!@}
 
@@ -532,7 +532,7 @@ namespace CONTACT
     Teuchos::RCP<Epetra_Vector> pgsdirichtoggle_;
 
     //! parallel redistribution type
-    INPAR::MORTAR::ParRedist partype_;
+    INPAR::MORTAR::ParallelRedist partype_;
 
     //!@}
 
@@ -1153,11 +1153,14 @@ namespace CONTACT
     virtual bool Dualquadslavetrafo() const { return Data().IsDualQuadSlaveTrafo(); };
 
     //! Return parallel redistribution status (yes or no)
-    inline bool ParRedist() const { return (Data().ParType() != INPAR::MORTAR::parredist_none); }
+    inline bool ParRedist() const
+    {
+      return (Data().ParType() != INPAR::MORTAR::ParallelRedist::redist_none);
+    }
 
 
     //! Return specific parallel redistribution status
-    inline INPAR::MORTAR::ParRedist WhichParRedist() const { return Data().ParType(); }
+    inline INPAR::MORTAR::ParallelRedist WhichParRedist() const { return Data().ParType(); }
 
     //! Return matrix T
     virtual Teuchos::RCP<LINALG::SparseMatrix> TMatrix() { return Teuchos::null; }

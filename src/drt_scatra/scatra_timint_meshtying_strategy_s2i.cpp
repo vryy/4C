@@ -66,9 +66,9 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       imortarredistribution_(
           DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(parameters.sublist("S2I COUPLING"),
               "COUPLINGTYPE") == INPAR::S2I::coupling_mortar_standard and
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+          Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
               DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION"),
-              "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none),
+              "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none),
       islavemap_(Teuchos::null),
       imastermap_(Teuchos::null),
       islavenodestomasterelements_(),
