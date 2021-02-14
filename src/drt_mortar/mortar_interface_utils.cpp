@@ -24,3 +24,20 @@ void MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
   meanOverAllRanks = static_cast<double>(std::accumulate(first, last, 0)) /
                      static_cast<double>(quantityAcrossAllRanks.size());
 }
+
+void MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+    const std::string& nameOfQuantity, const std::vector<int>& quantityAcrossAllRanks,
+    const bool printOnThisRank)
+{
+  if (printOnThisRank)
+  {
+    int minOverAllRanks = -1;
+    int maxOverAllRanks = -1;
+    double meanOverAllRanks = -1.0;
+
+    MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
+        quantityAcrossAllRanks, minOverAllRanks, maxOverAllRanks, meanOverAllRanks);
+    printf("    | %20s | %14d | %14d | %15.1f |\n", nameOfQuantity.c_str(), minOverAllRanks,
+        maxOverAllRanks, meanOverAllRanks);
+  }
+}

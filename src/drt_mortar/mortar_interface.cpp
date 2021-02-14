@@ -8,6 +8,7 @@
 /*-----------------------------------------------------------------------*/
 
 #include "mortar_interface.H"
+#include "mortar_interface_utils.H"
 #include "mortar_node.H"
 #include "mortar_element.H"
 #include "mortar_integrator.H"
@@ -417,19 +418,71 @@ void MORTAR::MortarInterface::PrintParallelDistribution() const
     if (myrank == 0)
     {
       std::cout << std::endl;
-      std::cout << "   Discretization: " << Discret().Name() << std::endl;
-      printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
-      printf("   | PID |   n_rownodes    | n_ghostnodes |  n_rowelements  |  n_ghostele  |\n");
-      printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
-      for (int npid = 0; npid < numproc; ++npid)
+      std::cout << "  Discretization: " << Discret().Name() << std::endl;
+
+      // Compute and print statistics
       {
-        printf("   | %3d | Total %9d | %12d | Total %9d | %12d |\n", npid, n_nodes[npid],
-            n_ghostnodes[npid], n_elements[npid], n_ghostele[npid]);
-        printf("   |     | Slave %9d | %12d | Slave %9d | %12d |\n", s_nodes[npid],
-            s_ghostnodes[npid], s_elements[npid], s_ghostele[npid]);
-        printf("   |     | Master %8d | %12d | Master %8d | %12d |\n", m_nodes[npid],
-            m_ghostnodes[npid], m_elements[npid], m_ghostele[npid]);
-        printf("   +-----+-----------------+--------------+-----------------+--------------+\n");
+        std::cout << "\n"
+                  << "    Statistics of parallel distribution across " << numproc
+                  << " ranks:" << std::endl;
+        printf(
+            "    +----------------------+----------------+----------------+-----------------+\n");
+        printf(
+            "    | Type                 | min over procs | max over procs | mean over procs |\n");
+        printf(
+            "    +----------------------+----------------+----------------+-----------------+\n");
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "nodes (s+m)", n_nodes, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "ghost nodes (s+m)", n_ghostnodes, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "elements (s+m)", n_elements, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "ghost elements (s+m)", n_ghostele, myrank == 0);
+        printf(
+            "    +----------------------+----------------+----------------+-----------------+\n");
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "nodes (s)", s_nodes, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "ghost nodes (s)", s_ghostnodes, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "elements (s)", s_elements, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "ghost elements (s)", s_ghostele, myrank == 0);
+        printf(
+            "    +----------------------+----------------+----------------+-----------------+\n");
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "nodes (m)", m_nodes, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "ghost nodes (m)", m_ghostnodes, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "elements (m)", m_elements, myrank == 0);
+        MORTAR::INTERFACEUTILS::ComputeAndPrintRowOfParallelDistributionStatisctics(
+            "ghost elements (m)", m_ghostele, myrank == 0);
+        printf(
+            "    +----------------------+----------------+----------------+-----------------+\n");
+      }
+
+      // Print details of parallel distribution for each proc if requested by the user
+      const bool printDetails = DRT::INPUT::IntegralValue<bool>(
+          InterfaceParams().sublist("PARALLEL REDISTRIBUTION"), "PRINT_DISTRIBUTION");
+      if (printDetails)
+      {
+        std::cout << std::endl;
+        std::cout << "    Detailed distribution:" << std::endl;
+        printf("    +-----+-----------------+--------------+-----------------+--------------+\n");
+        printf("    | PID |   n_rownodes    | n_ghostnodes |  n_rowelements  |  n_ghostele  |\n");
+        printf("    +-----+-----------------+--------------+-----------------+--------------+\n");
+        for (int npid = 0; npid < numproc; ++npid)
+        {
+          printf("    | %3d | Total %9d | %12d | Total %9d | %12d |\n", npid, n_nodes[npid],
+              n_ghostnodes[npid], n_elements[npid], n_ghostele[npid]);
+          printf("    |     | Slave %9d | %12d | Slave %9d | %12d |\n", s_nodes[npid],
+              s_ghostnodes[npid], s_elements[npid], s_ghostele[npid]);
+          printf("    |     | Master %8d | %12d | Master %8d | %12d |\n", m_nodes[npid],
+              m_ghostnodes[npid], m_elements[npid], m_ghostele[npid]);
+          printf("    +-----+-----------------+--------------+-----------------+--------------+\n");
+        }
       }
     }
   }

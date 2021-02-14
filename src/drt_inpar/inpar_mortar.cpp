@@ -144,6 +144,10 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(parredist_none, parredist_none, parredist_none, parredist_none, parredist_static,
           parredist_static, parredist_dynamic, parredist_dynamic),
       &parallelRedist);
+
+  BoolParameter("PRINT_DISTRIBUTION", "Yes",
+      "Print details of the parallel distribution, i.e. number of nodes/elements for each rank.",
+      &parallelRedist);
 }
 
 void INPAR::MORTAR::SetValidConditions(
