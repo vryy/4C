@@ -609,6 +609,8 @@ void MORTAR::MortarInterface::FillCompleteNew(
 void MORTAR::MortarInterface::FillComplete(
     const bool isFinalParallelDistribution, const int maxdof, const double meanVelocity)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("MORTAR::MortarInterface::FillComplete");
+
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
   // dof map, which of course must not overlap with existing dof ranges
