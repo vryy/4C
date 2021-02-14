@@ -1871,31 +1871,7 @@ cut_test(2)
 baci_test(f2_drivencavity20x20_muelu_drt 1 "")
 baci_test(f2_drivencavity20x20_muelu_drt 2 "")
 
-# Baci-internal contact preconditioners only w/ Trilinos Q1_2015
-if (TRILINOS_Q1_2015)
-# contact (condensed formulation, different permutation)
-baci_test(contact3D_lin_duallagr_algebr_contact1 2 "")
-baci_test(contact3D_lin_duallagr_algebr_contact1_new_struct 2 "")
-baci_test(contact3D_lin_duallagr_algebr_contact2 2 "")
-baci_test(contact3D_lin_duallagr_algebr_contact2_new_struct 2 "")
-baci_test(contact3D_lin_duallagr_local_contact1 2 "")
-baci_test(contact3D_lin_duallagr_local_contact1_new_struct 2 "")
-baci_test(contact3D_lin_duallagr_local_contact2 2 "")
-baci_test(contact3D_lin_duallagr_local_contact2_new_struct 2 "")
-baci_test(contact3D_lin_duallagr_noperm_contact1 2 "")
-baci_test(contact3D_lin_duallagr_noperm_contact1_new_struct 2 "")
-
-# meshtying condensed formulation (dual Lagrange)
-baci_test(meshtying3D_duallagr_muelu_contact1 2 "")
-baci_test(meshtying3D_duallagr_muelu_contact1_new_struct 2 "")
-baci_test(meshtying3D_duallagr_muelu_contact2 2 "")
-baci_test(meshtying3D_duallagr_muelu_contact2_new_struct 2 "")
-
-# 2 block contact (saddlepoint formulation)
-baci_test(contact3D_lin_duallagr_SP 2 "")
-baci_test(contact3D_lin_duallagr_SP_new_struct 2 "")
-endif (TRILINOS_Q1_2015)
-
+# Mortar problems with MueLu-AMG preconditioners
 if (TRILINOS_DEVELOP)
 baci_test(contact3D_sp_dual_simple 3 "")
 baci_test(contact3D_sp_std_simple 3 "")

@@ -1964,27 +1964,13 @@ set(OBJS_SOLVER
   src/solver/solver_ifpackpreconditioner.cpp
   src/solver/solver_mlpreconditioner.cpp
   src/solver/solver_muelupreconditioner.cpp
-  src/solver/solver_muelucontactpreconditioner.cpp
-  src/solver/solver_muelucontactpreconditioner2.cpp
   src/solver/solver_muelucontactsppreconditioner.cpp
-  src/solver/solver_muelucontactpenaltypreconditioner.cpp
   src/solver/solver_tekopreconditioner.cpp
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp
   src/solver/solver_aztecsolver_projectedresidual.cpp
   src/solver/solver_stratimikossolver.cpp
   src/solver/teko/teko_baciepetraoperatorwrapper.cpp
-  src/solver/muelu/MueLu_ContactAFilterFactory.cpp
-  src/solver/muelu/MueLu_ContactTransferFactory.cpp
-  src/solver/muelu/MueLu_ContactInfoFactory.cpp
-  src/solver/muelu/MueLu_ContactASlaveDofFilterFactory.cpp
-  src/solver/muelu/MueLu_ContactSPAggregationFactory.cpp
-  src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
-  src/solver/muelu/MueLu_IterationAFactory.cpp
-  src/solver/muelu/MueLu_SelectiveSaPFactory.cpp
-  src/solver/muelu/MueLu_MeshtyingSPAmalgamationFactory.cpp
-  src/solver/muelu/MueLu_ContactSPRepartitionInterface.cpp
-  src/solver/muelu/MueLu_BaciFactoryFactory.cpp
   src/solver/muelu/muelu_utils.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
   src/solver/solver_amgnxn_vcycle.cpp

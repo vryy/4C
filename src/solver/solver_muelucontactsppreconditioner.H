@@ -13,31 +13,11 @@
 
 #include "solver_preconditionertype.H"
 
-#ifdef TRILINOS_Q1_2015
-#include <Xpetra_BlockedCrsMatrix_fwd.hpp>
-
-#include <MueLu_Hierarchy.hpp>  // for MueLu
-#include <MueLu_SmootherFactory.hpp>
-#include <MueLu_MapTransferFactory_fwd.hpp>
-#include <MueLu_SchurComplementFactory_fwd.hpp>
-
-
-// header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
-#include "muelu/MueLu_ContactSPAggregationFactory_fwd.hpp"
-#include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
-#include "muelu/MueLu_ContactSPRepartitionInterface_fwd.hpp"
-
-#else  // not TRILINOS_Q1_2015
-
 // MueLu
 #include <MueLu_Hierarchy.hpp>
 
-// header files for default types, must be included after all other MueLu/Xpetra headers
-#include <MueLu_UseDefaultTypes.hpp>  // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
-
-#endif  // TRILINOS_Q1_2015
+// Header files for default types must be included after all other MueLu/Xpetra headers
+#include <MueLu_UseDefaultTypes.hpp>
 
 // BACI includes
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -53,16 +33,6 @@ namespace LINALG
     class MueLuContactSpPreconditioner : public PreconditionerType
     {
      public:
-#ifdef TRILINOS_Q1_2015
-      // some typedefs
-      typedef MueLu::FactoryManager<Scalar, LocalOrdinal, GlobalOrdinal, Node> FactoryManager;
-      typedef MueLu::FactoryBase FactoryBase;
-      typedef Scalar SC;
-      typedef LocalOrdinal LO;
-      typedef GlobalOrdinal GO;
-      typedef Node NO;
-#endif  // TRILINOS_Q1_2015
-
       MueLuContactSpPreconditioner(FILE* outfile, Teuchos::ParameterList& mllist);
 
       /*! \brief Create and compute the preconditioner
@@ -99,120 +69,9 @@ namespace LINALG
       void Print(std::ostream& stream) final { stream << "MueLu"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
-      const std::string getParameterListName() const final
-      {
-        return "MueLu (Contact) Parameters";
-      }  // TODO check me
+      const std::string getParameterListName() const final { return "MueLu (Contact) Parameters"; }
+
      private:
-#ifdef TRILINOS_Q1_2015
-      void Write(
-          const Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>& H);
-
-      //! @name Create block smoothers
-      //!@{
-
-      /*! \brief Get block smoother factory on fine and intermediate levels
-       *
-       * The parameter list stores the smoother factory configuration. We extract this information
-       * and then call subroutines to actually create a concrete instance of the smoother factory.
-       *
-       * @param paramList Parameter list with smoother configuration
-       * @param level Current level ID
-       * @return Instance of a concrete MueLu::SmootherFactory
-       *
-       * \sa GetCoarsestBlockSmootherFactory(), CreateBlockSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetBlockSmootherFactory(const Teuchos::ParameterList& paramList, int level) const;
-
-      /*! \brief Get block smoother factory on coarsest level
-       *
-       * The parameter list stores the smoother factory configuration. We extract this information
-       * and then call subroutines to actually create a concrete instance of the smoother factory.
-       *
-       * @param paramList paramList Parameter list with smoother configuration
-       * @return Instance of a concrete MueLu::SmootherFactory
-       *
-       * \sa GetBlockSmootherFactory(), CreateBlockSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList& paramList) const;
-
-      /*! \brief Create block smoother factory from parameter list
-       *
-       * The parameter list stores the smoother factory configuration. We extract this information
-       * and then call subroutines to actually create a concrete instance of the smoother factory.
-       *
-       * @param type Type of block smoother to be created
-       * @param paramList Parameter list with smoother configuration
-       * @param bCoarse Boolean flag to indicate if this is the coarsest level
-       * @return
-       *
-       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory(),
-       * GetUzawaSmootherFactory(), GetIndefBlockedDiagonalSmootherFactory(),
-       * GetSIMPLESmootherFactory(), GetBraessSarazinSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      CreateBlockSmootherFactory(const std::string& type, const Teuchos::ParameterList& paramList,
-          const bool bCoarse) const;
-
-      /*! \brief Interpret ML parameter lists for creating an Uzawa smoother
-       *
-       * @param paramList Parameter list with smoother configuration
-       * @param bCoarse Boolean flag to indicate if this is the coarsest level
-       * @return Instance of a Uzawa smoother
-       *
-       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetUzawaSmootherFactory(
-          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
-
-      /*! \brief Interpret ML parameter lists for creating a indefinite block diagonal level
-       * smoother
-       *
-       * @param paramList Parameter list with smoother configuration
-       * @param bCoarse Boolean flag to indicate if this is the coarsest level
-       * @return Instance of a indefinite block diagonal level smoother
-       *
-       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetIndefBlockedDiagonalSmootherFactory(
-          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
-
-      /*! \brief Interpret ML parameter lists for creating a SIMPLE-type level smoother
-       *
-       * @param paramList Parameter list with smoother configuration
-       * @param bCoarse Boolean flag to indicate if this is the coarsest level
-       * @return Instance of a SIMPLE-type smoother
-       *
-       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetSIMPLESmootherFactory(
-          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
-
-      /*! \brief Interprets ML parameter lists for creating a Braess Sarazin level smoother
-       *
-       * @param paramList Parameter list with smoother configuration
-       * @param bCoarse Boolean flag to indicate if this is the coarsest level
-       * @return Instance of a Braess-Sarazin smoother
-       *
-       * \sa GetBlockSmootherFactory(), GetCoarsestBlockSmootherFactory()
-       */
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      GetBraessSarazinSmootherFactory(
-          const Teuchos::ParameterList& paramList, const bool bCoarse = false) const;
-
-      //!@}
-
-      //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
-      InterpretBACIList2MueLuSmoother(
-          const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact) const;
-#endif  // TRILINOS_Q1_2015
-
       //! ML parameter list
       Teuchos::ParameterList& mllist_;
 
