@@ -13,7 +13,6 @@
 
 
 #include "inpar_parameterlist_utils.H"
-#include <boost/algorithm/string/predicate.hpp>
 
 /*----------------------------------------------------------------------*/
 /* headers */
@@ -140,20 +139,28 @@ namespace INPAR
     inline enum ModelType String2ModelType(const std::string& name)
     {
       ModelType type = model_vague;
-      if (boost::iequals(name, "structure"))
+      if (name == "Structure")
         type = model_structure;
-      else if (boost::iequals(name, "contact"))
+      else if (name == "Contact")
         type = model_contact;
-      else if (boost::iequals(name, "meshtying"))
+      else if (name == "Meshtying")
         type = model_meshtying;
-      else if (boost::iequals(name, "cardiovascular0d"))
+      else if (name == "Cardiovascular0D")
         type = model_cardiovascular0d;
-      else if (boost::iequals(name, "springdashpot"))
+      else if (name == "SpringDashpot")
         type = model_springdashpot;
-      else if (boost::iequals(name, "lag-pen-constraint"))
+      else if (name == "Lag-Pen-Constraint")
         type = model_lag_pen_constraint;
-      else if (boost::iequals(name, "partitioned-coupling"))
+      else if (name == "Partitioned-Coupling")
         type = model_partitioned_coupling;
+      else if (name == "BeamInteractionOld")
+        type = model_beam_interaction_old;
+      else if (name == "BrownianDyn")
+        type = model_browniandyn;
+      else if (name == "BeamInteraction")
+        type = model_beaminteraction;
+      else
+        dserror("Unkonwn INPAR::STR::ModelType with name '%s'.", name.c_str());
 
       return type;
     };

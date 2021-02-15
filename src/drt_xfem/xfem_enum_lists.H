@@ -14,8 +14,6 @@
 #ifndef SRC_DRT_XFEM_XFEM_ENUM_LISTS_H_
 #define SRC_DRT_XFEM_XFEM_ENUM_LISTS_H_
 
-#include <boost/algorithm/string/predicate.hpp>
-
 namespace XFEM
 {
   /// supported field names
@@ -48,9 +46,9 @@ namespace XFEM
   static inline enum FieldName String2FieldName(const std::string& name)
   {
     enum FieldName field = unknown;
-    if (boost::iequals(name, "structure"))
+    if (name == "STRUCTURE")
       field = structure;
-    else if (boost::iequals(name, "xstructure"))
+    else if (name == "XSTRUCTURE")
       field = xstructure;
     else
       dserror(

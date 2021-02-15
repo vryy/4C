@@ -15,7 +15,6 @@
 
 #include <Teuchos_RCP.hpp>
 #include "../drt_lib/drt_dserror.H"
-#include <boost/algorithm/string/predicate.hpp>
 
 // forward declaration
 namespace Teuchos

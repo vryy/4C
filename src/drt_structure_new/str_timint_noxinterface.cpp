@@ -27,8 +27,6 @@
 
 #include <NOX_Epetra_Vector.H>
 
-#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
-
 #include "../linalg/linalg_sparsematrix.H"
 
 /*----------------------------------------------------------------------------*

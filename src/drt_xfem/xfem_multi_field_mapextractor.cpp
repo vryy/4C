@@ -942,9 +942,9 @@ void XFEM::MultiFieldMapExtractor::BuildSlaveDiscretIdMap()
   for (cit_dis = SlDisVec().begin(); cit_dis != SlDisVec().end(); ++cit_dis)
   {
     const std::string& name = (*cit_dis)->Name();
-    if (boost::iequals(name, "structure"))
+    if (name == "STRUCTURE")
       slave_discret_id_map_[structure] = dis_count;
-    else if (boost::iequals(name, "xstructure"))
+    else if (name == "XSTRUCTURE")
       slave_discret_id_map_[xstructure] = dis_count;
     else
       dserror("Unknown field discretization name \"%s\"!", name.c_str());

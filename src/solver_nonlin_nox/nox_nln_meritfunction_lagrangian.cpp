@@ -181,7 +181,7 @@ void NOX::NLN::MeritFunction::Lagrangian::SetType(const std::string& identifier)
   auto cit = supported_type_names.cbegin();
   while (cit != supported_type_names.cend())
   {
-    if (boost::iequals(identifier, cit->first))
+    if (identifier == cit->first)
     {
       lagrangian_type_ = cit->second;
       break;
