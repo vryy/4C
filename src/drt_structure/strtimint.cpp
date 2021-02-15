@@ -221,7 +221,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
   conman_->Init(discret_, sdynparams_);
 
   // create stiffness, mass matrix and other fields
-  createFields();
+  CreateFields();
 
   // stay with us
 
@@ -238,10 +238,10 @@ void STR::TimInt::Setup()
   // we have to call Init() before
   CheckIsInit();
 
-  createAllEpetraVectors();
+  CreateAllSolutionVectors();
 
   // create stiffness, mass matrix and other fields
-  createFields();
+  CreateFields();
 
   // set initial fields
   SetInitialFields();
@@ -366,7 +366,7 @@ void STR::TimInt::Setup()
 /*----------------------------------------------------------------------------------------------*
  * Create all solution vectors
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::createAllEpetraVectors()
+void STR::TimInt::CreateAllSolutionVectors()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
@@ -399,7 +399,7 @@ void STR::TimInt::createAllEpetraVectors()
 /*-------------------------------------------------------------------------------------------*
  * Create matrices when setting up time integrator
  *-------------------------------------------------------------------------------------------*/
-void STR::TimInt::createFields()
+void STR::TimInt::CreateFields()
 {
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*DofRowMapView(), true);

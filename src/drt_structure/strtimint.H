@@ -197,10 +197,10 @@ namespace STR
     virtual void Setup();
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
-    virtual void createFields();
+    virtual void CreateFields();
 
     //! Construct all solution vectors
-    void createAllEpetraVectors();
+    void CreateAllSolutionVectors();
 
     //! Resize \p TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;
