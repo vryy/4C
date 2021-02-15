@@ -550,7 +550,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
-    dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
+    dserror("Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
   const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
@@ -607,7 +607,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     // only plausibility check, that a contact solver is available
     if (contactsolver_ == Teuchos::null)
-      dserror("ERROR: No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
+      dserror("No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
   }
 
   //**********************************************************************
@@ -803,7 +803,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else
-            dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+            dserror("Invalid strategy or shape function type for contact/meshtying");
         }
 
         // condensed formulation
@@ -919,7 +919,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else
-            dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+            dserror("Invalid strategy or shape function type for contact/meshtying");
         }
       }
       else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -969,7 +969,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       }
       // invalid system type
       else
-        dserror("ERROR: Invalid system type for contact/meshtying");
+        dserror("Invalid system type for contact/meshtying");
     }
   }
 
@@ -1017,8 +1017,8 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        dserror("ERROR: Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(),
-            nodedofs[i]);
+        dserror(
+            "Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(), nodedofs[i]);
 
       nvector[i] += gvector[lid];
     }
@@ -1463,7 +1463,7 @@ void STR::TimInt::UpdateStepContactVUM()
       int err = 0;
       Minv->ExtractDiagonalCopy(*diag);
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = Minv->ReplaceDiagonalValues(*diag);
       Minv->Complete(*dofmap, *dofmap);
 
@@ -2895,8 +2895,7 @@ void STR::TimInt::OutputContact()
           if (MyConForce != NULL)
             fclose(MyConForce);
           else
-            dserror(
-                "ERROR: File for writing contact interface forces/moments could not be generated.");
+            dserror("File for writing contact interface forces/moments could not be generated.");
         }
         else
           MyFile = fopen(filename.str().c_str(), "at+");
@@ -2912,7 +2911,7 @@ void STR::TimInt::OutputContact()
           fclose(MyFile);
         }
         else
-          dserror("ERROR: File for writing momentum and energy data could not be opened.");
+          dserror("File for writing momentum and energy data could not be opened.");
       }
     }
 
