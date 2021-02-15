@@ -263,7 +263,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     if (adhesionType == INPAR::CONTACT::adhesion_bound)
     {
       // read interface COFs
-      std::vector<double> ad_bound(static_cast<int>(currentgroup.size()));
+      std::vector<double> ad_bound(currentgroup.size());
       for (unsigned j = 0; j < currentgroup.size(); ++j)
         ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
 
@@ -1444,12 +1444,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   if (myInterface.size() != 1) dserror("Interface size should be 1");
 
   std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << std::endl;
-  // std::cout << "Master_node_in_contact x_dis y_dis z_dis" << std::endl;
-  for (int i = 0; i < static_cast<int>(gnid.size()); ++i)
-  {
-    int myGid = gnid[i];
-    std::cout << gnid[i] << std::endl;
-  }
+  for (const auto& globalNodeId : gnid) std::cout << globalNodeId << std::endl;
 
 #endif  // MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
 

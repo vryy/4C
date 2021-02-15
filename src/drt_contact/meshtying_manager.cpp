@@ -281,22 +281,18 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       Comm().SumAll(&lsize, &gsize, 1);
 
 
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
-      for (fool = currele.begin(); fool != currele.end(); ++fool)
+      for (const auto& element : currele)
       {
-        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<DRT::Element> ele = element.second;
         Teuchos::RCP<MORTAR::MortarElement> mtele =
             Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
-        if (nurbs)
-        {
-          MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
-        }
+        if (nurbs) MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
 
         interface->AddMortarElement(mtele);
-      }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+      }
 
       ggsize += gsize;  // update global element counter
     }
