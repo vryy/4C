@@ -31,7 +31,6 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_timestepping/timintmstep.H"
-#include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_elements_paramsinterface.H"
 
 
@@ -55,7 +54,6 @@ namespace UTILS
   class Cardiovascular0DManager;
   class SpringDashpotManager;
   class SurfStressManager;
-  //  class GrowthDisplManager;
 }  // namespace UTILS
 
 namespace CONTACT

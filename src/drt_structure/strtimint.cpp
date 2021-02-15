@@ -25,6 +25,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/micromaterial.H"
 
+#include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -38,7 +39,6 @@
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
-#include "../drt_contact/contact_abstract_strategy.H"  // for feeding contact solver with maps
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
