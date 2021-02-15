@@ -610,55 +610,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       dserror("No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
   }
 
-  //**********************************************************************
-  // feed solver/preconditioner with additional information about the contact/meshtying problem
-  //**********************************************************************
-  {
-#if 0  // do we need this? feed solvers with latest information. why not using Aztec parameters?
-    if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
-    {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
-      Teuchos::RCP<Epetra_Map> masterDofMap;
-      Teuchos::RCP<Epetra_Map> slaveDofMap;
-      Teuchos::RCP<Epetra_Map> innerDofMap;
-      Teuchos::RCP<Epetra_Map> activeDofMap;
-      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-      //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      //if(cstrat != Teuchos::null) { // dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
-      strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-      mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
-      //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
-
-      //std::cout << contactsolver_->Params() << std::endl;
-    }
-
-    // TODO fix me
-    if (contactsolver_->Params().isSublist("MueLu (Contact2) Parameters"))
-    {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact2) Parameters");
-      Teuchos::RCP<Epetra_Map> masterDofMap;
-      Teuchos::RCP<Epetra_Map> slaveDofMap;
-      Teuchos::RCP<Epetra_Map> innerDofMap;
-      Teuchos::RCP<Epetra_Map> activeDofMap;
-      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-      //Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      //if(cstrat != Teuchos::null) { //dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
-        strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-        mueluParams.set<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
-      //} else std::cout << "STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem? strtimint.cpp line 550" << std::endl;
-      //std::cout << contactsolver_->Params() << std::endl;
-    }
-#endif
-  }
-
   // output of strategy / shapefcn / system type to screen
   {
     // output
