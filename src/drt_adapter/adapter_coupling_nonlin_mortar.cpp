@@ -525,7 +525,7 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
    */
   {
     bool isFinalDistribution = false;
-    if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm_->NumProc() == 1)
+    if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none || comm_->NumProc() == 1)
       isFinalDistribution = true;
 
     interface->FillComplete(isFinalDistribution);
@@ -543,14 +543,10 @@ void ADAPTER::CouplingNonLinMortar::CompleteInterface(
   // print parallel distribution
   interface->PrintParallelDistribution();
 
-  // check for parallel redistribution
-  bool parredist = false;
-  if (parallelRedist != INPAR::MORTAR::ParallelRedist::redist_none) parredist = true;
-
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (parredist && comm_->NumProc() > 1)
+  if (parallelRedist != INPAR::MORTAR::ParallelRedist::redist_none && comm_->NumProc() > 1)
   {
     // redistribute optimally among all procs
     interface->Redistribute();
