@@ -520,17 +520,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   discret_->GetCondition("Contact", contactconditions);
 
   // double-check for contact/meshtying conditions
-  if ((int)mortarconditions.size() == 0 and (int) contactconditions.size() == 0) return;
+  if (mortarconditions.size() == 0 and contactconditions.size() == 0) return;
 
   // check if only beam-to-solid contact / meshtying conditions (and leave if so)
   bool realcontactconditions = false;
-  for (int i = 0; i < (int)contactconditions.size(); ++i)
+  for (const auto& contactCondition : contactconditions)
   {
-    if (*(contactconditions[i]->Get<std::string>("Application")) != "Beamtosolidcontact" &&
-        *(contactconditions[i]->Get<std::string>("Application")) != "Beamtosolidmeshtying")
+    if (*contactCondition->Get<std::string>("Application") != "Beamtosolidcontact" &&
+        *contactCondition->Get<std::string>("Application") != "Beamtosolidmeshtying")
       realcontactconditions = true;
   }
-  if ((int)mortarconditions.size() == 0 and !realcontactconditions) return;
+  if (mortarconditions.size() == 0 and !realcontactconditions) return;
 
   // store integration parameter alphaf into cmtman_ as well
   // (for all cases except OST, GenAlpha and GEMM this is zero)
@@ -538,11 +538,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   // is defined just the other way round as alphaf in GenAlpha schemes.
   // Thus, we have to hand in 1-theta for OST!!!)
   double time_integration_factor = 0.0;
-  bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
-  if (!do_endtime)
-  {
-    time_integration_factor = TimIntParam();
-  }
+  const bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
+  if (!do_endtime) time_integration_factor = TimIntParam();
 
   // create instance for meshtying contact bridge
   cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(
