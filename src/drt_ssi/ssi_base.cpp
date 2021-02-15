@@ -24,18 +24,18 @@
 
 #include "../drt_inpar/inpar_volmortar.H"
 
+#include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
+#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_utils_gid_vector.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_utils_vector.H"
+#include "../drt_lib/drt_utils_rebalancing.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -618,16 +618,35 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
   {
     if (IsScaTraManifold())
     {
-      std::vector<Teuchos::RCP<DRT::Discretization>> dis;
-      dis.push_back(structdis);
-      DRT::UTILS::RedistributeDiscretizationsByBinning(dis, false);
+      auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
 
-      DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(*structdis,
-          *problem->GetDis("scatra_manifold"), "SSISurfaceManifold", "SSISurfaceManifold");
+      // redistribute nodes of scatra manifold field
+      DRT::UTILS::REBALANCING::RedistributeAndFillCompleteDiscretizationUsingWeights(
+          scatra_manifold_dis, true, true, true);
 
-      DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(*structdis, *scatradis);
+      // build map with scatra nodes on manifold condition
+      std::vector<int> scatra_manifold_node_col_vec(0);
+      for (int lid = 0; lid < scatradis->NodeColMap()->NumMyElements(); ++lid)
+      {
+        if (scatradis->gNode(scatradis->NodeColMap()->GID(lid))
+                ->GetCondition("SSISurfaceManifold") != nullptr)
+          scatra_manifold_node_col_vec.push_back(scatradis->NodeColMap()->GID(lid));
+      }
+      auto scatra_node_col_map =
+          Teuchos::rcp(new Epetra_Map(-1, scatra_manifold_node_col_vec.size(),
+              &scatra_manifold_node_col_vec[0], 0, scatradis->Comm()));
 
-      structdis->ExportColumnNodes(*scatradis->NodeColMap());
+      // export new distributed column nodes on other fields to enable field coupling
+      structdis->ExportColumnNodes(
+          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *structdis->NodeColMap(), true));
+      scatradis->ExportColumnNodes(
+          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatradis->NodeColMap(), true));
+      scatra_manifold_dis->ExportColumnNodes(
+          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatra_node_col_map, true));
+
+      structdis->FillComplete();
+      scatradis->FillComplete();
+      scatra_manifold_dis->FillComplete();
     }
     else
     {

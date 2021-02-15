@@ -104,7 +104,7 @@ void ssi_drt()
   problem->GetDis("scatra")->FillComplete(true, false, true);
   if (is_scatra_manifold) problem->GetDis("scatra_manifold")->FillComplete(true, false, true);
 
-  DRT::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
+  DRT::UTILS::PrintParallelDistribution(*problem->GetDis("structure"));
   DRT::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
   if (is_scatra_manifold)
     DRT::UTILS::PrintParallelDistribution(*problem->GetDis("scatra_manifold"));
