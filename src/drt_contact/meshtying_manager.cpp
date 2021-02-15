@@ -66,7 +66,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   discret.GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
-  if ((int)contactconditions.size() < 2) dserror("Not enough contact conditions in discretization");
+  if (contactconditions.size() < 2) dserror("Not enough contact conditions in discretization");
 
   // find all pairs of matching meshtying conditions
   // there is a maximum of (conditions / 2) groups
@@ -81,7 +81,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // freedom, which of course must not overlap with displacement dofs
   const int maxdof = discret.DofRowMap()->MaxAllGID();
 
-  for (int i = 0; i < (int)contactconditions.size(); ++i)
+  for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
     std::vector<DRT::Condition*> currentgroup(0);
@@ -94,7 +94,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
-    for (int j = 0; j < (int)contactconditions.size(); ++j)
+    for (unsigned j = 0; j < contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
@@ -112,11 +112,13 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // see whether we found this group before
     bool foundbefore = false;
     for (int j = 0; j < numgroupsfound; ++j)
+    {
       if (groupid1 == foundgroups[j])
       {
         foundbefore = true;
         break;
       }
+    }
 
     // if we have processed this group before, do nothing
     if (foundbefore) continue;
@@ -128,10 +130,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // find out which sides are Master and Slave
     bool hasslave = false;
     bool hasmaster = false;
-    std::vector<const std::string*> sides((int)currentgroup.size());
-    std::vector<bool> isslave((int)currentgroup.size());
+    std::vector<const std::string*> sides(currentgroup.size());
+    std::vector<bool> isslave(currentgroup.size());
 
-    for (int j = 0; j < (int)sides.size(); ++j)
+    for (unsigned j = 0; j < sides.size(); ++j)
     {
       sides[j] = currentgroup[j]->Get<std::string>("Side");
       if (*sides[j] == "Slave")
@@ -154,10 +156,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     if (!hasmaster) dserror("Master side missing in contact condition group!");
 
     // find out which sides are initialized as Active
-    std::vector<const std::string*> active((int)currentgroup.size());
-    std::vector<bool> isactive((int)currentgroup.size());
+    std::vector<const std::string*> active(currentgroup.size());
+    std::vector<bool> isactive(currentgroup.size());
 
-    for (int j = 0; j < (int)sides.size(); ++j)
+    for (unsigned j = 0; j < sides.size(); ++j)
     {
       active[j] = currentgroup[j]->Get<std::string>("Initialization");
       if (*sides[j] == "Slave")
@@ -191,7 +193,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     interfaces.push_back(MORTAR::MortarInterface::Create(groupid1, Comm(), spatialDim, mtparams));
 
     // get it again
-    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size() - 1];
+    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces.back();
 
     // note that the nodal IDs are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -200,12 +202,12 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // do meshtying between two distinct discretizations here
 
     //-------------------------------------------------- process nodes
-    for (int j = 0; j < (int)currentgroup.size(); ++j)
+    for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
-      for (int k = 0; k < (int)(*nodeids).size(); ++k)
+      for (unsigned k = 0; k < nodeids->size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
@@ -218,10 +220,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
             node->X(), node->Owner(), discret.NumDof(0, node), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
-        if (nurbs)
-        {
-          MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
-        }
+        if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
 
         // get edge and corner information:
         std::vector<DRT::Condition*> contactcornercond(0);
@@ -264,7 +263,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
     //----------------------------------------------- process elements
     int ggsize = 0;
-    for (int j = 0; j < (int)currentgroup.size(); ++j)
+    for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
       std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
@@ -277,7 +276,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       // enough number ggsize to all elements of cond2, cond3,... so they are
       // different from those in cond1!!!
       // note that elements in ele1/ele2 already are in column (overlapping) map
-      int lsize = (int)currele.size();
+      int lsize = static_cast<int>(currele.size());
       int gsize = 0;
       Comm().SumAll(&lsize, &gsize, 1);
 
@@ -319,8 +318,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
       interface->FillComplete(isFinalDistribution, maxdof);
     }
-
-  }  // for (int i=0; i<(int)contactconditions.size(); ++i)
+  }
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
@@ -363,7 +361,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   //**********************************************************************
 
   // create binary search tree
-  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
+  for (auto& interface : interfaces) interface->CreateSearchTree();
 
   return;
 }
