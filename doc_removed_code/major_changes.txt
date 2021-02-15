@@ -1,5 +1,13 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Contact preconditioners via Trilinos/MueLu
+- remove in commit c93a999dc5063c49f22acbaa008daa14319c633e
+- reasons: Due to changes in the MueLu interface, these preconditioner have been disabled several years ago.
+           Since there's no value in carrying along dead and unused code, this is removed.
+- context: The saddle-point case for fully coupled AMG is covered in MueLu. All other variants are partially
+           available in MueLu, yet probably need some fixes and need to be connnected to Baci.
+- removed by Matthias Mayr
+
 Levenberg-Marquardt module (gen_inv_analysis) in drt_inv_analysis (by several authors)
 - removed in commit 53b0da7adcab7abe99edae174d78e2d440fd5936
 - reasons: This part of BACI is now available in a more robust way in QUEENS
