@@ -73,7 +73,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck1stOrder(
       // now get the node we want to apply the FD scheme to
       int gid = fullmaps[m]->GID(fd / dim);
       CoNode* snode = dynamic_cast<CoNode*>(inter_.idiscret_->gNode(gid));
-      if (!snode) dserror("ERROR: Cannot find slave node with gid %", gid);
+      if (!snode) dserror("Cannot find slave node with gid %", gid);
 
       const int sdof = snode->Dofs()[fd % dim];
 
@@ -94,7 +94,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck1stOrder(
         const int kgid = snode_row_map.GID(k);
 
         DRT::Node* knode = inter_.idiscret_->gNode(kgid);
-        if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+        if (!knode) dserror("Cannot find node with gid %", kgid);
         CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
         if (GetDeriv1st(kcnode->AugData()).empty())
@@ -210,7 +210,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck2ndOrder(
     // now get the node we want to apply the FD scheme to
     int gid = fullmap->GID(fd / dim);
     CoNode* snode = dynamic_cast<CoNode*>(inter_.idiscret_->gNode(gid));
-    if (!snode) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!snode) dserror("Cannot find slave node with gid %", gid);
 
     const int sdof = snode->Dofs()[fd % dim];
 
@@ -234,7 +234,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GPCheck2ndOrder(
       GEN_DATA::reset(deriv1st_cap, new_deriv1st);
 
       DRT::Node* knode = inter_.idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CoNode* kcnode = dynamic_cast<CoNode*>(knode);
 
       if (GetDeriv2nd(kcnode->AugData()).empty())
@@ -391,7 +391,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GetReference(
   {
     const int gid = mygids[i];
     DRT::Node* node = inter_.idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
 
     CoNode& cnode = static_cast<CoNode&>(*node);
 
@@ -435,7 +435,7 @@ void CONTACT::AUG::Interface::FiniteDifference<T0, T1, T2>::GetReference(
   {
     const int gid = mygids[i];
     DRT::Node* node = inter_.idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
 
     CoNode& cnode = static_cast<CoNode&>(*node);
 

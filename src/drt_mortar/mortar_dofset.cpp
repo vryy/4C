@@ -24,8 +24,7 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
 {
   // first, we call the standard AssignDegreesOfFreedom from the base class
   const int count = DRT::DofSet::AssignDegreesOfFreedom(dis, dspos, start);
-  if (pccdofhandling_)
-    dserror("ERROR: Point coupling conditions not yet implemented for MortarDofSet");
+  if (pccdofhandling_) dserror("Point coupling conditions not yet implemented for MortarDofSet");
 
   // we'll get ourselves the row and column dof maps from the base class
   // and later replace them with our own version of them

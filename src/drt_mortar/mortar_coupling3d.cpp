@@ -153,7 +153,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
   // project master nodes onto auxiliary plane
   int nnodes = MasterIntElement().NumNode();
   DRT::Node** mynodes = MasterIntElement().Nodes();
-  if (!mynodes) dserror("ERROR: RoughCheckNodes: Null pointer!");
+  if (!mynodes) dserror("RoughCheckNodes: Null pointer!");
 
   // prepare check
   bool near = false;
@@ -164,7 +164,7 @@ bool MORTAR::Coupling3d::RoughCheckNodes()
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode) dserror("ERROR: RoughCheckNodes: Null pointer!");
+    if (!mycnode) dserror("RoughCheckNodes: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -206,7 +206,7 @@ bool MORTAR::Coupling3d::RoughCheckOrient()
     loccenter[1] = 0.0;
   }
   else
-    dserror("ERROR: RoughCheckOrient called for unknown element type");
+    dserror("RoughCheckOrient called for unknown element type");
 
   // compute the unit normal vector at the master element center
   double nmc[3] = {0.0, 0.0, 0.0};
@@ -243,7 +243,7 @@ bool MORTAR::Coupling3d::AuxiliaryPlane()
     loccenter[1] = 0.0;
   }
   else
-    dserror("ERROR: AuxiliaryPlane called for unknown element type");
+    dserror("AuxiliaryPlane called for unknown element type");
 
   // compute element center via shape fct. interpolation
   SlaveIntElement().LocalToGlobal(loccenter, Auxc(), 0);
@@ -294,7 +294,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
   // project slave nodes onto auxiliary plane
   int nnodes = SlaveIntElement().NumNode();
   DRT::Node** mynodes = SlaveIntElement().Nodes();
-  if (!mynodes) dserror("ERROR: ProjectSlave: Null pointer!");
+  if (!mynodes) dserror("ProjectSlave: Null pointer!");
 
   // initialize storage for slave coords + their ids
   std::vector<double> vertices(3);
@@ -303,7 +303,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
+    if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -339,7 +339,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
   // project master nodes onto auxiliary plane
   int nnodes = MasterIntElement().NumNode();
   DRT::Node** mynodes = MasterIntElement().Nodes();
-  if (!mynodes) dserror("ERROR: ProjectMaster: Null pointer!");
+  if (!mynodes) dserror("ProjectMaster: Null pointer!");
 
   // initialize storage for master coords + their ids
   std::vector<double> vertices(3);
@@ -348,7 +348,7 @@ bool MORTAR::Coupling3d::ProjectMaster()
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode) dserror("ERROR: ProjectMaster: Null pointer!");
+    if (!mycnode) dserror("ProjectMaster: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -383,7 +383,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
     std::vector<Vertex>& respoly, double& tol)
 {
   //**********************************************************************
-  dserror("ERROR: PolygonClipping outdated, use PolygonClippingConvexHull instead!");
+  dserror("PolygonClipping outdated, use PolygonClippingConvexHull instead!");
   //**********************************************************************
 
   // choose output
@@ -399,7 +399,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
 
   // check input variables
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
-    dserror("ERROR: Input Polygons must consist of min. 3 vertices each");
+    dserror("Input Polygons must consist of min. 3 vertices each");
 
   // check for rotation of polygon1 (slave) and polgon 2 (master)
   // note that we implicitly already rely on convexity here!
@@ -452,7 +452,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
   if (check1 <= 0)
   {
     return;
-    dserror("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+    dserror("Polygon 1 (slave) not ordered counter-clockwise!");
   }
 
   // check polygon 2 and reorder in c-clockwise direction
@@ -498,7 +498,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
 
     // check scalar product
     double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
-    if (check > 0) dserror("ERROR: Input polygon 1 not convex");
+    if (check > 0) dserror("Input polygon 1 not convex");
   }
 
   for (int i = 0; i < (int)poly2.size(); ++i)
@@ -533,7 +533,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
 
     // check scalar product
     double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
-    if (check > 0) dserror("ERROR: Input polygon 2 not convex");
+    if (check > 0) dserror("Input polygon 2 not convex");
   }
 
   // print final input polygons to screen
@@ -866,7 +866,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
   //**********************
   // do clipping
   //**********************
-  if ((int)respoly.size() != 0) dserror("ERROR: PolygonClipping: Respoly!=0 at beginning...");
+  if ((int)respoly.size() != 0) dserror("PolygonClipping: Respoly!=0 at beginning...");
 
   //**********************************************************************
   // STEP5: Find result polygon for no intersection case
@@ -962,7 +962,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
   // invalid case
   else if ((int)intersec1.size() * (int)intersec2.size() == 0)
   {
-    dserror("ERROR: Found intersection points only on one input polygon...?");
+    dserror("Found intersection points only on one input polygon...?");
   }
 
   //**********************************************************************
@@ -996,7 +996,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
       }
 
       if ((int)dis.size() < 2) continue;
-      if ((int)dis.size() > 2) dserror("ERROR: More than 2 intersections on 1 edge impossible!");
+      if ((int)dis.size() > 2) dserror("More than 2 intersections on 1 edge impossible!");
 
       double alpha1 = dis[0]->Alpha();
       double alpha2 = dis[1]->Alpha();
@@ -1009,7 +1009,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
       }
       else if (alpha1 == alpha2)
       {
-        dserror("ERROR: Two identical intersection points on 1 edge!");
+        dserror("Two identical intersection points on 1 edge!");
       }
       else
       {
@@ -1031,7 +1031,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
       }
 
       if ((int)dis.size() < 2) continue;
-      if ((int)dis.size() > 2) dserror("ERROR: More than 2 intersections on 1 edge impossible!");
+      if ((int)dis.size() > 2) dserror("More than 2 intersections on 1 edge impossible!");
 
       double alpha1 = dis[0]->Alpha();
       double alpha2 = dis[1]->Alpha();
@@ -1044,7 +1044,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
       }
       else if (alpha1 == alpha2)
       {
-        dserror("ERROR: Two identical intersection points on 1 edge!");
+        dserror("Two identical intersection points on 1 edge!");
       }
       else
       {
@@ -1192,8 +1192,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
       if (out) std::cout << "Length of result list so far: " << (int)respoly.size() << std::endl;
 
       // check length of result polygon list
-      if ((int)respoly.size() > 8)
-        dserror("ERROR: Length of result polygon > 8! Something went wrong!");
+      if ((int)respoly.size() > 8) dserror("Length of result polygon > 8! Something went wrong!");
 
     } while (current != &intersec1[0] && current != &intersec2[0]);
 
@@ -1220,7 +1219,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
     else
     {
       std::cout << "\nDifference Dists: " << fldist << " " << fldist2 << std::endl;
-      dserror("ERROR: We did not arrive at the starting point again...?");
+      dserror("We did not arrive at the starting point again...?");
     }
 
     // collapse respoly points that are very close
@@ -1359,7 +1358,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
       }
       // check scalar product
       double check = n[0] * nextedge[0] + n[1] * nextedge[1] + n[2] * nextedge[2];
-      if (check > 0) dserror("ERROR: Result polygon not convex!");
+      if (check > 0) dserror("Result polygon not convex!");
     }
   }
 
@@ -1505,7 +1504,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
 
   // check input variables
   if ((int)poly1.size() < 3 || (int)poly2.size() < 3)
-    dserror("ERROR: Input Polygons must consist of min. 3 vertices each");
+    dserror("Input Polygons must consist of min. 3 vertices each");
 
   // check for rotation of polygon1 (slave) and polgon 2 (master)
   // note that we implicitly already rely on convexity here!
@@ -1558,7 +1557,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
   if (check1 <= 0)
   {
     return false;
-    dserror("ERROR: Polygon 1 (slave) not ordered counter-clockwise!");
+    dserror("Polygon 1 (slave) not ordered counter-clockwise!");
   }
 
   // check polygon 2 and reorder in c-clockwise direction
@@ -1607,7 +1606,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     if (check > 0)
     {
       return false;
-      dserror("ERROR: Input polygon 1 not convex");
+      dserror("Input polygon 1 not convex");
     }
   }
 
@@ -1692,12 +1691,12 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         // get slave and master nodes
         int nsnodes = SlaveIntElement().NumNode();
         DRT::Node** mysnodes = SlaveIntElement().Nodes();
-        if (!mysnodes) dserror("ERROR: Null pointer!");
+        if (!mysnodes) dserror("Null pointer!");
         std::vector<MortarNode*> mycsnodes(nsnodes);
         for (int i = 0; i < nsnodes; ++i) mycsnodes[i] = dynamic_cast<MortarNode*>(mysnodes[i]);
         int nmnodes = MasterIntElement().NumNode();
         DRT::Node** mymnodes = MasterIntElement().Nodes();
-        if (!mymnodes) dserror("ERROR: Null pointer!");
+        if (!mymnodes) dserror("Null pointer!");
         std::vector<MortarNode*> mycmnodes(nmnodes);
         for (int i = 0; i < nmnodes; ++i) mycmnodes[i] = dynamic_cast<MortarNode*>(mymnodes[i]);
 
@@ -2463,7 +2462,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         for (int k = 0; k < 3; ++k)
           newpoint[j] += trafo(j, k) * (collconvexhull[i].Coord()[k] - newzero[k]);
 
-      if (abs(newpoint[2]) > tol) dserror("ERROR: Transformation to aux. plane failed: z!=0 !");
+      if (abs(newpoint[2]) > tol) dserror("Transformation to aux. plane failed: z!=0 !");
       transformed(0, i) = newpoint[0];
       transformed(1, i) = newpoint[1];
     }
@@ -2657,13 +2656,13 @@ bool MORTAR::Coupling3d::HasProjStatus()
   // check all nodes
   int nnodes = SlaveIntElement().NumNode();
   DRT::Node** mynodes = SlaveIntElement().Nodes();
-  if (!mynodes) dserror("ERROR: HasProjStatus: Null pointer!");
+  if (!mynodes) dserror("HasProjStatus: Null pointer!");
 
   // loop over all slave nodes
   for (int i = 0; i < nnodes; ++i)
   {
     MortarNode* mycnode = dynamic_cast<MortarNode*>(mynodes[i]);
-    if (!mycnode) dserror("ERROR: HasProjStatus: Null pointer!");
+    if (!mycnode) dserror("HasProjStatus: Null pointer!");
 
     // loop over all vertices of clip polygon
     for (int j = 0; j < (int)(Clip().size()); ++j)
@@ -2875,7 +2874,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       if (abs(Auxn()[0]) >= abs(Auxn()[1]) && abs(Auxn()[0]) >= abs(Auxn()[2])) direction = 1;
       if (abs(Auxn()[1]) >= abs(Auxn()[0]) && abs(Auxn()[1]) >= abs(Auxn()[2])) direction = 2;
       if (abs(Auxn()[2]) >= abs(Auxn()[0]) && abs(Auxn()[2]) >= abs(Auxn()[1])) direction = 3;
-      if (direction == 0) dserror("ERROR: Did not find best direction");
+      if (direction == 0) dserror("Did not find best direction");
 
       // intersection of the two perpendicular bisections
       // (solution of m1+s*c1 = n1+t*d1 and m2+s*c2 = n2+t*d2)
@@ -3108,7 +3107,7 @@ bool MORTAR::Coupling3d::DelaunayTriangulation(
       } while (!validneighbor1);
 
       // plausibility check
-      if (neighbor0 == c || neighbor1 == c) dserror("ERROR: Connected nodes not possible here");
+      if (neighbor0 == c || neighbor1 == c) dserror("Connected nodes not possible here");
 
       // add triangles
       std::vector<int> add1(3);
@@ -3408,11 +3407,11 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     // is integrated that contributes to this slave node)
     int nnodes = SlaveIntElement().NumNode();
     DRT::Node** mynodes = SlaveIntElement().Nodes();
-    if (!mynodes) dserror("ERROR: Null pointer!");
+    if (!mynodes) dserror("Null pointer!");
     for (int k = 0; k < nnodes; ++k)
     {
       MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-      if (!mycnode) dserror("ERROR: Null pointer!");
+      if (!mycnode) dserror("Null pointer!");
       mycnode->HasSegment() = true;
     }
 
@@ -3488,7 +3487,7 @@ bool MORTAR::Coupling3d::IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterfa
     // *******************************************************************
     else
     {
-      dserror("ERROR: IntegrateCells: Invalid case for 3D mortar coupling LM interpolation");
+      dserror("IntegrateCells: Invalid case for 3D mortar coupling LM interpolation");
     }
     // *******************************************************************
   }
@@ -3897,7 +3896,7 @@ bool MORTAR::Coupling3dQuadManager::SplitIntElements(
 
   // ********************************************************* invalid ***
   else
-    dserror("ERROR: SplitIntElements called for unknown element shape!");
+    dserror("SplitIntElements called for unknown element shape!");
 
   // *********************************************************************
 
@@ -3916,7 +3915,7 @@ MORTAR::Coupling3dQuad::Coupling3dQuad(DRT::Discretization& idiscret, int dim, b
       mintele_(mintele)
 {
   //  3D quadratic coupling only for quadratic ansatz type
-  if (!Quad()) dserror("ERROR: Coupling3dQuad called for non-quadratic ansatz!");
+  if (!Quad()) dserror("Coupling3dQuad called for non-quadratic ansatz!");
 
   return;
 }
@@ -3983,7 +3982,7 @@ bool MORTAR::Coupling3dManager::EvaluateCoupling(Teuchos::RCP<MORTAR::ParamsInte
   // Error
   //*********************************
   else
-    dserror("ERROR: chosen contact algorithm not supported!");
+    dserror("chosen contact algorithm not supported!");
 
   return true;
 }
@@ -4099,7 +4098,7 @@ void MORTAR::Coupling3dManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("ERROR: Invalid type of numerical integration");
+    dserror("Invalid type of numerical integration");
   }
 
   // free memory of consistent dual shape function coefficient matrix
@@ -4215,7 +4214,7 @@ void MORTAR::Coupling3dQuadManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("ERROR: Invalid type of numerical integration");
+    dserror("Invalid type of numerical integration");
   }
 
   // free memory of consistent dual shape function coefficient matrix
@@ -4435,7 +4434,7 @@ void MORTAR::Coupling3dManager::ConsistDualShape()
         for (int k = 0; k < 4; ++k) meinv(j, k) = melin(j, k);
     }
     else
-      dserror("ERROR: incorrect element shape for linear interpolation of quadratic element!");
+      dserror("incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
     ae.Multiply('N', 'N', 1.0, de, meinv, 0.0);

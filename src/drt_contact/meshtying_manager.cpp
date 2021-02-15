@@ -429,26 +429,26 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_penalty &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("ERROR: Penalty parameter eps <= 0, must be greater than 0");
+    dserror("Penalty parameter eps <= 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("PENALTYPARAM") <= 0.0)
-    dserror("ERROR: Penalty parameter eps <= 0, must be greater than 0");
+    dserror("Penalty parameter eps <= 0, must be greater than 0");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<int>("UZAWAMAXSTEPS") < 2)
-    dserror("ERROR: Maximum number of Uzawa / Augmentation steps must be at least 2");
+    dserror("Maximum number of Uzawa / Augmentation steps must be at least 2");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_uzawa &&
       meshtying.get<double>("UZAWACONSTRTOL") <= 0.0)
-    dserror("ERROR: Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
+    dserror("Constraint tolerance for Uzawa / Augmentation scheme must be greater than 0");
 
   if (onlymeshtying && DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(
                            meshtying, "FRICTION") != INPAR::CONTACT::friction_none)
-    dserror("ERROR: Friction law supplied for mortar meshtying");
+    dserror("Friction law supplied for mortar meshtying");
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(meshtying, "STRATEGY") ==
           INPAR::CONTACT::solution_lagmult &&
@@ -458,12 +458,12 @@ bool CONTACT::MtManager::ReadAndCheckInput(
               INPAR::CONTACT::system_condensed ||
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(meshtying, "SYSTEM") ==
               INPAR::CONTACT::system_condensed_lagmult))
-    dserror("ERROR: Condensation of linear system only possible for dual Lagrange multipliers");
+    dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
       onlymeshtying)
-    dserror("ERROR: Dynamic parallel redistribution not possible for meshtying");
+    dserror("Dynamic parallel redistribution not possible for meshtying");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
@@ -494,22 +494,22 @@ bool CONTACT::MtManager::ReadAndCheckInput(
     // not (yet) implemented combinations
     // *********************************************************************
     if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true && spatialDim == 3)
-      dserror("ERROR: Crosspoints / edge node modification not yet implemented for 3D");
+      dserror("Crosspoints / edge node modification not yet implemented for 3D");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") ==
           INPAR::MORTAR::lagmult_lin)
-    dserror("ERROR: Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
+    dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
           mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
-    dserror("ERROR: Crosspoints and parallel redistribution not yet compatible");
+    dserror("Crosspoints and parallel redistribution not yet compatible");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
           INPAR::MORTAR::shape_petrovgalerkin and
       onlymeshtying)
-    dserror("ERROR: Petrov-Galerkin approach makes no sense for meshtying");
+    dserror("Petrov-Galerkin approach makes no sense for meshtying");
 
   // *********************************************************************
   // 3D quadratic mortar (choice of interpolation and testing fcts.)
@@ -529,7 +529,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
       DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
   if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
-    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
     dserror(
@@ -543,7 +543,7 @@ bool CONTACT::MtManager::ReadAndCheckInput(
   if ((inttype == INPAR::MORTAR::inttype_elements ||
           inttype == INPAR::MORTAR::inttype_elements_BS) &&
       mortar.get<int>("NUMGP_PER_DIM") <= 1)
-    dserror("ERROR: Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
+    dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
   // *********************************************************************
   // warnings

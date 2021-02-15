@@ -1542,7 +1542,7 @@ void CONTACT::CoAbstractStrategy::EvaluateReferenceState(Teuchos::RCP<const Epet
 
     // error if no nodes are initialized to active
     if (gactivenodes_->NumGlobalElements() == 0)
-      dserror("ERROR: No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
+      dserror("No active nodes: Choose bigger value for INITCONTACTGAPVALUE!");
   }
 
   // (2) FRICTIONAL CONTACT CASE
@@ -1705,7 +1705,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         break;
       }
       default:
-        dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+        dserror("StoreNodalQuantities: Unknown state std::string variable!");
         break;
     }  // switch
 
@@ -1735,13 +1735,13 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
     {
       int gid = snodemap->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // be aware of problem dimension
       const int dim = Dim();
       const int numdof = cnode->NumDof();
-      if (dim != numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+      if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
       // find indices for DOFs of current node in Epetra_Vector
       // and extract this node's quantity from vectorinterface
@@ -1750,7 +1750,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       for (int dof = 0; dof < dim; ++dof)
       {
         locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
-        if (locindex[dof] < 0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+        if (locindex[dof] < 0) dserror("StoreNodalQuantites: Did not find dof in map");
 
         switch (type)
         {
@@ -1774,7 +1774,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
 #ifndef CONTACTPSEUDO2D
             // throw a dserror if node is Active and DBC
             if (cnode->IsDbc() && cnode->Active())
-              dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+              dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 #endif  // #ifndef CONTACTPSEUDO2D
 
             // store updated LM into node
@@ -1788,14 +1788,14 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
           }
           case MORTAR::StrategyBase::slipold:
           {
-            if (!friction_) dserror("ERROR: Slip just for friction problems!");
+            if (!friction_) dserror("Slip just for friction problems!");
 
             FriNode* fnode = dynamic_cast<FriNode*>(cnode);
             fnode->FriData().SlipOld() = fnode->FriData().Slip();
             break;
           }
           default:
-            dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+            dserror("StoreNodalQuantities: Unknown state std::string variable!");
             break;
         }  // switch
       }
@@ -1822,13 +1822,13 @@ void CONTACT::CoAbstractStrategy::ComputeContactStresses()
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // be aware of problem dimension
       int dim = Dim();
       int numdof = cnode->NumDof();
-      if (dim != numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+      if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
       double nn[3];
       double nt1[3];
@@ -1880,16 +1880,12 @@ void CONTACT::CoAbstractStrategy::StoreDirichletStatus(
   // loop over all interfaces
   for (unsigned i = 0; i < Interfaces().size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("ERROR: StoreDirichletStatus: Double active node check needed for n
-    // interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // check if this node's dofs are in dbcmap
@@ -1947,7 +1943,7 @@ void CONTACT::CoAbstractStrategy::StoreDM(const std::string& state)
   // unknown conversion
   else
   {
-    dserror("ERROR: StoreDM: Unknown conversion requested!");
+    dserror("StoreDM: Unknown conversion requested!");
   }
 
   return;
@@ -2047,7 +2043,7 @@ void CONTACT::CoAbstractStrategy::DoWriteRestart(
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
@@ -2146,7 +2142,7 @@ void CONTACT::CoAbstractStrategy::DoReadRestart(IO::DiscretizationReader& reader
       if ((*activetoggle)[dof] == 1)
       {
         DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // set value active / inactive in cnode
@@ -2310,7 +2306,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       std::vector<double> nodeforce(3);
@@ -2320,7 +2316,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcslavetemp->Map()).LID(cnode->Dofs()[d]);
-        if (dofid < 0) dserror("ERROR: ContactForces: Did not find slave dof in map");
+        if (dofid < 0) dserror("ContactForces: Did not find slave dof in map");
         nodeforce[d] = (*fcslavetemp)[dofid];
         gfcs[d] += nodeforce[d];
         position[d] = cnode->xspatial()[d];
@@ -2351,7 +2347,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     {
       int gid = Interfaces()[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       std::vector<double> nodeforce(3);
@@ -2361,7 +2357,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcmastertemp->Map()).LID(cnode->Dofs()[d]);
-        if (dofid < 0) dserror("ERROR: ContactForces: Did not find master dof in map");
+        if (dofid < 0) dserror("ContactForces: Did not find master dof in map");
         nodeforce[d] = -(*fcmastertemp)[dofid];
         gfcm[d] += nodeforce[d];
         position[d] = cnode->xspatial()[d];
@@ -2406,7 +2402,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       std::vector<double> lm(3);
@@ -2417,7 +2413,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcslavetemp->Map()).LID(cnode->Dofs()[d]);
-        if (dofid < 0) dserror("ERROR: ContactForces: Did not find slave dof in map");
+        if (dofid < 0) dserror("ContactForces: Did not find slave dof in map");
         nodegaps[d] = (*gapslavefinal)[dofid];
         nodegapm[d] = (*gapmasterfinal)[dofid];
         lm[d] = cnode->MoData().lm()[d];
@@ -2476,7 +2472,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
         fclose(MyFile);
       }
       else
-        dserror("ERROR: File for writing meshtying forces could not be opened.");
+        dserror("File for writing meshtying forces could not be opened.");
     }
   }
 
@@ -2573,15 +2569,13 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
   // loop over all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
   {
-    // if (i>0) dserror("ERROR: PrintActiveSet: Double active node check needed for n interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       // gid of current node
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
 
       //--------------------------------------------------------------------
       // FRICTIONLESS CASE
@@ -2746,7 +2740,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
 
         // invalid status **************************************************
         else
-          dserror("ERROR: Invalid node status %i for frictionless case", gsta[k]);
+          dserror("Invalid node status %i for frictionless case", gsta[k]);
       }
     }
 
@@ -2797,7 +2791,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
 
         // invalid status **************************************************
         else
-          dserror("ERROR: Invalid node status %i for frictional case", gsta[k]);
+          dserror("Invalid node status %i for frictional case", gsta[k]);
       }
 
 #ifdef CONTACTEXPORT
@@ -2828,7 +2822,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
         fclose(MyFile);
       }
       else
-        dserror("ERROR: File for Output could not be opened.");
+        dserror("File for Output could not be opened.");
 #endif
     }
   }
@@ -2865,7 +2859,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
     {
       int gid = Interfaces()[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = Interfaces()[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
 
       // increase active counters
       CoNode* cnode = dynamic_cast<CoNode*>(node);

@@ -61,7 +61,7 @@ WEAR::Algorithm::Algorithm(const Epetra_Comm& comm)
   structure_->Setup();
 
   if (structure_ == Teuchos::null)
-    dserror("ERROR: cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
+    dserror("cast from ADAPTER::Structure to ADAPTER::FSIStructureWrapper failed");
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<ADAPTER::AleBaseAlgorithm> ale = Teuchos::rcp(
@@ -125,7 +125,7 @@ void WEAR::Algorithm::CreateMaterialInterface()
 
   // create some local variables (later to be stored in strategy)
   int dim = DRT::Problem::Instance()->NDim();
-  if (dim != 2 && dim != 3) dserror("ERROR: Contact problem must be 2D or 3D");
+  if (dim != 2 && dim != 3) dserror("Contact problem must be 2D or 3D");
   Teuchos::ParameterList cparams = cstrategy.Params();
 
   // check for FillComplete of discretization
@@ -260,10 +260,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
         if (frcoeff[j] != frcoeff[0])
-          dserror("ERROR: Inconsistency in friction coefficients of interface %i", groupid1);
+          dserror("Inconsistency in friction coefficients of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (frcoeff[0] < 0.0) dserror("ERROR: Negative FrCoeff / FrBound on interface %i", groupid1);
+      if (frcoeff[0] < 0.0) dserror("Negative FrCoeff / FrBound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       if (fric == INPAR::CONTACT::friction_tresca)
@@ -291,10 +291,10 @@ void WEAR::Algorithm::CreateMaterialInterface()
       // check consistency of interface COFs
       for (int j = 1; j < (int)currentgroup.size(); ++j)
         if (ad_bound[j] != ad_bound[0])
-          dserror("ERROR: Inconsistency in adhesion bounds of interface %i", groupid1);
+          dserror("Inconsistency in adhesion bounds of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (ad_bound[0] < 0.0) dserror("ERROR: Negative adhesion bound on interface %i", groupid1);
+      if (ad_bound[0] < 0.0) dserror("Negative adhesion bound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       icparams.setEntry("ADHESION_BOUND", static_cast<Teuchos::ParameterEntry>(ad_bound[0]));

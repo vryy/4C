@@ -704,7 +704,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
     /* get the interface id
      * (should be the same for both conditions in the current group!) */
-    if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
 
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
@@ -752,10 +752,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
         if (frcoeff[j] != frcoeff[0])
-          dserror("ERROR: Inconsistency in friction coefficients of interface %i", groupid1);
+          dserror("Inconsistency in friction coefficients of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (frcoeff[0] < 0.0) dserror("ERROR: Negative FrCoeff / FrBound on interface %i", groupid1);
+      if (frcoeff[0] < 0.0) dserror("Negative FrCoeff / FrBound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       if (ftype == INPAR::CONTACT::friction_tresca)
@@ -788,10 +788,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // check consistency of interface COFs
       for (std::size_t j = 1; j < currentgroup.size(); ++j)
         if (ad_bound[j] != ad_bound[0])
-          dserror("ERROR: Inconsistency in adhesion bounds of interface %i", groupid1);
+          dserror("Inconsistency in adhesion bounds of interface %i", groupid1);
 
       // check for infeasible value of COF
-      if (ad_bound[0] < 0.0) dserror("ERROR: Negative adhesion bound on interface %i", groupid1);
+      if (ad_bound[0] < 0.0) dserror("Negative adhesion bound on interface %i", groupid1);
 
       // add COF locally to contact parameter list of this interface
       icparams.setEntry("ADHESION_BOUND", static_cast<Teuchos::ParameterEntry>(ad_bound[0]));
@@ -834,14 +834,14 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
-      if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
+      if (!nodeids) dserror("Condition does not have Node Ids");
       for (std::size_t k = 0; k < (*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!parent_discret.HaveGlobalNode(gid)) continue;
         DRT::Node* node = parent_discret.gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
 
         if (node->NumElement() == 0)
           dserror(
@@ -1709,8 +1709,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   }
   else
   {
-    dserror("ERROR: Unrecognized strategy: \"%s\"",
-        INPAR::CONTACT::SolvingStrategy2String(stype).c_str());
+    dserror("Unrecognized strategy: \"%s\"", INPAR::CONTACT::SolvingStrategy2String(stype).c_str());
   }
 
   // setup the stategy object
@@ -1809,8 +1808,7 @@ void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
       for (unsigned j = 0; j < given_ccgroup.size(); ++j)
       {
         const std::vector<int>* ggroupv = given_ccgroup[j]->Get<std::vector<int>>("Interface ID");
-        if (ggroupv == NULL)
-          dserror("ERROR: Given Contact Conditions do not have value 'Interface ID'");
+        if (ggroupv == NULL) dserror("Given Contact Conditions do not have value 'Interface ID'");
         const std::vector<int>* cgroupv = (*vv_cit)[j]->Get<std::vector<int>>("Interface ID");
         if (cgroupv == NULL or cgroupv->size() != ggroupv->size())
         {
@@ -1878,7 +1876,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
       IO::cout << "================================================================\n\n";
     }
     else
-      dserror("ERROR: Invalid system type for contact/meshtying interface smoothing");
+      dserror("Invalid system type for contact/meshtying interface smoothing");
   }
   else
   {
@@ -1986,7 +1984,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+          dserror("Invalid strategy or shape function type for contact/meshtying");
       }
 
       // condensed formulation
@@ -2066,7 +2064,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+          dserror("Invalid strategy or shape function type for contact/meshtying");
       }
     }
     else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -2095,7 +2093,7 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
     }
     // invalid system type
     else
-      dserror("ERROR: Invalid system type for contact/meshtying");
+      dserror("Invalid system type for contact/meshtying");
   }
   return;
 }

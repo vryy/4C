@@ -336,16 +336,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -410,7 +413,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -420,6 +423,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -1418,7 +1422,7 @@ void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         std::vector<int> locindex(Dim());
@@ -1471,7 +1475,7 @@ void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
         fclose(MyFile);
       }
       else
-        dserror("ERROR: File could not be opened.");
+        dserror("File could not be opened.");
     }
   }
 
@@ -1499,7 +1503,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
   {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
-      dserror("ERROR: FillComplete() not called on interface %", i);
+      dserror("FillComplete() not called on interface %", i);
 
     // reset kappa
     // loop over all slave row nodes on the current interface
@@ -1507,7 +1511,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
       cnode->CoData().Kappa() = 0.0;
     }
@@ -1518,7 +1522,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
     {
       int gid1 = interface_[i]->MasterColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+      if (!ele1) dserror("Cannot find slave element with gid %", gid1);
       CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
       // loop over slave edges -> match node number for tri3/quad4
@@ -1562,7 +1566,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
             nodeLIds[1] = 0;
           }
           else
-            dserror("ERROR: loop counter and edge number do not match!");
+            dserror("loop counter and edge number do not match!");
         }
         else if (selement->Shape() == DRT::Element::tri3)
         {
@@ -1591,7 +1595,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
             nodeLIds[1] = 0;
           }
           else
-            dserror("ERROR: loop counter and edge number do not match!");
+            dserror("loop counter and edge number do not match!");
         }
 
         // check if both nodes on edge geometry
@@ -1642,7 +1646,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
     {
       int gid = interface_[i]->MasterRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // only for edge nodes!
@@ -1656,7 +1660,7 @@ void CONTACT::CoLagrangeStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_V
         if (abs(kappainv) < 1e-12)
         {
           kappainv = 1.0;
-          //          dserror("ERROR: gap is zero!");
+          //          dserror("gap is zero!");
         }
         else
         {
@@ -1696,22 +1700,22 @@ void CONTACT::CoLagrangeStrategy::AddMasterContributions(
   }
 
   // force
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("ERROR: GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
+  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
 
   if (add_time_integration)
     if (fLTLOld_ != Teuchos::null)
-      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("Update went wrong");
 
   double fac = 0.;
   if (add_time_integration)
     fac = 1. - alphaf_;
   else
     fac = 1.;
-  if (feff->Update(fac, *fc, 1.)) dserror("ERROR: Update went wrong");
+  if (feff->Update(fac, *fc, 1.)) dserror("Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
@@ -1752,22 +1756,22 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributions(
   fconservation_->Update(1.0, *fc, 0.0);
 
   // force
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("ERROR: GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
+  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
 
   if (add_time_integration)
     if (fLTLOld_ != Teuchos::null)
-      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("Update went wrong");
 
   double fac = 0.;
   if (add_time_integration)
     fac = 1. - alphaf_;
   else
     fac = 1.;
-  if (feff->Update(fac, *fc, 1.)) dserror("ERROR: Update went wrong");
+  if (feff->Update(fac, *fc, 1.)) dserror("Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
@@ -1805,7 +1809,7 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
 
   // store normal forces
   fLTLn_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTLn_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
+  if (fLTLn_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
 
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1819,26 +1823,26 @@ void CONTACT::CoLagrangeStrategy::AddLineToLinContributionsFriction(
 
   // store tangential forces
   fLTLt_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTLt_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
-  if (fLTLt_->Update(-1.0, *fLTLn_, 1.0)) dserror("ERROR: Update went wrong");
+  if (fLTLt_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
+  if (fLTLt_->Update(-1.0, *fLTLn_, 1.0)) dserror("Update went wrong");
 
   // force
-  if (fc->GlobalAssemble(Add, false) != 0) dserror("ERROR: GlobalAssemble failed");
+  if (fc->GlobalAssemble(Add, false) != 0) dserror("GlobalAssemble failed");
 
   // store fLTL values for time integration
   fLTL_ = Teuchos::rcp(new Epetra_Vector(fc->Map()), true);
-  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("ERROR: Update went wrong");
+  if (fLTL_->Update(1.0, *fc, 0.0)) dserror("Update went wrong");
 
   if (add_time_integration)
     if (fLTLOld_ != Teuchos::null)
-      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("ERROR: Update went wrong");
+      if (feff->Update(alphaf_, *fLTLOld_, 1.)) dserror("Update went wrong");
 
   double fac = 0.;
   if (add_time_integration)
     fac = 1. - alphaf_;
   else
     fac = 1.;
-  if (feff->Update(fac, *fc, 1.)) dserror("ERROR: Update went wrong");
+  if (feff->Update(fac, *fc, 1.)) dserror("Update went wrong");
 
   // stiffness
   dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add);
@@ -2073,19 +2077,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -2149,7 +2153,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -2159,8 +2163,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      // we cannot use this check, as we deliberately replaced zero entries
-      // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -3544,16 +3547,19 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3618,7 +3624,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -3628,6 +3634,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -3798,19 +3805,19 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      // if (err>0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3874,7 +3881,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -3884,8 +3891,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      // we cannot use this check, as we deliberately replaced zero entries
-      // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -4543,15 +4549,12 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // if (i>0) dserror("ERROR: UpdateActiveSet: Double active node check needed for n
-    // interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // compute weighted gap
@@ -4591,11 +4594,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       // (thus we only have to check ncr.disp. jump and weighted gap)
       if (cnode->Active() == false)
       {
-        // check for fulfilment of contact condition
-        // if (abs(nz) > 1e-8)
-        //  std::cout << "ERROR: UpdateActiveSet: Exact inactive node condition violated "
-        //       <<  "for node ID: " << cnode->Id() << std::endl;
-
         // check for penetration
         if (wgap < 0)
         {
@@ -4609,11 +4607,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       // (thus we only have to check for positive Lagrange multipliers)
       else
       {
-        // check for fulfilment of contact condition
-        // if (abs(wgap) > 1e-8)
-        //  std::cout << "ERROR: UpdateActiveSet: Exact active node condition violated "
-        //       << "for node ID: " << cnode->Id() << std::endl;
-
         // check for tensile contact forces
         if (nz <= 0)  // no averaging of Lagrange multipliers
         // if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers
@@ -4865,7 +4858,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStep
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
         // The nested active set strategy cannot deal with the case of
@@ -4877,7 +4870,7 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth(const bool firstStep
         // updates the active set after EACH Newton step, see below, and thus
         // would always set the corresponding nodes to INACTIVE.)
         if (cnode->Active() && !cnode->HasSegment() && !cnode->IsOnBoundorCE())
-          dserror("ERROR: Active node %i without any segment/cell attached", cnode->Id());
+          dserror("Active node %i without any segment/cell attached", cnode->Id());
       }
     }
     return;
@@ -5069,7 +5062,7 @@ void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   {
     // store fLTL values for time integration
     fLTLOld_ = Teuchos::rcp(new Epetra_Vector(fLTL_->Map()), true);
-    if (fLTLOld_->Update(1.0, *fLTL_, 0.0)) dserror("ERROR: Update went wrong");
+    if (fLTLOld_->Update(1.0, *fLTL_, 0.0)) dserror("Update went wrong");
   }
 
   // abstract routine
@@ -5147,7 +5140,7 @@ void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   //    fclose(MyFile);
   //  }
   //  else
-  //    dserror("ERROR: File could not be opened.");
+  //    dserror("File could not be opened.");
   //
   //  ++step;
 
@@ -5344,7 +5337,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
 
         CoNode* cnode = dynamic_cast<CoNode*>(node);
 
@@ -5383,7 +5376,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateRegularizationScaling(Teuchos::RCP<Epe
           }
           else
           {
-            dserror("ERROR: lid = -1!");
+            dserror("lid = -1!");
           }
 
           std::cout << std::setprecision(32) << "cnode->CoPoroData().GetnScale() for node "

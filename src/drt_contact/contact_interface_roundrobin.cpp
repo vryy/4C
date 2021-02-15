@@ -29,14 +29,14 @@ void CONTACT::CoInterface::RoundRobinExtendGhosting(bool firstevaluation)
   {
     int gid = SlaveColElements()->GID(k);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!ele) dserror("Cannot find ele with gid %i", gid);
     CoElement* slave_ele = dynamic_cast<CoElement*>(ele);
 
     for (int j = 0; j < slave_ele->MoData().NumSearchElements(); ++j)
     {
       int gid2 = slave_ele->MoData().SearchElements()[j];
       DRT::Element* ele2 = idiscret_->gElement(gid2);
-      if (!ele2) dserror("ERROR: Cannot find master element with gid %", gid2);
+      if (!ele2) dserror("Cannot find master element with gid %", gid2);
       CoElement* melement = dynamic_cast<CoElement*>(ele2);
 
       element_GIDs_to_be_ghosted.push_back(melement->Id());
@@ -127,7 +127,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   {
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!ele) dserror("Cannot find ele with gid %i", gid);
     MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     mele->Pack(dataeles);
@@ -143,7 +143,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   {
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!ele) dserror("Cannot find ele with gid %i", gid);
     MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     mele->Pack(dataeles);
@@ -164,7 +164,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   {
     int gid = MasterColelesdummy->GID(i);
     DRT::Element* ele = Discret().gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!ele) dserror("Cannot find ele with gid %i", gid);
     MORTAR::MortarElement* mele = dynamic_cast<MORTAR::MortarElement*>(ele);
 
     // check for ghosting
@@ -242,7 +242,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   {
     int gid = MasterColNodesdummy->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!node) dserror("Cannot find ele with gid %i", gid);
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
@@ -264,7 +264,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   {
     int gid = MasterColNodesdummy->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!node) dserror("Cannot find ele with gid %i", gid);
 
     // check for ghosting
     int ghost;
@@ -299,7 +299,7 @@ void CONTACT::CoInterface::RoundRobinChangeOwnership()
   {
     int gid = MasterColNodesdummy->GID(i);
     DRT::Node* node = Discret().gNode(gid);
-    if (!node) dserror("ERROR: Cannot find ele with gid %i", gid);
+    if (!node) dserror("Cannot find ele with gid %i", gid);
 
     if (ftype == INPAR::CONTACT::friction_none)
     {
@@ -437,7 +437,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("ERROR: Invalid search algorithm");
+    dserror("Invalid search algorithm");
 
   // first ghosting for std. distribution
   RoundRobinExtendGhosting(true);
@@ -470,7 +470,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
       if (SearchAlg() == INPAR::MORTAR::search_binarytree)
         CreateSearchTree();
       else if (SearchAlg() != INPAR::MORTAR::search_bfele)
-        dserror("ERROR: Invalid search algorithm");
+        dserror("Invalid search algorithm");
 
       // evaluate interfaces
       if (proc < (int)(Comm().NumProc() - 1))
@@ -480,7 +480,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
         else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
           EvaluateSearchBinarytree();
         else
-          dserror("ERROR: Invalid search algorithm");
+          dserror("Invalid search algorithm");
 
         // other ghostings per iteration
         RoundRobinExtendGhosting(false);
@@ -511,7 +511,7 @@ void CONTACT::CoInterface::RoundRobinDetectGhosting()
   if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     CreateSearchTree();
   else if (SearchAlg() != INPAR::MORTAR::search_bfele)
-    dserror("ERROR: Invalid search algorithm");
+    dserror("Invalid search algorithm");
 
   // final output for loop
   if (Comm().MyPID() == 0) std::cout << " Round-Robin loop done!" << std::endl;

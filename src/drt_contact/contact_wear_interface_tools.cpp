@@ -32,7 +32,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -48,7 +48,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // store gap-values into refG
@@ -67,7 +67,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -108,7 +108,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
 
       // store gap-values into newG
@@ -171,7 +171,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
+    if (!node) dserror("Cannot find master node with gid %", gid);
     CONTACT::CoNode* mnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -212,7 +212,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
 
       if (kcnode->Active())
@@ -231,7 +231,7 @@ void WEAR::WearInterface::FDCheckGapDeriv()
         {
           int gid = mnodefullmap->GID(m);
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           CONTACT::CoNode* cmnode = dynamic_cast<CONTACT::CoNode*>(mnode);
           bool hasentry = false;
 
@@ -318,7 +318,7 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -334,7 +334,7 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // store gap-values into refG
@@ -353,7 +353,7 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -376,7 +376,7 @@ void WEAR::WearInterface::FDCheckGapDeriv_W()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::CoNode* kcnode = dynamic_cast<CONTACT::CoNode*>(knode);
 
       // store gap-values into newG
@@ -430,7 +430,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -448,7 +448,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
 
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (cnode->WearData().GetE().size() > 0)
@@ -459,7 +459,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
       {
         int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+        if (!node2) dserror("Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double w = cnode2->WearData().wcurr()[0];
@@ -485,7 +485,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -521,7 +521,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
 
       int gid3 = snoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
+      if (!node3) dserror("Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
       if (kcnode->WearData().GetE().size() > 0)
@@ -532,7 +532,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
         {
           int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+          if (!node2) dserror("Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
@@ -614,7 +614,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -650,7 +650,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
 
       int gid3 = snoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
+      if (!node3) dserror("Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
       if (kcnode->WearData().GetE().size() > 0)
@@ -661,7 +661,7 @@ void WEAR::WearInterface::FDCheckDerivE_D(LINALG::SparseMatrix& linedis)
         {
           int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+          if (!node2) dserror("Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
@@ -745,7 +745,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for values of complementary function C
   int nrow = snoderowmap_->NumMyElements();
@@ -763,7 +763,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
 
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (cnode->WearData().GetE().size() > 0)
@@ -774,7 +774,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
       {
         int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+        if (!node2) dserror("Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double w = cnode2->WearData().wcurr()[0];
@@ -800,7 +800,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -836,7 +836,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
 
       int gid3 = mnoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
+      if (!node3) dserror("Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
       if (kcnode->WearData().GetE().size() > 0)
@@ -847,7 +847,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
         {
           int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+          if (!node2) dserror("Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
@@ -929,7 +929,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -965,7 +965,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
 
       int gid3 = mnoderowmap_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
+      if (!node3) dserror("Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
       if (kcnode->WearData().GetE().size() > 0)
@@ -976,7 +976,7 @@ void WEAR::WearInterface::FDCheckDerivE_D_Master(LINALG::SparseMatrix& linedis)
         {
           int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+          if (!node2) dserror("Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double w = cnode2->WearData().wcurr()[0];
@@ -1060,7 +1060,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // nothing to do if no slip nodes
   if (slipnodes_->NumMyElements() == 0) return;
@@ -1081,7 +1081,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
 
     int gid = slipnodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (cnode->WearData().GetT().size() > 0)
@@ -1092,7 +1092,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
       {
         int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+        if (!node2) dserror("Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double lmn = 0.0;
@@ -1119,7 +1119,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -1155,7 +1155,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
 
       int gid3 = slipnodes_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
+      if (!node3) dserror("Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
       if (kcnode->WearData().GetT().size() > 0)
@@ -1166,7 +1166,7 @@ void WEAR::WearInterface::FDCheckDerivT_D(LINALG::SparseMatrix& lintdis)
         {
           int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+          if (!node2) dserror("Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double lmn = 0.0;
@@ -1251,7 +1251,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // nothing to do if no slip nodes
   if (slipmasternodes_->NumMyElements() == 0) return;
@@ -1272,7 +1272,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
 
     int gid = slipmasternodes_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     if (cnode->WearData().GetT().size() > 0)
@@ -1283,7 +1283,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
       {
         int gid2 = (int)((p->first) / (dim));
         DRT::Node* node2 = idiscret_->gNode(gid2);
-        if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+        if (!node2) dserror("Cannot find node with gid %", gid2);
         CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
         double lmn = 0.0;
@@ -1310,7 +1310,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -1346,7 +1346,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
 
       int gid3 = slipmasternodes_->GID(k);
       DRT::Node* node3 = idiscret_->gNode(gid3);
-      if (!node3) dserror("ERROR: Cannot find node with gid %", gid3);
+      if (!node3) dserror("Cannot find node with gid %", gid3);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(node3);
 
       if (kcnode->WearData().GetT().size() > 0)
@@ -1357,7 +1357,7 @@ void WEAR::WearInterface::FDCheckDerivT_D_Master(LINALG::SparseMatrix& lintdis)
         {
           int gid2 = (int)((p->first) / (dim));
           DRT::Node* node2 = idiscret_->gNode(gid2);
-          if (!node2) dserror("ERROR: Cannot find node with gid %", gid2);
+          if (!node2) dserror("Cannot find node with gid %", gid2);
           CONTACT::FriNode* cnode2 = dynamic_cast<CONTACT::FriNode*>(node2);
 
           double lmn = 0.0;
@@ -1445,7 +1445,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // information from interface contact parameter list
   INPAR::CONTACT::FrictionType ftype =
@@ -1470,7 +1470,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     double jumptxi = 0;
@@ -1513,7 +1513,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       {
         int gid = *mcurr;
         DRT::Node* mnode = idiscret_->gNode(gid);
-        if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!mnode) dserror("Cannot find node with gid %", gid);
         CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
         double mik = mmap[cmnode->Id()];
@@ -1557,7 +1557,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
       refCteta[i] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
     }
     else
-      dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
+      dserror("Friction law is neiter Tresca nor Coulomb");
 
     refCtxi[i] =
         euclidean * ztxi - (frcoeff * (znor - cn * cnode->CoData().Getg())) * (ztxi + ct * jumptxi);
@@ -1575,7 +1575,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -1601,7 +1601,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!node) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -1644,7 +1644,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
           double mik = mmap[cmnode->Id()];
           double mikold = mmapold[cmnode->Id()];
@@ -1687,7 +1687,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
+        dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
@@ -1801,7 +1801,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::FriNode* snode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -1835,7 +1835,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!node) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -1879,7 +1879,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -1924,7 +1924,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
+        dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
@@ -2040,7 +2040,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     int gid = mnodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
+    if (!node) dserror("Cannot find master node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -2074,7 +2074,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -2118,7 +2118,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -2163,7 +2163,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
+        dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
@@ -2278,7 +2278,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     int gid = snodefullmap->GID(fd / dim);
     int coldof = 0;
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
+    if (!node) dserror("Cannot find master node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -2302,7 +2302,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       double jumptxi = 0;
@@ -2346,7 +2346,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         {
           int gid = *mcurr;
           DRT::Node* mnode = idiscret_->gNode(gid);
-          if (!mnode) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!mnode) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cmnode = dynamic_cast<CONTACT::FriNode*>(mnode);
 
           double mik = mmap[cmnode->Id()];
@@ -2391,7 +2391,7 @@ void WEAR::WearInterface::FDCheckSlipDeriv(LINALG::SparseMatrix& linslipLMglobal
         newCteta[k] = euclidean * zteta - (frcoeff * znor) * (zteta + ct * jumpteta);
       }
       else
-        dserror("ERROR: Friction law is neiter Tresca nor Coulomb");
+        dserror("Friction law is neiter Tresca nor Coulomb");
 
       newCtxi[k] = euclidean * ztxi -
                    (frcoeff * (znor - cn * kcnode->CoData().Getg())) * (ztxi + ct * jumptxi);
@@ -2502,7 +2502,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
@@ -2520,7 +2520,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // typedef std::map<int,std::map<int,double> >::const_iterator CID;
@@ -2549,7 +2549,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2584,7 +2584,7 @@ void WEAR::WearInterface::FDCheckMortarTDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       if ((int)(kcnode->WearData().GetT().size()) == 0) continue;
@@ -2672,7 +2672,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refT;  // stores dof-wise the entries of D
@@ -2690,7 +2690,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
   {
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // typedef std::map<int,std::map<int,double> >::const_iterator CID;
@@ -2719,7 +2719,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2754,7 +2754,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       if ((int)(kcnode->WearData().GetT().size()) == 0) continue;
@@ -2833,7 +2833,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -2868,7 +2868,7 @@ void WEAR::WearInterface::FDCheckMortarT_Master_Deriv()
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       if ((int)(kcnode->WearData().GetT().size()) == 0) continue;
@@ -2956,7 +2956,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
@@ -2974,7 +2974,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // typedef std::map<int,std::map<int,double> >::const_iterator CID;
@@ -3003,7 +3003,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -3038,7 +3038,7 @@ void WEAR::WearInterface::FDCheckMortarEDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       if ((int)(kcnode->WearData().GetE().size()) == 0) continue;
@@ -3126,7 +3126,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for D-Matrix entries
   std::map<int, std::map<int, double>> refE;  // stores dof-wise the entries of D
@@ -3144,7 +3144,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
   {
     int gid = mnoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // typedef std::map<int,std::map<int,double> >::const_iterator CID;
@@ -3173,7 +3173,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -3208,7 +3208,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       if ((int)(kcnode->WearData().GetE().size()) == 0) continue;
@@ -3288,7 +3288,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -3323,7 +3323,7 @@ void WEAR::WearInterface::FDCheckMortarE_Master_Deriv()
     {
       int kgid = mnoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       if ((int)(kcnode->WearData().GetE().size()) == 0) continue;
@@ -3413,7 +3413,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3429,7 +3429,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // store wear-values into refW
@@ -3448,7 +3448,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     // do step forward (modify nodal displacement)
@@ -3480,7 +3480,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       // store gap-values into newG
@@ -3543,7 +3543,7 @@ void WEAR::WearInterface::FDCheckWearDerivLm()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // store gap-values into refG
@@ -3564,7 +3564,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
   // FD checks only for serial case
   Teuchos::RCP<Epetra_Map> snodefullmap = LINALG::AllreduceEMap(*snoderowmap_);
   Teuchos::RCP<Epetra_Map> mnodefullmap = LINALG::AllreduceEMap(*mnoderowmap_);
-  if (Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   // create storage for gap values
   int nrow = snoderowmap_->NumMyElements();
@@ -3580,7 +3580,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     // store wear-values into refW
@@ -3599,7 +3599,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = snodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
     CONTACT::CoNode* snode = dynamic_cast<CONTACT::CoNode*>(node);
 
     int sdof = snode->Dofs()[fd % dim];
@@ -3634,7 +3634,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       // store gap-values into newG
@@ -3699,7 +3699,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     // now get the node we want to apply the FD scheme to
     int gid = mnodefullmap->GID(fd / dim);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find master node with gid %", gid);
+    if (!node) dserror("Cannot find master node with gid %", gid);
     CONTACT::FriNode* mnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     int mdof = mnode->Dofs()[fd % dim];
@@ -3733,7 +3733,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
     {
       int kgid = snoderowmap_->GID(k);
       DRT::Node* knode = idiscret_->gNode(kgid);
-      if (!knode) dserror("ERROR: Cannot find node with gid %", kgid);
+      if (!knode) dserror("Cannot find node with gid %", kgid);
       CONTACT::FriNode* kcnode = dynamic_cast<CONTACT::FriNode*>(knode);
 
       // store gap-values into newG
@@ -3794,7 +3794,7 @@ void WEAR::WearInterface::FDCheckWearDeriv()
   {
     int gid = snoderowmap_->GID(i);
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
     cnode->WearData().WeightedWear() = refW[i];

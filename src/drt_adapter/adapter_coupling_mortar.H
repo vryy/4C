@@ -148,28 +148,28 @@ namespace ADAPTER
     //! Access to slave side mortar matrix \f$D\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const
     {
-      if (D_ == Teuchos::null) dserror("ERROR: D Matrix is null pointer!");
+      if (D_ == Teuchos::null) dserror("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetDinvMatrix() const
     {
-      if (Dinv_ == Teuchos::null) dserror("ERROR: DInv Matrix is null pointer!");
+      if (Dinv_ == Teuchos::null) dserror("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMMatrix() const
     {
-      if (M_ == Teuchos::null) dserror("ERROR: M Matrix is null pointer!");
+      if (M_ == Teuchos::null) dserror("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetPMatrix() const
     {
-      if (P_ == Teuchos::null) dserror("ERROR: P Matrix is null pointer!");
+      if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
       return P_;
     };
 
@@ -181,7 +181,7 @@ namespace ADAPTER
      */
     virtual Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const
     {
-      if (P_ == Teuchos::null) dserror("ERROR: P Matrix is null pointer!");
+      if (P_ == Teuchos::null) dserror("P Matrix is null pointer!");
       return P_;
     };
 
@@ -323,7 +323,7 @@ namespace ADAPTER
     /// check init and setup call
     virtual void CheckSetup() const
     {
-      if (!IsSetup()) dserror("ERROR: Call Setup() first!");
+      if (!IsSetup()) dserror("Call Setup() first!");
     }
 
    private:

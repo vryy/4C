@@ -402,7 +402,7 @@ CONTACT::CoNode::CoNode(const CONTACT::CoNode& old)
       cTSIdata_(Teuchos::null)
 {
   // not yet used and thus not necessarily consistent
-  dserror("ERROR: CoNode copy-ctor not yet implemented");
+  dserror("CoNode copy-ctor not yet implemented");
 
   return;
 }
@@ -570,8 +570,8 @@ void CONTACT::CoNode::Unpack(const std::vector<char>& data)
 void CONTACT::CoNode::AddgValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddgValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("ERROR: AddgValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddgValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddgValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
   if (CoData().Getg() == 1.0e12) CoData().Getg() = 0.0;
@@ -589,9 +589,8 @@ void CONTACT::CoNode::AddgValue(double& val)
 void CONTACT::CoNode::AddWGapValue(const double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddWGapValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddWGapValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddWGapValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddWGapValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
   if (AugData().GetWGap() == 1.0e12) AugData().GetWGap() = 0;
@@ -637,8 +636,8 @@ void CONTACT::CoNode::AddltsGapValue(double& val)
 void CONTACT::CoNode::AddltlGapValue(double* val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("ERROR: function call for non edge node! %i", Id());
+  if (IsSlave() == false) dserror("function called for master node %i", Id());
+  if (!IsOnEdge()) dserror("function call for non edge node! %i", Id());
 
   // initialize if called for the first time
   if (CoData().Getgltl()[0] == 1.0e12 or CoData().Getgltl()[1] == 1.0e12 or
@@ -663,8 +662,8 @@ void CONTACT::CoNode::AddltlGapValue(double* val)
 void CONTACT::CoNode::AddltlJumpValue(double* val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: function called for master node %i", Id());
-  if (!IsOnEdge()) dserror("ERROR: function call for non edge node! %i", Id());
+  if (IsSlave() == false) dserror("function called for master node %i", Id());
+  if (!IsOnEdge()) dserror("function call for non edge node! %i", Id());
 
   // initialize if called for the first time
   if (CoData().Getjumpltl()[0] == 1.0e12 or CoData().Getjumpltl()[1] == 1.0e12 or
@@ -690,9 +689,8 @@ void CONTACT::CoNode::AddltlJumpValue(double* val)
 void CONTACT::CoNode::AddKappaValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddKappaValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddKappaValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddKappaValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddKappaValue: function called for boundary node %i", Id());
 
   // initialize if called for the first time
   if (AugData().GetKappa() == 1.0e12) AugData().GetKappa() = 0.0;
@@ -797,15 +795,15 @@ void CONTACT::CoNode::AddWcMuLm(int col, double val)
 void CONTACT::CoNode::AddDerivZValue(int& row, const int& col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddZValue: function called for master node %i", Id());
-  if (IsOnBound() == true) dserror("ERROR: AddZValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddZValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddZValue: function called for boundary node %i", Id());
 
   // check if this has been called before
   if ((int)CoData().GetDerivZ().size() == 0) CoData().GetDerivZ().resize(NumDof());
 
   // check row index input
   if ((int)CoData().GetDerivZ().size() <= row)
-    dserror("ERROR: AddDerivZValue: tried to access invalid row index!");
+    dserror("AddDerivZValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& zmap = CoData().GetDerivZ()[row];
@@ -1031,7 +1029,7 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
       }  // end edge loop
     }
     else
-      dserror("ERROR: only quad4!");
+      dserror("only quad4!");
   }  // end surfele loop
 
 
@@ -1210,7 +1208,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
   if (length < 1e-12)
   {
     std::cout << "normal zero: node slave= " << IsSlave() << "  length= " << length << std::endl;
-    dserror("ERROR: Nodal normal length 0, node ID %i", Id());
+    dserror("Nodal normal length 0, node ID %i", Id());
   }
   else
   {
@@ -1270,7 +1268,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
     if (ltxi < 1e-12)
     {
       std::cout << "tangent 1 zero: node slave= " << IsSlave() << "  length= " << ltxi << std::endl;
-      dserror("ERROR: Nodal tangent length 0, node ID %i", Id());
+      dserror("Nodal tangent length 0, node ID %i", Id());
     }
     else
     {
@@ -1287,7 +1285,7 @@ void CONTACT::CoNode::BuildAveragedNormal()
 #endif  // #ifdef CONTACTPSEUDO2D
   }
   else
-    dserror("ERROR: Contact problems must be either 2D or 3D");
+    dserror("Contact problems must be either 2D or 3D");
 
   // build linearization of averaged nodal normal and tangents
   DerivAveragedNormal(elens, length, ltxi);
@@ -1572,9 +1570,8 @@ void CONTACT::CoNode::DerivAveragedNormal(
 void CONTACT::CoNode::AddNcoupValue(double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddNcoupValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddNcoupValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddNcoupValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddNcoupValue: function called for boundary node %i", Id());
 
   // add given value to ncoup
   CoPoroData().GetnCoup() += val;

@@ -36,7 +36,7 @@ bool CONTACT::CoIntegrator::AssembleG(
 {
   // get adjacent slave nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: AssembleG: Null pointer for snodes!");
+  if (!snodes) dserror("AssembleG: Null pointer for snodes!");
 
   // loop over all slave nodes
   for (int slave = 0; slave < sele.NumNode(); ++slave)
@@ -74,7 +74,7 @@ bool CONTACT::CoIntegrator::AssembleG(
 {
   // get adjacent slave int nodes to assemble to
   DRT::Node** snodes = sintele.Nodes();
-  if (!snodes) dserror("ERROR: AssembleG: Null pointer for sintnodes!");
+  if (!snodes) dserror("AssembleG: Null pointer for sintnodes!");
 
   // loop over all slave nodes
   for (int slave = 0; slave < sintele.NumNode(); ++slave)

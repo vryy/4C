@@ -181,7 +181,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
   // initialize variables
   const int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
-  if (!mynodes) dserror("ERROR: DerivNormalAtXi: Null pointer!");
+  if (!mynodes) dserror("DerivNormalAtXi: Null pointer!");
   LINALG::SerialDenseVector val(nnodes);
   LINALG::SerialDenseMatrix deriv(nnodes, 2, true);
 
@@ -211,7 +211,7 @@ void CONTACT::CoElement::DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseM
   for (int n = 0; n < nnodes; ++n)
   {
     CoNode* mycnode = dynamic_cast<CoNode*>(mynodes[n]);
-    if (!mycnode) dserror("ERROR: DerivNormalAtXi: Null pointer!");
+    if (!mycnode) dserror("DerivNormalAtXi: Null pointer!");
     int ndof = mycnode->NumDof();
 
     // derivative weighting matrix for current node
@@ -369,7 +369,7 @@ void CONTACT::CoElement::DJacDXi(
 
   // unknown case
   else
-    dserror("ERROR: DJacDXi called for unknown element type!");
+    dserror("DJacDXi called for unknown element type!");
 
   return;
 }

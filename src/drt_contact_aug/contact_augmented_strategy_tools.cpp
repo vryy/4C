@@ -160,7 +160,7 @@ void CONTACT::AUG::Strategy::FD_Debug::Evaluate(
   else
     is_fd_check_ = true;
 
-  if (strat_->Comm().NumProc() > 1) dserror("ERROR: FD checks only for serial case");
+  if (strat_->Comm().NumProc() > 1) dserror("FD checks only for serial case");
 
   LINALG::SparseMatrix derivMatrix(*derivMatrixPtr);
 

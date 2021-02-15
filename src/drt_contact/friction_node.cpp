@@ -240,7 +240,7 @@ CONTACT::FriNode::FriNode(int id, const double* coords, const int owner, const i
 CONTACT::FriNode::FriNode(const CONTACT::FriNode& old) : CONTACT::CoNode(old), wear_(old.wear_)
 {
   // not yet used and thus not necessarily consistent
-  dserror("ERROR: FriNode copy-ctor not yet implemented");
+  dserror("FriNode copy-ctor not yet implemented");
 
   return;
 }
@@ -430,14 +430,14 @@ void CONTACT::FriNode::AddMNode(int node)
 void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == true) dserror("ERROR: AddD2Value: function called for slave node %i", Id());
+  if (IsSlave() == true) dserror("AddD2Value: function called for slave node %i", Id());
 
   // check if this has been called before
   if ((int)WearData().GetD2().size() == 0) WearData().GetD2().resize(NumDof());
 
   // check row index input
   if ((int)WearData().GetD2().size() <= row)
-    dserror("ERROR: AddD2Value: tried to access invalid row index!");
+    dserror("AddD2Value: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& d2map = WearData().GetD2()[row];
@@ -452,16 +452,15 @@ void CONTACT::FriNode::AddD2Value(int& row, int& col, double& val)
 void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddJumpValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddJumpValue: function called for boundary node %i", Id());
 
   // check if this has been called before
   if ((int)FriData().GetDerivJump().size() == 0) FriData().GetDerivJump().resize(NumDof());
 
   // check row index input
   if ((int)FriData().GetDerivJump().size() <= row)
-    dserror("ERROR: AddDerivJumpValue: tried to access invalid row index!");
+    dserror("AddDerivJumpValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& zmap = FriData().GetDerivJump()[row];
@@ -476,9 +475,8 @@ void CONTACT::FriNode::AddDerivJumpValue(int& row, const int& col, double val)
 void CONTACT::FriNode::AddJumpValue(double val, int k)
 {
   // check if this is a master node or slave boundary node
-  if (IsSlave() == false) dserror("ERROR: AddJumpValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    dserror("ERROR: AddJumpValue: function called for boundary node %i", Id());
+  if (IsSlave() == false) dserror("AddJumpValue: function called for master node %i", Id());
+  if (IsOnBound() == true) dserror("AddJumpValue: function called for boundary node %i", Id());
 
   FriData().jump_var()[k] += val;
 
@@ -492,14 +490,14 @@ void CONTACT::FriNode::AddTValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   //  if (IsSlave()==false)
-  //    dserror("ERROR: AddTValue: function called for master node %i", Id());
+  //    dserror("AddTValue: function called for master node %i", Id());
 
   // check if this has been called before
   if ((int)WearData().GetT().size() == 0) WearData().GetT().resize(NumDof());
 
   // check row index input
   if ((int)WearData().GetT().size() <= row)
-    dserror("ERROR: AddTValue: tried to access invalid row index!");
+    dserror("AddTValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& tmap = WearData().GetT()[row];
@@ -515,14 +513,14 @@ void CONTACT::FriNode::AddEValue(int& row, int& col, double& val)
 {
   // check if this is a master node or slave boundary node
   //  if (IsSlave()==false)
-  //    dserror("ERROR: AddEValue: function called for master node %i", Id());
+  //    dserror("AddEValue: function called for master node %i", Id());
 
   // check if this has been called before
   if ((int)WearData().GetE().size() == 0) WearData().GetE().resize(NumDof());
 
   // check row index input
   if ((int)WearData().GetE().size() <= row)
-    dserror("ERROR: AddEValue: tried to access invalid row index!");
+    dserror("AddEValue: tried to access invalid row index!");
 
   // add the pair (col,val) to the given row
   std::map<int, double>& emap = WearData().GetE()[row];

@@ -252,7 +252,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
       IO::cout << "================================================================\n\n";
     }
     else
-      dserror("ERROR: Invalid system type for contact/meshtying interface smoothing");
+      dserror("Invalid system type for contact/meshtying interface smoothing");
   }
   else
   {
@@ -353,7 +353,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+          dserror("Invalid strategy or shape function type for contact/meshtying");
       }
 
       // condensed formulation
@@ -417,7 +417,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
           IO::cout << "================================================================\n\n";
         }
         else
-          dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+          dserror("Invalid strategy or shape function type for contact/meshtying");
       }
     }
     else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -446,7 +446,7 @@ void MORTAR::STRATEGY::Factory::PrintStrategyBanner(
     }
     // invalid system type
     else
-      dserror("ERROR: Invalid system type for contact/meshtying");
+      dserror("Invalid system type for contact/meshtying");
   }
   return;
 }

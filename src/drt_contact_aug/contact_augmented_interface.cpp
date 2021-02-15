@@ -103,7 +103,7 @@ void CONTACT::AUG::Interface::Setup()
   {
     int gid = selerowmap_->GID(i);
     DRT::Element* ele = idiscret_->gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find slave element with gid %i", gid);
+    if (!ele) dserror("Cannot find slave element with gid %i", gid);
 
     MORTAR::MortarElement* sele = static_cast<MORTAR::MortarElement*>(ele);
     if (myMinEdgeLength > sele->MinEdgeSize()) myMinEdgeLength = sele->MinEdgeSize();
@@ -117,7 +117,7 @@ void CONTACT::AUG::Interface::Setup()
   {
     int gid = melerowmap_->GID(i);
     DRT::Element* ele = idiscret_->gElement(gid);
-    if (!ele) dserror("ERROR: Cannot find master element with gid %i", gid);
+    if (!ele) dserror("Cannot find master element with gid %i", gid);
 
     MORTAR::MortarElement* mele = static_cast<MORTAR::MortarElement*>(ele);
     if (myMinEdgeLength > mele->MinEdgeSize()) myMinEdgeLength = mele->MinEdgeSize();
@@ -317,8 +317,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // interface needs to be complete
-  if (!Filled() && Comm().MyPID() == 0)
-    dserror("ERROR: FillComplete() not called on interface %", id_);
+  if (!Filled() && Comm().MyPID() == 0) dserror("FillComplete() not called on interface %", id_);
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
@@ -330,7 +329,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
     const int gid1 = myelementgids[i];
 
     DRT::Element* ele1 = idiscret_->gElement(gid1);
-    if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+    if (!ele1) dserror("Cannot find slave element with gid %", gid1);
     MORTAR::MortarElement* selement = dynamic_cast<MORTAR::MortarElement*>(ele1);
 
     if (selement->ZeroSized()) continue;
@@ -348,7 +347,7 @@ void CONTACT::AUG::Interface::RedEvaluate(const Teuchos::RCP<MORTAR::ParamsInter
         augIntegrationWrapper.IntegrateDerivSlaveElement((*selement), Comm(), mparams_ptr);
         break;
       default:
-        dserror("ERROR: RedEvaluate: Dim value has to be 2 or 3!");
+        dserror("RedEvaluate: Dim value has to be 2 or 3!");
         exit(EXIT_FAILURE);
     }
     /**************************************************************************
@@ -374,7 +373,7 @@ void CONTACT::AUG::Interface::EvaluateNodalNormals() const
   {
     const int gid = mygids[i];
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CONTACT::CoNode& cnode = dynamic_cast<CONTACT::CoNode&>(*node);
 
     /*------------------------------------------------------------------------*/
@@ -423,7 +422,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
     {
       int gid = my_rgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       Teuchos::RCP<Epetra_SerialDenseMatrix>& normals_i = normals[gid];
@@ -452,7 +451,7 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
     {
       int gid = my_cgids[i];
       DRT::Node* node = idiscret_->gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode& cnode = dynamic_cast<CoNode&>(*node);
 
       Teuchos::RCP<Epetra_SerialDenseMatrix>& normals_i = normals[gid];
@@ -603,7 +602,7 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
   else if (SearchAlg() == INPAR::MORTAR::search_binarytree)
     EvaluateSearchBinarytree();
   else
-    dserror("ERROR: Invalid search algorithm");
+    dserror("Invalid search algorithm");
 
   // set active slave node map of this interface and start the
   // coupling evaluation
@@ -818,7 +817,7 @@ void CONTACT::AUG::Interface::AssembleAugAVector(
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
 
     CoNode* cnode = static_cast<CoNode*>(node);
 
@@ -880,7 +879,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find inactive slave node with gid %", gid);
+    if (!cnode) dserror("Cannot find inactive slave node with gid %", gid);
 
     if (cnode->Owner() != Comm().MyPID())
       dserror(
@@ -936,7 +935,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
           gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDLmTLmTrhs: Node ownership inconsistency!");
+      dserror("AssembleDLmTLmTrhs: Node ownership inconsistency!");
 
     // Get the Lagrange multiplier and txi of the current node
     double* lm = cnode->MoData().lm();
@@ -1006,7 +1005,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTMatrix(LINALG::SparseMatrix& dLmTLm
           gid);
 
     if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDLmTLmTrhs: Node ownership inconsistency!");
+      dserror("AssembleDLmTLmTrhs: Node ownership inconsistency!");
 
     // get weighted element area
     const double kappa = cnode->AugData().GetKappa();
@@ -1047,11 +1046,10 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTLinMatrix(LINALG::SparseMatrix& dLm
     const int gid = mynodegids[i];
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+    if (!node) dserror("Cannot find node with gid %", gid);
     CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-    if (cnode->Owner() != Comm().MyPID())
-      dserror("ERROR: AssembleDGLmLin: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("AssembleDGLmLin: Node ownership inconsistency!");
 
     double* lm = cnode->MoData().lm();
     Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_Kappa();
@@ -1206,7 +1204,7 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
 
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     const double cn = cnVec[cnVec.Map().LID(gid)];
 
@@ -1245,7 +1243,7 @@ void CONTACT::AUG::Interface::AssembleContactPotentialTerms(
     int gid = augInactiveSlaveNodes->GID(i);
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
 
-    if (cnode->Owner() != Comm().MyPID()) dserror("ERROR: Node ownership inconsistency!");
+    if (cnode->Owner() != Comm().MyPID()) dserror("Node ownership inconsistency!");
 
     const int cn_lid = cnVec.Map().LID(gid);
     if (cn_lid < 0) dserror("Couldn't find the cn-LID for GID %d.", gid);
@@ -1287,7 +1285,7 @@ bool CONTACT::AUG::Interface::BuildActiveSet(bool init)
     const int gid = mynodegids[i];
 
     CoNode* cnode = dynamic_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find node with gid %i", gid);
+    if (!cnode) dserror("Cannot find node with gid %i", gid);
 
     const int numdof = cnode->NumDof();
 
@@ -1385,7 +1383,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
   // dimension check
   const double dimcheck = (activedofs_->NumGlobalElements()) / (activenodes_->NumGlobalElements());
 
-  if (dimcheck != Dim()) dserror("ERROR: SplitAugActiveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("SplitAugActiveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all augmented active row nodes
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -1393,7 +1391,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
     int gid = activenodes_->GID(i);
 
     DRT::Node* node = idiscret_->gNode(gid);
-    if (!node) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!node) dserror("Cannot find slave node with gid %", gid);
 
     CoNode* cnode = static_cast<CoNode*>(node);
 
@@ -1420,7 +1418,7 @@ void CONTACT::AUG::Interface::SplitAugActiveDofs()
 
   // check global dimensions
   if ((gCountN + gCountT) != activedofs_->NumGlobalElements())
-    dserror("ERROR: SplitAugActiveDofs: Splitting went wrong!");
+    dserror("SplitAugActiveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
   activen_ = Teuchos::rcp(new Epetra_Map(gCountN, countN, &myNGids[0], 0, Comm()));
@@ -1449,14 +1447,14 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
 
   // dimension check
   double dimcheck = (sdofrowmap_->NumGlobalElements()) / (snoderowmap_->NumGlobalElements());
-  if (dimcheck != Dim()) dserror("ERROR: SplitSlaveDofs: Nodes <-> Dofs dimension mismatch!");
+  if (dimcheck != Dim()) dserror("SplitSlaveDofs: Nodes <-> Dofs dimension mismatch!");
 
   // loop over all augmented active row nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
   {
     int gid = snoderowmap_->GID(i);
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
-    if (!cnode) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (!cnode) dserror("Cannot find slave node with gid %", gid);
 
     // add first dof to nMap
     myNGids[countN] = cnode->Dofs()[0];
@@ -1484,7 +1482,7 @@ void CONTACT::AUG::Interface::SplitSlaveDofs()
 
   // check global dimensions
   if ((gCountN + gCountT) != sdofrowmap_->NumGlobalElements())
-    dserror("ERROR: SplitSlaveDofs: Splitting went wrong!");
+    dserror("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
   interfaceData_.SNDofRowMap() =
@@ -1623,7 +1621,7 @@ void CONTACT::AUG::Interface::AssembleGradientBMatrixContribution(
     const int gid = mynodegids[lid];
 
     CoNode* cnode = static_cast<CoNode*>(idiscret_->gNode(gid));
-    if (not cnode) dserror("ERROR: Cannot find slave node with gid %", gid);
+    if (not cnode) dserror("Cannot find slave node with gid %", gid);
 
     const int ndof = cnode->Dofs()[0];
     const int nlid_j = lmincr.Map().LID(ndof);
@@ -2095,7 +2093,7 @@ void CONTACT::AUG::Interface::SplitIntoFarAndCloseSets(std::vector<int>& close_s
       // get element
       int gid = SlaveRowElements()->GID(i);
       DRT::Element* ele = Discret().gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) dserror("Cannot find element with gid %", gid);
 
       const bool close = et_selerow[i] > threshold;
       if (close)

@@ -76,9 +76,9 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
 
     // get current elements and its nodes
     DRT::Element* element = Discret().gElement(gid);
-    if (!element) dserror("ERROR: Cannot find element with gid %\n", gid);
+    if (!element) dserror("Cannot find element with gid %\n", gid);
     DRT::Node** nodes = element->Nodes();
-    if (!nodes) dserror("ERROR: Null pointer!");
+    if (!nodes) dserror("Null pointer!");
 
     // skip further steps, if element is not owned by processor p
     if (element->Owner() != p) continue;
@@ -105,12 +105,12 @@ void CONTACT::UnbiasedSelfBinaryTree::CalculateProcSpecificDualGraph(
     for (int j = 0; j < numnode; ++j)
     {
       DRT::Node* node = nodes[j];
-      if (!node) dserror("ERROR: Null pointer!");
+      if (!node) dserror("Null pointer!");
 
       // adjacent elements of current node
       int numE = node->NumElement();
       DRT::Element** adjElements = node->Elements();
-      if (!adjElements) dserror("ERROR: Null pointer!");
+      if (!adjElements) dserror("Null pointer!");
 
       // loop over all adjacent elements of current node
       for (int k = 0; k < numE; ++k)
@@ -294,7 +294,7 @@ void CONTACT::UnbiasedSelfBinaryTree::InitializeTreeBottomUp(
   }
 
   // complete the tree starting from its roots (top-down)
-  if (Roots().size() == 0) dserror("ERROR: No root tree node found!");
+  if (Roots().size() == 0) dserror("No root tree node found!");
 
   // SAFETY CHECK: check whether all leaf nodes were assigned a root node
   std::vector<int> list = Roots()[0]->Elelist();
@@ -377,7 +377,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
     }
     break;
     default:
-      dserror("ERROR: RoughCheckRefConfig called for unknown element type");
+      dserror("RoughCheckRefConfig called for unknown element type");
       break;
   }
   // get center of master element
@@ -407,7 +407,7 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
     }
     break;
     default:
-      dserror("ERROR: RoughCheckRefConfig called for unknown element type");
+      dserror("RoughCheckRefConfig called for unknown element type");
       break;
   }
 
@@ -435,8 +435,8 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
 void CONTACT::UnbiasedSelfBinaryTree::SearchContact()
 {
   // check is root node available
-  if (Roots().size() == 0) dserror("ERROR: No root node for search!");
-  if (Roots()[0] == Teuchos::null) dserror("ERROR: No root node for search!");
+  if (Roots().size() == 0) dserror("No root node for search!");
+  if (Roots()[0] == Teuchos::null) dserror("No root node for search!");
 
   // reset contact pairs from last iteration
   SetContactPairs().clear();

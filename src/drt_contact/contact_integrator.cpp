@@ -102,7 +102,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
   double glob_test[3] = {0.0, 0.0, 0.0};
 
   DRT::Node** mynodes_test = sele.Nodes();
-  if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
+  if (!mynodes_test) dserror("HasProjStatus: Null pointer!");
 
   if (sele.Shape() == DRT::Element::line2 || sele.Shape() == DRT::Element::nurbs2)
   {
@@ -127,7 +127,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
           for (int ii = 0; ii < sele.NumNode(); ++ii)
           {
             MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-            if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+            if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
             if (glob_test[0] == mycnode_test->xspatial()[0] &&
                 glob_test[1] == mycnode_test->xspatial()[1] &&
@@ -170,7 +170,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck2D(
           for (int ii = 0; ii < sele.NumNode(); ++ii)
           {
             MORTAR::MortarNode* mycnode_test = dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-            if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+            if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
             if (glob_test[0] == mycnode_test->xspatial()[0] &&
                 glob_test[1] == mycnode_test->xspatial()[1] &&
@@ -569,7 +569,7 @@ void CONTACT::CoIntegrator::InitializeGP(DRT::Element::DiscretizationType eletyp
     }
     default:
     {
-      dserror("ERROR: MortarIntegrator: This contact element type is not implemented!");
+      dserror("MortarIntegrator: This contact element type is not implemented!");
       break;
     }
   }  // switch(eletype)
@@ -613,24 +613,23 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivSegment2D called without specific shape function defined!");
+    dserror("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == MORTAR::MortarElement::line3 &&
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-    dserror(
-        "ERROR: Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
+    dserror("Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
   // check for problem dimension
-  if (Dim() != 2) dserror("ERROR: 2D integration method called for non-2D problem");
+  if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateDerivSegment2D called on a wrong type of MortarElement pair!");
+    dserror("IntegrateDerivSegment2D called on a wrong type of MortarElement pair!");
   if ((sxia < -1.0) || (sxib > 1.0))
-    dserror("ERROR: IntegrateDerivSegment2D called with infeasible slave limits!");
+    dserror("IntegrateDerivSegment2D called with infeasible slave limits!");
   if ((mxia < -1.0) || (mxib > 1.0))
-    dserror("ERROR: IntegrateDerivSegment2D called with infeasible master limits!");
+    dserror("IntegrateDerivSegment2D called with infeasible master limits!");
 
   // *********************************************************************
   // Prepare integration
@@ -642,7 +641,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
@@ -650,7 +649,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -722,17 +721,13 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
 
   if (sele.NormalFac() * mele.NormalFac() > 0.)
   {
-    if (sxia != -1.0 && mxib != 1.0)
-      dserror("ERROR: First outer node is neither slave nor master node");
-    if (sxib != 1.0 && mxia != -1.0)
-      dserror("ERROR: Second outer node is neither slave nor master node");
+    if (sxia != -1.0 && mxib != 1.0) dserror("First outer node is neither slave nor master node");
+    if (sxib != 1.0 && mxia != -1.0) dserror("Second outer node is neither slave nor master node");
   }
   else
   {
-    if (sxia != -1. && mxia != -1.)
-      dserror("ERROR: First outer node is neither slave nor master node");
-    if (sxib != 1. && mxib != 1.)
-      dserror("ERROR: Second outer node is neither slave nor master node");
+    if (sxia != -1. && mxia != -1.) dserror("First outer node is neither slave nor master node");
+    if (sxib != 1. && mxib != 1.) dserror("Second outer node is neither slave nor master node");
   }
   if (sxia == -1.0)
     startslave = true;
@@ -771,7 +766,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(MORTAR::MortarElement& sele,
       std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << std::endl;
       std::cout << "Projection: " << mxi[0] << " " << mxi[1] << std::endl;
       std::cout << "Projection bounds: " << mxia << " " << mxib << std::endl;
-      // dserror("ERROR: IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",mxi[0]);
+      // dserror("IntegrateAndDerivSegment: Gauss point projection failed! mxi=%d",mxi[0]);
     }
 
     // evaluate Lagrange multiplier shape functions (on slave element)
@@ -876,7 +871,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
   double glob_test[3] = {0.0, 0.0, 0.0};
   const double tol = 1e-8;
   DRT::Node** mynodes_test = sele.Nodes();
-  if (!mynodes_test) dserror("ERROR: HasProjStatus: Null pointer!");
+  if (!mynodes_test) dserror("HasProjStatus: Null pointer!");
 
   DRT::Element::DiscretizationType dt_s = sele.Shape();
 
@@ -924,7 +919,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -953,7 +948,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1048,7 +1043,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1077,7 +1072,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1167,7 +1162,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1196,7 +1191,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1261,7 +1256,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1290,7 +1285,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1370,7 +1365,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1399,7 +1394,7 @@ bool CONTACT::CoIntegrator::BoundarySegmCheck3D(
             {
               MORTAR::MortarNode* mycnode_test =
                   dynamic_cast<MORTAR::MortarNode*>(mynodes_test[ii]);
-              if (!mycnode_test) dserror("ERROR: HasProjStatus: Null pointer!");
+              if (!mycnode_test) dserror("HasProjStatus: Null pointer!");
 
               if (glob_test[0] > mycnode_test->xspatial()[0] - tol &&
                   glob_test[0] < mycnode_test->xspatial()[0] + tol &&
@@ -1456,25 +1451,24 @@ void CONTACT::CoIntegrator::IntegrateDerivEle3D(MORTAR::MortarElement& sele,
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivEle3D called without specific shape function defined!");
+    dserror("IntegrateDerivEle3D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin && sele.Shape() != DRT::Element::nurbs9)
-    dserror(
-        "ERROR: Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
+    dserror("Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivEle3D: Null pointer!");
+  if (!mynodes) dserror("IntegrateDerivEle3D: Null pointer!");
 
   // check input data
   for (int test = 0; test < (int)meles.size(); ++test)
   {
     if (((!sele.IsSlave()) || (meles[test]->IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
-      dserror("ERROR: IntegrateDerivEle3D called on a wrong type of MortarElement pair!");
+      dserror("IntegrateDerivEle3D called on a wrong type of MortarElement pair!");
   }
 
   int msize = meles.size();
@@ -1717,10 +1711,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+    dserror("IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
   DRT::Element::DiscretizationType sdt = sele.Shape();
@@ -1728,9 +1722,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
 
   // check input data
   if (((!sele.IsSlave()) || (mele.IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
   if (cell == Teuchos::null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+    dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
   // number of nodes (slave, master)
   int nrow = sele.NumNode();
@@ -1739,7 +1733,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& 
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if (!mynodes) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -1950,10 +1944,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+    dserror("IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
   DRT::Element::DiscretizationType sdt = sele.Shape();
@@ -1961,9 +1955,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
   // check input data
   if ((!sele.IsSlave()) || (mele.IsSlave()))
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
+    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement pair!");
   if (cell == Teuchos::null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+    dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
   // number of nodes (slave, master)
   //  int nrowL = lele.NumNode();
@@ -1974,9 +1968,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mynodes) dserror("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
   DRT::Node** mnodes = lele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mnodes) dserror("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -2113,7 +2107,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       lxi[0] = -mxi[1];
     }
     else
-      dserror("ERROR: invalid local id of line ele");
+      dserror("invalid local id of line ele");
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     sele.EvaluateShapeLagMult(ShapeFcn(), sxi, lmval, lmderiv, nrow);
@@ -2165,7 +2159,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       for (_CI p = dmxigp[1].begin(); p != dmxigp[1].end(); ++p) dlxigp[0][p->first] -= (p->second);
     }
     else
-      dserror("ERROR: invalid local id of line ele");
+      dserror("invalid local id of line ele");
 
     //**********************************************************************
     // geometric quantities
@@ -2205,7 +2199,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
 
     // normalize interpolated GP normal back to length 1.0 !!!
     double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-    if (lengthn < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+    if (lengthn < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
     for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
@@ -2382,7 +2376,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[iter]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       static double fac = 0.0;
 
@@ -2502,7 +2496,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       for (int j = 0; j < nrow; ++j)
       {
         MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-        if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         int sgid = mymrtrnode->Id();
         std::map<int, double>& ddmap_jk =
@@ -2569,7 +2563,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneSTL(MORTAR::MortarElemen
       for (int j = 0; j < nrow; ++j)
       {
         MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-        if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
 
         // integrate LinD
@@ -2695,10 +2689,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+    dserror("IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
 
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of master element
   DRT::Element::DiscretizationType sdt = sele.Shape();
@@ -2706,10 +2700,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
   // check input data
   //  if ((!sele.IsSlave()) || (mele.IsSlave()))
-  //    dserror("ERROR: IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement
+  //    dserror("IntegrateDerivCell3DAuxPlane called on a wrong type of MortarElement
   //    pair!");
   if (cell == Teuchos::null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without integration cell");
+    dserror("IntegrateDerivCell3DAuxPlane called without integration cell");
 
   // number of nodes (slave, master)
   int nrowL = lsele.NumNode();
@@ -2720,10 +2714,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = lsele.Nodes();
   if (!mynodes)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Cannot access slave ndoes. Null pointer!");
+    dserror("IntegrateDerivCell3DAuxPlaneLTS: Cannot access slave ndoes. Null pointer!");
   DRT::Node** mnodes = mele.Nodes();
   if (!mnodes)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Cannot access master nodes. Null pointer!");
+    dserror("IntegrateDerivCell3DAuxPlaneLTS: Cannot access master nodes. Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrowL);
@@ -2795,7 +2789,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         globgp, auxn, sele, sxi, sprojalpha);
     if (!success)
     {
-      //      dserror("ERROR: projection not possible!");
+      //      dserror("projection not possible!");
       return;
     }
 
@@ -2803,7 +2797,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         globgp, auxn, mele, mxi, mprojalpha);
     if (!success)
     {
-      //      dserror("ERROR: projection not possible!");
+      //      dserror("projection not possible!");
       return;
     }
 
@@ -2886,7 +2880,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       lxi[0] = -sxi[1];
     }
     else
-      dserror("ERROR: invalid local id of line ele");
+      dserror("invalid local id of line ele");
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     lsele.EvaluateShapeLagMult(ShapeFcn(), lxi, lmval, lmderiv, nrowL);
@@ -2938,7 +2932,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       for (_CI p = dsxigp[1].begin(); p != dsxigp[1].end(); ++p) dlxigp[0][p->first] -= (p->second);
     }
     else
-      dserror("ERROR: invalid local id of line ele");
+      dserror("invalid local id of line ele");
 
     //**********************************************************************
     // geometric quantities
@@ -2978,7 +2972,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
 
     // normalize interpolated GP normal back to length 1.0 !!!
     double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-    if (lengthn < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+    if (lengthn < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
     for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
@@ -3143,7 +3137,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[iter]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       if (mymrtrnode->IsOnCorner()) continue;
 
@@ -3356,7 +3350,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         for (int j = 0; j < nrowL; ++j)
         {
           MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-          if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+          if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
           // node j is boundary node
           if (mymrtrnode->IsOnCorner()) continue;
@@ -3413,7 +3407,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
           for (int k = 0; k < nrowL; ++k)
           {
             MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-            if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+            if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
             // global master node ID
             int sgid = mymrtrnode2->Id();
@@ -3518,7 +3512,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
         for (int j = 0; j < nrowL; ++j)
         {
           MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-          if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+          if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
           int sgid = mymrtrnode->Id();
           std::map<int, double>& ddmap_jk =
@@ -3579,7 +3573,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneLTS(MORTAR::MortarElemen
       for (int j = 0; j < nrowL; ++j)
       {
         MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[j]);
-        if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         if (mymrtrnode->IsOnCorner()) continue;
 
@@ -3722,16 +3716,14 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror(
-        "ERROR: IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
+    dserror("IntegrateDerivCell3DAuxPlaneQuad called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented
   if (ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin && sele.Shape() != DRT::Element::nurbs9)
-    dserror(
-        "ERROR: Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
+    dserror("Petrov-Galerkin approach not yet implemented for 3-D quadratic FE interpolation");
 
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // discretization type of slave and master IntElement
   DRT::Element::DiscretizationType sdt = sintele.Shape();
@@ -3743,10 +3735,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
 
   // check input data
   if (((!sele.IsSlave()) || (mele.IsSlave())) and (!imortar_.get<bool>("Two_half_pass")))
-    dserror(
-        "ERROR: IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
+    dserror("IntegrateDerivCell3DAuxPlaneQuad called on a wrong type of MortarElement pair!");
   if (cell == Teuchos::null)
-    dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
+    dserror("IntegrateDerivCell3DAuxPlaneQuad called without integration cell");
 
   // contact with wear
   bool wear = false;
@@ -3797,9 +3788,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
+  if (!mynodes) dserror("IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
   DRT::Node** myintnodes = sintele.Nodes();
-  if (!myintnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
+  if (!myintnodes) dserror("IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
@@ -3825,7 +3816,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(MORTAR::MortarEleme
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlaneQuad: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -4204,22 +4195,21 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateDerivEle2D called without specific shape function defined!");
+    dserror("IntegrateDerivEle2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
   if (sele.Shape() == MORTAR::MortarElement::line3 &&
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
-    dserror(
-        "ERROR: Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
+    dserror("Petrov-Galerkin approach not yet implemented for 2-D quadratic FE interpolation");
 
   // check for problem dimension
-  if (Dim() != 2) dserror("ERROR: 2D integration method called for non-2D problem");
+  if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // check input data
   for (int i = 0; i < (int)meles.size(); ++i)
   {
     if ((!sele.IsSlave()) || (meles[i]->IsSlave()))
-      dserror("ERROR: IntegrateDerivEle2D called on a wrong type of MortarElement pair!");
+      dserror("IntegrateDerivEle2D called on a wrong type of MortarElement pair!");
   }
 
   // *********************************************************************
@@ -4239,7 +4229,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   mynodes = sele.Nodes();
 
   // get slave element nodes themselves
-  if (!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -4276,7 +4266,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -4446,7 +4436,7 @@ void CONTACT::CoIntegrator::IntegrateD(
 
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateD called without specific shape function defined!");
+    dserror("IntegrateD called without specific shape function defined!");
 
   // *********************************************************************
   // Define slave quantities
@@ -4460,7 +4450,7 @@ void CONTACT::CoIntegrator::IntegrateD(
   mynodes = sele.Nodes();
 
   // get slave element nodes themselves
-  if (!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mynodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseVector sval(nrow);
@@ -4481,7 +4471,7 @@ void CONTACT::CoIntegrator::IntegrateD(
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -4701,12 +4691,12 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, d
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateKappaPenalty called without specific shape function defined!");
+    dserror("IntegrateKappaPenalty called without specific shape function defined!");
 
   // check input data
-  if (!sele.IsSlave()) dserror("ERROR: IntegrateKappaPenalty called on a non-slave MortarElement!");
+  if (!sele.IsSlave()) dserror("IntegrateKappaPenalty called on a non-slave MortarElement!");
   if ((sxia[0] < -1.0) || (sxia[1] < -1.0) || (sxib[0] > 1.0) || (sxib[1] > 1.0))
-    dserror("ERROR: IntegrateKappaPenalty called with infeasible slave limits!");
+    dserror("IntegrateKappaPenalty called with infeasible slave limits!");
 
   // number of nodes (slave)
   int nrow = sele.NumNode();
@@ -4720,7 +4710,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, d
 
   // get slave element nodes themselves
   DRT::Node** mynodes = sele.Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateKappaPenalty: Null pointer!");
+  if (!mynodes) dserror("IntegrateKappaPenalty: Null pointer!");
 
   // decide whether boundary modification has to be considered or not
   // this is element-specific (is there a boundary node in this element?)
@@ -4728,7 +4718,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele, d
   for (int k = 0; k < nrow; ++k)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateKappaPenalty: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateKappaPenalty: Null pointer!");
     bound += mymrtrnode->IsOnBound();
   }
 
@@ -4778,12 +4768,12 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
 
   // explicitly defined shape function type needed
   if (ShapeFcn() != INPAR::MORTAR::shape_standard)
-    dserror("ERROR: IntegrateKappaPenalty -> you should not be here!");
+    dserror("IntegrateKappaPenalty -> you should not be here!");
 
   // check input data
-  if (!sele.IsSlave()) dserror("ERROR: IntegrateKappaPenalty called on a non-slave MortarElement!");
+  if (!sele.IsSlave()) dserror("IntegrateKappaPenalty called on a non-slave MortarElement!");
   if ((sxia[0] < -1.0) || (sxia[1] < -1.0) || (sxib[0] > 1.0) || (sxib[1] > 1.0))
-    dserror("ERROR: IntegrateKappaPenalty called with infeasible slave limits!");
+    dserror("IntegrateKappaPenalty called with infeasible slave limits!");
 
   // number of nodes (slave)
   int nrow = sele.NumNode();
@@ -4838,7 +4828,7 @@ void CONTACT::CoIntegrator::IntegrateKappaPenalty(MORTAR::MortarElement& sele,
     }
     else
     {
-      dserror("ERROR: Invalid LM interpolation case!");
+      dserror("Invalid LM interpolation case!");
     }
     // compute cell gap vector *******************************************
   }
@@ -4856,7 +4846,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     int& linsize)
 {
   // check for problem dimension
-  if (Dim() != 2) dserror("ERROR: 2D integration method called for non-2D problem");
+  if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
   DRT::Node** snodes = NULL;
@@ -4875,13 +4865,13 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
   for (int i = 0; i < numsnode; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
+    if (!smrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
     mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
-    if (!mmrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
+    if (!mmrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   // we also need shape function derivs in A and B
@@ -5238,7 +5228,7 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
     GEN::pairedvector<int, double>& derivmxi, int& linsize)
 {
   // check for problem dimension
-  if (Dim() != 2) dserror("ERROR: 2D integration method called for non-2D problem");
+  if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
   DRT::Node** snodes = NULL;
@@ -5257,13 +5247,13 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
   for (int i = 0; i < numsnode; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
+    if (!smrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
     mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
-    if (!mmrtrnodes[i]) dserror("ERROR: DerivXiAB2D: Null pointer!");
+    if (!mmrtrnodes[i]) dserror("DerivXiAB2D: Null pointer!");
   }
 
   // we also need shape function derivs in A and B
@@ -5301,7 +5291,7 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
 
   // normalize interpolated GP normal back to length 1.0 !!!
   const double length = sqrt(sgpn[0] * sgpn[0] + sgpn[1] * sgpn[1] + sgpn[2] * sgpn[2]);
-  if (length < 1.0e-12) dserror("ERROR: DerivXiGP2D: Divide by zero!");
+  if (length < 1.0e-12) dserror("DerivXiGP2D: Divide by zero!");
   for (int i = 0; i < 3; ++i) sgpn[i] /= length;
 
   // compute factors and leading constants for master
@@ -5437,7 +5427,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
     std::vector<GEN::pairedvector<int, double>>& derivmxi, const double alpha)
 {
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // we need the participating slave and master nodes
   DRT::Node** snodes = sele.Nodes();
@@ -5450,13 +5440,13 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
   for (int i = 0; i < numsnode; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("ERROR: DerivXiGP3D: Null pointer!");
+    if (!smrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
   }
 
   for (int i = 0; i < nummnode; ++i)
   {
     mmrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(mnodes[i]);
-    if (!mmrtrnodes[i]) dserror("ERROR: DerivXiGP3D: Null pointer!");
+    if (!mmrtrnodes[i]) dserror("DerivXiGP3D: Null pointer!");
   }
 
   // we also need shape function derivs at the GP
@@ -5489,7 +5479,7 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele, MORTAR::Mor
     }
 
   // get inverse of the 3x3 matrix L (in place)
-  if (abs(lmatrix.Determinant()) < 1e-12) dserror("ERROR: Singular lmatrix for derivgp3d");
+  if (abs(lmatrix.Determinant()) < 1e-12) dserror("Singular lmatrix for derivgp3d");
 
   lmatrix.Invert();
 
@@ -5622,7 +5612,7 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, doub
     GEN::pairedvector<int, LINALG::Matrix<3, 1>>& derivgp)
 {
   // check for problem dimension
-  if (Dim() != 3) dserror("ERROR: 3D integration method called for non-3D problem");
+  if (Dim() != 3) dserror("3D integration method called for non-3D problem");
 
   // we need the participating element nodes
   DRT::Node** nodes = ele.Nodes();
@@ -5632,7 +5622,7 @@ void CONTACT::CoIntegrator::DerivXiGP3DAuxPlane(MORTAR::MortarElement& ele, doub
   for (int i = 0; i < numnode; ++i)
   {
     mrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(nodes[i]);
-    if (!mrtrnodes[i]) dserror("ERROR: DerivXiGP3DAuxPlane: Null pointer!");
+    if (!mrtrnodes[i]) dserror("DerivXiGP3DAuxPlane: Null pointer!");
   }
 
   // we also need shape function derivs at the GP
@@ -5933,7 +5923,7 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
       for (int k = 0; k < sele.NumNode(); ++k)
       {
         MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sele.Nodes()[k]);
-        if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+        if (!mymrtrnode) dserror("IntegrateDerivSegment2D: Null pointer!");
 
         if (mymrtrnode->IsOnBoundorCE())
         {
@@ -6276,7 +6266,7 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
                          ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin) &&
                      LagMultQuad() == INPAR::MORTAR::lagmult_lin && nonsmooth_)
               dserror(
-                  "ERROR: dual shape functions with locally linear Lagrange multipliers in "
+                  "dual shape functions with locally linear Lagrange multipliers in "
                   "combination non-smooth approach still needs to be checked!");
             else
             {
@@ -6308,11 +6298,11 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: Null pointer!");
+  if (!snodes) dserror("Null pointer!");
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: Null pointer!");
+  if (!mnodes) dserror("Null pointer!");
   DRT::Node** sintnodes = sintele.Nodes();
-  if (!sintnodes) dserror("ERROR: Null pointer for sintnodes!");
+  if (!sintnodes) dserror("Null pointer for sintnodes!");
 
   // CASE 1/2: Standard LM shape functions and quadratic, linear or constant interpolation
   // CASE 5: dual LM shape functions and linear interpolation
@@ -6447,7 +6437,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad(MORTAR::MortarElement& sele,
   // INVALID CASES
   else
   {
-    dserror("ERROR: Invalid integration case for 3D quadratic mortar!");
+    dserror("Invalid integration case for 3D quadratic mortar!");
   }
 
   return;
@@ -6501,7 +6491,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele, LINALG::Seri
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // number of nodes (slave, master)
   const int nrow = sele.NumNode();
@@ -6602,7 +6592,7 @@ void CONTACT::CoIntegrator::GP_3D_wGap(MORTAR::MortarElement& sele, LINALG::Seri
     // INVALID CASES
     else
     {
-      dserror("ERROR: Invalid integration case for 3D quadratic contact!");
+      dserror("Invalid integration case for 3D quadratic contact!");
     }
   }
 
@@ -6622,8 +6612,8 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // number of nodes (slave, master)
   const int nrow = sele.NumNode();
@@ -6681,7 +6671,7 @@ void CONTACT::CoIntegrator::Gap_3D(MORTAR::MortarElement& sele, MORTAR::MortarEl
 
   // normalize interpolated GP normal back to length 1.0 !!!
   double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-  if (lengthn < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (lengthn < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
@@ -6997,7 +6987,7 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
 
   // normalize interpolated GP normal back to length 1.0 !!!
   double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1]);
-  if (lengthn < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (lengthn < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < Dim(); ++i) gpn[i] /= lengthn;
 
@@ -7169,9 +7159,9 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** sintnodes = sintele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  if (!snodes) dserror("ERROR: Null pointer!");
-  if (!sintnodes) dserror("ERROR: Null pointer!");
-  if (!mnodes) dserror("ERROR: Null pointer!");
+  if (!snodes) dserror("Null pointer!");
+  if (!sintnodes) dserror("Null pointer!");
+  if (!mnodes) dserror("Null pointer!");
 
   // number of nodes (slave, master)
   const int nrow = sele.NumNode();
@@ -7230,7 +7220,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
 
   // normalize interpolated GP normal back to length 1.0 !!!
   lengthn[0] = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-  if (lengthn[0] < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (lengthn[0] < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn[0];
 
@@ -7260,7 +7250,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin(MORTAR::MortarElement& sel
   // INVALID CASES
   else
   {
-    dserror("ERROR: Invalid integration case for 3D quadratic contact!");
+    dserror("Invalid integration case for 3D quadratic contact!");
   }
 
   // **************************
@@ -7477,7 +7467,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement&
   snodes = sele.Nodes();
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
   if (mymrtrnode->IsOnBoundorCE()) return;
 
   double fac = 0.0;
@@ -7589,7 +7579,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_pwlin_Lin(int& iter, MORTAR::Int
   DRT::Node** sintnodes = sintele.Nodes();
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
 
@@ -7646,7 +7636,7 @@ void inline CONTACT::CoIntegrator::GP_3D_G_Quad_Lin(int& iter, MORTAR::MortarEle
   DRT::Node** snodes = sele.Nodes();
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   double fac = 0.0;
 
@@ -7774,7 +7764,7 @@ void CONTACT::CoIntegrator::GP_G_Lin(int& iter, MORTAR::MortarElement& sele,
   DRT::Node** mnodes = mele.Nodes();
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   if (mymrtrnode->IsOnBoundorCE()) return;
 
@@ -7896,7 +7886,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
     for (int j = 0; j < nrow; ++j)
     {
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
       if (mymrtrnode->IsOnBoundorCE()) continue;
@@ -7942,7 +7932,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
       for (int k = 0; k < nrow; ++k)
       {
         MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-        if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
         int sgid = mymrtrnode2->Id();
@@ -8044,7 +8034,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
     for (int j = 0; j < nrow; ++j)
     {
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
       if (mymrtrnode->IsOnBoundorCE()) continue;
@@ -8101,7 +8091,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
       for (int k = 0; k < nrow; ++k)
       {
         MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-        if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
         int sgid = mymrtrnode2->Id();
@@ -8216,7 +8206,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
     }
   }
   else
-    dserror("ERROR: unknwon shape function type!");
+    dserror("unknwon shape function type!");
 
   return;
 }
@@ -8248,7 +8238,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
     for (int j = 0; j < nrow; ++j)
     {
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
       if (mymrtrnode->IsOnBoundorCE()) continue;
@@ -8294,7 +8284,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
       for (int k = 0; k < nrow; ++k)
       {
         MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-        if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
         int sgid = mymrtrnode2->Id();
@@ -8379,7 +8369,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
     for (int j = 0; j < nrow; ++j)
     {
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
       if (mymrtrnode->IsOnBoundorCE()) continue;
@@ -8436,7 +8426,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
       for (int k = 0; k < nrow; ++k)
       {
         MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-        if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
         // global master node ID
         int sgid = mymrtrnode2->Id();
@@ -8534,7 +8524,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin_bound(MORTAR::MortarElement& sel
     }
   }
   else
-    dserror("ERROR: unknwon shape function type!");
+    dserror("unknwon shape function type!");
 
   return;
 }
@@ -8563,7 +8553,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   const int sgid = mymrtrnode->Id();
 
@@ -8716,7 +8706,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
   if (linlm)
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
     bool jbound = mymrtrnode->IsOnBound();
 
     // node j is boundary node
@@ -8761,7 +8751,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
       for (int k = 0; k < nrow; ++k)
       {
         MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-        if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+        if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
         bool kbound = mymrtrnode2->IsOnBound();
 
         // global master node ID
@@ -8827,7 +8817,7 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
   else
   {
     MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-    if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+    if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
     int sgid = mymrtrnode->Id();
 
@@ -8985,7 +8975,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_pwlin_Lin(int& iter, MORTAR::Mo
   // (and LinM also for edge node modification case)
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(sintnodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
   // integrate LinM
   for (int k = 0; k < ncol; ++k)
@@ -9174,7 +9164,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
     for (int j = 0; j < nrow; ++j)
     {
       MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[j]);
-      if (!mymrtrnode) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+      if (!mymrtrnode) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
       // node j is boundary node
       if (mymrtrnode->SetBound())
@@ -9236,7 +9226,7 @@ void inline CONTACT::CoIntegrator::GP_3D_DM_Quad_Lin(bool& duallin, MORTAR::Mort
         for (int k = 0; k < nrow; ++k)
         {
           MORTAR::MortarNode* mymrtrnode2 = dynamic_cast<MORTAR::MortarNode*>(snodes[k]);
-          if (!mymrtrnode2) dserror("ERROR: IntegrateDerivCell3DAuxPlane: Null pointer!");
+          if (!mymrtrnode2) dserror("IntegrateDerivCell3DAuxPlane: Null pointer!");
 
           // global master node ID
           int sgid = mymrtrnode2->Id();
@@ -9605,7 +9595,7 @@ void inline CONTACT::CoIntegrator::GP_D2(MORTAR::MortarElement& sele, MORTAR::Mo
 
   // get slave element nodes themselves
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (ShapeFcn() == INPAR::MORTAR::shape_dual || ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
   {
@@ -9718,7 +9708,7 @@ void inline CONTACT::CoIntegrator::GP_2D_Wear(MORTAR::MortarElement& sele,
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   lengtht = sqrt(gpt[0] * gpt[0] + gpt[1] * gpt[1]);
-  if (abs(lengtht) < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (abs(lengtht) < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < Dim(); i++) gpt[i] /= lengtht;
 
@@ -10440,7 +10430,7 @@ void inline CONTACT::CoIntegrator::GP_TE(MORTAR::MortarElement& sele,
 {
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: Null pointer!");
+  if (!snodes) dserror("Null pointer!");
 
   int nrow = sele.NumNode();
 
@@ -10513,11 +10503,11 @@ void inline CONTACT::CoIntegrator::GP_TE_Master(MORTAR::MortarElement& sele,
 
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // get master element nodes themselves
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   int nrow = mele.NumNode();
   int ncol = sele.NumNode();
@@ -10607,17 +10597,17 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Master_Lin(int& iter,  // like k
 
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // get master element nodes themselves
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
   {
@@ -10736,13 +10726,13 @@ void inline CONTACT::CoIntegrator::GP_2D_TE_Lin(int& iter, MORTAR::MortarElement
 
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
   {
@@ -10933,13 +10923,13 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Lin(int& iter, MORTAR::MortarElement
 
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
   {
@@ -11182,13 +11172,13 @@ void inline CONTACT::CoIntegrator::GP_3D_TE_Master_Lin(int& iter, MORTAR::Mortar
 
   // get slave element nodes themselves
   DRT::Node** mnodes = mele.Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // map iterator
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   MORTAR::MortarNode* mymrtrnode = dynamic_cast<MORTAR::MortarNode*>(mnodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!mymrtrnode) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   if (WearShapeFcn() == INPAR::WEAR::wear_shape_standard)
   {
@@ -11414,8 +11404,8 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // number of nodes (slave, master)
   const int nrow = sele.NumNode();
@@ -11454,7 +11444,7 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr(MORTAR::MortarElement& sele,
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   tanlength = sqrt(tanv[0] * tanv[0] + tanv[1] * tanv[1]);
-  if (tanlength < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (tanlength < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < 2; i++) tanv[i] /= tanlength;
 
@@ -11585,8 +11575,8 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // number of nodes (slave, master)
   const int nrow = sele.NumNode();
@@ -11643,10 +11633,10 @@ void inline CONTACT::CoIntegrator::GP_3D_SlipIncr(MORTAR::MortarElement& sele,
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   tanlength1 = sqrt(tanv1[0] * tanv1[0] + tanv1[1] * tanv1[1] + tanv1[2] * tanv1[2]);
-  if (tanlength1 < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (tanlength1 < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   tanlength2 = sqrt(tanv2[0] * tanv2[0] + tanv2[1] * tanv2[1] + tanv2[2] * tanv2[2]);
-  if (tanlength2 < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (tanlength2 < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < 3; i++)
   {
@@ -12311,8 +12301,8 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   // get slave element nodes themselves
   DRT::Node** snodes = sele.Nodes();
   DRT::Node** mnodes = mele.Nodes();
-  if (!snodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
-  if (!mnodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+  if (!snodes) dserror("IntegrateAndDerivSegment: Null pointer!");
+  if (!mnodes) dserror("IntegrateAndDerivSegment: Null pointer!");
 
   // bool to decide if fluid quantities and structural velocities
   // exist for slave side on CoNode level and contribute to porofluid meshtying
@@ -12470,8 +12460,6 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
         continue;
       }
 
-      // if (cnode->Owner()!=Comm_.MyPID()) continue;
-
       // add current Gauss point's contribution to gseg
       mrtrnode->AddNcoupValue(prod);
     }
@@ -12497,7 +12485,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
   // INVALID CASES
   else
   {
-    dserror("ERROR: Invalid integration case for 3D quadratic normal coupling mortar!");
+    dserror("Invalid integration case for 3D quadratic normal coupling mortar!");
   }
   //}
   // **************************
@@ -12671,7 +12659,7 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_LIN(int& iter, MORTAR::MortarElement
   // DRT::Node** mnodes = mele.Nodes();
 
   CONTACT::CoNode* mymrtrnode = dynamic_cast<CONTACT::CoNode*>(snodes[iter]);
-  if (!mymrtrnode) dserror("ERROR: CONTACT::CoIntegrator::GP_NCOUP_LIN: mymrtnode: Null pointer!");
+  if (!mymrtrnode) dserror("CONTACT::CoIntegrator::GP_NCOUP_LIN: mymrtnode: Null pointer!");
 
   double fac = 0.0;
 

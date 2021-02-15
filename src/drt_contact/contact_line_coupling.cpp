@@ -209,7 +209,7 @@ void CONTACT::LineToSurfaceCoupling3d::ConsistDualShape()
   if (consistent == INPAR::MORTAR::consistent_none) return;
 
   if (IType() == LineToSurfaceCoupling3d::lts) return;
-  dserror("ERROR: consistent dual shapes for stl is experimental!");
+  dserror("consistent dual shapes for stl is experimental!");
 
   // slave nodes and dofs
   const int max_nnodes = 9;
@@ -434,7 +434,7 @@ void CONTACT::LineToSurfaceCoupling3d::IntegrateLine()
         ParentElement(), *LineElement(), SurfaceElement(), IntLine(), Auxn(), Comm());
   }
   else
-    dserror("ERROR: wrong integration type for line coupling!");
+    dserror("wrong integration type for line coupling!");
 
   return;
 }
@@ -465,7 +465,7 @@ bool CONTACT::LineToSurfaceCoupling3d::CheckLineOnLine(MORTAR::Vertex& edgeVerte
   double lengthedge =
       sqrt(edgeLine[0] * edgeLine[0] + edgeLine[1] * edgeLine[1] + edgeLine[2] * edgeLine[2]);
 
-  if (lengthLine < tol) dserror("ERROR: Line Element is of zero length!");
+  if (lengthLine < tol) dserror("Line Element is of zero length!");
 
   if (lengthedge < tol)
   {
@@ -501,7 +501,7 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
 
   bool lineOnLine = CheckLineOnLine(edgeVertex1, edgeVertex0, lineVertex1, lineVertex0);
 
-  if (!lineOnLine) dserror("ERROR: vertices not along a line, but already checked!");
+  if (!lineOnLine) dserror("vertices not along a line, but already checked!");
 
   double line[3] = {0.0, 0.0, 0.0};
   for (int k = 0; k < 3; ++k) line[k] = lineVertex1.Coord()[k] - lineVertex0.Coord()[k];
@@ -864,7 +864,7 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     std::cout << "e0v1 = " << e0v1 << std::endl;
     std::cout << "e1v1 = " << e1v1 << std::endl;
 
-    dserror("ERROR: Something went terribly wrong!");
+    dserror("Something went terribly wrong!");
   }
 
   return true;
@@ -889,8 +889,8 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
   TempInterSections().clear();
 
   // safety
-  if (MasterVertices().size() < 3) dserror("ERROR: Invalid number of Master Vertices!");
-  if (SlaveVertices().size() != 2) dserror("ERROR: Invalid number of Slave Vertices!");
+  if (MasterVertices().size() < 3) dserror("Invalid number of Master Vertices!");
+  if (SlaveVertices().size() != 2) dserror("Invalid number of Slave Vertices!");
 
   // set previous and next Vertex pointer for all elements in lists
   for (int i = 0; i < (int)MasterVertices().size(); ++i)
@@ -976,9 +976,9 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
     {
       // safety checks
       if (MasterVertices()[j].Next()->Nodeids().size() > 1)
-        dserror("ERROR: Only one node id per master vertex allowed!");
+        dserror("Only one node id per master vertex allowed!");
       if (MasterVertices()[j].Nodeids().size() > 1)
-        dserror("ERROR: Only one node id per master vertex allowed!");
+        dserror("Only one node id per master vertex allowed!");
 
       // store master node ids in set to guarantee uniquness
       std::pair<int, int> actIDs = std::pair<int, int>(
@@ -1298,7 +1298,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
   if (InterSections().size() > 2)
   {
     std::cout << "Intersections= " << InterSections().size() << std::endl;
-    dserror("ERROR: intersections not possible!!!");
+    dserror("intersections not possible!!!");
   }
 
   return;
@@ -1383,7 +1383,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
       }
 
       // dserror if not found
-      if (k == nsrows) dserror("ERROR: Slave Id not found!");
+      if (k == nsrows) dserror("Slave Id not found!");
 
       // get the correct slave node linearization
       currlin = linsnodes[k];
@@ -1402,7 +1402,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
       }
 
       // dserror if not found
-      if (k == nmrows) dserror("ERROR: Master Id not found!");
+      if (k == nmrows) dserror("Master Id not found!");
 
       // get the correct master node linearization
       currlin = linmnodes[k];
@@ -1418,7 +1418,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
         if (SlaveVertices()[j].Nodeids()[0] == currv.Nodeids()[1]) sindex2 = j;
       }
       if (sindex1 < 0 || sindex2 < 0 || sindex1 == sindex2)
-        dserror("ERROR: Lineclip linearization: (S) Something went wrong!");
+        dserror("Lineclip linearization: (S) Something went wrong!");
 
       MORTAR::Vertex* sv1 = &SlaveVertices()[sindex1];
       MORTAR::Vertex* sv2 = &SlaveVertices()[sindex2];
@@ -1432,7 +1432,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
         if (MasterVertices()[j].Nodeids()[0] == currv.Nodeids()[3]) mindex2 = j;
       }
       if (mindex1 < 0 || mindex2 < 0 || mindex1 == mindex2)
-        dserror("ERROR: Lineclip linearization: (M) Something went wrong!");
+        dserror("Lineclip linearization: (M) Something went wrong!");
 
       MORTAR::Vertex* mv1 = &MasterVertices()[mindex1];
       MORTAR::Vertex* mv2 = &MasterVertices()[mindex2];
@@ -1442,7 +1442,7 @@ void CONTACT::LineToSurfaceCoupling3d::LinearizeVertices(
     }
 
     else
-      dserror("ERROR: VertexLinearization: Invalid Vertex Type!");
+      dserror("VertexLinearization: Invalid Vertex Type!");
   }
 
   return;
@@ -1547,7 +1547,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   }
 
   // dserror if not found
-  if (k == nsrows) dserror("ERROR: Slave Id1 not found!");
+  if (k == nsrows) dserror("Slave Id1 not found!");
 
   // get the correct slave node linearization
   std::vector<GEN::pairedvector<int, double>>& slavelin0 = linsnodes[k];
@@ -1560,7 +1560,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   }
 
   // dserror if not found
-  if (k == nsrows) dserror("ERROR: Slave Id2 not found!");
+  if (k == nsrows) dserror("Slave Id2 not found!");
 
   // get the correct slave node linearization
   std::vector<GEN::pairedvector<int, double>>& slavelin1 = linsnodes[k];
@@ -1578,7 +1578,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   }
 
   // dserror if not found
-  if (k == nmrows) dserror("ERROR: Master Id1 not found!");
+  if (k == nmrows) dserror("Master Id1 not found!");
 
   // get the correct master node linearization
   std::vector<GEN::pairedvector<int, double>>& masterlin0 = linmnodes[k];
@@ -1591,7 +1591,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineclipVertexLinearization(MORTAR::Verte
   }
 
   // dserror if not found
-  if (k == nmrows) dserror("ERROR: Master Id2 not found!");
+  if (k == nmrows) dserror("Master Id2 not found!");
 
   // get the correct master node linearization
   std::vector<GEN::pairedvector<int, double>>& masterlin1 = linmnodes[k];
@@ -1699,7 +1699,7 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryPlane()
     loccenter[1] = 0.0;
   }
   else
-    dserror("ERROR: AuxiliaryPlane called for unknown element type");
+    dserror("AuxiliaryPlane called for unknown element type");
 
   // compute element center via shape fct. interpolation
   SurfaceElement().LocalToGlobal(loccenter, Auxc(), 0);
@@ -1722,16 +1722,16 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   typedef GEN::pairedvector<int, double>::const_iterator _CI;
 
   int nnodes = LineElement()->NumNode();
-  if (nnodes != 2) dserror("ERROR: Auxiliary line calculation only for line2 elements!");
+  if (nnodes != 2) dserror("Auxiliary line calculation only for line2 elements!");
 
   // average nodal normals of line element
   linsize_ = 0;
   for (int i = 0; i < nnodes; ++i)
   {
     DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[i]);
-    if (!node) dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
+    if (!node) dserror("Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
     CoNode* mycnode = dynamic_cast<CoNode*>(node);
-    if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
+    if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
     linsize_ += mycnode->GetLinsize();
   }
@@ -1756,9 +1756,9 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   for (int i = 0; i < nnodes; ++i)
   {
     DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[i]);
-    if (!node) dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
+    if (!node) dserror("Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
     CoNode* mycnode = dynamic_cast<CoNode*>(node);
-    if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
+    if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
     Auxn()[0] += 0.5 * mycnode->MoData().n()[0];
     Auxn()[1] += 0.5 * mycnode->MoData().n()[1];
@@ -1785,18 +1785,18 @@ bool CONTACT::LineToSurfaceCoupling3d::AuxiliaryLine()
   // create tangent of line element
   double tangent[3] = {0.0, 0.0, 0.0};
   DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[0]);
-  if (!node) dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[0]);
+  if (!node) dserror("Cannot find slave element with gid %", LineElement()->NodeIds()[0]);
   CoNode* mycnode = dynamic_cast<CoNode*>(node);
-  if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
+  if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
   tangent[0] += mycnode->xspatial()[0];
   tangent[1] += mycnode->xspatial()[1];
   tangent[2] += mycnode->xspatial()[2];
 
   DRT::Node* node2 = idiscret_.gNode(LineElement()->NodeIds()[1]);
-  if (!node2) dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[1]);
+  if (!node2) dserror("Cannot find slave element with gid %", LineElement()->NodeIds()[1]);
   CoNode* mycnode2 = dynamic_cast<CoNode*>(node2);
-  if (!mycnode2) dserror("ERROR: ProjectSlave: Null pointer!");
+  if (!mycnode2) dserror("ProjectSlave: Null pointer!");
 
   tangent[0] -= mycnode2->xspatial()[0];
   tangent[1] -= mycnode2->xspatial()[1];
@@ -1955,9 +1955,9 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectSlave()
   for (int i = 0; i < nnodes; ++i)
   {
     DRT::Node* node = idiscret_.gNode(LineElement()->NodeIds()[i]);
-    if (!node) dserror("ERROR: Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
+    if (!node) dserror("Cannot find slave element with gid %", LineElement()->NodeIds()[i]);
     CoNode* mycnode = dynamic_cast<CoNode*>(node);
-    if (!mycnode) dserror("ERROR: ProjectSlave: Null pointer!");
+    if (!mycnode) dserror("ProjectSlave: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -2002,7 +2002,7 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    dserror("ERROR: MasterVertexLinearization called for unknown element type");
+    dserror("MasterVertexLinearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   int nrow = SurfaceElement().NumNode();
@@ -2017,7 +2017,7 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("ERROR: MasterVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) dserror("MasterVertexLinearization: Null pointer!");
   }
 
   // linearization of the SlaveIntEle spatial coords
@@ -2137,7 +2137,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectMaster()
   // project master nodes onto auxiliary plane
   int nnodes = SurfaceElement().NumNode();
   DRT::Node** mynodes = SurfaceElement().Nodes();
-  if (!mynodes) dserror("ERROR: ProjectMaster: Null pointer!");
+  if (!mynodes) dserror("ProjectMaster: Null pointer!");
 
   // initialize storage for master coords + their ids
   std::vector<double> vertices(3);
@@ -2146,7 +2146,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectMaster()
   for (int i = 0; i < nnodes; ++i)
   {
     CoNode* mycnode = dynamic_cast<CoNode*>(mynodes[i]);
-    if (!mycnode) dserror("ERROR: ProjectMaster: Null pointer!");
+    if (!mycnode) dserror("ProjectMaster: Null pointer!");
 
     // first build difference of point and element center
     // and then dot product with unit normal at center
@@ -2196,7 +2196,7 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
     scxi[1] = 0.0;
   }
   else
-    dserror("ERROR: SlaveVertexLinearization called for unknown element type");
+    dserror("SlaveVertexLinearization called for unknown element type");
 
   // evlauate shape functions + derivatives at scxi
   const int nrow = SurfaceElement().NumNode();
@@ -2211,7 +2211,7 @@ void CONTACT::LineToSurfaceCoupling3d::MasterVertexLinearization(
   for (int i = 0; i < nrow; ++i)
   {
     smrtrnodes[i] = dynamic_cast<MORTAR::MortarNode*>(snodes[i]);
-    if (!smrtrnodes[i]) dserror("ERROR: SlaveVertexLinearization: Null pointer!");
+    if (!smrtrnodes[i]) dserror("SlaveVertexLinearization: Null pointer!");
   }
 
   // linearization of the IntEle spatial coords
@@ -2380,9 +2380,9 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
   // get slave element nodes themselves for normal evaluation
   DRT::Node** mynodes = LineSlaveElement()->Nodes();
-  if (!mynodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mynodes) dserror("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
   DRT::Node** mnodes = LineMasterElement()->Nodes();
-  if (!mnodes) dserror("ERROR: IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
+  if (!mnodes) dserror("IntegrateDerivCell3DAuxPlaneLTS: Null pointer!");
 
   int nnodes = 2;
   int ndof = 3;
@@ -2452,7 +2452,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
   // normalize interpolated GP normal back to length 1.0 !!!
   double lengthn = sqrt(gpn[0] * gpn[0] + gpn[1] * gpn[1] + gpn[2] * gpn[2]);
-  if (lengthn < 1.0e-12) dserror("ERROR: IntegrateAndDerivSegment: Divide by zero!");
+  if (lengthn < 1.0e-12) dserror("IntegrateAndDerivSegment: Divide by zero!");
 
   for (int i = 0; i < 3; ++i) gpn[i] /= lengthn;
 
@@ -2590,7 +2590,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
   double lengthv = 0.0;
   lengthv = sqrt(value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
-  if (lengthv < 1e-12) dserror("ERROR: zero length!");
+  if (lengthv < 1e-12) dserror("zero length!");
   value[0] /= lengthv;
   value[1] /= lengthv;
   value[2] /= lengthv;
@@ -2695,7 +2695,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
     {
       int gid1 = idiscret_.NodeColMap()->GID(i);
       DRT::Node* node1 = idiscret_.gNode(gid1);
-      if (!node1) dserror("ERROR: Cannot find node with gid %", gid1);
+      if (!node1) dserror("Cannot find node with gid %", gid1);
       CoNode* contactnode = dynamic_cast<CoNode*>(node1);
 
       // here only slave nodes
@@ -2723,7 +2723,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
     if (oldID > -1)
     {
       DRT::Node* node1 = idiscret_.gNode(oldID);
-      if (!node1) dserror("ERROR: Cannot find node with gid %", oldID);
+      if (!node1) dserror("Cannot find node with gid %", oldID);
       CoNode* contactnode = dynamic_cast<CoNode*>(node1);
 
       // check if we have dold
@@ -2735,7 +2735,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
           // node id
           int gid3 = p->first;
           DRT::Node* snode = idiscret_.gNode(gid3);
-          if (!snode) dserror("ERROR: Cannot find node with gid");
+          if (!snode) dserror("Cannot find node with gid");
           CoNode* csnode = dynamic_cast<CoNode*>(snode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2749,7 +2749,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
 
         // safety
         if (dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().size() < 1)
-          dserror("ERROR: something went wrong!");
+          dserror("something went wrong!");
 
         for (CI p = dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().begin();
              p != dynamic_cast<FriNode*>(contactnode)->FriData().GetMOldLTL().end(); ++p)
@@ -2757,7 +2757,7 @@ void CONTACT::LineToLineCouplingPoint3d::EvaluateTerms(double* sxi, double* mxi,
           // node id
           int gid3 = p->first;
           DRT::Node* mnode = idiscret_.gNode(gid3);
-          if (!mnode) dserror("ERROR: Cannot find node with gid");
+          if (!mnode) dserror("Cannot find node with gid");
           CoNode* cmnode = dynamic_cast<CoNode*>(mnode);
 
           for (int dim = 0; dim < Dim(); ++dim)
@@ -2983,7 +2983,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
                          nm2->MoData().EdgeTangent()[1] * nm2->MoData().EdgeTangent()[1] +
                          nm2->MoData().EdgeTangent()[2] * nm2->MoData().EdgeTangent()[2]);
   if (lengths1 < 1e-12 or lengths2 < 1e-12 or lengthm1 < 1e-12 or lengthm2 < 1e-12)
-    dserror("ERROR: tangents zero length");
+    dserror("tangents zero length");
 
   // calc angle between tangents
   double ts1[3] = {0.0, 0.0, 0.0};
@@ -3161,7 +3161,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
       sxi[0] = 1e12;
       mxi[0] = 1e12;
       return;
-      dserror("ERROR: Singular Jacobian for projection");
+      dserror("Singular Jacobian for projection");
     }
 
     // update eta and alpha
@@ -3170,7 +3170,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
   }
 
   // Newton iteration unconverged
-  if (conv > MORTARCONVTOL) dserror("ERROR: LTL intersection not converged!");
+  if (conv > MORTARCONVTOL) dserror("LTL intersection not converged!");
 
   //**********************************************
   //  Linearization                             //
@@ -3376,7 +3376,7 @@ double CONTACT::LineToLineCouplingPoint3d::CalcCurrentAngle(
   const double lengthM = sqrt(vm[0] * vm[0] + vm[1] * vm[1] + vm[2] * vm[2]);
 
   // safety
-  if (lengthS < 1e-12 or lengthM < 1e-12) dserror("ERROR: line elements of zero length!");
+  if (lengthS < 1e-12 or lengthM < 1e-12) dserror("line elements of zero length!");
 
   // calculate scalar product
   double scaprod = vs[0] * vm[0] + vs[1] * vm[1] + vs[2] * vm[2];

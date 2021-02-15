@@ -61,7 +61,7 @@ void wear_dyn_drt(int restart)
   if (!aledis->Filled()) aledis->FillComplete();
 
   // we use the structure discretization as layout for the ale discretization
-  if (structdis->NumGlobalNodes() == 0) dserror("ERROR: Structure discretization is empty!");
+  if (structdis->NumGlobalNodes() == 0) dserror("Structure discretization is empty!");
 
   // clone ale mesh from structure discretization
   if (aledis->NumGlobalNodes() == 0)
@@ -103,7 +103,7 @@ void wear_dyn_drt(int restart)
   }
   else
   {
-    dserror("ERROR: Chosen algorithm not supported");
+    dserror("Chosen algorithm not supported");
   }
 
   // read restart before joining the time loop

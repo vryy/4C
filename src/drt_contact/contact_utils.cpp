@@ -42,7 +42,7 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& ccond,
    * contact problem! */
   if (ccond.size() < 1)
   {
-    if (throw_error) dserror("ERROR: Not enough contact conditions in discretization");
+    if (throw_error) dserror("Not enough contact conditions in discretization");
     return -1;
   }
   if (ccond.size() == 1)
@@ -50,7 +50,7 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& ccond,
     const std::string* side = ccond[0]->Get<std::string>("Side");
     if (*side != "Selfcontact")
     {
-      if (throw_error) dserror("ERROR: Not enough contact conditions in discretization");
+      if (throw_error) dserror("Not enough contact conditions in discretization");
       return -2;
     }
   }
@@ -95,7 +95,7 @@ void CONTACT::UTILS::GetContactConditionGroups(
     // try to build contact group around this condition
     current_grp.push_back(cconds[i]);
     const std::vector<int>* group1v = current_grp[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
@@ -109,7 +109,7 @@ void CONTACT::UTILS::GetContactConditionGroups(
       if (j == i) continue;
       tempcond = cconds[j];
       const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
       int groupid2 = (*group2v)[0];
       // Do the IDs coincide?
       if (groupid1 != groupid2) continue;  // not in the group
@@ -118,7 +118,7 @@ void CONTACT::UTILS::GetContactConditionGroups(
     }
 
     // now we should have found a group of conditions
-    if (!foundit) dserror("ERROR: Cannot find matching contact condition for id %i", groupid1);
+    if (!foundit) dserror("Cannot find matching contact condition for id %i", groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
@@ -179,11 +179,11 @@ void CONTACT::UTILS::GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vec
       isself[j] = true;
     }
     else
-      dserror("ERROR: Unknown contact side qualifier!");
+      dserror("Unknown contact side qualifier!");
   }
 
-  if (!hasslave) dserror("ERROR: Slave side missing in contact condition group!");
-  if (!hasmaster) dserror("ERROR: Master side missing in contact condition group!");
+  if (!hasslave) dserror("Slave side missing in contact condition group!");
+  if (!hasmaster) dserror("Master side missing in contact condition group!");
 
   // check for self contact group
   if (hasself)
@@ -220,27 +220,27 @@ void CONTACT::UTILS::GetInitializationInfo(bool& Two_half_pass,
       else if (*active[j] == "Inactive")
         isactive[j] = false;
       else
-        dserror("ERROR: Unknown contact init qualifier!");
+        dserror("Unknown contact init qualifier!");
     }
     else if (isself[j])
     {
       // self contact surf must NOT be initialized as "Active" as this makes no sense
       if (*active[j] == "Active")
-        dserror("ERROR: Selfcontact surface cannot be active!");
+        dserror("Selfcontact surface cannot be active!");
       else if (*active[j] == "Inactive")
         isactive[j] = false;
       else
-        dserror("ERROR: Unknown contact init qualifier!");
+        dserror("Unknown contact init qualifier!");
     }
     else
     {
       // master sides must NOT be initialized as "Active" as this makes no sense
       if (*active[j] == "Active")
-        dserror("ERROR: Master side cannot be active!");
+        dserror("Master side cannot be active!");
       else if (*active[j] == "Inactive")
         isactive[j] = false;
       else
-        dserror("ERROR: Unknown contact init qualifier!");
+        dserror("Unknown contact init qualifier!");
     }
 
     // check for two half pass approach

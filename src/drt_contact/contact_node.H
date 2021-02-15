@@ -219,7 +219,7 @@ namespace CONTACT
     {
       typedef std::map<int, std::map<int, double>>::const_iterator CI;
       CI p = derivd_.find(k);
-      if (p == derivd_.end()) dserror("ERROR: GetDerivD: No map entry existing for given index");
+      if (p == derivd_.end()) dserror("GetDerivD: No map entry existing for given index");
       return derivd_[k];
     }
 
@@ -234,7 +234,7 @@ namespace CONTACT
     {
       typedef std::map<int, std::map<int, double>>::const_iterator CI;
       CI p = derivm_.find(k);
-      if (p == derivm_.end()) dserror("ERROR: GetDerivM: No map entry existing for given index");
+      if (p == derivm_.end()) dserror("GetDerivM: No map entry existing for given index");
       return derivm_[k];
     }
 
@@ -1094,7 +1094,7 @@ namespace CONTACT
      */
     virtual bool IsInitActive() const
     {
-      if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
+      if (!IsSlave()) dserror("InitActive requested for Master node");
       return initactive_;
     }
 
@@ -1109,7 +1109,7 @@ namespace CONTACT
      */
     virtual bool& SetInitActive()
     {
-      if (!IsSlave()) dserror("ERROR: InitActive requested for Master node");
+      if (!IsSlave()) dserror("InitActive requested for Master node");
       return initactive_;
     }
 

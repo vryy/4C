@@ -491,7 +491,7 @@ int MORTAR::SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed
     double xdiff = transformed(0, i) - startpoint[0];
     double ydiff = transformed(1, i) - startpoint[1];
 
-    if (xdiff < 0) dserror("ERROR: Found point with x < x_start for convex hull!");
+    if (xdiff < 0) dserror("Found point with x < x_start for convex hull!");
     if (xdiff >= tol)
     {
       cotangle.push_back(ydiff / xdiff);
@@ -551,7 +551,7 @@ int MORTAR::SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed
   }
 
   // check if sizes are correct
-  if ((int)cotangle.size() != np - 1) dserror("ERROR: Size went wrong for cot angle!");
+  if ((int)cotangle.size() != np - 1) dserror("Size went wrong for cot angle!");
 
   // now sort descending w.r.t cotangle = ascending w.r.t angle
   MORTAR::Sort(&cotangle[0], np - 1, &sorted[0]);
@@ -750,7 +750,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
       int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = dis_src.gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) dserror("Cannot find element with gid %", gid);
       DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
       if (!faceele) dserror("source element is not a face element");
       int volgid = faceele->ParentElementId();
@@ -780,7 +780,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
       int gid = ielecolmap->GID(i);
 
       DRT::Element* ele = dis_src.gElement(gid);
-      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      if (!ele) dserror("Cannot find element with gid %", gid);
       DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
       if (!faceele) dserror("source element is not a face element");
       int volgid = faceele->ParentElementId();
@@ -789,7 +789,7 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
         dserror("CreateVolumeGhosting: Element %d does not exist on this Proc!", volgid);
 
       DRT::Element* vele = voldis[0]->gElement(volgid);
-      if (!vele) dserror("ERROR: Cannot find element with gid %", volgid);
+      if (!vele) dserror("Cannot find element with gid %", volgid);
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
     }

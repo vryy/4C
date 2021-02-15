@@ -47,7 +47,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(
 {
   // explicitly defined shape function type needed
   if (ShapeFcn() == INPAR::MORTAR::shape_undefined)
-    dserror("ERROR: IntegrateOverlap called without specific shape function defined!");
+    dserror("IntegrateOverlap called without specific shape function defined!");
 
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -64,11 +64,11 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(
   // is integrated that contributes to this slave node)
   int nnodes = SlaveElement().NumNode();
   DRT::Node** mynodes = SlaveElement().Nodes();
-  if (!mynodes) dserror("ERROR: Null pointer!");
+  if (!mynodes) dserror("Null pointer!");
   for (int k = 0; k < nnodes; ++k)
   {
     MORTAR::MortarNode* mycnode = dynamic_cast<MORTAR::MortarNode*>(mynodes[k]);
-    if (!mycnode) dserror("ERROR: Null pointer!");
+    if (!mycnode) dserror("Null pointer!");
     mycnode->HasSegment() = true;
   }
 
@@ -113,7 +113,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(
   // *******************************************************************
   else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
   {
-    dserror("ERROR: Piecewise linear LM not (yet?) implemented in 2D");
+    dserror("Piecewise linear LM not (yet?) implemented in 2D");
   }
 
   // *******************************************************************
@@ -132,7 +132,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap(
   // *******************************************************************
   else
   {
-    dserror("ERROR: IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
+    dserror("IntegrateOverlap: Invalid case for 2D mortar coupling LM interpolation");
   }
 
   return true;
@@ -180,7 +180,7 @@ bool CONTACT::CoCoupling2dManager::EvaluateCoupling(
   // Error
   //*********************************
   else
-    dserror("ERROR: chose contact algorithm not supported!");
+    dserror("chose contact algorithm not supported!");
 
   return true;
 }
@@ -338,7 +338,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
     // *******************************************************************
     else if (Quad() && lmtype == INPAR::MORTAR::lagmult_pwlin)
     {
-      dserror("ERROR: Piecewise linear LM not (yet?) implemented in 2D");
+      dserror("Piecewise linear LM not (yet?) implemented in 2D");
     }
 
     // *******************************************************************
@@ -357,7 +357,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
     // *******************************************************************
     else
     {
-      dserror("ERROR: Integrate: Invalid case for 2D mortar coupling LM interpolation");
+      dserror("Integrate: Invalid case for 2D mortar coupling LM interpolation");
     }
   }
   //**********************************************************************
@@ -365,7 +365,7 @@ void CONTACT::CoCoupling2dManager::IntegrateCoupling(
   //**********************************************************************
   else
   {
-    dserror("ERROR: Invalid type of numerical integration");
+    dserror("Invalid type of numerical integration");
   }
 }
 
@@ -385,8 +385,7 @@ void CONTACT::CoCoupling2dManager::ConsistDualShape()
   // Consistent modification not yet checked for constant LM interpolation
   if (Quad() == true && LagMultQuad() == INPAR::MORTAR::lagmult_const &&
       consistent != INPAR::MORTAR::consistent_none)
-    dserror(
-        "ERROR: Consistent dual shape functions not yet checked for constant LM interpolation!");
+    dserror("Consistent dual shape functions not yet checked for constant LM interpolation!");
 
   // do nothing if there are no coupling pairs
   if (Coupling().size() == 0) return;

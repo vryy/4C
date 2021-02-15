@@ -81,8 +81,7 @@ bool CONTACT::UTILS::CheckNitscheContactState(CONTACT::CoInterface& contactinter
     if (other_cele) break;
     auto* test_ele = dynamic_cast<CONTACT::CoElement*>(
         contactinterface.Discret().gElement(cele->MoData().SearchElements()[m]));
-    if (!test_ele)
-      dserror("ERROR: Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
+    if (!test_ele) dserror("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 
     MORTAR::MortarProjector::Impl(*cele, *test_ele)
         ->ProjectGaussPoint3D(*cele, xsi.A(), *test_ele, mxi, projalpha);

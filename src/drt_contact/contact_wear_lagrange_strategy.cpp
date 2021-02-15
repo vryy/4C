@@ -180,7 +180,7 @@ void WEAR::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         cnode->WearData().wcurr()[0] = 0.0;
@@ -192,7 +192,7 @@ void WEAR::WearLagrangeStrategy::SetupWear(bool redistributed, bool init)
         {
           int gid = interface_[i]->MasterColNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!node) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           cnode->WearData().wcurr()[0] = 0.0;
@@ -441,7 +441,7 @@ void WEAR::WearLagrangeStrategy::AssembleMortar()
         {
           int gid = interface_[i]->SlaveRowNodes()->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!node) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           if (cnode->FriData().Slip() == true)
@@ -566,7 +566,7 @@ void WEAR::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::Spars
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("ERROR: Condensation only for dual LM");
+    dserror("Condensation only for dual LM");
 
   // get stick map
   Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_, *gslipt_);
@@ -587,12 +587,11 @@ void WEAR::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::Spars
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  // we cannot use this check, as we deliberately replaced zero entries
-  // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -1548,9 +1547,8 @@ void WEAR::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOp
 
   // double-check if this is a dual LM system
   if (shapefcn != INPAR::MORTAR::shape_dual && shapefcn != INPAR::MORTAR::shape_petrovgalerkin)
-    dserror("ERROR: Condensation only for dual LM");
-  if (wearshapefcn != INPAR::WEAR::wear_shape_dual)
-    dserror("ERROR: Condensation only for dual wear");
+    dserror("Condensation only for dual LM");
+  if (wearshapefcn != INPAR::WEAR::wear_shape_dual) dserror("Condensation only for dual wear");
 
   // get stick map
   Teuchos::RCP<Epetra_Map> gstickt = LINALG::SplitMap(*gactivet_, *gslipt_);
@@ -1571,12 +1569,11 @@ void WEAR::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOp
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  // we cannot use this check, as we deliberately replaced zero entries
-  // if (err>0) dserror("ERROR: ReplaceDiagonalValues: Missing diagonal entry!");
+  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -1838,7 +1835,7 @@ void WEAR::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOp
 
   // scalar inversion of diagonal values
   erre = diage->Reciprocal(*diage);
-  if (erre > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+  if (erre > 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   erre = inve->ReplaceDiagonalValues(*diage);
@@ -2768,7 +2765,7 @@ void WEAR::WearLagrangeStrategy::EvaluateFriction(
         ematrix_->Complete(
             *gsdofnrowmap_, *gslipn_);  // quadr. matrix --> for dual shapes --> diag.
       else
-        dserror("ERROR: chosen shape fnc for wear not supported!");
+        dserror("chosen shape fnc for wear not supported!");
 
       twmatrix_->Complete(*gsdofnrowmap_, *gslipn_);
 
@@ -3908,7 +3905,7 @@ void WEAR::WearLagrangeStrategy::BuildSaddlePointSystem(Teuchos::RCP<LINALG::Spa
   // invalid system types
   //**********************************************************************
   else
-    dserror("ERROR: Invalid system type in BuildSaddlePointProblem");
+    dserror("Invalid system type in BuildSaddlePointProblem");
 
   return;
 }
@@ -4019,7 +4016,7 @@ void WEAR::WearLagrangeStrategy::OutputWear()
     INPAR::MORTAR::ShapeFcn shapefcn =
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(Params(), "LM_SHAPEFCN");
     if (shapefcn == INPAR::MORTAR::shape_standard)
-      dserror("ERROR: Evaluation of wear only for dual shape functions so far.");
+      dserror("Evaluation of wear only for dual shape functions so far.");
 
     // vectors
     Teuchos::RCP<Epetra_Vector> wear_vector = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4036,13 +4033,13 @@ void WEAR::WearLagrangeStrategy::OutputWear()
       {
         int gid = interface_[i]->SlaveRowNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::FriNode* frinode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // be aware of problem dimension
         int dim = Dim();
         int numdof = frinode->NumDof();
-        if (dim != numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+        if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
         // nodal normal vector and wear
         double nn[3];
@@ -4232,15 +4229,12 @@ void WEAR::WearLagrangeStrategy::DoWriteRestart(
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("ERROR: DoWriteRestart: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
       int dof = (activetoggle->Map()).LID(gid);
 
@@ -4733,9 +4727,6 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
   // into nodes, therefore first loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("ERROR: DoReadRestart: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < (interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
     {
@@ -4745,7 +4736,7 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
       if ((*activetoggle)[dof] == 1)
       {
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
         // set value active / inactive in cnode
@@ -4925,7 +4916,7 @@ void WEAR::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
       {
         int gid = interface_[i]->SlaveColNodes()->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // reset
@@ -4942,7 +4933,7 @@ void WEAR::WearLagrangeStrategy::UpdateWearDiscretIterate(bool store)
         {
           int gid = masternodes->GID(j);
           DRT::Node* node = interface_[i]->Discret().gNode(gid);
-          if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+          if (!node) dserror("Cannot find node with gid %", gid);
           CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(node);
 
           // reset
@@ -5064,7 +5055,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
       {
         int gid = masternodes->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // store updated wcurr into node
@@ -5078,7 +5069,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
       {
         int gid = masternodes->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::FriNode* fnode = dynamic_cast<CONTACT::FriNode*>(node);
 
         // store updated wcurr into node
@@ -5093,13 +5084,13 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
       {
         int gid = snodemap->GID(j);
         DRT::Node* node = interface_[i]->Discret().gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
         CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
 
         // be aware of problem dimension
         const int dim = Dim();
         const int numdof = cnode->NumDof();
-        if (dim != numdof) dserror("ERROR: Inconsisteny Dim <-> NumDof");
+        if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
         // find indices for DOFs of current node in Epetra_Vector
         // and extract this node's quantity from vectorinterface
@@ -5108,7 +5099,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
         for (int dof = 0; dof < dim; ++dof)
         {
           locindex[dof] = (vectorinterface->Map()).LID(cnode->Dofs()[dof]);
-          if (locindex[dof] < 0) dserror("ERROR: StoreNodalQuantites: Did not find dof in map");
+          if (locindex[dof] < 0) dserror("StoreNodalQuantites: Did not find dof in map");
 
           switch (type)
           {
@@ -5116,7 +5107,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             {
               // throw a dserror if node is Active and DBC
               if (cnode->IsDbc() && cnode->Active())
-                dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+                dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -5131,7 +5122,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             {
               // throw a dserror if node is Active and DBC
               if (cnode->IsDbc() && cnode->Active())
-                dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+                dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -5146,7 +5137,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             {
               // throw a dserror if node is Active and DBC
               if (cnode->IsDbc() && cnode->Active())
-                dserror("ERROR: Slave node %i is active AND carries D.B.C.s!", cnode->Id());
+                dserror("Slave node %i is active AND carries D.B.C.s!", cnode->Id());
 
               // explicity set global Lag. Mult. to zero for D.B.C nodes
               if (cnode->IsDbc()) (*vectorinterface)[locindex[dof]] = 0.0;
@@ -5162,8 +5153,7 @@ void WEAR::WearLagrangeStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Quan
             // weighted wear
             case MORTAR::StrategyBase::weightedwear:
             {
-              if (!friction_)
-                dserror("ERROR: This should not be called for contact without friction");
+              if (!friction_) dserror("This should not be called for contact without friction");
 
               // update wear only once per node
               if (dof == 0)

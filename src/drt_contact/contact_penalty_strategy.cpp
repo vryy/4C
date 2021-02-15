@@ -80,7 +80,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
   {
     // interface needs to be complete
     if (!interface_[i]->Filled() && Comm().MyPID() == 0)
-      dserror("ERROR: FillComplete() not called on interface %", i);
+      dserror("FillComplete() not called on interface %", i);
 
     // do the computation of nodal shape function integral
     // (for convenience, the results will be stored in nodal gap)
@@ -91,7 +91,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
     {
       int gid1 = interface_[i]->SlaveColElements()->GID(j);
       DRT::Element* ele1 = interface_[i]->Discret().gElement(gid1);
-      if (!ele1) dserror("ERROR: Cannot find slave element with gid %", gid1);
+      if (!ele1) dserror("Cannot find slave element with gid %", gid1);
       CoElement* selement = dynamic_cast<CoElement*>(ele1);
 
       interface_[i]->IntegrateKappaPenalty(*selement);
@@ -102,7 +102,7 @@ void CONTACT::CoPenaltyStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Ve
     {
       int gid = interface_[i]->SlaveRowNodes()->GID(j);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       // get nodal weighted gap
@@ -540,7 +540,7 @@ void CONTACT::CoPenaltyStrategy::InitializeUzawa(
     {
       int gid = interface_[i]->SlaveColNodesBound()->GID(i);
       DRT::Node* node = interface_[i]->Discret().gNode(gid);
-      if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+      if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
       for (int k = 0; k < (int)((cnode->CoData().GetDerivZ()).size()); ++k)

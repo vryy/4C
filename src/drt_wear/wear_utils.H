@@ -99,7 +99,7 @@ namespace WEAR
           DRT::UTILS::shape_function_3D_deriv1(deriv, e[0], e[1], e[2], distype);
         }
         else
-          dserror("ERROR: Wrong dimension!");
+          dserror("Wrong dimension!");
 
         for (int k = 0; k < numnod; ++k)
           for (int p = 0; p < ndim; ++p)
@@ -122,7 +122,7 @@ namespace WEAR
         if (abs(xjm.Determinant()) < WEARSING) dserror("*** WARNING: jacobi singular ***");
 
         double xjm_invert = xjm.Invert();
-        if (abs(xjm_invert) < WEARSING) dserror("ERROR: Singular Jacobian for advection map");
+        if (abs(xjm_invert) < WEARSING) dserror("Singular Jacobian for advection map");
 
         double deltae[3];
         for (int p = 0; p < ndim; ++p) deltae[p] = 0.0;
@@ -137,7 +137,7 @@ namespace WEAR
       }  // end loop
       //************************************************
 
-      if (!converged) dserror("ERROR: Evaluation of element coordinates not converged!");
+      if (!converged) dserror("Evaluation of element coordinates not converged!");
 
       // if material parameters are within the element, evaluate material
       // coordinates
@@ -157,7 +157,7 @@ namespace WEAR
           found = true;
       }
       else
-        dserror("ERROR: Element type not supported!");
+        dserror("Element type not supported!");
 
       double xmat[ndim];
       for (int p = 0; p < ndim; ++p) xmat[p] = 0.0;
