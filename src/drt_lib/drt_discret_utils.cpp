@@ -86,9 +86,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // see whether we have a sublist indicating usage of Trilinos::ML or Trilinos::MueLu
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
-      !solveparams.isSublist("MueLu (Contact2) Parameters") &&
-      !solveparams.isSublist("MueLu (Contact3) Parameters") &&
-      !solveparams.isSublist("MueLu (PenaltyContact) Parameters") &&
       !solveparams.isSublist("Stratimikos Parameters"))
     return;
   Teuchos::ParameterList* mllist_ptr = NULL;
@@ -110,12 +107,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     mllist_ptr = &(solveparams.sublist("MueLu Parameters"));
   else if (solveparams.isSublist("MueLu (Contact) Parameters"))
     mllist_ptr = &(solveparams.sublist("MueLu (Contact) Parameters"));
-  else if (solveparams.isSublist("MueLu (Contact2) Parameters"))
-    mllist_ptr = &(solveparams.sublist("MueLu (Contact2) Parameters"));
-  else if (solveparams.isSublist("MueLu (Contact3) Parameters"))
-    mllist_ptr = &(solveparams.sublist("MueLu (Contact3) Parameters"));
-  else if (solveparams.isSublist("MueLu (PenaltyContact) Parameters"))
-    mllist_ptr = &(solveparams.sublist("MueLu (PenaltyContact) Parameters"));
   else
     return;
 

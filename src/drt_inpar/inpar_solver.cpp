@@ -68,8 +68,8 @@ namespace INPAR
       {
         // this one is longer than 15 and the tuple<> function does not support this,
         // so build the Tuple class directly (which can be any size)
-        Teuchos::Tuple<std::string, 28> name;
-        Teuchos::Tuple<int, 28> number;
+        Teuchos::Tuple<std::string, 25> name;
+        Teuchos::Tuple<int, 25> number;
 
         name[0] = "none";
         number[0] = azprec_none;
@@ -115,18 +115,12 @@ namespace INPAR
         number[20] = azprec_MueLuAMG_sym;
         name[21] = "MueLu_nonsym";
         number[21] = azprec_MueLuAMG_nonsym;
-        name[22] = "MueLu_contact";
-        number[22] = azprec_MueLuAMG_contact;
-        name[23] = "MueLu_contact2";
-        number[23] = azprec_MueLuAMG_contact2;
-        name[24] = "MueLu_contactSP";
-        number[24] = azprec_MueLuAMG_contactSP;
-        name[25] = "MueLu_contactPenalty";
-        number[25] = azprec_MueLuAMG_contactPen;
-        name[26] = "AMGnxn";
-        number[26] = azprec_AMGnxn;
-        name[27] = "Chebyshev";
-        number[27] = azprec_Chebyshev;
+        name[22] = "MueLu_contactSP";
+        number[22] = azprec_MueLuAMG_contactSP;
+        name[23] = "AMGnxn";
+        number[23] = azprec_AMGnxn;
+        name[24] = "Chebyshev";
+        number[24] = azprec_Chebyshev;
 
         setStringToIntegralParameter<int>("AZPREC", "ILU",
             "Type of internal preconditioner to use.\n"
