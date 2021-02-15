@@ -542,7 +542,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
   }
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
-  std::cout << __LINE__ << __FILE__ << std::endl;
+
   //**********************************************************************
   // create the solver strategy object and pass all necessary data to it
   if (Comm().MyPID() == 0)
@@ -631,7 +631,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
-  std::cout << __LINE__ << __FILE__ << std::endl;
+
   // print friction information of interfaces
   if (Comm().MyPID() == 0)
   {
