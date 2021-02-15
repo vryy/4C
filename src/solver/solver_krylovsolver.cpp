@@ -67,12 +67,6 @@ typedef Node NO;
 #include "solver_mlpreconditioner.H"
 #include "solver_muelupreconditioner.H"
 #include "solver_amgnxn_preconditioner.H"
-#ifdef TRILINOS_Q1_2015
-#include "solver_muelucontactpreconditioner.H"
-#include "solver_muelucontactpreconditioner2.H"
-#include "solver_muelucontactsppreconditioner.H"
-#include "solver_muelucontactpenaltypreconditioner.H"
-#endif  // TRILINOS_Q1_2015
 #ifdef TRILINOS_DEVELOP
 #include "solver_muelucontactsppreconditioner.H"
 #endif
@@ -244,29 +238,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#ifdef TRILINOS_Q1_2015
-      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner(
-          outfile_, Params().sublist("MueLu (Contact) Parameters")));
-#else
-      dserror("MueLu (Contact) preconditioner only available with Trilinos Q1_2015.");
-#endif
-    }
-    else if (Params().isSublist("MueLu (Contact2) Parameters"))
-    {
-#ifdef TRILINOS_Q1_2015
-      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPreconditioner2(
-          outfile_, Params().sublist("MueLu (Contact2) Parameters")));
-#else
-      dserror("MueLu (Contact2) preconditioner only available with Trilinos Q1_2015.");
-#endif
-    }
-    else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
-    {
-#ifdef TRILINOS_Q1_2015
-      preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactPenaltyPreconditioner(
-          outfile_, Params().sublist("MueLu (PenaltyContact) Parameters")));
-#else
-      dserror("MueLu (PenaltyContact) preconditioner only available with Trilinos Q1_2015.");
+#ifndef TRILINOS_DEVELOP
+      dserror("MueLu (Contact) preconditioner not available in Trilinos Q1_2015 or Q4_2019.");
 #endif
     }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
@@ -341,13 +314,11 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
-#if defined(TRILINOS_Q1_2015) || defined(TRILINOS_DEVELOP)
+#ifdef TRILINOS_DEVELOP
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::MueLuContactSpPreconditioner(
           outfile_, Params().sublist("MueLu (Contact) Parameters")));
 #else
-      dserror(
-          "MueLu (Contact) preconditioner only available with Trilinos Q1_2015 or current Trilinos "
-          "develop branch.");
+      dserror("MueLu (Contact) preconditioner not available in Trilinos Q1_2015 or Q4_2019.");
 #endif
     }
     else if (Params().isSublist("AMGnxn Parameters"))
@@ -502,12 +473,6 @@ void LINALG::SOLVER::KrylovSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_Cr
     MultiGridParameterListName = "MueLu Parameters";
   else if (Params().isSublist("MueLu (Contact) Parameters"))
     MultiGridParameterListName = "MueLu (Contact) Parameters";
-  else if (Params().isSublist("MueLu (Contact2) Parameters"))
-    MultiGridParameterListName = "MueLu (Contact2) Parameters";
-  else if (Params().isSublist("MueLu (Contact3) Parameters"))
-    MultiGridParameterListName = "MueLu (Contact3) Parameters";
-  else if (Params().isSublist("MueLu (PenaltyContact) Parameters"))
-    MultiGridParameterListName = "MueLu (PenaltyContact) Parameters";
 
   // retransform nullspace vectors
   if (MultiGridParameterListName == "") return;  // no nullspace to permute

@@ -768,11 +768,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     case INPAR::SOLVER::azprec_MLAPI:  // set flag to use mlapi operator
       mllist.set<bool>("LINALG::AMG_Operator", true);
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:         // MueLu operator (smoothed aggregation)
-    case INPAR::SOLVER::azprec_MueLuAMG_contact:     // MueLu operator (contact)
-    case INPAR::SOLVER::azprec_MueLuAMG_contact2:    // MueLu operator (contact)
-    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:   // MueLu operator (contact)
-    case INPAR::SOLVER::azprec_MueLuAMG_contactPen:  // MueLu operator (contact)
+    case INPAR::SOLVER::azprec_MueLuAMG_sym:        // MueLu operator (smoothed aggregation)
+    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
     {
       std::string xmlfile = inparams.get<std::string>(
           "STRATIMIKOS_XMLFILE");  // TODO change this to XML_FILE input parameter!
@@ -860,10 +857,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
     }
     break;
-    case INPAR::SOLVER::azprec_MueLuAMG_contact:     // MueLu operator (contact)
-    case INPAR::SOLVER::azprec_MueLuAMG_contact2:    // MueLu operator (contact)
-    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:   // MueLu operator (contact)
-    case INPAR::SOLVER::azprec_MueLuAMG_contactPen:  // MueLu operator (contact)
+    case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
     {
       int doRepart = DRT::INPUT::IntegralValue<int>(inparams, "MueLu_REBALANCE");
       if (doRepart > 2)
@@ -1372,8 +1366,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_MueLuAMG_sym:
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
-    case INPAR::SOLVER::azprec_MueLuAMG_contact:
-    case INPAR::SOLVER::azprec_MueLuAMG_contact2:
       beloslist.set("Preconditioner Type", "ML");
       break;
     case INPAR::SOLVER::azprec_BGS2x2:
@@ -1468,18 +1460,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
   {
     Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(
-        inparams, &beloslist);  // MueLu reuses the ML parameter list
-  }
-  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact)
-  {
-    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-    muelulist = LINALG::Solver::TranslateBACIToML(
-        inparams, &beloslist);  // MueLu reuses the ML parameter list
-  }
-  if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact2)
-  {
-    Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact2) Parameters");
     muelulist = LINALG::Solver::TranslateBACIToML(
         inparams, &beloslist);  // MueLu reuses the ML parameter list
   }
@@ -1701,9 +1681,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         case INPAR::SOLVER::azprec_TekoSIMPLE:
         case INPAR::SOLVER::azprec_MueLuAMG_sym:
         case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
-        case INPAR::SOLVER::azprec_MueLuAMG_contact:
-        case INPAR::SOLVER::azprec_MueLuAMG_contact2:
-        case INPAR::SOLVER::azprec_MueLuAMG_contactPen:
         case INPAR::SOLVER::azprec_AMGnxn:
           azlist.set("AZ_precond", AZ_user_precond);
           break;
@@ -1806,18 +1783,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         muelulist = LINALG::Solver::TranslateBACIToML(
             inparams, &azlist);  // MueLu reuses the ML parameter list
       }
-      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact)
-      {
-        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
-        muelulist = LINALG::Solver::TranslateBACIToML(
-            inparams, &azlist);  // MueLu reuses the ML parameter list
-      }
-      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contact2)
-      {
-        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact2) Parameters");
-        muelulist = LINALG::Solver::TranslateBACIToML(
-            inparams, &azlist);  // MueLu reuses the ML parameter list
-      }
       if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactSP)
       {
         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Contact) Parameters");
@@ -1837,12 +1802,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         std::string muelu_xml_file = inparams.get<std::string>("MUELU_XML_FILE");
         muelulist.set<std::string>("MUELU_XML_FILE", muelu_xml_file);
 #endif  // TRILINOS_DEVELOP
-      }
-      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactPen)
-      {
-        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (PenaltyContact) Parameters");
-        muelulist = LINALG::Solver::TranslateBACIToML(
-            inparams, &azlist);  // MueLu reuses the ML parameter list
       }
       if (azprectyp == INPAR::SOLVER::azprec_BGS2x2)
       {
