@@ -8,6 +8,7 @@
 */
 /*---------------------------------------------------------------------*/
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 #include "Epetra_SerialComm.h"
 
 #include "meshtying_abstract_strategy.H"
@@ -75,6 +76,8 @@ std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& st
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::RedistributeMeshtying()
 {
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtAbstractStrategy::RedistributeMeshtying");
+
   // Do we really want to redistribute?
   if (ParRedist() && Comm().NumProc() > 1)
   {

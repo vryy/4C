@@ -118,6 +118,11 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& parallelRedist = mortar.sublist("PARALLEL REDISTRIBUTION", false,
       "Parameters to control parallel redistribution of mortar interfaces");
 
+  BoolParameter("EXPLOIT_PROXIMITY", "Yes",
+      "Exploit information on geometric proximity to split slave interface into close and "
+      "non-close parts and redistribute them independently. [Contact only]",
+      &parallelRedist);
+
   setStringToIntegralParameter<ExtendGhosting>("GHOSTING_STRATEGY", "redundant_master",
       "Type of interface ghosting and ghosting extension algorithm",
       tuple<std::string>("redundant_all", "redundant_master", "round_robin", "binning"),
@@ -140,9 +145,8 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           parredist_static, parredist_dynamic, parredist_dynamic),
       &parallelRedist);
 
-  BoolParameter("EXPLOIT_PROXIMITY", "Yes",
-      "Exploit information on geometric proximity to split slave interface into close and "
-      "non-close parts and redistribute them independently. [Contact only]",
+  BoolParameter("PRINT_DISTRIBUTION", "Yes",
+      "Print details of the parallel distribution, i.e. number of nodes/elements for each rank.",
       &parallelRedist);
 }
 

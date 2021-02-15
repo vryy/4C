@@ -57,6 +57,7 @@ LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Static
 GHOSTING_STRATEGY               binning
+PRINT_DISTRIBUTION              No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Superlu
