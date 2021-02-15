@@ -12460,8 +12460,6 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
         continue;
       }
 
-      // if (cnode->Owner()!=Comm_.MyPID()) continue;
-
       // add current Gauss point's contribution to gseg
       mrtrnode->AddNcoupValue(prod);
     }

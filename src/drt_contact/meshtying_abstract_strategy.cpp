@@ -602,10 +602,6 @@ void CONTACT::MtAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("StoreNodalQuantities: Double active node check needed for n
-    // interfaces!");
-
     // get global quantity to be stored in nodes
     Teuchos::RCP<Epetra_Vector> vectorglobal = Teuchos::null;
     switch (type)
@@ -718,10 +714,6 @@ void CONTACT::MtAbstractStrategy::StoreDirichletStatus(
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("StoreDirichletStatus: Double active node check needed for n
-    // interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -1110,9 +1102,6 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("PrintActiveSet: Double active node check needed for n interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {

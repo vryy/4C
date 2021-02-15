@@ -587,12 +587,11 @@ void WEAR::WearLagrangeStrategy::CondenseWearImplExpl(Teuchos::RCP<LINALG::Spars
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  // we cannot use this check, as we deliberately replaced zero entries
-  // if (err>0) dserror("ReplaceDiagonalValues: Missing diagonal entry!");
+  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -1570,12 +1569,11 @@ void WEAR::WearLagrangeStrategy::CondenseWearDiscr(Teuchos::RCP<LINALG::SparseOp
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = invd->ReplaceDiagonalValues(*diag);
-  // we cannot use this check, as we deliberately replaced zero entries
-  // if (err>0) dserror("ReplaceDiagonalValues: Missing diagonal entry!");
+  if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // do the multiplication mhat = inv(D) * M
   mhatmatrix_ = LINALG::MLMultiply(*invd, false, *mmatrix_, false, false, false, true);
@@ -4231,9 +4229,6 @@ void WEAR::WearLagrangeStrategy::DoWriteRestart(
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("DoWriteRestart: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -4732,9 +4727,6 @@ void WEAR::WearLagrangeStrategy::DoReadRestart(
   // into nodes, therefore first loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("DoReadRestart: Double active node check needed for n interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < (interface_[i]->SlaveRowNodes())->NumMyElements(); ++j)
     {

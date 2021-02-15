@@ -914,9 +914,6 @@ void ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<DRT::Discretization> s
         // get corresponding entries from Xslavemod
         int numdof = mtnode->NumDof();
 
-        // this is not anymore true for fluid meshtying
-        // if (dim!=numdof) dserror("Inconsisteny Dim <-> NumDof");
-
         // find DOFs of current node in Xslavemod and extract this node's position
         std::vector<int> locindex(numdof);
 
@@ -1175,11 +1172,11 @@ void ADAPTER::CouplingMortar::CreateP()
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);
-  if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+  if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
   // re-insert inverted diagonal into invd
   err = Dinv_->ReplaceDiagonalValues(*diag);
-  if (err > 0) dserror("ReplaceDiagonalValues failed!");
+  if (err != 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
   // complete inverse D matrix
   Dinv_->Complete();

@@ -336,16 +336,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -410,7 +413,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -420,6 +423,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateFriction(
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -2073,19 +2077,19 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      // if (err>0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      // if (err>0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      // if (err>0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -2149,7 +2153,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -2159,8 +2163,7 @@ void CONTACT::CoLagrangeStrategy::EvaluateContact(
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      // we cannot use this check, as we deliberately replaced zero entries
-      // if (err>0) dserror("ReplaceDiagonalValues: Missing diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     // do the multiplication mhat = inv(D) * M
@@ -3544,16 +3547,19 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3618,7 +3624,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -3628,6 +3634,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFriction()
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -3798,19 +3805,19 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // scalar inversion of diagonal values
       err = diagV->Reciprocal(*diagV);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagE->Reciprocal(*diagE);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = diagS->Reciprocal(*diagS);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       // re-insert inverted diagonal into invd
       err = invdV->ReplaceDiagonalValues(*diagV);
-      // if (err>0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdE->ReplaceDiagonalValues(*diagE);
-      // if (err>0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
       err = invdS->ReplaceDiagonalValues(*diagS);
-      // if (err>0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
       invd = Teuchos::rcp(new LINALG::SparseMatrix(*gsdofrowmap_, 100, true, true));
@@ -3874,7 +3881,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // scalar inversion of diagonal values
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
 
       Teuchos::RCP<Epetra_Vector> lmDBC = LINALG::CreateVector(*gsdofrowmap_, true);
       LINALG::Export(*pgsdirichtoggle_, *lmDBC);
@@ -3884,8 +3891,7 @@ void CONTACT::CoLagrangeStrategy::AssembleAllContactTermsFrictionless()
 
       // re-insert inverted diagonal into invd
       err = invd->ReplaceDiagonalValues(*diag);
-      // we cannot use this check, as we deliberately replaced zero entries
-      // if (err>0) dserror("ReplaceDiagonalValues: Missing diagonal entry!");
+      if (err < 0) dserror("ReplaceDiagonalValues() failed with error code %d.", err);
     }
 
     invd_ = invd;
@@ -4543,9 +4549,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    // if (i>0) dserror("UpdateActiveSet: Double active node check needed for n
-    // interfaces!");
-
     // loop over all slave nodes on the current interface
     for (int j = 0; j < interface_[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -4591,11 +4594,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       // (thus we only have to check ncr.disp. jump and weighted gap)
       if (cnode->Active() == false)
       {
-        // check for fulfilment of contact condition
-        // if (abs(nz) > 1e-8)
-        //  std::cout << "UpdateActiveSet: Exact inactive node condition violated "
-        //       <<  "for node ID: " << cnode->Id() << std::endl;
-
         // check for penetration
         if (wgap < 0)
         {
@@ -4609,11 +4607,6 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSet()
       // (thus we only have to check for positive Lagrange multipliers)
       else
       {
-        // check for fulfilment of contact condition
-        // if (abs(wgap) > 1e-8)
-        //  std::cout << "UpdateActiveSet: Exact active node condition violated "
-        //       << "for node ID: " << cnode->Id() << std::endl;
-
         // check for tensile contact forces
         if (nz <= 0)  // no averaging of Lagrange multipliers
         // if (0.5*nz+0.5*nzold <= 0) // averaging of Lagrange multipliers

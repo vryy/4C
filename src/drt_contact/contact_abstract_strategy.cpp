@@ -1880,10 +1880,6 @@ void CONTACT::CoAbstractStrategy::StoreDirichletStatus(
   // loop over all interfaces
   for (unsigned i = 0; i < Interfaces().size(); ++i)
   {
-    // currently this only works safely for 1 interface
-    // if (i>0) dserror("StoreDirichletStatus: Double active node check needed for n
-    // interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
@@ -2573,8 +2569,6 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
   // loop over all interfaces
   for (int i = 0; i < (int)Interfaces().size(); ++i)
   {
-    // if (i>0) dserror("PrintActiveSet: Double active node check needed for n interfaces!");
-
     // loop over all slave row nodes on the current interface
     for (int j = 0; j < Interfaces()[i]->SlaveRowNodes()->NumMyElements(); ++j)
     {
