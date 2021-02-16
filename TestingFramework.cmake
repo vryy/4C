@@ -16,21 +16,35 @@ else ()
   message("Global test timeout is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT} s.")
 endif ()
 
+# Definition of default baci tests with restart (and optional "minimal" flag)
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
     COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+  if( "${ARGN}" STREQUAL "minimal")
+    set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
+  else ()
+    set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
+  endif ()
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
       COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
     set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
   endif (${restart})
-  if( "${ARGN}" STREQUAL "minimal")
-    set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT} LABELS minimal)
-  else ()
-    set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT})
-  endif ()
 endmacro (baci_test)
+
+# Definition of baci tests with restart and extended runtime
+macro (baci_test_extended_timeout arg nproc restart testtimeout)
+  add_test(NAME ${arg}-p${nproc}
+    COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+  set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${testtimeout})
+
+  if (${restart})
+    add_test(NAME ${arg}-p${nproc}-restart
+      COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+    set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${testtimeout})
+  endif (${restart})
+endmacro (baci_test_extended_timeout)
 
 # Definition of default baci tests with restart and parallel and serial ensight postprocessing
 macro (baci_test_and_post_ensight_test arg nproc restart)
