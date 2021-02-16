@@ -441,9 +441,9 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
   else
   {
     // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<DRT::DofSetInterface> structdofset = structdis->GetDofSetProxy();
+    auto structdofset = structdis->GetDofSetProxy();
     // build a proxy of the scatra discretization for the structure field
-    Teuchos::RCP<DRT::DofSetInterface> scatradofset = scatradis->GetDofSetProxy();
+    auto scatradofset = scatradis->GetDofSetProxy();
 
     // add proxy dofssets of other fields to discretizations and check if number of dofsets is
     // correct
