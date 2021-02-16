@@ -30,10 +30,10 @@ namespace XFEM
     switch (field)
     {
       case structure:
-        return "STRUCTURE";
+        return "structure";
         break;
       case xstructure:
-        return "XSTRUCTURE";
+        return "xstructure";
         break;
       default:
         dserror("Unknown FieldName enumerator (enum = %d)!", field);
@@ -46,9 +46,9 @@ namespace XFEM
   static inline enum FieldName String2FieldName(const std::string& name)
   {
     enum FieldName field = unknown;
-    if (name == "STRUCTURE")
+    if (name == "structure")
       field = structure;
-    else if (name == "XSTRUCTURE")
+    else if (name == "xstructure")
       field = xstructure;
     else
       dserror(
