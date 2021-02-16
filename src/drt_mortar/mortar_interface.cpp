@@ -609,6 +609,8 @@ void MORTAR::MortarInterface::FillCompleteNew(
 void MORTAR::MortarInterface::FillComplete(
     const bool isFinalParallelDistribution, const int maxdof, const double meanVelocity)
 {
+  TEUCHOS_FUNC_TIME_MONITOR("MORTAR::MortarInterface::FillComplete");
+
   // store maximum global dof ID handed in
   // this ID is later needed when setting up the Lagrange multiplier
   // dof map, which of course must not overlap with existing dof ranges
@@ -1165,8 +1167,8 @@ void MORTAR::MortarInterface::Redistribute()
       InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
 
   // make sure we are supposed to be here
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_none)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_none)
     dserror("You are not supposed to be here...");
 
   // some local variables

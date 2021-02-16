@@ -713,8 +713,8 @@ void CONTACT::CoInterface::Redistribute()
       InterfaceParams().sublist("PARALLEL REDISTRIBUTION");
 
   // make sure we are supposed to be here
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_none)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_none)
     dserror(
         "You are not supposed to be here since you did not enable PARALLEL_REDIST in the "
         "input file. ");

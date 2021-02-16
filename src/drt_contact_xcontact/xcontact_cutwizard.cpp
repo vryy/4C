@@ -23,7 +23,6 @@
 
 #include "../drt_cut/cut_volumecell.H"
 
-#include <boost/algorithm/string/predicate.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include "xcontact_cutwizard.H"
@@ -354,7 +353,7 @@ Teuchos::RCP<Epetra_Vector> XCONTACT::CutWizard::ExpandLevelSetValues(
     for (unsigned i = 0; i < ccond_grps[0].size(); ++i)
     {
       const std::string *side = ccond_grps[0][i]->Get<std::string>("Side");
-      if (side and boost::iequals(*side, desired_cond))
+      if (side && (*side == desired_cond))
       {
         conds[j] = ccond_grps[0][i];
         break;

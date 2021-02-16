@@ -62,11 +62,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   Teuchos::ParameterList contactParams;
 
   // read and check contact input parameters
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "Checking contact input parameters...........";
-    fflush(stdout);
-  }
+  if (Comm().MyPID() == 0) std::cout << "Checking contact input parameters..........." << std::endl;
+
   ReadAndCheckInput(contactParams);
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
@@ -75,11 +72,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
   // let's check for contact boundary conditions in the discretization and and detect groups of
   // matching conditions. For each group, create a contact interface and store it.
-  if (Comm().MyPID() == 0)
-  {
-    std::cout << "Building contact interface(s)...............";
-    fflush(stdout);
-  }
+  if (Comm().MyPID() == 0) std::cout << "Building contact interface(s)..............." << std::endl;
 
   // Vector that contains solid-to-solid and beam-to-solid contact pairs
   std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
@@ -89,17 +82,16 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   std::vector<DRT::Condition*> contactconditions(0);
 
   // Sort out beam-to-solid contact pairs, since these are treated in the beam3contact framework
-  for (int i = 0; i < (int)beamandsolidcontactconditions.size(); ++i)
+  for (const auto& beamSolidCondition : beamandsolidcontactconditions)
   {
-    if (*(beamandsolidcontactconditions[i]->Get<std::string>("Application")) !=
-        "Beamtosolidcontact")
-      contactconditions.push_back(beamandsolidcontactconditions[i]);
+    if (*beamSolidCondition->Get<std::string>("Application") != "Beamtosolidcontact")
+      contactconditions.push_back(beamSolidCondition);
   }
 
   // there must be more than one contact condition
   // unless we have a self contact problem!
-  if ((int)contactconditions.size() < 1) dserror("Not enough contact conditions in discretization");
-  if ((int)contactconditions.size() == 1)
+  if (contactconditions.size() < 1) dserror("Not enough contact conditions in discretization");
+  if (contactconditions.size() == 1)
   {
     const std::string* side = contactconditions[0]->Get<std::string>("Side");
     if (*side != "Selfcontact") dserror("Not enough contact conditions in discretization");
@@ -147,7 +139,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   int mastertype = -1;  // 1 poro, 0 struct, -1 default
   bool isanyselfcontact = false;
 
-  for (int i = 0; i < (int)contactconditions.size(); ++i)
+  for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
     std::vector<DRT::Condition*> currentgroup(0);
@@ -168,7 +160,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     const std::string* side = contactconditions[i]->Get<std::string>("Side");
     if (*side == "Selfcontact") foundit = true;
 
-    for (int j = 0; j < (int)contactconditions.size(); ++j)
+    for (unsigned j = 0; j < contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
@@ -186,11 +178,13 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     // see whether we found this group before
     bool foundbefore = false;
     for (int j = 0; j < numgroupsfound; ++j)
+    {
       if (groupid1 == foundgroups[j])
       {
         foundbefore = true;
         break;
       }
+    }
 
     // if we have processed this group before, do nothing
     if (foundbefore) continue;
@@ -204,11 +198,13 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     std::vector<bool> isself(0);
     CONTACT::UTILS::GetMasterSlaveSideInfo(isslave, isself, currentgroup);
     for (const bool is : isself)
+    {
       if (is)
       {
         isanyselfcontact = true;
         break;
       }
+    }
 
     // find out which sides are initialized as In/Active and other initalization data
     std::vector<bool> isactive(currentgroup.size());
@@ -228,14 +224,17 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         frictionType == INPAR::CONTACT::friction_stick)
     {
       // read interface COFs
-      std::vector<double> frcoeff((int)currentgroup.size());
-      for (int j = 0; j < (int)currentgroup.size(); ++j)
+      std::vector<double> frcoeff(currentgroup.size());
+
+      for (unsigned j = 0; j < currentgroup.size(); ++j)
         frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
 
       // check consistency of interface COFs
-      for (int j = 1; j < (int)currentgroup.size(); ++j)
+      for (unsigned j = 1; j < currentgroup.size(); ++j)
+      {
         if (frcoeff[j] != frcoeff[0])
           dserror("Inconsistency in friction coefficients of interface %i", groupid1);
+      }
 
       // check for infeasible value of COF
       if (frcoeff[0] < 0.0) dserror("Negative FrCoeff / FrBound on interface %i", groupid1);
@@ -264,14 +263,16 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     if (adhesionType == INPAR::CONTACT::adhesion_bound)
     {
       // read interface COFs
-      std::vector<double> ad_bound((int)currentgroup.size());
-      for (int j = 0; j < (int)currentgroup.size(); ++j)
+      std::vector<double> ad_bound(currentgroup.size());
+      for (unsigned j = 0; j < currentgroup.size(); ++j)
         ad_bound[j] = currentgroup[j]->GetDouble("AdhesionBound");
 
       // check consistency of interface COFs
-      for (int j = 1; j < (int)currentgroup.size(); ++j)
+      for (unsigned j = 1; j < currentgroup.size(); ++j)
+      {
         if (ad_bound[j] != ad_bound[0])
           dserror("Inconsistency in adhesion bounds of interface %i", groupid1);
+      }
 
       // check for infeasible value of COF
       if (ad_bound[0] < 0.0) dserror("Negative adhesion bound on interface %i", groupid1);
@@ -298,7 +299,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     interfaces.push_back(newinterface);
 
     // Get the RCP to the last created interface
-    Teuchos::RCP<CONTACT::CoInterface> interface = interfaces[(int)interfaces.size() - 1];
+    Teuchos::RCP<CONTACT::CoInterface> interface = interfaces.back();
 
     // note that the nodal ids are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -310,12 +311,12 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     std::vector<int> initialactive;
 
     //-------------------------------------------------- process nodes
-    for (int j = 0; j < (int)currentgroup.size(); ++j)
+    for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
-      for (int k = 0; k < (int)(*nodeids).size(); ++k)
+      for (unsigned k = 0; k < (*nodeids).size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
@@ -331,12 +332,14 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         bool foundinitialactive = false;
         if (!isactive[j])
         {
-          for (int k = 0; k < (int)initialactive.size(); ++k)
+          for (unsigned k = 0; k < initialactive.size(); ++k)
+          {
             if (gid == initialactive[k])
             {
               foundinitialactive = true;
               break;
             }
+          }
         }
 
         // create CoNode object or FriNode object in the frictional case
@@ -350,10 +353,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
                   Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
-          if (nurbs)
-          {
-            MORTAR::UTILS::PrepareNURBSNode(node, cnode);
-          }
+          if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, cnode);
 
           // get edge and corner information:
           std::vector<DRT::Condition*> contactcornercond(0);
@@ -465,7 +465,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
 
     //----------------------------------------------- process elements
     int ggsize = 0;
-    for (int j = 0; j < (int)currentgroup.size(); ++j)
+    for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
       std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
@@ -540,8 +540,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         algo != INPAR::MORTAR::algorithm_gpts)
       FindPoroInterfaceTypes(
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
-
-  }  // for (int i=0; i<(int)contactconditions.size(); ++i)
+  }
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
@@ -636,7 +635,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   // print friction information of interfaces
   if (Comm().MyPID() == 0)
   {
-    for (int i = 0; i < (int)interfaces.size(); ++i)
+    for (unsigned i = 0; i < interfaces.size(); ++i)
     {
       double checkfrcoeff = 0.0;
       if (frictionType == INPAR::CONTACT::friction_tresca)
@@ -696,21 +695,21 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   const Teuchos::ParameterList& mortarParallelRedistParams =
       mortar.sublist("PARALLEL REDISTRIBUTION");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic &&
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic &&
       mortarParallelRedistParams.get<double>("MAX_BALANCE") < 1.0)
     dserror(
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
 
   if (problemtype == prb_tsi &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror("Parallel redistribution not yet implemented for TSI problems");
 
   // *********************************************************************
@@ -895,19 +894,21 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
       dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
     // check for self contact
-    std::vector<DRT::Condition*> coco(0);
-    Discret().GetCondition("Mortar", coco);
     bool self = false;
-
-    for (int k = 0; k < (int)coco.size(); ++k)
     {
-      const std::string* side = coco[k]->Get<std::string>("Side");
-      if (*side == "Selfcontact") self = true;
+      std::vector<DRT::Condition*> contactCondition(0);
+      Discret().GetCondition("Mortar", contactCondition);
+
+      for (const auto& condition : contactCondition)
+      {
+        const std::string* side = condition->Get<std::string>("Side");
+        if (*side == "Selfcontact") self = true;
+      }
     }
 
     if (self == true &&
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-            mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+        Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+            "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       dserror("Self contact and parallel redistribution not yet compatible");
 
     if (DRT::INPUT::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
@@ -1013,8 +1014,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
               INPAR::CONTACT::solution_lagmult)
         dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-              mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+      if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+              "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
           DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               INPAR::CONTACT::solution_lagmult)
         dserror(
@@ -1239,14 +1240,14 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
   INPAR::MORTAR::AlgorithmType atype =
       DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(GetStrategy().Params(), "ALGORITHM");
   if (atype == INPAR::MORTAR::algorithm_gpts)
-    for (int i = 0;
-         i <
-         (int)dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces().size();
+  {
+    for (unsigned i = 0;
+         i < dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy()).ContactInterfaces().size();
          ++i)
       dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy())
           .ContactInterfaces()[i]
           ->CreateVolumeGhosting();
-
+  }
 
   // If Parent Elements are required, we need to reconnect them before contact restart!
   if (GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poro ||
@@ -1425,7 +1426,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   for (int i = 0; i < Comm().NumProc(); ++i) allproc[i] = i;
 
   // communicate all data to proc 0
-  LINALG::Gather<int>(lnid, gnid, (int)allproc.size(), &allproc[0], Comm());
+  LINALG::Gather<int>(lnid, gnid, static_cast<int>(llproc.size()), &allproc[0], Comm());
 
   // std::cout << " size of gnid:" << gnid.size() << std::endl;
 
@@ -1443,13 +1444,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
   if (myInterface.size() != 1) dserror("Interface size should be 1");
 
   std::cout << "OUTPUT OF MASTER NODE IN CONTACT" << std::endl;
-  // std::cout << "Master_node_in_contact x_dis y_dis z_dis" << std::endl;
-  for (int i = 0; i < (int)gnid.size(); ++i)
-  {
-    int myGid = gnid[i];
-    std::cout << gnid[i]
-              << std::endl;  // << " " << myUx << " " << myUy << " " << myUz << std::endl;
-  }
+  for (const auto& globalNodeId : gnid) std::cout << globalNodeId << std::endl;
 
 #endif  // MASTERNODESINCONTACT: to output the global ID's of the master nodes in contact
 
@@ -1573,16 +1568,15 @@ void CONTACT::CoManager::ReconnectParentElements()
     CONTACT::CoAbstractStrategy& strategy =
         dynamic_cast<CONTACT::CoAbstractStrategy&>(GetStrategy());
 
-    for (int intidx = 0; intidx < (int)strategy.ContactInterfaces().size(); ++intidx)
+    for (auto& interface : strategy.ContactInterfaces())
     {
-      const Epetra_Map* ielecolmap =
-          strategy.ContactInterfaces()[intidx]->Discret().ElementColMap();
+      const Epetra_Map* ielecolmap = interface->Discret().ElementColMap();
 
       for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
       {
         int gid = ielecolmap->GID(i);
 
-        DRT::Element* ele = strategy.ContactInterfaces()[intidx]->Discret().gElement(gid);
+        DRT::Element* ele = interface->Discret().gElement(gid);
         if (!ele) dserror("Cannot find element with gid %", gid);
         DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
 

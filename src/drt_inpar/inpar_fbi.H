@@ -13,7 +13,6 @@
 #define INPAR_FBI_H
 
 #include "inpar_parameterlist_utils.H"
-#include <boost/algorithm/string/predicate.hpp>
 
 #include "../drt_lib/drt_dserror.H"
 

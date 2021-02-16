@@ -25,6 +25,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/micromaterial.H"
 
+#include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -38,7 +39,6 @@
 #include "../drt_contact/contact_defines.H"
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
-#include "../drt_contact/contact_abstract_strategy.H"  // for feeding contact solver with maps
 #include "../drt_contact/meshtying_contact_bridge.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/inpar_contact.H"
@@ -221,7 +221,7 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
   conman_->Init(discret_, sdynparams_);
 
   // create stiffness, mass matrix and other fields
-  createFields();
+  CreateFields();
 
   // stay with us
 
@@ -238,10 +238,10 @@ void STR::TimInt::Setup()
   // we have to call Init() before
   CheckIsInit();
 
-  createAllEpetraVectors();
+  CreateAllSolutionVectors();
 
   // create stiffness, mass matrix and other fields
-  createFields();
+  CreateFields();
 
   // set initial fields
   SetInitialFields();
@@ -366,7 +366,7 @@ void STR::TimInt::Setup()
 /*----------------------------------------------------------------------------------------------*
  * Create all solution vectors
  *----------------------------------------------------------------------------------------------*/
-void STR::TimInt::createAllEpetraVectors()
+void STR::TimInt::CreateAllSolutionVectors()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(new TIMINT::TimIntMStep<Epetra_Vector>(0, 0, DofRowMapView(), true));
@@ -399,7 +399,7 @@ void STR::TimInt::createAllEpetraVectors()
 /*-------------------------------------------------------------------------------------------*
  * Create matrices when setting up time integrator
  *-------------------------------------------------------------------------------------------*/
-void STR::TimInt::createFields()
+void STR::TimInt::CreateFields()
 {
   // a zero vector of full length
   zeros_ = LINALG::CreateVector(*DofRowMapView(), true);
@@ -520,17 +520,17 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   discret_->GetCondition("Contact", contactconditions);
 
   // double-check for contact/meshtying conditions
-  if ((int)mortarconditions.size() == 0 and (int) contactconditions.size() == 0) return;
+  if (mortarconditions.size() == 0 and contactconditions.size() == 0) return;
 
   // check if only beam-to-solid contact / meshtying conditions (and leave if so)
   bool realcontactconditions = false;
-  for (int i = 0; i < (int)contactconditions.size(); ++i)
+  for (const auto& contactCondition : contactconditions)
   {
-    if (*(contactconditions[i]->Get<std::string>("Application")) != "Beamtosolidcontact" &&
-        *(contactconditions[i]->Get<std::string>("Application")) != "Beamtosolidmeshtying")
+    if (*contactCondition->Get<std::string>("Application") != "Beamtosolidcontact" &&
+        *contactCondition->Get<std::string>("Application") != "Beamtosolidmeshtying")
       realcontactconditions = true;
   }
-  if ((int)mortarconditions.size() == 0 and !realcontactconditions) return;
+  if (mortarconditions.size() == 0 and !realcontactconditions) return;
 
   // store integration parameter alphaf into cmtman_ as well
   // (for all cases except OST, GenAlpha and GEMM this is zero)
@@ -538,11 +538,8 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   // is defined just the other way round as alphaf in GenAlpha schemes.
   // Thus, we have to hand in 1-theta for OST!!!)
   double time_integration_factor = 0.0;
-  bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
-  if (!do_endtime)
-  {
-    time_integration_factor = TimIntParam();
-  }
+  const bool do_endtime = DRT::INPUT::IntegralValue<int>(scontact, "CONTACTFORCE_ENDTIME");
+  if (!do_endtime) time_integration_factor = TimIntParam();
 
   // create instance for meshtying contact bridge
   cmtbridge_ = Teuchos::rcp(new CONTACT::MeshtyingContactBridge(
@@ -553,7 +550,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
   // contact and constraints together not yet implemented
   if (conman_->HaveConstraint())
-    dserror("ERROR: Constraints and contact cannot be treated at the same time yet");
+    dserror("Constraints and contact cannot be treated at the same time yet");
 
   // print messages for multifield problems (e.g FSI)
   const ProblemType probtype = DRT::Problem::Instance()->GetProblemType();
@@ -610,7 +607,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   {
     // only plausibility check, that a contact solver is available
     if (contactsolver_ == Teuchos::null)
-      dserror("ERROR: No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
+      dserror("No contact solver in STR::TimInt::PrepareContactMeshtying? Cannot be!");
   }
 
   // output of strategy / shapefcn / system type to screen
@@ -757,7 +754,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else
-            dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+            dserror("Invalid strategy or shape function type for contact/meshtying");
         }
 
         // condensed formulation
@@ -873,7 +870,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
                       << std::endl;
           }
           else
-            dserror("ERROR: Invalid strategy or shape function type for contact/meshtying");
+            dserror("Invalid strategy or shape function type for contact/meshtying");
         }
       }
       else if (algorithm == INPAR::MORTAR::algorithm_nts)
@@ -923,7 +920,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
       }
       // invalid system type
       else
-        dserror("ERROR: Invalid system type for contact/meshtying");
+        dserror("Invalid system type for contact/meshtying");
     }
   }
 
@@ -971,8 +968,8 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        dserror("ERROR: Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(),
-            nodedofs[i]);
+        dserror(
+            "Proc %d: Cannot find gid=%d in Epetra_Vector", gvector.Comm().MyPID(), nodedofs[i]);
 
       nvector[i] += gvector[lid];
     }
@@ -1417,7 +1414,7 @@ void STR::TimInt::UpdateStepContactVUM()
       int err = 0;
       Minv->ExtractDiagonalCopy(*diag);
       err = diag->Reciprocal(*diag);
-      if (err > 0) dserror("ERROR: Reciprocal: Zero diagonal entry!");
+      if (err != 0) dserror("Reciprocal: Zero diagonal entry!");
       err = Minv->ReplaceDiagonalValues(*diag);
       Minv->Complete(*dofmap, *dofmap);
 
@@ -1435,9 +1432,9 @@ void STR::TimInt::UpdateStepContactVUM()
           Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
       Teuchos::RCP<LINALG::SparseMatrix> D =
           Teuchos::rcp(new LINALG::SparseMatrix(*slavedofmap, 10));
-      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+      if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
               cmtbridge_->GetStrategy().Params().sublist("PARALLEL REDISTRIBUTION"),
-              "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+              "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       {
         M = MORTAR::MatrixColTransform(Mmat, notredistmasterdofmap);
         D = MORTAR::MatrixColTransform(Dmat, notredistslavedofmap);
@@ -2849,8 +2846,7 @@ void STR::TimInt::OutputContact()
           if (MyConForce != NULL)
             fclose(MyConForce);
           else
-            dserror(
-                "ERROR: File for writing contact interface forces/moments could not be generated.");
+            dserror("File for writing contact interface forces/moments could not be generated.");
         }
         else
           MyFile = fopen(filename.str().c_str(), "at+");
@@ -2866,7 +2862,7 @@ void STR::TimInt::OutputContact()
           fclose(MyFile);
         }
         else
-          dserror("ERROR: File for writing momentum and energy data could not be opened.");
+          dserror("File for writing momentum and energy data could not be opened.");
       }
     }
 

@@ -31,7 +31,6 @@
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_timestepping/timintmstep.H"
-#include "../drt_lib/drt_discret_faces.H"
 #include "../drt_lib/drt_elements_paramsinterface.H"
 
 
@@ -55,7 +54,6 @@ namespace UTILS
   class Cardiovascular0DManager;
   class SpringDashpotManager;
   class SurfStressManager;
-  //  class GrowthDisplManager;
 }  // namespace UTILS
 
 namespace CONTACT
@@ -197,10 +195,10 @@ namespace STR
     virtual void Setup();
 
     //! create fields, based on dofrowmap, whose previous time step values are unimportant
-    virtual void createFields();
+    virtual void CreateFields();
 
     //! Construct all solution vectors
-    void createAllEpetraVectors();
+    void CreateAllSolutionVectors();
 
     //! Resize \p TimIntMStep<T> multi-step quantities
     virtual void ResizeMStep() = 0;

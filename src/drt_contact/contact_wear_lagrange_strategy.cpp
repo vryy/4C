@@ -4531,7 +4531,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(
   // (1) static redistribution: ONLY at time t=0 or after restart
   // (both cases can be identified via empty unbalance vectors)
   //**********************************************************************
-  if (WhichParRedist() == INPAR::MORTAR::parredist_static)
+  if (WhichParRedist() == INPAR::MORTAR::ParallelRedist::redist_static)
   {
     // this is the first time step (t=0) or restart
     if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
@@ -4563,7 +4563,7 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(
   //**********************************************************************
   // (2) dynamic redistribution: whenever system is out of balance
   //**********************************************************************
-  else if (WhichParRedist() == INPAR::MORTAR::parredist_dynamic)
+  else if (WhichParRedist() == INPAR::MORTAR::ParallelRedist::redist_dynamic)
   {
     // this is the first time step (t=0) or restart
     if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)

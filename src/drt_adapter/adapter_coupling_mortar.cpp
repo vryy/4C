@@ -459,12 +459,12 @@ void ADAPTER::CouplingMortar::SetupInterface(
    * FillComplete(), so we skip this expensive operation here and do it later. DOFs have to be
    * assigned only once!
    */
-  const INPAR::MORTAR::ParRedist parallelRedist =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+  const INPAR::MORTAR::ParallelRedist parallelRedist =
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
           input.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
   {
     bool isFinalDistribution = false;
-    if (parallelRedist == INPAR::MORTAR::parredist_none or comm.NumProc() == 1)
+    if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm.NumProc() == 1)
       isFinalDistribution = true;
 
     interface_->FillComplete(isFinalDistribution);
@@ -483,7 +483,7 @@ void ADAPTER::CouplingMortar::SetupInterface(
   //**********************************************************************
   // PARALLEL REDISTRIBUTION OF INTERFACE
   //**********************************************************************
-  if (parallelRedist != INPAR::MORTAR::parredist_none and comm.NumProc() > 1)
+  if (parallelRedist != INPAR::MORTAR::ParallelRedist::redist_none and comm.NumProc() > 1)
   {
     // redistribute optimally among all procs
     interface_->Redistribute();
@@ -1314,8 +1314,8 @@ void ADAPTER::CouplingMortar::MatrixRowColTransform()
   bool parredist = false;
   const Teuchos::ParameterList& input =
       DRT::Problem::Instance()->MortarCouplingParams().sublist("PARALLEL REDISTRIBUTION");
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(input, "PARALLEL_REDIST") !=
-      INPAR::MORTAR::parredist_none)
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(input, "PARALLEL_REDIST") !=
+      INPAR::MORTAR::ParallelRedist::redist_none)
     parredist = true;
 
   // only for parallel redistribution case

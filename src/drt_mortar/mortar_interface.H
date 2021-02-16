@@ -22,9 +22,6 @@
 #include "../headers/pairedvector.H"
 #include "mortar_paramsinterface.H"
 
-#include <boost/algorithm/string/predicate.hpp>  // case insensitive string compare
-
-
 // forward declarations
 namespace BINSTRATEGY
 {
@@ -114,26 +111,25 @@ namespace MORTAR
   static inline enum MORTAR::StateType String2StateType(const std::string& name)
   {
     MORTAR::StateType type = state_vague;
-    if (boost::iequals(name, "displacement"))
+    if (name == "displacement")
       type = state_new_displacement;
-    else if (boost::iequals(name, "olddisplacement"))
+    else if (name == "olddisplacement")
       type = state_old_displacement;
-    else if (boost::iequals(name, "lm"))
+    else if (name == "lm")
       type = state_lagrange_multiplier;
-    else if (boost::iequals(name, "fvelocity"))
+    else if (name == "fvelocity")
       type = state_fvelocity;
-    else if (boost::iequals(name, "svelocity"))
+    else if (name == "svelocity")
       type = state_svelocity;
-    else if (boost::iequals(name, "fpressure"))
+    else if (name == "fpressure")
       type = state_fpressure;
-    else if (boost::iequals(name, "temperature"))
+    else if (name == "temperature")
       type = state_temperature;
-    else if (boost::iequals(name, "thermo_lm"))
+    else if (name == "thermo_lm")
       type = state_thermo_lagrange_multiplier;
     else
-    {
       dserror("Unknown state type name. (name = %s)", name.c_str());
-    }
+
     return type;
   };
 

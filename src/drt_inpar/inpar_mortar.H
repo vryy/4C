@@ -99,11 +99,11 @@ namespace INPAR
 
     /// Type of parallel redistribution algorithm
     /// (this enum represents the input file parameter PARALLEL_REDIST)
-    enum ParRedist
+    enum class ParallelRedist
     {
-      parredist_none,    ///< no redistribution
-      parredist_static,  ///< static redistribution (at t=0 and after restart)
-      parredist_dynamic  ///< dynamic redistribution
+      redist_none,    ///< no redistribution
+      redist_static,  ///< static redistribution (at t=0 and after restart)
+      redist_dynamic  ///< dynamic redistribution
     };
 
     /// Type of integration procedure

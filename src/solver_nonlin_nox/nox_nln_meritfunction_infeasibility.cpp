@@ -55,7 +55,7 @@ void NOX::NLN::MeritFunction::Infeasibility::SetType(const std::string& type_nam
   auto cit = supported_type_names.cbegin();
   while (cit != supported_type_names.cend())
   {
-    if (boost::iequals(type_name, cit->first))
+    if (type_name == cit->first)
     {
       infeasibility_type_ = cit->second;
       break;

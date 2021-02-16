@@ -48,10 +48,8 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
   // read and check meshtying input parameters
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "Checking meshtying input parameters...........";
-    fflush(stdout);
-  }
+    std::cout << "Checking meshtying input parameters..........." << std::endl;
+
   ReadAndCheckInput(mtparams, discret);
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
@@ -62,17 +60,13 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // and detect groups of matching conditions
   // for each group, create a contact interface and store it
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "Building meshtying interface(s)...............";
-    fflush(stdout);
-  }
+    std::cout << "Building meshtying interface(s)..............." << std::endl;
 
   std::vector<DRT::Condition*> contactconditions(0);
   discret.GetCondition("Mortar", contactconditions);
 
   // there must be more than one meshtying condition
-  if ((int)contactconditions.size() < 2)
-    dserror("ERROR: Not enough contact conditions in discretization");
+  if (contactconditions.size() < 2) dserror("Not enough contact conditions in discretization");
 
   // find all pairs of matching meshtying conditions
   // there is a maximum of (conditions / 2) groups
@@ -87,7 +81,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   // freedom, which of course must not overlap with displacement dofs
   const int maxdof = discret.DofRowMap()->MaxAllGID();
 
-  for (int i = 0; i < (int)contactconditions.size(); ++i)
+  for (unsigned i = 0; i < contactconditions.size(); ++i)
   {
     // initialize vector for current group of conditions and temp condition
     std::vector<DRT::Condition*> currentgroup(0);
@@ -96,16 +90,16 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);
     const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
-    if (!group1v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+    if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
     int groupid1 = (*group1v)[0];
     bool foundit = false;
 
-    for (int j = 0; j < (int)contactconditions.size(); ++j)
+    for (unsigned j = 0; j < contactconditions.size(); ++j)
     {
       if (j == i) continue;  // do not detect contactconditions[i] again
       tempcond = contactconditions[j];
       const std::vector<int>* group2v = tempcond->Get<std::vector<int>>("Interface ID");
-      if (!group2v) dserror("ERROR: Contact Conditions does not have value 'Interface ID'");
+      if (!group2v) dserror("Contact Conditions does not have value 'Interface ID'");
       int groupid2 = (*group2v)[0];
       if (groupid1 != groupid2) continue;  // not in the group
       foundit = true;                      // found a group entry
@@ -113,16 +107,18 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     }
 
     // now we should have found a group of conds
-    if (!foundit) dserror("ERROR: Cannot find matching contact condition for id %d", groupid1);
+    if (!foundit) dserror("Cannot find matching contact condition for id %d", groupid1);
 
     // see whether we found this group before
     bool foundbefore = false;
     for (int j = 0; j < numgroupsfound; ++j)
+    {
       if (groupid1 == foundgroups[j])
       {
         foundbefore = true;
         break;
       }
+    }
 
     // if we have processed this group before, do nothing
     if (foundbefore) continue;
@@ -134,10 +130,10 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // find out which sides are Master and Slave
     bool hasslave = false;
     bool hasmaster = false;
-    std::vector<const std::string*> sides((int)currentgroup.size());
-    std::vector<bool> isslave((int)currentgroup.size());
+    std::vector<const std::string*> sides(currentgroup.size());
+    std::vector<bool> isslave(currentgroup.size());
 
-    for (int j = 0; j < (int)sides.size(); ++j)
+    for (unsigned j = 0; j < sides.size(); ++j)
     {
       sides[j] = currentgroup[j]->Get<std::string>("Side");
       if (*sides[j] == "Slave")
@@ -152,18 +148,18 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown mortar side qualifier!");
+        dserror("MtManager: Unknown mortar side qualifier!");
       }
     }
 
-    if (!hasslave) dserror("ERROR: Slave side missing in contact condition group!");
-    if (!hasmaster) dserror("ERROR: Master side missing in contact condition group!");
+    if (!hasslave) dserror("Slave side missing in contact condition group!");
+    if (!hasmaster) dserror("Master side missing in contact condition group!");
 
     // find out which sides are initialized as Active
-    std::vector<const std::string*> active((int)currentgroup.size());
-    std::vector<bool> isactive((int)currentgroup.size());
+    std::vector<const std::string*> active(currentgroup.size());
+    std::vector<bool> isactive(currentgroup.size());
 
-    for (int j = 0; j < (int)sides.size(); ++j)
+    for (unsigned j = 0; j < sides.size(); ++j)
     {
       active[j] = currentgroup[j]->Get<std::string>("Initialization");
       if (*sides[j] == "Slave")
@@ -172,27 +168,24 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
         if (*active[j] == "Active")
           isactive[j] = true;
         else if (*active[j] == "Inactive")
-          dserror("ERROR: Slave side must be active for meshtying!");
+          dserror(" Slave side must be active for meshtying!");
         else
-          dserror(
-              "ERROR: Unknown initialization qualifier for slave side of mortar meshtying "
-              "interface!");
+          dserror("Unknown initialization qualifier for slave side of mortar meshtying interface!");
       }
       else if (*sides[j] == "Master")
       {
         // master sides must NOT be initialized as "Active" as this makes no sense
         if (*active[j] == "Active")
-          dserror("ERROR: Master side cannot be active!");
+          dserror("Master side cannot be active!");
         else if (*active[j] == "Inactive")
           isactive[j] = false;
         else
           dserror(
-              "ERROR: Unknown initialization qualifier for master side of mortar meshtying "
-              "interface!");
+              "Unknown initialization qualifier for master side of mortar meshtying interface!");
       }
       else
       {
-        dserror("ERROR: MtManager: Unknown contact side qualifier!");
+        dserror("MtManager: Unknown contact side qualifier!");
       }
     }
 
@@ -200,7 +193,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     interfaces.push_back(MORTAR::MortarInterface::Create(groupid1, Comm(), spatialDim, mtparams));
 
     // get it again
-    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces[(int)interfaces.size() - 1];
+    Teuchos::RCP<MORTAR::MortarInterface> interface = interfaces.back();
 
     // note that the nodal IDs are unique because they come from
     // one global problem discretization containing all nodes of the
@@ -209,28 +202,25 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     // do meshtying between two distinct discretizations here
 
     //-------------------------------------------------- process nodes
-    for (int j = 0; j < (int)currentgroup.size(); ++j)
+    for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
-      if (!nodeids) dserror("ERROR: Condition does not have Node Ids");
-      for (int k = 0; k < (int)(*nodeids).size(); ++k)
+      if (!nodeids) dserror("Condition does not have Node Ids");
+      for (unsigned k = 0; k < nodeids->size(); ++k)
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!discret.NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = discret.gNode(gid);
-        if (!node) dserror("ERROR: Cannot find node with gid %", gid);
+        if (!node) dserror("Cannot find node with gid %", gid);
 
         // create MortarNode object
         Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
             node->X(), node->Owner(), discret.NumDof(0, node), discret.Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
-        if (nurbs)
-        {
-          MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
-        }
+        if (nurbs) MORTAR::UTILS::PrepareNURBSNode(node, mtnode);
 
         // get edge and corner information:
         std::vector<DRT::Condition*> contactcornercond(0);
@@ -273,7 +263,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
 
     //----------------------------------------------- process elements
     int ggsize = 0;
-    for (int j = 0; j < (int)currentgroup.size(); ++j)
+    for (unsigned j = 0; j < currentgroup.size(); ++j)
     {
       // get elements from condition j of current group
       std::map<int, Teuchos::RCP<DRT::Element>>& currele = currentgroup[j]->Geometry();
@@ -286,27 +276,23 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
       // enough number ggsize to all elements of cond2, cond3,... so they are
       // different from those in cond1!!!
       // note that elements in ele1/ele2 already are in column (overlapping) map
-      int lsize = (int)currele.size();
+      int lsize = static_cast<int>(currele.size());
       int gsize = 0;
       Comm().SumAll(&lsize, &gsize, 1);
 
 
-      std::map<int, Teuchos::RCP<DRT::Element>>::iterator fool;
-      for (fool = currele.begin(); fool != currele.end(); ++fool)
+      for (const auto& element : currele)
       {
-        Teuchos::RCP<DRT::Element> ele = fool->second;
+        Teuchos::RCP<DRT::Element> ele = element.second;
         Teuchos::RCP<MORTAR::MortarElement> mtele =
             Teuchos::rcp(new MORTAR::MortarElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
-        if (nurbs)
-        {
-          MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
-        }
+        if (nurbs) MORTAR::UTILS::PrepareNURBSElement(discret, ele, mtele, spatialDim);
 
         interface->AddMortarElement(mtele);
-      }  // for (fool=ele1.start(); fool != ele1.end(); ++fool)
+      }
 
       ggsize += gsize;  // update global element counter
     }
@@ -319,27 +305,23 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
      * assigned only once!
      */
     {
-      const INPAR::MORTAR::ParRedist parallelRedist =
-          DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
+      const INPAR::MORTAR::ParallelRedist parallelRedist =
+          Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(
               mtparams.sublist("PARALLEL REDISTRIBUTION"), "PARALLEL_REDIST");
       bool isFinalDistribution = false;
-      if (parallelRedist == INPAR::MORTAR::parredist_none or comm_->NumProc() == 1)
+      if (parallelRedist == INPAR::MORTAR::ParallelRedist::redist_none or comm_->NumProc() == 1)
         isFinalDistribution = true;
 
       interface->FillComplete(isFinalDistribution, maxdof);
     }
-
-  }  // for (int i=0; i<(int)contactconditions.size(); ++i)
+  }
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
 
   //**********************************************************************
   // create the solver strategy object
   // and pass all necessary data to it
   if (Comm().MyPID() == 0)
-  {
-    std::cout << "Building meshtying strategy object............";
-    fflush(stdout);
-  }
+    std::cout << "Building meshtying strategy object............" << std::endl;
 
   const ProblemType problemtype = DRT::Problem::Instance()->GetProblemType();
 
@@ -364,7 +346,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
     strategy_ = Teuchos::rcp(new MtPenaltyStrategy(discret.DofRowMap(), discret.NodeRowMap(),
         mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
   else
-    dserror("ERROR: Unrecognized strategy");
+    dserror("Unrecognized strategy");
 
   if (Comm().MyPID() == 0) std::cout << "done!" << std::endl;
   //**********************************************************************
@@ -375,7 +357,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   //**********************************************************************
 
   // create binary search tree
-  for (int i = 0; i < (int)interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
+  for (auto& interface : interfaces) interface->CreateSearchTree();
 
   return;
 }
@@ -460,13 +442,13 @@ bool CONTACT::MtManager::ReadAndCheckInput(
               INPAR::CONTACT::system_condensed_lagmult))
     dserror("Condensation of linear system only possible for dual Lagrange multipliers");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") == INPAR::MORTAR::parredist_dynamic and
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic and
       onlymeshtying)
     dserror("Dynamic parallel redistribution not possible for meshtying");
 
-  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none &&
+  if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none &&
       mortarParallelRedistParams.get<int>("MIN_ELEPROC") < 0)
     dserror(
         "ERROR: Minimum number of elements per processor for parallel redistribution must be >= 0");
@@ -502,8 +484,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(
     dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
   if (DRT::INPUT::IntegralValue<int>(mortar, "CROSSPOINTS") == true &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror("Crosspoints and parallel redistribution not yet compatible");
 
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
@@ -604,8 +586,8 @@ bool CONTACT::MtManager::ReadAndCheckInput(
     dserror("POROCONTACT: Only dual and petrovgalerkin shape functions implemented yet!");
 
   if ((problemtype == prb_poroelast || problemtype == prb_fpsi || problemtype == prb_fpsi_xfem) &&
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ParRedist>(
-          mortarParallelRedistParams, "PARALLEL_REDIST") != INPAR::MORTAR::parredist_none)
+      Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+          "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
     dserror(
         "POROCONTACT: Parallel Redistribution not implemented yet!");  // Since we use Pointers to
                                                                        // Parent Elements, which are
