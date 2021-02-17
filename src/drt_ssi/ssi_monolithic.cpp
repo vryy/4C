@@ -112,7 +112,8 @@ void SSI::SSIMono::AssembleMatAndRHS()
   }
 
   // apply meshtying
-  strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
+  if (SSIInterfaceMeshtying())
+    strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // finalize global system matrix
   ssi_matrices_->SystemMatrix()->Complete();
