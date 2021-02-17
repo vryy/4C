@@ -175,14 +175,6 @@ void INPAR::SSTI::SetValidConditions(
   sstitriplepointmeshtying.emplace_back(Teuchos::rcp(
       new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
           Teuchos::tuple<std::string>("Master", "Slave"))));
-  sstitriplepointmeshtying.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("MeshtyingSurfSlaveID")));
-  sstitriplepointmeshtying.emplace_back(
-      Teuchos::rcp(new IntConditionComponent("MeshtyingSurfSlaveID")));
-  sstitriplepointmeshtying.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("MeshtyingSurfMasterID")));
-  sstitriplepointmeshtying.emplace_back(
-      Teuchos::rcp(new IntConditionComponent("MeshtyingSurfMasterID")));
 
   for (auto& conditioncomponent : sstitriplepointmeshtying)
     sstiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
