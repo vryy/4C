@@ -739,8 +739,6 @@ baci_test(invana_reg0_lbfgs100_full_unif 3 "")
 baci_test(invana_cube2by2_displ 2 " " minimal)
 baci_test(invana_cube2by2_unif_displ 3 "")
 baci_test(invana_cube2by2_unif_displ 1 " ")
-# Surface Current Evaluation needs Kokkos
-# Statistical stuff neeeds C++11
 baci_test(invana_arch_surfcurr_target 2 "")
 baci_test(invana_arch_surfcurr 2 "")
 baci_test(invana_arch_surfcurr_prestress_pc_target 2 "")
