@@ -20,10 +20,6 @@
 #cmakedefine DEBUG
 #endif
 
-#ifndef D_THERMO
-#cmakedefine D_THERMO
-#endif
-
 #ifndef BINIO
 #cmakedefine BINIO
 #endif

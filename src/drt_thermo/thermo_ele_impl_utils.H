@@ -8,7 +8,6 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
-#ifdef D_THERMO
 #ifndef THERMO_ELE_IMPL_UTILS_H
 #define THERMO_ELE_IMPL_UTILS_H
 
@@ -326,4 +325,3 @@ namespace THR
 
 /*----------------------------------------------------------------------*/
 #endif  // THERMO_ELE_IMPL_UTILS_H
-#endif  // D_THERMO

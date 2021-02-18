@@ -10,8 +10,6 @@
 /*----------------------------------------------------------------------*
  | definitions                                               dano 09/09 |
  *----------------------------------------------------------------------*/
-#ifdef D_THERMO
-
 #ifndef THERMO_ELE_BOUNDARY_IMPL_H
 #define THERMO_ELE_BOUNDARY_IMPL_H
 
@@ -237,4 +235,3 @@ namespace DRT
 
 /*----------------------------------------------------------------------*/
 #endif  // THERMO_ELE_BOUNDARY_IMPL_H
-#endif  // D_THERMO

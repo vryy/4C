@@ -2613,16 +2613,6 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_prestress_strategy_isocyl.cpp
   src/drt_mixture/mixture_prestress_strategy_iterative.cpp)
 
-
-###------------------------------------------------------------------ Element flags
-
-#   all possible elements
-
-option (D_THERMO      "thermal elements" ON)
-if (D_THERMO)
-  add_definitions("-DD_THERMO")
-endif(D_THERMO)
-
 ###------------------------------------------------------------------ Binaries
 
 # hide libraries

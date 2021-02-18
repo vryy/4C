@@ -7,8 +7,6 @@
 
 */
 
-#ifdef D_THERMO
-
 #include "../drt_inpar/inpar_thermo.H"
 #include "../drt_inpar/inpar_structure.H"
 
@@ -3818,5 +3816,3 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateReactiveTerm(
   // -------------------------------------- end reactive term check
 }
 #endif  // CALCSTABILOFREACTTERM
-
-#endif  // D_THERMO
