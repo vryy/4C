@@ -95,9 +95,11 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatra(
   {
     for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
     {
-      systemmatrix_block->Assign(BlockPositionScaTra()->at(iblock),
-          BlockPositionScaTra()->at(jblock), LINALG::View,
-          scatradomain_block->Matrix(iblock, jblock));
+      auto& systemmatrix_block_iscatra_jscatra = systemmatrix_block->Matrix(
+          BlockPositionScaTra()->at(iblock), BlockPositionScaTra()->at(jblock));
+
+      systemmatrix_block_iscatra_jscatra.Add(
+          scatradomain_block->Matrix(iblock, jblock), false, 1.0, 1.0);
     }
   }
 }
@@ -111,9 +113,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatra(
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
   auto scatradomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatradomain);
 
-  // add scalar transport system matrix to global system matrix
-  systemmatrix_block->Assign(BlockPositionScaTra()->at(0), BlockPositionScaTra()->at(0),
-      LINALG::View, *scatradomain_sparse);
+  auto& systemmatrix_block_scatra_scatra =
+      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), BlockPositionScaTra()->at(0));
+
+  systemmatrix_block_scatra_scatra.Add(*scatradomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -145,8 +148,10 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructure(
   }
   else
   {
-    systemmatrix_block->Assign(
-        PositionStructure(), PositionStructure(), LINALG::View, *structuredomain);
+    auto& systemmatrix_block_struct_struct =
+        systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
+
+    systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
   }
 }
 
@@ -166,8 +171,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructure(
   }
   else
   {
-    systemmatrix_block->Assign(
-        PositionStructure(), PositionStructure(), LINALG::View, *structuredomain);
+    auto& systemmatrix_block_struct_struct =
+        systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
+
+    systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
   }
 }
 
@@ -284,8 +291,11 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     }
     else
     {
-      systemmatrix_block->Assign(BlockPositionScaTra()->at(iblock), PositionStructure(),
-          LINALG::View, scatrastructuredomain_block->Matrix(iblock, 0));
+      auto& systemmatrix_block_iscatra_struct =
+          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
+
+      systemmatrix_block_iscatra_struct.Add(
+          scatrastructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
     }
   }
 }
@@ -317,8 +327,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
   }
   else
   {
-    systemmatrix_block->Assign(BlockPositionScaTra()->at(0), PositionStructure(), LINALG::View,
-        *scatrastructuredomain_sparse);
+    auto& systemmatrix_block_scatra_struct =
+        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
+
+    systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
   }
 }
 
@@ -393,8 +405,11 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatra(
     }
     else
     {
-      systemmatrix_block->Assign(PositionStructure(), BlockPositionScaTra()->at(iblock),
-          LINALG::View, structurescatradomain_block->Matrix(0, iblock));
+      auto& systemmatrix_block_struct_iscatra =
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock));
+
+      systemmatrix_block_struct_iscatra.Add(
+          structurescatradomain_block->Matrix(0, iblock), false, 1.0, 1.0);
     }
   }
 }
@@ -418,8 +433,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructureScatra(
   }
   else
   {
-    systemmatrix_block->Assign(PositionStructure(), BlockPositionScaTra()->at(0), LINALG::View,
-        *structurescatradomain_sparse);
+    auto& systemmatrix_block_struct_scatra =
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0));
+
+    systemmatrix_block_struct_scatra.Add(*structurescatradomain_sparse, false, 1.0, 1.0);
   }
 }
 
@@ -480,9 +497,11 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifold(
   {
     for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++jblock)
     {
-      systemmatrix_block->Assign(BlockPositionScaTraManifold()->at(iblock),
-          BlockPositionScaTraManifold()->at(jblock), LINALG::View,
-          manifolddomain_block->Matrix(iblock, jblock));
+      auto& systemmatrix_block_iscatramanifold_jscatramanifold = systemmatrix_block->Matrix(
+          BlockPositionScaTraManifold()->at(iblock), BlockPositionScaTraManifold()->at(jblock));
+
+      systemmatrix_block_iscatramanifold_jscatramanifold.Add(
+          manifolddomain_block->Matrix(iblock, jblock), false, 1.0, 1.0);
     }
   }
 }
@@ -496,9 +515,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifold(
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
   auto manifolddomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(manifolddomain);
 
-  // add scalar transport system matrix to global system matrix
-  systemmatrix_block->Assign(BlockPositionScaTraManifold()->at(0),
-      BlockPositionScaTraManifold()->at(0), LINALG::View, *manifolddomain_sparse);
+  auto& systemmatrix_block_scatramanifold_scatramanifold = systemmatrix_block->Matrix(
+      BlockPositionScaTraManifold()->at(0), BlockPositionScaTraManifold()->at(0));
+
+  systemmatrix_block_scatramanifold_scatramanifold.Add(*manifolddomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -536,8 +556,11 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructure(
     }
     else
     {
-      systemmatrix_block->Assign(BlockPositionScaTraManifold()->at(iblock), PositionStructure(),
-          LINALG::View, manifoldstructuredomain_block->Matrix(iblock, 0));
+      auto& systemmatrix_block_iscatramanifold_struct = systemmatrix_block->Matrix(
+          BlockPositionScaTraManifold()->at(iblock), PositionStructure());
+
+      systemmatrix_block_iscatramanifold_struct.Add(
+          manifoldstructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
     }
   }
 }
@@ -561,8 +584,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructure(
   }
   else
   {
-    systemmatrix_block->Assign(BlockPositionScaTraManifold()->at(0), PositionStructure(),
-        LINALG::View, *manifoldstructuredomain_sparse);
+    auto& systemmatrix_block_scatramanifold_struct =
+        systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure());
+
+    systemmatrix_block_scatramanifold_struct.Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
   }
 }
 
