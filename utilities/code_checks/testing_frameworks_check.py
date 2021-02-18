@@ -139,6 +139,7 @@ def check_inputtests(look_cmd, allerrors):
   with open('TestingFrameworkListOfTests.cmake', 'r') as cmakefile:
     entry_regex = [
       re.compile(r'baci_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
+      re.compile(r'baci_test_extended_timeout *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_and_post_ensight_test *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_restartonly *\( *([a-zA-Z0-9_\.\-]+ .) *'),
       re.compile(r'baci_test_Nested_Par *\( *([a-zA-Z0-9_\.\-]+) +([a-zA-Z0-9_\.\-]+) *'),
@@ -148,7 +149,11 @@ def check_inputtests(look_cmd, allerrors):
     ]
 
     # list of test categories as one test can be run in different scenarios using differnt mpi-ranks
-    test_categories = ['', '', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
+    test_categories = ['', '', '', 'restartonly', 'Nested_Par', 'Nested_Par_MultipleInvana', 'Nested_Par_CopyDat','Nested_Par_CopyDat_prepost']
+
+    # Sanity check:
+    if (len(entry_regex) != len(test_categories)):
+      raise Exception('Length of lists \'entry_regex\' and \'test_categories\' does not match. Correspondence of these lists is mandatory, though.')
 
     # go through all lines in the TestingFrameworkListOfTests.cmake file
     for line in cmakefile:
