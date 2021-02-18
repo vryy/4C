@@ -1321,7 +1321,6 @@ set(OBJS_DRT_RED_AIRWAYS
 set(OBJS_DRT_THERMO_LIB
   src/drt_thermo/thermo_ele_boundary_impl.cpp
   src/drt_thermo/thermo_ele_impl.cpp
-  src/drt_thermo/thermo_ele_impl_utils.cpp
   src/drt_thermo/thermo_element.cpp
   src/drt_thermo/thermo_element_boundary_evaluate.cpp
   src/drt_thermo/thermo_element_evaluate.cpp
