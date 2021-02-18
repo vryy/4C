@@ -24,26 +24,6 @@
 #cmakedefine BINIO
 #endif
 
-#ifndef PRESTRESS
-#cmakedefine PRESTRESS
-#endif
-
-#ifndef POSTSTRESS
-#cmakedefine POSTSTRESS
-#endif
-
-#ifndef INVERSEDESIGNCREATE
-#cmakedefine INVERSEDESIGNCREATE
-#endif
-
-#ifndef INVERSEDESIGNUSE
-#cmakedefine INVERSEDESIGNUSE
-#endif
-
-#ifndef PERF
-#cmakedefine PERF
-#endif
-
 #ifndef COLOROUTPUT
 #cmakedefine COLOROUTPUT
 #endif

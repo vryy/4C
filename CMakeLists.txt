@@ -159,13 +159,6 @@ if (OPENMP_FOUND)
 endif()
 endif(HAVE_OpenMP)
 
-#   tools
-
-option (PERF "detailed time measurement" OFF)
-if (PERF)
-  add_definitions("-DPERF")
-endif(PERF)
-
 #   fancy stuff
 
 option (COLOROUTPUT "use colored output to the terminal" OFF)
