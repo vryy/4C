@@ -223,11 +223,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 {
   const int myrank = Comm().MyPID();
 
-#if 0
-  Epetra_Time timer(Comm());
-  double t1 = timer.ElapsedTime();
-#endif
-
   // proc 0 looks for nodes that are to be distributed
   Reset();
   BuildNodeRowMap();
@@ -239,25 +234,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), &pidlist[0], NULL);
     if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
   }
-
-#if 0
-  for (int proc=0; proc<Comm().NumProc(); ++proc)
-  {
-    if (proc==myrank)
-    {
-      printf("\nProc %d numnode %d\n",myrank,size);
-      for (int i=0; i<size; ++i)
-        printf("Proc %d gid %d pid %d\n",myrank,oldmap.MyGlobalElements()[i],pidlist[i]);
-    }
-    fflush(stdout);
-    Comm().Barrier();
-  }
-#endif
-
-#if 0
-  double t2 = timer.ElapsedTime();
-  if (!myrank) printf("\nTime 1 %10.5e\n",t2-t1); fflush(stdout);
-#endif
 
   std::map<int, std::vector<char>> sendmap;
   if (!myrank)
@@ -286,11 +262,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
          ++fool)
       swap(sendmap[fool->first], fool->second());
   }
-
-#if 0
-  double t3 = timer.ElapsedTime();
-  if (!myrank) printf("Time 2 %10.5e\n",t3-t2); fflush(stdout);
-#endif
 
 #ifdef PARALLEL
   // tell everybody who is to receive something
@@ -358,13 +329,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   {
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
   }
-
-#if 0
-  Comm().Barrier(); // feel better this way ;-)
-  double t4 = timer.ElapsedTime();
-  if (!myrank) printf("Time 3 %10.5e\n",t4-t3); fflush(stdout);
-#endif
-
 
 #endif
 
