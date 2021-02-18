@@ -113,13 +113,13 @@ NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 GMSH_CUT_OUT                    yes
 -----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 3
 NAME                            ScaTra_Solver
-SOLVER                          UMFPACK
+SOLVER                          Superlu
 -----------------------------------------------------------SOLVER 4
 NAME                            L2-projection solver for levelset gradients
 SOLVER                          Belos
