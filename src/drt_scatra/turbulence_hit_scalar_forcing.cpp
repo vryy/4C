@@ -115,18 +115,14 @@ namespace SCATRA
 
     // communicate coordinates to all procs via round Robin loop
     {
-#ifdef PARALLEL
       int myrank = discret_->Comm().MyPID();
-#endif
       int numprocs = discret_->Comm().NumProc();
 
       std::vector<char> sblock;
       std::vector<char> rblock;
 
-#ifdef PARALLEL
       // create an exporter for point to point communication
       DRT::Exporter exporter(discret_->Comm());
-#endif
 
       // communicate coordinates
       for (int np = 0; np < numprocs; ++np)
@@ -146,7 +142,6 @@ namespace SCATRA
         }
         std::swap(sblock, data());
 
-#ifdef PARALLEL
         MPI_Request request;
         int tag = myrank;
 
@@ -174,11 +169,6 @@ namespace SCATRA
           // for safety
           exporter.Comm().Barrier();
         }
-#else
-        // dummy communication
-        rblock.clear();
-        rblock = sblock;
-#endif
 
         // unpack received block into set of all coordinates
         {

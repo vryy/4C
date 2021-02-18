@@ -14,11 +14,7 @@
 
 #include <cstdlib>
 
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_inputreader.H"

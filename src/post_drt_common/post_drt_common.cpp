@@ -16,6 +16,7 @@
 #include <stack>
 #include "../drt_lib/drt_exporter.H"
 #include <EpetraExt_Transpose_CrsGraph.h>
+#include <Epetra_MpiComm.h>
 #include "../drt_lib/drt_parobjectregister.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_lib/drt_condition_utils.H"
@@ -42,9 +43,7 @@ extern "C"
 PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** argv)
     : start_(0), end_(-1), step_(1), mortar_(false)
 {
-#ifdef PARALLEL
   MPI_Init(&argc, &argv);
-#endif
 
   std::string file = "xxx";
   std::string output;
@@ -192,9 +191,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 PostProblem::~PostProblem()
 {
   destroy_map(&control_table_);
-#ifdef PARALLEL
   MPI_Finalize();
-#endif
 }
 
 
@@ -524,7 +521,6 @@ void PostProblem::read_meshes()
             cond_pbcsline =
                 reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
 
-#ifdef PARALLEL
             // distribute condition to all procs
             if (comm_->NumProc() > 1)
             {
@@ -542,11 +538,9 @@ void PostProblem::read_meshes()
                     frompid, topid, &((*cond_pbcsline)[0]), (*cond_pbcsline).size(), tag, request);
               }
             }
-#endif
           }
           else
           {
-#ifdef PARALLEL
             int length = -1;
             int frompid = 0;
             int mypid = comm_->MyPID();
@@ -556,7 +550,6 @@ void PostProblem::read_meshes()
             exporter.ReceiveAny(frompid, mypid, rblock, length);
 
             *cond_pbcsline = rblock;
-#endif
           }
 
           currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
@@ -575,7 +568,6 @@ void PostProblem::read_meshes()
             // distribute condition to all procs
             if (comm_->NumProc() > 1)
             {
-#ifdef PARALLEL
               MPI_Request request;
               int tag = -1;
               int frompid = 0;
@@ -589,12 +581,10 @@ void PostProblem::read_meshes()
                 exporter.ISend(
                     frompid, topid, &((*cond_pbcssurf)[0]), (*cond_pbcssurf).size(), tag, request);
               }
-#endif
             }
           }
           else
           {
-#ifdef PARALLEL
             int length = -1;
             int frompid = 0;
             int mypid = comm_->MyPID();
@@ -604,7 +594,6 @@ void PostProblem::read_meshes()
             exporter.ReceiveAny(frompid, mypid, rblock, length);
 
             *cond_pbcssurf = rblock;
-#endif
           }
           currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
         }
@@ -642,7 +631,6 @@ void PostProblem::read_meshes()
 
             if (comm_->MyPID() == 0)
             {
-#ifdef PARALLEL
               MPI_Request request;
               int tag = -1;
               int frompid = 0;
@@ -656,11 +644,9 @@ void PostProblem::read_meshes()
                 exporter.ISend(
                     frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
               }
-#endif
             }
             else
             {
-#ifdef PARALLEL
               int length = -1;
               int frompid = 0;
               int mypid = comm_->MyPID();
@@ -670,7 +656,6 @@ void PostProblem::read_meshes()
               exporter.ReceiveAny(frompid, mypid, rblock, length);
 
               *packed_knots = rblock;
-#endif
             }
           }
 
@@ -830,7 +815,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
           cond_pbcsline =
               reader.ReadCondition(step, comm_->NumProc(), comm_->MyPID(), "LinePeriodic");
 
-#ifdef PARALLEL
           // distribute condition to all procs
           if (comm_->NumProc() > 1)
           {
@@ -848,11 +832,9 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
                   frompid, topid, &((*cond_pbcsline)[0]), (*cond_pbcsline).size(), tag, request);
             }
           }
-#endif
         }
         else
         {
-#ifdef PARALLEL
           int length = -1;
           int frompid = 0;
           int mypid = comm_->MyPID();
@@ -862,7 +844,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
           exporter.ReceiveAny(frompid, mypid, rblock, length);
 
           *cond_pbcsline = rblock;
-#endif
         }
 
         currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
@@ -881,7 +862,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
           // distribute condition to all procs
           if (comm_->NumProc() > 1)
           {
-#ifdef PARALLEL
             MPI_Request request;
             int tag = -1;
             int frompid = 0;
@@ -895,12 +875,10 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
               exporter.ISend(
                   frompid, topid, &((*cond_pbcssurf)[0]), (*cond_pbcssurf).size(), tag, request);
             }
-#endif
           }
         }
         else
         {
-#ifdef PARALLEL
           int length = -1;
           int frompid = 0;
           int mypid = comm_->MyPID();
@@ -910,7 +888,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
           exporter.ReceiveAny(frompid, mypid, rblock, length);
 
           *cond_pbcssurf = rblock;
-#endif
         }
         currfield.discretization()->UnPackCondition(cond_pbcssurf, "SurfacePeriodic");
       }
@@ -948,7 +925,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
 
           if (comm_->MyPID() == 0)
           {
-#ifdef PARALLEL
             MPI_Request request;
             int tag = -1;
             int frompid = 0;
@@ -962,11 +938,9 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
               exporter.ISend(
                   frompid, topid, &((*packed_knots)[0]), (*packed_knots).size(), tag, request);
             }
-#endif
           }
           else
           {
-#ifdef PARALLEL
             int length = -1;
             int frompid = 0;
             int mypid = comm_->MyPID();
@@ -976,7 +950,6 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
             exporter.ReceiveAny(frompid, mypid, rblock, length);
 
             *packed_knots = rblock;
-#endif
           }
         }
 

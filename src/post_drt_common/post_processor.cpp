@@ -9,6 +9,8 @@
 
 #include "post_drt_common.H"
 
+#include <Epetra_MpiComm.h>
+
 #include "post_writer_base.H"
 #include "post_single_field_writers.H"
 
@@ -981,11 +983,7 @@ int main(int argc, char** argv)
     abort();
 #endif
 
-#ifdef PARALLEL
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-#else
-    exit(1);
-#endif
   }  // catch
 
   // proper cleanup

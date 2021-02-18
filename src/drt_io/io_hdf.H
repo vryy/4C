@@ -35,12 +35,7 @@
 
 #include "Teuchos_RCP.hpp"
 
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#endif
-#include <Epetra_SerialComm.h>
-
-
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

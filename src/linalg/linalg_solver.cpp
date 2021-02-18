@@ -14,12 +14,8 @@
 
 #include "Teuchos_ParameterList.hpp"
 
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
 #include <Epetra_LinearProblem.h>
-#else
-#include "Epetra_SerialComm.h"
-#endif
 
 #include "../drt_inpar/inpar_solver.H"
 #include "linalg_solver.H"
@@ -830,13 +826,11 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     case INPAR::SOLVER::azprec_MLfluid:   // unsymmetric, unsmoothed restriction
     case INPAR::SOLVER::azprec_MLfluid2:  // full Pretrov-Galerkin unsymmetric smoothed
     {
-#if defined(PARALLEL)
       // these are the hard-coded ML repartitioning settings
       mllist.set("repartition: enable", 1);
       mllist.set("repartition: partitioner", "ParMETIS");
       mllist.set("repartition: max min ratio", 1.3);
       mllist.set("repartition: min per proc", 3000);
-#endif
     }
     break;
     case INPAR::SOLVER::azprec_MueLuAMG_sym:     // MueLu operator (smoothed aggregation)
@@ -1019,11 +1013,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       case 9:  // Amesos' Umfpack
         smolevelsublist.set("smoother: type", "Amesos-UMFPACK");
         break;
-#ifdef PARALLEL
       case 6:  // Amesos' SuperLU_Dist
         smolevelsublist.set("smoother: type", "Amesos-Superludist");
         break;
-#endif
       case 10:  // Braess-Sarazin smoother (only for MueLu with BlockedOperators)
       {
         smolevelsublist.set("smoother: type", "Braess-Sarazin");
@@ -1514,12 +1506,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
                 << std::endl;
       dserror("fix your dat file");
       break;
-#ifdef PARALLEL
     case INPAR::SOLVER::superlu:  //============================== superlu solver (parallel only)
       outparams.set("solver", "superlu");
       outparams.set("symmetric", false);
       break;
-#endif
     case INPAR::SOLVER::amesos_klu_sym:  //====================================== Tim Davis' KLU
       outparams.set("solver", "klu");
       outparams.set("symmetric", true);

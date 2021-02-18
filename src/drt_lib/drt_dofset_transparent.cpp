@@ -158,13 +158,11 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   }
 
   {
-#ifdef PARALLEL
     // create an exporter for point to point comunication
     DRT::Exporter exporter(sourcedis.Comm());
 
     // necessary variables
     MPI_Request request;
-#endif
 
     // define send and receive blocks
     std::vector<char> sblock;
@@ -182,11 +180,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-#ifdef PARALLEL
         ReceiveBlock(numproc, myrank, rblock, exporter, request);
-#else
-        rblock = sblock;
-#endif
 
         // Unpack info from the receive block from the last proc
         UnpackLocalSourceDofs(gid_to_dofs, rblock);
@@ -207,9 +201,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
         gid_to_dofs.clear();
         swap(sblock, data());
 
-#ifdef PARALLEL
         SendBlock(numproc, myrank, sblock, exporter, request);
-#endif
       }
     }
   }
@@ -454,7 +446,6 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
   return;
 }
 
-#ifdef PARALLEL
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -495,11 +486,8 @@ void DRT::TransparentDofSet::ReceiveBlock(int numproc, int myrank, std::vector<c
 
   return;
 }  // ReceiveBlock
-#endif
 
 
-
-#ifdef PARALLEL
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -525,4 +513,3 @@ void DRT::TransparentDofSet::SendBlock(int numproc, int myrank, std::vector<char
 
   return;
 }  // SendBlock
-#endif

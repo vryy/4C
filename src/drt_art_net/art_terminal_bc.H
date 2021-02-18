@@ -10,12 +10,7 @@
 #ifndef ART_TERMINAL_BC_H_
 #define ART_TERMINAL_BC_H_
 
-
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
 
 #include "Teuchos_RCP.hpp"
 #include "../drt_lib/drt_discret.H"

@@ -371,9 +371,6 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // this is the actual redistribution
-    // call PARMETIS (with #ifdef to be on the safe side)
-#if defined(PARALLEL)
-
     Teuchos::RCP<Epetra_Map> sepcondrownodes;
     Teuchos::RCP<Epetra_Map> sepcondcolnodes;
 
@@ -387,10 +384,6 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(childdiscret_, sepcondelenodesmap,
         sepcondrownodes, sepcondcolnodes, comm, false, comm->NumProc());
 
-#else
-    sepcondrownodes = Teuchos::rcp(new Epetra_Map(*newrownodemap));
-    sepcondcolnodes = Teuchos::rcp(new Epetra_Map(*newcolnodemap));
-#endif
     if (childdiscret_->Comm().MyPID() == 0)
     {
       std::cout << "| Redistributing .";

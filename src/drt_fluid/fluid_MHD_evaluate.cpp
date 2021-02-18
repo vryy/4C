@@ -336,8 +336,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     LINALG::Gather<int>(bndnidslocal, bndnids, numproc, &allproc[0], pdiscret_->Comm());
 
     //**********************************************************************
-    // call PARMETIS (again with #ifdef to be on the safe side)
-#if defined(PARALLEL)
+    // Compute the rebalancing
 
     Teuchos::RCP<Epetra_Map> bndrownodes;
     Teuchos::RCP<Epetra_Map> bndcolnodes;
@@ -349,10 +348,6 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(Teuchos::RCP<DRT::Discretization> actdis
     DRT::UTILS::REBALANCING::ComputeRebalancedNodeMaps(
         bnd_discret_, belemap, bndrownodes, bndcolnodes, comm, false, comm->NumProc());
 
-#else
-    bndrownodes = Teuchos::rcp(new Epetra_Map(*newrownodemap));
-    bndcolnodes = Teuchos::rcp(new Epetra_Map(*newcolnodemap));
-#endif
     if (bnd_discret_->Comm().MyPID() == 0)
     {
       std::cout << "| Redistributing .";

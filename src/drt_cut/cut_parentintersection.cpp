@@ -457,11 +457,9 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes
 
     std::vector<int> nds;
 
-#ifdef PARALLEL
     // fill the map with nids, whose dofsets for the current set of volumecells has to filled by the
     // nodes row proc initialize the value (dofset_number with -1)
     std::map<int, int> nids_dofsetnumber_map_toComm;
-#endif
 
     // find this plain_volumecell_set in dof_cellsets_ vector of each node
     {
@@ -478,7 +476,6 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes
 
         if (nid >= 0)
         {
-#ifdef PARALLEL
           DRT::Node* drt_node = dis.gNode(nid);
 
           // decide if the information for this cell has to be ordered from row-node or not
@@ -495,9 +492,6 @@ void GEO::CUT::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>& nodes
             // set dofset number to minus one, not a valid dofset number
             nds.push_back(-1);
           }
-#else
-          nds.push_back(n->DofSetNumberNEW(cells));
-#endif
         }
         else
           dserror("node with negative Id gets no dofnumber!");

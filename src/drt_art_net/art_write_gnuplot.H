@@ -11,11 +11,7 @@
 #ifndef ART_WRITE_GNUPLOT_H_
 #define ART_WRITE_GNUPLOT_H_
 
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
 
 #include <iostream>
 #include "Teuchos_RCP.hpp"

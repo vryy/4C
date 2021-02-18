@@ -28,13 +28,6 @@ specific output operations can be done by the elements themselves.
 #include "../drt_lib/drt_globalproblem_enums.H"
 #include "../drt_io/io_hdf.H"
 
-#ifdef PARALLEL
-//#include <mpi.h>
-#include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
-
 extern "C"
 {
 #include "../pss_full/pss_types.h"
@@ -46,6 +39,7 @@ extern "C"
 #include <Epetra_Vector.h>
 #include <Epetra_SerialDenseMatrix.h>
 
+class Epetra_Comm;
 class PostField;
 
 namespace DRT
