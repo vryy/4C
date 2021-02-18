@@ -1107,7 +1107,6 @@ set(OBJS_DRT_UTILS
   src/drt_lib/drt_parser.cpp
   src/drt_lib/drt_resulttest.cpp
   src/drt_lib/drt_utils.cpp
-  src/drt_lib/drt_utils_metis.cpp
   src/drt_lib/drt_utils_parallel.cpp
   src/drt_lib/epetra_utils.cpp
   src/drt_beaminteraction/drt_utils_parallel_proctoproc.cpp

@@ -15,7 +15,6 @@
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "drt_utils_metis.H"
 #include "drt_dofset_pbc.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 
