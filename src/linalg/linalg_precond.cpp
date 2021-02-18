@@ -218,7 +218,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(Teuchos::ParameterList& mllist
   // this is not the way it should be done
   const DRT::ElementType& eot = ele->ElementType();
   bool is3d = false;
-#ifdef D_FLUID3
+
   if (eot == DRT::ELEMENTS::FluidType::Instance())
   {
     // number of space dimensions is always one less than the number of dof's,
@@ -234,7 +234,6 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(Teuchos::ParameterList& mllist
       dserror("1D fluid element is not supported");
   }
   else
-#endif
   {
     dserror("Element type not supported by ML");
   }

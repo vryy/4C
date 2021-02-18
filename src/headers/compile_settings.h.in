@@ -20,18 +20,6 @@
 #cmakedefine DEBUG
 #endif
 
-#ifndef D_ALE
-#cmakedefine D_ALE
-#endif
-
-#ifndef D_FLUID2
-#cmakedefine D_FLUID2
-#endif
-
-#ifndef D_FLUID3
-#cmakedefine D_FLUID3
-#endif
-
 #ifndef D_THERMO
 #cmakedefine D_THERMO
 #endif

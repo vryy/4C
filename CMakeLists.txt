@@ -2618,26 +2618,10 @@ set(OBJS_DRT_MIXTURE
 
 #   all possible elements
 
-option (D_ALE         "ale element (2D+3D)" ON)
-if (D_ALE)
-  add_definitions("-DD_ALE")
-endif(D_ALE)
-
-option (D_FLUID3      "fluid3" ON)
-if (D_FLUID3)
-  add_definitions("-DD_FLUID3")
-endif(D_FLUID3)
-
 option (D_THERMO      "thermal elements" ON)
 if (D_THERMO)
   add_definitions("-DD_THERMO")
 endif(D_THERMO)
-
-option (D_ALE_BFLOW   "ALE deformation included in flow calculation" OFF)
-if (D_ALE_BFLOW)
-  add_definitions("-DD_ALE_BFLOW")
-endif(D_ALE_BFLOW)
-
 
 ###------------------------------------------------------------------ Binaries
 
