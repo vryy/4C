@@ -684,7 +684,7 @@ void PostProblem::read_meshes()
           }
 
           if (nurbsdis->Comm().NumProc() != 1)
-            nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
+            nurbsdis->SetupGhosting(false, false, false);
           else
             nurbsdis->FillComplete(false, false, false);
 
@@ -709,7 +709,7 @@ void PostProblem::read_meshes()
         {
           // setup of parallel layout: create ghosting of already distributed nodes+elems
           if (currfield.discretization()->Comm().NumProc() != 1)
-            currfield.discretization()->SetupGhostingWrongNameDoNotUse();
+            currfield.discretization()->SetupGhosting(true, true, true);
           else
             currfield.discretization()->FillComplete();
 
@@ -990,7 +990,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
         }
 
         if (nurbsdis->Comm().NumProc() != 1)
-          nurbsdis->SetupGhostingWrongNameDoNotUse(false, false, false);
+          nurbsdis->SetupGhosting(false, false, false);
         else
           nurbsdis->FillComplete(false, false, false);
 
@@ -1015,7 +1015,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       {
         // setup of parallel layout: create ghosting of already distributed nodes+elems
         if (currfield.discretization()->Comm().NumProc() != 1)
-          currfield.discretization()->SetupGhostingWrongNameDoNotUse();
+          currfield.discretization()->SetupGhosting(true, true, true);
         else
           currfield.discretization()->FillComplete();
 
