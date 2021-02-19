@@ -350,16 +350,14 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
       // Build GID vector of nodes on this proc, sort, and remove duplicates
       DRT::UTILS::AddOwnedNodeGIDVector(
           structdis, *condition_pair.first->Nodes(), islavenodegidvec);
-      DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
 
       DRT::UTILS::AddOwnedNodeGIDVector(
           structdis, *condition_pair.second->Nodes(), imasternodegidvec);
-      DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
       // remove all nodes from line conditions except on conditions with arbitrary_coupling_id
       if (condition_pair.first->GetInt("ConditionID") != arbitrary_coupling_id)
       {
-        for (auto& condition_3_domain_intersection : conditions_3_domain_intersection)
+        for (const auto& condition_3_domain_intersection : conditions_3_domain_intersection)
         {
           DRT::UTILS::RemoveNodeGIDsFromVector(
               structdis, *condition_3_domain_intersection->Nodes(), islavenodegidvec);
@@ -389,9 +387,6 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
       DRT::UTILS::AddOwnedNodeGIDVector(
           structdis, *condition_pair.second->Nodes(), inodegidvec_master);
     }
-
-    DRT::UTILS::SortAndRemoveDuplicateVectorElements(inodegidvec_slave);
-    DRT::UTILS::SortAndRemoveDuplicateVectorElements(inodegidvec_master);
 
     interfacecouplingadapter->SetupCoupling(*structdis, *structdis, inodegidvec_master,
         inodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
@@ -433,9 +428,6 @@ SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
       structdis, *condition_3_domain_pair.first->Nodes(), ilinenodegidvec_slave);
   DRT::UTILS::AddOwnedNodeGIDVector(
       structdis, *condition_3_domain_pair.second->Nodes(), ilinenodegidvec_master);
-
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(ilinenodegidvec_master);
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(ilinenodegidvec_slave);
 
   // setup coupling adapter based on master and slave side GID node vectors
   auto coupling_line_structure = Teuchos::rcp(new ADAPTER::Coupling());
