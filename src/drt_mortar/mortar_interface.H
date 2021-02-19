@@ -961,15 +961,8 @@ namespace MORTAR
     */
     void AddMortarElement(Teuchos::RCP<MORTAR::MortarElement> mrtrele);
 
-    /*!
-    \brief delete all elements/nodes on one side of the interface
-
-    \param slaveside (in): bool to choose side of interface that will be deleted
-
-    */
-    void RemoveSingleInterfaceSide(bool slaveside);
-
     //! @name Parallel distribution and ghosting
+    //! @{
 
     /*!
     \brief Finalize construction of mortar interface
