@@ -121,17 +121,17 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructure(
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
+  if (InterfaceMeshtying())
+  {
+    AssembleStructureMeshtying(
+        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
+  }
+  else
   {
     auto& systemmatrix_block_struct_struct =
         systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
 
     systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
-  }
-  else
-  {
-    AssembleStructureMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
   }
 }
 
@@ -144,17 +144,17 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructure(
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
+  if (InterfaceMeshtying())
+  {
+    AssembleStructureMeshtying(
+        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
+  }
+  else
   {
     auto& systemmatrix_block_struct_struct =
         systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
 
     systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
-  }
-  else
-  {
-    AssembleStructureMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
   }
 }
 
@@ -167,10 +167,10 @@ void SSTI::AssembleStrategySparse::AssembleStructure(
   auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
-    systemmatrix_sparse->Add(*structuredomain, false, 1.0, 1.0);
-  else
+  if (InterfaceMeshtying())
     AssembleStructureMeshtying(*systemmatrix_sparse, structuredomain);
+  else
+    systemmatrix_sparse->Add(*structuredomain, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -312,14 +312,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     const auto scatrastructuredomain_subblock = scatrastructuredomain_block->Matrix(iblock, 0);
 
     // add entire block or assemble slave side to master side
-    if (!InterfaceMeshtying())
-    {
-      auto& systemmatrix_block_iscatra_struct =
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
-
-      systemmatrix_block_iscatra_struct.Add(scatrastructuredomain_subblock, false, 1.0, 1.0);
-    }
-    else
+    if (InterfaceMeshtying())
     {
       AssembleXXXStructureMeshtying(
           systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
@@ -331,6 +324,13 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraStructure(
       AssembleXXXStructureMeshtying(
           systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
           scatrastructureinterface_block->Matrix(iblock, 0));
+    }
+    else
+    {
+      auto& systemmatrix_block_iscatra_struct =
+          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
+
+      systemmatrix_block_iscatra_struct.Add(scatrastructuredomain_subblock, false, 1.0, 1.0);
     }
   }
 }
@@ -348,14 +348,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructure(
       LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructuredomain);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
-  {
-    auto& systemmatrix_block_scatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
-
-    systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
-  }
-  else
+  if (InterfaceMeshtying())
   {
     AssembleXXXStructureMeshtying(
         systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
@@ -367,6 +360,13 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraStructure(
     AssembleXXXStructureMeshtying(
         systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
         *scatrastructureinterface_sparse);
+  }
+  else
+  {
+    auto& systemmatrix_block_scatra_struct =
+        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
+
+    systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
   }
 }
 
@@ -382,9 +382,7 @@ void SSTI::AssembleStrategySparse::AssembleScatraStructure(
       LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructuredomain);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
-    systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
-  else
+  if (InterfaceMeshtying())
   {
     AssembleXXXStructureMeshtying(*systemmatrix_sparse, *scatrastructuredomain_sparse);
 
@@ -393,6 +391,9 @@ void SSTI::AssembleStrategySparse::AssembleScatraStructure(
 
     AssembleXXXStructureMeshtying(*systemmatrix_sparse, *scatrastructureinterface_sparse);
   }
+
+  else
+    systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -544,18 +545,18 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureScatra(
     const auto structurescatradomain_subblock = structurescatradomain_block->Matrix(0, iblock);
 
     // add entire block or assemble slave side to master side
-    if (!InterfaceMeshtying())
+    if (InterfaceMeshtying())
+    {
+      AssembleStructureXXXMeshtying(
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock)),
+          structurescatradomain_subblock);
+    }
+    else
     {
       auto& systemmatrix_block_struct_iscatra =
           systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock));
 
       systemmatrix_block_struct_iscatra.Add(structurescatradomain_subblock, false, 1.0, 1.0);
-    }
-    else
-    {
-      AssembleStructureXXXMeshtying(
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock)),
-          structurescatradomain_subblock);
     }
   }
 }
@@ -571,18 +572,18 @@ void SSTI::AssembleStrategyBlockSparse::AssembleStructureScatra(
       LINALG::CastToSparseMatrixAndCheckSuccess(structurescatradomain);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
+  if (InterfaceMeshtying())
+  {
+    AssembleStructureXXXMeshtying(
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0)),
+        *structurescatradomain_sparse);
+  }
+  else
   {
     auto& systemmatrix_block_struct_scatra =
         systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0));
 
     systemmatrix_block_struct_scatra.Add(*structurescatradomain_sparse, false, 1.0, 1.0);
-  }
-  else
-  {
-    AssembleStructureXXXMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0)),
-        *structurescatradomain_sparse);
   }
 }
 
@@ -597,10 +598,10 @@ void SSTI::AssembleStrategySparse::AssembleStructureScatra(
       LINALG::CastToSparseMatrixAndCheckSuccess(structurescatradomain);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
-    systemmatrix_sparse->Add(*structurescatradomain_sparse, false, 1.0, 1.0);
-  else
+  if (InterfaceMeshtying())
     AssembleStructureXXXMeshtying(*systemmatrix_sparse, *structurescatradomain_sparse);
+  else
+    systemmatrix_sparse->Add(*structurescatradomain_sparse, false, 1.0, 1.0);
 }
 
 
@@ -827,14 +828,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructure(
     const auto thermostructuredomain_subblock = thermostructuredomain_block->Matrix(iblock, 0);
 
     // add entire block or assemble slave side to master side
-    if (!InterfaceMeshtying())
-    {
-      auto& systemmatrix_block_ithermo_struct =
-          systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure());
-
-      systemmatrix_block_ithermo_struct.Add(thermostructuredomain_subblock, false, 1.0, 1.0);
-    }
-    else
+    if (InterfaceMeshtying())
     {
       AssembleXXXStructureMeshtying(
           systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure()),
@@ -846,6 +840,13 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoStructure(
       AssembleXXXStructureMeshtying(
           systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure()),
           thermostructureinterface_block->Matrix(iblock, 0));
+    }
+    else
+    {
+      auto& systemmatrix_block_ithermo_struct =
+          systemmatrix_block->Matrix(BlockPositionThermo()->at(iblock), PositionStructure());
+
+      systemmatrix_block_ithermo_struct.Add(thermostructuredomain_subblock, false, 1.0, 1.0);
     }
   }
 }
@@ -862,14 +863,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructure(
       LINALG::CastToSparseMatrixAndCheckSuccess(thermostructuredomain);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
-  {
-    auto& sytemmatrix_block_thermo_structure =
-        systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure());
-
-    sytemmatrix_block_thermo_structure.Add(*thermostructuredomain_sparse, false, 1.0, 1.0);
-  }
-  else
+  if (InterfaceMeshtying())
   {
     AssembleXXXStructureMeshtying(
         systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure()),
@@ -881,6 +875,13 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoStructure(
     AssembleXXXStructureMeshtying(
         systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure()),
         *thermostructureinterface_sparse);
+  }
+  else
+  {
+    auto& sytemmatrix_block_thermo_structure =
+        systemmatrix_block->Matrix(BlockPositionThermo()->at(0), PositionStructure());
+
+    sytemmatrix_block_thermo_structure.Add(*thermostructuredomain_sparse, false, 1.0, 1.0);
   }
 }
 
@@ -895,9 +896,7 @@ void SSTI::AssembleStrategySparse::AssembleThermoStructure(
   auto thermostructuredomain_sparse =
       LINALG::CastToSparseMatrixAndCheckSuccess(thermostructuredomain);
 
-  if (!InterfaceMeshtying())
-    systemmatrix_sparse->Add(*thermostructuredomain_sparse, false, 1.0, 1.0);
-  else
+  if (InterfaceMeshtying())
   {
     AssembleXXXStructureMeshtying(*systemmatrix_sparse, *thermostructuredomain_sparse);
 
@@ -906,6 +905,8 @@ void SSTI::AssembleStrategySparse::AssembleThermoStructure(
 
     AssembleXXXStructureMeshtying(*systemmatrix_sparse, *thermostructureinterface_sparse);
   }
+  else
+    systemmatrix_sparse->Add(*thermostructuredomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -925,18 +926,18 @@ void SSTI::AssembleStrategyBlockBlock::AssembleStructureThermo(
     const auto structurethermodomain_subblock = structurethermodomain_block->Matrix(0, iblock);
 
     // add entire block or assemble slave side to master side
-    if (!InterfaceMeshtying())
+    if (InterfaceMeshtying())
+    {
+      AssembleStructureXXXMeshtying(
+          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(iblock)),
+          structurethermodomain_subblock);
+    }
+    else
     {
       auto& systemmatrix_block_struct_ithermo =
           systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(iblock));
 
       systemmatrix_block_struct_ithermo.Add(structurethermodomain_subblock, false, 1.0, 1.0);
-    }
-    else
-    {
-      AssembleStructureXXXMeshtying(
-          systemmatrix_block->Matrix(PositionStructure(), BlockPositionThermo()->at(iblock)),
-          structurethermodomain_subblock);
     }
   }
 }
@@ -978,10 +979,10 @@ void SSTI::AssembleStrategySparse::AssembleStructureThermo(
       LINALG::CastToSparseMatrixAndCheckSuccess(structurethermodomain);
 
   // add entire block or assemble slave side to master side
-  if (!InterfaceMeshtying())
-    systemmatrix_sparse->Add(*structurethermodomain_sparse, false, 1.0, 1.0);
-  else
+  if (InterfaceMeshtying())
     AssembleStructureXXXMeshtying(*systemmatrix_sparse, *structurethermodomain_sparse);
+  else
+    systemmatrix_sparse->Add(*structurethermodomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -1154,12 +1155,7 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
   AllMaps()->MapsSubproblems()->InsertVector(
       RHSthermo, ssti_mono_->GetProblemPosition(Subproblem::thermo), RHS);
 
-  if (!InterfaceMeshtying())
-  {
-    AllMaps()->MapsSubproblems()->AddVector(
-        RHSstructure, ssti_mono_->GetProblemPosition(Subproblem::structure), RHS, -1.0);
-  }
-  else
+  if (InterfaceMeshtying())
   {
     // perform structural meshtying before assembling structural right-hand side vector into
     // monolithic right-hand side vector
@@ -1216,6 +1212,11 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     AllMaps()->MapsSubproblems()->AddVector(
         residual_structure, ssti_mono_->GetProblemPosition(Subproblem::structure), *RHS, -1.0);
+  }
+  else
+  {
+    AllMaps()->MapsSubproblems()->AddVector(
+        RHSstructure, ssti_mono_->GetProblemPosition(Subproblem::structure), RHS, -1.0);
   }
 }
 
