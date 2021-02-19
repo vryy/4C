@@ -23,7 +23,6 @@
 #include <Epetra_FECrsGraph.h>
 #include <Ifpack_Graph_Epetra_CrsGraph.h>
 #include <Ifpack_RCMReordering.h>
-#include <Ifpack_METISReordering.h>
 #include <Ifpack_AMDReordering.h>
 
 // Bandwidth optimization is currently not working and to prevent it from
@@ -323,7 +322,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
 
     Ifpack_Graph_Epetra_CrsGraph ifgraph(graphcombo);
     Ifpack_RCMReordering reorderer;
-    //    Ifpack_AMDReordering reorderer;
+
     reorderer.Compute(ifgraph);
     std::vector<int> permute(rowmapcombo.NumMyElements(), -1);
     for (int i = 0; i < rowmapcombo.NumMyElements(); ++i)

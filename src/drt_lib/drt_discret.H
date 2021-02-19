@@ -1163,37 +1163,6 @@ namespace DRT
     // mwgee 4/12
     friend class ::PostProblem;
 
-   protected:
-    /// Distribute to proper ghosting after the discretization has been read
-    /*!
-      This is a very misleading function name! It does a repartitioning as well!!
-
-      After a discretization has been read (via restart or inside a filter),
-      only row elements and nodes are available. Yet the ghosting information in
-      the current distribution is already there. One just needs to use it.
-
-      We do a repartitioning here. This might be required for
-      load-balancing. But this involves graph-construction and a metis call.
-
-
-      all input arguments are passed to the final Redistribute call at the end of the
-      method
-
-
-    \param assigndegreesoffreedom (in) : if true, resets existing dofsets and performs
-                                         assigning of degrees of freedoms to nodes and
-                                         elements.
-    \param initelements           (in) : if true, build element register classes and
-                                         call Initialize() on each type of finite element
-                                         present
-    \param doboundaryconditions   (in) : if true, build geometry of boundary conditions
-                                         present.
-
-     */
-    virtual void SetupGhostingWrongNameDoNotUse(bool assigndegreesoffreedom = true,
-        bool initelements = true, bool doboundaryconditions = true);
-
-
    public:
     //-----------------------------------------------------------------------------------
     /*!

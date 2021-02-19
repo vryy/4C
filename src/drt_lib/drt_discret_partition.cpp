@@ -15,7 +15,6 @@
 #include "drt_discret.H"
 #include "drt_exporter.H"
 #include "drt_dserror.H"
-#include "drt_utils_metis.H"
 #include "drt_dofset_pbc.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
 
@@ -224,11 +223,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
 {
   const int myrank = Comm().MyPID();
 
-#if 0
-  Epetra_Time timer(Comm());
-  double t1 = timer.ElapsedTime();
-#endif
-
   // proc 0 looks for nodes that are to be distributed
   Reset();
   BuildNodeRowMap();
@@ -240,25 +234,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
     int err = target.RemoteIDList(size, oldmap.MyGlobalElements(), &pidlist[0], NULL);
     if (err) dserror("Epetra_BlockMap::RemoteIDLis returned err=%d", err);
   }
-
-#if 0
-  for (int proc=0; proc<Comm().NumProc(); ++proc)
-  {
-    if (proc==myrank)
-    {
-      printf("\nProc %d numnode %d\n",myrank,size);
-      for (int i=0; i<size; ++i)
-        printf("Proc %d gid %d pid %d\n",myrank,oldmap.MyGlobalElements()[i],pidlist[i]);
-    }
-    fflush(stdout);
-    Comm().Barrier();
-  }
-#endif
-
-#if 0
-  double t2 = timer.ElapsedTime();
-  if (!myrank) printf("\nTime 1 %10.5e\n",t2-t1); fflush(stdout);
-#endif
 
   std::map<int, std::vector<char>> sendmap;
   if (!myrank)
@@ -287,11 +262,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
          ++fool)
       swap(sendmap[fool->first], fool->second());
   }
-
-#if 0
-  double t3 = timer.ElapsedTime();
-  if (!myrank) printf("Time 2 %10.5e\n",t3-t2); fflush(stdout);
-#endif
 
 #ifdef PARALLEL
   // tell everybody who is to receive something
@@ -359,13 +329,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   {
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
   }
-
-#if 0
-  Comm().Barrier(); // feel better this way ;-)
-  double t4 = timer.ElapsedTime();
-  if (!myrank) printf("Time 3 %10.5e\n",t4-t3); fflush(stdout);
-#endif
-
 
 #endif
 
@@ -864,102 +827,6 @@ void DRT::Discretization::ExtendedGhosting(const Epetra_Map& elecolmap, bool ass
   if (err) dserror("FillComplete() threw error code %d", err);
 
   return;
-}
-
-
-/*----------------------------------------------------------------------*
-// this is to go away!!!!
- *----------------------------------------------------------------------*/
-void DRT::Discretization::SetupGhostingWrongNameDoNotUse(
-    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions)
-{
-  if (Filled())
-    dserror("there is really no need to setup ghosting if the discretization is already filled");
-
-  // build the graph ourselves
-  std::map<int, std::set<int>> localgraph;
-  for (std::map<int, Teuchos::RCP<DRT::Element>>::iterator i = element_.begin();
-       i != element_.end(); ++i)
-  {
-    int numnodes = i->second->NumNode();
-    const int* nodes = i->second->NodeIds();
-
-    // loop nodes and add this topology to the row in the graph of every node
-    for (int n = 0; n < numnodes; ++n)
-    {
-      int nodelid = nodes[n];
-      copy(nodes, nodes + numnodes, inserter(localgraph[nodelid], localgraph[nodelid].begin()));
-    }
-  }
-
-  // Create node row map. Only the row nodes go there.
-
-  std::vector<int> gids;
-  std::vector<int> entriesperrow;
-
-  gids.reserve(localgraph.size());
-  entriesperrow.reserve(localgraph.size());
-
-  for (std::map<int, Teuchos::RCP<DRT::Node>>::iterator i = node_.begin(); i != node_.end(); ++i)
-  {
-    gids.push_back(i->first);
-    entriesperrow.push_back(localgraph[i->first].size());
-  }
-
-  Epetra_Map rownodes(-1, gids.size(), &gids[0], 0, *comm_);
-
-  // Construct FE graph. This graph allows processor off-rows to be inserted
-  // as well. The communication issue is solved.
-
-  Teuchos::RCP<Epetra_FECrsGraph> graph =
-      Teuchos::rcp(new Epetra_FECrsGraph(Copy, rownodes, &entriesperrow[0], false));
-
-  gids.clear();
-  entriesperrow.clear();
-
-  // Insert all rows into the graph, including the off ones.
-
-  for (std::map<int, std::set<int>>::iterator i = localgraph.begin(); i != localgraph.end(); ++i)
-  {
-    std::set<int>& rowset = i->second;
-    std::vector<int> row;
-    row.reserve(rowset.size());
-    row.assign(rowset.begin(), rowset.end());
-    rowset.clear();
-
-    int err = graph->InsertGlobalIndices(1, &i->first, row.size(), &row[0]);
-    if (err < 0) dserror("graph->InsertGlobalIndices returned %d", err);
-  }
-
-  localgraph.clear();
-
-  // Finalize construction of this graph. Here the communication
-  // happens. The ghosting problem is solved at this point.
-
-  int err = graph->GlobalAssemble(rownodes, rownodes);
-  if (err) dserror("graph->GlobalAssemble returned %d", err);
-
-  // partition graph using metis
-  Epetra_Vector weights(graph->RowMap(), false);
-  weights.PutScalar(1.0);
-  Teuchos::RCP<Epetra_CrsGraph> gr = DRT::UTILS::PartGraphUsingMetis(*graph, weights);
-  graph = Teuchos::null;
-
-  // replace rownodes, colnodes with row and column maps from the graph
-  // do stupid conversion from Epetra_BlockMap to Epetra_Map
-  const Epetra_BlockMap& brow = gr->RowMap();
-  const Epetra_BlockMap& bcol = gr->ColMap();
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(
-      brow.NumGlobalElements(), brow.NumMyElements(), brow.MyGlobalElements(), 0, *comm_));
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(
-      bcol.NumGlobalElements(), bcol.NumMyElements(), bcol.MyGlobalElements(), 0, *comm_));
-
-  gr = Teuchos::null;
-
-  // Redistribute discretization to match the new maps.
-
-  Redistribute(
-      *noderowmap, *nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
 }
 
 void DRT::Discretization::SetupGhosting(
