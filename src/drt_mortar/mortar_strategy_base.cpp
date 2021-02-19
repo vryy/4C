@@ -8,8 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialComm.h"
+#include <Teuchos_RCP.hpp>
+
 #include "mortar_strategy_base.H"
 #include "mortar_defines.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"

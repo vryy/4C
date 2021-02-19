@@ -13,7 +13,6 @@
 #include "../drt_lib/drt_element.H"
 #include "../drt_contact/contact_node.H"
 #include "../drt_contact/contact_element.H"
-#include "../drt_contact_xcontact/xcontact_interface.H"
 
 #ifndef XCONTACT_DEBUG_UTILS_H
 #define XCONTACT_DEBUG_UTILS_H
