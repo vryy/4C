@@ -415,7 +415,7 @@ void SSTI::AssembleStrategyBase::AssembleXXXStructureMeshtying(
     // assemble derivs. of x w.r.t. structural line slave dofs
     LINALG::MatrixLogicalSplitAndTransform()(x_structurematrix, x_structurematrix.RangeMap(),
         *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
-        &*(StructureSlaveConverter3DomainIntersection()), systemmatrix_x_structure, true, true);
+        &(*StructureSlaveConverter3DomainIntersection()), systemmatrix_x_structure, true, true);
   }
 }
 

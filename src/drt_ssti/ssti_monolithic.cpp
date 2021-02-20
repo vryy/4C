@@ -75,9 +75,9 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
  *--------------------------------------------------------------------------*/
 void SSTI::SSTIMono::AssembleMatAndRHS()
 {
-  ssti_matrices_->SystemMatrix()->Zero();
-
   double starttime = timer_->WallTime();
+
+  ssti_matrices_->SystemMatrix()->Zero();
 
   // assemble blocks of subproblems into system matrix
   strategy_assemble_->AssembleScatra(
@@ -97,7 +97,7 @@ void SSTI::SSTIMono::AssembleMatAndRHS()
   strategy_assemble_->AssembleStructureThermo(
       ssti_matrices_->SystemMatrix(), ssti_matrices_->StructureThermoDomain());
   strategy_assemble_->AssembleThermoScatra(ssti_matrices_->SystemMatrix(),
-      ssti_matrices_->ThermoScaTraDomain(), ssti_matrices_->ThermoScaTraIntefrace());
+      ssti_matrices_->ThermoScaTraDomain(), ssti_matrices_->ThermoScaTraInterface());
 
   // assemble interface contributions from coupling into system matrix
   if (InterfaceMeshtying())
@@ -604,7 +604,7 @@ void SSTI::SSTIMono::EvaluateSubproblems()
     thermostructureoffdiagcoupling_->EvaluateOffDiagBlockThermoStructureInterface(
         ssti_matrices_->ThermoStructureInterface());
     scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraInterface(
-        ssti_matrices_->ThermoScaTraIntefrace());
+        ssti_matrices_->ThermoScaTraInterface());
     scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoInterface(
         ssti_matrices_->ScaTraThermoInterface());
   }
