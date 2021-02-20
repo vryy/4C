@@ -151,7 +151,7 @@ namespace SSTI
     Teuchos::RCP<LINALG::SparseOperator> StructureScaTraDomain() { return structurescatradomain_; };
     Teuchos::RCP<LINALG::SparseOperator> StructureThermoDomain() { return structurethermodomain_; };
     Teuchos::RCP<LINALG::SparseOperator> ThermoScaTraDomain() { return thermoscatradomain_; };
-    Teuchos::RCP<LINALG::SparseOperator> ThermoScaTraIntefrace() { return thermoscatrainterface_; };
+    Teuchos::RCP<LINALG::SparseOperator> ThermoScaTraInterface() { return thermoscatrainterface_; };
     Teuchos::RCP<LINALG::SparseOperator> ThermoStructureDomain() { return thermostructuredomain_; };
     Teuchos::RCP<LINALG::SparseOperator> ThermoStructureInterface()
     {
