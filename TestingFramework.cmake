@@ -35,14 +35,20 @@ endmacro (baci_test)
 
 # Definition of baci tests with restart and extended runtime
 macro (baci_test_extended_timeout arg nproc restart testtimeout)
+  # Overwrite testtimout for debug build
+  set(actualtesttimeout ${testtimeout})
+  if ("${CMAKE_BUILD_TYPE}" STREQUAL "DEBUG")
+    set(actualtesttimeout 1800)
+  endif ()
+
   add_test(NAME ${arg}-p${nproc}
     COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
-  set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${testtimeout})
+  set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${actualtesttimeout})
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
       COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
-    set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${testtimeout})
+    set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${actualtesttimeout})
   endif (${restart})
 endmacro (baci_test_extended_timeout)
 
