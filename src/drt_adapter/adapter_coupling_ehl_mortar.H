@@ -18,7 +18,6 @@
 #include <Epetra_Vector.h>
 #include "../drt_lib/drt_dserror.H"
 #include "adapter_coupling_nonlin_mortar.H"
-#include "../drt_contact/contact_interface.H"
 
 /*---------------------------------------------------------------------*
  | forward declarations                                                |
@@ -111,8 +110,8 @@ namespace ADAPTER
     bool HasContact() { return contact_regularization_; }
     double ContactRes() { return contact_rhs_norm_; }
     double ContactIncr() { return contact_LM_incr_norm_; }
-    int ActiveContact() { return interface_->ActiveNodes()->NumGlobalElements(); }
-    int SlipContact() { return interface_->SlipNodes()->NumGlobalElements(); }
+    int ActiveContact();
+    int SlipContact();
     //@}
 
     //! @name Access

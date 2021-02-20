@@ -1143,3 +1143,13 @@ void ADAPTER::CouplingEhlMortar::ReadRestart(IO::DiscretizationReader& reader)
       cnode->MoData().lm()[d] = z_->operator[](z_->Map().LID(cnode->Dofs()[d]));
   }
 }
+
+int ADAPTER::CouplingEhlMortar::ActiveContact()
+{
+  return interface_->ActiveNodes()->NumGlobalElements();
+}
+
+int ADAPTER::CouplingEhlMortar::SlipContact()
+{
+  return interface_->SlipNodes()->NumGlobalElements();
+}
