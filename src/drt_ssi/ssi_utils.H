@@ -64,6 +64,10 @@ namespace SSI
         const std::string& conditionname_coupling,
         const std::string& conditionname_3_domain_intersection);
 
+    //! Build a vector of condition with slave-master pairs ordered by coupling ID
+    std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>> BuildSlaveMasterPairing(
+        const std::vector<DRT::Condition*>& conditions);
+
     //! clone scatra specific parameters for solver of manifold. Add manifold specific parameters
     Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& sublist_manifold_params, const Epetra_Comm& comm);

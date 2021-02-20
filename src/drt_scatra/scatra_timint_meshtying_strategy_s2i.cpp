@@ -1979,6 +1979,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         std::vector<std::vector<int>> islavenodegidvec_cond;
         std::vector<std::vector<int>> imasternodegidvec_cond;
 
+        bool has_no_flux_kinetics = false;
+
         // loop over slave conditions and build vector of nodes for slave and master condition with
         // same ID
         for (auto& slavecondition : slaveconditions_)
@@ -2001,44 +2003,35 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
           // remove nodes from slave side line condition to avoid non-unique slave-master relation
-          std::vector<DRT::Condition*> conditionstriplemeshtying(0, nullptr);
-          scatratimint_->Discretization()->GetCondition(
-              "Meshtying3DomainIntersection", conditionstriplemeshtying);
-
-          for (const auto& conditiontriplemeshtying : conditionstriplemeshtying)
+          if (slavecondition.second->GetInt("kinetic model") ==
+              static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
-            const int surf_cond_id = conditiontriplemeshtying->GetInt("MeshtyingSurfSlaveID");
-            const auto* side = conditiontriplemeshtying->Get<std::string>("Side");
-            const bool isslave = (*side == "Slave");
+            has_no_flux_kinetics = true;
 
-            if (conditiontriplemeshtying->GType() == DRT::Condition::Line and
-                surf_cond_id == slavecondition.first)
+            std::vector<DRT::Condition*> conditionstriplemeshtying(0, nullptr);
+            scatratimint_->Discretization()->GetCondition(
+                "Meshtying3DomainIntersection", conditionstriplemeshtying);
+
+            for (const auto& conditiontriplemeshtying : conditionstriplemeshtying)
             {
-              if (slavecondition.second->GetInt("kinetic model") !=
-                  static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
-                dserror("Triple meshtying in S2I coupling only for 'NoInterfaceFlux' so far");
-
-              // compare node gids and remove if they are equal and on this proc
-              if (isslave)
-              {
-                DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
-                    *conditiontriplemeshtying->Nodes(), islavenodegidvec);
-              }
-              else
-              {
-                DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
-                    *conditiontriplemeshtying->Nodes(), imasternodegidvec);
-              }
+              DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
+                  *conditiontriplemeshtying->Nodes(), islavenodegidvec);
+              DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
+                  *conditiontriplemeshtying->Nodes(), imasternodegidvec);
             }
           }
+
           islavenodegidvec_cond.push_back(islavenodegidvec);
           imasternodegidvec_cond.push_back(imasternodegidvec);
         }
 
+        if (!has_no_flux_kinetics)
+          dserror("Triple meshtying in S2I coupling only for 'NoInterfaceFlux' so far");
+
         // setup non-mortar coupling adapter
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
-            scatratimint_->NumDofPerNode(), true, 1.e-8);
+            scatratimint_->NumDofPerNode(), true, 1.0e-8);
       }
 
       // generate interior and interface maps

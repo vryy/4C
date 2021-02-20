@@ -139,7 +139,7 @@ SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE  3.53651552235269362e+00 TO
 SSI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE  4.00000000000000000e+00 TOLERANCE 1.0e-16
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
-NDLINE  5
+NDLINE  6
 NDSURF  28
 NDVOL   9
 --------------------------DESIGN SURF TRANSPORT NEUMANN CONDITIONS
@@ -248,12 +248,16 @@ E 9 - 3 Slave S2ICouplingID 3
 E 10 - 4 Master S2ICouplingID 4
 // cc-side_(sl)_of_sol-el-comp_cat-
 E 11 - 4 Slave S2ICouplingID 4
------------------------DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS
-DLINE  2
+--------------DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS
+DLINE  4
 // line_triple_point_cc_side
-E 4 - 0 Slave MeshtyingSurfSlaveID 4 MeshtyingSurfMasterID 2
+E 4 - 1 Slave
 // line_triple_point_el_side
-E 5 - 0 Master MeshtyingSurfSlaveID 4 MeshtyingSurfMasterID 2
+E 5 - 1 Master
+// line_triple_point_cath_side
+E 6 - 0 Slave
+// line_triple_point_el_side
+E 5 - 0 Master
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    791 DNODE 1
 NODE    794 DNODE 1
@@ -420,6 +424,14 @@ NODE    456 DLINE 5
 NODE    459 DLINE 5
 NODE    505 DLINE 5
 NODE    512 DLINE 5
+NODE    629 DLINE 6
+NODE    630 DLINE 6
+NODE    713 DLINE 6
+NODE    746 DLINE 6
+NODE    762 DLINE 6
+NODE    763 DLINE 6
+NODE    775 DLINE 6
+NODE    777 DLINE 6
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    780 DSURFACE 1
 NODE    781 DSURFACE 1

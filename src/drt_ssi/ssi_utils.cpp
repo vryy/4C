@@ -226,6 +226,47 @@ void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
     }
   }
 }
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>>
+SSI::UTILS::BuildSlaveMasterPairing(const std::vector<DRT::Condition*>& conditions)
+{
+  // sort conditions by condition ID and slave/master using a map
+  std::map<const int, DRT::Condition* const> slave_conditions;
+  std::map<const int, DRT::Condition* const> master_conditions;
+  for (auto* condition : conditions)
+  {
+    const auto pair =
+        std::pair<const int, DRT::Condition* const>(condition->GetInt("ConditionID"), condition);
+    if (*condition->Get<std::string>("Side") == "Slave")
+      slave_conditions.insert(pair);
+    else if (*condition->Get<std::string>("Side") == "Master")
+      master_conditions.insert(pair);
+    else
+      dserror("Coupling side must either be slave or master");
+  }
+
+  // safety check
+  if (master_conditions.size() != slave_conditions.size())
+    dserror("must provide both, master and slave side conditions");
+
+  // create slave-master pair for matching condition IDs
+  std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>> condition_pairs;
+  for (const auto& slave_condition : slave_conditions)
+  {
+    for (const auto master_condition : master_conditions)
+    {
+      if (slave_condition.first == master_condition.first)
+      {
+        condition_pairs.emplace_back(std::pair<DRT::Condition* const, DRT::Condition* const>(
+            slave_condition.second, master_condition.second));
+        break;
+      }
+    }
+  }
+
+  return condition_pairs;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -239,75 +280,84 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
   // extract ssi coupling conditions from discretization and assign to slave/master side maps
   std::vector<DRT::Condition*> conditions(0, nullptr);
   structdis->GetCondition(conditionname_coupling, conditions);
-  std::map<const int, DRT::Condition* const> slaveconditions;
-  std::map<const int, DRT::Condition* const> masterconditions;
-  for (auto* condition : conditions)
-  {
-    const int condid = condition->GetInt("ConditionID");
-    if (condid < 0)
-      dserror("Invalid condition ID %i for SSI Interface Meshtying Condition!", condid);
-
-    if (*condition->Get<std::string>("Side") == "Slave")
-    {
-      if (slaveconditions.find(condid) == slaveconditions.end())
-        slaveconditions.insert(std::pair<const int, DRT::Condition* const>(condid, condition));
-      else
-      {
-        dserror(
-            "Cannot have multiple slave-side ssi coupling conditions with the same ID %i!", condid);
-      }
-    }
-    else if (*condition->Get<std::string>("Side") == "Master")
-    {
-      if (masterconditions.find(condid) == masterconditions.end())
-        masterconditions.insert(std::pair<const int, DRT::Condition* const>(condid, condition));
-      else
-      {
-        dserror("Cannot have multiple master-side ssi coupling conditions with the same ID %i!",
-            condid);
-      }
-    }
-    else
-      dserror("Invalid ssi coupling condition!");
-  }
+  auto condition_pairs = BuildSlaveMasterPairing(conditions);
 
   // Setup coupling adapter from ssi conditions
   if (meshtying_3_domain_intersection)
   {
+    // strategy:
+    // - remove all nodes in conditionname_3_domain_intersection from conditions except for one
+    // arbitrary condition
+    // - setup coupling adapter with modified nodes
+
+    // get 3 domain intersection conditions
+    std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
+    structdis->GetCondition(conditionname_3_domain_intersection, conditions_3_domain_intersection);
+    auto condition_3_domain_pairs = BuildSlaveMasterPairing(conditions_3_domain_intersection);
+
+    // safety check
+    if (condition_3_domain_pairs.size() != 2)
+      dserror("Currently, exactly 2 coupling pairs with 3-domain-meshtying supported");
+    // both master conditions must be the same
+    if (!DRT::UTILS::HaveSameNodes(
+            condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second))
+      dserror("All master conditions with 3-domain-meshtying must be the same");
+
+    // select an arbitrary 3 domain meshtying condition (0) and find other conditions
+    // (arbitrary_coupling_id) with same nodes
+    const auto& condition_3_domain_pair = condition_3_domain_pairs[0];
+    int arbitrary_coupling_id = -1;
+    for (const auto& condition_pair : condition_pairs)
+    {
+      // do all nodes match on this proc?
+      int my_match_slave_nodes = 1;
+      int my_match_master_nodes = 1;
+
+      for (int gid_line_slave : *condition_3_domain_pair.first->Nodes())
+        if (!condition_pair.first->ContainsNode(gid_line_slave)) my_match_slave_nodes = 0;
+
+      for (int gid_line_master : *condition_3_domain_pair.second->Nodes())
+        if (!condition_pair.second->ContainsNode(gid_line_master)) my_match_master_nodes = 0;
+
+      // do all nodes match on all procs? -> other condition with matching nodes is found
+      int match_slave_nodes;
+      int match_master_nodes;
+      structdis->Comm().SumAll(&my_match_slave_nodes, &match_slave_nodes, 1);
+      structdis->Comm().SumAll(&my_match_master_nodes, &match_master_nodes, 1);
+      const int numproc = structdis->Comm().NumProc();
+      if (match_slave_nodes == numproc and match_master_nodes == numproc)
+      {
+        arbitrary_coupling_id = condition_pair.first->GetInt("ConditionID");
+        break;
+      }
+    }
+
+    // safety check
+    if (arbitrary_coupling_id == -1)
+      dserror("cannot find surface condition with nodes from line condition");
+
     // vectors for global ids of slave and master interface nodes for each condition
     std::vector<std::vector<int>> islavenodegidvec_cond;
     std::vector<std::vector<int>> imasternodegidvec_cond;
 
     // loop over slave conditions and build vector of nodes for slave and master condition with same
-    // ID
-    for (auto& slavecondition : slaveconditions)
+    // coupling ID
+    for (const auto& condition_pair : condition_pairs)
     {
       std::vector<int> islavenodegidvec;
       std::vector<int> imasternodegidvec;
 
       // Build GID vector of nodes on this proc, sort, and remove duplicates
       DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *slavecondition.second->Nodes(), islavenodegidvec);
-      DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
+          structdis, *condition_pair.first->Nodes(), islavenodegidvec);
 
-      auto mastercondition = masterconditions.find(slavecondition.first);
-      if (mastercondition != masterconditions.end())
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          structdis, *condition_pair.second->Nodes(), imasternodegidvec);
+
+      // remove all nodes from line conditions except on conditions with arbitrary_coupling_id
+      if (condition_pair.first->GetInt("ConditionID") != arbitrary_coupling_id)
       {
-        DRT::UTILS::AddOwnedNodeGIDVector(
-            structdis, *mastercondition->second->Nodes(), imasternodegidvec);
-      }
-      DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
-
-      // remove nodes from slave side line condition to avoid non-unique slave-master relation
-      std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
-      structdis->GetCondition(
-          conditionname_3_domain_intersection, conditions_3_domain_intersection);
-
-      for (const auto& condition_3_domain_intersection : conditions_3_domain_intersection)
-      {
-        if (slavecondition.first !=
-                condition_3_domain_intersection->GetInt("MeshtyingSurfMasterID") and
-            condition_3_domain_intersection->GType() == DRT::Condition::Line)
+        for (const auto& condition_3_domain_intersection : conditions_3_domain_intersection)
         {
           DRT::UTILS::RemoveNodeGIDsFromVector(
               structdis, *condition_3_domain_intersection->Nodes(), islavenodegidvec);
@@ -321,7 +371,7 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
     }
 
     interfacecouplingadapter->SetupCoupling(*structdis, *structdis, imasternodegidvec_cond,
-        islavenodegidvec_cond, DRT::Problem::Instance()->NDim(), false, 1.e-8);
+        islavenodegidvec_cond, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
   }
   else
   {
@@ -330,16 +380,13 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
     std::vector<int> inodegidvec_slave;
 
     // Build GID vector of nodes on this proc, sort, and remove duplicates
-    for (const auto& slavecondition : slaveconditions)
+    for (const auto& condition_pair : condition_pairs)
+    {
       DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *slavecondition.second->Nodes(), inodegidvec_slave);
-    DRT::UTILS::SortAndRemoveDuplicateVectorElements(inodegidvec_slave);
-
-    for (const auto& mastercondition : masterconditions)
+          structdis, *condition_pair.first->Nodes(), inodegidvec_slave);
       DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *mastercondition.second->Nodes(), inodegidvec_master);
-    DRT::UTILS::SortAndRemoveDuplicateVectorElements(inodegidvec_master);
-
+          structdis, *condition_pair.second->Nodes(), inodegidvec_master);
+    }
 
     interfacecouplingadapter->SetupCoupling(*structdis, *structdis, inodegidvec_master,
         inodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
@@ -355,26 +402,34 @@ SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
     Teuchos::RCP<DRT::Discretization> structdis,
     const std::string& conditionname_3_domain_intersection)
 {
+  // strategy:
+  // - setup coupling adapter with all nodes from conditions_3_domain_intersection except for nodes
+  // from arbitrary condition (see SetupInterfaceCouplingAdapterStructure)
+
   std::vector<int> ilinenodegidvec_master;
   std::vector<int> ilinenodegidvec_slave;
 
-  std::vector<DRT::Condition*> conditionsssi(0, nullptr);
-  structdis->GetCondition(conditionname_3_domain_intersection, conditionsssi);
+  // Build slave-master pairs
+  std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
+  structdis->GetCondition(conditionname_3_domain_intersection, conditions_3_domain_intersection);
+  auto condition_3_domain_pairs = BuildSlaveMasterPairing(conditions_3_domain_intersection);
 
-  // Build GID vector of nodes on this proc, sort, and remove duplicates
-  for (const auto& condition : conditionsssi)
-  {
-    if (condition->GType() != DRT::Condition::Line) dserror("only line allowed");
+  // safety check
+  if (condition_3_domain_pairs.size() != 2)
+    dserror("Currently, exactly 2 coupling pairs with 3-domain-meshtying supported");
+  // both master conditions must be the same
+  if (!DRT::UTILS::HaveSameNodes(
+          condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second))
+    dserror("All master conditions with 3-domain-meshtying must be the same");
 
-    if (*condition->Get<std::string>("Side") == "Slave")
-      DRT::UTILS::AddOwnedNodeGIDVector(structdis, *condition->Nodes(), ilinenodegidvec_slave);
-    else
-      DRT::UTILS::AddOwnedNodeGIDVector(structdis, *condition->Nodes(), ilinenodegidvec_master);
-  }
+  // Build GID vector of nodes for master and slave side except for arbitrary condition (0)
+  const auto& condition_3_domain_pair = condition_3_domain_pairs[1];
+  DRT::UTILS::AddOwnedNodeGIDVector(
+      structdis, *condition_3_domain_pair.first->Nodes(), ilinenodegidvec_slave);
+  DRT::UTILS::AddOwnedNodeGIDVector(
+      structdis, *condition_3_domain_pair.second->Nodes(), ilinenodegidvec_master);
 
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(ilinenodegidvec_master);
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(ilinenodegidvec_slave);
-
+  // setup coupling adapter based on master and slave side GID node vectors
   auto coupling_line_structure = Teuchos::rcp(new ADAPTER::Coupling());
   coupling_line_structure->SetupCoupling(*structdis, *structdis, ilinenodegidvec_master,
       ilinenodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
