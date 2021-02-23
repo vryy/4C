@@ -184,16 +184,6 @@ Teuchos::RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap
 void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
     const std::vector<std::vector<int>>& send, std::vector<std::vector<int>>& recv)
 {
-#ifndef PARALLEL
-
-  dsassert(send.size() == 1, "there has to be just one entry for sending");
-
-  // make a copy
-  recv.clear();
-  recv.push_back(send[0]);
-
-#else
-
   if (comm.NumProc() == 1)
   {
     dsassert(send.size() == 1, "there has to be just one entry for sending");
@@ -259,8 +249,6 @@ void LINALG::AllToAllCommunication(const Epetra_Comm& comm,
       recv.push_back(std::vector<int>(&recvbuf[rdispls[proc]], &recvbuf[rdispls[proc + 1]]));
     }
   }
-
-#endif  // PARALLEL
 }
 
 /*----------------------------------------------------------------------*

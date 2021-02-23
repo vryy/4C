@@ -259,11 +259,7 @@ int main(int argc, char *argv[])
         "*             version (git SHA1):            *\n"
         "*  %s  *\n"
         "*                                            *\n"
-#ifdef PARALLEL
         "*              parallel version              *\n"
-#else
-        "*             sequential version             *\n"
-#endif
 #ifdef DEBUG
         "*               debug version                *\n"
 #else

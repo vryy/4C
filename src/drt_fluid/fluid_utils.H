@@ -12,11 +12,7 @@
 #ifndef FLUID_UTILS_H
 #define FLUID_UTILS_H
 
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
 
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_blocksparsematrix.H"

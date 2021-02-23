@@ -148,18 +148,14 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   // round robin loop to communicate coordinates to all procs
   //--------------------------------------------------------------------
   {
-#ifdef PARALLEL
     int myrank = discret_->Comm().MyPID();
-#endif
     int numprocs = discret_->Comm().NumProc();
 
     std::vector<char> sblock;
     std::vector<char> rblock;
 
-#ifdef PARALLEL
     // create an exporter for point to point communication
     DRT::Exporter exporter(discret_->Comm());
-#endif
 
     // first, communicate coordinates in x1-direction
     for (int np = 0; np < numprocs; ++np)
@@ -179,7 +175,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
       }
       std::swap(sblock, data());
 
-#ifdef PARALLEL
       MPI_Request request;
       int tag = myrank;
 
@@ -207,11 +202,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
         // for safety
         exporter.Comm().Barrier();
       }
-#else
-      // dummy communication
-      rblock.clear();
-      rblock = sblock;
-#endif
 
       //--------------------------------------------------
       // Unpack received block into set of all planes.
@@ -248,7 +238,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
       }
       std::swap(sblock, data());
 
-#ifdef PARALLEL
       MPI_Request request;
       int tag = myrank;
 
@@ -276,11 +265,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
         // for safety
         exporter.Comm().Barrier();
       }
-#else
-      // dummy communication
-      rblock.clear();
-      rblock = sblock;
-#endif
 
       //--------------------------------------------------
       // Unpack received block into set of all planes.

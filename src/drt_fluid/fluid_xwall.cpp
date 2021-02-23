@@ -629,8 +629,6 @@ void FLD::XWall::SetupXWallDis()
   if (parallel)
   {
     // redistribute
-#if defined(PARALLEL)
-
     Teuchos::RCP<Epetra_Map> elemap = Teuchos::rcp(new Epetra_Map(*xwdiscret_->ElementRowMap()));
     Teuchos::RCP<Epetra_Map> rownodes;
     Teuchos::RCP<Epetra_Map> colnodes;
@@ -639,7 +637,6 @@ void FLD::XWall::SetupXWallDis()
         xwdiscret_, elemap, rownodes, colnodes, comm, true, comm->NumProc());
     // rebuild of the system with new maps
     xwdiscret_->Redistribute(*rownodes, *colnodes, false, false);
-#endif
 
     PeriodicBoundaryConditions pbc(xwdiscret_, false);
     pbc.UpdateDofsForPeriodicBoundaryConditions();

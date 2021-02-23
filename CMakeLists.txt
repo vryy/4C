@@ -63,11 +63,6 @@ IF(NOT CMAKE_BUILD_TYPE)
       FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-#
-# Legacy defines
-
-add_definitions("-DPARALLEL") # TODO remove PARALLEL flag? exact meaning of this flag?
-
 # external library variable
 set(LIBRARIES "")
 

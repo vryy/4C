@@ -400,19 +400,13 @@ int main(int argc, char** argv)
     abort();
 #endif
 
-#ifdef PARALLEL
     MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
-#else
-    exit(1);
-#endif
   }
 
   // free the global problem instance
   problem->Done();
 
-#ifdef PARALLEL
   MPI_Finalize();
-#endif
 
   return 0;
 

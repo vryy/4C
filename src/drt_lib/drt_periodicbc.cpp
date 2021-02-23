@@ -1201,7 +1201,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
     }
 
     *allcoupledcolnodes_ = (*allcoupledrownodes_);
-#ifdef PARALLEL
     {
       // create an exporter
       DRT::Exporter exportconnectivity(*newrownodemap, *newcolnodemap, discret_->Comm());
@@ -1213,7 +1212,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
       // export the inverse slave->master matching without multiple couplings
       exportconnectivity.Export(*inversenodecoupling);
     }
-#endif
 
     // to assign the degrees of freedom, we have to make sure that coupled
     // nodes are only ghosted in pairs --- so modify the colmap
@@ -1249,7 +1247,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
 
       // We need to do this again in order to get the new master-slave pairs
       // that might have been added in the previous loop over the inversenodecoupling
-#ifdef PARALLEL
       {
         // now reconstruct the extended colmap
         newcolnodemap = Teuchos::rcp(
@@ -1264,7 +1261,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
         // couplings)
         exportconnectivity.Export(*allcoupledcolnodes_);
       }
-#endif
 
       // determine all ghosted master nodes in this vector which do not have
       // all their slaves ghosted on this proc --- we have to fetch them to be able
@@ -1297,7 +1293,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
           Teuchos::rcp(new Epetra_Map(-1, mycolnodes.size(), &mycolnodes[0], 0, discret_->Comm()));
 
       *allcoupledcolnodes_ = (*allcoupledrownodes_);
-#ifdef PARALLEL
+
       // the new master-ghost nodes need their information about
       // connectivity
       {
@@ -1307,7 +1303,6 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
         // couplings)
         exportconnectivity.Export(*allcoupledcolnodes_);
       }
-#endif
     }
 
     // time measurement --- this causes the TimeMonitor tm7 to stop here
@@ -1797,7 +1792,6 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
         }
         if (numproc < 8)  // better for smaller no. of partitions
         {
-#ifdef PARALLEL
           METIS_PartGraphRecursive(&nummyele, &xadj[0], &adjncy[0], &vwgt[0], &adjwgt[0], &wgtflag,
               &numflag, &npart, options, &edgecut, &part[0]);
 
@@ -1806,14 +1800,11 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
             std::cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << "\n";
             fflush(stdout);
           }
-#endif
         }
         else
         {
-#ifdef PARALLEL
           METIS_PartGraphKway(&nummyele, &xadj[0], &adjncy[0], &vwgt[0], &adjwgt[0], &wgtflag,
               &numflag, &npart, options, &edgecut, &part[0]);
-#endif
         }
 
 

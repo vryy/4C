@@ -29,11 +29,7 @@
 void fluid_topopt_dyn()
 {
   // create a communicator
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   //------------------------------------------------------------------------------------------------
   // print Logo on screen

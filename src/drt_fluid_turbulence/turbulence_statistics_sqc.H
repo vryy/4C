@@ -42,11 +42,7 @@ output
 #ifndef TURBULENCE_STATISTICS_SQC_H
 #define TURBULENCE_STATISTICS_SQC_H
 
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
 
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"

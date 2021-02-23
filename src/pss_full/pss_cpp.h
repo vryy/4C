@@ -12,9 +12,7 @@
 
 // this ensures we always obtain the C++ version of mpi and
 // not its C version included by pss_table.h
-#ifdef PARALLEL
 #include <mpi.h>
-#endif
 
 extern "C"
 {

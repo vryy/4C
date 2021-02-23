@@ -415,7 +415,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   std::map<double, std::map<double, int, doublecomp>, doublecomp>::iterator x_and_y;
   std::map<double, int, doublecomp>::iterator y_and_i;
 
-#ifdef PARALLEL
   // create an exporter for point to point comunication
   DRT::Exporter exporter(avgcomm);
 
@@ -427,14 +426,11 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
   int topid = -1;
   int length = -1;
 
-#endif
-
   for (int np = 0; np < numprocs + 1; ++np)
   {
     // in the first step, we cannot receive anything
     if (np > 0)
     {
-#ifdef PARALLEL
       //--------------------------------------------------
       // Receive a block from the last proc
 
@@ -460,7 +456,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       // for safety
       exporter.Comm().Barrier();
-#endif
 
       //--------------------------------------------------
       // Unpack received block
@@ -713,7 +708,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       swap(sblock, data());
 
-#ifdef PARALLEL
       //--------------------------------------------------
       // Send block to next proc.
 
@@ -722,8 +716,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       topid = (myrank + 1) % numprocs;
 
       exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
-
-#endif
     }
   }
 
@@ -750,7 +742,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
     // in the first step, we cannot receive anything
     if (np > 0)
     {
-#ifdef PARALLEL
       //--------------------------------------------------
       // Receive a block from the last proc
 
@@ -774,7 +765,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       // for safety
       exporter.Comm().Barrier();
-#endif
 
       //--------------------------------------------------
       // Unpack received block
@@ -1014,7 +1004,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
 
       swap(sblock, data());
 
-#ifdef PARALLEL
       //--------------------------------------------------
       // Send block to next proc.
 
@@ -1023,8 +1012,6 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(const int 
       topid = (myrank + 1) % numprocs;
 
       exporter.ISend(frompid, topid, &(sblock[0]), sblock.size(), tag, request);
-
-#endif
     }
   }
 

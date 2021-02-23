@@ -252,13 +252,11 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       }
     }
 
-#ifdef PARALLEL
     // create an exporter for point to point comunication
     DRT::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
-#endif
 
     // define send and receive blocks
     std::vector<char> sblock;
@@ -275,11 +273,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-#ifdef PARALLEL
         ReceiveBlock(rblock, exporter, request);
-#else
-        rblock = sblock;
-#endif
 
         // Unpack info from the receive block from the last proc
         UnpackLocalMasterValues(mymasters, mymasters_vel, rblock);
@@ -299,9 +293,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
         PackLocalMasterValues(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
-#ifdef PARALLEL
         SendBlock(sblock, exporter, request);
-#endif
       }
     }
   }
@@ -382,7 +374,6 @@ void FLD::TransferTurbulentInflowCondition::GetData(
 }
 
 
-#ifdef PARALLEL
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -428,11 +419,8 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
 
   return;
 }  // TransferTurbulentInflowCondition::ReceiveBlock
-#endif
 
 
-
-#ifdef PARALLEL
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -463,8 +451,6 @@ void FLD::TransferTurbulentInflowCondition::SendBlock(
 
   return;
 }  // TransferTurbulentInflowCondition::SendBlock
-#endif
-
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -825,13 +811,11 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       }
     }
 
-#ifdef PARALLEL
     // create an exporter for point to point comunication
     DRT::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
-#endif
 
     // define send and receive blocks
     std::vector<char> sblock;
@@ -848,11 +832,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-#ifdef PARALLEL
         ReceiveBlock(rblock, exporter, request);
-#else
-        rblock = sblock;
-#endif
 
         // Unpack info from the receive block from the last proc
         UnpackLocalMasterValues(mymasters, mymasters_vel, rblock);
@@ -872,9 +852,7 @@ void FLD::TransferTurbulentInflowConditionXW::Transfer(
         PackLocalMasterValues(mymasters, mymasters_vel, data);
         swap(sblock, data());
 
-#ifdef PARALLEL
         SendBlock(sblock, exporter, request);
-#endif
       }
     }
   }
@@ -1036,13 +1014,11 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       }
     }
 
-#ifdef PARALLEL
     // create an exporter for point to point comunication
     DRT::Exporter exporter(dis_->Comm());
 
     // necessary variables
     MPI_Request request;
-#endif
 
     // define send and receive blocks
     std::vector<char> sblock;
@@ -1059,11 +1035,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
       // in the first step, we cannot receive anything
       if (np > 0)
       {
-#ifdef PARALLEL
         ReceiveBlock(rblock, exporter, request);
-#else
-        rblock = sblock;
-#endif
 
         // Unpack info from the receive block from the last proc
         UnpackLocalMasterValues(mymasters, mymasters_vec, rblock);
@@ -1083,9 +1055,7 @@ void FLD::TransferTurbulentInflowConditionNodal::Transfer(
         PackLocalMasterValues(mymasters, mymasters_vec, data);
         swap(sblock, data());
 
-#ifdef PARALLEL
         SendBlock(sblock, exporter, request);
-#endif
       }
     }
   }

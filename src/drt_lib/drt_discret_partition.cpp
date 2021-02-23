@@ -141,7 +141,6 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   }
 
 
-#ifdef PARALLEL
   // tell everybody who is to receive something
   std::vector<int> receivers;
 
@@ -209,7 +208,6 @@ void DRT::Discretization::ProcZeroDistributeElementsToAll(
   {
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
   }
-#endif
 
   Comm().Barrier();  // I feel better this way ;-)
   Reset();
@@ -263,7 +261,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
       swap(sendmap[fool->first], fool->second());
   }
 
-#ifdef PARALLEL
   // tell everybody who is to receive something
   std::vector<int> receivers;
   for (std::map<int, std::vector<char>>::iterator fool = sendmap.begin(); fool != sendmap.end();
@@ -329,8 +326,6 @@ void DRT::Discretization::ProcZeroDistributeNodesToAll(Epetra_Map& target)
   {
     for (int i = 0; i < size; ++i) exporter.Wait(request[i]);
   }
-
-#endif
 
   Comm().Barrier();  // feel better this way ;-)
   Reset();

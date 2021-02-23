@@ -27,13 +27,9 @@
 void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
-#ifdef PARALLEL
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> scalarfield =
       DRT::UTILS::GetColVersionOfRowVector(discret, scalarfield_row);
-#else
-  const Teuchos::RCP<const Epetra_Vector> scalarfield = scalarfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -81,13 +77,9 @@ void IO::GMSH::ScalarFieldToGmsh(const Teuchos::RCP<DRT::Discretization> discret
 void IO::GMSH::ScalarFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, const int nds, std::ostream& s)
 {
-#ifdef PARALLEL
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> scalarfield =
       DRT::UTILS::GetColVersionOfRowVector(discret, scalarfield_row, nds);
-#else
-  const Teuchos::RCP<const Epetra_Vector> scalarfield = scalarfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -206,13 +198,9 @@ void IO::GMSH::VectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discretization>
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row, std::ostream& s, const int nds,
     bool displacenodes)
 {
-#ifdef PARALLEL
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
       DRT::UTILS::GetColVersionOfRowVector(discret, vectorfield_row, nds);
-#else
-  const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -273,14 +261,11 @@ void IO::GMSH::VectorFieldMultiVectorDofBasedToGmsh(
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s, const int nds)
 {
   // TODO: Remove dependence on size of Epetra_Multivector!!!
-#ifdef PARALLEL
+
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->DofColMap(nds), 3, true));
   LINALG::Export(*vectorfield_row, *vectorfield);
-#else
-  const Teuchos::RCP<Epetra_MultiVector> vectorfield = vectorfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -339,13 +324,9 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discreti
     std::map<int, LINALG::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
 {
-#ifdef PARALLEL
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
       DRT::UTILS::GetColVersionOfRowVector(discret, vectorfield_row);
-#else
-  const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -403,13 +384,9 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
     const Teuchos::RCP<const Epetra_Vector> vectorfield_row, const std::string field,
     std::ostream& s, const int nds)
 {
-#ifdef PARALLEL
   // tranform solution vector from DofRowMap to DofColMap
   const Teuchos::RCP<const Epetra_Vector> vectorfield =
       DRT::UTILS::GetColVersionOfRowVector(discret, vectorfield_row, nds);
-#else
-  const Teuchos::RCP<const Epetra_Vector> vectorfield = vectorfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -496,15 +473,11 @@ void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(const Teuchos::RCP<DRT::Discr
 void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s)
 {
-#ifdef PARALLEL
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
       Teuchos::rcp(new Epetra_MultiVector(*discret->NodeColMap(), 3, true));
   LINALG::Export(*vectorfield_row, *vectorfield);
-#else
-  const Teuchos::RCP<Epetra_MultiVector> vectorfield = vectorfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)
@@ -546,7 +519,6 @@ void IO::GMSH::VectorFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
 void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discretization> discret,
     const Teuchos::RCP<const Epetra_Vector> scalarfield_row, std::ostream& s)
 {
-#ifdef PARALLEL
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: DRT::UTILS::GetColVersionOfRowVector() does only work for Epetra_Vectors on DofRowMap
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
@@ -554,9 +526,6 @@ void IO::GMSH::ScalarFieldNodeBasedToGmsh(const Teuchos::RCP<const DRT::Discreti
   const Teuchos::RCP<Epetra_Vector> scalarfield =
       Teuchos::rcp(new Epetra_Vector(*discret->NodeColMap(), true));
   LINALG::Export(*scalarfield_row, *scalarfield);
-#else
-  const Teuchos::RCP<Epetra_Vector> scalarfield = scalarfield_row;
-#endif
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret->NumMyRowElements(); ++iele)

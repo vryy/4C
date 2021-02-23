@@ -43,9 +43,7 @@ table. This table can be queried for those values quite easily.
 #include "../headers/standardtypes.h"
 #include "../headers/am.h"
 #include "../pss_full/pss_types.h"
-#ifdef PARALLEL
 #include <mpi.h> /* Be careful: this is the C mpi header */
-#endif
 
 
 /*----------------------------------------------------------------------*/

@@ -216,10 +216,8 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop
-#ifdef PARALLEL
   // create an exporter for point to point comunication
   DRT::Exporter exporter(discret_->Comm());
-#endif
 
   for (int np = 0; np < numprocs; np++)
   {
@@ -227,7 +225,6 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
     // Send block to next proc. Receive a block from the last proc
     if (np > 0)  // in the first step, we keep all nodes on this proc
     {
-#ifdef PARALLEL
       MPI_Request request;
       int tag = myrank;
 
@@ -262,7 +259,6 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
         // for safety
         exporter.Comm().Barrier();
       }
-#endif
     }
     else
     {
@@ -407,12 +403,10 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
     // we need a new receive buffer
     rblockofnodes.clear();
 
-#ifdef PARALLEL
     {
       // for safety
       exporter.Comm().Barrier();
     }
-#endif
   }  // end loop np
 
   return;
@@ -485,7 +479,6 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
     // Send block to next proc. Receive a block from the last proc
     if (np > 0)  // in the first step, we keep all nodes on this proc
     {
-#ifdef PARALLEL
       int myrank = discret_->Comm().MyPID();
       MPI_Request request;
       int tag = myrank;
@@ -516,9 +509,6 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
       }
 
       exporter.Wait(request);
-#else
-      dserror("How did you get here? Go away!");
-#endif
     }
     else
     {
@@ -651,7 +641,6 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
     // Send block to next proc. Receive a block from the last proc
     if (np > 0)  // in the first step, we keep all nodes on this proc
     {
-#ifdef PARALLEL
       int myrank = discret_->Comm().MyPID();
       MPI_Request request;
       int tag = myrank;
@@ -682,9 +671,6 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
       }
 
       exporter.Wait(request);
-#else
-      dserror("How did you get here? Go away!");
-#endif
     }
     else
     {

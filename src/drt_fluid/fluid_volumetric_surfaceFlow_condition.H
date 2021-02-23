@@ -13,11 +13,7 @@
 #define FLUIDWOMERSLEYCONDITION_H
 
 
-#ifdef PARALLEL
 #include "Epetra_MpiComm.h"
-#else
-#include "Epetra_SerialComm.h"
-#endif /* PARALLEL */
 
 #include <Epetra_Map.h>
 

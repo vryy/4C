@@ -14,6 +14,7 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 
+#include <Epetra_SerialComm.h>
 #include <Teuchos_RCP.hpp>
 #include <vector>
 

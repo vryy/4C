@@ -33,11 +33,7 @@
 void loma_dyn(int restart)
 {
   // create a communicator
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // print warning to screen
   if (comm.MyPID() == 0)
