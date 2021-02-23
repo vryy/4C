@@ -12,8 +12,6 @@ Pack, Unpack, NumDofPerNode etc.
 /*----------------------------------------------------------------------*
  | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
-#ifdef D_THERMO
-
 #ifndef THERMO_ELEMENT_H
 #define THERMO_ELEMENT_H
 
@@ -603,4 +601,3 @@ namespace DRT
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THERMO_ELEMENT_H
-#endif  // #ifdef D_THERMO

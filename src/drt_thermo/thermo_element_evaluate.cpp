@@ -7,12 +7,6 @@
 */
 
 /*----------------------------------------------------------------------*
- | definitions                                                gjb 01/08 |
- *----------------------------------------------------------------------*/
-#ifdef D_THERMO
-
-
-/*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
@@ -51,7 +45,3 @@ int DRT::ELEMENTS::Thermo::EvaluateNeumann(Teuchos::ParameterList& params,
   return DRT::ELEMENTS::TemperImplInterface::Impl(this)->EvaluateNeumann(
       this, params, discretization, lm, elevec1, elemat1);
 }
-
-
-/*----------------------------------------------------------------------*/
-#endif  // #ifdef D_THERMO

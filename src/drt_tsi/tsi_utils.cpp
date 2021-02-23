@@ -108,8 +108,8 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   else
     dserror("oldele is neither a So_base element!");
 
-    // note: SetMaterial() was reimplemented by the thermo element!
-#if defined(D_THERMO)
+  // note: SetMaterial() was reimplemented by the thermo element!
+
   Teuchos::RCP<DRT::ELEMENTS::Thermo> therm =
       Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(newele);
   if (therm != Teuchos::null)
@@ -139,7 +139,6 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
     }
   }
   else
-#endif
   {
     dserror("unsupported element type '%s'", typeid(*newele).name());
   }

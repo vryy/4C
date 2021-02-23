@@ -70,7 +70,6 @@ void ALE::UTILS::AleCloneStrategy::CheckMaterialType(const int matid)
 void ALE::UTILS::AleCloneStrategy::SetElementData(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
 {
-#ifdef D_ALE
   if (nurbsdis == false)
   {
     DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(newele.get());
@@ -114,7 +113,6 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
       }
     }
   }
-#endif
 
   return;
 }

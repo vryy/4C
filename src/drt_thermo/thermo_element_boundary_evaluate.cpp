@@ -9,12 +9,6 @@ Evaluate boundary conditions for thermo problems
 */
 
 /*----------------------------------------------------------------------*
- | definitions                                               dano 09/09 |
- *----------------------------------------------------------------------*/
-#ifdef D_THERMO
-
-
-/*----------------------------------------------------------------------*
  | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_boundary_impl.H"
@@ -56,7 +50,3 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(Teuchos::ParameterList& param
   return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->EvaluateNeumann(
       this, params, discretization, condition, lm, elevec1);
 }
-
-
-/*----------------------------------------------------------------------*/
-#endif  // #ifdef D_THERMO

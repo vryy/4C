@@ -159,13 +159,6 @@ if (OPENMP_FOUND)
 endif()
 endif(HAVE_OpenMP)
 
-#   tools
-
-option (PERF "detailed time measurement" OFF)
-if (PERF)
-  add_definitions("-DPERF")
-endif(PERF)
-
 #   fancy stuff
 
 option (COLOROUTPUT "use colored output to the terminal" OFF)
@@ -1321,7 +1314,6 @@ set(OBJS_DRT_RED_AIRWAYS
 set(OBJS_DRT_THERMO_LIB
   src/drt_thermo/thermo_ele_boundary_impl.cpp
   src/drt_thermo/thermo_ele_impl.cpp
-  src/drt_thermo/thermo_ele_impl_utils.cpp
   src/drt_thermo/thermo_element.cpp
   src/drt_thermo/thermo_element_boundary_evaluate.cpp
   src/drt_thermo/thermo_element_evaluate.cpp
@@ -2612,32 +2604,6 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_prestress_strategy_constant.cpp
   src/drt_mixture/mixture_prestress_strategy_isocyl.cpp
   src/drt_mixture/mixture_prestress_strategy_iterative.cpp)
-
-
-###------------------------------------------------------------------ Element flags
-
-#   all possible elements
-
-option (D_ALE         "ale element (2D+3D)" ON)
-if (D_ALE)
-  add_definitions("-DD_ALE")
-endif(D_ALE)
-
-option (D_FLUID3      "fluid3" ON)
-if (D_FLUID3)
-  add_definitions("-DD_FLUID3")
-endif(D_FLUID3)
-
-option (D_THERMO      "thermal elements" ON)
-if (D_THERMO)
-  add_definitions("-DD_THERMO")
-endif(D_THERMO)
-
-option (D_ALE_BFLOW   "ALE deformation included in flow calculation" OFF)
-if (D_ALE_BFLOW)
-  add_definitions("-DD_ALE_BFLOW")
-endif(D_ALE_BFLOW)
-
 
 ###------------------------------------------------------------------ Binaries
 
