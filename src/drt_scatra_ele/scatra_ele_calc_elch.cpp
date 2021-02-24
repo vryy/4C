@@ -31,8 +31,6 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
   if (not my::scatraparatimint_->IsIncremental())
     dserror(
         "Since the ion-transport equations are non-linear, it can be solved only incrementally!!");
-
-  return;
 }
 
 
@@ -156,8 +154,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
     // Compute element matrix and rhs
     CalcMatAndRhsOutsideScalarLoop(emat, erhs, fac, timefacfac, rhsfac);
   }
-
-  return;
 }
 
 
@@ -185,8 +181,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
           alphaf * DiffManager()->GetValence(k) * fac * my::funct_(vi) * my::funct_(ui);
     }
   }
-
-  return;
 }
 
 
@@ -202,12 +196,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcRhsPotEquENC(
 )
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
+  {
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
         DiffManager()->GetValence(k) * fac * my::funct_(vi) * conint;
-
-  return;
+  }
 }
 
 

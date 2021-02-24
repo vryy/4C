@@ -19,7 +19,6 @@
 SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint)
     : MeshtyingStrategyStd(elchtimint)
 {
-  return;
 }  // SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch
 
 
@@ -94,11 +93,13 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
 void SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy()
 {
   if (ElchTimInt()->MacroScale())
+  {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  }
   else
+  {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-
-  return;
+  }
 }  // SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy

@@ -45,15 +45,16 @@ namespace DRT
 
      private:
       //! abbreviations
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleSTIElch<distype> mystielch;
+      using my = ScaTraEleCalc<distype>;
+      using mystielch = ScaTraEleSTIElch<distype>;
 
       //! private constructor for singletons
       ScaTraEleCalcSTIElectrode(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
-      virtual ~ScaTraEleCalcSTIElectrode() { return; };
+      virtual ~ScaTraEleCalcSTIElectrode() = default;
+      ;
 
       //! evaluate action for off-diagonal system matrix block
       int EvaluateActionOD(DRT::Element* ele,        //!< current element
@@ -187,13 +188,10 @@ namespace DRT
             // initialize internal member variables
             ocp_(0.),
             ocpderiv_(0.),
-            ocpderiv2_(0.)
-      {
-        return;
-      };
+            ocpderiv2_(0.){};
 
       //! destructor
-      virtual ~ScaTraEleDiffManagerSTIElchElectrode() { return; };
+      ~ScaTraEleDiffManagerSTIElchElectrode() override = default;
 
       //! compute and store half cell open circuit potential and its first and second derivatives
       //! w.r.t. concentration
@@ -217,8 +215,6 @@ namespace DRT
             matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(concentration, faraday, frt);
         ocpderiv2_ =
             matelectrode->ComputeSecondDerivOpenCircuitPotentialConc(concentration, faraday, frt);
-
-        return;
       };
 
       //! return half cell open circuit potential

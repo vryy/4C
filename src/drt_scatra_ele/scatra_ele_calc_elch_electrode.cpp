@@ -26,7 +26,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(const int 
 {
   static std::map<std::string, ScaTraEleCalcElchElectrode<distype, probdim>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] =
@@ -35,15 +35,15 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(const int 
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleCalcElchElectrode<distype, probdim>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
+    {
+      if (instance->second == delete_me)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
+        delete instance->second;
+        instances.erase(instance);
+        return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
@@ -59,8 +59,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -83,8 +81,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchEl
   // replace elch utility class by utility class for electrodes
   myelch::utils_ = DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::Instance(
       numdofpernode, numscal, disname);
-
-  return;
 }
 
 
@@ -169,8 +165,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
   //    terms arising from potential equation
   //----------------------------------------------------------------------------
   // see function CalcMatAndRhsOutsideScalarLoop()
-
-  return;
 }
 
 
@@ -201,8 +195,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
 
   // element rhs: standard Galerkin terms from potential equation
   CalcRhsPotEquDiviOhm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
-
-  return;
 }
 
 
@@ -238,8 +230,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
   // structural displacements
   my::CalcDiffODMesh(emat, 1, ndofpernodemesh, VarManager()->InvF() * DiffManager()->GetCond(), fac,
       rhsfac, J, VarManager()->GradPot(), convelint, dJ_dmesh);
-
-  return;
 }
 
 
@@ -271,8 +261,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
           my::funct_(ui);
     }
   }
-
-  return;
 }
 
 
@@ -317,8 +305,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
       }
     }
   }
-
-  return;
 }
 
 
@@ -342,8 +328,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcRhsPotEquD
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
         scalar * rhsfac * invf * DiffManager()->GetCond() * laplawfrhs_gradpot;
   }
-
-  return;
 }
 
 
@@ -360,8 +344,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::GetMaterialPar
 
   // evaluate electrode material
   if (material->MaterialType() == INPAR::MAT::m_electrode)
+  {
     Utils()->MatElectrode(
         material, VarManager()->Phinp(0), VarManager()->Temperature(), DiffManager());
+  }
   else
     dserror("Material type not supported!");
 }

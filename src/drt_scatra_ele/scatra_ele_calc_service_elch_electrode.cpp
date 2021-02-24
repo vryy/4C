@@ -204,10 +204,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     double intcdivv(0.);
     double intvgradc(0.);
 
-    // integration points and weights
-    const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
-        SCATRA::DisTypeToOptGaussRule<distype>::rule);
-
     // loop over integration points
     for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
     {

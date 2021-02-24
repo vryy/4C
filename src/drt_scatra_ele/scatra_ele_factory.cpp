@@ -35,10 +35,7 @@
 #include "scatra_ele_calc_hdg.H"
 #include "scatra_ele_parameter_std.H"
 
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_element.H"
 
 #include "scatra_ele_factory.H"
 
@@ -106,21 +103,13 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         dserror("invalid problem dimension for TET10 transport element!");
       break;
     }
-      //  case DRT::Element::wedge6:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::wedge6,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  } /*
-      //  case DRT::Element::wedge15:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::wedge15,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
     case DRT::Element::pyramid5:
     {
       if (ndim == 3)
+      {
         return DefineProblemType<DRT::Element::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
+      }
       else
         dserror("invalid problem dimension for PYRAMID5 transport element!");
       break;
@@ -134,40 +123,30 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       else
         dserror("invalid problem dimension for quad4 transport element!");
       break;
-    } /*
-  //  case DRT::Element::quad8:
-  //  {
-  //    return ScaTraImpl<DRT::Element::quad8,2>::Instance(problem,numdofpernode,numscal,disname);
-  //  } */
+    }
     case DRT::Element::quad9:
     {
       if (ndim == 2)
         return DefineProblemType<DRT::Element::quad9, 2>(problem, numdofpernode, numscal, disname);
-      //    else if(ndim==3)
-      //      return
-      //      DefineProblemType<DRT::Element::quad9,3>(problem,numdofpernode,numscal,disname);
       else
+      {
         dserror(
             "QUAD9 transport element not implemented as part of %i-dimensional problem. Just do it",
             ndim);
+      }
       break;
-    } /*
-  //  case DRT::Element::nurbs4:
-  //  {
-  //    return ScaTraImpl<DRT::Element::nurbs4,2>::Instance(problem,numdofpernode,numscal,disname);
-  //  } */
+    }
     case DRT::Element::nurbs9:
     {
       if (ndim == 2)
         return DefineProblemType<DRT::Element::nurbs9, 2>(problem, numdofpernode, numscal, disname);
-      //    else if(ndim==3)
-      //      return
-      //      DefineProblemType<DRT::Element::nurbs9,3>(problem,numdofpernode,numscal,disname);
       else
+      {
         dserror(
             "NURBS9 transport element not implemented as part of %i-dimensional problem. Just do "
             "it",
             ndim);
+      }
       break;
     }
     case DRT::Element::tri3:
@@ -185,9 +164,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
       if (ndim == 2)
         return DefineProblemType<DRT::Element::tri6, 2>(problem, numdofpernode, numscal, disname);
       else
+      {
         dserror(
             "TRI6 transport element not implemented as part of %i-dimensional problem. Just do it",
             ndim);
+      }
       break;
     }
     case DRT::Element::line2:
@@ -204,25 +185,21 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     }
     case DRT::Element::line3:
     {
-      if (ndim == 1)
-        return DefineProblemType<DRT::Element::line3, 1>(problem, numdofpernode, numscal, disname);
-      //    else if(ndim==2)
-      //      return
-      //      DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname);
-      //    else if(ndim==3)
-      //      return
-      //      DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
-      else
+      if (ndim != 1)
+      {
         dserror(
             "LINE3 transport element not implemented as part of %i-dimensional problem. Just do it",
             ndim);
+      }
+      else
+        return DefineProblemType<DRT::Element::line3, 1>(problem, numdofpernode, numscal, disname);
       break;
     }
     default:
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -241,8 +218,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     case DRT::Element::hex8:
     {
       if (ndim == 3)
+      {
         return DefineProblemTypeHDG<DRT::Element::hex8, 3>(
             problem, numdofpernode, numscal, disname);
+      }
       else
         dserror("invalid problem dimension for HEX8 transport element!");
       break;
@@ -273,8 +252,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     case DRT::Element::tet4:
     {
       if (ndim == 3)
+      {
         return DefineProblemTypeHDG<DRT::Element::tet4, 3>(
             problem, numdofpernode, numscal, disname);
+      }
       else
         dserror("invalid problem dimension for TET4 transport element!");
       break;
@@ -282,8 +263,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     case DRT::Element::tet10:
     {
       if (ndim == 3)
+      {
         return DefineProblemTypeHDG<DRT::Element::tet10, 3>(
             problem, numdofpernode, numscal, disname);
+      }
       else
         dserror("invalid problem dimension for TET10 transport element!");
       break;
@@ -301,8 +284,10 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     case DRT::Element::pyramid5:
     {
       if (ndim == 3)
+      {
         return DefineProblemTypeHDG<DRT::Element::pyramid5, 3>(
             problem, numdofpernode, numscal, disname);
+      }
       else
         dserror("invalid problem dimension for PYRAMID5 transport element!");
       break;
@@ -310,93 +295,28 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     case DRT::Element::quad4:
     {
       if (ndim == 2)
+      {
         return DefineProblemTypeHDG<DRT::Element::quad4, 2>(
             problem, numdofpernode, numscal, disname);
+      }
       else if (ndim == 3)
+      {
         return DefineProblemTypeHDG<DRT::Element::quad4, 3>(
             problem, numdofpernode, numscal, disname);
+      }
       else
         dserror("invalid problem dimension for quad4 transport element!");
       break;
-    } /*
-  //  case DRT::Element::quad8:
-  //  {
-  //    return ScaTraImpl<DRT::Element::quad8,2>::Instance(problem,numdofpernode,numscal,disname);
-  //  } */
-      //  case DRT::Element::quad9:
-      //  {
-      //    if(ndim==2)
-      //      return
-      //      DefineProblemTypeHDG<DRT::Element::quad9,2>(problem,numdofpernode,numscal,disname);
-      ////    else if(ndim==3)
-      ////      return
-      /// DefineProblemType<DRT::Element::quad9,3>(problem,numdofpernode,numscal,disname);
-      //    else
-      //      dserror("QUAD9 transport element not implemented as part of %i-dimensional problem.
-      //      Just do it",ndim);
-      //    break;
-      //  } /*
-      //  case DRT::Element::nurbs4:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::nurbs4,2>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
-      //  case DRT::Element::nurbs9:
-      //  {
-      //    if(ndim==2)
-      //      return
-      //      DefineProblemTypeHDG<DRT::Element::nurbs9,2>(problem,numdofpernode,numscal,disname);
-      ////    else if(ndim==3)
-      ////      return
-      /// DefineProblemType<DRT::Element::nurbs9,3>(problem,numdofpernode,numscal,disname);
-      //    else
-      //      dserror("NURBS9 transport element not implemented as part of %i-dimensional problem.
-      //      Just do it",ndim);
-      //    break;
-      //  }
+    }
     case DRT::Element::tri3:
     {
       return DefineProblemTypeHDG<DRT::Element::tri3, 2>(problem, numdofpernode, numscal, disname);
-    } /*
-    case DRT::Element::tri6:
-    {
-      return ScaTraImpl<DRT::Element::tri6,2>::Instance(problem,numdofpernode,numscal,disname);
-    }*/
-      //  case DRT::Element::line2:
-      //  {
-      //    if(ndim==1)
-      //      return
-      //      DefineProblemType<DRT::Element::line2,1>(problem,numdofpernode,numscal,disname);
-      //    else if(ndim==2)
-      //      return
-      //      DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname);
-      //    else if(ndim==3)
-      //      return
-      //      DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
-      //    else
-      //      dserror("invalid problem dimension for LINE2 transport element!");
-      //    break;
-      //  }
-      //  case DRT::Element::line3:
-      //  {
-      //    if(ndim==1)
-      //      return
-      //      DefineProblemType<DRT::Element::line3,1>(problem,numdofpernode,numscal,disname);
-      ////    else if(ndim==2)
-      ////      return
-      /// DefineProblemType<DRT::Element::line2,2>(problem,numdofpernode,numscal,disname); /    else
-      /// if(ndim==3) /      return
-      /// DefineProblemType<DRT::Element::line2,3>(problem,numdofpernode,numscal,disname);
-      //    else
-      //      dserror("LINE3 transport element not implemented as part of %i-dimensional problem.
-      //      Just do it",ndim);
-      //    break;
-      //  }
+    }
     default:
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -409,6 +329,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     const std::string& disname)
 {
   if (DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
+  {
     if (problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain and
         problem != INPAR::SCATRA::impltype_advreac and
@@ -418,6 +339,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_elch_electrode)
       dserror("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
+  }
 
   switch (problem)
   {
@@ -566,7 +488,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -578,10 +500,12 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     const std::string& disname)
 {
   if (DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
+  {
     if (problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain)
       dserror("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
+  }
 
   switch (problem)
   {
@@ -604,5 +528,5 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     }
   }
 
-  return NULL;
+  return nullptr;
 }

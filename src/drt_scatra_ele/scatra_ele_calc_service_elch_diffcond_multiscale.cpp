@@ -74,8 +74,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
   scalars(0) = intconcentration;
   scalars(1) = intconcentrationtimederiv;
   scalars(2) = intdomain;
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOCAndCRate
 
 
@@ -140,8 +138,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(
         phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
         if (action == SCATRA::micro_scale_prepare_time_step)
+        {
           // prepare time step on micro scale
           newmanmultiscale->PrepareTimeStep(iquad, phinp);
+        }
         else
         {
           // solve micro scale

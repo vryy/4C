@@ -53,9 +53,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
       int nummat = actphase->NumMat();
       // enough materials defined
       if (nummat != my::numscal_)
+      {
         dserror(
             "The number of scalars defined in the material ElchMat does not correspond with "
             "the number of materials defined in the material MatPhase.");
+      }
 
       int numdofpernode = 0;
       if (diffcondparams_->CurSolVar())
@@ -67,9 +69,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
         numdofpernode = nummat + numphase;
 
       if (numdofpernode != my::numdofpernode_)
+      {
         dserror(
             "The chosen element formulation (e.g. current as solution variable) "
             "does not correspond with the number of dof's defined in your material");
+      }
 
       // 2) loop over materials of the single phase
       for (int imat = 0; imat < actphase->NumMat(); ++imat)
@@ -81,22 +85,24 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CheckElchElementParamete
         {
           // Newman material must be combined with divi closing equation for electric potential
           if (myelch::elchparams_->EquPot() != INPAR::ELCH::equpot_divi)
+          {
             dserror(
                 "Newman material must be combined with divi closing equation for electric "
                 "potential!");
+          }
 
           // Material Newman is derived for a binary electrolyte utilizing the ENC to condense the
           // non-reacting species
           if (my::numscal_ > 1)
+          {
             dserror(
                 "Material Newman is only valid for one scalar (binary electrolyte utilizing the "
                 "ENC)");
+          }
         }
       }
     }
   }
-
-  return;
 }
 
 
@@ -122,8 +128,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcInitialTimeDerivativ
   // variable is the initial time derivative. Therefore, we have to correct emat by the initial
   // porosity Attention: this procedure is only valid for a constant porosity in the beginning
   emat.Scale(DiffManager()->GetPhasePoro(0));
-
-  return;
 }
 
 
@@ -140,8 +144,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectRHSFromCalcRHSLin
     my::CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, DiffManager()->GetPhasePoro(0));
   else
     dserror("Must be incremental!");
-
-  return;
 }
 
 
@@ -167,16 +169,17 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateAction(DRT::Eleme
       // extract porosity from material and store in diffusion manager
       if (material->MaterialType() == INPAR::MAT::m_elchmat)
       {
-        const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+        const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
           Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
           if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+          {
             DiffManager()->SetPhasePoro(
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
-
+          }
           else
             dserror("Invalid material!");
         }
@@ -226,16 +229,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
 
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+    const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
     for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
     {
       Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
       if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+      {
         DiffManager()->SetPhasePoro(
             (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
-
+      }
       else
         dserror("Invalid material!");
     }
@@ -273,18 +277,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
   // condition) but the electrode status is evaluated
   const int zerocur = cond->GetInt("zero_cur");
   if (nume < 0)
+  {
     dserror(
         "The convention for electrochemical reactions at the electrodes does not allow \n"
         "a negative number of transferred electrons");
+  }
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
   const std::vector<int>* stoich = cond->GetMutable<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
+  {
     dserror(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
         " the number of ionic species %d",
         (*stoich).size(), my::numscal_);
+  }
 
   // the classical implementations of kinetic electrode models does not support
   // more than one reagent or product!! There are alternative formulations
@@ -296,9 +304,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
     if (reactspecies > 1 and (kinetics == INPAR::ELCH::butler_volmer or
                                  kinetics == INPAR::ELCH::butler_volmer_yang1997 or
                                  kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
+    {
       dserror(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
+    }
   }
 
   // get control parameter from parameter list
@@ -362,8 +372,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcElchDomainKinetics(D
     EvaluateElectrodeStatus(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics, *stoich,
         nume, pot0, timefac);
   }
-
-  return;
 }
 
 
@@ -427,8 +435,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchBoundaryKine
       break;
     }
   }  // switch(myelch::elchparams_->EquPot())
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchBoundaryKineticsPoint
 
 
@@ -533,8 +539,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKineti
       break;
     }
   }  // switch(myelch::elchparams_->EquPot())
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElchDomainKinetics
 
 
@@ -610,12 +614,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus(
   }  // loop over scalars
 
   // safety check
-  if (statistics == false)
+  if (!statistics)
+  {
     dserror(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
-
-  return;
+  }
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::EvaluateElectrodeStatus
 
 
@@ -669,9 +673,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateFlux(
     default:
       dserror("received illegal flag inside flux evaluation for whole domain");
       break;
-  };
-
-  return;
+  }
 }  // ScaTraCalc::CalculateFlux
 
 
@@ -706,21 +708,20 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalculateCurrent(
       q.Update(-DiffManager()->GetCond(), VarManager()->GradPot());
       // diffusion overpotential flux contribution
       for (int k = 0; k < my::numscal_; ++k)
+      {
         q.Update(-VarManager()->RTF() / diffcondparams_->NewmanConstC() * DiffManager()->GetCond() *
                      DiffManager()->GetThermFac() *
                      (diffcondparams_->NewmanConstA() +
                          (diffcondparams_->NewmanConstB() * DiffManager()->GetTransNum(k))) *
                      VarManager()->ConIntInv(k),
             VarManager()->GradPhi(k), 1.0);
+      }
 
       break;
     default:
       dserror("received illegal flag inside flux evaluation for whole domain");
       break;
-  };
-
-
-  return;
+  }
 }  // ScaTraCalc::CalculateCurrent
 
 /*----------------------------------------------------------------------*
@@ -736,12 +737,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity(
   // use precomputed conductivity
   sigma_all = DiffManager()->GetCond();
 
-  if (effCond == true)
+  if (effCond)
   {
     sigma_all = sigma_all * DiffManager()->GetPhasePoroTort(0);
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetConductivity
 
 /*---------------------------------------------------------------------*
@@ -884,8 +883,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalErrorComparedToAnalyt
       break;
     }
   }  // switch(errortype)
-
-  return;
 }  // CalErrorComparedToAnalytSolution
 
 
@@ -898,8 +895,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::SetInternalVariablesForM
   // set internal variables
   VarManager()->SetInternalVariablesElchDiffCond(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
-
-  return;
 }
 
 

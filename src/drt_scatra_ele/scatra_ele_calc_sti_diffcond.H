@@ -43,17 +43,16 @@ namespace DRT
 
      private:
       //! abbreviations
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElch<distype, DRT::UTILS::DisTypeToDim<distype>::dim> myelch;
-      typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
-      typedef ScaTraEleSTIElch<distype> mystielch;
+      using my = ScaTraEleCalc<distype>;
+      using myelch = ScaTraEleCalcElch<distype, DRT::UTILS::DisTypeToDim<distype>::dim>;
+      using mystielch = ScaTraEleSTIElch<distype>;
 
       //! private constructor for singletons
       ScaTraEleCalcSTIDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! destructor
-      virtual ~ScaTraEleCalcSTIDiffCond() { return; };
+      virtual ~ScaTraEleCalcSTIDiffCond() = default;
 
       //! evaluate action for off-diagonal system matrix block
       int EvaluateActionOD(DRT::Element* ele,        //!< current element

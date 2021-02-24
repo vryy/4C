@@ -20,12 +20,9 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"  // consistency check of formulation and material
 
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
 #include "../drt_mat/elchmat.H"
-#include "../drt_mat/newman.H"
-#include "../drt_mat/elchphase.H"
 
 #include "scatra_ele_calc_elch.H"
 
@@ -144,7 +141,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
         Teuchos::RCP<std::vector<int>> writefluxids = my::scatrapara_->WriteFluxIds();
 
         // do a loop for systems of transported scalars
-        for (std::vector<int>::iterator it = writefluxids->begin(); it != writefluxids->end(); ++it)
+        for (int& writefluxid : *writefluxids)
         {
           int k = 0;
           // Actually, we compute here a weighted (and integrated) form of the fluxes!
@@ -155,12 +152,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Elem
           // allocate and initialize!
           LINALG::Matrix<my::nsd_, 1> q(true);
 
-          if ((*it) != my::numdofpernode_)
+          if (writefluxid != my::numdofpernode_)
           {
-            k = (*it) - 1;
+            k = writefluxid - 1;
             CalculateFlux(q, fluxtype, k);
           }
-          else if ((*it) == my::numdofpernode_)
+          else if (writefluxid == my::numdofpernode_)
           {
             k = my::numdofpernode_ - 1;
             CalculateCurrent(q, fluxtype, fac);
@@ -250,8 +247,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnaly
 {
   // call base class routine
   my::CalErrorComparedToAnalytSolution(ele, params, errors);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
 
 
@@ -311,7 +306,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
       }
 
       // calculation of conductivity or specific resistance of electrolyte solution
-      if (specresist == false)
+      if (!specresist)
         sigma_domint[my::numscal_] += sigma_all * fac_funct_i;
       else
         sigma_domint[my::numscal_] += 1 / sigma_all * fac_funct_i;
@@ -320,9 +315,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
       sigma_domint[my::numscal_ + 1] += fac_funct_i;
     }
   }  // loop over integration points
-
-  return;
-
 }  // ScaTraEleCalcElch()
 
 
@@ -371,18 +363,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
   // condition) but the electrode status is evaluated
   const int zerocur = cond->GetInt("zero_cur");
   if (nume < 0)
+  {
     dserror(
         "The convention for electrochemical reactions at the electrodes does not allow \n"
         "a negative number of transferred electrons");
+  }
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
   const std::vector<int>* stoich = cond->GetMutable<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
+  {
     dserror(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
         " the number of ionic species %d",
         (*stoich).size(), my::numscal_);
+  }
 
   // the classical implementations of kinetic electrode models does not support
   // more than one reagent or product!! There are alternative formulations
@@ -394,9 +390,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
     if (reactspecies > 1 and (kinetics == INPAR::ELCH::butler_volmer or
                                  kinetics == INPAR::ELCH::butler_volmer_yang1997 or
                                  kinetics == INPAR::ELCH::tafel or kinetics == INPAR::ELCH::linear))
+    {
       dserror(
           "Kinetic model Butler-Volmer / Butler-Volmer-Yang / Tafel and Linear: \n"
           "Only one educt and no product is allowed in the implemented version");
+    }
   }
 
   // access input parameter
@@ -466,8 +464,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKinetic
     EvaluateElectrodeStatusPoint(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
         *stoich, nume, pot0, frt, timefac, scalar);
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint
 
 
@@ -507,9 +503,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
     dserror(
         "Electrode kinetics point boundary condition must be associated with exactly one node!");
   if (my::nsd_ele_ != 1)
+  {
     dserror(
         "Electrode kinetics point boundary conditions are applicable to one-dimensional problems "
         "only!");
+  }
 
   // extract global ID of conditioned node
   const int nodeid = (*nodeids)[0];
@@ -522,9 +520,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
   else if (nodeid == ele->Nodes()[1]->Id())
     position = 1;
   else
+  {
     dserror(
         "Electrode kinetics point boundary condition must be imposed either on the leftmost or on "
         "the rightmost node of a line element!");
+  }
 
   // manipulate shape function array according to node position
   my::funct_.Clear();
@@ -551,8 +551,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKin
     utils_->EvaluateElchKineticsAtIntegrationPoint(ele, emat, erhs, ephinp, ehist, timefac, 1.,
         my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
   }  // loop over all scalars
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElchBoundaryKineticsPoint
 
 
@@ -607,9 +605,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
     dserror(
         "Electrode kinetics point boundary condition must be associated with exactly one node!");
   if (my::nsd_ele_ != 1)
+  {
     dserror(
         "Electrode kinetics point boundary conditions are applicable to one-dimensional problems "
         "only!");
+  }
 
   // extract global ID of conditioned node
   const int nodeid = (*nodeids)[0];
@@ -622,9 +622,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
   else if (nodeid == ele->Nodes()[1]->Id())
     position = 1;
   else
+  {
     dserror(
         "Electrode kinetics point boundary condition must be imposed either on the leftmost or on "
         "the rightmost node of a line element!");
+  }
 
   // manipulate shape function array according to node position
   my::funct_.Clear();
@@ -649,12 +651,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatus
   }  // loop over scalars
 
   // safety check
-  if (statistics == false)
+  if (!statistics)
+  {
     dserror(
         "There is no oxidized species O (stoich<0) defined in your input file!! \n"
         " Statistics could not be evaluated");
-
-  return;
+  }
 }  // DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElectrodeStatusPoint
 
 
@@ -700,7 +702,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
     for (int idof = 0; idof < my::numdofpernode_; ++idof)
     {
       // number of current column of element matrix
-      unsigned col = inode * my::numdofpernode_ + idof;
+      int col = inode * my::numdofpernode_ + idof;
 
       // clear element matrix and vectors for perturbed state
       emat_dummy.Scale(0.0);
@@ -724,9 +726,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
         // perturbation of phi(n+alphaF) by alphaF*epsilon corresponds to perturbation of phidtam
         // (stored in ehist_) by alphaM*epsilon/(gamma*dt); note: alphaF/timefac = alphaM/(gamma*dt)
         if (idof < my::numscal_)
+        {
           my::ehist_[idof](inode, 0) += my::scatraparatimint_->AlphaF() /
                                         my::scatraparatimint_->TimeFac() *
                                         my::scatrapara_->FDCheckEps();
+        }
       }
       else
         my::ephinp_[idof](inode, 0) += my::scatrapara_->FDCheckEps();
@@ -745,7 +749,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
       // Note that we still need to evaluate the first comparison as well. For small entries in the
       // element matrix, the second comparison might yield good agreement in spite of the entries
       // being wrong!
-      for (unsigned row = 0; row < static_cast<unsigned>(my::numdofpernode_ * my::nen_); ++row)
+      for (int row = 0; row < my::numdofpernode_ * my::nen_; ++row)
       {
         // get current entry in original element matrix
         const double entry = emat(row, col);
@@ -832,8 +836,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
   if (my::scatraparatimint_->IsGenAlpha())
     for (int k = 0; k < my::numscal_; ++k)
       for (unsigned i = 0; i < my::nen_; ++i) my::ehist_[k](i, 0) = ehist_original[k](i, 0);
-
-  return;
 }
 
 

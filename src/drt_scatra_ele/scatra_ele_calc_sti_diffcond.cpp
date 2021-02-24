@@ -27,7 +27,7 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(const int numdofperno
 {
   static std::map<std::string, ScaTraEleCalcSTIDiffCond<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleCalcSTIDiffCond<distype>(numdofpernode, numscal, disname);
@@ -35,15 +35,15 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(const int numdofperno
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleCalcSTIDiffCond<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
+    {
+      if (instance->second == delete_me)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
+        delete instance->second;
+        instances.erase(instance);
+        return nullptr;
       }
+    }
   }
 
   return instances[disname];
@@ -58,8 +58,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -141,8 +139,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
     else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       CalcMatAndRhsJouleSolid(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
-
-  return;
 }
 
 
@@ -185,9 +181,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
   LINALG::Matrix<my::nsd_, 1> di2_dgradT = i;
   di2_dgradT.Scale(2. * di_dgradT);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times derivative of square of current density w.r.t. temperature
       // gradient
@@ -202,8 +198,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
     // contributions of Joule's heat term to thermo residuals
     erhs[vi] += rhsfac * my::funct_(vi) * i.Dot(i) / kappa;
   }
-
-  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -254,9 +248,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
   // square of abovementioned gradient
   const double a2 = a.Dot(a);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // abovementioned gradient times gradient of shape function
       double laplawfrhs_a(0.);
@@ -277,8 +271,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
     erhs[vi] += rhsfac * my::funct_(vi) * pow(diffcoeff, 2) * gasconstant * 2. * temperature /
                 concentration * a2;
   }
-
-  return;
 }
 
 
@@ -306,7 +298,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
   LINALG::Matrix<my::nsd_, 1> a = VarManager()->GradConc();
   a.Update(concentration * soret / temperature, gradtemp, 1.);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     // abovementioned gradient times gradient of test function
     double laplawfrhs_a_vi(0.);
@@ -316,7 +308,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
     double laplawfrhs_gradtemp_vi(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradtemp_vi, gradtemp, vi);
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // abovementioned gradient times gradient of shape function
       double laplawfrhs_a_ui(0.);
@@ -347,8 +339,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
     erhs[vi] -= rhsfac * diffcoeff * 2. * R * soret *
                 (a.Dot(gradtemp) * my::funct_(vi) + temperature * laplawfrhs_a_vi);
   }
-
-  return;
 }
 
 
@@ -429,8 +419,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
     else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       CalcMatJouleSolidOD(emat, my::scatraparatimint_->TimeFac() * fac);
   }
-
-  return;
 }
 
 
@@ -490,9 +478,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
   LINALG::Matrix<my::nsd_, 1> di2_dgradpot = i;
   di2_dgradpot.Scale(-2. * kappa);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times derivative of square of current density w.r.t.
       // concentration gradient
@@ -516,8 +504,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
       emat(vi, ui * 2 + 1) -= timefacfac * my::funct_(vi) * di2_dgradpot_gradN / kappa;
     }
   }
-
-  return;
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -577,9 +563,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
   // square of abovementioned gradient
   const double a2 = a.Dot(a);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // abovementioned gradient times gradient of shape function
       double laplawfrhs_a(0.);
@@ -601,8 +587,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
       // are zero
     }
   }
-
-  return;
 }
 
 
@@ -636,7 +620,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
   // abovementioned gradient times temperature gradient
   const double gradtemp_a = gradtemp.Dot(a);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     // gradient of test function times abovementioned gradient
     double laplawfrhs_a(0.);
@@ -646,7 +630,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
     double laplawfrhs_gradtemp_vi(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradtemp_vi, gradtemp, vi);
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times temperature gradient
       double laplawfrhs_gradtemp_ui(0.);
@@ -669,8 +653,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
       // zero
     }
   }
-
-  return;
 }
 
 
@@ -690,8 +672,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ExtractElementAndNodeValu
 
   // call base class routine to extract scatra-related quantities
   mystielch::ExtractElementAndNodeValues(ele, params, discretization, la);
-
-  return;
 }
 
 
@@ -747,8 +727,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret(
   densn = densnp = densam = matsoret->Capacity();
   DiffManager()->SetIsotropicDiff(matsoret->Conductivity(), 0);
   DiffManager()->SetSoret(matsoret->SoretCoefficient());
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret
 
 /*----------------------------------------------------------------------*
@@ -766,8 +744,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatFourier(
       Teuchos::rcp_static_cast<const MAT::FourierIso>(material);
   densn = densnp = densam = matfourier->Capacity();
   DiffManager()->SetIsotropicDiff(matfourier->Conductivity(), 0);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::MatSoret
 
 
@@ -780,8 +756,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SetInternalVariablesForMa
   // set internal variables for element evaluation
   VarManager()->SetInternalVariablesSTIElch(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
       mystielch::econcnp_, mystielch::epotnp_, my::econvelnp_, my::ehist_);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SetInternalVariablesForMatAndRHS
 
 
