@@ -56,8 +56,32 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
   else
   {
     // initialize standard (stabilized) system matrix (and save its graph)
-    systemmatrix = Teuchos::rcp(
-        new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
+    switch (scatratimint_->MatrixType())
+    {
+      case LINALG::MatrixType::sparse:
+      {
+        systemmatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+            *scatratimint_->Discretization()->DofRowMap(), 27, false, true));
+        break;
+      }
+
+      case LINALG::MatrixType::block_condition:
+      case LINALG::MatrixType::block_condition_dof:
+      {
+        systemmatrix =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                scatratimint_->BlockMaps(), scatratimint_->BlockMaps(), 81, false, true));
+
+        break;
+      }
+
+      default:
+      {
+        dserror(
+            "Type of global system matrix for scatra-scatra interface coupling not recognized!");
+        break;
+      }
+    }
   }
 
   return systemmatrix;

@@ -371,4 +371,45 @@ void INPAR::SSI::SetValidConditions(
   surfmanifoldinitfields->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
 
   condlist.emplace_back(surfmanifoldinitfields);
+  /*--------------------------------------------------------------------*/
+  // Dirichlet conditions
+  auto pointmanifolddirichlet = Teuchos::rcp(
+      new ConditionDefinition("DESIGN POINT MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet",
+          "Point Dirichlet", DRT::Condition::PointDirichlet, false, DRT::Condition::Point));
+  auto linemanifolddirichlet = Teuchos::rcp(
+      new ConditionDefinition("DESIGN LINE MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet",
+          "Line Dirichlet", DRT::Condition::LineDirichlet, false, DRT::Condition::Line));
+  auto surfmanifolddirichlet = Teuchos::rcp(
+      new ConditionDefinition("DESIGN SURF MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet",
+          "Surface Dirichlet", DRT::Condition::SurfaceDirichlet, false, DRT::Condition::Surface));
+
+  std::vector<Teuchos::RCP<SeparatorConditionComponent>> dirichletintsepveccomponents;
+  std::vector<Teuchos::RCP<IntVectorConditionComponent>> dirichletintveccomponents;
+  std::vector<Teuchos::RCP<SeparatorConditionComponent>> dirichletrealsepveccomponents;
+  std::vector<Teuchos::RCP<RealVectorConditionComponent>> dirichletrealveccomponents;
+  std::vector<Teuchos::RCP<ConditionComponent>> dirichletbundcomponents;
+
+  dirichletintsepveccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  dirichletintveccomponents.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
+  dirichletrealsepveccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  dirichletrealveccomponents.emplace_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  dirichletintsepveccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  dirichletintveccomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, false)));
+
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new DirichletNeumannBundle("dirichbund",
+      Teuchos::rcp(new IntConditionComponent("numdof")), dirichletintsepveccomponents,
+      dirichletintveccomponents, dirichletrealsepveccomponents, dirichletrealveccomponents)));
+
+  for (auto& dirichletbundcomponent : dirichletbundcomponents)
+  {
+    pointmanifolddirichlet->AddComponent(dirichletbundcomponent);
+    linemanifolddirichlet->AddComponent(dirichletbundcomponent);
+    surfmanifolddirichlet->AddComponent(dirichletbundcomponent);
+  }
+
+  condlist.push_back(pointmanifolddirichlet);
+  condlist.push_back(linemanifolddirichlet);
+  condlist.push_back(surfmanifolddirichlet);
 }

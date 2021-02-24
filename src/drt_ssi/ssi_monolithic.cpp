@@ -120,6 +120,8 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
   // apply scatra Dirichlet
   ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  if (IsScaTraManifold())
+    ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraManifold()->DirichMaps()->CondMap(), true);
 
   // apply structural Dirichlet conditions
   strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
