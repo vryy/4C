@@ -18,7 +18,7 @@ namespace DRT
   namespace ELEMENTS
   {
     // forward declarations
-    template <DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype, int probdim>
     class ScaTraEleCalcElch;
     template <DRT::Element::DiscretizationType distype>
     class ScaTraEleCalcElchDiffCond;
@@ -44,7 +44,7 @@ namespace DRT
      private:
       //! abbreviations
       typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElch<distype> myelch;
+      typedef ScaTraEleCalcElch<distype, DRT::UTILS::DisTypeToDim<distype>::dim> myelch;
       typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
       typedef ScaTraEleSTIElch<distype> mystielch;
 

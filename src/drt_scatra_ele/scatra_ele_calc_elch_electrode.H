@@ -26,12 +26,13 @@ namespace DRT
     class ScaTraEleUtilsElchElectrode;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcElchElectrode : public ScaTraEleCalcElch<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+    class ScaTraEleCalcElchElectrode : public ScaTraEleCalcElch<distype, probdim>
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchElectrode<distype>* Instance(const int numdofpernode,
+      static ScaTraEleCalcElchElectrode<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname,
           const ScaTraEleCalcElchElectrode* delete_me = NULL);
 
@@ -54,8 +55,8 @@ namespace DRT
       ~ScaTraEleCalcElchElectrode() override = default;
 
       //! abbreviations
-      using my = ScaTraEleCalc<distype>;
-      using myelch = ScaTraEleCalcElch<distype>;
+      using my = ScaTraEleCalc<distype, probdim>;
+      using myelch = ScaTraEleCalcElch<distype, probdim>;
 
       /*========================================================================*/
       //! @name general framework

@@ -35,8 +35,8 @@
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(DRT::Element* ele,
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(DRT::Element* ele,
       // integration loop for one element
       //----------------------------------------------------------------------
       // integration points and weights
-      const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
           SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -241,8 +241,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateAction(DRT::Element* ele,
 /*----------------------------------------------------------------------------------------*
  | calculate error of numerical solution with respect to analytical solution   fang 10/16 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele,          //!< element
     Teuchos::ParameterList& params,   //!< parameter list
     Epetra_SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
@@ -258,10 +258,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalErrorComparedToAnalytSolution
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
   *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(const DRT::Element* ele,
-    const enum INPAR::ELCH::EquPot equpot, Epetra_SerialDenseVector& sigma_domint, bool effCond,
-    bool specresist)
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalculateConductivity(
+    const DRT::Element* ele, const enum INPAR::ELCH::EquPot equpot,
+    Epetra_SerialDenseVector& sigma_domint, bool effCond, bool specresist)
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
@@ -329,8 +329,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalculateConductivity(const DRT:
 /*----------------------------------------------------------------------*
  | process an electrode boundary kinetics point condition    fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcElchBoundaryKineticsPoint(
     DRT::Element* ele,                         ///< current element
     Teuchos::ParameterList& params,            ///< parameter list
     DRT::Discretization& discretization,       ///< discretization
@@ -474,8 +474,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcElchBoundaryKineticsPoint(
 /*----------------------------------------------------------------------*
  | evaluate an electrode boundary kinetics point condition   fang 08/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElchBoundaryKineticsPoint(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele,                                 ///< current element
     Epetra_SerialDenseMatrix& emat,                          ///< element matrix
     Epetra_SerialDenseVector& erhs,                          ///< element right-hand side vector
@@ -559,8 +559,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElchBoundaryKineticsPoin
 /*----------------------------------------------------------------------*
  | evaluate status information on point electrode            fang 09/15 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElectrodeStatusPoint(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::EvaluateElectrodeStatusPoint(
     const DRT::Element* ele,                                   ///< current element
     Epetra_SerialDenseVector& scalars,                         ///< scalars to be integrated
     Teuchos::ParameterList& params,                            ///< parameter list
@@ -661,8 +661,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::EvaluateElectrodeStatusPoint(
 /*----------------------------------------------------------------------------------------*
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(DRT::Element* ele,
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* ele,
     Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
     Epetra_SerialDenseVector& subgrdiff)
 {
@@ -840,23 +840,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::FDCheck(DRT::Element* ele,
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs27>;

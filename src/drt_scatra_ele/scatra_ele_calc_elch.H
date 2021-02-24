@@ -26,8 +26,9 @@ namespace DRT
     class ScaTraEleUtilsElch;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcElch : public ScaTraEleCalc<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+    class ScaTraEleCalcElch : public ScaTraEleCalc<distype, probdim>
     {
      protected:
       /// protected constructor, since we are a singleton
@@ -35,7 +36,7 @@ namespace DRT
       /// -> therefore, it has to be protected instead of private
       ScaTraEleCalcElch(const int numdofpernode, const int numscal, const std::string& disname);
 
-      using my = ScaTraEleCalc<distype>;
+      using my = ScaTraEleCalc<distype, probdim>;
 
      public:
       ~ScaTraEleCalcElch() override = default;

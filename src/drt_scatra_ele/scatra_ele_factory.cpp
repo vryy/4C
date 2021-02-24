@@ -28,6 +28,7 @@
 #include "scatra_ele_calc_aniso.H"
 #include "scatra_ele_calc_cardiac_monodomain.H"
 #include "scatra_ele_calc_elch_diffcond_sti_thermo.H"
+#include "scatra_ele_calc_elch_electrode.H"
 #include "scatra_ele_calc_elch_electrode_sti_thermo.H"
 #include "scatra_ele_calc_sti_diffcond.H"
 #include "scatra_ele_calc_sti_electrode.H"
@@ -413,7 +414,8 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
         problem != INPAR::SCATRA::impltype_advreac and
         problem != INPAR::SCATRA::impltype_lsreinit and
         problem != INPAR::SCATRA::impltype_one_d_artery and
-        problem != INPAR::SCATRA::impltype_no_physics)
+        problem != INPAR::SCATRA::impltype_no_physics and
+        problem != INPAR::SCATRA::impltype_elch_electrode)
       dserror("ImplType '%s' not implemented for transport on manifolds!",
           SCATRA::ImplTypeToString(problem).c_str());
 
@@ -461,7 +463,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     case INPAR::SCATRA::impltype_elch_electrode:
     case INPAR::SCATRA::impltype_elch_electrode_growth:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::Instance(
+      return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
       break;
     }
