@@ -749,7 +749,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::FDCheck(DRT::Element* e
       // Note that we still need to evaluate the first comparison as well. For small entries in the
       // element matrix, the second comparison might yield good agreement in spite of the entries
       // being wrong!
-      for (int row = 0; row < my::numdofpernode_ * my::nen_; ++row)
+      for (int row = 0; row < my::numdofpernode_ * static_cast<int>(my::nen_); ++row)
       {
         // get current entry in original element matrix
         const double entry = emat(row, col);

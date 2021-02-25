@@ -157,7 +157,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsJoule(
   // square of gradient of electric potential
   const double gradpot2 = VarManager()->GradPot().Dot(VarManager()->GradPot());
 
-  for (int vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     // linearizations of Joule's heat term in thermo residuals w.r.t. thermo dofs are zero
     // contributions of Joule's heat term to thermo residuals
@@ -199,9 +199,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
   LINALG::Matrix<my::nsd_, 1> dn2_dgradT = n;
   dn2_dgradT.Scale(-2. * diffcoeff * concentration * soret / temperature);
 
-  for (int vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (int ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times derivative of square of ionic flux density w.r.t.
       // temperature gradient
@@ -248,7 +248,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
   LINALG::Matrix<my::nsd_, 1> dn_dT = gradtemp;
   dn_dT.Scale(diffcoeff * concentration * soret / pow(temperature, 2));
 
-  for (int vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     // gradient of test function times ionic flux density
     double laplawfrhs_n_vi(0.);
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
     double laplawfrhs_dndT(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_dndT, dn_dT, vi);
 
-    for (int ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times gradient of test function
       double laplawf(0.);
