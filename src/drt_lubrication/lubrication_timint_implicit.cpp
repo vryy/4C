@@ -50,6 +50,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<DRT::Discretization> actdis,
       incremental_(true),
       modified_reynolds_(DRT::INPUT::IntegralValue<int>(*params, "MODIFIED_REYNOLDS_EQU")),
       addsqz_(DRT::INPUT::IntegralValue<int>(*params, "ADD_SQUEEZE_TERM")),
+      purelub_(DRT::INPUT::IntegralValue<int>(*params, "PURE_LUB")),
       outmean_(DRT::INPUT::IntegralValue<int>(*params, "OUTMEAN")),
       outputgmsh_(DRT::INPUT::IntegralValue<int>(*params, "OUTPUT_GMSH")),
       output_state_matlab_(DRT::INPUT::IntegralValue<int>(*params, "MATLAB_STATE_OUTPUT")),
@@ -113,7 +114,6 @@ void LUBRICATION::TimIntImpl::Init()
   // -------------------------------------------------------------------
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  //    sysmat_ = strategy_->InitSystemMatrix();
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*(discret_->DofRowMap()), 27, false, true));
 
   // -------------------------------------------------------------------
@@ -186,6 +186,8 @@ void LUBRICATION::TimIntImpl::SetElementGeneralParameters() const
 
   eleparams.set<bool>("addsqz", addsqz_);
 
+  eleparams.set<bool>("purelub", purelub_);
+
   eleparams.set("roughnessdeviation", roughness_deviation_);
 
   // call standard loop over elements
@@ -222,7 +224,7 @@ void LUBRICATION::TimIntImpl::PrepareTimeLoop()
 
 
 /*----------------------------------------------------------------------*
- | setup the variables to do a new time step       (public) wirtz 11/15 |
+ | setup the variables to do a new time step(predictor)  (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::PrepareTimeStep()
 {
@@ -270,6 +272,89 @@ void LUBRICATION::TimIntImpl::PrepareFirstTimeStep()
 
 
 /*----------------------------------------------------------------------*
+ | update the height field by function                    faraji        |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::SetHeightFieldPureLub(const int nds)
+{
+  // create the parameters for the time
+  Teuchos::ParameterList eleparams;
+  eleparams.set("total time", time_);
+
+  // initialize height vectors
+  Teuchos::RCP<Epetra_Vector> height = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+
+  int err(0);
+  const int heightfuncno = params_->get<int>("HFUNCNO");
+  // loop all nodes on the processor
+  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  {
+    // get the processor local node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    // get dofs associated with current node
+    std::vector<int> nodedofs = discret_->Dof(nds, lnode);
+
+    for (int index = 0; index < nsd_; ++index)
+    {
+      double heightfuncvalue =
+          DRT::Problem::Instance()->Funct(heightfuncno - 1).Evaluate(index, lnode->X(), time_);
+
+      // get global and local dof IDs
+      const int gid = nodedofs[index];
+      const int lid = height->Map().LID(gid);
+
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      err = height->ReplaceMyValue(lid, 0, heightfuncvalue);
+      if (err != 0) dserror("error while inserting a value into height");
+    }
+  }
+  // provide lubrication discretization with height
+  discret_->SetState(nds, "height", height);
+
+}  // LUBRICATION::TimIntImpl::SetHeightFieldPureLub
+
+/*----------------------------------------------------------------------*
+ | update the velocity field by function                  faraji       |
+ *----------------------------------------------------------------------*/
+void LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub(const int nds)
+{
+  // create the parameters for the time
+  Teuchos::ParameterList eleparams;
+  eleparams.set("total time", time_);
+
+  // initialize velocity vectors
+  Teuchos::RCP<Epetra_Vector> vel = LINALG::CreateVector(*discret_->DofRowMap(nds), true);
+
+  int err(0);
+  const int velfuncno = params_->get<int>("VELFUNCNO");
+  // loop all nodes on the processor
+  for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
+  {
+    // get the processor local node
+    DRT::Node* lnode = discret_->lRowNode(lnodeid);
+
+    // get dofs associated with current node
+    std::vector<int> nodedofs = discret_->Dof(nds, lnode);
+
+    for (int index = 0; index < nsd_; ++index)
+    {
+      double velfuncvalue =
+          DRT::Problem::Instance()->Funct(velfuncno - 1).Evaluate(index, lnode->X(), time_);
+
+      // get global and local dof IDs
+      const int gid = nodedofs[index];
+      const int lid = vel->Map().LID(gid);
+
+      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+      err = vel->ReplaceMyValue(lid, 0, velfuncvalue);
+      if (err != 0) dserror("error while inserting a value into vel");
+    }
+  }
+  // provide lubrication discretization with velocity
+  discret_->SetState(nds, "av_tang_vel", vel);
+
+}  // LUBRICATION::TimIntImpl::SetAverageVelocityFieldPureLub
+/*----------------------------------------------------------------------*
  | contains the time loop                                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::TimeLoop()
@@ -290,11 +375,18 @@ void LUBRICATION::TimIntImpl::TimeLoop()
     // -------------------------------------------------------------------
     //                  set the auxiliary dofs
     // -------------------------------------------------------------------
-    SetHeightField(1, Teuchos::null);
-    SetHeightDotField(1, Teuchos::null);
-    SetRelativeVelocityField(1, Teuchos::null);
-    SetAverageVelocityField(1, Teuchos::null);
-
+    if (purelub_)
+    {
+      SetHeightFieldPureLub(1);
+      SetAverageVelocityFieldPureLub(1);
+    }
+    else
+    {
+      SetHeightField(1, Teuchos::null);
+      SetHeightDotField(1, Teuchos::null);
+      SetRelativeVelocityField(1, Teuchos::null);
+      SetAverageVelocityField(1, Teuchos::null);
+    }
     // -------------------------------------------------------------------
     //                  solve nonlinear / linear equation
     // -------------------------------------------------------------------
@@ -1034,7 +1126,6 @@ void LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     }
   }
 
-  return;
 }  // LUBRICATION::TimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
 /*----------------------------------------------------------------------*
@@ -1049,13 +1140,6 @@ void LUBRICATION::TimIntImpl::OutputToGmsh(const int step, const double time) co
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(
       "solution_field_pressure", step, 500, screen_out, discret_->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Pren \" {" << std::endl;
-  //    // draw pressure field 'Prendtp' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,pren_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -1064,33 +1148,7 @@ void LUBRICATION::TimIntImpl::OutputToGmsh(const int step, const double time) co
     IO::GMSH::ScalarFieldToGmsh(discret_, prenp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Predtn \" {" << std::endl;
-  //    // draw pressure field 'Prendtn' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,predtn_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Predtnp \" {" << std::endl;
-  //    // draw pressure field 'Prendtp' for every element
-  //    IO::GMSH::ScalarFieldToGmsh(discret_,predtnp_,gmshfilecontent);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
-  //  {
-  //    // add 'View' to Gmsh postprocessing file
-  //    gmshfilecontent << "View \" " << "Convective Velocity \" {" << std::endl;
-  //
-  //    // extract convective velocity from discretization
-  //    Teuchos::RCP<const Epetra_Vector> convel = discret_->GetState(nds_vel_,"convective velocity
-  //    field"); if (convel == Teuchos::null)
-  //      dserror("Cannot extract convective velocity field from discretization");
-  //
-  //    // draw vector field 'Convective Velocity' for every element
-  //    IO::GMSH::VectorFieldDofBasedToGmsh(discret_,convel,gmshfilecontent,nds_vel_);
-  //    gmshfilecontent << "};" << std::endl;
-  //  }
+
   gmshfilecontent.close();
   if (screen_out) std::cout << " done" << std::endl;
 }  // TimIntImpl::OutputToGmsh
@@ -1161,7 +1219,6 @@ void LUBRICATION::TimIntImpl::OutputMeanPressures(const int num)
 
   }  // if(outmean_)
 
-  return;
 }  // LUBRICATION::TimIntImpl::OutputMeanPressures
 
 /*----------------------------------------------------------------------*
