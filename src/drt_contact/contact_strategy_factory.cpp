@@ -14,14 +14,12 @@
 #include "friction_node.H"
 
 #include "../drt_inpar/drt_validparameters.H"
-#include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_wear.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
@@ -38,7 +36,6 @@
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
 #include "contact_nitsche_strategy_tsi.H"
-#include "contact_poro_lagrange_strategy.H"
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
 #include "contact_nitsche_strategy.H"
@@ -47,7 +44,6 @@
 #include "../drt_contact_aug/contact_augmented_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_interface.H"
 #include "../drt_contact_aug/contact_aug_steepest_ascent_strategy.H"
-#include "../drt_contact_aug/contact_aug_steepest_ascent_sp_strategy.H"
 #include "../drt_contact_aug/contact_aug_lagrange_strategy.H"
 #include "../drt_contact_aug/contact_aug_lagrange_interface.H"
 #include "../drt_contact_aug/contact_aug_combo_strategy.H"
@@ -64,8 +60,6 @@ void CONTACT::STRATEGY::Factory::Setup()
   MORTAR::STRATEGY::Factory::Setup();
 
   SetIsSetup();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -94,9 +88,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   // in case just System type system_condensed_lagmult
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(contact, "SYSTEM") ==
       INPAR::CONTACT::system_condensed_lagmult)
+  {
     dserror(
         "For Contact anyway just the lagrange multiplier can be condensed, "
         "choose SYSTEM = Condensed.");
+  }
 
   // ---------------------------------------------------------------------
   // invalid parallel strategies
@@ -112,9 +108,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic &&
       mortarParallelRedistParams.get<double>("MAX_BALANCE") < 1.0)
+  {
     dserror(
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");
+  }
 
   if (problemtype == prb_tsi &&
       Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
@@ -220,9 +218,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") !=
           INPAR::CONTACT::solution_lagmult)
+  {
     dserror(
         "Regularized Contact just available for Dual Mortar Contact with Lagrangean "
         "Multiplier!");
+  }
 
   if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Regularization>(
           contact, "CONTACT_REGULARIZATION") != INPAR::CONTACT::reg_none &&
@@ -275,18 +275,22 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::CONTACT::solution_lagmult &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
             INPAR::MORTAR::shape_standard)
+    {
       dserror(
           "Consistent dual shape functions in boundary elements only for Lagrange "
           "multiplier strategy.");
+    }
 
     if (DRT::INPUT::IntegralValue<int>(mortar, "LM_DUAL_CONSISTENT") == true &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE") ==
             INPAR::MORTAR::inttype_elements &&
         (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual))
+    {
       dserror(
           "Consistent dual shape functions in boundary elements not for purely "
           "element-based integration.");
+    }
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
             INPAR::CONTACT::solution_augmented &&
@@ -304,19 +308,18 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
     // check for self contact
-    std::vector<DRT::Condition*> coco(0);
-    Discret().GetCondition("Mortar", coco);
+    std::vector<DRT::Condition*> contactconditions(0);
+    Discret().GetCondition("Mortar", contactconditions);
     bool self = false;
 
-    for (int k = 0; k < (int)coco.size(); ++k)
+    for (const auto& contactcondition : contactconditions)
     {
-      const std::string* side = coco[k]->Get<std::string>("Side");
+      const auto* side = contactcondition->Get<std::string>("Side");
       if (*side == "Selfcontact") self = true;
     }
 
-    if (self == true &&
-        Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
-            "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
+    if (self && Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
+                    "PARALLEL_REDIST") != INPAR::MORTAR::ParallelRedist::redist_none)
       dserror("Self contact and parallel redistribution not yet compatible");
 
     if (DRT::INPUT::IntegralValue<int>(contact, "INITCONTACTBYGAP") == true &&
@@ -327,9 +330,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(mortar, "LM_QUAD") !=
             INPAR::MORTAR::lagmult_undefined &&
         distype != ShapeFunctionType::shapefunction_nurbs)
+    {
       dserror(
           "Consistent dual shape functions in boundary elements only for linear shape "
           "functions or NURBS.");
+    }
 
     if (DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(wearlist, "WEARLAW") !=
             INPAR::WEAR::wear_none &&
@@ -351,9 +356,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         dserror("AUGEMENTED LAGRANGIAN STRATEGY: No support for dual shape functions.");
 
       if (not DRT::INPUT::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON"))
+      {
         dserror(
             "AUGEMENTED LAGRANGIAN STRATEGY: Support ony for the semi-smooth Newton "
             "case at the moment!");
+      }
 
       if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
           INPAR::CONTACT::friction_tresca)
@@ -391,9 +398,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::WEAR::wear_none and
         DRT::INPUT::IntegralValue<INPAR::WEAR::WearTimInt>(wearlist, "WEARTIMINT") !=
             INPAR::WEAR::wear_expl)
+    {
       dserror(
           "Wear calculation for pure structure problems only with explicit internal state "
           "variable approach reasonable!");
+    }
 
     if (DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(contact, "FRICTION") ==
             INPAR::CONTACT::friction_none &&
@@ -425,9 +434,11 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
             INPAR::MORTAR::lagmult_pwlin &&
         DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
             INPAR::MORTAR::shape_dual)
+    {
       dserror(
           "No piecewise linear approach (for LM) implemented for quadratic contact with "
           "DUAL shape fct.");
+    }
 
     // ---------------------------------------------------------------------
     // poroelastic contact
@@ -474,13 +485,13 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
     // ---------------------------------------------------------------------
     // element-based vs. segment-based mortar integration
     // ---------------------------------------------------------------------
-    INPAR::MORTAR::IntType inttype =
-        DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
+    auto inttype = DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar, "INTTYPE");
 
     if (inttype == INPAR::MORTAR::inttype_elements && mortar.get<int>("NUMGP_PER_DIM") <= 0)
       dserror("Invalid Gauss point number NUMGP_PER_DIM for element-based integration.");
 
     if (inttype == INPAR::MORTAR::inttype_elements_BS && mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    {
       dserror(
           "Invalid Gauss point number NUMGP_PER_DIM for element-based integration with "
           "boundary segmentation."
@@ -488,6 +499,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
           "integration"
           "\ndomain, while pre-defined default values will be used in the segment-based boundary "
           "domain.");
+    }
 
     if ((inttype == INPAR::MORTAR::inttype_elements ||
             inttype == INPAR::MORTAR::inttype_elements_BS) &&
@@ -546,11 +558,13 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       double timestep = DRT::Problem::Instance()->TSIDynamicParams().get<double>("TIMESTEP");
       // rauch 01/16
       if (Comm().MyPID() == 0)
+      {
         std::cout
             << "\n \n  Warning: CONTACT::STRATEGY::Factory::ReadAndCheckInput() reads TIMESTEP = "
             << timestep << " from DRT::Problem::Instance()->TSIDynamicParams().  \n"
             << "Anyway, you should not use the \"TIMESTEP\" variable inside of "
             << "the new structural/contact framework!" << std::endl;
+      }
       params.set<double>("TIMESTEP", timestep);
       break;
     }
@@ -639,8 +653,6 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
 
   // set dimension
   params.set<int>("DIMENSION", dim);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -671,18 +683,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   int maxdof = Discret().DofRowMap()->MaxAllGID();
 
   // get input par.
-  INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
-  INPAR::CONTACT::ConstraintDirection constr_direction =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
-          params, "CONSTRAINT_DIRECTIONS");
-  INPAR::CONTACT::FrictionType ftype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
-  INPAR::CONTACT::AdhesionType ad =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(params, "ADHESION");
-  INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
+  auto stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
+  auto wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
+  auto constr_direction = DRT::INPUT::IntegralValue<INPAR::CONTACT::ConstraintDirection>(
+      params, "CONSTRAINT_DIRECTIONS");
+  auto ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
+  auto ad = DRT::INPUT::IntegralValue<INPAR::CONTACT::AdhesionType>(params, "ADHESION");
+  auto algo = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
 
   bool friplus = false;
   if ((wlaw != INPAR::WEAR::wear_none) || (params.get<int>("PROBTYPE") == INPAR::CONTACT::tsi))
@@ -697,11 +704,10 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
   enum MORTAR::MortarElement::PhysicalType mastertype = MORTAR::MortarElement::other;
 
   // loop over all contact condition groups
-  for (unsigned i = 0; i < ccond_grps.size(); ++i)
+  for (auto& currentgroup : ccond_grps)
   {
     // initialize a reference to the i-th contact condition group
-    std::vector<DRT::Condition*>& currentgroup = ccond_grps[i];
-    const std::vector<int>* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
+    const auto* group1v = currentgroup[0]->Get<std::vector<int>>("Interface ID");
     /* get the interface id
      * (should be the same for both conditions in the current group!) */
     if (!group1v) dserror("Contact Conditions does not have value 'Interface ID'");
@@ -722,11 +728,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     std::vector<bool> isself(0);
     CONTACT::UTILS::GetMasterSlaveSideInfo(isslave, isself, currentgroup);
     for (const bool is : isself)
+    {
       if (is)
       {
         isanyselfcontact = true;
         break;
       }
+    }
 
     // find out which sides are initialized as In/Active and other initalization data
     std::vector<bool> isactive(currentgroup.size());
@@ -804,10 +812,9 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too
-    INPAR::MORTAR::ExtendGhosting redundant =
-        Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
-            icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
-    if (isanyselfcontact == true && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
+    auto redundant = Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
+        icparams.sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
+    if (isanyselfcontact && redundant != INPAR::MORTAR::ExtendGhosting::redundant_all)
       dserror("Self contact requires fully redundant slave and master storage");
 
     // ------------------------------------------------------------------------
@@ -827,7 +834,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
      * do contact between two distinct discretizations here. */
 
     // collect all intial active nodes
-    std::vector<int> initialactive;
+    std::vector<int> initialactive_nodeids;
 
     //-------------------------------------------------- process nodes
     for (int j = 0; j < (int)currentgroup.size(); ++j)
@@ -835,28 +842,31 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       // get all nodes and add them
       const std::vector<int>* nodeids = currentgroup[j]->Nodes();
       if (!nodeids) dserror("Condition does not have Node Ids");
-      for (std::size_t k = 0; k < (*nodeids).size(); ++k)
+      for (int gid : *nodeids)
       {
-        int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
         if (!parent_discret.HaveGlobalNode(gid)) continue;
         DRT::Node* node = parent_discret.gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
         if (node->NumElement() == 0)
+        {
           dserror(
               "surface node without adjacent element detected! "
               "(node-id = %d)",
               node->Id());
+        }
 
         const bool nurbs = DRT::UTILS::IsNurbsDisType(node->Elements()[0]->Shape());
         for (unsigned elid = 0; elid < static_cast<unsigned>(node->NumElement()); ++elid)
         {
           const DRT::Element* adj_ele = node->Elements()[elid];
           if (nurbs != DRT::UTILS::IsNurbsDisType(adj_ele->Shape()))
+          {
             dserror(
                 "There are NURBS and non-NURBS adjacent elements to this "
                 "node. What shall be done?");
+          }
         }
 
         // skip dbc slave nodes ( if the corresponding option is set for
@@ -864,19 +874,21 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
         if (dbc_slave_nodes.find(node) != dbc_slave_nodes.end()) continue;
 
         // store initial active node gids
-        if (isactive[j]) initialactive.push_back(gid);
+        if (isactive[j]) initialactive_nodeids.push_back(gid);
 
         /* find out if this node is initial active on another Condition
          * and do NOT overwrite this status then! */
         bool foundinitialactive = false;
         if (!isactive[j])
         {
-          for (int k = 0; k < (int)initialactive.size(); ++k)
-            if (gid == initialactive[k])
+          for (int initialactive_nodeid : initialactive_nodeids)
+          {
+            if (gid == initialactive_nodeid)
             {
               foundinitialactive = true;
               break;
             }
+          }
         }
 
         /* create CoNode object or FriNode object in the frictional case
@@ -896,20 +908,20 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactcornercond(0);
-          parent_discret.GetCondition("mrtrcorner", contactcornercond);
-          for (unsigned j = 0; j < contactcornercond.size(); j++)
+          std::vector<DRT::Condition*> contactcornerconditions(0);
+          parent_discret.GetCondition("mrtrcorner", contactcornerconditions);
+          for (auto& contactcornercondition : contactcornerconditions)
           {
-            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            if (contactcornercondition->ContainsNode(node->Id()))
             {
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactedgecond(0);
-          parent_discret.GetCondition("mrtredge", contactedgecond);
-          for (unsigned j = 0; j < contactedgecond.size(); j++)
+          std::vector<DRT::Condition*> contactedgeconditions(0);
+          parent_discret.GetCondition("mrtredge", contactedgeconditions);
+          for (auto& contactedgecondition : contactedgeconditions)
           {
-            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            if (contactedgecondition->ContainsNode(node->Id()))
             {
               cnode->SetOnEdge() = true;
             }
@@ -919,20 +931,23 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           std::vector<DRT::Condition*> contactSymconditions(0);
           parent_discret.GetCondition("mrtrsym", contactSymconditions);
 
-          for (unsigned j = 0; j < contactSymconditions.size(); j++)
-            if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+          for (auto& contactSymcondition : contactSymconditions)
+          {
+            if (contactSymcondition->ContainsNode(node->Id()))
             {
-              const std::vector<int>* onoff =
-                  contactSymconditions.at(j)->Get<std::vector<int>>("onoff");
+              const auto* onoff = contactSymcondition->Get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff->size(); k++)
                 if (onoff->at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == INPAR::CONTACT::solution_lagmult &&
                   constr_direction != INPAR::CONTACT::constr_xyz)
+              {
                 dserror(
                     "Contact symmetry with Lagrange multiplier method"
                     " only with contact constraints in xyz direction.\n"
                     "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
+              }
             }
+          }
 
           /* note that we do not have to worry about double entries
            * as the AddNode function can deal with this case!
@@ -954,20 +969,20 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactcornercond(0);
-          parent_discret.GetCondition("mrtrcorner", contactcornercond);
-          for (unsigned j = 0; j < contactcornercond.size(); j++)
+          std::vector<DRT::Condition*> contactcornerconditions(0);
+          parent_discret.GetCondition("mrtrcorner", contactcornerconditions);
+          for (auto& contactcornercondition : contactcornerconditions)
           {
-            if (contactcornercond.at(j)->ContainsNode(node->Id()))
+            if (contactcornercondition->ContainsNode(node->Id()))
             {
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactedgecond(0);
-          parent_discret.GetCondition("mrtredge", contactedgecond);
-          for (unsigned j = 0; j < contactedgecond.size(); j++)
+          std::vector<DRT::Condition*> contactedgeconditions(0);
+          parent_discret.GetCondition("mrtredge", contactedgeconditions);
+          for (auto& contactedgecondition : contactedgeconditions)
           {
-            if (contactedgecond.at(j)->ContainsNode(node->Id()))
+            if (contactedgecondition->ContainsNode(node->Id()))
             {
               cnode->SetOnEdge() = true;
             }
@@ -977,23 +992,28 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           std::vector<DRT::Condition*> contactSymconditions(0);
           parent_discret.GetCondition("mrtrsym", contactSymconditions);
 
-          for (unsigned j = 0; j < contactSymconditions.size(); j++)
-            if (contactSymconditions.at(j)->ContainsNode(node->Id()))
+          for (auto& contactSymcondition : contactSymconditions)
+          {
+            if (contactSymcondition->ContainsNode(node->Id()))
             {
-              const std::vector<int>* onoff =
-                  contactSymconditions.at(j)->Get<std::vector<int>>("onoff");
+              const auto* onoff = contactSymcondition->Get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff->size(); k++)
+              {
                 if (onoff->at(k) == 1)
                 {
                   cnode->DbcDofs()[k] = true;
                   if (stype == INPAR::CONTACT::solution_lagmult &&
                       constr_direction != INPAR::CONTACT::constr_xyz)
+                  {
                     dserror(
                         "Contact symmetry with Lagrange multiplier method"
                         " only with contact constraints in xyz direction.\n"
                         "Set CONSTRAINT_DIRECTIONS to xyz in CONTACT input section");
+                  }
                 }
+              }
             }
+          }
 
           /* note that we do not have to worry about double entries
            * as the AddNode function can deal with this case!
@@ -1039,11 +1059,13 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
       {
         Teuchos::RCP<DRT::Element> ele = fool->second;
         if (DRT::UTILS::IsNurbsDisType(ele->Shape()) != nurbs)
+        {
           dserror(
               "All elements of one interface side (i.e. slave or master) "
               "must be NURBS or LAGRANGE elements. A mixed NURBS/Lagrange "
               "discretizations on one side of the interface is currently "
               "unsupported.");
+        }
 
         // skip dbc slave elements ( if the corresponding option is set for
         // the slave condition )
@@ -1057,12 +1079,12 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
 
         if (algo == INPAR::MORTAR::algorithm_gpts)
         {
-          const DRT::Discretization* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
-          if (discret == NULL) dserror("Dynamic cast failed!");
+          const auto* discret = dynamic_cast<const DRT::Discretization*>(&Discret());
+          if (discret == nullptr) dserror("Dynamic cast failed!");
           Teuchos::RCP<DRT::FaceElement> faceele =
               Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
           if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-          if (faceele->ParentElement() == NULL) dserror("face parent does not exist");
+          if (faceele->ParentElement() == nullptr) dserror("face parent does not exist");
           if (discret->ElementColMap()->LID(faceele->ParentElement()->Id()) == -1)
             dserror("vol dis does not have parent ele");
           cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
@@ -1133,14 +1155,16 @@ void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
   for (const auto& inter : interfaces)
   {
     if (inter->HasMaSharingRefInterface())
+    {
       IO::cout << "master side of mortar interface #" << inter->Id()
                << " is fully overlapping with the master side of interface #"
                << inter->GetMaSharingRefInterface().Id() << IO::endl;
+    }
   }
 
-  for (auto it = interfaces.begin(); it != interfaces.end(); ++it)
-    IO::cout << (*it)->Id() << " HasMaSharingRefInterface  = "
-             << ((*it)->HasMaSharingRefInterface() ? "TRUE" : "FALSE") << IO::endl;
+  for (auto& interface : interfaces)
+    IO::cout << interface->Id() << " HasMaSharingRefInterface  = "
+             << (interface->HasMaSharingRefInterface() ? "TRUE" : "FALSE") << IO::endl;
 
   // resort the interface vector via a short bubble sort:
   /* Move all interfaces with a shared reference interface to the end of the
@@ -1150,18 +1174,20 @@ void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
     if ((*it)->HasMaSharingRefInterface())
     {
       for (auto iit = it + 1; iit != interfaces.end(); ++iit)
+      {
         if (not(*iit)->HasMaSharingRefInterface())
         {
           std::swap(*it, *iit);
           break;
         }
+      }
     }
   }
 
   IO::cout << "After sorting:\n";
-  for (auto it = interfaces.begin(); it != interfaces.end(); ++it)
-    IO::cout << (*it)->Id() << " HasMaSharingRefInterface  = "
-             << ((*it)->HasMaSharingRefInterface() ? "TRUE" : "FALSE") << IO::endl;
+  for (auto& interface : interfaces)
+    IO::cout << interface->Id() << " HasMaSharingRefInterface  = "
+             << (interface->HasMaSharingRefInterface() ? "TRUE" : "FALSE") << IO::endl;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1169,8 +1195,8 @@ void CONTACT::STRATEGY::Factory::FullyOverlappingInterfaces(
 int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
     const Epetra_Map& map_0, const Epetra_Map& map_1, bool throw_if_partial_subset_on_proc) const
 {
-  const Epetra_Map* ref_map = NULL;
-  const Epetra_Map* sub_map = NULL;
+  const Epetra_Map* ref_map = nullptr;
+  const Epetra_Map* sub_map = nullptr;
 
   int sub_id = -1;
 
@@ -1225,8 +1251,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelawid)
 {
-  INPAR::CONTACT::SolvingStrategy stype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
+  auto stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
   return CreateInterface(stype, id, comm, dim, icparams, selfcontact, parent_dis_pair,
       interfaceData_ptr, contactconstitutivelawid);
@@ -1243,7 +1268,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
 
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(icparams, "WEARLAW");
+  auto wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(icparams, "WEARLAW");
 
   switch (stype)
   {
@@ -1359,12 +1384,16 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
       idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
 
       if (wlaw != INPAR::WEAR::wear_none)
+      {
         newinterface =
             Teuchos::rcp(new WEAR::WearInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
+      }
       else if (icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi &&
                stype == INPAR::CONTACT::solution_lagmult)
+      {
         newinterface = Teuchos::rcp(
             new CONTACT::CoTSIInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
+      }
       else
         newinterface =
             Teuchos::rcp(new CONTACT::CoInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
@@ -1391,18 +1420,20 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   discret.GetCondition("PoroCoupling", porocondvec);
   if (!cele->IsSlave())  // treat an element as a master element if it is no slave element
   {
-    for (unsigned int i = 0; i < porocondvec.size(); ++i)
+    for (auto& porocond : porocondvec)
     {
       std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocondvec[i]->Geometry().begin();
-           eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = porocond->Geometry().begin();
+           eleitergeometry != porocond->Geometry().end(); ++eleitergeometry)
       {
         if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
           if (mastertype == MORTAR::MortarElement::poro)
+          {
             dserror(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
+          }
           cele->PhysType() = MORTAR::MortarElement::poro;
           mastertype = MORTAR::MortarElement::poro;
           break;
@@ -1420,18 +1451,20 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   }
   else if (cele->IsSlave())  // treat an element as slave element if it is one
   {
-    for (unsigned int i = 0; i < porocondvec.size(); ++i)
+    for (auto& porocond : porocondvec)
     {
       std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocondvec[i]->Geometry().begin();
-           eleitergeometry != porocondvec[i]->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = porocond->Geometry().begin();
+           eleitergeometry != porocond->Geometry().end(); ++eleitergeometry)
       {
         if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
           if (slavetype == MORTAR::MortarElement::structure)
+          {
             dserror(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
+          }
           cele->PhysType() = MORTAR::MortarElement::poro;
           slavetype = MORTAR::MortarElement::poro;
           break;
@@ -1450,7 +1483,6 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   // store information about parent for porous contact (required for calculation of deformation
   // gradient!) in every contact element although only really needed for phystype poro
   cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1491,9 +1523,11 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       case static_cast<int>(MORTAR::MortarElement::poro):
       {
         if (structslave)
+        {
           dserror(
               "struct and poro slave elements in the same problem - no mixed interface "
               "constellations supported");
+        }
         // adjust dserror text, when more than one interface is supported
         poroslave = true;
         break;
@@ -1501,9 +1535,11 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       case static_cast<int>(MORTAR::MortarElement::structure):
       {
         if (poroslave)
+        {
           dserror(
               "struct and poro slave elements in the same problem - no mixed interface "
               "constellations supported");
+        }
         structslave = true;
         break;
       }
@@ -1524,9 +1560,11 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       case static_cast<int>(MORTAR::MortarElement::poro):
       {
         if (structmaster)
+        {
           dserror(
               "struct and poro master elements in the same problem - no mixed interface "
               "constellations supported");
+        }
         // adjust dserror text, when more than one interface is supported
         poromaster = true;
         break;
@@ -1534,9 +1572,11 @@ void CONTACT::STRATEGY::Factory::FindPoroInterfaceTypes(bool& poromaster, bool& 
       case static_cast<int>(MORTAR::MortarElement::structure):
       {
         if (poromaster)
+        {
           dserror(
               "struct and poro master elements in the same problem - no mixed interface "
               "constellations supported");
+        }
         structmaster = true;
         break;
       }
@@ -1556,7 +1596,7 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     const int& dof_offset, std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
     CONTACT::ParamsInterface* cparams_interface) const
 {
-  const INPAR::CONTACT::SolvingStrategy stype =
+  const auto stype =
       DRT::INPUT::IntegralValue<enum INPAR::CONTACT::SolvingStrategy>(params, "STRATEGY");
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
@@ -1582,11 +1622,9 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   Teuchos::RCP<CONTACT::CoAbstractStrategy> strategy_ptr = Teuchos::null;
 
   // get input par.
-  INPAR::WEAR::WearLaw wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
-  INPAR::WEAR::WearType wtype =
-      DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(params, "WEARTYPE");
-  INPAR::MORTAR::AlgorithmType algo =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
+  auto wlaw = DRT::INPUT::IntegralValue<INPAR::WEAR::WearLaw>(params, "WEARLAW");
+  auto wtype = DRT::INPUT::IntegralValue<INPAR::WEAR::WearType>(params, "WEARTYPE");
+  auto algo = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(params, "ALGORITHM");
 
   // Set dummy parameter. The correct parameter will be read directly from time integrator. We still
   // need to pass an argument as long as we want to support the same strategy contructor as the old
@@ -1726,7 +1764,7 @@ void CONTACT::STRATEGY::Factory::BuildSearchTree(
     const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const
 {
   // create binary search tree
-  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->CreateSearchTree();
+  for (const auto& interface : interfaces) interface->CreateSearchTree();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1740,8 +1778,7 @@ void CONTACT::STRATEGY::Factory::Print(
   if (Comm().MyPID() == 0)
   {
     // get input parameter
-    INPAR::CONTACT::FrictionType ftype =
-        DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
+    auto ftype = DRT::INPUT::IntegralValue<INPAR::CONTACT::FrictionType>(params, "FRICTION");
 
     for (unsigned i = 0; i < interfaces.size(); ++i)
     {
@@ -1762,14 +1799,12 @@ void CONTACT::STRATEGY::Factory::Print(
   }
 
   // print initial parallel redistribution
-  for (unsigned i = 0; i < interfaces.size(); ++i) interfaces[i]->PrintParallelDistribution();
+  for (const auto& interface : interfaces) interface->PrintParallelDistribution();
 
   if (Comm().MyPID() == 0)
   {
     PrintStrategyBanner(strategy_ptr->Type());
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1779,11 +1814,10 @@ void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
     const std::vector<DRT::Condition*>& given_ccgroup,
     XSTR::MultiDiscretizationWrapper::cXDisPair& parent_dis_pair) const
 {
-  const XSTR::MultiDiscretizationWrapper* dis_wrapper =
-      dynamic_cast<const XSTR::MultiDiscretizationWrapper*>(&full_discret);
+  const auto* dis_wrapper = dynamic_cast<const XSTR::MultiDiscretizationWrapper*>(&full_discret);
 
   // default case: do nothing and just return the input object
-  if (dis_wrapper == NULL)
+  if (dis_wrapper == nullptr)
   {
     parent_dis_pair = std::make_pair(
         XFEM::structure, Teuchos::rcp<const DRT::DiscretizationInterface>(&full_discret, false));
@@ -1807,10 +1841,11 @@ void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
       // loop over the entries of the contact condition groups
       for (unsigned j = 0; j < given_ccgroup.size(); ++j)
       {
-        const std::vector<int>* ggroupv = given_ccgroup[j]->Get<std::vector<int>>("Interface ID");
-        if (ggroupv == NULL) dserror("Given Contact Conditions do not have value 'Interface ID'");
-        const std::vector<int>* cgroupv = (*vv_cit)[j]->Get<std::vector<int>>("Interface ID");
-        if (cgroupv == NULL or cgroupv->size() != ggroupv->size())
+        const auto* ggroupv = given_ccgroup[j]->Get<std::vector<int>>("Interface ID");
+        if (ggroupv == nullptr)
+          dserror("Given Contact Conditions do not have value 'Interface ID'");
+        const auto* cgroupv = (*vv_cit)[j]->Get<std::vector<int>>("Interface ID");
+        if (cgroupv == nullptr or cgroupv->size() != ggroupv->size())
         {
           coincide = false;
           break;
@@ -1835,7 +1870,7 @@ void CONTACT::STRATEGY::Factory::ExtractParentDiscretization(
   }
   // if the search failed, throw an error
   IO::cout << "\n:::: Given Contact Condition Group ::::\n";
-  for (unsigned i = 0; i < given_ccgroup.size(); ++i) IO::cout << *(given_ccgroup[i]) << "\n";
+  for (auto* current_ccgroup : given_ccgroup) IO::cout << *current_ccgroup << "\n";
   dserror(
       "There is no wrapped discretization which belongs to the given "
       "contact condition group!");
@@ -1849,12 +1884,9 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
   // some parameters
   const Teuchos::ParameterList& smortar = DRT::Problem::Instance()->MortarCouplingParams();
   const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
-  INPAR::MORTAR::ShapeFcn shapefcn =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
-  INPAR::CONTACT::SystemType systype =
-      DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
-  INPAR::MORTAR::AlgorithmType algorithm =
-      DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
+  auto shapefcn = DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(smortar, "LM_SHAPEFCN");
+  auto systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(scontact, "SYSTEM");
+  auto algorithm = DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(smortar, "ALGORITHM");
   bool nonSmoothGeometries = DRT::INPUT::IntegralValue<int>(scontact, "NONSMOOTH_GEOMETRIES");
 
   if (nonSmoothGeometries)
@@ -2095,5 +2127,4 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
     else
       dserror("Invalid system type for contact/meshtying");
   }
-  return;
 }

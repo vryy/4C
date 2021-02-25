@@ -11,20 +11,13 @@
 #include "contact_integrator_factory.H"
 
 // supported contact integrators
-#include "../drt_contact_aug/contact_augmented_integrator.H"
+#include "contact_ehl_integrator.H"
 #include "contact_nitsche_integrator.H"
-#include "contact_nitsche_integrator_tsi.H"
-#include "contact_nitsche_integrator_poro.H"
 #include "contact_nitsche_integrator_fsi.H"
 #include "contact_nitsche_integrator_fpi.H"
-#include "contact_ehl_integrator.H"
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-CONTACT::INTEGRATOR::Factory::Factory()
-{
-  // empty constructor
-}
+#include "contact_nitsche_integrator_poro.H"
+#include "contact_nitsche_integrator_tsi.H"
+#include "../drt_contact_aug/contact_augmented_integrator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -110,7 +103,7 @@ CONTACT::CoIntegrator* CONTACT::INTEGRATOR::Factory::BuildXIntegrator(
     Teuchos::ParameterList& p_mortar, const DRT::Element::DiscretizationType& slave_type,
     const Epetra_Comm& comm) const
 {
-  CONTACT::CoIntegrator* xintegrator = NULL;
+  CONTACT::CoIntegrator* xintegrator = nullptr;
   switch (slave_type)
   {
     case DRT::Element::line2:

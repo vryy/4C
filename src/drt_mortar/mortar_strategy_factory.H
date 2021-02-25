@@ -68,7 +68,7 @@ namespace MORTAR
        * \note Since this is an abstract class, the setup flag stays false. It has to be set by
        * the Setup routing of the derived class.
        */
-      void Setup();
+      virtual void Setup();
 
       /*! \brief print strategy banner
        *

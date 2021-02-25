@@ -29,12 +29,6 @@ namespace CONTACT
     class Factory
     {
      public:
-      //! constructor
-      Factory();
-
-      //! destructor
-      virtual ~Factory(){};
-
       /*! \brief Build the desired contact integrator
        *
        * \date 04/16
@@ -61,7 +55,7 @@ namespace CONTACT
       {
         const int probdim = p_mortar.get<int>("DIMENSION");
         const int dim = DRT::UTILS::DisTypeToDim<slave_type>::dim;
-        CONTACT::CoIntegrator* xintegrator = NULL;
+        CONTACT::CoIntegrator* xintegrator = nullptr;
 
         if (probdim <= dim)
         {
