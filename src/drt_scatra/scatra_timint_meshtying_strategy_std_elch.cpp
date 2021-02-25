@@ -76,8 +76,7 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
 
       default:
       {
-        dserror(
-            "Type of global system matrix for scatra-scatra interface coupling not recognized!");
+        dserror("Unknown matrix type of ScaTra field");
         break;
       }
     }
