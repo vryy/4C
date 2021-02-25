@@ -51,9 +51,6 @@ namespace DRT
       ScaTraEleCalcElchElectrode(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      ~ScaTraEleCalcElchElectrode() override = default;
-
       //! abbreviations
       using my = ScaTraEleCalc<distype, probdim>;
       using myelch = ScaTraEleCalcElch<distype, probdim>;

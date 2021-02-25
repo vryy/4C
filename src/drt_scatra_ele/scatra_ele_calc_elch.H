@@ -39,8 +39,6 @@ namespace DRT
       using my = ScaTraEleCalc<distype, probdim>;
 
      public:
-      ~ScaTraEleCalcElch() override = default;
-
       /// called upon destruction
       virtual void Done() = 0;
 

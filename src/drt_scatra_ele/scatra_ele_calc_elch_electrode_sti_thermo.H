@@ -49,9 +49,6 @@ namespace DRT
       ScaTraEleCalcElchElectrodeSTIThermo(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      ~ScaTraEleCalcElchElectrodeSTIThermo() override = default;
-
       //! evaluate action for off-diagonal system matrix block
       int EvaluateActionOD(DRT::Element* ele,        //!< current element
           Teuchos::ParameterList& params,            //!< parameter list

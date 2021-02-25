@@ -51,9 +51,6 @@ namespace DRT
       ScaTraEleCalcSTIDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      virtual ~ScaTraEleCalcSTIDiffCond() = default;
-
       //! evaluate action for off-diagonal system matrix block
       int EvaluateActionOD(DRT::Element* ele,        //!< current element
           Teuchos::ParameterList& params,            //!< parameter list
