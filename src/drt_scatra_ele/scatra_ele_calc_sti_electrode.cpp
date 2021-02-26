@@ -26,7 +26,7 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(const int numdofpern
 {
   static std::map<std::string, ScaTraEleCalcSTIElectrode<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleCalcSTIElectrode<distype>(numdofpernode, numscal, disname);
@@ -34,15 +34,15 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(const int numdofpern
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleCalcSTIElectrode<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
+    {
+      if (instance->second == delete_me)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
+        delete instance->second;
+        instances.erase(instance);
+        return nullptr;
       }
+    }
   }
 
   return instances[disname];
@@ -57,8 +57,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -141,8 +139,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Sysmat(
     else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       CalcMatAndRhsJoule(emat, erhs, timefacfac, rhsfac);
   }  // loop over integration points
-
-  return;
 }
 
 
@@ -161,12 +157,12 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsJoule(
   // square of gradient of electric potential
   const double gradpot2 = VarManager()->GradPot().Dot(VarManager()->GradPot());
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+  {
     // linearizations of Joule's heat term in thermo residuals w.r.t. thermo dofs are zero
     // contributions of Joule's heat term to thermo residuals
     erhs[vi] += rhsfac * my::funct_(vi) * gradpot2 * diffmanagerstielectrode_->GetCond();
-
-  return;
+  }
 }
 
 
@@ -203,9 +199,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
   LINALG::Matrix<my::nsd_, 1> dn2_dgradT = n;
   dn2_dgradT.Scale(-2. * diffcoeff * concentration * soret / temperature);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times derivative of square of ionic flux density w.r.t.
       // temperature gradient
@@ -221,8 +217,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsMixing(
     erhs[vi] -= rhsfac * diffmanagerstielectrode_->GetOCPDeriv() * F * n.Dot(n) / diffcoeff *
                 my::funct_(vi);
   }
-
-  return;
 }
 
 
@@ -254,7 +248,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
   LINALG::Matrix<my::nsd_, 1> dn_dT = gradtemp;
   dn_dT.Scale(diffcoeff * concentration * soret / pow(temperature, 2));
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     // gradient of test function times ionic flux density
     double laplawfrhs_n_vi(0.);
@@ -264,7 +258,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
     double laplawfrhs_dndT(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_dndT, dn_dT, vi);
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times gradient of test function
       double laplawf(0.);
@@ -296,8 +290,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatAndRhsSoret(
     erhs[vi] -= rhsfac * concentration * diffmanagerstielectrode_->GetOCPDeriv() * F * soret *
                 (my::funct_(vi) * n.Dot(gradtemp) / temperature + laplawfrhs_n_vi);
   }
-
-  return;
 }
 
 
@@ -378,8 +370,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SysmatODThermoScatra(
     else if (ele->Material()->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       CalcMatJouleOD(emat, my::scatraparatimint_->TimeFac() * fac);
   }
-
-  return;
 }
 
 
@@ -397,9 +387,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
   const LINALG::Matrix<my::nsd_, 1>& gradpot = VarManager()->GradPot();
   const double gradpot2 = gradpot.Dot(gradpot);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times gradient of electric potential
       double laplawfrhs_gradpot(0.0);
@@ -414,8 +404,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
                               diffmanagerstielectrode_->GetCond() * laplawfrhs_gradpot;
     }
   }
-
-  return;
 }
 
 
@@ -458,9 +446,9 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
   LINALG::Matrix<my::nsd_, 1> dn2_dgradc = n;
   dn2_dgradc.Scale(-2. * diffcoeff);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times derivative of square of ionic flux density w.r.t.
       // concentration gradient
@@ -483,8 +471,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
       // are zero
     }
   }
-
-  return;
 }
 
 
@@ -518,7 +504,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
       -diffcoeffderiv * concentration * soret / temperature - diffcoeff * soret / temperature,
       gradtemp, -diffcoeffderiv);
 
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     // gradient of test function times ionic flux density
     double laplawfrhs_n(0.);
@@ -528,7 +514,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
     double laplawfrhs_dndc(0.);
     my::GetLaplacianWeakFormRHS(laplawfrhs_dndc, dn_dc, vi);
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       // gradient of shape function times gradient of test function
       double laplawf(0.);
@@ -560,8 +546,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
       // zero
     }
   }
-
-  return;
 }
 
 
@@ -581,8 +565,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ExtractElementAndNodeVal
 
   // call base class routine to extract scatra-related quantities
   mystielch::ExtractElementAndNodeValues(ele, params, discretization, la);
-
-  return;
 }
 
 
@@ -633,8 +615,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret(
   densn = densnp = densam = matsoret->Capacity();
   DiffManager()->SetIsotropicDiff(matsoret->Conductivity(), 0);
   DiffManager()->SetSoret(matsoret->SoretCoefficient());
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::MatSoret
 
 /*----------------------------------------------------------------------*
@@ -664,8 +644,6 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::SetInternalVariablesForM
   // set internal variables for element evaluation
   VarManager()->SetInternalVariablesSTIElch(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
       mystielch::econcnp_, mystielch::epotnp_, my::econvelnp_, my::ehist_);
-
-  return;
 }
 
 
@@ -698,8 +676,6 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode(
   // for heat transport within electrochemical substances
   my::scatravarmanager_ =
       Teuchos::rcp(new ScaTraEleInternalVariableManagerSTIElch<my::nsd_, my::nen_>(my::numscal_));
-
-  return;
 }
 
 

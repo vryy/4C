@@ -475,19 +475,6 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
   scatra_manifold_params->set<std::string>("OUTPUTSCALARS", "none");
   scatra_manifold_params->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
 
-  // so far only one scalar -> block_condition_dof not reasonable
-  if (Teuchos::getIntegralValue<LINALG::MatrixType>(scatraparams, "MATRIXTYPE") ==
-      LINALG::MatrixType::block_condition_dof)
-  {
-    scatra_manifold_params->set<std::string>("MATRIXTYPE", "block_condition");
-    if (comm.MyPID() == 0)
-    {
-      std::cout << "WARNING: MATRIXTYPE 'block_condition_dof' not reasonable for ScaTra on "
-                   "manifolds. Using 'block_condition' instead"
-                << std::endl;
-    }
-  }
-
   return *scatra_manifold_params;
 }
 

@@ -19,7 +19,6 @@
 SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch(SCATRA::ScaTraTimIntElch* elchtimint)
     : MeshtyingStrategyStd(elchtimint)
 {
-  return;
 }  // SCATRA::MeshtyingStrategyStdElch::MeshtyingStrategyStdElch
 
 
@@ -56,8 +55,31 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
   else
   {
     // initialize standard (stabilized) system matrix (and save its graph)
-    systemmatrix = Teuchos::rcp(
-        new LINALG::SparseMatrix(*(scatratimint_->Discretization()->DofRowMap()), 27, false, true));
+    switch (scatratimint_->MatrixType())
+    {
+      case LINALG::MatrixType::sparse:
+      {
+        systemmatrix = Teuchos::rcp(new LINALG::SparseMatrix(
+            *scatratimint_->Discretization()->DofRowMap(), 27, false, true));
+        break;
+      }
+
+      case LINALG::MatrixType::block_condition:
+      case LINALG::MatrixType::block_condition_dof:
+      {
+        systemmatrix =
+            Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                scatratimint_->BlockMaps(), scatratimint_->BlockMaps(), 81, false, true));
+
+        break;
+      }
+
+      default:
+      {
+        dserror("Unknown matrix type of ScaTra field");
+        break;
+      }
+    }
   }
 
   return systemmatrix;
@@ -70,11 +92,13 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::MeshtyingStrategyStdElch::InitSyste
 void SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy()
 {
   if (ElchTimInt()->MacroScale())
+  {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  }
   else
+  {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
-
-  return;
+  }
 }  // SCATRA::MeshtyingStrategyStdElch::InitConvCheckStrategy

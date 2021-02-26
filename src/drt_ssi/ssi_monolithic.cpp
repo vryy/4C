@@ -120,6 +120,8 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
   // apply scatra Dirichlet
   ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
+  if (IsScaTraManifold())
+    ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraManifold()->DirichMaps()->CondMap(), true);
 
   // apply structural Dirichlet conditions
   strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
@@ -452,13 +454,18 @@ void SSI::SSIMono::SetupSystem()
   }
 
   // initialize global map extractor
-  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps;
+  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
+      IsScaTraManifold() ? 3 : 2, Teuchos::null);
   Teuchos::RCP<const Epetra_Map> merged_map;
-  partial_maps.emplace_back(Teuchos::rcp(new Epetra_Map(*ScaTraField()->DofRowMap())));
-  partial_maps.emplace_back(Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap())));
+
+  partial_maps[GetProblemPosition(Subproblem::scalar_transport)] =
+      Teuchos::rcp(new Epetra_Map(*ScaTraField()->DofRowMap()));
+  partial_maps[GetProblemPosition(Subproblem::structure)] =
+      Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap()));
   if (IsScaTraManifold())
   {
-    partial_maps.emplace_back(Teuchos::rcp(new Epetra_Map(*ScaTraManifold()->DofRowMap())));
+    partial_maps[GetProblemPosition(Subproblem::manifold)] =
+        Teuchos::rcp(new Epetra_Map(*ScaTraManifold()->DofRowMap()));
     auto temp_map = LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
     merged_map = LINALG::MergeMap(temp_map, partial_maps[2], false);
   }

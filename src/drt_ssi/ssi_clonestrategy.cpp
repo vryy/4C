@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "ssi_clonestrategy.H"
+#include "../drt_inpar/inpar_ssi.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -84,6 +85,7 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::Co
       std::pair<std::string, std::string>("SSISurfaceManifold", "SSISurfaceManifold"));
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("ScaTraManifoldInitfield", "Initfield"));
+  conditions_to_copy.insert(std::pair<std::string, std::string>("ManifoldDirichlet", "Dirichlet"));
 
   return conditions_to_copy;
 }
@@ -213,7 +215,7 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
   {
     // set material
     trans->SetMaterial(matid, oldele);
-    // set distype as well!
+    // set distype as well
     trans->SetDisType(oldele->Shape());
 
     // now check whether ImplType is reasonable and if set the ImplType
@@ -248,10 +250,17 @@ void SSI::ScatraStructureCloneStrategyManifold::SetElementData(
   {
     // set material
     trans->SetMaterial(matid, oldele);
-    // set distype as well!
+    // set distype as well
     trans->SetDisType(oldele->Shape());
-    // so far, only scatra on manifolds only with one scalar
-    trans->SetImplType(INPAR::SCATRA::impltype_std);
+    // set impltype according to SCATRATIMINTTYPE
+    const auto scatratype = Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
+        DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE");
+    if (scatratype == INPAR::SSI::ScaTraTimIntType::elch)
+      trans->SetImplType(INPAR::SCATRA::impltype_elch_electrode);
+    else if (scatratype == INPAR::SSI::ScaTraTimIntType::standard)
+      trans->SetImplType(INPAR::SCATRA::impltype_std);
+    else
+      dserror("Unknown time integration type for scatra field");
   }
   else
     dserror("unsupported element type");

@@ -3282,8 +3282,6 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
 void SCATRA::ScaTraTimIntElch::BuildBlockNullSpaces(
     Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
-  if (init_block_number != 0) dserror("System matrix must begin with scatra blocks in elch");
-
   SCATRA::ScaTraTimIntImpl::BuildBlockNullSpaces(solver, init_block_number);
 
   if (MatrixType() == LINALG::MatrixType::block_condition_dof)
@@ -3296,10 +3294,10 @@ void SCATRA::ScaTraTimIntElch::ReduceDimensionNullSpaceBlocks(
     Teuchos::RCP<LINALG::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
-  for (int iblock = init_block_number; iblock < BlockMaps().NumMaps() + init_block_number; ++iblock)
+  for (int iblock = 0; iblock < BlockMaps().NumMaps(); ++iblock)
   {
     std::ostringstream iblockstr;
-    iblockstr << iblock + 1;
+    iblockstr << init_block_number + iblock + 1;
 
     // access parameter sublist associated with smoother for current matrix block
     Teuchos::ParameterList& mueluparams =

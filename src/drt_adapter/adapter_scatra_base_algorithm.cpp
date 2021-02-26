@@ -245,19 +245,19 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
 
   // electrochemistry
   else if (probtype == prb_elch or
-           (disname == "scatra" and
-               ((probtype == prb_ssi and
-                    Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
-                        DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
-                        INPAR::SSI::ScaTraTimIntType::elch) or
-                   (probtype == prb_ssti and
-                       Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
-                           DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
-                           INPAR::SSTI::ScaTraTimIntType::elch) or
-                   (probtype == prb_sti and
-                       Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
-                           DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
-                           INPAR::STI::ScaTraTimIntType::elch))))
+           ((probtype == prb_ssi and
+                Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
+                    DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
+                    INPAR::SSI::ScaTraTimIntType::elch) or
+               (disname == "scatra" and
+                   ((probtype == prb_ssti and
+                        Teuchos::getIntegralValue<INPAR::SSTI::ScaTraTimIntType>(
+                            DRT::Problem::Instance()->SSTIControlParams(), "SCATRATIMINTTYPE") ==
+                            INPAR::SSTI::ScaTraTimIntType::elch) or
+                       (probtype == prb_sti and
+                           Teuchos::getIntegralValue<INPAR::STI::ScaTraTimIntType>(
+                               DRT::Problem::Instance()->STIDynamicParams(), "SCATRATIMINTTYPE") ==
+                               INPAR::STI::ScaTraTimIntType::elch)))))
   {
     Teuchos::RCP<Teuchos::ParameterList> elchparams =
         Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->ELCHControlParams()));

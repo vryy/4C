@@ -42,9 +42,6 @@ namespace DRT
       ScaTraEleCalcElchDiffCondMultiScale(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! destructor
-      virtual ~ScaTraEleCalcElchDiffCondMultiScale() { return; };
-
       //! macro-scale matrix and vector contributions arising from macro-micro coupling in
       //! multi-scale simulations
       void CalcMatAndRhsMultiScale(const DRT::Element* const ele,  //!< element

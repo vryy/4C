@@ -25,10 +25,10 @@ namespace DRT
     {
      public:
       //! ctor
-      ScaTraFactory() { return; }
+      ScaTraFactory() = default;
 
       //! dtor
-      virtual ~ScaTraFactory() { return; }
+      virtual ~ScaTraFactory() = default;
 
       //! ProvideImpl
       static ScaTraEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,

@@ -38,8 +38,6 @@ namespace DRT
       typedef ScaTraEleCalcElchElectrode<distype> myelectrode;
 
      public:
-      virtual ~ScaTraEleCalcElchDiffCond() { return; }
-
       /// Singleton access method
       static ScaTraEleCalcElchDiffCond<distype>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname,

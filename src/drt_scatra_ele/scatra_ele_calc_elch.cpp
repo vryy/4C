@@ -15,10 +15,11 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : DRT::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+    : DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+          numdofpernode, numscal, disname),
       elchparams_(DRT::ELEMENTS::ScaTraEleParameterElch::Instance(
           disname)),  // parameter class for electrochemistry problems
       utils_(DRT::ELEMENTS::ScaTraEleUtilsElch<distype>::Instance(numdofpernode, numscal, disname))
@@ -30,16 +31,14 @@ DRT::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(
   if (not my::scatraparatimint_->IsIncremental())
     dserror(
         "Since the ion-transport equations are non-linear, it can be solved only incrementally!!");
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
  | Action type: Evaluate                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(DRT::Element* ele,
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
     Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
@@ -61,8 +60,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Evaluate(DRT::Element* ele,
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                 ehrl  08/08|
 *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::Sysmat(
     DRT::Element* ele,                   ///< the element whose matrix is calculated
     Epetra_SerialDenseMatrix& emat,      ///< element matrix to calculate
     Epetra_SerialDenseVector& erhs,      ///< element rhs to calculate
@@ -107,7 +106,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
   // integration loop for one element
   //----------------------------------------------------------------------
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -155,16 +154,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::Sysmat(
     // Compute element matrix and rhs
     CalcMatAndRhsOutsideScalarLoop(emat, erhs, fac, timefacfac, rhsfac);
   }
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------------------*
 |  CalcMat: Potential equation ENC                                       ehrl  02/14|
 *-----------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcMatPotEquENC(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcMatPotEquENC(
     Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                     //!< index of current scalar
     const double fac,                //!< domain-integration factor
@@ -184,16 +181,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcMatPotEquENC(
           alphaf * DiffManager()->GetValence(k) * fac * my::funct_(vi) * my::funct_(ui);
     }
   }
-
-  return;
 }
 
 
 /*-------------------------------------------------------------------------------------*
  |  CalcRhs: Potential equation ENC                                         ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::CalcRhsPotEquENC(
     Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                     //!< index of current scalar
     const double fac,                //!< domain-integration factor
@@ -201,34 +196,38 @@ void DRT::ELEMENTS::ScaTraEleCalcElch<distype>::CalcRhsPotEquENC(
 )
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
+  {
     // electroneutrality condition
     // for incremental formulation, there is the residuum on the rhs! : 0-sum(z_k c_k)
     erhs[vi * my::numdofpernode_ + my::numscal_] -=
         DiffManager()->GetValence(k) * fac * my::funct_(vi) * conint;
-
-  return;
+  }
 }
 
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad4, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex8, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::tet10, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::pyramid5, 3>;
 // template class DRT::ELEMENTS::ScaTraEleCalcElch<DRT::Element::nurbs27>;
