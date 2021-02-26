@@ -308,13 +308,13 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
       dserror("Crosspoints and linear LM interpolation for quadratic FE not yet compatible");
 
     // check for self contact
-    std::vector<DRT::Condition*> contactconditions(0);
-    Discret().GetCondition("Mortar", contactconditions);
+    std::vector<DRT::Condition*> contactConditions(0);
+    Discret().GetCondition("Mortar", contactConditions);
     bool self = false;
 
-    for (const auto& contactcondition : contactconditions)
+    for (const auto& condition : contactConditions)
     {
-      const auto* side = contactcondition->Get<std::string>("Side");
+      const auto* side = condition->Get<std::string>("Side");
       if (*side == "Selfcontact") self = true;
     }
 
@@ -908,34 +908,34 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactcornerconditions(0);
-          parent_discret.GetCondition("mrtrcorner", contactcornerconditions);
-          for (auto& contactcornercondition : contactcornerconditions)
+          std::vector<DRT::Condition*> contactCornerConditions(0);
+          parent_discret.GetCondition("mrtrcorner", contactCornerConditions);
+          for (auto& condition : contactCornerConditions)
           {
-            if (contactcornercondition->ContainsNode(node->Id()))
+            if (condition->ContainsNode(node->Id()))
             {
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactedgeconditions(0);
-          parent_discret.GetCondition("mrtredge", contactedgeconditions);
-          for (auto& contactedgecondition : contactedgeconditions)
+          std::vector<DRT::Condition*> contactEdgeConditions(0);
+          parent_discret.GetCondition("mrtredge", contactEdgeConditions);
+          for (auto& condition : contactEdgeConditions)
           {
-            if (contactedgecondition->ContainsNode(node->Id()))
+            if (condition->ContainsNode(node->Id()))
             {
               cnode->SetOnEdge() = true;
             }
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<DRT::Condition*> contactSymconditions(0);
-          parent_discret.GetCondition("mrtrsym", contactSymconditions);
+          std::vector<DRT::Condition*> contactSymConditions(0);
+          parent_discret.GetCondition("mrtrsym", contactSymConditions);
 
-          for (auto& contactSymcondition : contactSymconditions)
+          for (auto& condition : contactSymConditions)
           {
-            if (contactSymcondition->ContainsNode(node->Id()))
+            if (condition->ContainsNode(node->Id()))
             {
-              const auto* onoff = contactSymcondition->Get<std::vector<int>>("onoff");
+              const auto* onoff = condition->Get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff->size(); k++)
                 if (onoff->at(k) == 1) cnode->DbcDofs()[k] = true;
               if (stype == INPAR::CONTACT::solution_lagmult &&
@@ -969,34 +969,34 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
           }
 
           // get edge and corner information:
-          std::vector<DRT::Condition*> contactcornerconditions(0);
-          parent_discret.GetCondition("mrtrcorner", contactcornerconditions);
-          for (auto& contactcornercondition : contactcornerconditions)
+          std::vector<DRT::Condition*> contactCornerConditions(0);
+          parent_discret.GetCondition("mrtrcorner", contactCornerConditions);
+          for (auto& condition : contactCornerConditions)
           {
-            if (contactcornercondition->ContainsNode(node->Id()))
+            if (condition->ContainsNode(node->Id()))
             {
               cnode->SetOnCorner() = true;
             }
           }
-          std::vector<DRT::Condition*> contactedgeconditions(0);
-          parent_discret.GetCondition("mrtredge", contactedgeconditions);
-          for (auto& contactedgecondition : contactedgeconditions)
+          std::vector<DRT::Condition*> contactEdgeConditions(0);
+          parent_discret.GetCondition("mrtredge", contactEdgeConditions);
+          for (auto& condition : contactEdgeConditions)
           {
-            if (contactedgecondition->ContainsNode(node->Id()))
+            if (condition->ContainsNode(node->Id()))
             {
               cnode->SetOnEdge() = true;
             }
           }
 
           // Check, if this node (and, in case, which dofs) are in the contact symmetry condition
-          std::vector<DRT::Condition*> contactSymconditions(0);
-          parent_discret.GetCondition("mrtrsym", contactSymconditions);
+          std::vector<DRT::Condition*> contactSymConditions(0);
+          parent_discret.GetCondition("mrtrsym", contactSymConditions);
 
-          for (auto& contactSymcondition : contactSymconditions)
+          for (auto& condition : contactSymConditions)
           {
-            if (contactSymcondition->ContainsNode(node->Id()))
+            if (condition->ContainsNode(node->Id()))
             {
-              const auto* onoff = contactSymcondition->Get<std::vector<int>>("onoff");
+              const auto* onoff = condition->Get<std::vector<int>>("onoff");
               for (unsigned k = 0; k < onoff->size(); k++)
               {
                 if (onoff->at(k) == 1)
@@ -1416,15 +1416,15 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
   if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
   cele->PhysType() = MORTAR::MortarElement::other;
-  std::vector<Teuchos::RCP<DRT::Condition>> porocondvec;
-  discret.GetCondition("PoroCoupling", porocondvec);
+  std::vector<Teuchos::RCP<DRT::Condition>> poroCondVec;
+  discret.GetCondition("PoroCoupling", poroCondVec);
   if (!cele->IsSlave())  // treat an element as a master element if it is no slave element
   {
-    for (auto& porocond : porocondvec)
+    for (auto& poroCond : poroCondVec)
     {
       std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocond->Geometry().begin();
-           eleitergeometry != porocond->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = poroCond->Geometry().begin();
+           eleitergeometry != poroCond->Geometry().end(); ++eleitergeometry)
       {
         if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {
@@ -1451,11 +1451,11 @@ void CONTACT::STRATEGY::Factory::SetPoroParentElement(
   }
   else if (cele->IsSlave())  // treat an element as slave element if it is one
   {
-    for (auto& porocond : porocondvec)
+    for (auto& poroCond : poroCondVec)
     {
       std::map<int, Teuchos::RCP<DRT::Element>>::const_iterator eleitergeometry;
-      for (eleitergeometry = porocond->Geometry().begin();
-           eleitergeometry != porocond->Geometry().end(); ++eleitergeometry)
+      for (eleitergeometry = poroCond->Geometry().begin();
+           eleitergeometry != poroCond->Geometry().end(); ++eleitergeometry)
       {
         if (faceele->ParentElement()->Id() == eleitergeometry->second->Id())
         {

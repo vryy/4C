@@ -2699,9 +2699,6 @@ void MORTAR::MortarInterface::ExportNodalNormals() const
     mrtrnode->MoData().n()[1] = (*loc)(1, 0);
     mrtrnode->MoData().n()[2] = (*loc)(2, 0);
   }
-
-  // free memory
-  triad.clear();
 }
 
 /*----------------------------------------------------------------------*
