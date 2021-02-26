@@ -2100,10 +2100,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyAtXiElast(const LINALG::Matrix<
 
   if (plmat && temp)
     plmat->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2, &D2sntDFDn,
-        &D2sntDFDt, -1, Id(), &gp_temp, &DsntDT_gp, &D2sntDFDT);
+        &D2sntDFDt, -1, Id(), nullptr, &gp_temp, &DsntDT_gp, &D2sntDFDT);
   else
     SolidMaterial()->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2,
-        &D2sntDFDn, &D2sntDFDt, -1, Id(), nullptr, nullptr, nullptr);
+        &D2sntDFDn, &D2sntDFDt, -1, Id(), nullptr, nullptr, nullptr, nullptr);
 
   if (DsntDd)
   {

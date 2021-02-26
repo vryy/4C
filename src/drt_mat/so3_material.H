@@ -105,8 +105,9 @@ namespace MAT
                                 (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
                                 \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
      * \param[in]     gp        Gauss point
-     * \param[in]     eleGID    global ID of element
-     * \param[in]     temp      temperature (if thermal dependency shall be handeled)
+     * \param[in]     eleGID         global ID of element
+     * \param[in]     concentration  concentration at gauss point
+     * \param[in]     temp           temperature (if thermal dependency shall be handeled)
      * \param[out]    DsntDT    derivative of snt w.r.t. temperature (\f[ \frac{ \mathrm{d}
                                 \bold{\sigma} \cdot \bold{n} \cdot \bold{t} }{\mathrm{d} T} \f])
      * \param[out]    D2sntDFDT second derivative of snt w.r.t. deformation gradient and temperature
@@ -117,12 +118,24 @@ namespace MAT
         const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
         LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
         LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int gp, int eleGID,
-        const double* temp = nullptr, double* DsntDT = nullptr,
-        LINALG::Matrix<9, 1>* D2sntDFDT = nullptr)
+        const double* concentration, const double* temp, double* DsntDT,
+        LINALG::Matrix<9, 1>* D2sntDFDT)
     {
-      dserror("EvaluateCauchy not implementend for this material");
+      dserror("EvaluateCauchy not implemented for this material");
     }
 
+    /*!
+     * @brief  Evaluate the derivative of the deformation gradient w.r.t. degree of freedom x
+     *
+     * @param[in] defgrd         deformation gradient
+     * @param[in] concentration  concentration at gauss point
+     * @param[out] DFDx          derivative of deformation gradient w.r.t. degree of freedom x
+     */
+    virtual void EvaluateLinearizationOD(
+        const LINALG::Matrix<3, 3>& defgrd, double concentration, LINALG::Matrix<9, 1>* DFDx)
+    {
+      dserror("EvaluateLinearizationOD not implemented for this material");
+    }
     //@}
 
     /// Return whether material includes a varying material density

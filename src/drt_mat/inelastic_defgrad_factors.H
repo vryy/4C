@@ -327,6 +327,16 @@ namespace MAT
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) = 0;
 
     /*!
+     * @brief calculate the derivative of the inelastic deformation gradient
+     *
+     * @param[in] detjacobian  determinant of the deformation gradient
+     * @param[out] DFinDx      derivative of inelastic deformation gradient w.r.t. primary variable
+     *                         of different field
+     */
+    virtual void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) = 0;
+
+    /*!
      * @brief evaluate off-diagonal stiffness matrix for monolithic systems to get the
      *        cross-linearizations
      *
@@ -350,6 +360,14 @@ namespace MAT
      * @param[in] gp      Gauss point
      */
     virtual void PreEvaluate(Teuchos::ParameterList& params, int gp) = 0;
+
+    /*!
+     * @brief set gauss point concentration to parameter class
+     *
+     * @param[in] concentration  gauss point concentration to be set to internal member of parameter
+     *                           class
+     */
+    virtual void SetConcentrationGP(double concentration){};
 
     /// return material parameters
     virtual MAT::PAR::Parameter* Parameter() { return params_; }
@@ -397,6 +415,14 @@ namespace MAT
     INPAR::MAT::MaterialType MaterialType() const override = 0;
 
     void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
+
+    void SetConcentrationGP(double concentration) override;
+
+    MAT::PAR::InelasticDefgradScalar* Parameter() override
+    {
+      return dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(
+          MAT::InelasticDefgradFactors::Parameter());
+    }
 
    protected:
     //! Get vector of concentration at current Gauß point
@@ -457,6 +483,9 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) override = 0;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
@@ -465,7 +494,7 @@ namespace MAT
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(
-          MAT::InelasticDefgradFactors::Parameter());
+          MAT::InelasticDefgradScalar::Parameter());
     }
 
    private:
@@ -508,16 +537,13 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) override;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
-
-    MAT::PAR::InelasticDefgradScalar* Parameter() override
-    {
-      return dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(
-          MAT::InelasticDefgradFactors::Parameter());
-    }
 
    private:
     /// pointer to class that evaluates the linear growth law
@@ -566,6 +592,9 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) override;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
@@ -574,7 +603,7 @@ namespace MAT
     MAT::PAR::InelasticDefgradLinScalarAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradLinScalarAniso*>(
-          MAT::InelasticDefgradFactors::Parameter());
+          MAT::InelasticDefgradScalar::Parameter());
     }
 
    private:
@@ -618,6 +647,9 @@ namespace MAT
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) override;
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
@@ -671,6 +703,9 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) override;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
@@ -696,13 +731,16 @@ namespace MAT
 
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) final;
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& DFinDx) override;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) final;
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdT) final;
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdT) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 

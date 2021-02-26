@@ -182,6 +182,16 @@ namespace MAT
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
         int gp, int eleGID) override;
 
+    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
+        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
+        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
+        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int gp, int eleGID,
+        const double* concentration, const double* temp, double* DsntDT,
+        LINALG::Matrix<9, 1>* D2sntDFDT) override;
+
+    void EvaluateLinearizationOD(const LINALG::Matrix<3, 3>& defgrd, double concentration,
+        LINALG::Matrix<9, 1>* DFDx) override;
+
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     void Update() override;
@@ -362,6 +372,14 @@ namespace MAT
      * @param[in] gp      current gauss point
      */
     void PreEvaluate(Teuchos::ParameterList& params, int gp) const;
+
+    /*!
+     * @brief set the gauss point concentration to the respective parameter class of the inelastic
+     * material
+     *
+     * @param[in]  concentration concentration at gauss point
+     */
+    void SetConcentrationGP(double concentration);
 
    private:
     /// Holder for anisotropy

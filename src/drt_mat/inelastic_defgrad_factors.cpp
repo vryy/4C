@@ -305,6 +305,18 @@ void MAT::InelasticDefgradScalar::PreEvaluate(Teuchos::ParameterList& params, co
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradScalar::SetConcentrationGP(const double concentration)
+{
+  const int dummy_gp(0);
+  SetGP(dummy_gp);
+
+  const double Sc1 = Parameter()->Scalar1();
+
+  GetConcentrationGP().at(Sc1 - 1) = concentration;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
     MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradPolynomialShape> PolynomialGrowth)
     : InelasticDefgradScalar(params), polynomial_growth_(std::move(PolynomialGrowth))
@@ -442,6 +454,29 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinScalarIso::EvaluateInelasticDefGradDerivative(
+    const double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
+{
+  // get parameters
+  const double Sc1 = Parameter()->Scalar1();
+  const double material_concentration = GetConcentrationGP().at(Sc1 - 1) * detjacobian;
+
+  // get growth factor
+  const double growth_factor = linear_growth_->EvaluateLinearGrowth(material_concentration);
+  // calculate the scale factor needed to calculate the derivative below
+  const double scalefac = 1.0 / 3.0 * std::pow(1 + growth_factor, -2.0 / 3.0) *
+                          linear_growth_->GrowthFac() * detjacobian;
+
+  // prepare identity tensor as 9x1 vector
+  static LINALG::Matrix<9, 1> id9x1(true);
+  for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
+
+  // here DFinDc is zeroed out and filled with the current value
+  DFinDx.Update(scalefac, id9x1, 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
     MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> LinearGrowth)
     : InelasticDefgradScalar(params), linear_growth_(std::move(LinearGrowth))
@@ -544,6 +579,21 @@ void MAT::InelasticDefgradLinScalarAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinScalarAniso::EvaluateInelasticDefGradDerivative(
+    const double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
+{
+  const double scalefac = linear_growth_->GrowthFac() * detjacobian;
+
+  // get the growth direction matrix as a 9x1 vector
+  static LINALG::Matrix<9, 1> growthdirmat9x1(true);
+  UTILS::VOIGT::Matrix3x3to9x1(Parameter()->Growthdirmat(), growthdirmat9x1);
+
+  // here DFinDc is zeroed out and filled with the current value
+  DFinDx.Update(scalefac, growthdirmat9x1, 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::InelasticDefgradPolyIntercalFracIso::InelasticDefgradPolyIntercalFracIso(
     MAT::PAR::Parameter* params,
     const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth)
@@ -638,6 +688,36 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
 
   // calculate diFinjdc and add contribution to dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(scalefac, dSdiFinj, id9x1, 1.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInelasticDefGradDerivative(
+    const double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
+{
+  static LINALG::Matrix<9, 1> id9x1(true);
+  // prepare id9x1 (identity matrix written as a 9x1 vector)
+  for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
+
+  // get parameters
+  const double Sc1 = Parameter()->Scalar1();
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
+  const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+
+  // get polynomial and its derivative
+  const double PolynomValue = EvaluatePolynomial(concentration, detjacobian);
+  const double PolynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+
+  // calculate the scale factor needed to get the derivative later
+  const double denominator = 1.0 / (PolynomReferenceValue + 1.0);
+  const double base = (PolynomValue + 1.0) * denominator;
+  const double dChidc = MAT::Electrode::ComputeIntercalationFractionDerivative(
+      Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
+  const double scalefac =
+      1.0 / 3.0 * std::pow(base, -2.0 / 3.0) * PolynomDerivativeValue * denominator * dChidc;
+
+  // here DFinDc is zeroed out and filled with the current value
+  DFinDx.Update(scalefac, id9x1, 0.0);
 }
 
 /*--------------------------------------------------------------------*
@@ -756,6 +836,31 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInelasticDefGradDerivative(
+    const double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
+{
+  // get parameters
+  const double Sc1 = Parameter()->Scalar1();
+  const double concentration = GetConcentrationGP().at(Sc1 - 1);
+  const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
+
+  // get polynomial derivative
+  const double PolynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+
+  const double dChidc = MAT::Electrode::ComputeIntercalationFractionDerivative(
+      Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
+  const double scalefac = PolynomDerivativeValue / (PolynomReferenceValue + 1.0) * dChidc;
+
+  // get the growth direction matrix as a 9x1 vector
+  static LINALG::Matrix<9, 1> growthdirmat9x1(true);
+  UTILS::VOIGT::Matrix3x3to9x1(Parameter()->Growthdirmat(), growthdirmat9x1);
+
+  // here DFinDc is zeroed out and filled with the current value
+  DFinDx.Update(scalefac, growthdirmat9x1, 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::InelasticDefgradLinearShape::InelasticDefgradLinearShape(
     const double GrowthFac, const double ReferenceValue)
     : GrowthFac_(GrowthFac), ReferenceValue_(ReferenceValue)
@@ -851,6 +956,26 @@ void MAT::InelasticDefgradLinTempIso::EvaluateInverseInelasticDefGrad(
 
   // calculate inverse inelastic deformation gradient
   for (int i = 0; i < 3; ++i) iFinM(i, i) = 1.0 / isoinelasticdefo;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradLinTempIso::EvaluateInelasticDefGradDerivative(
+    double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
+{
+  // get parameters
+  const double tempgrowthfac = Parameter()->GetTempGrowthFac();
+  const double reftemp = Parameter()->RefTemp();
+
+  const double growthfactor = 1.0 + tempgrowthfac * (GetTemperatureGP() - reftemp);
+  const double scalefac = tempgrowthfac / 3.0 * std::pow(growthfactor, -2.0 / 3.0);
+
+  // prepare identity tensor as 9x1 vector
+  static LINALG::Matrix<9, 1> id9x1(true);
+  for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
+
+  // here DFinDT is zeroed out and filled with the current value
+  DFinDx.Update(scalefac, id9x1, 0.0);
 }
 
 /*--------------------------------------------------------------------*
