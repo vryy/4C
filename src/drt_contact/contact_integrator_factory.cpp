@@ -40,8 +40,7 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
     }
     case INPAR::CONTACT::solution_xcontact:
     {
-      integrator =
-          Teuchos::rcp<CONTACT::CoIntegrator>(BuildXIntegrator(p_mortar, slave_type, comm));
+      integrator = BuildXIntegrator(p_mortar, slave_type, comm);
       break;
     }
     case INPAR::CONTACT::solution_nitsche:
@@ -99,26 +98,23 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::CoIntegrator* CONTACT::INTEGRATOR::Factory::BuildXIntegrator(
+Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildXIntegrator(
     Teuchos::ParameterList& p_mortar, const DRT::Element::DiscretizationType& slave_type,
     const Epetra_Comm& comm) const
 {
-  CONTACT::CoIntegrator* xintegrator = nullptr;
   switch (slave_type)
   {
     case DRT::Element::line2:
     {
-      xintegrator = BuildConcreteXIntegrator<DRT::Element::line2>(p_mortar, comm);
-      break;
+      return BuildConcreteXIntegrator<DRT::Element::line2>(p_mortar, comm);
     }
     default:
     {
       dserror("Unsupported slave element type! (eletype = %d | %s)", slave_type,
           DRT::DistypeToString(slave_type).c_str());
-      break;
+      return Teuchos::null;
     }
   }
-  return xintegrator;
 }
 
 
