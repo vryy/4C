@@ -76,13 +76,11 @@ SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6.xml
-AZSUB                           1000
 ----------------------------------------------------------SOLVER 2
 SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6_scatra.xml
-AZSUB                           1000
 ----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------SOLVER 4
@@ -90,7 +88,6 @@ SOLVER                          Aztec_MSR
 AZPREC                          AMGnxn
 AMGNXN_TYPE                     XML
 AMGNXN_XML_FILE                 ssi_mono_3D_tet4_elch_s2i_butlervolmer_manifold_BGS-AMG_6x6_manifold.xml
-AZSUB                           1000
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 4 NUMFACINEL 1 INELDEFGRADFACIDS 5 DENS 1.0
 MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 4 NUMFACINEL 1 INELDEFGRADFACIDS 5 DENS 1.0
