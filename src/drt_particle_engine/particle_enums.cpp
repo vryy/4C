@@ -34,6 +34,8 @@ int PARTICLEENGINE::EnumToStateDim(const enum ParticleState& state)
     case Colorfield:
     case Curvature:
     case WallColorfield:
+    case LastIterDensity:
+    case LastIterTemperature:
       dim = 1;
       break;
 
@@ -191,6 +193,12 @@ std::string PARTICLEENGINE::EnumToStateName(const enum ParticleState& state)
       break;
     case LastIterModifiedAcceleration:
       name = "modified acceleration last iteration";
+      break;
+    case LastIterDensity:
+      name = "density last iteration";
+      break;
+    case LastIterTemperature:
+      name = "temperature last iteration";
       break;
     default:
       dserror("particle state unknown!");
