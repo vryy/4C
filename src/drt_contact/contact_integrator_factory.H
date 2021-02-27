@@ -29,12 +29,6 @@ namespace CONTACT
     class Factory
     {
      public:
-      //! constructor
-      Factory();
-
-      //! destructor
-      virtual ~Factory(){};
-
       /*! \brief Build the desired contact integrator
        *
        * \date 04/16
@@ -48,7 +42,7 @@ namespace CONTACT
        *
        *  \author hiermeier
        *  \date 08/16 */
-      CONTACT::CoIntegrator* BuildXIntegrator(Teuchos::ParameterList& p_mortar,
+      Teuchos::RCP<CONTACT::CoIntegrator> BuildXIntegrator(Teuchos::ParameterList& p_mortar,
           const DRT::Element::DiscretizationType& slave_type, const Epetra_Comm& comm) const;
 
       /*! \brief Build the eXtended integrator considering the problem dimension
@@ -56,12 +50,11 @@ namespace CONTACT
        *  \author hiermeier
        *  \date 08/16 */
       template <DRT::Element::DiscretizationType slave_type>
-      CONTACT::CoIntegrator* BuildConcreteXIntegrator(
+      Teuchos::RCP<CONTACT::CoIntegrator> BuildConcreteXIntegrator(
           Teuchos::ParameterList& p_mortar, const Epetra_Comm& comm) const
       {
         const int probdim = p_mortar.get<int>("DIMENSION");
         const int dim = DRT::UTILS::DisTypeToDim<slave_type>::dim;
-        CONTACT::CoIntegrator* xintegrator = NULL;
 
         if (probdim <= dim)
         {
@@ -76,17 +69,15 @@ namespace CONTACT
         {
           case 2:
           {
-            xintegrator = new XCONTACT::Integrator<2, slave_type>(p_mortar, comm);
-            break;
+            return Teuchos::RCP<CONTACT::CoIntegrator>(
+                new XCONTACT::Integrator<2, slave_type>(p_mortar, comm));
           }
           default:
           {
             dserror("Currently unsupported problem dimension! (probdim = %d)", probdim);
-            break;
+            return Teuchos::null;
           }
         }
-
-        return xintegrator;
       }
     };  // class Factory
 

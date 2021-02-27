@@ -37,7 +37,7 @@ namespace CONTACT
   {
     /// Get the solid to solid contact conditions
     int GetContactConditions(std::vector<DRT::Condition*>& cond_group,
-        const std::vector<DRT::Condition*> beamandsolidcontactconditions,
+        const std::vector<DRT::Condition*>& beamandsolidcontactconditions,
         const bool& throw_error = true);
 
     /// Find the solid to solid contact conditions and combine them to contact condition groups
@@ -50,7 +50,7 @@ namespace CONTACT
 
     /// Gather information which side is master and which side is slave
     void GetMasterSlaveSideInfo(std::vector<bool>& isslave, std::vector<bool>& isself,
-        const std::vector<DRT::Condition*> cond_grp);
+        const std::vector<DRT::Condition*>& cond_grp);
 
     /**
      * \brief Gather information on initialization (Active/Inactive)
@@ -67,7 +67,7 @@ namespace CONTACT
      * \author cschmidt \date 11/18 */
     void GetInitializationInfo(bool& Two_half_pass, bool& Check_nonsmooth_selfcontactsurface,
         bool& Searchele_AllProc, std::vector<bool>& isactive, std::vector<bool>& isslave,
-        std::vector<bool>& isself, const std::vector<DRT::Condition*> cond_grp);
+        std::vector<bool>& isself, const std::vector<DRT::Condition*>& cond_grp);
 
     /// write conservation data to an output file
     void WriteConservationDataToFile(const int mypid, const int interface_id, const int nln_iter,

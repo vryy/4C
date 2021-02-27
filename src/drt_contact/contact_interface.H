@@ -10,9 +10,9 @@
 #ifndef CONTACT_INTERFACE_H
 #define CONTACT_INTERFACE_H
 
-#include "../drt_mortar/mortar_strategy_base.H"
-#include "../drt_mortar/mortar_interface.H"
 #include "../drt_inpar/inpar_contact.H"
+#include "../drt_mortar/mortar_interface.H"
+#include "../drt_mortar/mortar_strategy_base.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 
 // forward declarations
@@ -59,9 +59,6 @@ namespace CONTACT
    public:
     /// constructor
     InterfaceDataContainer();
-
-    /// destructor
-    virtual ~InterfaceDataContainer(){};
 
     /// @name Accessors
     /// @{
@@ -335,12 +332,9 @@ namespace CONTACT
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
         bool selfcontact);
 
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~CoInterface() = default;
-
+    // don't want = operator and cctor
+    CoInterface operator=(const CoInterface& old) = delete;
+    CoInterface(const CoInterface& old) = delete;
 
     /*!
     \brief Print this Interface
@@ -1127,7 +1121,7 @@ namespace CONTACT
 
     */
     void EvalResultantMoment(const Epetra_Vector& fs, const Epetra_Vector& fm,
-        LINALG::SerialDenseMatrix* conservation_data_ptr = NULL) const;
+        LINALG::SerialDenseMatrix* conservation_data_ptr = nullptr) const;
 
     /*!
     \brief Get the nodal interface force
@@ -1415,7 +1409,7 @@ namespace CONTACT
     Derived version!
 
     */
-    virtual void PostEvaluate(const int step, const int iter);
+    void PostEvaluate(const int step, const int iter) override;
 
     /*!
     \brief Compute cpp normal based on averaged nodal normal field on master side.
@@ -1601,10 +1595,6 @@ namespace CONTACT
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_;
 
    protected:
-    // don't want = operator and cctor
-    CoInterface operator=(const CoInterface& old) = delete;
-    CoInterface(const CoInterface& old) = delete;
-
     /** @name References to the interface data container content
      *
      * \remark Please add no new member variables to this class and use the

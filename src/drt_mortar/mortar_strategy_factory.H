@@ -56,9 +56,6 @@ namespace MORTAR
       //! constructor
       Factory();
 
-      //! destructor
-      virtual ~Factory(){};
-
       //! initialization of class variables
       void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
       void Init(Teuchos::RCP<DRT::DiscretizationInterface> dis);
@@ -68,7 +65,7 @@ namespace MORTAR
        * \note Since this is an abstract class, the setup flag stays false. It has to be set by
        * the Setup routing of the derived class.
        */
-      void Setup();
+      virtual void Setup();
 
       /*! \brief print strategy banner
        *

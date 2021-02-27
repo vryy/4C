@@ -76,34 +76,24 @@ namespace MORTAR
     {
       case state_old_displacement:
         return "displacement";
-        break;
       case state_new_displacement:
         return "displacement new";
-        break;
       case state_lagrange_multiplier:
         return "lm";
-        break;
       case state_fvelocity:
         return "fveclocity";
-        break;
       case state_svelocity:
         return "svelocity";
-        break;
       case state_fpressure:
         return "fpressure";
-        break;
       case state_temperature:
         return "temperature";
-        break;
       case state_thermo_lagrange_multiplier:
         return "thermo_lm";
-        break;
       default:
         return "unknown MORTAR::StateType";
-        break;
     }
-    return "";
-  };
+  }
 
   /*! \brief Map std::string to state type enum
    *
@@ -131,7 +121,7 @@ namespace MORTAR
       dserror("Unknown state type name. (name = %s)", name.c_str());
 
     return type;
-  };
+  }
 
   /*----------------------------------------------------------------------------*/
   /** \brief Mortar interface data container
@@ -347,7 +337,7 @@ namespace MORTAR
 
     const MortarInterface& GetMaSharingRefInterface() const
     {
-      if (masharingrefinterface_ == NULL) dserror("NULL pointer");
+      if (masharingrefinterface_ == nullptr) dserror("nullpointer");
       return *masharingrefinterface_;
     }
 
@@ -385,7 +375,7 @@ namespace MORTAR
     bool redistributed_;
 
     //! master sharing reference interface ptr
-    const MortarInterface* masharingrefinterface_ = NULL;
+    const MortarInterface* masharingrefinterface_ = nullptr;
 
     //! the discretization of the mortar interface
     Teuchos::RCP<DRT::Discretization> idiscret_;
@@ -534,7 +524,7 @@ namespace MORTAR
 
     @param[in] interfaceData_ptr Interface data container
     */
-    MortarInterface(const Teuchos::RCP<MORTAR::InterfaceDataContainer>& interfaceData_ptr);
+    MortarInterface(Teuchos::RCP<MORTAR::InterfaceDataContainer> interfaceData_ptr);
 
    public:
     /** \brief Create a new Mortar interface object
@@ -560,13 +550,14 @@ namespace MORTAR
     \param spatialDim (in): Global problem dimension
     \param imortar (in): Global contact parameter list
     */
-    MortarInterface(const Teuchos::RCP<InterfaceDataContainer>& interfaceData_ptr, const int id,
+    MortarInterface(Teuchos::RCP<InterfaceDataContainer> interfaceData_ptr, const int id,
         const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& imortar);
 
-    /*!
-    \brief Destructor
-    */
-    virtual ~MortarInterface() = default;
+    //! don't want = operator
+    MortarInterface operator=(const MortarInterface& old) = delete;
+
+    //! don't want copy constructor
+    MortarInterface(const MortarInterface& old) = delete;
 
     /*!
     \brief Get unique ID of this interface
@@ -1694,12 +1685,6 @@ namespace MORTAR
     Teuchos::RCP<InterfaceDataContainer> interfaceData_;
 
    protected:
-    //! don't want = operator
-    MortarInterface operator=(const MortarInterface& old) = delete;
-
-    //! don't want copy constructor
-    MortarInterface(const MortarInterface& old) = delete;
-
     /** @name References to the interface data container content
      *
      * \remark Please add no new member variables to this class and use the

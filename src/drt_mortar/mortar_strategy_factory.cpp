@@ -11,12 +11,9 @@
 #include "mortar_element.H"
 #include "mortar_interface.H"
 
-#include "../drt_inpar/inpar_contact.H"
-
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_nurbs_discret/drt_control_point.H"

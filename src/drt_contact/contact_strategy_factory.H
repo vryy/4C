@@ -39,14 +39,7 @@ namespace CONTACT
     class Factory : public MORTAR::STRATEGY::Factory
     {
      public:
-      //! constructor
-      Factory(){};
-
-      //! destructor
-      virtual ~Factory(){};
-
-      //! derived
-      virtual void Setup();
+      void Setup() override;
 
       /*! \brief Read and check contact input parameters
        *
@@ -102,7 +95,7 @@ namespace CONTACT
       Teuchos::RCP<CONTACT::CoAbstractStrategy> BuildStrategy(const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces,
-          CONTACT::ParamsInterface* cparams_interface = NULL) const;
+          CONTACT::ParamsInterface* cparams_interface = nullptr) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
@@ -117,7 +110,7 @@ namespace CONTACT
           const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
           Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr,
-          CONTACT::ParamsInterface* cparams_interface = NULL);
+          CONTACT::ParamsInterface* cparams_interface = nullptr);
 
       //! Create the desired search tree object
       void BuildSearchTree(const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& interfaces) const;
