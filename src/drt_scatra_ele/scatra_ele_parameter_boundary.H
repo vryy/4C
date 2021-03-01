@@ -23,15 +23,11 @@ namespace DRT
     class ScaTraEleParameterBoundary : public ScaTraEleParameterBase
     {
      public:
-      //! destructor
-      virtual ~ScaTraEleParameterBoundary() { return; };
-
       //! singleton access method
       static ScaTraEleParameterBoundary* Instance(
           const std::string& disname, const ScaTraEleParameterBoundary* delete_me = nullptr);
 
-      //! singleton destruction
-      virtual void Done();
+      void Done() override;
 
       //! set parameters for specific kintetic model
       void SetParameters(Teuchos::ParameterList& parameters) override;

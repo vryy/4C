@@ -92,9 +92,6 @@ namespace SCATRA
             parameters  //!< input parameters for scatra-scatra interface coupling
     );
 
-    //! destructor
-    virtual ~MeshtyingStrategyS2I() { return; };
-
     //! provide global state vectors for element evaluation
     void AddTimeIntegrationSpecificVectors() const override;
 
@@ -110,12 +107,9 @@ namespace SCATRA
     //! compute time derivatives of discrete state variables
     void ComputeTimeDerivative() const override;
 
-    //! condense global system of equations
-    void CondenseMatAndRHS(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const bool calcinittimederiv = false  //!< flag for calculation of initial time derivative
-        ) const override;
+    void CondenseMatAndRHS(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Teuchos::RCP<Epetra_Vector>& residual,
+        const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
     const Teuchos::RCP<const ADAPTER::Coupling> CouplingAdapter() const { return icoup_; };
@@ -129,13 +123,15 @@ namespace SCATRA
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying() override;
 
-    //! evaluate mortar integration cells
-    void EvaluateMortarCells(const DRT::Discretization& idiscret,  //!< interface discretization
-        const Teuchos::ParameterList&
-            params,  //!< parameter list for evaluation of mortar integration cells
-        SCATRA::MortarCellAssemblyStrategy&
-            strategy  //!< assembly strategy for mortar integration cells
-        ) const;
+    /*!
+     * @brief  evaluate mortar integration cells
+     *
+     * @param idiscret  interface discretization
+     * @param params    parameter list for evaluation of mortar integration cells
+     * @param strategy  assembly strategy for mortar integration cells
+     */
+    void EvaluateMortarCells(const DRT::Discretization& idiscret,
+        const Teuchos::ParameterList& params, SCATRA::MortarCellAssemblyStrategy& strategy) const;
 
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
     void ExplicitPredictor() const override;
@@ -146,12 +142,15 @@ namespace SCATRA
         const Epetra_Map& rowmap  //!< map of matrix rows to be extracted
     );
 
-    //! finite difference check for extended system matrix involving scatra-scatra interface layer
-    //! growth (for debugging only)
-    void FDCheck(
-        const LINALG::BlockSparseMatrixBase& extendedsystemmatrix,  //!< global system matrix
-        const Teuchos::RCP<Epetra_Vector>& extendedresidual         //!< global residual vector
-        ) const;
+    /*!
+     * @brief finite difference check for extended system matrix involving scatra-scatra interface
+     * layer growth (for debugging only)
+     *
+     * @param extendedsystemmatrix  global system matrix
+     * @param extendedresidual      global residual vector
+     */
+    void FDCheck(const LINALG::BlockSparseMatrixBase& extendedsystemmatrix,
+        const Teuchos::RCP<Epetra_Vector>& extendedresidual) const;
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
     const Teuchos::RCP<Epetra_Vector>& GrowthVarN() const { return growthn_; };
@@ -217,10 +216,8 @@ namespace SCATRA
     //! return mortar projector P
     const Teuchos::RCP<LINALG::SparseMatrix>& P() const { return P_; };
 
-    //! read restart data
-    void ReadRestart(const int step,                          //!< restart step
-        Teuchos::RCP<IO::InputControl> input = Teuchos::null  //!< control file manager
-        ) const override;
+    void ReadRestart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const override;
 
     //! set general parameters for element evaluation
     void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const override;
@@ -237,6 +234,17 @@ namespace SCATRA
      */
     void SetConditionSpecificScaTraParameters(DRT::Condition& s2icondition) const;
 
+    /*!
+     * \brief Writes S2ICoupling condition specific parameters to parameter list that is stored to
+     * the boundary parameter class afterwards
+     *
+     * @param[in]  s2icondition           ScaTra-ScaTra interface condition whose parameters are
+     *                                    stored to the parameter list
+     * @param[out] s2icouplingparameters  parameter list filled with condition specific parameters
+     */
+    static void WriteS2IConditionSpecificScaTraParametersToParameterList(
+        DRT::Condition& s2icondition, Teuchos::ParameterList& s2icouplingparameters);
+
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
     void SetOldPartOfRHS() const override;
@@ -248,15 +256,11 @@ namespace SCATRA
     //! (non-mortar case) or slave and master dofs (mortar case)
     const Teuchos::RCP<LINALG::SparseMatrix>& SlaveMatrix() const { return islavematrix_; };
 
-    //! solve resulting linear system of equations
-    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& increment,              //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
-        const int& iteration,  //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-        ) const override;
+    void Solve(const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
+        const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
+        const Teuchos::RCP<LINALG::KrylovProjector>& projector) const override;
 
     //! return linear solver for global system of linear equations
     const LINALG::Solver& Solver() const override;
@@ -450,165 +454,212 @@ namespace SCATRA
     //! build map extractors associated with blocks of global system matrix
     void BuildBlockMapExtractors();
 
-    //! evaluate single mortar integration cell
-    void EvaluateMortarCell(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::IntCell& cell,                                    //!< mortar integration cell
-        const INPAR::SCATRA::ImplType&
-            impltype,  //!< physical implementation type of mortar integration cell
-        MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,    //!< parameter list
-        Epetra_SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
-        Epetra_SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
-        Epetra_SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
-        Epetra_SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
-        Epetra_SerialDenseVector& cellvector1,   //!< cell vector 1
-        Epetra_SerialDenseVector& cellvector2    //!< cell vector 2
-        ) const;
+    /*!
+     * @brief  evaluate single mortar integration cell
+     *
+     * @param idiscret       interface discretization
+     * @param cell           mortar integration cell
+     * @param impltype       physical implementation type of mortar integration cell
+     * @param slaveelement   slave-side mortar element
+     * @param masterelement  master-side mortar element
+     * @param la_slave       slave-side location array
+     * @param la_master      master-side location array
+     * @param params         parameter list
+     * @param cellmatrix1    cell matrix 1
+     * @param cellmatrix2    cell matrix 2
+     * @param cellmatrix3    cell matrix 3
+     * @param cellmatrix4    cell matrix 4
+     * @param cellvector1    cell vector 1
+     * @param cellvector2    cell vector 2
+     */
+    void EvaluateMortarCell(const DRT::Discretization& idiscret, MORTAR::IntCell& cell,
+        const INPAR::SCATRA::ImplType& impltype, MORTAR::MortarElement& slaveelement,
+        MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+        DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+        Epetra_SerialDenseMatrix& cellmatrix1, Epetra_SerialDenseMatrix& cellmatrix2,
+        Epetra_SerialDenseMatrix& cellmatrix3, Epetra_SerialDenseMatrix& cellmatrix4,
+        Epetra_SerialDenseVector& cellvector1, Epetra_SerialDenseVector& cellvector2) const;
 
-    //! evaluate single slave-side node for node-to-segment coupling
-    void EvaluateSlaveNode(const DRT::Discretization& idiscret,  //!< interface discretization
-        const MORTAR::MortarNode& slavenode,                     //!< slave-side node
-        const double&
-            lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-        const INPAR::SCATRA::ImplType&
-            impltype,  //!< physical implementation type of mortar integration cell
-        MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-        MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-        DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,  //!< master-side location array
-        const Teuchos::ParameterList& params,    //!< parameter list
-        Epetra_SerialDenseMatrix& ntsmatrix1,    //!< node-to-segment matrix 1
-        Epetra_SerialDenseMatrix& ntsmatrix2,    //!< node-to-segment matrix 2
-        Epetra_SerialDenseMatrix& ntsmatrix3,    //!< node-to-segment matrix 3
-        Epetra_SerialDenseMatrix& ntsmatrix4,    //!< node-to-segment matrix 4
-        Epetra_SerialDenseVector& ntsvector1,    //!< node-to-segment vector 1
-        Epetra_SerialDenseVector& ntsvector2     //!< node-to-segment vector 2
-        ) const;
+    /*!
+     * @brief  evaluate single slave-side node for node-to-segment coupling
+     *
+     * @param idiscret       interface discretization
+     * @param slavenode      slave-side node
+     * @param lumpedarea     lumped interface area fraction associated with slave-side node
+     * @param impltype       physical implementation type of mortar integration cell
+     * @param slaveelement   slave-side mortar element
+     * @param masterelement  master-side mortar element
+     * @param la_slave       slave-side location array
+     * @param la_master      master-side location array
+     * @param params         parameter list
+     * @param ntsmatrix1     node-to-segment matrix 1
+     * @param ntsmatrix2     node-to-segment matrix 2
+     * @param ntsmatrix3     node-to-segment matrix 3
+     * @param ntsmatrix4     node-to-segment matrix 4
+     * @param ntsvector1     node-to-segment vector 1
+     * @param ntsvector2     node-to-segment vector 2
+     */
+    void EvaluateSlaveNode(const DRT::Discretization& idiscret, const MORTAR::MortarNode& slavenode,
+        const double& lumpedarea, const INPAR::SCATRA::ImplType& impltype,
+        MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+        DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
+        const Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& ntsmatrix1,
+        Epetra_SerialDenseMatrix& ntsmatrix2, Epetra_SerialDenseMatrix& ntsmatrix3,
+        Epetra_SerialDenseMatrix& ntsmatrix4, Epetra_SerialDenseVector& ntsvector1,
+        Epetra_SerialDenseVector& ntsvector2) const;
 
-    //! evaluate single mortar element
-    void EvaluateMortarElement(const DRT::Discretization& idiscret,  //!< interface discretization
-        MORTAR::MortarElement& element,                              //!< mortar element
-        const INPAR::SCATRA::ImplType&
-            impltype,                          //!< physical implementation type of mortar element
-        DRT::Element::LocationArray& la,       //!< location array
-        const Teuchos::ParameterList& params,  //!< parameter list
-        Epetra_SerialDenseMatrix& elematrix1,  //!< element matrix 1
-        Epetra_SerialDenseMatrix& elematrix2,  //!< element matrix 2
-        Epetra_SerialDenseMatrix& elematrix3,  //!< element matrix 3
-        Epetra_SerialDenseMatrix& elematrix4,  //!< element matrix 4
-        Epetra_SerialDenseVector& elevector1,  //!< element vector 1
-        Epetra_SerialDenseVector& elevector2   //!< element vector 2
-        ) const;
+    /*!
+     * @brief  evaluate single mortar element
+     *
+     * @param idiscret   interface discretization
+     * @param element    mortar element
+     * @param impltype   physical implementation type of mortar element
+     * @param la         location array
+     * @param params     parameter list
+     * @param elematrix1 element matrix 1
+     * @param elematrix2 element matrix 2
+     * @param elematrix3 element matrix 3
+     * @param elematrix4 element matrix 4
+     * @param elevector1 element vector 1
+     * @param elevector2 element vector 2
+     */
+    void EvaluateMortarElement(const DRT::Discretization& idiscret, MORTAR::MortarElement& element,
+        const INPAR::SCATRA::ImplType& impltype, DRT::Element::LocationArray& la,
+        const Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elematrix1,
+        Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseMatrix& elematrix3,
+        Epetra_SerialDenseMatrix& elematrix4, Epetra_SerialDenseVector& elevector1,
+        Epetra_SerialDenseVector& elevector2) const;
 
-    //! evaluate mortar integration cells
-    void EvaluateMortarCells(const DRT::Discretization& idiscret,  //!< interface discretization
-        const Teuchos::ParameterList&
-            params,  //!< parameter list for evaluation of mortar integration cells
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,  //!< system matrix 1
-        const INPAR::S2I::InterfaceSides
-            matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
-        const INPAR::S2I::InterfaceSides
-            matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,  //!< system matrix 2
-        const INPAR::S2I::InterfaceSides
-            matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
-        const INPAR::S2I::InterfaceSides
-            matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,  //!< system matrix 3
-        const INPAR::S2I::InterfaceSides
-            matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
-        const INPAR::S2I::InterfaceSides
-            matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,  //!< system matrix 4
-        const INPAR::S2I::InterfaceSides
-            matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
-        const INPAR::S2I::InterfaceSides
-            matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,  //!< system vector 1
-        const INPAR::S2I::InterfaceSides
-            vector1_side,  //!< interface side associated with system vector 1
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,  //!< system vector 2
-        const INPAR::S2I::InterfaceSides
-            vector2_side  //!< interface side associated with system vector 2
-        ) const;
+    /*!
+     * @brief  evaluate mortar integration cells
+     *
+     * @param idiscret           interface discretization
+     * @param params             parameter list for evaluation of mortar integration cells
+     * @param systemmatrix1      system matrix 1
+     * @param matrix1_side_rows  interface side associated with rows of system matrix 1
+     * @param matrix1_side_cols  interface side associated with columns of system matrix 1
+     * @param systemmatrix2      system matrix 2
+     * @param matrix2_side_rows  interface side associated with rows of system matrix 2
+     * @param matrix2_side_cols  interface side associated with columns of system matrix 2
+     * @param systemmatrix3      system matrix 3
+     * @param matrix3_side_rows  interface side associated with rows of system matrix 3
+     * @param matrix3_side_cols  interface side associated with columns of system matrix 3
+     * @param systemmatrix4      system matrix 4
+     * @param matrix4_side_rows  interface side associated with rows of system matrix 4
+     * @param matrix4_side_cols  interface side associated with columns of system matrix 4
+     * @param systemvector1      system vector 1
+     * @param vector1_side       interface side associated with system vector 1
+     * @param systemvector2      system vector 2
+     * @param vector2_side       interface side associated with system vector 2
+     */
+    void EvaluateMortarCells(const DRT::Discretization& idiscret,
+        const Teuchos::ParameterList& params,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,
+        const INPAR::S2I::InterfaceSides matrix1_side_rows,
+        const INPAR::S2I::InterfaceSides matrix1_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,
+        const INPAR::S2I::InterfaceSides matrix2_side_rows,
+        const INPAR::S2I::InterfaceSides matrix2_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,
+        const INPAR::S2I::InterfaceSides matrix3_side_rows,
+        const INPAR::S2I::InterfaceSides matrix3_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,
+        const INPAR::S2I::InterfaceSides matrix4_side_rows,
+        const INPAR::S2I::InterfaceSides matrix4_side_cols,
+        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+        const INPAR::S2I::InterfaceSides vector1_side,
+        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+        const INPAR::S2I::InterfaceSides vector2_side) const;
 
-    //! evaluate node-to-segment coupling
-    void EvaluateNTS(const Epetra_IntVector&
-                         islavenodestomasterelements,  //!< vector for node-to-segment connectivity
-        const Epetra_Vector&
-            islavenodeslumpedareas,  //!< vector for lumped interface area fractions associated with
-                                     //!< slave-side nodes
-        const Epetra_IntVector&
-            islavenodesimpltypes,  //!< vector for physical implementation types of slave-side nodes
-        const DRT::Discretization& idiscret,  //!< interface discretization
-        const Teuchos::ParameterList&
-            params,  //!< parameter list for evaluation of mortar integration cells
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,  //!< system matrix 1
-        const INPAR::S2I::InterfaceSides
-            matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
-        const INPAR::S2I::InterfaceSides
-            matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,  //!< system matrix 2
-        const INPAR::S2I::InterfaceSides
-            matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
-        const INPAR::S2I::InterfaceSides
-            matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,  //!< system matrix 3
-        const INPAR::S2I::InterfaceSides
-            matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
-        const INPAR::S2I::InterfaceSides
-            matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,  //!< system matrix 4
-        const INPAR::S2I::InterfaceSides
-            matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
-        const INPAR::S2I::InterfaceSides
-            matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,  //!< system vector 1
-        const INPAR::S2I::InterfaceSides
-            vector1_side,  //!< interface side associated with system vector 1
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,  //!< system vector 2
-        const INPAR::S2I::InterfaceSides
-            vector2_side  //!< interface side associated with system vector 2
-        ) const;
+    /*!
+     * @brief  evaluate node-to-segment coupling
+     *
+     * @param islavenodestomasterelements  vector for node-to-segment connectivity
+     * @param islavenodeslumpedareas       vector for lumped interface area fractions associated
+     *                                     with slave-side nodes
+     * @param islavenodesimpltypes         vector for physical implementation types of slave-side
+     *                                     nodes
+     * @param idiscret                     interface discretization
+     * @param params                       parameter list for evaluation of mortar integration cells
+     * @param systemmatrix1                system matrix 1
+     * @param matrix1_side_rows            interface side associated with rows of system matrix 1
+     * @param matrix1_side_cols            interface side associated with columns of system matrix 1
+     * @param systemmatrix2                system matrix 2
+     * @param matrix2_side_rows            interface side associated with rows of system matrix 2
+     * @param matrix2_side_cols            interface side associated with columns of system matrix 2
+     * @param systemmatrix3                system matrix 3
+     * @param matrix3_side_rows            interface side associated with rows of system matrix 3
+     * @param matrix3_side_cols            interface side associated with columns of system matrix 3
+     * @param systemmatrix4                system matrix 4
+     * @param matrix4_side_rows     interface side associated with rows of system matrix 4
+     * @param matrix4_side_cols     interface side associated with columns of system matrix 4
+     * @param systemvector1         system vector 1
+     * @param vector1_side          interface side associated with system vector 1
+     * @param systemvector2         system vector 2
+     * @param vector2_side          interface side associated with system vector 2
+     */
+    void EvaluateNTS(const Epetra_IntVector& islavenodestomasterelements,
+        const Epetra_Vector& islavenodeslumpedareas, const Epetra_IntVector& islavenodesimpltypes,
+        const DRT::Discretization& idiscret, const Teuchos::ParameterList& params,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,
+        const INPAR::S2I::InterfaceSides matrix1_side_rows,
+        const INPAR::S2I::InterfaceSides matrix1_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,
+        const INPAR::S2I::InterfaceSides matrix2_side_rows,
+        const INPAR::S2I::InterfaceSides matrix2_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,
+        const INPAR::S2I::InterfaceSides matrix3_side_rows,
+        const INPAR::S2I::InterfaceSides matrix3_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,
+        const INPAR::S2I::InterfaceSides matrix4_side_rows,
+        const INPAR::S2I::InterfaceSides matrix4_side_cols,
+        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+        const INPAR::S2I::InterfaceSides vector1_side,
+        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+        const INPAR::S2I::InterfaceSides vector2_side) const;
 
-    //! evaluate mortar elements
-    void EvaluateMortarElements(const Epetra_Map& ielecolmap,  //!< column map of mortar elements
-        const Epetra_IntVector&
-            ieleimpltypes,  //!< vector for physical implementation types of mortar elements
-        const DRT::Discretization& idiscret,  //!< interface discretization
-        const Teuchos::ParameterList&
-            params,  //!< parameter list for evaluation of mortar integration cells
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,  //!< system matrix 1
-        const INPAR::S2I::InterfaceSides
-            matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
-        const INPAR::S2I::InterfaceSides
-            matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,  //!< system matrix 2
-        const INPAR::S2I::InterfaceSides
-            matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
-        const INPAR::S2I::InterfaceSides
-            matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,  //!< system matrix 3
-        const INPAR::S2I::InterfaceSides
-            matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
-        const INPAR::S2I::InterfaceSides
-            matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,  //!< system matrix 4
-        const INPAR::S2I::InterfaceSides
-            matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
-        const INPAR::S2I::InterfaceSides
-            matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,  //!< system vector 1
-        const INPAR::S2I::InterfaceSides
-            vector1_side,  //!< interface side associated with system vector 1
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,  //!< system vector 2
-        const INPAR::S2I::InterfaceSides
-            vector2_side  //!< interface side associated with system vector 2
-        ) const;
-
+    /*!
+     * @brief  evaluate mortar elements
+     *
+     * @param ielecolmap         column map of mortar elements
+     * @param ieleimpltypes      vector for physical implementation types of mortar elements
+     * @param idiscret           interface discretization
+     * @param params             parameter list for evaluation of mortar integration cells
+     * @param systemmatrix1      system matrix 1
+     * @param matrix1_side_rows  interface side associated with rows of system matrix 1
+     * @param matrix1_side_cols  interface side associated with columns of system matrix 1
+     * @param systemmatrix2      system matrix 2
+     * @param matrix2_side_rows  interface side associated with rows of system matrix 2
+     * @param matrix2_side_cols  interface side associated with columns of system matrix 2
+     * @param systemmatrix3      system matrix 3
+     * @param matrix3_side_rows  interface side associated with rows of system matrix 3
+     * @param matrix3_side_cols  interface side associated with columns of system matrix 3
+     * @param systemmatrix4      system matrix 4
+     * @param matrix4_side_rows  interface side associated with rows of system matrix 4
+     * @param matrix4_side_cols  interface side associated with columns of system matrix 4
+     * @param systemvector1      system vector 1
+     * @param vector1_side       interface side associated with system vector 1
+     * @param systemvector2      system vector 2
+     * @param vector2_side       interface side associated with system vector 2
+     */
+    void EvaluateMortarElements(const Epetra_Map& ielecolmap, const Epetra_IntVector& ieleimpltypes,
+        const DRT::Discretization& idiscret, const Teuchos::ParameterList& params,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,
+        const INPAR::S2I::InterfaceSides matrix1_side_rows,
+        const INPAR::S2I::InterfaceSides matrix1_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,
+        const INPAR::S2I::InterfaceSides matrix2_side_rows,
+        const INPAR::S2I::InterfaceSides matrix2_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,
+        const INPAR::S2I::InterfaceSides matrix3_side_rows,
+        const INPAR::S2I::InterfaceSides matrix3_side_cols,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,
+        const INPAR::S2I::InterfaceSides matrix4_side_rows,
+        const INPAR::S2I::InterfaceSides matrix4_side_cols,
+        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+        const INPAR::S2I::InterfaceSides vector1_side,
+        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+        const INPAR::S2I::InterfaceSides vector2_side) const;
 
     //! slave-side scatra-scatra interface coupling conditions
     std::map<const int, DRT::Condition* const> slaveconditions_;
@@ -682,9 +733,6 @@ namespace SCATRA
         const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
         const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
     );
-
-    //! protected destructor for singletons
-    virtual ~MortarCellInterface() { return; };
 
     //! flag for interface side underlying Lagrange multiplier definition
     const INPAR::S2I::InterfaceSides lmside_;
@@ -787,9 +835,6 @@ namespace SCATRA
         const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
     );
 
-    //! protected destructor for singletons
-    virtual ~MortarCellCalc() { return; };
-
     //! evaluate mortar matrices
     void EvaluateMortarMatrices(MORTAR::IntCell& cell,  //!< mortar integration cell
         MORTAR::MortarElement& slaveelement,            //!< slave-side mortar element
@@ -859,26 +904,35 @@ namespace SCATRA
         DRT::Element::LocationArray& la_master  //!< master-side location array
     );
 
-    //! extract nodal state variables associated with slave element
-    void ExtractNodeValues(
-        LINALG::Matrix<nen_slave_, 1>& estate_slave,  //!< state variables at slave-side nodes
-        const DRT::Discretization& idiscret,          //!< interface discretization
-        DRT::Element::LocationArray& la_slave,        //!< slave-side location array
-        const std::string& statename = "iphinp",      //!< name of relevant state
-        const int& nds = 0                            //!< number of relevant dofset
-        ) const;
+    /*!
+     * @brief  extract nodal state variables associated with slave element
+     *
+     * @param estate_slave  state variables at slave-side nodes
+     * @param idiscret      interface discretization
+     * @param la_slave      slave-side location array
+     * @param statename     name of relevant state
+     * @param nds          number of relevant dofset
+     */
+    void ExtractNodeValues(LINALG::Matrix<nen_slave_, 1>& estate_slave,
+        const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
+        const std::string& statename = "iphinp", const int& nds = 0) const;
 
-    //! extract nodal state variables associated with slave and master elements
-    void ExtractNodeValues(std::vector<LINALG::Matrix<nen_slave_, 1>>&
-                               estate_slave,  //!< state variables at slave-side nodes
-        std::vector<LINALG::Matrix<nen_master_, 1>>&
-            estate_master,                        //!< state variables at master-side nodes
-        const DRT::Discretization& idiscret,      //!< interface discretization
-        DRT::Element::LocationArray& la_slave,    //!< slave-side location array
-        DRT::Element::LocationArray& la_master,   //!< master-side location array
-        const std::string& statename = "iphinp",  //!< name of relevant state
-        const int& nds = 0                        //!< number of relevant dofset
-        ) const;
+    /*!
+     * @brief extract nodal state variables associated with slave and master elements
+     *
+     * @param estate_slave   state variables at slave-side nodes
+     * @param estate_master  state variables at master-side nodes
+     * @param idiscret       interface discretization
+     * @param la_slave      slave-side location array
+     * @param la_master     master-side location array
+     * @param statename      name of relevant state
+     * @param nds            number of relevant dofset
+     */
+    void ExtractNodeValues(std::vector<LINALG::Matrix<nen_slave_, 1>>& estate_slave,
+        std::vector<LINALG::Matrix<nen_master_, 1>>& estate_master,
+        const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
+        DRT::Element::LocationArray& la_master, const std::string& statename = "iphinp",
+        const int& nds = 0) const;
 
     //! evaluate slave-side and master-side shape functions and domain integration factor at cell
     //! integration point
@@ -935,12 +989,6 @@ namespace SCATRA
   class MortarCellFactory
   {
    public:
-    //! constructor
-    MortarCellFactory() { return; };
-
-    //! destructor
-    virtual ~MortarCellFactory() { return; };
-
     //! provide instance of mortar cell evaluation class of particular slave-side discretization
     //! type
     static MortarCellInterface* MortarCellCalc(
@@ -1019,16 +1067,16 @@ namespace SCATRA
         const unsigned nds_cols = 0   //!< number of dofset associated with matrix columns
     );
 
-    //! destructor
-    virtual ~MortarCellAssemblyStrategy() { return; };
-
-    //! assemble cell matrices and vectors into system matrices and vectors
-    void AssembleCellMatricesAndVectors(
-        DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,  //!< master-side location array
-        const int assembler_pid_master  //!< ID of processor performing master-side matrix and
-                                        //!< vector assembly
-        ) const;
+    /*!
+     * @brief assemble cell matrices and vectors into system matrices and vectors
+     *
+     * @param la_slave   slave-side location array
+     * @param la_master  master-side location array
+     * @param assembler_pid_master  ID of processor performing master-side matrix and vector
+     *                              assembly
+     */
+    void AssembleCellMatricesAndVectors(DRT::Element::LocationArray& la_slave,
+        DRT::Element::LocationArray& la_master, const int assembler_pid_master) const;
 
     //! bool flag for assembly of system matrix 1
     bool AssembleMatrix1() const { return systemmatrix1_ != Teuchos::null; };
@@ -1091,45 +1139,60 @@ namespace SCATRA
     const Teuchos::RCP<Epetra_MultiVector>& SystemVector2() const { return systemvector2_; };
 
    private:
-    //! assemble cell matrix into system matrix
-    void AssembleCellMatrix(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Epetra_SerialDenseMatrix& cellmatrix,                //!< cell matrix
-        const INPAR::S2I::InterfaceSides side_rows,  //!< interface side associated with matrix rows
-        const INPAR::S2I::InterfaceSides
-            side_cols,                           //!< interface side associated with matrix columns
-        DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,  //!< master-side location array
-        const int assembler_pid_master  //!< ID of processor performing master-side matrix assembly
-        ) const;
+    /*!
+     * @brief  assemble cell matrix into system matrix
+     *
+     * @param systemmatrix   system matrix
+     * @param cellmatrix     cell matrix
+     * @param side_rows      interface side associated with matrix rows
+     * @param side_cols      interface side associated with matrix columns
+     * @param la_slave       slave-side location array
+     * @param la_master      master-side location array
+     * @param assembler_pid_master   ID of processor performing master-side matrix assembly
+     */
+    void AssembleCellMatrix(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Epetra_SerialDenseMatrix& cellmatrix, const INPAR::S2I::InterfaceSides side_rows,
+        const INPAR::S2I::InterfaceSides side_cols, DRT::Element::LocationArray& la_slave,
+        DRT::Element::LocationArray& la_master, const int assembler_pid_master) const;
 
-    //! assemble cell vector into system vector
-    void AssembleCellVector(
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector,  //!< system vector
-        const Epetra_SerialDenseVector& cellvector,            //!< cell vector
-        const INPAR::S2I::InterfaceSides
-            side,  //!< interface side associated with system and cell vectors
-        DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-        DRT::Element::LocationArray& la_master,  //!< master-side location array
-        const int assembler_pid_master  //!< ID of processor performing master-side vector assembly
-        ) const;
+    /*!
+     * @brief  assemble cell vector into system vector
+     *
+     * @param systemvector  system vector
+     * @param cellvector    cell vector
+     * @param side          interface side associated with system and cell vectors
+     * @param la_slave      slave-side location array
+     * @param la_master     master-side location array
+     * @param assembler_pid_master  ID of processor performing master-side vector assembly
+     */
+    void AssembleCellVector(const Teuchos::RCP<Epetra_MultiVector>& systemvector,
+        const Epetra_SerialDenseVector& cellvector, const INPAR::S2I::InterfaceSides side,
+        DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
+        const int assembler_pid_master) const;
 
-    //! initialize cell matrix
-    void InitCellMatrix(Epetra_SerialDenseMatrix& cellmatrix,  //!< cell matrix
-        const INPAR::S2I::InterfaceSides
-            side_rows,  //!< interface side associated with rows of cell matrix
-        const INPAR::S2I::InterfaceSides
-            side_cols,  //!< interface side associated with columns of cell matrix
-        DRT::Element::LocationArray& la_slave,  //!< slave-side location array
-        DRT::Element::LocationArray& la_master  //!< master-side location array
-        ) const;
+    /*!
+     * @brief  initialize cell matrix
+     *
+     * @param cellmatrix  cell matrix
+     * @param side_rows   interface side associated with rows of cell matrix
+     * @param side_cols   interface side associated with columns of cell matrix
+     * @param la_slave    slave-side location array
+     * @param la_master  master-side location array
+     */
+    void InitCellMatrix(Epetra_SerialDenseMatrix& cellmatrix,
+        const INPAR::S2I::InterfaceSides side_rows, const INPAR::S2I::InterfaceSides side_cols,
+        DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master) const;
 
-    //! initialize cell vector
-    void InitCellVector(Epetra_SerialDenseVector& cellvector,  //!< cell vector
-        const INPAR::S2I::InterfaceSides side,  //!< interface side associated with cell vector
-        DRT::Element::LocationArray& la_slave,  //!< slave-side location array
-        DRT::Element::LocationArray& la_master  //!< master-side location array
-        ) const;
+    /*!
+     * @brief  initialize cell vector
+     *
+     * @param cellvector  cell vector
+     * @param side        interface side associated with cell vector
+     * @param la_slave    slave-side location array
+     * @param la_master   master-side location array
+     */
+    void InitCellVector(Epetra_SerialDenseVector& cellvector, const INPAR::S2I::InterfaceSides side,
+        DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master) const;
 
     //! cell matrix 1
     Epetra_SerialDenseMatrix cellmatrix1_;

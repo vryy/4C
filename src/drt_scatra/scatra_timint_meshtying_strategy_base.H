@@ -64,15 +64,14 @@ namespace SCATRA
       return;
     }
 
-
-    //! destructor
-    virtual ~MeshtyingStrategyBase() { return; };
-
-    //! perform convergence check for Newton-Raphson iteration
-    bool AbortNonlinIter(
-        const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
-        double& actresidual                    //!< return maximum current residual value
-        ) const
+    /*!
+     * @brief perform convergence check for Newton-Raphson iteration
+     *
+     * @param scatratimint  scalar transport time integrator
+     * @param actresidual   return maximum current residual value
+     * @return bool indicating if convergence is met
+     */
+    bool AbortNonlinIter(const ScaTraTimIntImpl& scatratimint, double& actresidual) const
     {
       if (convcheckstrategy_ == Teuchos::null)
         dserror("Strategy for Newton-Raphson convergence check has not been instantiated!");
@@ -80,9 +79,13 @@ namespace SCATRA
       return convcheckstrategy_->AbortNonlinIter(scatratimint, actresidual);
     }
 
-    //! perform convergence check for outer iteration in partitioned coupling schemes
-    bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-        ) const
+    /*!
+     * @brief perform convergence check for outer iteration in partitioned coupling schemes
+     *
+     * @param scatratimint  scalar transport time integrator
+     * @return bool indicating if convergence is met
+     */
+    bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint) const
     {
       if (convcheckstrategy_ == Teuchos::null)
         dserror("Strategy for outer convergence check has not been instantiated!");
@@ -106,15 +109,15 @@ namespace SCATRA
     //! compute time derivatives of discrete state variables
     virtual void ComputeTimeDerivative() const { return; };
 
-    //! condense global system of equations
-    virtual void CondenseMatAndRHS(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& residual,               //!< residual vector
-        const bool calcinittimederiv = false  //!< flag for calculation of initial time derivative
-        ) const
-    {
-      return;
-    };
+    /*!
+     * @brief condense global system of equations
+     *
+     * @param systemmatrix        system matrix
+     * @param residual            residual vector
+     * @param calcinittimederiv   flag for calculation of initial time derivative
+     */
+    virtual void CondenseMatAndRHS(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Teuchos::RCP<Epetra_Vector>& residual, const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
     virtual const Epetra_Map& DofRowMap() const = 0;
@@ -183,13 +186,14 @@ namespace SCATRA
     //! output restart information
     virtual void OutputRestart() const { return; };
 
-    //! read restart data
-    virtual void ReadRestart(const int step,                  //!< restart step
-        Teuchos::RCP<IO::InputControl> input = Teuchos::null  //!< control file manager
-        ) const
-    {
-      return;
-    };
+    /*!
+     * @brief  read restart data
+     *
+     * @param step  restart step
+     * @param input control file manager
+     */
+    virtual void ReadRestart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) const {};
 
     //! set general parameters for element evaluation
     virtual void SetElementGeneralParameters(Teuchos::ParameterList& parameters) const { return; };
@@ -225,15 +229,22 @@ namespace SCATRA
     //! setup meshtying objects
     virtual void SetupMeshtying() = 0;
 
-    //! solve resulting linear system of equations
-    virtual void Solve(const Teuchos::RCP<LINALG::Solver>& solver,  //!< solver
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,   //!< system matrix
-        const Teuchos::RCP<Epetra_Vector>& increment,               //!< increment vector
-        const Teuchos::RCP<Epetra_Vector>& residual,                //!< residual vector
-        const Teuchos::RCP<Epetra_Vector>& phinp,                   //!< state vector at time n+1
-        const int& iteration,  //!< number of current Newton-Raphson iteration
-        const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-        ) const = 0;
+    /*!
+     * @brief  solve resulting linear system of equations
+     *
+     * @param solver        solver
+     * @param systemmatrix  system matrix
+     * @param increment     increment vector
+     * @param residual      residual vector
+     * @param phinp         state vector at time n+1
+     * @param iteration     number of current Newton-Raphson iteration
+     * @param projector     Krylov projector
+     */
+    virtual void Solve(const Teuchos::RCP<LINALG::Solver>& solver,
+        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,
+        const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
+        const Teuchos::RCP<Epetra_Vector>& phinp, const int& iteration,
+        const Teuchos::RCP<LINALG::KrylovProjector>& projector) const = 0;
 
     //! return linear solver for global system of linear equations
     virtual const LINALG::Solver& Solver() const = 0;
