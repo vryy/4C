@@ -294,7 +294,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_EvaluateLinearGrowth()
+  void TestEvaluateLinearGrowth()
   {
     const std::vector<double> TestValues{952834.0233, 44327.362, 12823.902};
     const std::vector<double> Results{0.4776612182790999, -0.0011217922259999, -0.0177241156459999};
@@ -306,7 +306,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_InelasticDeformationDirection()
+  void TestInelasticDeformationDirection()
   {
     // growth directions to be tested
     const std::vector<std::vector<double>> growth_directions{
@@ -348,7 +348,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_ComputePolynomial()
+  void TestComputePolynomial()
   {
     const std::vector<double> TestValues{0.215, 0.462, 0.675, 0.802};
     const std::vector<double> Results{
@@ -361,7 +361,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_ComputePolynomialDerivative()
+  void TestComputePolynomialDerivative()
   {
     const std::vector<double> TestValues{0.215, 0.462, 0.675, 0.802};
     const std::vector<double> Results{
@@ -375,7 +375,58 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_EvaluateInverseInelasticDefGrad()
+  void TestEvaluateInelasticDefGradDerivative()
+  {
+    const double detF = FM_.Determinant();
+    LINALG::Matrix<9, 1> DFinDx(true);
+    LINALG::Matrix<9, 1> DFinDx_ref(true);
+
+    lin_scalar_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 2.977205763668e-07;
+    TESTING::AssertDelta(DFinDx, DFinDx_ref, 1.0e-10);
+
+    // clear variables and next test
+    DFinDx.Clear();
+    DFinDx_ref.Clear();
+    lin_scalar_aniso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    DFinDx_ref(0) = 6.734163313433e-07;
+    DFinDx_ref(1) = 1.683540828358e-07;
+    DFinDx_ref(2) = 6.060746982090e-08;
+    DFinDx_ref(3) = DFinDx_ref(6) = 3.367081656716e-07;
+    DFinDx_ref(4) = DFinDx_ref(7) = 1.010124497015e-07;
+    DFinDx_ref(5) = DFinDx_ref(8) = 2.020248994030e-07;
+    TESTING::AssertDelta(DFinDx, DFinDx_ref, 1.0e-10);
+
+    // clear variables and next test
+    DFinDx.Clear();
+    DFinDx_ref.Clear();
+    poly_intercal_frac_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.399216373729e-07;
+    TESTING::AssertDelta(DFinDx, DFinDx_ref, 1.0e-10);
+
+    // clear variables and next test
+    DFinDx.Clear();
+    DFinDx_ref.Clear();
+    poly_intercal_frac_aniso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    DFinDx_ref(0) = 7.623672134952e-07;
+    DFinDx_ref(1) = 1.905918033738e-07;
+    DFinDx_ref(2) = 6.861304921457e-08;
+    DFinDx_ref(3) = DFinDx_ref(6) = 3.811836067476e-07;
+    DFinDx_ref(4) = DFinDx_ref(7) = 1.143550820243e-07;
+    DFinDx_ref(5) = DFinDx_ref(8) = 2.287101640486e-07;
+    TESTING::AssertDelta(DFinDx, DFinDx_ref, 1.0e-10);
+
+    // clear variables and next test
+    DFinDx.Clear();
+    DFinDx_ref.Clear();
+    lin_temp_iso_->EvaluateInelasticDefGradDerivative(detF, DFinDx);
+    DFinDx_ref(0) = DFinDx_ref(1) = DFinDx_ref(2) = 3.373943094440e-04;
+    TESTING::AssertDelta(DFinDx, DFinDx_ref, 1.0e-10);
+  }
+
+  /*--------------------------------------------------------------------*
+   *--------------------------------------------------------------------*/
+  void TestEvaluateInverseInelasticDefGrad()
   {
     // create matrix to be filled by tested methods
     LINALG::Matrix<3, 3> iFin(true);
@@ -425,7 +476,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_EvaluateAdditionalCmat()
+  void TestEvaluateAdditionalCmat()
   {
     // calculate the inverse Cauchy-Green tensor in voigt notation
     LINALG::Matrix<3, 3> CM;
@@ -532,7 +583,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
 
   /*--------------------------------------------------------------------*
    *--------------------------------------------------------------------*/
-  void test_EvaluateODStiffMat()
+  void TestEvaluateODStiffMat()
   {
     LINALG::Matrix<6, 1> dSdc(true);
     LINALG::Matrix<6, 1> dSdc_ref_solution(true);

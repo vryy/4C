@@ -229,6 +229,19 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
     ddPIIe_ref_(2) = 2.862458189907485;
   }
 
+  void SetConcentrationToInelasticMaterial(const double concentration) const
+  {
+    Teuchos::ParameterList params;
+
+    // set up a concentration vector and store it to the parameter list
+    auto gpconc_lin = Teuchos::rcp(
+        new std::vector<std::vector<double>>(1, std::vector<double>(1, concentration)));
+    params.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
+
+    // call pre evaluate to have concentration during actual call
+    multiplicative_split_defgrad_->PreEvaluate(params, 0);
+  }
+
   void SetRefValuesEvaluatedSdiFin()
   {
     dSdiFin_ref_(0, 0) = 114.1660435509188;
@@ -289,14 +302,8 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
 
   void TestEvaluateAdditionalCmat()
   {
-    // parameter list to be passed to PreEvaluate
-    Teuchos::ParameterList params_lin;
-    // set up a dummy concentration vector and store it to the parameter list
-    auto gpconc_lin =
-        Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 44327.362)));
-    params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
-    // call pre evaluate to have concentration during actual call
-    multiplicative_split_defgrad_->PreEvaluate(params_lin, 0);
+    const double concentration(44327.362);
+    SetConcentrationToInelasticMaterial(concentration);
 
     // actual call that is tested
     LINALG::Matrix<6, 6> cMatAdd(true);
@@ -342,6 +349,57 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
     multiplicative_split_defgrad_->EvaluateAdditionalCmat(&FM_, iCV_ref_, dSdiFin_ref_, cMatAdd);
 
     TESTING::AssertDelta(cMatAdd, cMatAdd_ref, 1.0e-10);
+  }
+
+  void TestEvaluateCauchy()
+  {
+    // we need to first set this dummy concentration. otherwise the call below results in a segfault
+    const double dummy_conc(-1.0);
+    SetConcentrationToInelasticMaterial(dummy_conc);
+
+    // input variables
+    LINALG::Matrix<3, 1> n, t;
+    n(0) = 1.0 / std::sqrt(2.0);
+    n(1) = 0.0;
+    n(2) = -1.0 / std::sqrt(2.0);
+    t(0) = 1.0 / std::sqrt(3.0);
+    t(1) = -1.0 / std::sqrt(3.0);
+    t(2) = -1.0 / std::sqrt(3.0);
+    const double concentration(1.0);
+
+    // output variables
+    double sigma_nt(0.0);
+    LINALG::Matrix<3, 1> DsntDn(true), DsntDt(true);
+    LINALG::Matrix<9, 1> DsntDF(true);
+
+    multiplicative_split_defgrad_->EvaluateCauchy(FM_, n, t, sigma_nt, &DsntDn, &DsntDt, &DsntDF,
+        nullptr, nullptr, nullptr, 0, 0, &concentration, nullptr, nullptr, nullptr);
+
+    const double sigma_nt_ref(6.019860168755);
+    LINALG::Matrix<3, 1> DsntDn_ref(true), DsntDt_ref(true);
+    LINALG::Matrix<9, 1> DsntDF_ref(true);
+    DsntDn_ref(0) = -2.856437080521;
+    DsntDn_ref(1) = -6.736850094992;
+    DsntDn_ref(2) = -1.136980497476e+01;
+
+    DsntDt_ref(0) = -1.933304201727;
+    DsntDt_ref(1) = -8.793331859785e-01;
+    DsntDt_ref(2) = -1.148067468249e+01;
+
+    DsntDF_ref(0) = 7.834365817988e+01;
+    DsntDF_ref(1) = 4.257334930649e+01;
+    DsntDF_ref(2) = 7.961614320095e+01;
+    DsntDF_ref(3) = -2.192663678809e+01;
+    DsntDF_ref(4) = 1.867810957230e+01;
+    DsntDF_ref(5) = -4.292543557935e+01;
+    DsntDF_ref(6) = -1.694113997401e+01;
+    DsntDF_ref(7) = 1.982432031426e+01;
+    DsntDF_ref(8) = -3.361951777558e+01;
+
+    TS_ASSERT_DELTA(sigma_nt, sigma_nt_ref, 1.0e-10)
+    TESTING::AssertDelta(DsntDn, DsntDn_ref, 1.0e-10);
+    TESTING::AssertDelta(DsntDt, DsntDt_ref, 1.0e-10);
+    TESTING::AssertDelta(DsntDF, DsntDF_ref, 1.0e-10);
   }
 
   void TestEvaluatedSdiFin()
@@ -395,16 +453,36 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
     TESTING::AssertDelta(prinv, prinv_ref_, 1.0e-10);
   }
 
+  void TestEvaluateLinearizationOD()
+  {
+    // we need to first set this dummy concentration. otherwise the call below results in a segfault
+    const double dummy_conc(-1.0);
+    SetConcentrationToInelasticMaterial(dummy_conc);
+
+    // actual material call
+    const double concentration(1.0);
+    LINALG::Matrix<9, 1> DFDx(true);
+    multiplicative_split_defgrad_->EvaluateLinearizationOD(FM_, concentration, &DFDx);
+
+    // define the reference solution
+    LINALG::Matrix<9, 1> DFDx_ref;
+    DFDx_ref(0) = 4.417109534556e-01;
+    DFDx_ref(1) = 4.818664946788e-01;
+    DFDx_ref(2) = 5.220220359020e-01;
+    DFDx_ref(3) = 4.015554122323e-03;
+    DFDx_ref(4) = 8.031108244647e-03;
+    DFDx_ref(5) = 1.204666236697e-02;
+    DFDx_ref(6) = 1.606221648929e-02;
+    DFDx_ref(7) = 2.007777061162e-02;
+    DFDx_ref(8) = 2.409332473394e-02;
+
+    TESTING::AssertDelta(DFDx, DFDx_ref, 1.0e-10);
+  }
+
   void TestEvaluateOdStiffMat()
   {
-    // parameter list to be passed to PreEvaluate
-    Teuchos::ParameterList params_lin;
-    // set up a dummy concentration vector and store it to the parameter list
-    auto gpconc_lin =
-        Teuchos::rcp(new std::vector<std::vector<double>>(1, std::vector<double>(1, 44327.362)));
-    params_lin.set<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_conc", gpconc_lin);
-    // call pre evaluate to have concentration during actual call
-    multiplicative_split_defgrad_->PreEvaluate(params_lin, 0);
+    const double concentration(44327.362);
+    SetConcentrationToInelasticMaterial(concentration);
 
     // do the actual call that is tested
     auto source(PAR::InelasticSource::concentration);

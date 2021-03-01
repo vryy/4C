@@ -167,17 +167,32 @@ namespace MAT
      * @brief compute the current lithiation
      *
      * @param[in] concentration  concentration
-     * @param[in] Chimax         lithiation value of saturation value of intercalated lithium
+     * @param[in] chi_max        lithiation value of saturation value of intercalated lithium
      *                           concentration
-     * @param[in] Cmax           saturation value of intercalated lithium concentration
-     * @param[in] DetJacobian    determinant of the deformation gradient
+     * @param[in] c_max          saturation value of intercalated lithium concentration
+     * @param[in] detjacobian    determinant of the deformation gradient
      * @return the current lithiation
      */
-    static double ComputeIntercalationFraction(const double concentration, const double Chimax,
-        const double Cmax, const double DetJacobian)
+    static double ComputeIntercalationFraction(const double concentration, const double chi_max,
+        const double c_max, const double detjacobian)
     {
-      return (concentration * Chimax * DetJacobian) / Cmax;
-    };
+      return (concentration * chi_max * detjacobian) / c_max;
+    }
+
+    /*!
+     * @brief compute the derivative of the lithiation w.r.t. the concentration
+     *
+     * @param[in] chi_max      lithiation value of saturation value of intercalated lithium
+     *                         concentration
+     * @param[in] c_max        saturation value of intercalated lithium concentration
+     * @param[in] detjacobian  determinant of the deformation gradient
+     * @return the derivative of current lithiation w.r.t. concentration
+     */
+    static double ComputeIntercalationFractionDerivative(
+        const double chi_max, const double c_max, const double detjacobian)
+    {
+      return chi_max * detjacobian / c_max;
+    }
 
     /*!
      * @brief compute first derivative of half cell open circuit potential w.r.t. concentration

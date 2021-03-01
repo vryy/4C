@@ -4079,7 +4079,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
   static LINALG::Matrix<9, NUMDIM_SOH8> D2sntDFDt(true);
 
   SolidMaterial()->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2,
-      &D2sntDFDn, &D2sntDFDt, -1, Id(), nullptr, nullptr, nullptr);
+      &D2sntDFDn, &D2sntDFDt, -1, Id(), nullptr, nullptr, nullptr, nullptr);
 
   if (DsntDd)
   {

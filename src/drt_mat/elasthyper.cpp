@@ -541,8 +541,8 @@ void MAT::ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
     const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& snt,
     LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF,
     LINALG::Matrix<9, 9>* D2sntDF2, LINALG::Matrix<9, 3>* D2sntDFDn,
-    LINALG::Matrix<9, 3>* D2sntDFDt, const int gp, const int eleGID, const double* temp,
-    double* DsntDT, LINALG::Matrix<9, 1>* D2sntDFDT)
+    LINALG::Matrix<9, 3>* D2sntDFDt, const int gp, const int eleGID, const double* concentration,
+    const double* temp, double* DsntDT, LINALG::Matrix<9, 1>* D2sntDFDT)
 {
   snt = 0.0;
 

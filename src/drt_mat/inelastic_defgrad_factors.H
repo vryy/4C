@@ -56,11 +56,11 @@ namespace MAT
       Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
 
       /// return scalar that causes growth
-      int Scalar1() const { return Scalar1_; }
+      int Scalar1() const { return scalar1_; }
 
      private:
       /// scalar that causes growth
-      const int Scalar1_;
+      const int scalar1_;
     };
 
     /*----------------------------------------------------------------------
@@ -98,15 +98,15 @@ namespace MAT
       explicit InelasticDefgradIntercalFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// return saturation concentration of material
-      double Cmax() const { return Cmax_; }
+      double Cmax() const { return c_max_; }
       /// return intercalation fraction at saturation concentration of material
-      double Chimax() const { return Chimax_; }
+      double Chimax() const { return chi_max_; }
 
      private:
       /// saturation concentration of material
-      double Cmax_;
+      double c_max_;
       /// intercalation fraction at saturation concentration of material
-      double Chimax_;
+      double chi_max_;
     };
 
     /*----------------------------------------------------------------------
@@ -123,17 +123,17 @@ namespace MAT
       explicit InelasticDefgradPolyIntercalFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// return value of polynomial at reference intercalation fraction
-      double GetPolynomReferenceValue() const { return PolynomReferenceValue_; }
+      double GetPolynomReferenceValue() const { return polynomReferenceValue_; }
 
       // set value of polynomial at reference intercalation fraction
-      void SetPolynomReferenceValue(double PolynomReferenceValue)
+      void SetPolynomReferenceValue(double polynomReferenceValue)
       {
-        PolynomReferenceValue_ = PolynomReferenceValue;
+        polynomReferenceValue_ = polynomReferenceValue;
       }
 
      private:
       /// value of polynomial at reference intercalation fraction
-      double PolynomReferenceValue_;
+      double polynomReferenceValue_;
     };
 
     /*----------------------------------------------------------------------
@@ -196,27 +196,27 @@ namespace MAT
     /*!
      * @brief constructor with required parameters
      *
-     * @param[in] GrowthFac       linear growth factor (slope of linear function)
-     * @param[in] ReferenceValue  reference value
+     * @param[in] growthFac       linear growth factor (slope of linear function)
+     * @param[in] referenceValue  reference value
      */
-    explicit InelasticDefgradLinearShape(double GrowthFac, double ReferenceValue);
+    explicit InelasticDefgradLinearShape(double growthFac, double referenceValue);
 
     /*!
      * @brief evaluation of the linear growth law
      *
-     * @param[in] Value           value the linear relation shall be evaluated for
+     * @param[in] value           value the linear relation shall be evaluated for
      * @return growth factor
      */
-    double EvaluateLinearGrowth(double Value) const;
+    double EvaluateLinearGrowth(double value) const;
 
     // return the growth factor (needed for linearizations)
-    double GrowthFac() const { return GrowthFac_; }
+    double GrowthFac() const { return growthFac_; }
 
    private:
     /// growth factor
-    const double GrowthFac_;
+    const double growthFac_;
     /// reference value
-    const double ReferenceValue_;
+    const double referenceValue_;
   };  // namespace MAT
 
   /*----------------------------------------------------------------------*/
@@ -230,45 +230,45 @@ namespace MAT
     /*!
      * @brief  constructor with required parameters
      *
-     * @param[in] PolyCoeffs  coefficients describing the polynomial to be evaluated
-     * @param[in] X_min       lower bound of validity of the polynomial
-     * @param[in] X_max       upper bound of validity of the polynomial
+     * @param[in] poly_coeffs  coefficients describing the polynomial to be evaluated
+     * @param[in] x_min        lower bound of validity of the polynomial
+     * @param[in] x_max        upper bound of validity of the polynomial
      */
     explicit InelasticDefgradPolynomialShape(
-        std::vector<double> PolyCoeffs, double Xmin, double Xmax);
+        std::vector<double> poly_coeffs, double x_min, double x_max);
 
     /*!
      * @brief checks the bounds of validity of the polynomial and writes a warning to screen if
      * bounds are violated
      *
-     * @param[in] X  value the polynomial is evaluated at
+     * @param[in] x  value the polynomial is evaluated at
      */
-    void CheckPolynomialBounds(double X) const;
+    void CheckPolynomialBounds(double x) const;
 
     /*!
      * @brief Evaluate the polynomial defined by #PolyCoeffs_ at the current position X
      *
-     * @param[in] X  value the polynomial is evaluated at
-     * @return value of the polynomial evaluated at X
+     * @param[in] x  value the polynomial is evaluated at
+     * @return value of the polynomial evaluated at x
      */
-    double ComputePolynomial(double X);
+    double ComputePolynomial(double x);
 
     /*!
      * @brief Evaluate the first derivative of the polynomial defined by #PolyCoeffs_ at the current
-     * position X
+     * position x
      *
-     * @param[in] X  value the polynomial is evaluated at
-     * @return value the first derivative of the polynomial evaluated at X
+     * @param[in] x  value the polynomial is evaluated at
+     * @return value the first derivative of the polynomial evaluated at x
      */
-    double ComputePolynomialDerivative(double X);
+    double ComputePolynomialDerivative(double x);
 
    private:
     /// coefficients of the polynomial to be evaluated
-    const std::vector<double> PolyCoeffs_;
+    const std::vector<double> poly_coeffs_;
     /// lower bound of validity of polynomial
-    const double Xmin_;
+    const double x_min_;
     /// upper bound of validity of polynomial
-    const double Xmax_;
+    const double x_max_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -327,6 +327,16 @@ namespace MAT
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) = 0;
 
     /*!
+     * @brief calculate the derivative of the inelastic deformation gradient
+     *
+     * @param[in] detjacobian  determinant of the deformation gradient
+     * @param[out] dFindx      derivative of inelastic deformation gradient w.r.t. primary variable
+     *                         of different field
+     */
+    virtual void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) = 0;
+
+    /*!
      * @brief evaluate off-diagonal stiffness matrix for monolithic systems to get the
      *        cross-linearizations
      *
@@ -350,6 +360,19 @@ namespace MAT
      * @param[in] gp      Gauss point
      */
     virtual void PreEvaluate(Teuchos::ParameterList& params, int gp) = 0;
+
+    /*!
+     * @brief set gauss point concentration to parameter class
+     *
+     * @param[in] concentration  gauss point concentration to be set to internal member of parameter
+     *                           class
+     *
+     * @note This method is used by methods called from the contact algorithm. Since the gauss point
+     * ids do not match anyways (volume vs. surface element gauss point ids) and the id is not
+     * relevant since the method is only called for one gauss point anyways, we set it to a dummy
+     * gauss point id of 0 here
+     */
+    virtual void SetConcentrationGP(double concentration){};
 
     /// return material parameters
     virtual MAT::PAR::Parameter* Parameter() { return params_; }
@@ -398,6 +421,14 @@ namespace MAT
 
     void PreEvaluate(Teuchos::ParameterList& params, int gp) override;
 
+    void SetConcentrationGP(double concentration) override;
+
+    MAT::PAR::InelasticDefgradScalar* Parameter() override
+    {
+      return dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(
+          MAT::InelasticDefgradFactors::Parameter());
+    }
+
    protected:
     //! Get vector of concentration at current Gauß point
     std::vector<double>& GetConcentrationGP() const { return concentrations_->at(GetGP()); };
@@ -422,31 +453,31 @@ namespace MAT
     /*!
      * @brief construct material with required inputs
      *
-     * @param[in] params           pointer to material specific parameters
-     * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
-     *            the input file
+     * @param[in] params             pointer to material specific parameters
+     * @param[in] polynomial_growth  pointer to object that evaluates the polynomial as prescribed
+     *                               in the input file
      */
     explicit InelasticDefgradPolyIntercalFrac(MAT::PAR::Parameter* params,
-        Teuchos::RCP<InelasticDefgradPolynomialShape> PolynomialGrowth);
+        Teuchos::RCP<InelasticDefgradPolynomialShape> polynomial_growth);
 
     /*!
      * @brief evaluate polynomial describing growth of material with regard to intercalation
      * fraction based on the current concentration
      *
      * @param[in] concentration current concentration
-     * @param[in] DetJacobian   determinant of the deformation gradient
+     * @param[in] detjacobian   determinant of the deformation gradient
      * @return value of polynomial describing the growth according to current intercalation fraction
      */
-    double EvaluatePolynomial(double concentration, double DetJacobian);
+    double EvaluatePolynomial(double concentration, double detjacobian);
 
     /*!
      * @brief evaluate the first derivative of the polynomial describing the growth
      *
      * @param[in] concentration current concentration
-     * @param[in] DetJacobian   determinant of the deformation gradient
+     * @param[in] detjacobian   determinant of the deformation gradient
      * @return first derivative of the polynomial describing the growth
      */
-    double EvaluatePolynomialDerivative(double concentration, double DetJacobian);
+    double EvaluatePolynomialDerivative(double concentration, double detjacobian);
 
     INPAR::MAT::MaterialType MaterialType() const override = 0;
 
@@ -457,6 +488,9 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override = 0;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override = 0;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdx) override = 0;
 
@@ -465,7 +499,7 @@ namespace MAT
     MAT::PAR::InelasticDefgradPolyIntercalFrac* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradPolyIntercalFrac*>(
-          MAT::InelasticDefgradFactors::Parameter());
+          MAT::InelasticDefgradScalar::Parameter());
     }
 
    private:
@@ -490,11 +524,11 @@ namespace MAT
      * @brief construct material with required inputs
      *
      * @param[in] params          pointer to material specific parameters
-     * @param[in] LinearGrowth    pointer to object that evaluates the linear relation as prescribed
+     * @param[in] linear_growth   pointer to object that evaluates the linear relation as prescribed
      *                            in the input file
      */
     explicit InelasticDefgradLinScalarIso(
-        MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> LinearGrowth);
+        MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> linear_growth);
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -508,16 +542,13 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
-
-    MAT::PAR::InelasticDefgradScalar* Parameter() override
-    {
-      return dynamic_cast<MAT::PAR::InelasticDefgradScalar*>(
-          MAT::InelasticDefgradFactors::Parameter());
-    }
 
    private:
     /// pointer to class that evaluates the linear growth law
@@ -548,11 +579,11 @@ namespace MAT
      * @brief construct material with required inputs
      *
      * @param[in] params          pointer to material specific parameters
-     * @param[in] LinearGrowth    pointer to object that evaluates the linear relation as prescribed
+     * @param[in] linear_growth   pointer to object that evaluates the linear relation as prescribed
      *                            in the input file
      */
     explicit InelasticDefgradLinScalarAniso(
-        MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> LinearGrowth);
+        MAT::PAR::Parameter* params, Teuchos::RCP<InelasticDefgradLinearShape> linear_growth);
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -566,6 +597,9 @@ namespace MAT
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
 
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
+
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
 
@@ -574,7 +608,7 @@ namespace MAT
     MAT::PAR::InelasticDefgradLinScalarAniso* Parameter() override
     {
       return dynamic_cast<MAT::PAR::InelasticDefgradLinScalarAniso*>(
-          MAT::InelasticDefgradFactors::Parameter());
+          MAT::InelasticDefgradScalar::Parameter());
     }
 
    private:
@@ -600,12 +634,12 @@ namespace MAT
     /*!
      * @brief construct material with required inputs
      *
-     * @param[in] params           pointer to material specific parameters
-     * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
-     *                             the input file
+     * @param[in] params             pointer to material specific parameters
+     * @param[in] polynomial_growth  pointer to object that evaluates the polynomial as prescribed
+     *                               in the input file
      */
     explicit InelasticDefgradPolyIntercalFracIso(MAT::PAR::Parameter* params,
-        const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
+        const Teuchos::RCP<InelasticDefgradPolynomialShape>& polynomial_growth);
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -618,6 +652,9 @@ namespace MAT
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
@@ -652,12 +689,12 @@ namespace MAT
     /*!
      * @brief construct material with required inputs
      *
-     * @param[in] params           pointer to material specific parameters
-     * @param[in] PolynomialGrowth pointer to object that evaluates the polynomial as prescribed in
-     *                             the input file
+     * @param[in] params             pointer to material specific parameters
+     * @param[in] polynomial_growth  pointer to object that evaluates the polynomial as prescribed
+     *                               in the input file
      */
     explicit InelasticDefgradPolyIntercalFracAniso(MAT::PAR::Parameter* params,
-        const Teuchos::RCP<InelasticDefgradPolynomialShape>& PolynomialGrowth);
+        const Teuchos::RCP<InelasticDefgradPolynomialShape>& polynomial_growth);
 
     INPAR::MAT::MaterialType MaterialType() const override
     {
@@ -670,6 +707,9 @@ namespace MAT
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
         const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdc) override;
@@ -696,13 +736,16 @@ namespace MAT
 
     void EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
         const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) final;
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd) override;
+
+    void EvaluateInelasticDefGradDerivative(
+        double detjacobian, LINALG::Matrix<9, 1>& dFindx) override;
 
     void EvaluateInverseInelasticDefGrad(
-        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) final;
+        const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM) override;
 
     void EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad, const LINALG::Matrix<3, 3>& iFinjM,
-        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdT) final;
+        const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 1>& dstressdT) override;
 
     MAT::PAR::InelasticSource GetInelasticSource() override;
 

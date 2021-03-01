@@ -261,6 +261,219 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
+    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& snt,
+    LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF,
+    LINALG::Matrix<9, 9>* D2sntDF2, LINALG::Matrix<9, 3>* D2sntDFDn,
+    LINALG::Matrix<9, 3>* D2sntDFDt, const int gp, const int eleGID, const double* concentration,
+    const double* temp, double* DsntDT, LINALG::Matrix<9, 1>* D2sntDFDT)
+{
+  if (concentration != nullptr) SetConcentrationGP(*concentration);
+
+  if (D2sntDF2 || D2sntDFDT || D2sntDFDn || D2sntDFDt)
+  {
+    dserror(
+        "So far only implemented for 'Nitsche theta = 0'. Therefore no second derivatives "
+        "available!");
+  }
+
+  // reset sigma contracted with n and t
+  snt = 0.0;
+
+  static LINALG::Matrix<6, 1> idV(true);
+  for (int i = 0; i < 3; ++i) idV(i) = 1.0;
+  static LINALG::Matrix<3, 3> idM(true);
+  for (int i = 0; i < 3; ++i) idM(i, i) = 1.0;
+  static LINALG::Matrix<3, 3> iFinM(true);
+  inelastic_->EvaluateInverseInelasticDefGrad(&defgrd, iFinM);
+  static LINALG::Matrix<3, 3> FeM(true);
+  FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
+
+  // get elastic left cauchy-green tensor and corresponding principal invariants
+  static LINALG::Matrix<3, 3> beM(true);
+  beM.MultiplyNT(1.0, FeM, FeM, 0.0);
+  static LINALG::Matrix<6, 1> beV_strain(true);
+  UTILS::VOIGT::Strains::MatrixToVector(beM, beV_strain);
+  static LINALG::Matrix<3, 1> prinv(true);
+  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, beV_strain);
+  static LINALG::Matrix<6, 1> beV_stress(true);
+  UTILS::VOIGT::Stresses::MatrixToVector(beM, beV_stress);
+
+  static LINALG::Matrix<3, 1> beMdn(true);
+  beMdn.Multiply(1.0, beM, n, 0.0);
+  const double beMdndt = beMdn.Dot(t);
+  static LINALG::Matrix<3, 1> beMdt(true);
+  beMdt.Multiply(1.0, beM, t, 0.0);
+
+  static LINALG::Matrix<3, 3> ibeM(true);
+  ibeM.Invert(beM);
+  static LINALG::Matrix<6, 1> ibeV_stress(true);
+  UTILS::VOIGT::Stresses::MatrixToVector(ibeM, ibeV_stress);
+  static LINALG::Matrix<3, 1> ibeMdn(true);
+  ibeMdn.Multiply(1.0, ibeM, n, 0.0);
+  const double ibeMdndt = ibeMdn.Dot(t);
+  static LINALG::Matrix<3, 1> ibeMdt(true);
+  ibeMdt.Multiply(1.0, ibeM, t, 0.0);
+
+  // derivatives of principle invariants of elastic left cauchy-green tensor
+  static LINALG::Matrix<3, 1> dPI(true);
+  static LINALG::Matrix<6, 1> ddPII(true);
+  EvaluateInvariantDerivatives(prinv, gp, eleGID, dPI, ddPII);
+
+  const double detFe = FeM.Determinant();
+  const double ndt = n.Dot(t);
+  const double prefac = 2.0 / detFe;
+
+  // calculate \mat{\sigma} \cdot \vec{n} \cdot \vec{t}
+  snt = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * beMdndt -
+                     prinv(2) * dPI(1) * ibeMdndt);
+
+  if (DsntDn)
+  {
+    DsntDn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);  // DsntDn is cleared here
+    DsntDn->Update(dPI(0), beMdt, 1.0);
+    DsntDn->Update(-prinv(2) * dPI(1), ibeMdt, 1.0);
+    DsntDn->Scale(prefac);
+  }
+
+  if (DsntDt)
+  {
+    DsntDt->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);  // DsntDt is cleared here
+    DsntDt->Update(dPI(0), beMdn, 1.0);
+    DsntDt->Update(-prinv(2) * dPI(1), ibeMdn, 1.0);
+    DsntDt->Scale(prefac);
+  }
+
+  if (DsntDF)
+  {
+    static LINALG::Matrix<6, 1> DI1Dbe(true);
+    DI1Dbe = idV;
+    static LINALG::Matrix<6, 1> DI2Dbe(true);
+    DI2Dbe.Update(prinv(0), idV, -1.0, beV_stress);
+    static LINALG::Matrix<6, 1> DI3Dbe(true);
+    DI3Dbe.Update(prinv(2), ibeV_stress, 0.0);
+
+    // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
+    // gradient)
+    static LINALG::Matrix<6, 9> DbeDFe(true);
+    DbeDFe.Clear();
+    AddRightNonSymmetricHolzapfelProductStrainLike(DbeDFe, idM, FeM, 1.0);
+    static LINALG::Matrix<9, 9> DFeDF(true);
+    DFeDF.Clear();
+    AddNonSymmetricProduct(1.0, idM, iFinM, DFeDF);
+    static LINALG::Matrix<6, 9> DbeDF(true);
+    DbeDF.Multiply(1.0, DbeDFe, DFeDF, 0.0);
+
+    // calculation of \partial I_i / \partial F (Invariants of b_{el} w.r.t. deformation gradient)
+    static LINALG::Matrix<9, 1> DI1DF(true);
+    static LINALG::Matrix<9, 1> DI2DF(true);
+    static LINALG::Matrix<9, 1> DI3DF(true);
+    DI1DF.MultiplyTN(1.0, DbeDF, DI1Dbe, 0.0);
+    DI2DF.MultiplyTN(1.0, DbeDF, DI2Dbe, 0.0);
+    DI3DF.MultiplyTN(1.0, DbeDF, DI3Dbe, 0.0);
+
+    // add DsntDI1 \odot DI1DF and clear static matrix
+    DsntDF->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
+                                ddPII(0) * beMdndt - prinv(2) * ddPII(5) * ibeMdndt),
+        DI1DF, 0.0);
+    // add DsntDI2 \odot DI2DF
+    DsntDF->Update(prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
+                                ddPII(5) * beMdndt - prinv(2) * ddPII(1) * ibeMdndt),
+        DI2DF, 1.0);
+    // add DsntDI3 \odot DI3DF
+    DsntDF->Update(
+        prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
+                     ddPII(4) * beMdndt - dPI(1) * ibeMdndt - prinv(2) * ddPII(3) * ibeMdndt),
+        DI3DF, 1.0);
+
+    // next three updates add partial derivative of snt w.r.t. the deformation gradient F for
+    // constant invariants first part is term arising from \partial Je^{-1} / \partial F
+    static LINALG::Matrix<3, 3> iFeM(true);
+    static LINALG::Matrix<3, 3> iFeTM(true);
+    iFeM.Invert(FeM);
+    iFeTM.UpdateT(1.0, iFeM, 0.0);
+    static LINALG::Matrix<9, 1> iFeTV(true);
+    UTILS::VOIGT::Matrix3x3to9x1(iFeTM, iFeTV);
+    static LINALG::Matrix<1, 9> DiJeDFV(true);
+    DiJeDFV.MultiplyTN(1.0, iFeTV, DFeDF, 0.0);
+    DsntDF->UpdateT(-snt, DiJeDFV, 1.0);
+
+    // second part is term arising from \partial b_el * n * t / \partial F
+    static LINALG::Matrix<3, 3> FeMiFinTM(true);
+    FeMiFinTM.MultiplyNT(1.0, FeM, iFinM, 0.0);
+    static LINALG::Matrix<3, 1> tempvec(true);
+    tempvec.MultiplyTN(1.0, FeMiFinTM, n, 0.0);
+    static LINALG::Matrix<3, 3> DbedndtDF(true);
+    DbedndtDF.MultiplyNT(1.0, t, tempvec, 0.0);
+    // now reuse tempvec
+    tempvec.MultiplyTN(1.0, FeMiFinTM, t, 0.0);
+    DbedndtDF.MultiplyNT(1.0, n, tempvec, 1.0);
+    static LINALG::Matrix<9, 1> DbedndtDFV(true);
+    UTILS::VOIGT::Matrix3x3to9x1(DbedndtDF, DbedndtDFV);
+    DsntDF->Update(prefac * dPI(0), DbedndtDFV, 1.0);
+
+    // third part is term arising from \partial b_el^{-1} * n * t / \partial F
+    static LINALG::Matrix<3, 3> iFM(true);
+    iFM.Invert(defgrd);
+    static LINALG::Matrix<3, 1> tempvec2(true);
+    tempvec.Multiply(1.0, ibeM, t, 0.0);
+    tempvec2.Multiply(1.0, iFM, n, 0.0);
+    static LINALG::Matrix<3, 3> DibedndtDFM(true);
+    DibedndtDFM.MultiplyNT(1.0, tempvec, tempvec2, 0.0);
+    // now reuse tempvecs
+    tempvec.Multiply(1.0, ibeM, n, 0.0);
+    tempvec2.Multiply(1.0, iFM, t, 0.0);
+    DibedndtDFM.MultiplyNT(1.0, tempvec, tempvec2, 1.0);
+    DibedndtDFM.Scale(-1.0);
+    static LINALG::Matrix<9, 1> DibedndtDFV(true);
+    UTILS::VOIGT::Matrix3x3to9x1(DibedndtDFM, DibedndtDFV);
+    DsntDF->Update(-prefac * prinv(2) * dPI(1), DibedndtDFV, 1.0);
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
+    const LINALG::Matrix<3, 3>& defgrd, const double concentration, LINALG::Matrix<9, 1>* DFDx)
+{
+  SetConcentrationGP(concentration);
+
+  // References to vector of inelastic contributions and inelastic deformation gradients
+  auto facdefgradin = inelastic_->FacDefGradIn();
+
+  // number of contributions for this source
+  const int num_contributions = inelastic_->NumInelasticDefGrad();
+
+  // build inverse inelastic deformation gradient
+  static LINALG::Matrix<3, 3> iFinM(true);
+  inelastic_->EvaluateInverseInelasticDefGrad(&defgrd, iFinM);
+
+  static LINALG::Matrix<3, 3> idM(true);
+  for (int i = 0; i < 3; ++i) idM(i, i) = 1.0;
+  static LINALG::Matrix<3, 3> FeM(true);
+  FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
+
+  // calculate the derivative of the deformation gradient w.r.t. the inelastic deformation gradient
+  static LINALG::Matrix<9, 9> DFDFin(true);
+  DFDFin.Clear();
+  AddNonSymmetricProduct(1.0, FeM, idM, DFDFin);
+
+  static LINALG::Matrix<9, 1> DFinDx(true);
+
+  // check number of factors the inelastic deformation gradient consists of and choose
+  // implementation accordingly
+  if (num_contributions == 1)
+  {
+    facdefgradin[0].second->EvaluateInelasticDefGradDerivative(defgrd.Determinant(), DFinDx);
+  }
+  else
+    dserror("NOT YET IMPLEMENTED");
+
+  DFDx->MultiplyNN(1.0, DFDFin, DFinDx, 0.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateStressCmatIso(
     const LINALG::Matrix<6, 1>& iCV, const LINALG::Matrix<6, 1>& iCinV,
     const LINALG::Matrix<6, 1>& iCinCiCinV, const LINALG::Matrix<3, 1>& gamma,
@@ -615,6 +828,14 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::PreEvaluate(
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
     inelastic_->FacDefGradIn()[p].second->PreEvaluate(params, gp);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::SetConcentrationGP(const double concentration)
+{
+  for (int p = 0; p < inelastic_->NumInelasticDefGrad(); ++p)
+    inelastic_->FacDefGradIn()[p].second->SetConcentrationGP(concentration);
 }
 
 /*--------------------------------------------------------------------*
