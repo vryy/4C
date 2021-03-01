@@ -366,6 +366,11 @@ namespace MAT
      *
      * @param[in] concentration  gauss point concentration to be set to internal member of parameter
      *                           class
+     *
+     * @note This method is used by methods called from the contact algorithm. Since the gauss point
+     * ids do not match anyways (volume vs. surface element gauss point ids) and the id is not
+     * relevant since the method is only called for one gauss point anyways, we set it to a dummy
+     * gauss point id of 0 here
      */
     virtual void SetConcentrationGP(double concentration){};
 

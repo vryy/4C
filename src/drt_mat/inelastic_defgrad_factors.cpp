@@ -307,10 +307,12 @@ void MAT::InelasticDefgradScalar::PreEvaluate(Teuchos::ParameterList& params, co
  *--------------------------------------------------------------------*/
 void MAT::InelasticDefgradScalar::SetConcentrationGP(const double concentration)
 {
+  // this method is only called for a certain gauss point whose id is not accessible, thus we set a
+  // dummy id here and set the corresponding concentration value afterwards
   const int dummy_gp(0);
   SetGP(dummy_gp);
 
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
 
   GetConcentrationGP().at(Sc1 - 1) = concentration;
 }
@@ -458,7 +460,7 @@ void MAT::InelasticDefgradLinScalarIso::EvaluateInelasticDefGradDerivative(
     const double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
 {
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double material_concentration = GetConcentrationGP().at(Sc1 - 1) * detjacobian;
 
   // get growth factor
@@ -672,19 +674,19 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateODStiffMat(
   // get parameters
   const int Sc1 = Parameter()->Scalar1();
   const double concentration = GetConcentrationGP().at(Sc1 - 1);
-  const double Chimax = Parameter()->Chimax();
-  const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
-  // get polynomial
+  // get polynomial and derivatives
   const double PolynomValue = EvaluatePolynomial(concentration, detjacobian);
   const double PolynomDerivativeValue = EvaluatePolynomialDerivative(concentration, detjacobian);
+  const double dChidc = MAT::Electrode::ComputeIntercalationFractionDerivative(
+      Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // prepare scalefac
-  const double scalefac = -1.0 / (3.0 * Cmax) * Chimax * detjacobian * PolynomDerivativeValue *
+  const double scalefac = -1.0 / 3.0 * std::pow(1.0 + PolynomValue, -4.0 / 3.0) *
                           std::pow(1.0 + PolynomReferenceValue, 1.0 / 3.0) *
-                          std::pow(1.0 + PolynomValue, -4.0 / 3.0);
+                          PolynomDerivativeValue * dChidc;
 
   // calculate diFinjdc and add contribution to dstressdc = dSdiFinj : diFinjdc
   dstressdc.MultiplyNN(scalefac, dSdiFinj, id9x1, 1.0);
@@ -700,7 +702,7 @@ void MAT::InelasticDefgradPolyIntercalFracIso::EvaluateInelasticDefGradDerivativ
   for (int i = 0; i < 3; ++i) id9x1(i) = 1.0;
 
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
@@ -812,18 +814,17 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateODStiffMat(
 
   // get parameters
   const int Sc1 = Parameter()->Scalar1();
-  const double Chimax = Parameter()->Chimax();
-  const double Cmax = Parameter()->Cmax();
   const double detjacobian = defgrad->Determinant();
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
-  // get polynomials
+  // get derivatives
   const double PolynomDerivativeValue =
       EvaluatePolynomialDerivative(GetConcentrationGP().at(Sc1 - 1), detjacobian);
+  const double dChidc = MAT::Electrode::ComputeIntercalationFractionDerivative(
+      Parameter()->Chimax(), Parameter()->Cmax(), detjacobian);
 
   // prepare scalefac
-  const double scalefac =
-      -detjacobian * Chimax * PolynomDerivativeValue / (Cmax * (PolynomReferenceValue + 1.0));
+  const double scalefac = -PolynomDerivativeValue / (PolynomReferenceValue + 1.0) * dChidc;
 
   // calculate diFinjdc
   tmp.MultiplyNN(1.0, iFinjM, Parameter()->Growthdirmat(), 0.0);
@@ -840,7 +841,7 @@ void MAT::InelasticDefgradPolyIntercalFracAniso::EvaluateInelasticDefGradDerivat
     const double detjacobian, LINALG::Matrix<9, 1>& DFinDx)
 {
   // get parameters
-  const double Sc1 = Parameter()->Scalar1();
+  const int Sc1 = Parameter()->Scalar1();
   const double concentration = GetConcentrationGP().at(Sc1 - 1);
   const double PolynomReferenceValue = Parameter()->GetPolynomReferenceValue();
 
