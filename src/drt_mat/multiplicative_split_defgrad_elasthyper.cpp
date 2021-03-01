@@ -270,6 +270,13 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Ma
 {
   if (concentration != nullptr) SetConcentrationGP(*concentration);
 
+  if (D2sntDF2 || D2sntDFDT || D2sntDFDn || D2sntDFDt)
+  {
+    dserror(
+        "So far only implemented for 'Nitsche theta = 0'. Therefore no second derivatives "
+        "available!");
+  }
+
   // reset sigma contracted with n and t
   snt = 0.0;
 
