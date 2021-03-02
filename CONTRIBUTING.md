@@ -197,7 +197,8 @@ move the issue card from **In Progress** to **Under Review** on our
 
    > **Note** Do not create the merge request by clicking on the button *Create merge request* in your issue (creates a new branch).
    
-   * To notify others about your merge request, @mention affected teams and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field. This can be used to notify affected code owners in order to request their review and **required** approval.
+   * To notify others about your merge request, @mention affected teams and other interested parties in the *Interested Parties / Possible Reviewers* section of the *Description* field.
+   * Assign some of your fellow developers as *Reviewers* to request their review and **required** approval.
    * Assign the MR to yourself, as you are probably the person that will work the most on this MR.
    
 * Trigger the execution of the test suite manually:
