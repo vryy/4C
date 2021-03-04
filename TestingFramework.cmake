@@ -27,7 +27,7 @@ else ()
   message("Global test timeout scale is not passed as an environment variable. It is set to the default ${GLOBAL_TEST_TIMEOUT_SCALE} for this kind of build.")
 endif ()
 
-# Determine default scaled global test timeout
+# Determine scaled global test timeout
 math(EXPR GLOBAL_TEST_TIMEOUT_SCALED "${GLOBAL_TEST_TIMEOUT}*${GLOBAL_TEST_TIMEOUT_SCALE}")
 message("The scaled global test timeout is ${GLOBAL_TEST_TIMEOUT_SCALED} s.")
 
