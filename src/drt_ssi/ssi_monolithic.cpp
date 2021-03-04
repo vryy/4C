@@ -11,6 +11,7 @@
 #include "ssi_coupling.H"
 #include "ssi_monolithic_assemble_strategy.H"
 #include "ssi_monolithic_convcheck_strategies.H"
+#include "ssi_monolithic_dbc_handler.H"
 #include "ssi_monolithic_evaluate_OffDiag.H"
 #include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
@@ -50,8 +51,8 @@
  *--------------------------------------------------------------------------*/
 SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIBase(comm, globaltimeparams),
-      combinedDBCMap_(Teuchos::null),
       contact_strategy_nitsche_(Teuchos::null),
+      dbc_handler_(Teuchos::null),
       dtele_(0.0),
       dtsolve_(0.0),
       equilibration_method_{Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
@@ -79,8 +80,18 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       strategy_convcheck_(Teuchos::null),
       strategy_equilibration_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
-
 {
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void SSI::SSIMono::ApplyDBCToSystem()
+{
+  // apply Dirichlet boundary conditions to global system matrix
+  dbc_handler_->ApplyDBCToSystemMatrix(ssi_matrices_->SystemMatrix());
+
+  // apply Dirichlet boundary conditions to global RHS
+  dbc_handler_->ApplyDBCToRHS(residual_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -124,14 +135,6 @@ void SSI::SSIMono::AssembleMatAndRHS()
   // finalize global system matrix
   ssi_matrices_->SystemMatrix()->Complete();
 
-  // apply scatra Dirichlet
-  ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraField()->DirichMaps()->CondMap(), true);
-  if (IsScaTraManifold())
-    ssi_matrices_->SystemMatrix()->ApplyDirichlet(*ScaTraManifold()->DirichMaps()->CondMap(), true);
-
-  // apply structural Dirichlet conditions
-  strategy_assemble_->ApplyStructuralDBCSystemMatrix(ssi_matrices_->SystemMatrix());
-
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS(),
       IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
@@ -161,6 +164,14 @@ void SSI::SSIMono::EvaluateSubproblems()
   // build system matrix and residual for scalar transport field on manifold
   if (IsScaTraManifold()) ScaTraManifold()->PrepareLinearSolve();
 
+  // build all off diagonal matrices
+  EvaluateOffDiagContributions();
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void SSI::SSIMono::EvaluateOffDiagContributions()
+{
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
       ssi_matrices_->ScaTraStructureDomain());
@@ -175,21 +186,10 @@ void SSI::SSIMono::EvaluateSubproblems()
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
       ssi_matrices_->StructureScaTraDomain());
 
+  // evaluate off-diagonal manifold-structure block of global system matrix
   if (IsScaTraManifold())
-  {
-    // evaluate off-diagonal manifold-structure block of global system matrix
     scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
         ssi_matrices_->ScaTraManifoldStructureDomain());
-  }
-}
-
-/*-------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------*/
-void SSI::SSIMono::BuildCombinedDBCMap()
-{
-  const auto& structure_cond_map = StructureField()->GetDBCMapExtractor()->CondMap();
-  const auto& scatra_cond_map = ScaTraField()->DirichMaps()->CondMap();
-  combinedDBCMap_ = LINALG::MergeMap(structure_cond_map, scatra_cond_map, false);
 }
 
 /*-------------------------------------------------------------------------------*
@@ -554,9 +554,6 @@ void SSI::SSIMono::SetupSystem()
   // initialize global residual vector
   residual_ = LINALG::CreateVector(*DofRowMap(), true);
 
-  // build the dirichlet boundary condition map of the coupled system
-  BuildCombinedDBCMap();
-
   // initialize map extractors associated with blocks of global system matrix
   switch (ScaTraField()->MatrixType())
   {
@@ -698,6 +695,9 @@ void SSI::SSIMono::SetupSystem()
   // instantiate appropriate equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
+
+  // instantiate Dirichlet boundary condition handler class
+  dbc_handler_ = SSI::BuildDBCHandler(Teuchos::rcp(this, false), matrixtype_);
 }
 
 /*---------------------------------------------------------------------------------*
@@ -780,11 +780,14 @@ void SSI::SSIMono::NewtonLoop()
     // store time before evaluating elements and assembling global system of equations
     double time = timer_->WallTime();
 
-    // evaluate subproblems and get all matrices and right-hand-sides
+    // evaluate sub problems and get all matrices and right-hand-sides
     EvaluateSubproblems();
 
     // assemble global system of equations
     AssembleMatAndRHS();
+
+    // apply the Dirichlet boundary conditions to global system
+    ApplyDBCToSystem();
 
     // determine time needed for evaluating elements and assembling global system of
     // equations, and take maximum over all processors via communication

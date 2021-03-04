@@ -2515,6 +2515,7 @@ src/drt_ssi/ssi_coupling.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp
+src/drt_ssi/ssi_monolithic_dbc_handler.cpp
 src/drt_ssi/ssi_monolithic_evaluate_OffDiag.cpp
 src/drt_ssi/ssi_partitioned.cpp
 src/drt_ssi/ssi_partitioned_1wc.cpp

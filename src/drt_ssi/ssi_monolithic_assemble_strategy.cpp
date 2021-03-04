@@ -801,75 +801,6 @@ void SSI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& syste
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlock::ApplyStructuralDBCSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  // locsys manager of structure
-  const auto& locsysmanager_structure = ssi_mono_->StructureField()->LocsysManager();
-
-  // map of structural Dirichlet BCs
-  const auto dbcmap_structure = ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap();
-
-  if (locsysmanager_structure == Teuchos::null)
-    systemmatrix->ApplyDirichlet(*dbcmap_structure);
-  else
-  {
-    auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-
-    // apply structural Dirichlet conditions
-    for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
-    {
-      locsysmanager_structure->RotateGlobalToLocal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-      systemmatrix_block->Matrix(PositionStructure(), iblock)
-          .ApplyDirichletWithTrafo(
-              locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
-      locsysmanager_structure->RotateLocalToGlobal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::ApplyStructuralDBCSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  // locsys manager of structure
-  const auto& locsysmanager_structure = ssi_mono_->StructureField()->LocsysManager();
-
-  // map of structural Dirichlet BCs
-  const auto& dbcmap_structure = ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap();
-
-  // structural dof row map
-  const auto& dofrowmap_structure = ssi_mono_->StructureField()->DofRowMap();
-
-  if (locsysmanager_structure == Teuchos::null)
-    systemmatrix->ApplyDirichlet(*dbcmap_structure);
-  else
-  {
-    auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-
-    // extract structural rows of global system matrix
-    const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_structure =
-        Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_structure, 27, false, true));
-    LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
-        systemmatrix->DomainMap(), 1.0, nullptr, nullptr, *systemmatrix_structure);
-    systemmatrix_structure->Complete(systemmatrix->DomainMap(), *dofrowmap_structure);
-
-    // apply structural Dirichlet conditions
-    locsysmanager_structure->RotateGlobalToLocal(systemmatrix_structure);
-    systemmatrix_structure->ApplyDirichletWithTrafo(
-        locsysmanager_structure->Trafo(), *dbcmap_structure);
-    locsysmanager_structure->RotateLocalToGlobal(systemmatrix_structure);
-
-    // assemble structural rows of global system matrix back into global system matrix
-    systemmatrix_sparse->Put(*systemmatrix_structure, 1.0, dofrowmap_structure);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     Teuchos::RCP<Epetra_Vector> RHSscatra, Teuchos::RCP<const Epetra_Vector> RHSstructure,
     Teuchos::RCP<Epetra_Vector> RHSmanifold)
@@ -948,10 +879,6 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     ssi_mono_->MapsSubProblems()->AddVector(
         ssi_mono_->CoNitscheStrategySsi()->GetRhsBlockPtr(DRT::UTILS::VecBlockType::scatra),
         ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), RHS);
-
-    // apply the dirichlet boundary conditions
-    const auto zeros = Teuchos::rcp(new Epetra_Vector(RHS->Map()));
-    LINALG::ApplyDirichlettoSystem(RHS, zeros, *(ssi_mono_->CombinedDBCMap()));
   }
 }
 
