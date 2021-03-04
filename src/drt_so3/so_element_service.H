@@ -66,6 +66,19 @@ namespace DRT
     void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
         const Epetra_SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele);
 
+    /*!
+     * @brief calculate and return the value of the quantity at position xi based on the quantity
+     * node vector
+     *
+     * @tparam distype        discretization type of element
+     * @param xi              position to project to in local coordinates
+     * @param nodal_quantity  nodal vector of the quantity to be projected
+     * @return quantity projected to position xi
+     */
+    template <DRT::Element::DiscretizationType distype>
+    double ProjectNodalQuantityToXi(
+        const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
+
   }  // namespace ELEMENTS
 }  // namespace DRT
 

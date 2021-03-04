@@ -315,16 +315,6 @@ namespace DRT
           Epetra_SerialDenseMatrix* DsntDs, LINALG::Matrix<3, 1>* DsntDn,
           LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi);
 
-      /*!
-       * @brief calculate the gauss point concentration and return the result
-       *
-       * @param[in] xi      position of gauss point in local coordinates
-       * @param[in] scalar  node values of the concentration
-       * @return gauss point concentration
-       */
-      double ReturnGPConcentration(
-          const LINALG::Matrix<3, 1>& xi, const std::vector<double>& scalar);
-
       /// @name params
       /// return SCATRA::ImplType
       const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };

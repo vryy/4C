@@ -10,6 +10,8 @@
 
 #include "so3_scatra.H"
 
+#include "so_element_service.H"
+
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_structure_new/str_enum_lists.H"
@@ -232,7 +234,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyAtXi(const LINALG::Ma
     Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* DsntDs,
     LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi)
 {
-  const double concentration_gp = ReturnGPConcentration(xi, scalar);
+  const double concentration_gp = DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar);
   double DsntDs_gp(0.0);
   // call base class
   so3_ele::GetCauchyAtXi(xi, disp, n, t, sigma_nt, DsntDd, nullptr, nullptr, nullptr, nullptr,
@@ -247,26 +249,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyAtXi(const LINALG::Ma
     // calculate DsntDs
     LINALG::Matrix<numnod_, 1>(DsntDs->A(), true).Update(DsntDs_gp, shapefunct, 1.0);
   }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-template <class so3_ele, DRT::Element::DiscretizationType distype>
-double DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::ReturnGPConcentration(
-    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& scalar)
-{
-  LINALG::Matrix<numnod_, 1> shapefunct(true);
-  DRT::UTILS::shape_function<distype>(xi, shapefunct);
-
-  // prepare element node concentrations for multiplication with shape functions
-  static LINALG::Matrix<numnod_, 1> ele_conc(true);
-  for (int i = 0; i < numnod_; ++i)
-  {
-    ele_conc(i) = scalar.at(i);
-  }
-
-  // return the gauss point concentration
-  return ele_conc.Dot(shapefunct);
 }
 
 /*----------------------------------------------------------------------*
