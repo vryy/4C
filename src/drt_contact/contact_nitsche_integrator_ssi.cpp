@@ -86,9 +86,7 @@ void CONTACT::CoIntegratorNitscheSsi::GPTSForces(MORTAR::MortarElement& slave_el
       return;
   }
 
-#ifdef DEBUG
-  if (dim != Dim()) dserror("dimension inconsistency");
-#endif
+  dsassert(dim == Dim(), "dimension inconsitency");
 
   // calculate normals and derivatives
   const LINALG::Matrix<dim, 1> normal(gp_normal, true);
@@ -141,11 +139,11 @@ void CONTACT::CoIntegratorNitscheSsi::GPTSForces(MORTAR::MortarElement& slave_el
           d_jac_dd, gp_wgt, cauchy_nn_average_pen_gap, d_cauchy_nn_average_pen_gap_dd,
           d_cauchy_nn_weighted_average_ds, normal, d_gp_normal_dd);
     }
-  }
 
-  // integrate the scatra-scatra interface condition
-  IntegrateSSIInterfaceCondition<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
-      master_ele, master_shape, master_shape_deriv, d_master_xi_dd, jac, d_jac_dd, gp_wgt);
+    // integrate the scatra-scatra interface condition
+    IntegrateSSIInterfaceCondition<dim>(slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd,
+        master_ele, master_shape, master_shape_deriv, d_master_xi_dd, jac, d_jac_dd, gp_wgt);
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -350,8 +348,11 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateSSIInterfaceCondition(
 
       IntegrateScaTraTest<dim>(-1.0, slave_ele, slave_shape, slave_shape_deriv, d_slave_xi_dd, jac,
           d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
-      IntegrateScaTraTest<dim>(1.0, master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
-          jac, d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
+      if (!two_half_pass_)
+      {
+        IntegrateScaTraTest<dim>(1.0, master_ele, master_shape, master_shape_deriv, d_master_xi_dd,
+            jac, d_jac_dd, wgt, flux, dflux_dd, dflux_dc);
+      }
 
       break;
     }
