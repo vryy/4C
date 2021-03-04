@@ -801,20 +801,18 @@ void SSI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& syste
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
-    Teuchos::RCP<Epetra_Vector> RHSscatra, Teuchos::RCP<const Epetra_Vector> RHSstructure,
-    Teuchos::RCP<Epetra_Vector> RHSmanifold)
+void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<const Epetra_Vector> rhs_scatra, Teuchos::RCP<const Epetra_Vector> rhs_structure,
+    Teuchos::RCP<const Epetra_Vector> rhs_manifold)
 {
-  RHS->PutScalar(0.0);
-
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
   ssi_mono_->MapsSubProblems()->InsertVector(
-      RHSscatra, ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), RHS);
+      rhs_scatra, ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
 
   if (ssi_mono_->IsScaTraManifold())
   {
     ssi_mono_->MapsSubProblems()->InsertVector(
-        RHSmanifold, ssi_mono_->GetProblemPosition(SSI::Subproblem::manifold), RHS);
+        rhs_manifold, ssi_mono_->GetProblemPosition(SSI::Subproblem::manifold), rhs);
   }
 
   if (ssi_mono_->SSIInterfaceMeshtying())
@@ -823,7 +821,7 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     // monolithic right-hand side vector
 
     // make copy of structural right-hand side vector
-    Epetra_Vector residual_structure(*RHSstructure);
+    Epetra_Vector residual_structure(*rhs_structure);
 
     // transform slave-side part of structural right-hand side vector to master side
     Teuchos::RCP<Epetra_Vector> slavetomaster = ssi_mono_->MapsCoupStruct()->InsertVector(
@@ -865,12 +863,12 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     ssi_mono_->MapsSubProblems()->AddVector(
-        residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), *RHS, -1.0);
+        residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), *rhs, -1.0);
   }
   else
   {
     ssi_mono_->MapsSubProblems()->AddVector(
-        RHSstructure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), RHS, -1.0);
+        rhs_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
   }
 
   if (ssi_mono_->SSIInterfaceContact())
@@ -878,7 +876,7 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     // add the scatra contact contribution
     ssi_mono_->MapsSubProblems()->AddVector(
         ssi_mono_->CoNitscheStrategySsi()->GetRhsBlockPtr(DRT::UTILS::VecBlockType::scatra),
-        ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), RHS);
+        ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
   }
 }
 

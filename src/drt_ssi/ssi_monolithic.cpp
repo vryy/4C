@@ -41,7 +41,6 @@
 #include "../linalg/linalg_equilibrate.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
-#include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Time.h>
@@ -61,7 +60,6 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
           Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
-      increment_(Teuchos::null),
       map_structure_(Teuchos::null),
       maps_scatra_(Teuchos::null),
       maps_sub_problems_(Teuchos::null),
@@ -69,13 +67,13 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       meshtying_strategy_s2i_(Teuchos::null),
-      residual_(Teuchos::null),
       scatrastructureOffDiagcoupling_(Teuchos::null),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
       ssi_matrices_(Teuchos::null),
+      ssi_vectors_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
       strategy_convcheck_(Teuchos::null),
       strategy_equilibration_(Teuchos::null),
@@ -91,7 +89,7 @@ void SSI::SSIMono::ApplyDBCToSystem()
   dbc_handler_->ApplyDBCToSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // apply Dirichlet boundary conditions to global RHS
-  dbc_handler_->ApplyDBCToRHS(residual_);
+  dbc_handler_->ApplyDBCToRHS(ssi_vectors_->Residual());
 }
 
 /*--------------------------------------------------------------------------*
@@ -136,14 +134,17 @@ void SSI::SSIMono::AssembleMatAndRHS()
   ssi_matrices_->SystemMatrix()->Complete();
 
   // assemble monolithic RHS
-  strategy_assemble_->AssembleRHS(residual_, ScaTraField()->Residual(), StructureField()->RHS(),
-      IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
+  strategy_assemble_->AssembleRHS(ssi_vectors_->Residual(), ScaTraField()->Residual(),
+      StructureField()->RHS(), IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::EvaluateSubproblems()
 {
+  // clear residual vectors
+  ssi_vectors_->ClearResiduals();
+
   // needed to communicate to NOX state
   StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
@@ -548,12 +549,6 @@ void SSI::SSIMono::SetupSystem()
   // check global map extractor
   maps_sub_problems_->CheckForValidMapExtractor();
 
-  // initialize global increment vector for Newton-Raphson iteration
-  increment_ = LINALG::CreateVector(*DofRowMap(), true);
-
-  // initialize global residual vector
-  residual_ = LINALG::CreateVector(*DofRowMap(), true);
-
   // initialize map extractors associated with blocks of global system matrix
   switch (ScaTraField()->MatrixType())
   {
@@ -667,6 +662,9 @@ void SSI::SSIMono::SetupSystem()
   // initialize sub blocks and system matrix
   ssi_matrices_ = Teuchos::rcp(new SSI::UTILS::SSIMatrices(*this, interface_map_scatra));
 
+  // initialize residual and increment vectors
+  ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(*this));
+
   // initialize strategy for assembly
   strategy_assemble_ = SSI::BuildAssembleStrategy(
       Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
@@ -751,14 +749,14 @@ void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) co
 void SSI::SSIMono::SolveLinearSystem()
 {
   strategy_equilibration_->EquilibrateSystem(
-      ssi_matrices_->SystemMatrix(), residual_, *MapsSystemMatrix());
+      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), *MapsSystemMatrix());
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
-  solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true,
-      IterationCount() == 1);
+  solver_->Solve(ssi_matrices_->SystemMatrix()->EpetraOperator(), ssi_vectors_->Increment(),
+      ssi_vectors_->Residual(), true, IterationCount() == 1);
 
-  strategy_equilibration_->UnequilibrateIncrement(increment_);
+  strategy_equilibration_->UnequilibrateIncrement(ssi_vectors_->Increment());
 }
 
 /*--------------------------------------------------------------------------*
@@ -801,8 +799,8 @@ void SSI::SSIMono::NewtonLoop()
     // check termination criterion for Newton-Raphson iteration
     if (strategy_convcheck_->ExitNewtonRaphson(*this)) break;
 
-    // initialize global increment vector
-    increment_->PutScalar(0.0);
+    // clear the global increment vector
+    ssi_vectors_->ClearIncrement();
 
     // store time before solving global system of equations
     time = timer_->WallTime();
@@ -818,8 +816,8 @@ void SSI::SSIMono::NewtonLoop()
     // applicable
     if (DRT::INPUT::IntegralValue<bool>(
             *ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
-      ScaTraField()->OutputLinSolverStats(
-          *solver_, dtsolve_, Step(), IterationCount(), residual_->Map().NumGlobalElements());
+      ScaTraField()->OutputLinSolverStats(*solver_, dtsolve_, Step(), IterationCount(),
+          ssi_vectors_->Residual()->Map().NumGlobalElements());
 
     // update states for next Newton iteration
     UpdateIterScaTra();
@@ -892,13 +890,13 @@ void SSI::SSIMono::UpdateIterScaTra()
 {
   // update scalar transport field
   ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
-      increment_, GetProblemPosition(Subproblem::scalar_transport)));
+      ssi_vectors_->Increment(), GetProblemPosition(Subproblem::scalar_transport)));
   ScaTraField()->ComputeIntermediateValues();
 
   if (IsScaTraManifold())
   {
-    ScaTraManifold()->UpdateIter(
-        MapsSubProblems()->ExtractVector(increment_, GetProblemPosition(Subproblem::manifold)));
+    ScaTraManifold()->UpdateIter(MapsSubProblems()->ExtractVector(
+        ssi_vectors_->Increment(), GetProblemPosition(Subproblem::manifold)));
     ScaTraManifold()->ComputeIntermediateValues();
   }
 }
@@ -908,8 +906,8 @@ void SSI::SSIMono::UpdateIterScaTra()
 void SSI::SSIMono::UpdateIterStructure()
 {
   // set up structural increment vector
-  const Teuchos::RCP<Epetra_Vector> increment_structure =
-      MapsSubProblems()->ExtractVector(increment_, GetProblemPosition(Subproblem::structure));
+  const Teuchos::RCP<Epetra_Vector> increment_structure = MapsSubProblems()->ExtractVector(
+      ssi_vectors_->Increment(), GetProblemPosition(Subproblem::structure));
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())

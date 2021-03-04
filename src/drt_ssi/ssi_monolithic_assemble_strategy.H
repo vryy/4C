@@ -40,7 +40,7 @@ namespace SSI
     2a) Scatra matrix block
     ->Structure matrix sparse
     2b) Scatra matrix sparse
-    ->Strucutre matrix sparse
+    ->Structure matrix sparse
 
   The inheritance hierarchy is appropriate*/
   class AssembleStrategyBase
@@ -53,8 +53,9 @@ namespace SSI
     virtual void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) = 0;
 
     //! assemble RHS
-    void AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS, Teuchos::RCP<Epetra_Vector> RHSscatra,
-        Teuchos::RCP<const Epetra_Vector> RHSstructure, Teuchos::RCP<Epetra_Vector> RHSmanifold);
+    void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
+        Teuchos::RCP<const Epetra_Vector> rhs_structure,
+        Teuchos::RCP<const Epetra_Vector> rhs_manifold);
 
     //! assemble ScaTra-Block into system matrix
     virtual void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,

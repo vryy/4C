@@ -44,7 +44,8 @@ namespace SSI
   namespace UTILS
   {
     class SSIMatrices;
-  }
+    class SSIVectors;
+  }  // namespace UTILS
 
   class AssembleStrategyBase;
   class DBCHandlerBase;
@@ -210,9 +211,6 @@ namespace SSI
     //! equilibration method applied to system matrix
     const struct SSIMonoEquilibrationMethod equilibration_method_;
 
-    //! global increment vector for Newton-Raphson iteration
-    Teuchos::RCP<Epetra_Vector> increment_;
-
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
 
@@ -231,17 +229,17 @@ namespace SSI
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
-    //! global residual vector on right-hand side of global system of equations
-    Teuchos::RCP<Epetra_Vector> residual_;
-
     //! all OD evaluation is in here
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
 
-    //! this object holds the system matrix and all subblocks
+    //! this object holds the system matrix and all sub blocks
     Teuchos::RCP<SSI::UTILS::SSIMatrices> ssi_matrices_;
+
+    //! this object holds the system residuals and increment
+    Teuchos::RCP<SSI::UTILS::SSIVectors> ssi_vectors_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;

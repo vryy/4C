@@ -640,6 +640,23 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SSI::UTILS::SSIVectors::SSIVectors(const SSI::SSIMono& ssi_mono_algorithm)
+    : increment_(Teuchos::null), residual_(Teuchos::null)
+{
+  increment_ = LINALG::CreateVector(*(ssi_mono_algorithm.DofRowMap()), true);
+  residual_ = LINALG::CreateVector(*(ssi_mono_algorithm.DofRowMap()), true);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIVectors::ClearIncrement() { increment_->PutScalar(0.0); }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIVectors::ClearResiduals() { residual_->PutScalar(0.0); }
+
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::UTILS::SSIMatrices::InitializeSystemMatrix(const SSI::SSIMono& ssi_mono_algorithm)
