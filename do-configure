@@ -153,6 +153,7 @@ if [[ $CCACHE_COMMAND != "" ]]; then
     if ! command -v $CCACHE_COMMAND &> /dev/null
     then
         echo "ccache command: $CCACHE_COMMAND could not be found, ccache will not be used!"
+        CCACHE_COMMAND=""
     fi
 fi
 
