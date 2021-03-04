@@ -177,8 +177,12 @@ namespace SSI
     //! set scatra solution on structure field
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
 
-    //! set contact states needed for evaluation of ssi contact
-    void SetSSIContactStates() const;
+    /*!
+     * @brief set contact states needed for evaluation of ssi contact
+     *
+     * @param[in] phi  scatra state to be set to contact nitsche strategy
+     */
+    void SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();

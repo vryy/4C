@@ -113,6 +113,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatra(
             ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra)
             ->Split<LINALG::DefaultBlockMatrixStrategy>(
                 *ssi_mono_->MapsScatra(), *ssi_mono_->MapsScatra());
+    scatra_scatra_interface_blockmatrix->Complete();
 
     // assemble it into the system matrix
     for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
@@ -125,8 +126,6 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatra(
         // get relevant block and complete it, such that it can be added to system matrix block
         auto& scatra_scatra_interface_block_i_j =
             scatra_scatra_interface_blockmatrix->Matrix(iblock, jblock);
-        scatra_scatra_interface_block_i_j.Complete();
-
         systemmatrix_block_iscatra_jscatra.Add(scatra_scatra_interface_block_i_j, false, 1.0, 1.0);
       }
     }
@@ -349,6 +348,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
             ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ)
             ->Split<LINALG::DefaultBlockMatrixStrategy>(
                 *ssi_mono_->MapStructure(), *ssi_mono_->MapsScatra());
+    scatra_struct_interface_blockmatrix->Complete();
 
     // assemble it into the system matrix
     for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
@@ -358,8 +358,6 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
 
       // get relevant block and complete it, such that it can be added to system matrix block
       auto& iscatra_struct_interface_block = scatra_struct_interface_blockmatrix->Matrix(iblock, 0);
-      iscatra_struct_interface_block.Complete();
-
       systemmatrix_block_iscatra_struct.Add(iscatra_struct_interface_block, false, 1.0, 1.0);
     }
   }
@@ -505,6 +503,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatra(
             ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra)
             ->Split<LINALG::DefaultBlockMatrixStrategy>(
                 *ssi_mono_->MapsScatra(), *ssi_mono_->MapStructure());
+    struct_scatra_interface_blockmatrix->Complete();
 
     // assemble it into the system matrix
     for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
@@ -514,8 +513,6 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatra(
 
       // get relevant block and complete it, such that it can be added to system matrix block
       auto& struct_iscatra_interface_block = struct_scatra_interface_blockmatrix->Matrix(0, iblock);
-      struct_iscatra_interface_block.Complete();
-
       systemmatrix_block_struct_iscatra.Add(struct_iscatra_interface_block, false, 1.0, 1.0);
     }
   }

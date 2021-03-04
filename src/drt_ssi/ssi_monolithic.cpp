@@ -292,11 +292,13 @@ void SSI::SSIMono::SetupContactStrategy()
       dserror("ssi contact only with new structural time integration");
 
     // get the contact model evaluator and store a pointer to the strategy
-    auto& model_evaluator = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
+    auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
         StructureField()->ModelEvaluator(INPAR::STR::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::CoNitscheStrategySsi>(
-        model_evaluator.StrategyPtr(), true);
+        model_evaluator_contact.StrategyPtr(), true);
   }
+  else
+    dserror("Only Nitsche contact implemented for SSI problems at the moment!");
 }
 
 /*--------------------------------------------------------------------------*
@@ -369,7 +371,7 @@ void SSI::SSIMono::ReadRestart(int restart)
   if (SSIInterfaceContact())
   {
     SetupContactStrategy();
-    SetSSIContactStates();
+    SetSSIContactStates(ScaTraField()->Phinp());
   }
 }
 
@@ -384,7 +386,7 @@ void SSI::SSIMono::ReadRestartfromTime(double restarttime)
   if (SSIInterfaceContact())
   {
     SetupContactStrategy();
-    SetSSIContactStates();
+    SetSSIContactStates(ScaTraField()->Phinp());
   }
 }
 
@@ -733,15 +735,15 @@ void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   SSIBase::SetScatraSolution(phi);
 
   // set state for contact evaluation
-  SetSSIContactStates();
+  SetSSIContactStates(phi);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SetSSIContactStates() const
+void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   if (contact_strategy_nitsche_ != Teuchos::null)
-    contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *(ScaTraField()->Phinp()));
+    contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
 }
 
 /*---------------------------------------------------------------------------------*
