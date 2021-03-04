@@ -182,6 +182,18 @@ namespace MORTAR
     virtual std::vector<int>& ParentDof() { return parentdofs_; }
 
     /*!
+    \brief Return Parent scalar vector
+
+    */
+    virtual std::vector<double>& ParentScalar() { return parentscalar_; }
+
+    /*!
+    \brief Return Parent Scalar element degrees of freedom
+
+    */
+    virtual std::vector<int>& ParentScalarDof() { return parentscalardofs_; }
+
+    /*!
     \brief Return Parent temperature vector
 
     */
@@ -240,6 +252,12 @@ namespace MORTAR
 
     // Displacement Parent element degrees of freedom
     std::vector<int> parentdofs_;
+
+    /// Scalar of Parent Element
+    std::vector<double> parentscalar_;
+
+    /// Scalar Parent element degrees of freedom
+    std::vector<int> parentscalardofs_;
 
     // Temperature of Parent Element
     std::vector<double> parenttemp_;

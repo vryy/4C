@@ -1421,6 +1421,9 @@ namespace DRT
       return;
     }
 
+    void RedistributeState(unsigned nds, const std::string& name) override;
+
+
     /*!
       \brief Tell whether a state vector has been set
       \param name (in): Name of solution state

@@ -62,6 +62,9 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       scatra_manifold_base_algorithm_(Teuchos::null),
       slave_side_converter_(Teuchos::null),
       ssicoupling_(Teuchos::null),
+      ssiinterfacecontact_(
+          DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
+          nullptr),
       ssiinterfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
           nullptr),
@@ -100,6 +103,10 @@ void SSI::SSIBase::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       InitFieldCoupling(comm, struct_disname, scatra_disname);
 
   if (redistribution_type != SSI::RedistributionType::none) Redistribute(redistribution_type);
+
+  CheckSSIFlags();
+
+  CheckSSIInterfaceConditions(struct_disname);
 
   // set isinit_ flag true
   SetIsInit(true);
@@ -269,9 +276,6 @@ void SSI::SSIBase::Setup()
 void SSI::SSIBase::InitDiscretizations(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& scatra_disname)
 {
-  // Scheme   : the structure discretization is received from the input. Then, an ale-scatra disc.
-  // is cloned.
-
   DRT::Problem* problem = DRT::Problem::Instance();
 
   auto structdis = problem->GetDis(struct_disname);
@@ -338,12 +342,11 @@ void SSI::SSIBase::InitDiscretizations(
       {
         dserror(
             "A TRANSPORT discretization is read from the .dat file, which is fine since the scatra "
-            "discretization is not cloned from "
-            "the structure discretization. But in the STRUCTURE ELEMENTS section of the .dat file "
-            "an ImplType that is NOT 'Undefined' is prescribed "
+            "discretization is not cloned from the structure discretization. But in the STRUCTURE "
+            "ELEMENTS section of the .dat file an ImplType that is NOT 'Undefined' is prescribed "
             "which does not make sense if you don't want to clone the structure discretization. "
-            "Change the ImplType to 'Undefined' "
-            "or decide to clone the scatra discretization from the structure discretization.");
+            "Change the ImplType to 'Undefined' or decide to clone the scatra discretization from "
+            "the structure discretization.");
       }
     }
   }
@@ -444,7 +447,7 @@ void SSI::SSIBase::ReadRestart(int restart)
     }
     else  // restart from structure simulation
     {
-      // Since there is no restart output for the scatra fiels available, we only have to fix the
+      // Since there is no restart output for the scatra field available, we only have to fix the
       // time and step counter
       ScaTraField()->SetTimeStep(structure_->TimeOld(), restart);
       if (IsScaTraManifold()) ScaTraManifold()->SetTimeStep(structure_->TimeOld(), restart);
@@ -530,7 +533,7 @@ void SSI::SSIBase::SetStructSolution(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi)
+void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
 {
   // safety checks
   CheckIsInit();
@@ -590,6 +593,41 @@ void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 
   ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), disp);
   if (IsScaTraManifold()) ssicoupling_->SetMeshDisp(ScaTraManifoldBaseAlgorithm(), disp);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::CheckSSIFlags() const
+{
+  if (ScaTraField()->S2ICoupling())
+  {
+    if (!(SSIInterfaceContact() or SSIInterfaceMeshtying()))
+    {
+      dserror(
+          "You defined an 'S2ICoupling' condition in the input-file. However, neither an "
+          "'SSIInterfaceContact' condition nor an 'SSIInterfaceMeshtying' condition defined. This "
+          "is not reasonable!");
+    }
+  }
+
+  if (SSIInterfaceContact() and SSIInterfaceMeshtying())
+  {
+    dserror(
+        "Currently it is not possible to have an 'SSIInterfaceContact' condition and an "
+        "'SSIInterfaceMeshtying' condition at the same time. The problem is, that for the scatra "
+        "field the decision whether mesh tying is performed or not is based on the 'S2ICoupling' "
+        "condition which is also used for the SSIInterfaceContact as it defines the parameters of "
+        "the interface equation to be solved. It would be cleaner to separate those "
+        "functionalities [a) perform meshtying, b) what interface equations and what parameters "
+        "are needed] in the scatra field, because then the hack IsS2IMeshtying() in "
+        "CreateMeshtyingStrategy in scatra_timint_implicit.cpp would not be required any more.");
+  }
+
+  const bool is_nitsche_penalty_adaptive(DRT::INPUT::IntegralValue<int>(
+      DRT::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
+
+  if (SSIInterfaceContact() and is_nitsche_penalty_adaptive)
+    dserror("Adaptive nitsche penalty parameter currently not supported!");
 }
 
 /*----------------------------------------------------------------------*/
@@ -771,6 +809,19 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+bool SSI::SSIBase::IsRestart()
+{
+  // get the global problem
+  const auto* problem = DRT::Problem::Instance();
+
+  const int restartstep = problem->Restart();
+  const double restarttime = problem->RestartTime();
+
+  return ((restartstep > 0) or (restarttime > 0.0));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void SSI::SSIBase::CheckAdaptiveTimeStepping(
     const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams)
 {
@@ -786,4 +837,29 @@ void SSI::SSIBase::CheckAdaptiveTimeStepping(
     dserror("Adaptive time stepping in SSI currently just from ScaTra");
   if (DRT::INPUT::IntegralValue<int>(structparams, "DYNAMICTYP") == INPAR::STR::dyna_ab2)
     dserror("Currently, only one step methods are allowed for adaptive time stepping");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname) const
+{
+  // access the structural discretization
+  auto structdis = DRT::Problem::Instance()->GetDis(struct_disname);
+
+  if (SSIInterfaceMeshtying())
+  {
+    // get ssi condition to be tested
+    std::vector<DRT::Condition*> ssiconditions;
+    structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
+    SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssiconditions, structdis);
+  }
+
+  // check scatra-structure-interaction contact condition
+  if (SSIInterfaceContact())
+  {
+    // get ssi condition to be tested
+    std::vector<DRT::Condition*> ssiconditions;
+    structdis->GetCondition("SSIInterfaceContact", ssiconditions);
+    SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(ssiconditions, structdis);
+  }
 }

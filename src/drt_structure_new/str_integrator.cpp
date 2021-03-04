@@ -253,8 +253,6 @@ void STR::Integrator::EquilibrateInitialState()
   UpdateStepState();
   UpdateStepElement();
   PostUpdate();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

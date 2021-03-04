@@ -63,8 +63,6 @@ namespace SSI
     /// create using a Epetra_Comm
     explicit SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    ~SSIBase() override = default;
-
     //! return scatra-scatra interface coupling adapter for structure field
     const Teuchos::RCP<ADAPTER::Coupling>& InterfaceCouplingAdapterStructure() const
     {
@@ -136,6 +134,13 @@ namespace SSI
 
     //! returns true if Setup() was called and is still valid
     bool IsSetup() const { return issetup_; };
+
+    /*!
+     * @brief checks whether simulation is restarted or not
+     *
+     * @return  flag indicating if simulation is restarted
+     */
+    bool IsRestart();
 
     /*! \brief Setup discretizations and dofsets
 
@@ -244,7 +249,7 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel);
 
     /// set scatra solution on other fields
-    void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi);
+    virtual void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
     /// set scatra on manifold solution on other fields
     void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
@@ -263,6 +268,9 @@ namespace SSI
 
     //! Redistribute nodes and elements on processors
     void Redistribute(RedistributionType redistribution_type);
+
+    //! get bool indicating if we have at least one ssi interface contact condition
+    bool SSIInterfaceContact() const { return ssiinterfacecontact_; };
 
    protected:
     //! get bool indicating if old structural time integration is used
@@ -316,6 +324,16 @@ namespace SSI
     void InitTimeIntegrators(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, const bool isAle);
+
+    //! check whether scatra-structure interaction flags are set correctly
+    void CheckSSIFlags() const;
+
+    /*!
+     * @brief SSI interface condition definition is checked
+     *
+     * @param[in] struct_disname  name of structure discretization
+     */
+    void CheckSSIInterfaceConditions(const std::string& struct_disname) const;
 
     //! returns true if Init(..) was called and is still valid
     bool IsInit() const { return isinit_; }
@@ -381,6 +399,9 @@ namespace SSI
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
 
+    //! bool indicating if we have at least one ssi interface contact condition
+    const bool ssiinterfacecontact_;
+
     //! bool indicating if we have at least one ssi interface meshtying condition
     const bool ssiinterfacemeshtying_;
 
@@ -401,7 +422,6 @@ namespace SSI
 
     //! a zero vector of full length with structure dofs
     Teuchos::RCP<Epetra_Vector> zeros_structure_;
-
   };  // SSI_Base
 }  // namespace SSI
 #endif /* SSI_BASE_H_ */

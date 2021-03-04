@@ -64,13 +64,6 @@ namespace DRT
 
       */
       So3_Scatra(const So3_Scatra& old);
-
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~So3_Scatra(){};
-
       //@}
 
       // static const DRT::UTILS::GaussIntegration intpoints_ =
@@ -105,7 +98,6 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      // virtual int UniqueParObjectId() const = 0 ;
       int UniqueParObjectId() const
       {
         switch (distype)
@@ -175,6 +167,7 @@ namespace DRT
       */
       void Print(std::ostream& os) const;
 
+      //! returns a reference to the element type
       DRT::ElementType& ElementType() const
       {
         switch (distype)
@@ -287,6 +280,41 @@ namespace DRT
        */
       void SetMaterial(int matnum);
 
+      /*!
+       * @brief Evaluate Cauchy stress at given point in parameter space and calculate
+       * linearizations
+       *
+       * @param[in] xi          position in parameter space xi
+       * @param[in] disp        vector of displacements
+       * @param[in] scalar      vector of scalars
+       * @param[in] n           vector n (\f[\bold{n}\f])
+       * @param[in] t           vector t (\f[\bold{t}\f])
+       * @param[out] sigma_nt   cauchy stress tensor contracted using the vectors n and t
+       *                        (\f[\bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
+       * @param[out] DsntDd     derivative of sigma_nt w.r.t. displacements
+       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
+       *                        \bold{t}}{\mathrm{d} \bold{d}}\f])
+       * @param[out] DsntDs     derivative of sigma_nt w.r.t. vector of scalars s
+       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
+       *                        \bold{t}}{\mathrm{d} \bold{s}}\f])
+       * @param[out] DsntDn     derivative of sigma_nt w.r.t. vector n
+       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
+       *                        \bold{t}}{\mathrm{d} \bold{n}}\f])
+       * @param[out] DsntDt     derivative of sigma_nt w.r.t. vector t
+       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
+       *                        \bold{t}}{\mathrm{d} \bold{t}}\f])
+       * @param[out] DsntDxi    derivative of sigma_nt w.r.t. local parameter coordinate xi
+       *                        (\f[\frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
+       *                        \bold{t}}{\mathrm{d} \bold{\xi}} \f])
+       *
+       * @note At the moment this method is only used for the nitsche contact formulation
+       */
+      void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+          const std::vector<double>& scalar, const LINALG::Matrix<3, 1>& n,
+          const LINALG::Matrix<3, 1>& t, double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd,
+          Epetra_SerialDenseMatrix* DsntDs, LINALG::Matrix<3, 1>* DsntDn,
+          LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi);
+
       /// @name params
       /// return SCATRA::ImplType
       const INPAR::SCATRA::ImplType& ImplType() const { return impltype_; };
@@ -304,14 +332,16 @@ namespace DRT
           Teuchos::ParameterList& params  //!< parameter list
       );
 
-      //! calculate nonlinear B-operator (6x24)
-      void CalculateBop(
-          LINALG::Matrix<numstr_, numdofperelement_>* bop,  //!< (o): nonlinear B-operator
-          const LINALG::Matrix<numdim_, numdim_>* defgrd,   //!< (i): deformation gradient
-          const LINALG::Matrix<numdim_, numnod_>*
-              N_XYZ  //!< (i): (material) derivative of shape functions
-          ) const;
-
+      /*!
+       * @brief calculate nonlinear B-operator (6x24)
+       *
+       * @param[out] bop    nonlinear B-operator
+       * @param[in] defgrd  deformation gradient
+       * @param[in] N_XYZ   (material) derivative of shape functions
+       */
+      void CalculateBop(LINALG::Matrix<numstr_, numdofperelement_>* bop,
+          const LINALG::Matrix<numdim_, numdim_>* defgrd,
+          const LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
       //@}
 
      protected:
@@ -339,9 +369,6 @@ namespace DRT
       //! vector of determinants of the jacobian (\det[ \frac{\mathrm{d} \vec{X}} {\mathrm{d}
       //! \vec{r}} ]) at each gauss point
       std::vector<double> detJ_;
-
-      //! container containing all kind of solid3 thisandthat
-      // DRT::Container                                                        data_;
 
       DRT::Node** Nodes();
 

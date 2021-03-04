@@ -170,8 +170,18 @@ namespace CONTACT
 
       int IdentifyFullSubset(const Epetra_Map& map_0, const Epetra_Map& map_1,
           bool throw_if_partial_subset_on_proc = true) const;
-    };  // namespace STRATEGY
-  }     // namespace STRATEGY
+
+      /*!
+       * \brief Set parameters to contact interface parameter list
+       *
+       * @param[in] conditiongroupid:                ID of the current contact condition group
+       * @param[in/out] contactinterfaceparameters:  the sublist 'ContactS2ICoupling' containing
+       *                   the scatra-scatra interface parameters is added to this list if needed
+       */
+      void SetParametersForContactCondition(
+          int conditiongroupid, Teuchos::ParameterList& contactinterfaceparameters) const;
+    };
+  }  // namespace STRATEGY
 }  // namespace CONTACT
 
 #endif /* SRC_DRT_CONTACT_CONTACT_STRATEGY_FACTORY_H_ */

@@ -295,7 +295,7 @@ void INPAR::SSI::SetValidConditions(
   condlist.push_back(volssi2);
 
   /*--------------------------------------------------------------------*/
-  // set Scalar-Structure interaction interface meshtying condition
+  // set ScaTra-Structure interaction interface meshtying condition
   Teuchos::RCP<ConditionDefinition> linessiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING LINE CONDITIONS",
           "SSIInterfaceMeshtying", "SSI Interface Meshtying", DRT::Condition::SSIInterfaceMeshtying,
@@ -311,7 +311,7 @@ void INPAR::SSI::SetValidConditions(
   // and not only to the S2ICoupling condition. Of course, then also the structural meshtying should
   // be used which could/should be the long-term goal. However, to date, a simple structural
   // meshtying version for matching node is implemented within the SSI framework and therefore no
-  // reference is neccessary.
+  // reference is necessary.
   std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacemeshtying;
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(
@@ -371,6 +371,7 @@ void INPAR::SSI::SetValidConditions(
   surfmanifoldinitfields->AddComponent(Teuchos::rcp(new IntVectorConditionComponent("funct", 1)));
 
   condlist.emplace_back(surfmanifoldinitfields);
+
   /*--------------------------------------------------------------------*/
   // Dirichlet conditions
   auto pointmanifolddirichlet = Teuchos::rcp(
@@ -412,4 +413,32 @@ void INPAR::SSI::SetValidConditions(
   condlist.push_back(pointmanifolddirichlet);
   condlist.push_back(linemanifolddirichlet);
   condlist.push_back(surfmanifolddirichlet);
+
+  /*--------------------------------------------------------------------*/
+  // set ScaTra-Structure Interaction interface contact condition
+  auto linessiinterfacecontact = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SSI INTERFACE CONTACT LINE CONDITIONS", "SSIInterfaceContact",
+      "SSI Interface Contact", DRT::Condition::SSIInterfaceContact, true, DRT::Condition::Line));
+  auto surfssiinterfacecontact = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SSI INTERFACE CONTACT SURF CONDITIONS", "SSIInterfaceContact",
+      "SSI Interface Contact", DRT::Condition::SSIInterfaceContact, true, DRT::Condition::Surface));
+
+  // equip condition definitions with input file line components
+  std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacecontact;
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+  ssiinterfacecontact.emplace_back(
+      Teuchos::rcp(new SeparatorConditionComponent("ContactConditionID")));
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ContactConditionID")));
+
+  // insert input file line components into condition definitions
+  for (const auto& ssiinterfacecontactcomponent : ssiinterfacecontact)
+  {
+    linessiinterfacecontact->AddComponent(ssiinterfacecontactcomponent);
+    surfssiinterfacecontact->AddComponent(ssiinterfacecontactcomponent);
+  }
+
+  condlist.push_back(linessiinterfacecontact);
+  condlist.push_back(surfssiinterfacecontact);
 }

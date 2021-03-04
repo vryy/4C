@@ -733,7 +733,6 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
     std::vector<int> rdata;
 
     // Fill rdata with existing colmap
-
     const Epetra_Map* elecolmap = voldis[disidx]->ElementColMap();
     const Teuchos::RCP<Epetra_Map> allredelecolmap =
         LINALG::AllreduceEMap(*voldis[disidx]->ElementRowMap());
@@ -792,6 +791,19 @@ void MORTAR::UTILS::CreateVolumeGhosting(const DRT::Discretization& dis_src,
       if (!vele) dserror("Cannot find element with gid %", volgid);
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
+
+      if (voldis.size() == 2)
+      {
+        const auto* elecolmap2 = voldis[1]->ElementColMap();
+        if (elecolmap2->LID(volgid) == -1)
+          faceele->SetParentSlaveElement(nullptr, -1);
+        else
+        {
+          auto* volele = voldis[1]->gElement(volgid);
+          if (volele == nullptr) dserror("Cannot find element with gid %", volgid);
+          faceele->SetParentSlaveElement(volele, faceele->FaceParentNumber());
+        }
+      }
     }
   }
 

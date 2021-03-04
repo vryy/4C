@@ -15,6 +15,7 @@
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_wear.H"
+#include "../drt_inpar/inpar_s2i.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
@@ -24,6 +25,8 @@
 
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
 #include "../drt_structure_new/str_utils.H"
+
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../drt_structure_xstructure/xstr_multi_discretization_wrapper.H"
 
@@ -35,6 +38,7 @@
 // -- standard strategies and interfaces
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
+#include "contact_nitsche_strategy_ssi.H"
 #include "contact_nitsche_strategy_tsi.H"
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
@@ -605,6 +609,10 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::tsi);
   }
+  else if (problemtype == prb_ssi)
+  {
+    params.set<int>("PROBTYPE", INPAR::CONTACT::ssi);
+  }
   else if (problemtype == prb_struct_ale)
   {
     params.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
@@ -809,6 +817,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     icparams.set<bool>("Two_half_pass", Two_half_pass);
     icparams.set<bool>("Check_nonsmooth_selfcontactsurface", Check_nonsmooth_selfcontactsurface);
     icparams.set<bool>("Searchele_AllProc", Searchele_AllProc);
+
+    SetParametersForContactCondition(groupid1, icparams);
 
     // for structural contact we currently choose redundant master storage
     // the only exception is self contact where a redundant slave is needed, too
@@ -1738,6 +1748,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
       strategy_ptr = Teuchos::rcp(new CoNitscheStrategyTsi(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
+    else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::ssi)
+    {
+      data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      strategy_ptr = Teuchos::rcp(new CoNitscheStrategySsi(
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
+    }
     else
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
@@ -2126,5 +2142,43 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
     // invalid system type
     else
       dserror("Invalid system type for contact/meshtying");
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
+    const int conditiongroupid, Teuchos::ParameterList& contactinterfaceparameters) const
+{
+  // add parameters if we have SSI contact
+  if (Discret().GetCondition("SSIInterfaceContact") != nullptr)
+  {
+    // get the scatra-scatra interface coupling condition
+    std::vector<DRT::Condition*> s2iconditions;
+    Discret().GetCondition("S2ICoupling", s2iconditions);
+
+    // create a sublist which is filled and added to the contact interface parameters
+    auto& s2icouplingparameters = contactinterfaceparameters.sublist("ContactS2ICoupling");
+
+    // loop over all s2i conditions and get the one with the same condition id (that they have to
+    // match is assured within the setup of the SSI framework) at the slave-side, as only this
+    // stores all the information
+    for (const auto& s2icondition : s2iconditions)
+    {
+      // only add to parameters if condition ID's match
+      if (s2icondition->GetInt("ConditionID") == conditiongroupid)
+      {
+        // only the slave-side stores the parameters
+        if (s2icondition->GetInt("interface side") == INPAR::S2I::side_slave)
+        {
+          // fill the parameters from the s2i condition
+          SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToParameterList(
+              *s2icondition, s2icouplingparameters);
+
+          // add the sublist to the contact interface parameter list
+          contactinterfaceparameters.setParameters(s2icouplingparameters);
+        }
+      }
+    }
   }
 }

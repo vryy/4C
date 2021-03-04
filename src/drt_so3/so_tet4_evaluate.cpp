@@ -2405,7 +2405,8 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
     Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
     LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT)
+    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT,
+    const double* concentration, double* DsntDc)
 {
   if (temp || DsntDT || D2sntDdDT)
     dserror("Thermo-elastic Nitsche contact not yet implemented in so tet4");
@@ -2465,7 +2466,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
   static LINALG::Matrix<9, NUMDIM_SOTET4> D2sntDFDt(true);
 
   SolidMaterial()->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2,
-      &D2sntDFDn, &D2sntDFDt, -1, Id(), nullptr, nullptr, nullptr, nullptr);
+      &D2sntDFDn, &D2sntDFDt, -1, Id(), concentration, nullptr, nullptr, nullptr);
 
   if (DsntDd)
   {
@@ -2575,5 +2576,10 @@ void DRT::ELEMENTS::So_tet4::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
         }
   }
 
-  return;
+  if (DsntDc != nullptr)
+  {
+    static LINALG::Matrix<9, 1> DFDc(true);
+    SolidMaterial()->EvaluateLinearizationOD(defgrd, *concentration, &DFDc);
+    *DsntDc = DsntDF.Dot(DFDc);
+  }
 }

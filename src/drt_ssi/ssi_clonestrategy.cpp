@@ -9,18 +9,23 @@
 /*----------------------------------------------------------------------*/
 
 #include "ssi_clonestrategy.H"
+
 #include "../drt_inpar/inpar_ssi.H"
+
 #include "../drt_lib/drt_globalproblem.H"
+
 #include "../drt_mat/matpar_material.H"
 #include "../drt_mat/matpar_bundle.H"
-#include "../drt_scatra_ele/scatra_ele.H"
-#include "../drt_so3/so_nurbs27.H"
-#include "../drt_so3/so3_scatra.H"
-#include "../drt_w1/wall1_scatra.H"
-#include "../drt_s8/shell8_scatra.H"
+
 #include "../drt_membrane/membrane_scatra.H"
 
+#include "../drt_scatra_ele/scatra_ele.H"
 
+#include "../drt_s8/shell8_scatra.H"
+
+#include "../drt_so3/so3_scatra.H"
+
+#include "../drt_w1/wall1_scatra.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

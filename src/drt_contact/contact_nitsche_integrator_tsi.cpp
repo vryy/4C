@@ -784,7 +784,7 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(MORTAR::MortarElement& moEle,
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
       ->GetCauchyAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction, sigma_nt, &dsntdd,
           &d2sntdd2, &d2sntDdDn, &d2sntDdDt, &d2sntDdDpxi, &dsntdn, &dsntdt, &dsntdpxi,
-          &moEle.MoData().ParentTemp(), &dsntdT, &d2sntDdDT);
+          &moEle.MoData().ParentTemp(), &dsntdT, &d2sntDdDT, nullptr, nullptr);
 
   cauchy_nt += w * sigma_nt;
 

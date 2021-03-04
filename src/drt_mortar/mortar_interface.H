@@ -62,6 +62,7 @@ namespace MORTAR
     state_fvelocity,                   //!< fvelocity (only necessary for poro)
     state_svelocity,                   //!< svelocity (only necessary for poro)
     state_fpressure,                   //!< fpressure (only necessary for poro)
+    state_scalar,                      //!< scalar (only necessary for SSI)
     state_temperature,                 //!< temperature (only necessary for TSI)
     state_thermo_lagrange_multiplier,  //!< thermo lagrange multiplier (only necessary for TSI)
     state_vague                        //!< undefined state type
@@ -86,6 +87,8 @@ namespace MORTAR
         return "svelocity";
       case state_fpressure:
         return "fpressure";
+      case state_scalar:
+        return "scalar";
       case state_temperature:
         return "temperature";
       case state_thermo_lagrange_multiplier:
@@ -113,6 +116,8 @@ namespace MORTAR
       type = state_svelocity;
     else if (name == "fpressure")
       type = state_fpressure;
+    else if (name == "scalar")
+      type = state_scalar;
     else if (name == "temperature")
       type = state_temperature;
     else if (name == "thermo_lm")

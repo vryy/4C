@@ -10,12 +10,13 @@
 
 #include "so3_scatra.H"
 
+#include "so_element_service.H"
+
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/so3_material.H"
 #include "../drt_structure_new/str_enum_lists.H"
 
 /*----------------------------------------------------------------------*
- |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::ParameterList& params,
@@ -164,8 +165,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
   std::vector<double> center = DRT::UTILS::ElementCenterRefeCoords(this);
   auto xrefe = Teuchos::rcp(new std::vector<double>(center));
   params.set<Teuchos::RCP<std::vector<double>>>("position", xrefe);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -225,6 +224,32 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
   return 0;
 }  // Evaluate
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
+    const std::vector<double>& disp, const std::vector<double>& scalar,
+    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
+    Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* DsntDs,
+    LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi)
+{
+  const double concentration_gp = DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar);
+  double DsntDs_gp(0.0);
+  // call base class
+  so3_ele::GetCauchyAtXi(xi, disp, n, t, sigma_nt, DsntDd, nullptr, nullptr, nullptr, nullptr,
+      DsntDn, DsntDt, DsntDxi, nullptr, nullptr, nullptr, &concentration_gp, &DsntDs_gp);
+
+  if (DsntDs != nullptr)
+  {
+    DsntDs->Shape(numnod_, 1);
+    // get the shape functions
+    LINALG::Matrix<numnod_, 1> shapefunct(true);
+    DRT::UTILS::shape_function<distype>(xi, shapefunct);
+    // calculate DsntDs
+    LINALG::Matrix<numnod_, 1>(DsntDs->A(), true).Update(DsntDs_gp, shapefunct, 1.0);
+  }
+}
 
 /*----------------------------------------------------------------------*
  | evaluate only the mechanical-scatra stiffness term     schmidt 10/17 |
@@ -325,7 +350,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
 
     // get dSdc, hand in NULL as 'cmat' to evaluate the off-diagonal block
     Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_static_cast<MAT::So3Material>(Material());
-    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, NULL, gp, Id());
+    so3mat->Evaluate(&defgrad, &glstrain, params, &dSdc, nullptr, gp, Id());
 
     /*==== end of call material law ===============================================*/
 
@@ -351,8 +376,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::Loca
       }
     }
   }  // gauss point loop
-
-  return;
 }  // nln_kdS_ssi
 
 
@@ -367,7 +390,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::CalculateBop(
     const  //!< (i): (material) derivative of shape functions
 {
   // calc bop matrix if provided
-  if (bop != NULL)
+  if (bop != nullptr)
   {
     /* non-linear B-operator (may so be called, meaning of B-operator is not so
     **  sharp in the non-linear realm) *
@@ -425,8 +448,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::CalculateBop(
           (*defgrad)(2, 2) * (*N_XYZ)(0, i) + (*defgrad)(2, 0) * (*N_XYZ)(2, i);
     }
   }
-
-  return;
 }  // CalculateBop
 
 
@@ -478,8 +499,6 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
     // make sure determinant of jacobian is positive
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
   }
-
-  return;
 }
 
 

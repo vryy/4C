@@ -412,6 +412,11 @@ namespace XSTR
     virtual void SetState(
         unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
 
+    void RedistributeState(const unsigned nds, const std::string& name) override
+    {
+      dserror("Not implemented!");
+    }
+
     /** \brief Get a reference to a data vector [derived]
      *
      *  \note See the base class for more information.

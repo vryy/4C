@@ -11,6 +11,8 @@
 #include "so_hex8.H"
 #include "so_tet10.H"
 
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+
 template <class T>
 void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector& global_data,
     const T& nodal_data, const DRT::ELEMENTS::So_base* ele, bool nodal_average)
@@ -82,6 +84,26 @@ void DRT::ELEMENTS::AssembleNodalElementCount(
   }
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+double DRT::ELEMENTS::ProjectNodalQuantityToXi(
+    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity)
+{
+  const int numNodesPerElement = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  LINALG::Matrix<numNodesPerElement, 1> shapefunct(true);
+  DRT::UTILS::shape_function<distype>(xi, shapefunct);
+
+  double projected_quantity = 0.0;
+  for (int i = 0; i < numNodesPerElement; ++i)
+  {
+    projected_quantity += nodal_quantity.at(i) * shapefunct(i);
+  }
+
+  return projected_quantity;
+}
+
 
 // explicit template instantiations
 template void DRT::ELEMENTS::AssembleExtrapolatedNodalValues(Epetra_MultiVector&,
@@ -95,3 +117,14 @@ template void DRT::ELEMENTS::AssembleAveragedElementValues(Epetra_MultiVector&,
     const LINALG::Matrix<NUMNOD_SOH8, MAT::NUM_STRESS_3D>&, const DRT::ELEMENTS::So_base*);
 template void DRT::ELEMENTS::AssembleAveragedElementValues(
     Epetra_MultiVector&, const LINALG::SerialDenseMatrix&, const DRT::ELEMENTS::So_base*);
+
+template double DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex8>(
+    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+template double DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex27>(
+    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+template double DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet4>(
+    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+template double DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet10>(
+    const LINALG::Matrix<3, 1>&, const std::vector<double>&);
+template double DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::wedge6>(
+    const LINALG::Matrix<3, 1>&, const std::vector<double>&);

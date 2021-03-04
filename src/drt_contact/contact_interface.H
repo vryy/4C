@@ -1591,6 +1591,12 @@ namespace CONTACT
      */
     void SetNodeInitiallyActiveByGap(CoNode& cnode) const;
 
+    /*!
+     * \brief Set condition specific parameters such that the correct parameters are available for
+     * the actual evaluation process
+     */
+    void SetConditionSpecificParameters();
+
     /// pointer to the interface data object
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_;
 

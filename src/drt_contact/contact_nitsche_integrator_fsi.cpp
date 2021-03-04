@@ -277,7 +277,8 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele, const LINALG::M
   {
     dynamic_cast<DRT::ELEMENTS::So_base*>(cele->ParentElement())
         ->GetCauchyAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt, nullptr, nullptr,
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+            nullptr, nullptr);
   }
   else
   {

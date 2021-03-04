@@ -248,6 +248,7 @@ namespace DRT
       EHLCoupling,
       SSICouplingSolidToScatra,
       SSICouplingScatraToSolid,
+      SSIInterfaceContact,
       SSIInterfaceMeshtying,
       SSIMeshtying3DomainIntersection,
       SSISurfaceManifold,

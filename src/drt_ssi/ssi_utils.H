@@ -44,6 +44,11 @@ namespace SSI
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
 
+    //! check for a consistent input file definition of the SSIInterfaceContact condition
+    void CheckConsistencyOfSSIInterfaceContactCondition(
+        const std::vector<DRT::Condition*>& conditionsToBeTested,
+        Teuchos::RCP<DRT::Discretization>& structdis);
+
     //! check, if nodes of input conditions equal s2i conditions
     void CheckConsistencyWithS2IMeshtyingCondition(
         const std::vector<DRT::Condition*>& conditionsToBeTested,
