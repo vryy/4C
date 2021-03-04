@@ -3622,6 +3622,43 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Mixture constituent for Weickenmeier muscle material
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_Constituent_Muscle_Weickenmeier",
+        "Weickenmeier muscle material constituent", INPAR::MAT::mix_muscle_weickenmeier));
+
+    AddNamedReal(m, "ALPHA", "experimentally fitted material parameter");
+    AddNamedReal(m, "BETA", "experimentally fitted material parameter");
+    AddNamedReal(m, "GAMMA", "experimentally fitted material parameter");
+    AddNamedReal(m, "KAPPA", "material parameter for coupled volumetric contribution");
+    AddNamedReal(m, "OMEGA0", "weighting factor for isotropic tissue constituents");
+    AddNamedReal(
+        m, "ACTMUNUM", "number of active motor units per undeformed muscle cross-sectional area");
+    AddNamedInt(m, "MUTYPESNUM", "number of motor unit types");
+    AddNamedRealVector(m, "INTERSTIM", "interstimulus interval", "MUTYPESNUM");
+    AddNamedRealVector(m, "FRACACTMU", "fraction of motor unit type", "MUTYPESNUM");
+    AddNamedRealVector(m, "FTWITCH", "twitch force of motor unit type", "MUTYPESNUM");
+    AddNamedRealVector(m, "TTWITCH", "twitch contraction time of motor unit type", "MUTYPESNUM");
+    AddNamedReal(m, "LAMBDAMIN", "minimal active fiber stretch");
+    AddNamedReal(
+        m, "LAMBDAOPT", "optimal active fiber stretch related to active nominal stress maximum");
+    AddNamedReal(m, "DOTLAMBDAMIN", "minimal stretch rate");
+    AddNamedReal(m, "KE",
+        "parameter controlling the curvature of the velocity dependent activation function in the "
+        "eccentric case");
+    AddNamedReal(m, "KC",
+        "parameter controlling the curvature of the velocity dependent activation function in the "
+        "concentric case");
+    AddNamedInt(m, "ACTTIMESNUM", "number of time boundaries to prescribe activation");
+    AddNamedRealVector(m, "ACTTIMES", "time boundaries between intervals", "ACTTIMESNUM");
+    AddNamedInt(m, "ACTINTERVALSNUM", "number of time intervals to prescribe activation");
+    AddNamedRealVector(m, "ACTVALUES",
+        "scaling factor in intervals (1=full activation, 0=no activation)", "ACTINTERVALSNUM");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Constant predefined prestretch
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Constant",
