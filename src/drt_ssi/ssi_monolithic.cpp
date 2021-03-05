@@ -100,14 +100,20 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 {
   if (SSIInterfaceMeshtying())
   {
+    strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
+        *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
+
     ssi_vectors_->StructureResidual()->Update(
         1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
   }
-  // copy the structure residual if no mesh tying is applied
+  // copy the structure residual and matrix if we do not have a mesh tying problem
   else
   {
     ssi_vectors_->StructureResidual()->Update(1.0, *(StructureField()->RHS()), 1.0);
+    ssi_matrices_->StructureMatrix()->Add(*StructureField()->SystemMatrix(), false, 1.0, 1.0);
   }
+  // call fill complete on ssi structure matrix
+  ssi_matrices_->StructureMatrix()->Complete();
 }
 
 /*--------------------------------------------------------------------------*
@@ -128,7 +134,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
   // assemble structure block into system matrix
   strategy_assemble_->AssembleStructure(
-      ssi_matrices_->SystemMatrix(), StructureField()->SystemMatrix());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureMatrix());
 
   if (IsScaTraManifold())
   {
@@ -140,10 +146,6 @@ void SSI::SSIMono::AssembleMatAndRHS()
     strategy_assemble_->AssembleScaTraManifoldStructure(
         ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
   }
-
-  // apply meshtying
-  if (SSIInterfaceMeshtying())
-    strategy_assemble_->ApplyMeshtyingSystemMatrix(ssi_matrices_->SystemMatrix());
 
   // finalize global system matrix
   ssi_matrices_->SystemMatrix()->Complete();
@@ -715,7 +717,8 @@ void SSI::SSIMono::SetupSystem()
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 
   // instantiate appropriate mesh tying class
-  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(*this);
+  strategy_meshtying_ =
+      SSI::BuildMeshtyingStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(Teuchos::rcp(this, false), matrixtype_);

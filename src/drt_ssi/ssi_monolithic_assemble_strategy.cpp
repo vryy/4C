@@ -180,20 +180,10 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructure(
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto& systemmatrix_block_struct_struct =
+      systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
 
-  // add entire block or assemble slave side to master side
-  if (ssi_mono_->SSIInterfaceMeshtying())
-  {
-    AssembleStructureMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
-  }
-  else
-  {
-    auto& systemmatrix_block_struct_struct =
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
-
-    systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
-  }
+  systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -203,20 +193,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructure(
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto& systemmatrix_block_struct_struct =
+      systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
 
-  // add entire block or assemble slave side to master side
-  if (ssi_mono_->SSIInterfaceMeshtying())
-  {
-    AssembleStructureMeshtying(
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure()), structuredomain);
-  }
-  else
-  {
-    auto& systemmatrix_block_struct_struct =
-        systemmatrix_block->Matrix(PositionStructure(), PositionStructure());
-
-    systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
-  }
+  systemmatrix_block_struct_struct.Add(*structuredomain, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -226,80 +206,7 @@ void SSI::AssembleStrategySparse::AssembleStructure(
     Teuchos::RCP<LINALG::SparseMatrix> structuredomain)
 {
   auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-
-  // add entire block or assemble slave side to master side
-  if (ssi_mono_->SSIInterfaceMeshtying())
-    AssembleStructureMeshtying(*systemmatrix_sparse, structuredomain);
-  else
-    systemmatrix_sparse->Add(*structuredomain, false, 1.0, 1.0);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleStructureMeshtying(
-    LINALG::SparseMatrix& systemmatrix_structure,
-    Teuchos::RCP<LINALG::SparseMatrix> structurematrix)
-{
-  /* Transform and assemble the structural matrix in the global system matrix block by block:
-   * S_m: structural interior and master side dofs
-   * S_ss: structural slave surface dofs
-   * S_sl: structural slave line dofs
-   *
-   *       S_m  S_ss  S_sl
-   *       --------------
-   * S_m  |  a |  b |  c |
-   * S_ss |  d |  e |  f |
-   * S_sl |  g |  h |  i |
-   *       --------------
-   */
-  // assemble derivs. of interior & master dofs w.r.t. interior & master dofs (block a)
-  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureCondensed(),
-      *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_structure, true, true);
-
-  // assemble  derivs. of surface slave dofs w.r.t. master & interior dofs (block d)
-  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureSlave(),
-      *MapStructureCondensed(), 1.0, &StructureSlaveConverter(), nullptr, systemmatrix_structure,
-      true, true);
-
-  // assemble derivs. of master & interior w.r.t. surface slave dofs (block b)
-  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureCondensed(),
-      *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), systemmatrix_structure, true,
-      true);
-
-  // assemble derivs. of surface slave dofs w.r.t. surface slave dofs (block e)
-  LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureSlave(),
-      *MapStructureSlave(), 1.0, &StructureSlaveConverter(), &StructureSlaveConverter(),
-      systemmatrix_structure, true, true);
-
-  if (Meshtying3DomainIntersection())
-  {
-    // assemble derivs. of line slave dofs w.r.t. master & interior (block g)
-    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix,
-        *MapStructureSlave3DomainIntersection(), *MapStructureCondensed(), 1.0,
-        &StructureSlaveConverter3DomainIntersection(), nullptr, systemmatrix_structure, true, true);
-
-    // assemble derivs. of master & interior w.r.t. line slave dofs (block c)
-    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureCondensed(),
-        *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
-        &StructureSlaveConverter3DomainIntersection(), systemmatrix_structure, true, true);
-
-    // assemble derivs. of line slave dof w.r.t. line slave dofs (block i)
-    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix,
-        *MapStructureSlave3DomainIntersection(), *MapStructureSlave3DomainIntersection(), 1.0,
-        &StructureSlaveConverter3DomainIntersection(),
-        &StructureSlaveConverter3DomainIntersection(), systemmatrix_structure, true, true);
-
-    // assemble derivs. of surface slave dofs w.r.t. line slave dofs (block f)
-    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix, *MapStructureSlave(),
-        *MapStructureSlave3DomainIntersection(), 1.0, &StructureSlaveConverter(),
-        &StructureSlaveConverter3DomainIntersection(), systemmatrix_structure, true, true);
-
-    // assemble derivs. of line slave dofs w.r.t. surface slave dofs (block h)
-    LINALG::MatrixLogicalSplitAndTransform()(*structurematrix,
-        *MapStructureSlave3DomainIntersection(), *MapStructureSlave(), 1.0,
-        &StructureSlaveConverter3DomainIntersection(), &StructureSlaveConverter(),
-        systemmatrix_structure, true, true);
-  }
+  systemmatrix_sparse->Add(*structuredomain, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -730,73 +637,6 @@ void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructure(
     AssembleXXXStructureMeshtying(*systemmatrix_sparse, *manifoldstructuredomain_sparse);
   else
     systemmatrix_sparse->Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockBlock::ApplyMeshtyingSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-  ApplyMeshtyingSysMat(systemmatrix_block->Matrix(PositionStructure(), PositionStructure()));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlockSparse::ApplyMeshtyingSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-  ApplyMeshtyingSysMat(systemmatrix_block->Matrix(PositionStructure(), PositionStructure()));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::ApplyMeshtyingSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-  ApplyMeshtyingSysMat(*systemmatrix_sparse);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& systemmatrix_structure)
-{
-  // map for slave side structural degrees of freedom
-  Teuchos::RCP<const Epetra_Map> slavemaps;
-  if (Meshtying3DomainIntersection())
-  {
-    slavemaps = LINALG::MultiMapExtractor::MergeMaps({ssi_mono_->MapsCoupStruct()->Map(1),
-        ssi_mono_->MapsCoupStruct3DomainIntersection()->Map(1)});
-  }
-  else
-    slavemaps = ssi_mono_->MapsCoupStruct()->Map(1);
-
-  // subject slave-side rows of structural system matrix to pseudo Dirichlet conditions to
-  // finalize structural meshtying
-  const double one(1.0);
-  for (int doflid_slave = 0; doflid_slave < slavemaps->NumMyElements(); ++doflid_slave)
-  {
-    // extract global ID of current slave-side row
-    const int dofgid_slave = slavemaps->GID(doflid_slave);
-    if (dofgid_slave < 0) dserror("Local ID not found!");
-
-    // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
-    if (systemmatrix_structure.Filled())
-    {
-      const int rowlid_slave = systemmatrix_structure.RowMap().LID(dofgid_slave);
-      if (rowlid_slave < 0) dserror("Global ID not found!");
-      if (systemmatrix_structure.EpetraMatrix()->ReplaceMyValues(
-              rowlid_slave, 1, &one, &rowlid_slave))
-        dserror("ReplaceMyValues failed!");
-    }
-
-    // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column indices
-    else if (systemmatrix_structure.EpetraMatrix()->InsertGlobalValues(
-                 dofgid_slave, 1, &one, &dofgid_slave))
-      dserror("InsertGlobalValues failed!");
-  }
 }
 
 /*----------------------------------------------------------------------*

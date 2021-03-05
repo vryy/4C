@@ -99,6 +99,10 @@ namespace SSI
 
       //! return sub blocks of system matrix
       //@{
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureDomain()
+      {
+        return scatramanifoldstructuredomain_;
+      }
       Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureDomain()
       {
         return scatrastructuredomain_;
@@ -111,10 +115,7 @@ namespace SSI
       {
         return structurescatradomain_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureDomain()
-      {
-        return scatramanifoldstructuredomain_;
-      }
+      Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structurematrix_; }
       //@}
 
      private:
@@ -174,10 +175,11 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
       //! sub blocks of system matrix
       //@{
+      Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructuredomain_;
       Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
       Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
       Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
-      Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructuredomain_;
+      Teuchos::RCP<LINALG::SparseMatrix> structurematrix_;
       //@}
     };
 

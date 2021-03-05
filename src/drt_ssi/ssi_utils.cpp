@@ -508,9 +508,12 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
       scatramanifoldstructuredomain_(Teuchos::null),
       scatrastructuredomain_(Teuchos::null),
       scatrastructureinterface_(Teuchos::null),
-      structurescatradomain_(Teuchos::null)
+      structurescatradomain_(Teuchos::null),
+      structurematrix_(Teuchos::null)
 {
   InitializeSystemMatrix(ssi_mono_algorithm);
+
+  structurematrix_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
 
   InitializeOffDiagMatrices(ssi_mono_algorithm, interface_map_scatra);
 }
@@ -639,6 +642,7 @@ void SSI::UTILS::SSIMatrices::ClearMatrices()
   scatrastructuredomain_->Zero();
   if (is_ssi_interface_meshtying_) scatrastructureinterface_->Zero();
   structurescatradomain_->Zero();
+  structurematrix_->Zero();
 }
 
 /*----------------------------------------------------------------------*/

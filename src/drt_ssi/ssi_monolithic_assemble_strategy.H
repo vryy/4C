@@ -49,9 +49,6 @@ namespace SSI
     //! constructor
     explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
-    //! write 1.0 on main diagonal of slave side dofs
-    virtual void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) = 0;
-
     //! assemble RHS
     void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
         Teuchos::RCP<const Epetra_Vector> rhs_structure,
@@ -83,16 +80,9 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) = 0;
 
    protected:
-    //! write 1.0 on main diagonal of slave side dofs
-    void ApplyMeshtyingSysMat(LINALG::SparseMatrix& systemmatrix_structure);
-
     //! assemble xxx-structure block into system matrix for meshtying
     void AssembleXXXStructureMeshtying(LINALG::SparseMatrix& systemmatrix_xxx_structure,
         const LINALG::SparseMatrix& xxx_structurematrix);
-
-    //! assemble structure block  into system matrix for meshtying
-    void AssembleStructureMeshtying(LINALG::SparseMatrix& systemmatrix_structure,
-        Teuchos::RCP<LINALG::SparseMatrix> structurematrix);
 
     //! assemble structure-xxx block into system matrix for meshtying
     void AssembleStructureXXXMeshtying(LINALG::SparseMatrix& systemmatrix_structure_xxx,
@@ -151,8 +141,6 @@ namespace SSI
    public:
     explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override = 0;
-
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override = 0;
 
@@ -203,8 +191,6 @@ namespace SSI
    public:
     explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
-
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
@@ -232,8 +218,6 @@ namespace SSI
    public:
     explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
-
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
@@ -260,8 +244,6 @@ namespace SSI
   {
    public:
     explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
-
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
