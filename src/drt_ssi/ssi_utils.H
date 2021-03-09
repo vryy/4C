@@ -91,6 +91,10 @@ namespace SSI
       SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm,
           Teuchos::RCP<const Epetra_Map> interface_map_scatra);
 
+      //! method that clears all ssi matrices
+      void ClearMatrices();
+
+      //! return the system matrix
       Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; }
 
       //! return sub blocks of system matrix
@@ -161,6 +165,12 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
           const Teuchos::RCP<const Epetra_Map> row_map);
 
+     private:
+      //! flag indicating if we have a scatra manifold
+      const bool is_scatra_manifold_;
+      //! flag indicating if we have ssi interface mesh tying
+      const bool is_ssi_interface_meshtying_;
+      //! system matrix
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
       //! sub blocks of system matrix
       //@{
@@ -192,12 +202,18 @@ namespace SSI
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
 
+      //! residual vector on right-hand side of structure system
+      Teuchos::RCP<Epetra_Vector> StructureResidual() { return structure_residual_; }
+
      private:
       //! global increment vector for Newton-Raphson iteration
       Teuchos::RCP<Epetra_Vector> increment_;
 
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;
+
+      //! residual vector on right-hand side of structure system
+      Teuchos::RCP<Epetra_Vector> structure_residual_;
     };
 
     class SSISlaveSideConverter

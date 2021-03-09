@@ -502,6 +502,13 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 /*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(
     const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
+    : is_scatra_manifold_(ssi_mono_algorithm.IsScaTraManifold()),
+      is_ssi_interface_meshtying_(ssi_mono_algorithm.SSIInterfaceMeshtying()),
+      systemmatrix_(Teuchos::null),
+      scatramanifoldstructuredomain_(Teuchos::null),
+      scatrastructuredomain_(Teuchos::null),
+      scatrastructureinterface_(Teuchos::null),
+      structurescatradomain_(Teuchos::null)
 {
   InitializeSystemMatrix(ssi_mono_algorithm);
 
@@ -526,7 +533,7 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMatrices::GetScaTra
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+      if (is_ssi_interface_meshtying_)
       {
         const int maps_systemmatrix_scatra = ssi_mono_algorithm.MapsScatra()->NumMaps();
 
@@ -573,7 +580,7 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
       structurescatradomain_ = SetupBlockMatrix(ssi_mono_algorithm.MapStructure(),
           Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()));
 
-      if (ssi_mono_algorithm.IsScaTraManifold())
+      if (is_scatra_manifold_)
       {
         // structure dofs on manifold discretization
         const auto map_structure_manifold = Teuchos::rcp(new LINALG::MultiMapExtractor(
@@ -586,7 +593,7 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
                 map_structure_manifold);
       }
 
-      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+      if (is_ssi_interface_meshtying_)
       {
         auto block_map_scatra_interface =
             GetScaTraInterfaceBlockMap(ssi_mono_algorithm, interface_map_scatra);
@@ -603,13 +610,13 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
       scatrastructuredomain_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
       structurescatradomain_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
 
-      if (ssi_mono_algorithm.IsScaTraManifold())
+      if (is_scatra_manifold_)
       {
         scatramanifoldstructuredomain_ =
             SetupSparseMatrix(ssi_mono_algorithm.ScaTraManifold()->DofRowMap());
       }
 
-      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
+      if (is_ssi_interface_meshtying_)
         scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
 
       break;
@@ -625,11 +632,24 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::ClearMatrices()
+{
+  systemmatrix_->Zero();
+  if (is_scatra_manifold_) scatramanifoldstructuredomain_->Zero();
+  scatrastructuredomain_->Zero();
+  if (is_ssi_interface_meshtying_) scatrastructureinterface_->Zero();
+  structurescatradomain_->Zero();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 SSI::UTILS::SSIVectors::SSIVectors(const SSI::SSIMono& ssi_mono_algorithm)
-    : increment_(Teuchos::null), residual_(Teuchos::null)
+    : increment_(Teuchos::null), residual_(Teuchos::null), structure_residual_(Teuchos::null)
 {
   increment_ = LINALG::CreateVector(*(ssi_mono_algorithm.DofRowMap()), true);
   residual_ = LINALG::CreateVector(*(ssi_mono_algorithm.DofRowMap()), true);
+  structure_residual_ =
+      LINALG::CreateVector(*(ssi_mono_algorithm.StructureField()->DofRowMap()), true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -638,7 +658,11 @@ void SSI::UTILS::SSIVectors::ClearIncrement() { increment_->PutScalar(0.0); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::SSIVectors::ClearResiduals() { residual_->PutScalar(0.0); }
+void SSI::UTILS::SSIVectors::ClearResiduals()
+{
+  residual_->PutScalar(0.0);
+  structure_residual_->PutScalar(0.0);
+}
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/

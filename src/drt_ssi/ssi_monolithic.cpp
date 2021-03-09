@@ -13,6 +13,7 @@
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_monolithic_dbc_handler.H"
 #include "ssi_monolithic_evaluate_OffDiag.H"
+#include "ssi_monolithic_meshtying_strategy.H"
 #include "ssi_resulttest.H"
 #include "ssi_str_model_evaluator_monolithic.H"
 #include "ssi_utils.H"
@@ -77,6 +78,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       strategy_assemble_(Teuchos::null),
       strategy_convcheck_(Teuchos::null),
       strategy_equilibration_(Teuchos::null),
+      strategy_meshtying_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
 }
@@ -92,13 +94,26 @@ void SSI::SSIMono::ApplyDBCToSystem()
   dbc_handler_->ApplyDBCToRHS(ssi_vectors_->Residual());
 }
 
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void SSI::SSIMono::ApplyMeshtyingToSubProblems()
+{
+  if (SSIInterfaceMeshtying())
+  {
+    ssi_vectors_->StructureResidual()->Update(
+        1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
+  }
+  // copy the structure residual if no mesh tying is applied
+  else
+  {
+    ssi_vectors_->StructureResidual()->Update(1.0, *(StructureField()->RHS()), 1.0);
+  }
+}
+
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
-  // clear system matrix from previous Newton step
-  ssi_matrices_->SystemMatrix()->Zero();
-
   // assemble scatra block into system matrix
   strategy_assemble_->AssembleScatra(
       ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
@@ -135,14 +150,16 @@ void SSI::SSIMono::AssembleMatAndRHS()
 
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(ssi_vectors_->Residual(), ScaTraField()->Residual(),
-      StructureField()->RHS(), IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
+      ssi_vectors_->StructureResidual(),
+      IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
 }
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::EvaluateSubproblems()
 {
-  // clear residual vectors
+  // clear all matrices and residuals from previous Newton iteration
+  ssi_matrices_->ClearMatrices();
   ssi_vectors_->ClearResiduals();
 
   // needed to communicate to NOX state
@@ -167,6 +184,9 @@ void SSI::SSIMono::EvaluateSubproblems()
 
   // build all off diagonal matrices
   EvaluateOffDiagContributions();
+
+  // apply mesh tying to sub problems
+  ApplyMeshtyingToSubProblems();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -693,6 +713,9 @@ void SSI::SSIMono::SetupSystem()
   // instantiate appropriate equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
+
+  // instantiate appropriate mesh tying class
+  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(*this);
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(Teuchos::rcp(this, false), matrixtype_);

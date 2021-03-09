@@ -815,61 +815,8 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
         rhs_manifold, ssi_mono_->GetProblemPosition(SSI::Subproblem::manifold), rhs);
   }
 
-  if (ssi_mono_->SSIInterfaceMeshtying())
-  {
-    // perform structural meshtying before assembling structural right-hand side vector into
-    // monolithic right-hand side vector
-
-    // make copy of structural right-hand side vector
-    Epetra_Vector residual_structure(*rhs_structure);
-
-    // transform slave-side part of structural right-hand side vector to master side
-    Teuchos::RCP<Epetra_Vector> slavetomaster = ssi_mono_->MapsCoupStruct()->InsertVector(
-        ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveToMaster(
-            ssi_mono_->MapsCoupStruct()->ExtractVector(residual_structure, 1)),
-        2);
-
-    if (Meshtying3DomainIntersection())
-    {
-      slavetomaster->Update(1.0,
-          *ssi_mono_->MapsCoupStruct3DomainIntersection()->InsertVector(
-              ssi_mono_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveToMaster(
-                  ssi_mono_->MapsCoupStruct3DomainIntersection()->ExtractVector(
-                      residual_structure, 1)),
-              2),
-          1.0);
-    }
-
-    // locsys manager of structure
-    const auto& locsysmanager_structure = ssi_mono_->StructureField()->LocsysManager();
-
-    // apply pseudo Dirichlet conditions to transformed slave-side part of structural right-hand
-    // side vector
-    const auto zeros = Teuchos::rcp(new Epetra_Vector(slavetomaster->Map()));
-    if (locsysmanager_structure != Teuchos::null)
-      locsysmanager_structure->RotateGlobalToLocal(slavetomaster);
-    LINALG::ApplyDirichlettoSystem(
-        slavetomaster, zeros, *ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap());
-    if (locsysmanager_structure != Teuchos::null)
-      locsysmanager_structure->RotateLocalToGlobal(slavetomaster);
-
-    // assemble transformed slave-side part of structural right-hand side vector
-    residual_structure.Update(1.0, *slavetomaster, 1.0);
-
-    // zero out slave-side part of structural right-hand side vector
-    ssi_mono_->MapsCoupStruct()->PutScalar(residual_structure, 1, 0.0);
-    if (Meshtying3DomainIntersection())
-      ssi_mono_->MapsCoupStruct3DomainIntersection()->PutScalar(residual_structure, 1, 0.0);
-
-    // assemble final structural right-hand side vector into monolithic right-hand side vector
-    ssi_mono_->MapsSubProblems()->AddVector(
-        residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), *rhs, -1.0);
-  }
-  else
-  {
-    ssi_mono_->MapsSubProblems()->AddVector(
-        rhs_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
-  }
+  ssi_mono_->MapsSubProblems()->AddVector(
+      rhs_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
 
   if (ssi_mono_->SSIInterfaceContact())
   {
