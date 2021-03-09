@@ -619,46 +619,60 @@ void DRT::UTILS::WriteBoundarySurfacesVolumeCoupling(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::UTILS::HaveSameNodes(
-    const DRT::Condition* const condition1, const DRT::Condition* const condition2)
+bool DRT::UTILS::HaveSameNodes(const DRT::Condition* const condition1,
+    const DRT::Condition* const condition2, const bool mustmatch)
 {
+  // indicates, if both conditions match
+  bool matching_conditions = true;
+
   // get nodes of conditions
-  auto condition1nodes = condition1->Nodes();
-  auto condition2nodes = condition2->Nodes();
+  const auto* condition1nodes = condition1->Nodes();
+  const auto* condition2nodes = condition2->Nodes();
 
   // simple first check just checks the size
   if (condition1nodes->size() != condition2nodes->size())
-    dserror(
-        "Number of nodes that are defined for both conditions do not match! Did you define the "
-        "conditions for the same nodesets?");
+  {
+    matching_conditions = false;
+    if (mustmatch)
+    {
+      dserror(
+          "Number of nodes that are defined for both conditions do not match! Did you define the "
+          "conditions for the same nodesets?");
+    }
+  }
 
   // loop over all node global IDs belonging to condition1
   for (auto condition1nodegid : *condition1nodes)
   {
-    bool foundit(false);
+    bool found_node = false;
     // loop over all node global IDs belonging to condition2
     for (auto condition2nodegid : *condition2nodes)
     {
       if (condition1nodegid == condition2nodegid)
       {
         // we found the node, so set foundit to true and continue with next condition1node
-        foundit = true;
+        found_node = true;
         continue;
       }
     }
     // throw error if node global ID is not found in condition2
-    if (!foundit)
+    if (!found_node)
     {
-      std::cout << "Node with global ID: " << condition1nodegid << "  which is part of condition: ";
-      condition1->Print(std::cout);
-      std::cout << " is not part of condition: ";
-      condition2->Print(std::cout);
-      dserror(
-          "Did you assign those conditions to the same nodeset? Please check your input file and "
-          "fix this inconsistency!");
+      matching_conditions = false;
+      if (mustmatch)
+      {
+        std::cout << "Node with global ID: " << condition1nodegid
+                  << "  which is part of condition: ";
+        condition1->Print(std::cout);
+        std::cout << " is not part of condition: ";
+        condition2->Print(std::cout);
+        dserror(
+            "Did you assign those conditions to the same nodeset? Please check your input file and "
+            "fix this inconsistency!");
+      }
     }
   }
 
   // when we get here everything is fine
-  return true;
+  return matching_conditions;
 }

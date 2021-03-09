@@ -169,7 +169,6 @@ void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
   for (const auto& conditionToBeTested : conditionsToBeTested)
   {
     if (conditionToBeTested->GType() != DRT::Condition::Surface) continue;
-    bool matchingconditions(false);
     bool isslave(true);
     const int s2icouplingid = conditionToBeTested->GetInt("S2ICouplingID");
     const auto* side = conditionToBeTested->Get<std::string>("Side");
@@ -197,15 +196,13 @@ void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
       {
         case INPAR::S2I::side_slave:
         {
-          if (isslave)
-            matchingconditions = DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition);
+          if (isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition, true);
 
           break;
         }
         case INPAR::S2I::side_master:
         {
-          if (!isslave)
-            matchingconditions = DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition);
+          if (!isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition, true);
 
           break;
         }
@@ -215,14 +212,6 @@ void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
           break;
         }
       }
-    }
-
-    if (!matchingconditions)
-    {
-      dserror(
-          "Did not find 'S2ICoupling' condition with ID: %i and interface side: %s as defined in "
-          "the condition to be tested",
-          s2icouplingid, side->c_str());
     }
   }
 }
@@ -299,9 +288,8 @@ Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructu
     if (condition_3_domain_pairs.size() != 2)
       dserror("Currently, exactly 2 coupling pairs with 3-domain-meshtying supported");
     // both master conditions must be the same
-    if (!DRT::UTILS::HaveSameNodes(
-            condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second))
-      dserror("All master conditions with 3-domain-meshtying must be the same");
+    DRT::UTILS::HaveSameNodes(
+        condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second, true);
 
     // select an arbitrary 3 domain meshtying condition (0) and find other conditions
     // (arbitrary_coupling_id) with same nodes
@@ -418,9 +406,8 @@ SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
   if (condition_3_domain_pairs.size() != 2)
     dserror("Currently, exactly 2 coupling pairs with 3-domain-meshtying supported");
   // both master conditions must be the same
-  if (!DRT::UTILS::HaveSameNodes(
-          condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second))
-    dserror("All master conditions with 3-domain-meshtying must be the same");
+  DRT::UTILS::HaveSameNodes(
+      condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second, true);
 
   // Build GID vector of nodes for master and slave side except for arbitrary condition (0)
   const auto& condition_3_domain_pair = condition_3_domain_pairs[1];

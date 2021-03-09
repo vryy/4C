@@ -237,10 +237,11 @@ namespace DRT
      *
      * @param[in] condition1  first condition to be tested
      * @param[in] condition2  second condition to be tested
+     * @param[in] mustmatch   both conditions must match
      * @return flag indicating if both conditions are defined on the same set of nodes
      */
-    bool HaveSameNodes(
-        const DRT::Condition* const condition1, const DRT::Condition* const condition2);
+    bool HaveSameNodes(const DRT::Condition* const condition1,
+        const DRT::Condition* const condition2, bool mustmatch);
 
   }  // namespace UTILS
 }  // namespace DRT
