@@ -58,7 +58,25 @@ namespace SSI
      */
     Epetra_Vector ApplyMeshtyingToStructureRHS(Teuchos::RCP<const Epetra_Vector> structure_rhs);
 
+    /*!
+     * @brief apply mesh tying to the structure scatra matrix
+     *
+     * @param[in,out] structure_scatra_matrix  structure scatra matrix
+     */
+    virtual void ApplyMeshtyingToStructureScatra(
+        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) = 0;
+
    protected:
+    /*!
+     * @brief apply mesh tying to structure-xxx block
+     *
+     * @param[out] ssi_structure_xxx_matrix  structure xxx matrix block including mesh tying
+     *                                       constraints
+     * @param[in] structure_xxx_matrix       structure xxx matrix block
+     */
+    void ApplyMeshtyingToStructureXXX(LINALG::SparseMatrix& ssi_structure_xxx_matrix,
+        const LINALG::SparseMatrix& structure_xxx_matrix);
+
     //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
     //! side)
     //@{
@@ -79,6 +97,10 @@ namespace SSI
     //! monolithic algorithm for scalar-structure interaction
     const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
 
+    //! structure scatra system matrix used to apply mesh tying to this matrix block
+    Teuchos::RCP<LINALG::SparseOperator> temp_struct_scatra_mat_;
+
+   private:
     //! indicates, if meshtying includes three entities
     bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
 
@@ -115,6 +137,9 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategySparse(const SSI::SSIMono& ssi_mono);
+
+    void ApplyMeshtyingToStructureScatra(
+        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 
   //! SSI problem is composed of sub matrices
@@ -124,11 +149,20 @@ namespace SSI
     //! constructor
     explicit MeshtyingStrategyBlock(const SSI::SSIMono& ssi_mono);
 
+    void ApplyMeshtyingToStructureScatra(
+        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override = 0;
+
    protected:
+    //! position of scatra blocks in system matrix
+    Teuchos::RCP<std::vector<int>> BlockPositionScaTra() { return block_position_scatra_; }
+
     //! position of structure block in system matrix
     int PositionStructure() const { return position_structure_; };
 
    private:
+    //! position of scatra blocks in system matrix
+    Teuchos::RCP<std::vector<int>> block_position_scatra_;
+
     //! position of structure block in system matrix
     int position_structure_;
   };
@@ -139,6 +173,9 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
+
+    void ApplyMeshtyingToStructureScatra(
+        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 
   //! SSI problem is composed of sparse structure sub matrix and block scatra sub matrix
@@ -147,6 +184,9 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
+
+    void ApplyMeshtyingToStructureScatra(
+        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
   };
 
   //! build specific mesh tying strategy

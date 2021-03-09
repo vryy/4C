@@ -118,6 +118,26 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structurematrix_; }
       //@}
 
+      /*!
+       * @brief set up a pointer to a block matrix
+       *
+       * @param[in] row_map  row map the block matrix is based on
+       * @param[in] col_map  column map the block matrix is based on
+       * @return pointer to block matrix
+       */
+      static Teuchos::RCP<LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
+          Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
+          Teuchos::RCP<const LINALG::MultiMapExtractor> col_map);
+
+      /*!
+       * @brief set up a pointer to a sparse matrix
+       *
+       * @param[in] row_map  row map the sparse matrix is based on
+       * @return pointer to sparse matrix
+       */
+      static Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
+          const Teuchos::RCP<const Epetra_Map> row_map);
+
      private:
       /*!
        * @brief set up and return the scatra interface block map
@@ -146,27 +166,6 @@ namespace SSI
        */
       void InitializeSystemMatrix(const SSI::SSIMono& ssi_mono_algorithm);
 
-      /*!
-       * @brief set up a pointer to a block matrix
-       *
-       * @param[in] row_map  row map the block matrix is based on
-       * @param[in] col_map  column map the block matrix is based on
-       * @return pointer to block matrix
-       */
-      Teuchos::RCP<LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
-          Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
-          Teuchos::RCP<const LINALG::MultiMapExtractor> col_map);
-
-      /*!
-       * @brief set up a pointer to a sparse matrix
-       *
-       * @param[in] row_map  row map the sparse matrix is based on
-       * @return pointer to sparse matrix
-       */
-      Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
-          const Teuchos::RCP<const Epetra_Map> row_map);
-
-     private:
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
       //! flag indicating if we have ssi interface mesh tying

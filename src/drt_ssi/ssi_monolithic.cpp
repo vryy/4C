@@ -103,6 +103,8 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
 
+    strategy_meshtying_->ApplyMeshtyingToStructureScatra(ssi_matrices_->StructureScaTraDomain());
+
     ssi_vectors_->StructureResidual()->Update(
         1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
   }

@@ -84,10 +84,6 @@ namespace SSI
     void AssembleXXXStructureMeshtying(LINALG::SparseMatrix& systemmatrix_xxx_structure,
         const LINALG::SparseMatrix& xxx_structurematrix);
 
-    //! assemble structure-xxx block into system matrix for meshtying
-    void AssembleStructureXXXMeshtying(LINALG::SparseMatrix& systemmatrix_structure_xxx,
-        const LINALG::SparseMatrix& structures_xxx_matrix);
-
     //! monolithic algorithm for scalar-structure interaction
     const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
 
