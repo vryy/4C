@@ -100,6 +100,10 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 {
   if (SSIInterfaceMeshtying())
   {
+    if (IsScaTraManifold())
+      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
+          ssi_matrices_->ScaTraManifoldStructureDomain());
+
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
 
@@ -719,8 +723,8 @@ void SSI::SSIMono::SetupSystem()
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 
   // instantiate appropriate mesh tying class
-  strategy_meshtying_ =
-      SSI::BuildMeshtyingStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
+  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(
+      *this, matrixtype_, ScaTraField()->MatrixType(), interface_map_scatra);
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(Teuchos::rcp(this, false), matrixtype_);

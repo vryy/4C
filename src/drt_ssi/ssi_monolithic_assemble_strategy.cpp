@@ -519,25 +519,12 @@ void SSI::AssembleStrategyBlockBlock::AssembleScaTraManifoldStructure(
   auto manifoldstructuredomain_block =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifoldstructuredomain);
 
-  // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++iblock)
   {
-    // add entire block or assemble slave side to master side
-    if (ssi_mono_->SSIInterfaceMeshtying())
-    {
-      AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(
-              BlockPositionScaTraManifold()->at(iblock), PositionStructure()),
-          manifoldstructuredomain_block->Matrix(iblock, 0));
-    }
-    else
-    {
-      auto& systemmatrix_block_iscatramanifold_struct = systemmatrix_block->Matrix(
-          BlockPositionScaTraManifold()->at(iblock), PositionStructure());
-
-      systemmatrix_block_iscatramanifold_struct.Add(
-          manifoldstructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
-    }
+    auto& systemmatrix_block_iscatramanifold_struct =
+        systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(iblock), PositionStructure());
+    systemmatrix_block_iscatramanifold_struct.Add(
+        manifoldstructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
   }
 }
 
@@ -551,20 +538,9 @@ void SSI::AssembleStrategyBlockSparse::AssembleScaTraManifoldStructure(
   auto manifoldstructuredomain_sparse =
       LINALG::CastToSparseMatrixAndCheckSuccess(manifoldstructuredomain);
 
-  // add entire block or assemble slave side to master side
-  if (ssi_mono_->SSIInterfaceMeshtying())
-  {
-    AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure()),
-        *manifoldstructuredomain_sparse);
-  }
-  else
-  {
-    auto& systemmatrix_block_scatramanifold_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure());
-
-    systemmatrix_block_scatramanifold_struct.Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
-  }
+  auto& systemmatrix_block_scatramanifold_struct =
+      systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure());
+  systemmatrix_block_scatramanifold_struct.Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -577,11 +553,7 @@ void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructure(
   auto manifoldstructuredomain_sparse =
       LINALG::CastToSparseMatrixAndCheckSuccess(manifoldstructuredomain);
 
-  // add entire block or assemble slave side to master side
-  if (ssi_mono_->SSIInterfaceMeshtying())
-    AssembleXXXStructureMeshtying(*systemmatrix_sparse, *manifoldstructuredomain_sparse);
-  else
-    systemmatrix_sparse->Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
+  systemmatrix_sparse->Add(*manifoldstructuredomain_sparse, false, 1.0, 1.0);
 }
 
 /*----------------------------------------------------------------------*

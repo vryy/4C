@@ -16,6 +16,7 @@
 
 namespace LINALG
 {
+  class MultiMapExtractor;
   class SparseMatrix;
   class SparseOperator;
 }  // namespace LINALG
@@ -51,6 +52,14 @@ namespace SSI
         Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix);
 
     /*!
+     * @brief apply mesh tying to scatra manifold structure matrix
+     *
+     * @param[in,out] manifold_structure_matrix scalar transport on manifold structure matrix
+     */
+    virtual void ApplyMeshtyingToScatraManifoldStructure(
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) = 0;
+
+    /*!
      * @brief apply mesh tying to structure right hand side vector
      *
      * @param[in] structure_rhs  structure right hand side vector without mesh tying contributions
@@ -77,6 +86,16 @@ namespace SSI
     void ApplyMeshtyingToStructureXXX(LINALG::SparseMatrix& ssi_structure_xxx_matrix,
         const LINALG::SparseMatrix& structure_xxx_matrix);
 
+    /*!
+     * @brief apply mesh tying to xxx-structure block
+     *
+     * @param[out] ssi_xxx_structure_matrix  xxx structure matrix block including mesh tying
+     *                                       constraints
+     * @param[in] xxx_structure_matrix       xxx structure matrix block
+     */
+    void ApplyMeshtyingToXXXStructure(LINALG::SparseMatrix& ssi_xxx_structure_matrix,
+        const LINALG::SparseMatrix& xxx_structure_matrix);
+
     //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
     //! side)
     //@{
@@ -96,6 +115,9 @@ namespace SSI
 
     //! monolithic algorithm for scalar-structure interaction
     const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
+
+    //! scatra-manifold structure system matrix used to apply mesh tying to this matrix block
+    Teuchos::RCP<LINALG::SparseOperator> temp_scatramanifold_struct_mat_;
 
     //! structure scatra system matrix used to apply mesh tying to this matrix block
     Teuchos::RCP<LINALG::SparseOperator> temp_struct_scatra_mat_;
@@ -136,7 +158,11 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategySparse(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategySparse(
+        const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+
+    void ApplyMeshtyingToScatraManifoldStructure(
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
@@ -149,6 +175,9 @@ namespace SSI
     //! constructor
     explicit MeshtyingStrategyBlock(const SSI::SSIMono& ssi_mono);
 
+    void ApplyMeshtyingToScatraManifoldStructure(
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override = 0;
+
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override = 0;
 
@@ -156,12 +185,21 @@ namespace SSI
     //! position of scatra blocks in system matrix
     Teuchos::RCP<std::vector<int>> BlockPositionScaTra() { return block_position_scatra_; }
 
+    //! position of scatra manifold blocks in system matrix
+    Teuchos::RCP<std::vector<int>> BlockPositionScaTraManifold() const
+    {
+      return block_position_scatra_manifold_;
+    }
+
     //! position of structure block in system matrix
     int PositionStructure() const { return position_structure_; };
 
    private:
     //! position of scatra blocks in system matrix
     Teuchos::RCP<std::vector<int>> block_position_scatra_;
+
+    //! position of scatra manifold blocks in system matrix
+    Teuchos::RCP<std::vector<int>> block_position_scatra_manifold_;
 
     //! position of structure block in system matrix
     int position_structure_;
@@ -172,7 +210,11 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategyBlockSparse(
+        const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+
+    void ApplyMeshtyingToScatraManifoldStructure(
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
@@ -183,7 +225,11 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategyBlockBlock(
+        const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+
+    void ApplyMeshtyingToScatraManifoldStructure(
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
@@ -191,6 +237,7 @@ namespace SSI
 
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(const SSI::SSIMono& ssi_mono,
-      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
+      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra,
+      Teuchos::RCP<const Epetra_Map> interface_map_scatra);
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_MESHTYING_STRATEGY_H
