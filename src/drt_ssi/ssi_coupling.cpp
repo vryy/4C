@@ -453,8 +453,10 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     std::vector<DRT::Condition*> conds;
     structdis->GetCondition("SSISurfaceManifold", conds);
 
+    // set dummy coupling id, as coupling between scatra_manifold dis and structdis/scatradis should
+    // be setup for all conditions
     std::set<int> couplingids;
-    for (auto& cond : conds) couplingids.insert(cond->GetInt("coupling id"));
+    couplingids.insert(0);
 
     auto structgidmatchingdofset =
         Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(structdis, structdis->GetDofSetProxy()));

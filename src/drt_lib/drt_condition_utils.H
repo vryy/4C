@@ -99,7 +99,7 @@ namespace DRT
     /// put them into a vector indexed by Id of the condition
     void FindConditionedNodes(const DRT::Discretization& dis,
         const std::vector<DRT::Condition*>& conds,
-        std::map<int, Teuchos::RCP<std::vector<int>>>& nodes);
+        std::map<int, Teuchos::RCP<std::vector<int>>>& nodes, bool use_coupling_id = true);
 
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,

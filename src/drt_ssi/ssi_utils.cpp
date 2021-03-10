@@ -477,12 +477,8 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
   // Build GID vector of nodes on this proc, sort, and remove duplicates
   std::vector<int> condition_node_vec;
   for (auto* condition : conditions)
-  {
-    if (condition->GetInt("coupling id") != 1)
-      dserror("'coupling id' in 'SSISurfaceManifold' must be set to 1");
-
     DRT::UTILS::AddOwnedNodeGIDVector(dis, *condition->Nodes(), condition_node_vec);
-  }
+
   DRT::UTILS::SortAndRemoveDuplicateVectorElements(condition_node_vec);
 
   // Build GID vector of dofs

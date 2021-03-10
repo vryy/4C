@@ -126,13 +126,14 @@ void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::UTILS::FindConditionedNodes(const DRT::Discretization& dis,
-    const std::vector<DRT::Condition*>& conds, std::map<int, Teuchos::RCP<std::vector<int>>>& nodes)
+    const std::vector<DRT::Condition*>& conds, std::map<int, Teuchos::RCP<std::vector<int>>>& nodes,
+    bool use_coupling_id)
 {
   std::map<int, std::set<int>> nodeset;
   const int myrank = dis.Comm().MyPID();
   for (unsigned i = 0; i < conds.size(); ++i)
   {
-    int id = conds[i]->GetInt("coupling id");
+    int id = use_coupling_id ? conds[i]->GetInt("coupling id") : 0;
     const std::vector<int>* n = conds[i]->Nodes();
     for (unsigned j = 0; j < n->size(); ++j)
     {
