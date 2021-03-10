@@ -667,7 +667,7 @@ void SSI::SSIMono::SetupSystem()
     }
   }
 
-  // initialize subblocks and system matrix
+  // initialize sub blocks and system matrix
   ssi_matrices_ = Teuchos::rcp(new SSI::UTILS::SSIMatrices(*this, interface_map_scatra));
 
   // initialize strategy for assembly
