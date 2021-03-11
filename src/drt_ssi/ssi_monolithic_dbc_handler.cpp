@@ -88,75 +88,76 @@ void SSI::DBCHandlerBase::ApplyDBCToSystemMatrix(Teuchos::RCP<LINALG::SparseOper
     system_matrix->ApplyDirichlet(*SSIMono()->ScaTraManifold()->DirichMaps()->CondMap(), true);
 
   // apply the structure Dirichlet boundary conditions to the global system matrix
-  ApplyStructuralDBCToSystemMatrix(system_matrix);
+  ApplyStructureDBCToSystemMatrix(system_matrix);
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::DBCHandlerSparse::ApplyStructuralDBCToSystemMatrix(
+void SSI::DBCHandlerBase::ApplyStructureDBCToSystemMatrix(
     Teuchos::RCP<LINALG::SparseOperator> system_matrix)
 {
   // locsys manager of structure
   const auto& locsysmanager_structure = SSIMono()->StructureField()->LocsysManager();
 
-  // map of structural Dirichlet BCs
+  // map of structure Dirichlet BCs
   const auto& dbcmap_structure = SSIMono()->StructureField()->GetDBCMapExtractor()->CondMap();
 
-  // structural dof row map
-  const auto& dofrowmap_structure = SSIMono()->StructureField()->DofRowMap();
-
   if (locsysmanager_structure == Teuchos::null)
     system_matrix->ApplyDirichlet(*dbcmap_structure);
   else
-  {
-    auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix);
-
-    // extract structural rows of global system matrix
-    const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_structure =
-        Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_structure, 27, false, true));
-    LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
-        system_matrix->DomainMap(), 1.0, nullptr, nullptr, *systemmatrix_structure);
-    systemmatrix_structure->Complete(system_matrix->DomainMap(), *dofrowmap_structure);
-
-    // apply structural Dirichlet conditions
-    locsysmanager_structure->RotateGlobalToLocal(systemmatrix_structure);
-    systemmatrix_structure->ApplyDirichletWithTrafo(
-        locsysmanager_structure->Trafo(), *dbcmap_structure);
-    locsysmanager_structure->RotateLocalToGlobal(systemmatrix_structure);
-
-    // assemble structural rows of global system matrix back into global system matrix
-    systemmatrix_sparse->Put(*systemmatrix_structure, 1.0, dofrowmap_structure);
-  }
+    ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+        system_matrix, dbcmap_structure, locsysmanager_structure);
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::DBCHandlerBlock::ApplyStructuralDBCToSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> system_matrix)
+void SSI::DBCHandlerSparse::ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+    const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
+    Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure)
+
 {
-  // locsys manager of structure
-  const auto& locsysmanager_structure = SSIMono()->StructureField()->LocsysManager();
+  auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(system_matrix);
 
-  // map of structural Dirichlet BCs
-  const auto dbcmap_structure = SSIMono()->StructureField()->GetDBCMapExtractor()->CondMap();
+  // structure dof row map
+  const auto& dofrowmap_structure = SSIMono()->StructureField()->DofRowMap();
 
-  if (locsysmanager_structure == Teuchos::null)
-    system_matrix->ApplyDirichlet(*dbcmap_structure);
-  else
+  // extract structure rows of global system matrix
+  const auto systemmatrix_structure =
+      Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_structure, 27, false, true));
+  LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
+      system_matrix->DomainMap(), 1.0, nullptr, nullptr, *systemmatrix_structure);
+  systemmatrix_structure->Complete(system_matrix->DomainMap(), *dofrowmap_structure);
+
+  // apply structure Dirichlet conditions
+  locsysmanager_structure->RotateGlobalToLocal(systemmatrix_structure);
+  systemmatrix_structure->ApplyDirichletWithTrafo(
+      locsysmanager_structure->Trafo(), *dbcmap_structure);
+  locsysmanager_structure->RotateLocalToGlobal(systemmatrix_structure);
+
+  // assemble structure rows of global system matrix back into global system matrix
+  systemmatrix_sparse->Put(*systemmatrix_structure, 1.0, dofrowmap_structure);
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+void SSI::DBCHandlerBlock::ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+    const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
+    Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure)
+{
+  auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix);
+
+  // apply structure Dirichlet conditions
+  for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
   {
-    auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(system_matrix);
-
-    // apply structural Dirichlet conditions
-    for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
-    {
-      locsysmanager_structure->RotateGlobalToLocal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-      systemmatrix_block->Matrix(PositionStructure(), iblock)
-          .ApplyDirichletWithTrafo(
-              locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
-      locsysmanager_structure->RotateLocalToGlobal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-    }
+    locsysmanager_structure->RotateGlobalToLocal(
+        Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
+    systemmatrix_block->Matrix(PositionStructure(), iblock)
+        .ApplyDirichletWithTrafo(
+            locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
+    locsysmanager_structure->RotateLocalToGlobal(
+        Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
   }
 }
 

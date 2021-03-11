@@ -13,6 +13,14 @@
 
 #include "../linalg/linalg_sparseoperator.H"
 
+namespace DRT
+{
+  namespace UTILS
+  {
+    class LocsysManager;
+  }
+}  // namespace DRT
+
 namespace LINALG
 {
   class SparseMatrix;
@@ -45,18 +53,31 @@ namespace SSI
     void ApplyDBCToSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> system_matrix);
 
     /*!
-     * @brief apply structural Dirichlet boundary conditions to system matrix
+     * @brief apply structure Dirichlet boundary conditions to system matrix
      *
      * @param[in,out] system_matrix  system matrix
      */
-    virtual void ApplyStructuralDBCToSystemMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> system_matrix) = 0;
+    void ApplyStructureDBCToSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> system_matrix);
 
    protected:
     //! return the monolithic algorithm for scalar-structure interaction
-    const Teuchos::RCP<const SSI::SSIMono> SSIMono() const { return ssi_mono_; }
+    Teuchos::RCP<const SSI::SSIMono> SSIMono() const { return ssi_mono_; }
 
    private:
+    /*!
+     * @brief apply structure Dirichlet boundary conditions to system matrix in case a rotation of
+     * the coordinate system has been defined
+     *
+     * @param[in,out] system_matrix        system matrix
+     * @param[in] dbcmap_structure         Dirichlet boundary condition map of structure problem
+     * @param[in] locsysmanager_structure  manager of the local coordinate system for the structure
+     *                                     problem
+     */
+    virtual void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+        const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
+        Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) = 0;
+
     //! monolithic algorithm for scalar-structure interaction
     const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
   };
@@ -69,8 +90,11 @@ namespace SSI
     //! constructor
     explicit DBCHandlerSparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
-    void ApplyStructuralDBCToSystemMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> system_matrix) override;
+   private:
+    void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+        const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
+        Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
   };
 
   //! Dirichlet boundary condition handler class for monolithic scalar-structure interaction if the
@@ -81,10 +105,12 @@ namespace SSI
     //! constructor
     explicit DBCHandlerBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
 
-    void ApplyStructuralDBCToSystemMatrix(
-        Teuchos::RCP<LINALG::SparseOperator> system_matrix) override;
-
    private:
+    void ApplyStructureDBCWithLocSysRotationToSystemMatrix(
+        Teuchos::RCP<LINALG::SparseOperator> system_matrix,
+        const Teuchos::RCP<const Epetra_Map>& dbcmap_structure,
+        Teuchos::RCP<const DRT::UTILS::LocsysManager> locsysmanager_structure) override;
+
     //! position of structure block in system matrix
     int PositionStructure() const { return position_structure_; };
 
