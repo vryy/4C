@@ -44,9 +44,12 @@ namespace SSI
   namespace UTILS
   {
     class SSIMatrices;
-  }
-  class ScatraStructureOffDiagCoupling;
+    class SSIVectors;
+  }  // namespace UTILS
+
   class AssembleStrategyBase;
+  class DBCHandlerBase;
+  class ScatraStructureOffDiagCoupling;
 
   //! equilibration methods applied to system matrix
   struct SSIMonoEquilibrationMethod
@@ -71,17 +74,12 @@ namespace SSI
         const Teuchos::ParameterList& globaltimeparams  //!< parameter list for time integration
     );
 
-    ~SSIMono() override = default;
-
     //! return global map of degrees of freedom
     const Teuchos::RCP<const Epetra_Map>& DofRowMap() const;
 
     void Init(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& scatraparams, const Teuchos::ParameterList& structparams,
         const std::string& struct_disname, const std::string& scatra_disname, bool isAle) override;
-
-    //! return unique map of all dofs that have to be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> CombinedDBCMap() const { return combinedDBCMap_; }
 
     //! return contact nitsche strategy for ssi problems
     Teuchos::RCP<CONTACT::CoNitscheStrategySsi> CoNitscheStrategySsi() const
@@ -150,16 +148,19 @@ namespace SSI
     class ConvCheckStrategyElchScaTraManifold;
     class ConvCheckStrategyStd;
 
+    //! apply the Dirichlet boundary conditions to the ssi system, i.e. matrices and residuals
+    void ApplyDBCToSystem();
+
     //! assemble global system of equations
     void AssembleMatAndRHS();
-
-    //! build the combined dirichlet boundary condition map
-    void BuildCombinedDBCMap();
 
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
-    //! get matrix and right-hand-side for all subproblems incl. coupling
+    //! evaluate all off-diagonal matrix contributions
+    void EvaluateOffDiagContributions();
+
+    //! get matrix and right-hand-side for all sub problems including coupling
     void EvaluateSubproblems();
 
     // build and return vector of equilibration methods for each block of system matrix
@@ -195,11 +196,11 @@ namespace SSI
     //! update structure state within Newton iteration
     void UpdateIterStructure();
 
-    //! dirichlet boundary condition map of monolithic system
-    Teuchos::RCP<Epetra_Map> combinedDBCMap_;
-
     //! store contact nitsche strategy for ssi problems
     Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_strategy_nitsche_;
+
+    //! Dirichlet boundary condition handler
+    Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler_;
 
     //! time for element evaluation and assembly of global system of equations
     double dtele_;
@@ -209,9 +210,6 @@ namespace SSI
 
     //! equilibration method applied to system matrix
     const struct SSIMonoEquilibrationMethod equilibration_method_;
-
-    //! global increment vector for Newton-Raphson iteration
-    Teuchos::RCP<Epetra_Vector> increment_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
@@ -231,17 +229,17 @@ namespace SSI
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
-    //! global residual vector on right-hand side of global system of equations
-    Teuchos::RCP<Epetra_Vector> residual_;
-
     //! all OD evaluation is in here
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
 
-    //! this object holds the system matrix and all subblocks
+    //! this object holds the system matrix and all sub blocks
     Teuchos::RCP<SSI::UTILS::SSIMatrices> ssi_matrices_;
+
+    //! this object holds the system residuals and increment
+    Teuchos::RCP<SSI::UTILS::SSIVectors> ssi_vectors_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;

@@ -171,6 +171,35 @@ namespace SSI
       //@}
     };
 
+    /*---------------------------------------------------------------------------------*
+     *---------------------------------------------------------------------------------*/
+    //! sets up and holds the system residuals and increment for SSI simulations
+    class SSIVectors
+    {
+     public:
+      //! constructor
+      explicit SSIVectors(const SSI::SSIMono& ssi_mono_algorithm);
+
+      //! clear the increment vector
+      void ClearIncrement();
+
+      //! clear all residual vectors
+      void ClearResiduals();
+
+      //! global increment vector for Newton-Raphson iteration
+      Teuchos::RCP<Epetra_Vector> Increment() { return increment_; }
+
+      //! residual vector on right-hand side of global system of equations
+      Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
+
+     private:
+      //! global increment vector for Newton-Raphson iteration
+      Teuchos::RCP<Epetra_Vector> increment_;
+
+      //! residual vector on right-hand side of global system of equations
+      Teuchos::RCP<Epetra_Vector> residual_;
+    };
+
     class SSISlaveSideConverter
     {
      public:

@@ -801,89 +801,18 @@ void SSI::AssembleStrategyBase::ApplyMeshtyingSysMat(LINALG::SparseMatrix& syste
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBlock::ApplyStructuralDBCSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
+void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
+    Teuchos::RCP<const Epetra_Vector> rhs_scatra, Teuchos::RCP<const Epetra_Vector> rhs_structure,
+    Teuchos::RCP<const Epetra_Vector> rhs_manifold)
 {
-  // locsys manager of structure
-  const auto& locsysmanager_structure = ssi_mono_->StructureField()->LocsysManager();
-
-  // map of structural Dirichlet BCs
-  const auto dbcmap_structure = ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap();
-
-  if (locsysmanager_structure == Teuchos::null)
-    systemmatrix->ApplyDirichlet(*dbcmap_structure);
-  else
-  {
-    auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-
-    // apply structural Dirichlet conditions
-    for (int iblock = 0; iblock < systemmatrix_block->Cols(); ++iblock)
-    {
-      locsysmanager_structure->RotateGlobalToLocal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-      systemmatrix_block->Matrix(PositionStructure(), iblock)
-          .ApplyDirichletWithTrafo(
-              locsysmanager_structure->Trafo(), *dbcmap_structure, (iblock == PositionStructure()));
-      locsysmanager_structure->RotateLocalToGlobal(
-          Teuchos::rcp(&systemmatrix_block->Matrix(PositionStructure(), iblock), false));
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategySparse::ApplyStructuralDBCSystemMatrix(
-    Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
-{
-  // locsys manager of structure
-  const auto& locsysmanager_structure = ssi_mono_->StructureField()->LocsysManager();
-
-  // map of structural Dirichlet BCs
-  const auto& dbcmap_structure = ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap();
-
-  // structural dof row map
-  const auto& dofrowmap_structure = ssi_mono_->StructureField()->DofRowMap();
-
-  if (locsysmanager_structure == Teuchos::null)
-    systemmatrix->ApplyDirichlet(*dbcmap_structure);
-  else
-  {
-    auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-
-    // extract structural rows of global system matrix
-    const Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_structure =
-        Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_structure, 27, false, true));
-    LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
-        systemmatrix->DomainMap(), 1.0, nullptr, nullptr, *systemmatrix_structure);
-    systemmatrix_structure->Complete(systemmatrix->DomainMap(), *dofrowmap_structure);
-
-    // apply structural Dirichlet conditions
-    locsysmanager_structure->RotateGlobalToLocal(systemmatrix_structure);
-    systemmatrix_structure->ApplyDirichletWithTrafo(
-        locsysmanager_structure->Trafo(), *dbcmap_structure);
-    locsysmanager_structure->RotateLocalToGlobal(systemmatrix_structure);
-
-    // assemble structural rows of global system matrix back into global system matrix
-    systemmatrix_sparse->Put(*systemmatrix_structure, 1.0, dofrowmap_structure);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
-    Teuchos::RCP<Epetra_Vector> RHSscatra, Teuchos::RCP<const Epetra_Vector> RHSstructure,
-    Teuchos::RCP<Epetra_Vector> RHSmanifold)
-{
-  RHS->PutScalar(0.0);
-
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
   ssi_mono_->MapsSubProblems()->InsertVector(
-      RHSscatra, ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), RHS);
+      rhs_scatra, ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
 
   if (ssi_mono_->IsScaTraManifold())
   {
     ssi_mono_->MapsSubProblems()->InsertVector(
-        RHSmanifold, ssi_mono_->GetProblemPosition(SSI::Subproblem::manifold), RHS);
+        rhs_manifold, ssi_mono_->GetProblemPosition(SSI::Subproblem::manifold), rhs);
   }
 
   if (ssi_mono_->SSIInterfaceMeshtying())
@@ -892,7 +821,7 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     // monolithic right-hand side vector
 
     // make copy of structural right-hand side vector
-    Epetra_Vector residual_structure(*RHSstructure);
+    Epetra_Vector residual_structure(*rhs_structure);
 
     // transform slave-side part of structural right-hand side vector to master side
     Teuchos::RCP<Epetra_Vector> slavetomaster = ssi_mono_->MapsCoupStruct()->InsertVector(
@@ -934,12 +863,12 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
     ssi_mono_->MapsSubProblems()->AddVector(
-        residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), *RHS, -1.0);
+        residual_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), *rhs, -1.0);
   }
   else
   {
     ssi_mono_->MapsSubProblems()->AddVector(
-        RHSstructure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), RHS, -1.0);
+        rhs_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
   }
 
   if (ssi_mono_->SSIInterfaceContact())
@@ -947,11 +876,7 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector>& RHS,
     // add the scatra contact contribution
     ssi_mono_->MapsSubProblems()->AddVector(
         ssi_mono_->CoNitscheStrategySsi()->GetRhsBlockPtr(DRT::UTILS::VecBlockType::scatra),
-        ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), RHS);
-
-    // apply the dirichlet boundary conditions
-    const auto zeros = Teuchos::rcp(new Epetra_Vector(RHS->Map()));
-    LINALG::ApplyDirichlettoSystem(RHS, zeros, *(ssi_mono_->CombinedDBCMap()));
+        ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
   }
 }
 
