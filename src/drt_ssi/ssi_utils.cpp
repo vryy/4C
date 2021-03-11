@@ -500,9 +500,9 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 
   // Build GID vector of dofs
   std::vector<int> condition_dof_vec;
-  for (int condidtion_node : condition_node_vec)
+  for (int condition_node : condition_node_vec)
   {
-    const auto* curr_node = dis->gNode(condidtion_node);
+    const auto* curr_node = dis->gNode(condition_node);
     for (int j = 0; j < dis->NumDof(0, curr_node); ++j)
       condition_dof_vec.emplace_back(dis->Dof(0, curr_node, j));
   }
@@ -518,21 +518,26 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(
-    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra)
+    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
 {
-  // first: build interface maps
-  Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface(Teuchos::null);
+  InitializeSystemMatrix(ssi_mono_algorithm);
+
+  InitializeOffDiagMatrices(ssi_mono_algorithm, interface_map_scatra);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMatrices::GetScaTraInterfaceBlockMap(
+    const SSI::SSIMono& ssi_mono_algorithm,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra) const
+{
+  Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_interface(Teuchos::null);
+
   switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
   {
-    // one single main-diagonal matrix block associated with scalar transport field
     case LINALG::MatrixType::sparse:
     {
-      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
-      {
-        blockmapscatrainterface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_scatra,
-            std::vector<Teuchos::RCP<const Epetra_Map>>(1, interface_map_scatra)));
-        blockmapscatrainterface->CheckForValidMapExtractor();
-      }
+      // do nothing
       break;
     }
     case LINALG::MatrixType::block_condition:
@@ -551,9 +556,9 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
               {ssi_mono_algorithm.MeshtyingStrategyS2I()->BlockMapsSlave().Map(iblockmap),
                   ssi_mono_algorithm.MeshtyingStrategyS2I()->BlockMapsMaster().Map(iblockmap)});
         }
-        blockmapscatrainterface = Teuchos::rcp(
+        block_map_scatra_interface = Teuchos::rcp(
             new LINALG::MultiMapExtractor(*interface_map_scatra, partial_blockmapscatrainterface));
-        blockmapscatrainterface->CheckForValidMapExtractor();
+        block_map_scatra_interface->CheckForValidMapExtractor();
       }
       break;
     }
@@ -565,38 +570,19 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
     }
   }
 
-  // second: initialze system matrix
-  switch (ssi_mono_algorithm.MatrixType())
-  {
-    case LINALG::MatrixType::block_field:
-    {
-      systemmatrix_ = SetupBlockMatrix(
-          ssi_mono_algorithm.MapsSystemMatrix(), ssi_mono_algorithm.MapsSystemMatrix());
+  return block_map_scatra_interface;
+}
 
-      break;
-    }
-
-    case LINALG::MatrixType::sparse:
-    {
-      systemmatrix_ = SetupSparseMatrix(ssi_mono_algorithm.DofRowMap());
-
-      break;
-    }
-
-    default:
-    {
-      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
-      break;
-    }
-  }
-
-  // third: initialize scatra-structure block and structure-scatra block of global system matrix
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
+    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
+{
   switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      // initialize scatra-structure block
       scatrastructuredomain_ =
           SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()),
               ssi_mono_algorithm.MapStructure());
@@ -619,8 +605,11 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
 
       if (ssi_mono_algorithm.SSIInterfaceMeshtying())
       {
+        auto block_map_scatra_interface =
+            GetScaTraInterfaceBlockMap(ssi_mono_algorithm, interface_map_scatra);
+
         scatrastructureinterface_ =
-            SetupBlockMatrix(blockmapscatrainterface, ssi_mono_algorithm.MapStructure());
+            SetupBlockMatrix(block_map_scatra_interface, ssi_mono_algorithm.MapStructure());
       }
 
       break;
@@ -630,6 +619,7 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
     {
       scatrastructuredomain_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
       structurescatradomain_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
+
       if (ssi_mono_algorithm.IsScaTraManifold())
       {
         scatramanifoldstructuredomain_ =
@@ -645,6 +635,33 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
     default:
     {
       dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::InitializeSystemMatrix(const SSI::SSIMono& ssi_mono_algorithm)
+{
+  switch (ssi_mono_algorithm.MatrixType())
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      systemmatrix_ = SetupBlockMatrix(
+          ssi_mono_algorithm.MapsSystemMatrix(), ssi_mono_algorithm.MapsSystemMatrix());
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      systemmatrix_ = SetupSparseMatrix(ssi_mono_algorithm.DofRowMap());
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
       break;
     }
   }

@@ -84,16 +84,16 @@ namespace SSI
 
     /*---------------------------------------------------------------------------------*
      *---------------------------------------------------------------------------------*/
-    //! sets up and holds all subblocks of system matrices and system matrix for SSTI simulations
+    //! sets up and holds all sub blocks of system matrices and system matrix for SSI simulations
     class SSIMatrices
     {
      public:
-      SSIMatrices(
-          const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<Epetra_Map> interface_map_scatra);
+      SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm,
+          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
 
       Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; }
 
-      //! return subblocks of system matrix
+      //! return sub blocks of system matrix
       //@{
       Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureDomain()
       {
@@ -114,15 +114,55 @@ namespace SSI
       //@}
 
      private:
+      /*!
+       * @brief set up and return the scatra interface block map
+       *
+       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
+       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
+       * @return scatra interface block map
+       */
+      Teuchos::RCP<const LINALG::MultiMapExtractor> GetScaTraInterfaceBlockMap(
+          const SSI::SSIMono& ssi_mono_algorithm,
+          Teuchos::RCP<const Epetra_Map> interface_map_scatra) const;
+
+      /*!
+       * @brief initialize the scatra-structure interaction off-diagonal matrices
+       *
+       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
+       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
+       */
+      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm,
+          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+
+      /*!
+       * @brief initialize the system matrix
+       *
+       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       */
+      void InitializeSystemMatrix(const SSI::SSIMono& ssi_mono_algorithm);
+
+      /*!
+       * @brief set up a pointer to a block matrix
+       *
+       * @param[in] row_map  row map the block matrix is based on
+       * @param[in] col_map  column map the block matrix is based on
+       * @return pointer to block matrix
+       */
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> SetupBlockMatrix(
           Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
           Teuchos::RCP<const LINALG::MultiMapExtractor> col_map);
 
+      /*!
+       * @brief set up a pointer to a sparse matrix
+       *
+       * @param[in] row_map  row map the sparse matrix is based on
+       * @return pointer to sparse matrix
+       */
       Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
           const Teuchos::RCP<const Epetra_Map> row_map);
 
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
-      //! subblocks of system matrix
+      //! sub blocks of system matrix
       //@{
       Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
       Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
