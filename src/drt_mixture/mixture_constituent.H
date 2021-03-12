@@ -47,7 +47,7 @@ namespace MIXTURE
           const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent() = 0;
+      virtual Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) = 0;
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() final;
@@ -83,7 +83,10 @@ namespace MIXTURE
   class MixtureConstituent
   {
    public:
-    explicit MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params);
+    MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id);
+
+    /// Returns the id of the constituent
+    int Id() const { return id_; }
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -336,6 +339,9 @@ namespace MIXTURE
 
     ///! Indicator, whether the constituent is already set up
     bool is_setup_;
+
+    ///! Id of the constituent
+    const int id_;
   };
 
 }  // namespace MIXTURE

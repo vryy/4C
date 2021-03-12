@@ -31,7 +31,7 @@ namespace MIXTURE
       ~MixtureConstituent_RemodelFiberExpl() override = default;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent() override;
+      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
     };
   }  // namespace PAR
 
@@ -42,7 +42,7 @@ namespace MIXTURE
   {
    public:
     explicit MixtureConstituent_RemodelFiberExpl(
-        MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params);
+        MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params, int id);
 
     /// Returns the material type enum
     INPAR::MAT::MaterialType MaterialType() const override;

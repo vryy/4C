@@ -41,8 +41,8 @@ MIXTURE::PAR::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
 }
 
 MIXTURE::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
-    MIXTURE::PAR::MixtureConstituent_RemodelFiber* params)
-    : MixtureConstituent(params), params_(params), orthogonalAnisotropyExtension_()
+    MIXTURE::PAR::MixtureConstituent_RemodelFiber* params, int id)
+    : MixtureConstituent(params, id), params_(params), orthogonalAnisotropyExtension_()
 {
   summand_ = MAT::ELASTIC::Summand::Factory(params_->matid_);
   activeSummand_ = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::ActiveSummand>(summand_);
