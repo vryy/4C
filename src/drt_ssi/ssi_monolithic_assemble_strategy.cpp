@@ -24,49 +24,46 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBase::AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
-    : ssi_mono_(ssi_mono)
+SSI::AssembleStrategyBase::AssembleStrategyBase(const SSI::SSIMono& ssi_mono) : ssi_mono_(ssi_mono)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlock::AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
+SSI::AssembleStrategyBlock::AssembleStrategyBlock(const SSI::SSIMono& ssi_mono)
     : AssembleStrategyBase(ssi_mono),
       block_position_scatra_(Teuchos::null),
       block_position_scatra_manifold_(Teuchos::null),
       position_structure_(-1)
 {
-  block_position_scatra_ = ssi_mono_->GetBlockPositions(SSI::Subproblem::scalar_transport);
-  position_structure_ = ssi_mono_->GetBlockPositions(SSI::Subproblem::structure)->at(0);
-  if (ssi_mono_->IsScaTraManifold())
-    block_position_scatra_manifold_ = ssi_mono_->GetBlockPositions(SSI::Subproblem::manifold);
+  block_position_scatra_ = SSIMono().GetBlockPositions(SSI::Subproblem::scalar_transport);
+  position_structure_ = SSIMono().GetBlockPositions(SSI::Subproblem::structure)->at(0);
+  if (SSIMono().IsScaTraManifold())
+    block_position_scatra_manifold_ = SSIMono().GetBlockPositions(SSI::Subproblem::manifold);
 
   if (block_position_scatra_ == Teuchos::null) dserror("Cannot get position of scatra blocks");
   if (position_structure_ == -1) dserror("Cannot get position of structure block");
-  if (ssi_mono_->IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
+  if (SSIMono().IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
     dserror("Cannot get position of scatra manifold blocks");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
-    const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
+SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(const SSI::SSIMono& ssi_mono)
     : AssembleStrategyBlock(ssi_mono)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(
-    const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
+SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(const SSI::SSIMono& ssi_mono)
     : AssembleStrategyBlock(ssi_mono)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategySparse::AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
+SSI::AssembleStrategySparse::AssembleStrategySparse(const SSI::SSIMono& ssi_mono)
     : AssembleStrategyBase(ssi_mono)
 {
 }
@@ -93,14 +90,15 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatra(
     }
   }
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
     // get scatra-scatra-interface block matrix
     const auto& scatra_scatra_interface_blockmatrix =
-        ssi_mono_->CoNitscheStrategySsi()
+        SSIMono()
+            .CoNitscheStrategySsi()
             ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra)
             ->Split<LINALG::DefaultBlockMatrixStrategy>(
-                *ssi_mono_->MapsScatra(), *ssi_mono_->MapsScatra());
+                *SSIMono().MapsScatra(), *SSIMono().MapsScatra());
     scatra_scatra_interface_blockmatrix->Complete();
 
     // assemble it into the system matrix
@@ -134,9 +132,9 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatra(
 
   systemmatrix_block_scatra_scatra.Add(*scatradomain_sparse, false, 1.0, 1.0);
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
-    systemmatrix_block_scatra_scatra.Add(*(ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
+    systemmatrix_block_scatra_scatra.Add(*(SSIMono().CoNitscheStrategySsi()->GetMatrixBlockPtr(
                                              DRT::UTILS::MatBlockType::scatra_scatra)),
         false, 1.0, 1.0);
   }
@@ -153,9 +151,9 @@ void SSI::AssembleStrategySparse::AssembleScatra(Teuchos::RCP<LINALG::SparseOper
   // add scalar transport system matrix to global system matrix
   systemmatrix_sparse->Add(*scatradomain_sparse, false, 1.0, 1.0);
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
-    systemmatrix_sparse->Add(*(ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
+    systemmatrix_sparse->Add(*(SSIMono().CoNitscheStrategySsi()->GetMatrixBlockPtr(
                                  DRT::UTILS::MatBlockType::scatra_scatra)),
         false, 1.0, 1.0);
   }
@@ -210,7 +208,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
 
   // cast interface matrix if necessary
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterface_block = Teuchos::null;
-  if (ssi_mono_->SSIInterfaceMeshtying())
+  if (SSIMono().SSIInterfaceMeshtying())
     scatrastructureinterface_block =
         LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
 
@@ -222,21 +220,22 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     systemmatrix_block_iscatra_struct.Add(
         scatrastructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
 
-    if (ssi_mono_->SSIInterfaceMeshtying())
+    if (SSIMono().SSIInterfaceMeshtying())
     {
       systemmatrix_block_iscatra_struct.Add(
           scatrastructureinterface_block->Matrix(iblock, 0), false, 1.0, 1.0);
     }
   }
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
     // get scatra-structure-interface block matrix
     const auto& scatra_struct_interface_blockmatrix =
-        ssi_mono_->CoNitscheStrategySsi()
+        SSIMono()
+            .CoNitscheStrategySsi()
             ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ)
             ->Split<LINALG::DefaultBlockMatrixStrategy>(
-                *ssi_mono_->MapStructure(), *ssi_mono_->MapsScatra());
+                *SSIMono().MapStructure(), *SSIMono().MapsScatra());
     scatra_struct_interface_blockmatrix->Complete();
 
     // assemble it into the system matrix
@@ -267,18 +266,17 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
       systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
   systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
 
-  if (ssi_mono_->SSIInterfaceMeshtying())
+  if (SSIMono().SSIInterfaceMeshtying())
   {
     auto scatrastructureinterface_sparse =
         LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
     systemmatrix_block_scatra_struct.Add(*scatrastructureinterface_sparse, false, 1.0, 1.0);
   }
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
     const auto& scatra_struct_interface_matrix =
-        ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
-            DRT::UTILS::MatBlockType::scatra_displ);
+        SSIMono().CoNitscheStrategySsi()->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ);
 
     systemmatrix_block_scatra_struct.Add(*scatra_struct_interface_matrix, false, 1.0, 1.0);
   }
@@ -297,16 +295,16 @@ void SSI::AssembleStrategySparse::AssembleScatraStructure(
 
   systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
 
-  if (ssi_mono_->SSIInterfaceMeshtying())
+  if (SSIMono().SSIInterfaceMeshtying())
   {
     auto scatrastructureinterface_sparse =
         LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
     systemmatrix_sparse->Add(*scatrastructureinterface_sparse, false, 1.0, 1.0);
   }
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
-    systemmatrix_sparse->Add(*(ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
+    systemmatrix_sparse->Add(*(SSIMono().CoNitscheStrategySsi()->GetMatrixBlockPtr(
                                  DRT::UTILS::MatBlockType::scatra_displ)),
         false, 1.0, 1.0);
   }
@@ -331,14 +329,15 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatra(
         structurescatradomain_block->Matrix(0, iblock), false, 1.0, 1.0);
   }
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
     // get structure-scatra-interface block matrix
     const auto& struct_scatra_interface_blockmatrix =
-        ssi_mono_->CoNitscheStrategySsi()
+        SSIMono()
+            .CoNitscheStrategySsi()
             ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra)
             ->Split<LINALG::DefaultBlockMatrixStrategy>(
-                *ssi_mono_->MapsScatra(), *ssi_mono_->MapStructure());
+                *SSIMono().MapsScatra(), *SSIMono().MapStructure());
     struct_scatra_interface_blockmatrix->Complete();
 
     // assemble it into the system matrix
@@ -368,11 +367,10 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructureScatra(
       systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0));
   systemmatrix_block_struct_scatra.Add(*structurescatradomain_sparse, false, 1.0, 1.0);
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
     const auto& struct_scatra_interface_matrix =
-        ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
-            DRT::UTILS::MatBlockType::displ_scatra);
+        SSIMono().CoNitscheStrategySsi()->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra);
 
     systemmatrix_block_struct_scatra.Add(*struct_scatra_interface_matrix, false, 1.0, 1.0);
   }
@@ -391,9 +389,9 @@ void SSI::AssembleStrategySparse::AssembleStructureScatra(
   systemmatrix_sparse->Add(*structurescatradomain_sparse, false, 1.0, 1.0);
 
   // add contact contributions
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
-    systemmatrix_sparse->Add(*(ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
+    systemmatrix_sparse->Add(*(SSIMono().CoNitscheStrategySsi()->GetMatrixBlockPtr(
                                  DRT::UTILS::MatBlockType::displ_scatra)),
         false, 1.0, 1.0);
   }
@@ -503,32 +501,31 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
     Teuchos::RCP<const Epetra_Vector> rhs_manifold)
 {
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
-  ssi_mono_->MapsSubProblems()->InsertVector(
-      rhs_scatra, ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
+  SSIMono().MapsSubProblems()->InsertVector(
+      rhs_scatra, SSIMono().GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
 
-  if (ssi_mono_->IsScaTraManifold())
+  if (SSIMono().IsScaTraManifold())
   {
-    ssi_mono_->MapsSubProblems()->InsertVector(
-        rhs_manifold, ssi_mono_->GetProblemPosition(SSI::Subproblem::manifold), rhs);
+    SSIMono().MapsSubProblems()->InsertVector(
+        rhs_manifold, SSIMono().GetProblemPosition(SSI::Subproblem::manifold), rhs);
   }
 
-  ssi_mono_->MapsSubProblems()->AddVector(
-      rhs_structure, ssi_mono_->GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
+  SSIMono().MapsSubProblems()->AddVector(
+      rhs_structure, SSIMono().GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
 
-  if (ssi_mono_->SSIInterfaceContact())
+  if (SSIMono().SSIInterfaceContact())
   {
     // add the scatra contact contribution
-    ssi_mono_->MapsSubProblems()->AddVector(
-        ssi_mono_->CoNitscheStrategySsi()->GetRhsBlockPtr(DRT::UTILS::VecBlockType::scatra),
-        ssi_mono_->GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
+    SSIMono().MapsSubProblems()->AddVector(
+        SSIMono().CoNitscheStrategySsi()->GetRhsBlockPtr(DRT::UTILS::VecBlockType::scatra),
+        SSIMono().GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
   }
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
-    Teuchos::RCP<const SSI::SSIMono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
-    LINALG::MatrixType matrixtype_scatra)
+Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(const SSI::SSIMono& ssi_mono,
+    LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSI::AssembleStrategyBase> assemblestrategy = Teuchos::null;
 

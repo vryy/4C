@@ -697,8 +697,7 @@ void SSI::SSIMono::SetupSystem()
   ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(*this));
 
   // initialize strategy for assembly
-  strategy_assemble_ = SSI::BuildAssembleStrategy(
-      Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
+  strategy_assemble_ = SSI::BuildAssembleStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
 
   // initialize object, that performs evaluations of OD coupling
   if (IsScaTraManifold())

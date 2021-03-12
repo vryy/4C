@@ -32,7 +32,7 @@ namespace SSI
   class SSIMono;
 
   /*!
-  We have three options how the global system matrix and the submatrices are arranged:
+  We have three options how the global system matrix and the sub matrices are arranged:
   1) System matrix: sparse
     ->Scatra matrix sparse
     ->Structure matrix sparse
@@ -47,7 +47,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
+    explicit AssembleStrategyBase(const SSI::SSIMono& ssi_mono);
 
     //! assemble RHS
     void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
@@ -81,7 +81,11 @@ namespace SSI
 
    protected:
     //! monolithic algorithm for scalar-structure interaction
-    const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
+    const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
+
+   private:
+    //! monolithic algorithm for scalar-structure interaction
+    const SSI::SSIMono& ssi_mono_;
   };
 
   //======================================================================================================
@@ -89,7 +93,7 @@ namespace SSI
   class AssembleStrategyBlock : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
+    explicit AssembleStrategyBlock(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override = 0;
@@ -139,7 +143,7 @@ namespace SSI
   class AssembleStrategyBlockBlock : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
+    explicit AssembleStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
@@ -166,7 +170,7 @@ namespace SSI
   class AssembleStrategyBlockSparse : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
+    explicit AssembleStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
@@ -193,7 +197,7 @@ namespace SSI
   class AssembleStrategySparse : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
+    explicit AssembleStrategySparse(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
@@ -216,9 +220,8 @@ namespace SSI
   };
 
   //! build specific assemble strategy
-  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
-      Teuchos::RCP<const SSI::SSIMono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
-      LINALG::MatrixType matrixtype_scatra);
+  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(const SSI::SSIMono& ssi_mono,
+      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
