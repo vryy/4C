@@ -13,8 +13,28 @@
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_H
 
 #include "../drt_mat/matpar_parameter.H"
-#include "../drt_lib/drt_pack_buffer.H"
 #include "../linalg/linalg_fixedsizematrix.H"
+#include <Teuchos_ENull.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPDecl.hpp>
+#include <utility>
+#include "../drt_lib/drt_dserror.H"
+
+namespace MAT
+{
+  class Material;
+}
+namespace MAT
+{
+  namespace PAR
+  {
+    class Material;
+  }
+}  // namespace MAT
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 
 // forward declarations

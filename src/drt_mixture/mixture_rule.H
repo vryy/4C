@@ -15,13 +15,44 @@
 #include <unordered_map>
 
 #include "../drt_mat/matpar_parameter.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "mixture_constituent.H"
+#include <Teuchos_ENull.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPDecl.hpp>
+#include <string>
+#include <utility>
+#include <vector>
+#include "../drt_lib/drt_dserror.H"
+#include "../linalg/linalg_fixedsizematrix.H"
+
+// forward declarations
+class Epetra_SerialDenseMatrix;
+namespace DRT
+{
+  class PackBuffer;
+  namespace INPUT
+  {
+    class LineDefinition;
+  }
+}  // namespace DRT
+namespace MAT
+{
+  class Anisotropy;
+  class Material;
+  namespace PAR
+  {
+    class Material;
+  }
+}  // namespace MAT
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 namespace MIXTURE
 {
   // forward declaration
   class MixtureRule;
+  class MixtureConstituent;
 
   namespace PAR
   {

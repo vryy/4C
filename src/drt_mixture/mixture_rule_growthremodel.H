@@ -13,7 +13,29 @@
 #define BACI_MIXTURE_RULE_GROWTHREMODEL_H
 
 #include "mixture_rule.H"
-#include "../drt_matelast/elast_summand.H"
+#include <Teuchos_RCPDecl.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include "../linalg/linalg_fixedsizematrix.H"
+
+// forward declarations
+class Epetra_SerialDenseMatrix;
+namespace DRT
+{
+  class PackBuffer;
+}
+namespace MAT
+{
+  namespace PAR
+  {
+    class Material;
+  }
+}  // namespace MAT
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 namespace MIXTURE
 {
