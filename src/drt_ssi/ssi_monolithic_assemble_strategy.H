@@ -80,54 +80,8 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) = 0;
 
    protected:
-    //! assemble xxx-structure block into system matrix for meshtying
-    void AssembleXXXStructureMeshtying(LINALG::SparseMatrix& systemmatrix_xxx_structure,
-        const LINALG::SparseMatrix& xxx_structurematrix);
-
     //! monolithic algorithm for scalar-structure interaction
     const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
-
-    //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
-    //! side)
-    //@{
-    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const { return mapstructurecondensed_; }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const { return mapstructureslave_; }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const
-    {
-      return mapstructureslave3domainintersection_;
-    }
-    //@}
-
-    // Slave structure converter for structure coupling
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const
-    {
-      return slave_side_converter_->InterfaceCouplingAdapterStructureSlaveConverter();
-    }
-
-    //! Slave structure converter for structure coupling with 3 domain intersection
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter3DomainIntersection() const
-    {
-      return slave_side_converter_
-          ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection();
-    }
-
-    //! indicates, if meshtying includes three entities
-    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
-
-   private:
-    //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
-    //! side)
-    //@{
-    Teuchos::RCP<const Epetra_Map> mapstructurecondensed_;
-    Teuchos::RCP<const Epetra_Map> mapstructureslave_;
-    Teuchos::RCP<const Epetra_Map> mapstructureslave3domainintersection_;
-    //@}
-
-    //! slave side converter
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
-
-    //! indicates, if meshtying includes three entities
-    bool meshtying_3_domain_intersection_;
   };
 
   //======================================================================================================

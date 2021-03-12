@@ -104,6 +104,9 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
           ssi_matrices_->ScaTraManifoldStructureDomain());
 
+    strategy_meshtying_->ApplyMeshtyingToScatraStructure(
+        ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
+
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
 

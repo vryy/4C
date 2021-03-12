@@ -119,6 +119,17 @@ namespace SSI
       //@}
 
       /*!
+       * @brief set up and return the scatra interface block map
+       *
+       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
+       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
+       * @return scatra interface block map
+       */
+      static Teuchos::RCP<const LINALG::MultiMapExtractor> GetScaTraInterfaceBlockMap(
+          const SSI::SSIMono& ssi_mono_algorithm,
+          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+
+      /*!
        * @brief set up a pointer to a block matrix
        *
        * @param[in] row_map  row map the block matrix is based on
@@ -139,17 +150,6 @@ namespace SSI
           const Teuchos::RCP<const Epetra_Map> row_map);
 
      private:
-      /*!
-       * @brief set up and return the scatra interface block map
-       *
-       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
-       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
-       * @return scatra interface block map
-       */
-      Teuchos::RCP<const LINALG::MultiMapExtractor> GetScaTraInterfaceBlockMap(
-          const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra) const;
-
       /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *

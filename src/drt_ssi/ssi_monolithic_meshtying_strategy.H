@@ -60,6 +60,16 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) = 0;
 
     /*!
+     * @brief apply mesh tying to scatra structure matrix
+     *
+     * @param[in,out] scatra_structure_domain     scatra structure domain matrix
+     * @param[in,out] scatra_structure_interface  scatra structure interface matrix
+     */
+    virtual void ApplyMeshtyingToScatraStructure(
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface) = 0;
+
+    /*!
      * @brief apply mesh tying to structure right hand side vector
      *
      * @param[in] structure_rhs  structure right hand side vector without mesh tying contributions
@@ -116,6 +126,12 @@ namespace SSI
     //! monolithic algorithm for scalar-structure interaction
     const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
 
+    //! scatra structure contribution matrix
+    Teuchos::RCP<LINALG::SparseOperator> temp_scatra_struct_domain_mat_;
+
+    //! scatra structure interface contribution matrix
+    Teuchos::RCP<LINALG::SparseOperator> temp_scatra_struct_interface_mat_;
+
     //! scatra-manifold structure system matrix used to apply mesh tying to this matrix block
     Teuchos::RCP<LINALG::SparseOperator> temp_scatramanifold_struct_mat_;
 
@@ -164,8 +180,16 @@ namespace SSI
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
 
+    void ApplyMeshtyingToScatraStructure(
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface) override;
+
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
+
+   private:
+    //! slave- and master-side of scatra interface map
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
   };
 
   //! SSI problem is composed of sub matrices
@@ -177,6 +201,10 @@ namespace SSI
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override = 0;
+
+    void ApplyMeshtyingToScatraStructure(
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface) override = 0;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override = 0;
@@ -216,8 +244,16 @@ namespace SSI
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
 
+    void ApplyMeshtyingToScatraStructure(
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface) override;
+
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;
+
+   private:
+    //! slave- and master-side of scatra interface map
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
   };
 
   //! SSI problem is composed of sparse structure sub matrix and block scatra sub matrix
@@ -230,6 +266,10 @@ namespace SSI
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
+
+    void ApplyMeshtyingToScatraStructure(
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) override;

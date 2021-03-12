@@ -41,6 +41,8 @@ SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const SSI::SSIMono& ssi_mono)
       slave_side_converter_(
           ssi_mono.SSIInterfaceMeshtying() ? ssi_mono.SlaveSideConverter() : Teuchos::null),
       ssi_mono_(ssi_mono),
+      temp_scatra_struct_domain_mat_(Teuchos::null),
+      temp_scatra_struct_interface_mat_(Teuchos::null),
       temp_scatramanifold_struct_mat_(Teuchos::null),
       temp_struct_scatra_mat_(Teuchos::null)
 {
@@ -50,8 +52,15 @@ SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const SSI::SSIMono& ssi_mono)
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategySparse::MeshtyingStrategySparse(
     const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
-    : MeshtyingStrategyBase(ssi_mono)
+    : MeshtyingStrategyBase(ssi_mono), interface_map_scatra_(interface_map_scatra)
 {
+  temp_scatra_struct_domain_mat_ =
+      SSI::UTILS::SSIMatrices::SetupSparseMatrix(ssi_mono.ScaTraField()->DofRowMap());
+
+  if (ssi_mono.SSIInterfaceMeshtying())
+    temp_scatra_struct_interface_mat_ =
+        SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra);
+
   if (ssi_mono.IsScaTraManifold())
     temp_scatramanifold_struct_mat_ =
         SSI::UTILS::SSIMatrices::SetupSparseMatrix(ssi_mono.ScaTraManifold()->DofRowMap());
@@ -84,8 +93,15 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const SSI::SSIMono& ssi_mono
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBlockSparse::MeshtyingStrategyBlockSparse(
     const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
-    : MeshtyingStrategyBlock(ssi_mono)
+    : MeshtyingStrategyBlock(ssi_mono), interface_map_scatra_(interface_map_scatra)
 {
+  temp_scatra_struct_domain_mat_ =
+      SSI::UTILS::SSIMatrices::SetupSparseMatrix(ssi_mono.ScaTraField()->DofRowMap());
+
+  if (ssi_mono.SSIInterfaceMeshtying())
+    temp_scatra_struct_interface_mat_ =
+        SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra);
+
   if (ssi_mono.IsScaTraManifold())
     temp_scatramanifold_struct_mat_ =
         SSI::UTILS::SSIMatrices::SetupSparseMatrix(ssi_mono.ScaTraManifold()->DofRowMap());
@@ -100,6 +116,18 @@ SSI::MeshtyingStrategyBlockBlock::MeshtyingStrategyBlockBlock(
     const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
     : MeshtyingStrategyBlock(ssi_mono)
 {
+  temp_scatra_struct_domain_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+      Teuchos::rcpFromRef(ssi_mono.ScaTraField()->BlockMaps()), ssi_mono.MapStructure());
+
+  if (ssi_mono.SSIInterfaceMeshtying())
+  {
+    const auto block_map_scatra_interface =
+        SSI::UTILS::SSIMatrices::GetScaTraInterfaceBlockMap(ssi_mono, interface_map_scatra);
+
+    temp_scatra_struct_interface_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+        block_map_scatra_interface, ssi_mono.MapStructure());
+  }
+
   if (ssi_mono.IsScaTraManifold())
   {
     // structure dofs on manifold discretization
@@ -342,6 +370,159 @@ void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToScatraManifoldStructure(
   manifold_structure_matrix_block_matrix->Add(
       *temp_scatramanifold_struct_block_matrix, false, 1.0, 0.0);
   manifold_structure_matrix_block_matrix->Complete();
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraStructure(
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface)
+{
+  // apply mesh tying to the domain contributions
+  {
+    temp_scatra_struct_domain_mat_->Zero();
+    auto temp_scatra_struct_domain_sparse_matrix =
+        LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_domain_mat_);
+    auto scatra_structure_domain_sparse =
+        LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_domain);
+
+    ApplyMeshtyingToXXXStructure(
+        *temp_scatra_struct_domain_sparse_matrix, *scatra_structure_domain_sparse);
+    temp_scatra_struct_domain_sparse_matrix->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *SSIMono().ScaTraField()->DofRowMap());
+
+    // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
+    scatra_structure_domain_sparse->UnComplete();
+    scatra_structure_domain_sparse->Add(*temp_scatra_struct_domain_sparse_matrix, false, 1.0, 0.0);
+    scatra_structure_domain_sparse->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *SSIMono().ScaTraField()->DofRowMap());
+  }
+
+  // apply mesh tying to the interface contributions
+  if (SSIMono().SSIInterfaceMeshtying())
+  {
+    temp_scatra_struct_interface_mat_->Zero();
+    auto temp_scatra_struct_interface_sparse_matrix =
+        LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_interface_mat_);
+    auto scatra_structure_interface_sparse =
+        LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_interface);
+
+    ApplyMeshtyingToXXXStructure(
+        *temp_scatra_struct_interface_sparse_matrix, *scatra_structure_interface_sparse);
+    temp_scatra_struct_interface_sparse_matrix->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *interface_map_scatra_);
+
+    // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
+    scatra_structure_interface_sparse->UnComplete();
+    scatra_structure_interface_sparse->Add(
+        *temp_scatra_struct_interface_sparse_matrix, false, 1.0, 0.0);
+    scatra_structure_interface_sparse->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *interface_map_scatra_);
+  }
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToScatraStructure(
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface)
+{
+  // apply mesh tying to the domain contributions
+  {
+    temp_scatra_struct_domain_mat_->Zero();
+    auto temp_scatra_struct_domain_sparse_matrix =
+        LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_domain_mat_);
+    auto scatra_structure_domain_sparse =
+        LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_domain);
+
+    ApplyMeshtyingToXXXStructure(
+        *temp_scatra_struct_domain_sparse_matrix, *scatra_structure_domain_sparse);
+    temp_scatra_struct_domain_sparse_matrix->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *SSIMono().ScaTraField()->DofRowMap());
+
+    // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
+    scatra_structure_domain_sparse->UnComplete();
+    scatra_structure_domain_sparse->Add(*temp_scatra_struct_domain_sparse_matrix, false, 1.0, 0.0);
+    scatra_structure_domain_sparse->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *SSIMono().ScaTraField()->DofRowMap());
+  }
+
+  // apply mesh tying to the interface contributions
+  if (SSIMono().SSIInterfaceMeshtying())
+  {
+    temp_scatra_struct_interface_mat_->Zero();
+    auto temp_scatra_struct_interface_sparse_matrix =
+        LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_interface_mat_);
+    auto scatra_structure_interface_sparse =
+        LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_interface);
+
+    ApplyMeshtyingToXXXStructure(
+        *temp_scatra_struct_interface_sparse_matrix, *scatra_structure_interface_sparse);
+    temp_scatra_struct_interface_sparse_matrix->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *interface_map_scatra_);
+
+    // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
+    scatra_structure_interface_sparse->UnComplete();
+    scatra_structure_interface_sparse->Add(
+        *temp_scatra_struct_interface_sparse_matrix, false, 1.0, 0.0);
+    scatra_structure_interface_sparse->Complete(
+        *SSIMono().StructureField()->DofRowMap(), *interface_map_scatra_);
+  }
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToScatraStructure(
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_domain,
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface)
+{
+  // apply mesh tying to the domain contributions
+  {
+    temp_scatra_struct_domain_mat_->Zero();
+    auto temp_scatra_struct_domain_block_sparse_matrix =
+        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatra_struct_domain_mat_);
+    auto scatra_structure_domain_block_sparse =
+        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_domain);
+
+    // apply mesh tying for all blocks
+    for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+    {
+      ApplyMeshtyingToXXXStructure(temp_scatra_struct_domain_block_sparse_matrix->Matrix(iblock, 0),
+          scatra_structure_domain_block_sparse->Matrix(iblock, 0));
+    }
+    temp_scatra_struct_domain_block_sparse_matrix->Complete();
+
+    // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
+    scatra_structure_domain_block_sparse->UnComplete();
+    scatra_structure_domain_block_sparse->Add(
+        *temp_scatra_struct_domain_block_sparse_matrix, false, 1.0, 0.0);
+    scatra_structure_domain_block_sparse->Complete();
+  }
+
+  // apply mesh tying to the interface contributions
+  if (SSIMono().SSIInterfaceMeshtying())
+  {
+    temp_scatra_struct_interface_mat_->Zero();
+    auto temp_scatra_structure_interface_block_sparse_matrix =
+        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(temp_scatra_struct_interface_mat_);
+    auto scatra_structure_interface_block_sparse =
+        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_interface);
+
+    // apply mesh tying for all blocks
+    for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+    {
+      ApplyMeshtyingToXXXStructure(
+          temp_scatra_structure_interface_block_sparse_matrix->Matrix(iblock, 0),
+          scatra_structure_interface_block_sparse->Matrix(iblock, 0));
+    }
+    temp_scatra_structure_interface_block_sparse_matrix->Complete();
+
+    // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
+    scatra_structure_interface_block_sparse->UnComplete();
+    scatra_structure_interface_block_sparse->Add(
+        *temp_scatra_structure_interface_block_sparse_matrix, false, 1.0, 0.0);
+    scatra_structure_interface_block_sparse->Complete();
+  }
 }
 
 /*-------------------------------------------------------------------------*

@@ -25,19 +25,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBase::AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono)
-    : ssi_mono_(ssi_mono),
-      mapstructurecondensed_(
-          ssi_mono->SSIInterfaceMeshtying() ? ssi_mono->MapStructureCondensed() : Teuchos::null),
-      mapstructureslave_(
-          ssi_mono->SSIInterfaceMeshtying() ? ssi_mono->MapsCoupStruct()->Map(1) : Teuchos::null),
-      mapstructureslave3domainintersection_(
-          (ssi_mono->SSIInterfaceMeshtying() and ssi_mono->Meshtying3DomainIntersection())
-              ? ssi_mono->MapsCoupStruct3DomainIntersection()->Map(1)
-              : Teuchos::null),
-      slave_side_converter_(
-          ssi_mono->SSIInterfaceMeshtying() ? ssi_mono->SlaveSideConverter() : Teuchos::null),
-      meshtying_3_domain_intersection_(
-          ssi_mono->SSIInterfaceMeshtying() and ssi_mono->Meshtying3DomainIntersection())
+    : ssi_mono_(ssi_mono)
 {
 }
 
@@ -220,30 +208,24 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
   auto scatrastructuredomain_block =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructuredomain);
 
+  // cast interface matrix if necessary
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterface_block = Teuchos::null;
+  if (ssi_mono_->SSIInterfaceMeshtying())
+    scatrastructureinterface_block =
+        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
+
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
-    // add entire block or assemble slave side to master side
+    auto& systemmatrix_block_iscatra_struct =
+        systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
+    systemmatrix_block_iscatra_struct.Add(
+        scatrastructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
+
     if (ssi_mono_->SSIInterfaceMeshtying())
     {
-      AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
-          scatrastructuredomain_block->Matrix(iblock, 0));
-
-      auto scatrastructureinterface_block =
-          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
-
-      AssembleXXXStructureMeshtying(
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure()),
-          scatrastructureinterface_block->Matrix(iblock, 0));
-    }
-    else
-    {
-      auto& systemmatrix_block_iscatra_struct =
-          systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
-
       systemmatrix_block_iscatra_struct.Add(
-          scatrastructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
+          scatrastructureinterface_block->Matrix(iblock, 0), false, 1.0, 1.0);
     }
   }
 
@@ -281,26 +263,15 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
   auto scatrastructuredomain_sparse =
       LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructuredomain);
 
-  // add entire block or assemble slave side to master side
+  auto& systemmatrix_block_scatra_struct =
+      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
+  systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
+
   if (ssi_mono_->SSIInterfaceMeshtying())
   {
-    AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
-        *scatrastructuredomain_sparse);
-
     auto scatrastructureinterface_sparse =
         LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
-
-    AssembleXXXStructureMeshtying(
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure()),
-        *scatrastructureinterface_sparse);
-  }
-  else
-  {
-    auto& systemmatrix_block_scatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
-
-    systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
+    systemmatrix_block_scatra_struct.Add(*scatrastructureinterface_sparse, false, 1.0, 1.0);
   }
 
   if (ssi_mono_->SSIInterfaceContact())
@@ -308,9 +279,6 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
     const auto& scatra_struct_interface_matrix =
         ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
             DRT::UTILS::MatBlockType::scatra_displ);
-
-    auto& systemmatrix_block_scatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
 
     systemmatrix_block_scatra_struct.Add(*scatra_struct_interface_matrix, false, 1.0, 1.0);
   }
@@ -327,48 +295,20 @@ void SSI::AssembleStrategySparse::AssembleScatraStructure(
   auto scatrastructuredomain_sparse =
       LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructuredomain);
 
-  // add entire block or assemble slave side to master side
+  systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
+
   if (ssi_mono_->SSIInterfaceMeshtying())
   {
-    AssembleXXXStructureMeshtying(*systemmatrix_sparse, *scatrastructuredomain_sparse);
-
     auto scatrastructureinterface_sparse =
         LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
-
-    AssembleXXXStructureMeshtying(*systemmatrix_sparse, *scatrastructureinterface_sparse);
+    systemmatrix_sparse->Add(*scatrastructureinterface_sparse, false, 1.0, 1.0);
   }
-  else
-    systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
 
   if (ssi_mono_->SSIInterfaceContact())
   {
     systemmatrix_sparse->Add(*(ssi_mono_->CoNitscheStrategySsi()->GetMatrixBlockPtr(
                                  DRT::UTILS::MatBlockType::scatra_displ)),
         false, 1.0, 1.0);
-  }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void SSI::AssembleStrategyBase::AssembleXXXStructureMeshtying(
-    LINALG::SparseMatrix& systemmatrix_xxx_structure,
-    const LINALG::SparseMatrix& xxx_structurematrix)
-{
-  // assemble derivs. of x w.r.t. structural master & interior dofs
-  LINALG::MatrixLogicalSplitAndTransform()(xxx_structurematrix, xxx_structurematrix.RangeMap(),
-      *MapStructureCondensed(), 1.0, nullptr, nullptr, systemmatrix_xxx_structure, true, true);
-
-  // assemble derivs. of x w.r.t. structural surface slave dofs
-  LINALG::MatrixLogicalSplitAndTransform()(xxx_structurematrix, xxx_structurematrix.RangeMap(),
-      *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), systemmatrix_xxx_structure,
-      true, true);
-
-  if (Meshtying3DomainIntersection())
-  {
-    // assemble derivs. of x w.r.t. structural line slave dofs
-    LINALG::MatrixLogicalSplitAndTransform()(xxx_structurematrix, xxx_structurematrix.RangeMap(),
-        *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
-        &StructureSlaveConverter3DomainIntersection(), systemmatrix_xxx_structure, true, true);
   }
 }
 

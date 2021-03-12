@@ -521,8 +521,7 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMatrices::GetScaTraInterfaceBlockMap(
-    const SSI::SSIMono& ssi_mono_algorithm,
-    Teuchos::RCP<const Epetra_Map> interface_map_scatra) const
+    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
 {
   Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_interface(Teuchos::null);
 
@@ -536,7 +535,7 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMatrices::GetScaTra
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      if (is_ssi_interface_meshtying_)
+      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
       {
         const int maps_systemmatrix_scatra = ssi_mono_algorithm.MapsScatra()->NumMaps();
 
