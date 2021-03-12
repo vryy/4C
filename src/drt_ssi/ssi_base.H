@@ -270,6 +270,12 @@ namespace SSI
     //! indicates, if meshtying includes triple points
     bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; };
 
+    //! return the scatra-scatra interface meshtying strategy
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
+    {
+      return meshtying_strategy_s2i_;
+    }
+
     //! solve additional scatra field on manifolds
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
 
@@ -393,6 +399,9 @@ namespace SSI
 
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;
+
+    //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;

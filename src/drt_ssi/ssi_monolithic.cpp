@@ -68,7 +68,6 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       maps_systemmatrix_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      meshtying_strategy_s2i_(Teuchos::null),
       scatrastructureOffDiagcoupling_(Teuchos::null),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
@@ -516,22 +515,11 @@ void SSI::SSIMono::Setup()
   if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
 
-  // set up scatra-scatra interface meshtying if set in input file
-  if (SSIInterfaceMeshtying())
+  if (MeshtyingStrategyS2I()->CouplingType() != INPAR::S2I::coupling_matching_nodes)
   {
-    // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    meshtying_strategy_s2i_ =
-        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
-
-    // safety checks
-    if (meshtying_strategy_s2i_ == Teuchos::null)
-      dserror("Invalid scatra-scatra interface coupling strategy!");
-    if (meshtying_strategy_s2i_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
-    {
-      dserror(
-          "Monolithic scalar-structure interaction only implemented for scatra-scatra "
-          "interface coupling with matching interface nodes!");
-    }
+    dserror(
+        "Monolithic scalar-structure interaction only implemented for scatra-scatra "
+        "interface coupling with matching interface nodes!");
   }
 
   if (SSIInterfaceContact() and !IsRestart()) SetupContactStrategy();
@@ -554,8 +542,8 @@ void SSI::SSIMono::SetupSystem()
       dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
 
     interface_map_scatra = LINALG::MultiMapExtractor::MergeMaps(
-        {meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap(),
-            meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap()});
+        {MeshtyingStrategyS2I()->CouplingAdapter()->MasterDofMap(),
+            MeshtyingStrategyS2I()->CouplingAdapter()->SlaveDofMap()});
   }
 
   // initialize global map extractor
@@ -709,7 +697,7 @@ void SSI::SSIMono::SetupSystem()
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
         MapStructureOnScaTraManifold()->Map(0), InterfaceCouplingAdapterStructure(),
         InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
-        meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
+        MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
         StructureField(), Meshtying3DomainIntersection()));
   }
   else
@@ -718,7 +706,7 @@ void SSI::SSIMono::SetupSystem()
         MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
-        interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField(),
+        interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), StructureField(),
         Meshtying3DomainIntersection()));
   }
   // instantiate appropriate equilibration class

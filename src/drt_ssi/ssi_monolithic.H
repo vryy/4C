@@ -115,12 +115,6 @@ namespace SSI
     // Return matrix type of global system matrix
     LINALG::MatrixType MatrixType() const { return matrixtype_; };
 
-    //! return the scatra-scatra interface meshtying strategy
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
-    {
-      return meshtying_strategy_s2i_;
-    }
-
     void ReadRestart(int restart) override;
 
     void ReadRestartfromTime(double restarttime) override;
@@ -229,9 +223,6 @@ namespace SSI
 
     //! type of global system matrix in global system of equations
     const LINALG::MatrixType matrixtype_;
-
-    //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! all OD evaluation is in here
     Teuchos::RCP<SSI::ScatraStructureOffDiagCoupling> scatrastructureOffDiagcoupling_;

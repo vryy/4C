@@ -58,6 +58,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
           "MESHTYING_3_DOMAIN_INTERSECTION")),
+      meshtying_strategy_s2i_(Teuchos::null),
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
       slave_side_converter_(Teuchos::null),
@@ -250,6 +251,14 @@ void SSI::SSIBase::Setup()
           new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps_line));
       maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
     }
+
+    // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    meshtying_strategy_s2i_ =
+        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
+
+    // safety checks
+    if (meshtying_strategy_s2i_ == Teuchos::null)
+      dserror("Invalid scatra-scatra interface coupling strategy!");
   }
 
   // create map of dofs on structure/scatra discretization that have the same nodes as manifold
