@@ -28,7 +28,11 @@
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const SSI::SSIMono& ssi_mono)
-    : mapstructurecondensed_(
+    : temp_scatra_struct_domain_mat_(Teuchos::null),
+      temp_scatra_struct_interface_mat_(Teuchos::null),
+      temp_scatramanifold_struct_mat_(Teuchos::null),
+      temp_struct_scatra_mat_(Teuchos::null),
+      mapstructurecondensed_(
           ssi_mono.SSIInterfaceMeshtying() ? ssi_mono.MapStructureCondensed() : Teuchos::null),
       mapstructureslave_(
           ssi_mono.SSIInterfaceMeshtying() ? ssi_mono.MapsCoupStruct()->Map(1) : Teuchos::null),
@@ -40,11 +44,7 @@ SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const SSI::SSIMono& ssi_mono)
           ssi_mono.SSIInterfaceMeshtying() and ssi_mono.Meshtying3DomainIntersection()),
       slave_side_converter_(
           ssi_mono.SSIInterfaceMeshtying() ? ssi_mono.SlaveSideConverter() : Teuchos::null),
-      ssi_mono_(ssi_mono),
-      temp_scatra_struct_domain_mat_(Teuchos::null),
-      temp_scatra_struct_interface_mat_(Teuchos::null),
-      temp_scatramanifold_struct_mat_(Teuchos::null),
-      temp_struct_scatra_mat_(Teuchos::null)
+      ssi_mono_(ssi_mono)
 {
 }
 
