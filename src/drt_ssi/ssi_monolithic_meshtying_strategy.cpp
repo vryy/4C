@@ -272,21 +272,6 @@ Epetra_Vector SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureRHS(
     rhs_structure_master->Update(1.0, *rhs_structure_3_domain_intersection_master, 1.0);
   }
 
-  // locsys manager of structure
-  const auto& locsysmanager_structure = SSIMono().StructureField()->LocsysManager();
-
-  // apply pseudo Dirichlet conditions to master-side part of structure right-hand side vector
-  const auto zeros_structure_master = Teuchos::rcp(new Epetra_Vector(rhs_structure_master->Map()));
-
-  if (locsysmanager_structure != Teuchos::null)
-    locsysmanager_structure->RotateGlobalToLocal(rhs_structure_master);
-
-  LINALG::ApplyDirichlettoSystem(rhs_structure_master, zeros_structure_master,
-      *SSIMono().StructureField()->GetDBCMapExtractor()->CondMap());
-
-  if (locsysmanager_structure != Teuchos::null)
-    locsysmanager_structure->RotateLocalToGlobal(rhs_structure_master);
-
   // assemble master-side part of structure right-hand side vector
   rhs_structure.Update(1.0, *rhs_structure_master, 1.0);
 
