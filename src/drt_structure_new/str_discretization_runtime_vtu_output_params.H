@@ -51,6 +51,13 @@ namespace DRT
         return output_displacement_state_;
       };
 
+      /// whether to write velocity
+      bool OutputVelocityState() const
+      {
+        CheckInitSetup();
+        return output_velocity_state_;
+      };
+
       /// whether to write the owner of elements
       bool OutputElementOwner() const
       {
@@ -111,6 +118,9 @@ namespace DRT
 
       /// whether to write displacement output
       bool output_displacement_state_;
+
+      /// whether to write velocity output
+      bool output_velocity_state_;
 
       /// whether to write the owner of elements
       bool output_element_owner_;

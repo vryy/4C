@@ -629,11 +629,15 @@ void STR::MODELEVALUATOR::Structure::WriteTimeStepOutputRuntimeVtkStructure() co
   Teuchos::RCP<Epetra_Vector> disn_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   LINALG::Export(*GState().GetDisN(), *disn_col);
+  Teuchos::RCP<Epetra_Vector> veln_col =
+      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+  LINALG::Export(*GState().GetVelN(), *veln_col);
 
   if (not GInOutput().GetRuntimeVtkOutputParams()->OutputEveryIteration())
-    WriteOutputRuntimeVtkStructure(disn_col, GState().GetStepN(), GState().GetTimeN());
+    WriteOutputRuntimeVtkStructure(disn_col, veln_col, GState().GetStepN(), GState().GetTimeN());
   else
-    WriteOutputRuntimeVtkStructure(disn_col, 10000 * GState().GetStepN(), GState().GetTimeN());
+    WriteOutputRuntimeVtkStructure(
+        disn_col, veln_col, 10000 * GState().GetStepN(), GState().GetTimeN());
 }
 
 /*----------------------------------------------------------------------------*
@@ -647,6 +651,9 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() c
   Teuchos::RCP<Epetra_Vector> disnp_col =
       Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
   LINALG::Export(*GState().GetDisNp(), *disnp_col);
+  Teuchos::RCP<Epetra_Vector> velnp_col =
+      Teuchos::rcp(new Epetra_Vector(*discret.DofColMap(), true));
+  LINALG::Export(*GState().GetVelNp(), *velnp_col);
 
   const int augmented_timestep_number_incl_iteration_count =
       10000 * GState().GetStepN() + 1 * EvalData().GetNlnIter();
@@ -654,14 +661,15 @@ void STR::MODELEVALUATOR::Structure::WriteIterationOutputRuntimeVtkStructure() c
   const double augmented_time_incl_iteration_count =
       GState().GetTimeN() + 1e-8 * EvalData().GetNlnIter();
 
-  WriteOutputRuntimeVtkStructure(disnp_col, augmented_timestep_number_incl_iteration_count,
-      augmented_time_incl_iteration_count);
+  WriteOutputRuntimeVtkStructure(disnp_col, velnp_col,
+      augmented_timestep_number_incl_iteration_count, augmented_time_incl_iteration_count);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
-    const Teuchos::RCP<Epetra_Vector>& displacement_state_vector, int timestep_number,
+    const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
+    const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
     double time) const
 {
   CheckInitSetup();
@@ -679,6 +687,10 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   if (structure_vtu_output_params.OutputDisplacementState())
     vtu_writer_ptr_->AppendDofBasedResultDataVector(
         displacement_state_vector, 3, 0, "displacement");
+
+  // append velocity if desired
+  if (structure_vtu_output_params.OutputVelocityState())
+    vtu_writer_ptr_->AppendDofBasedResultDataVector(velocity_state_vector, 3, 0, "velocity");
 
   // append element owner if desired
   if (structure_vtu_output_params.OutputElementOwner())
