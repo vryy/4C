@@ -11,7 +11,7 @@
 #include "mixture_rule_growthremodel.H"
 #include <Epetra_ConfigDefs.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include <math.h>
+#include <cmath>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
