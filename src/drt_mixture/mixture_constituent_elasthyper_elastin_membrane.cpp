@@ -107,15 +107,15 @@ MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane::
 
 // Create an instance of MIXTURE::MixtureConstituent_ElastHyper from the parameters
 Teuchos::RCP<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane::CreateConstituent()
+MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyperElastinMembrane(this));
+  return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyperElastinMembrane(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::MixtureConstituent_ElastHyperElastinMembrane(
-    MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane* params)
-    : MixtureConstituent_ElastHyperBase(params),
+    MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane* params, int id)
+    : MixtureConstituent_ElastHyperBase(params, id),
       params_(params),
       anisotropyExtension_(Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
           new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)))

@@ -92,12 +92,15 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params
       anisotropy_()
 {
   // create instances of constituents
+  int id = 0;
   for (auto const& constituent : params_->constituents_)
   {
-    Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent();
+    Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent(id);
     constituents_->emplace_back(Teuchos::rcp_static_cast<MIXTURE::MixtureConstituent>(c));
     c->SetInitialReferenceDensity(params_->density_);
     c->RegisterAnisotropyExtensions(anisotropy_);
+
+    ++id;
   }
 
   // create instance of mixture rule
@@ -205,11 +208,14 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
     if (params_ != nullptr)
     {
       // create instances of constituents
+      int id = 0;
       for (auto const& constituent : params_->constituents_)
       {
-        Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent();
+        Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent(id);
         c->SetInitialReferenceDensity(params_->density_);
         constituents_->emplace_back(c);
+
+        ++id;
       }
 
       // create instance of mixture rule

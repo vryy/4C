@@ -25,15 +25,15 @@ MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyper
 
 // Create an instance of MIXTURE::MixtureConstituent_ElastHyper from the parameters
 Teuchos::RCP<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::CreateConstituent()
+MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyperDamage(this));
+  return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyperDamage(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyperDamage(
-    MIXTURE::PAR::MixtureConstituent_ElastHyperDamage* params)
-    : MixtureConstituent_ElastHyperBase(params), params_(params)
+    MIXTURE::PAR::MixtureConstituent_ElastHyperDamage* params, int id)
+    : MixtureConstituent_ElastHyperBase(params, id), params_(params)
 {
   // nothing to do here
 }

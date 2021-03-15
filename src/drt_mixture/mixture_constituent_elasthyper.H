@@ -32,7 +32,7 @@ namespace MIXTURE
       ~MixtureConstituent_ElastHyper() override = default;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent() override;
+      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -50,7 +50,8 @@ namespace MIXTURE
   {
    public:
     /// Constructor for the materiak given the material parameters
-    explicit MixtureConstituent_ElastHyper(MIXTURE::PAR::MixtureConstituent_ElastHyper* params);
+    explicit MixtureConstituent_ElastHyper(
+        MIXTURE::PAR::MixtureConstituent_ElastHyper* params, int id);
 
     /// Returns the material type enum
     INPAR::MAT::MaterialType MaterialType() const override;

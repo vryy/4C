@@ -23,14 +23,14 @@
       <PDataArray type="Float64" Name="current_reference_density_gp_7" format="ascii"/>
       <PDataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="ascii"/>
       <PDataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_0" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_1" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_2" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_3" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_4" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_5" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_6" NumberOfComponents="9" format="ascii"/>
-      <PDataArray type="Float64" Name="mixture_constituent_elasthyper_prestretch_gp_7" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_0" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_1" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_2" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_3" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_4" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_5" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_6" NumberOfComponents="9" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch_gp_7" NumberOfComponents="9" format="ascii"/>
     </PCellData>
     <Piece Source="structure-000005-0.vtu"/>
   </PUnstructuredGrid>

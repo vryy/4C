@@ -46,8 +46,8 @@ MIXTURE::PAR::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBa
 
 // Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
-    MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params)
-    : MixtureConstituent(params),
+    MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params, int id)
+    : MixtureConstituent(params, id),
       summandProperties_(),
       params_(params),
       potsum_(0),
@@ -232,7 +232,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
 {
   if (!Teuchos::is_null(params_->PrestressStrategy()))
   {
-    names_and_size["mixture_constituent_elasthyper_prestretch"] = 9;
+    names_and_size["mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch"] = 9;
   }
 }
 
@@ -240,7 +240,7 @@ bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
     const std::string& name, Epetra_SerialDenseMatrix& data) const
 {
   if (!Teuchos::is_null(params_->PrestressStrategy()) &&
-      name == "mixture_constituent_elasthyper_prestretch")
+      name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")
   {
     for (int gp = 0; gp < NumGP(); ++gp)
     {

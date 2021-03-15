@@ -19,14 +19,14 @@ MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl::MixtureConstituent_RemodelFib
 }
 
 Teuchos::RCP<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl::CreateConstituent()
+MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_RemodelFiberExpl(this));
+  return Teuchos::rcp(new MIXTURE::MixtureConstituent_RemodelFiberExpl(this, id));
 }
 
 MIXTURE::MixtureConstituent_RemodelFiberExpl::MixtureConstituent_RemodelFiberExpl(
-    MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params)
-    : MixtureConstituent_RemodelFiber(params), params_(params)
+    MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl* params, int id)
+    : MixtureConstituent_RemodelFiber(params, id), params_(params)
 {
   // do nothing here, everything will be done in the base class
 }

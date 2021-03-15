@@ -73,7 +73,7 @@ namespace MIXTURE
    public:
     /// Constructor for the materiak given the material parameters
     explicit MixtureConstituent_ElastHyperBase(
-        MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params);
+        MIXTURE::PAR::MixtureConstituent_ElastHyperBase* params, int id);
 
     /*!
      * \brief Pack data into a char vector from this class

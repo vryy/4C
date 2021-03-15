@@ -9,9 +9,22 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_rule_growthremodel.H"
-#include "../drt_mat/material_service.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/elasthyper_service.H"
+#include <Epetra_ConfigDefs.h>
+#include <Epetra_SerialDenseMatrix.h>
+#include <cmath>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <algorithm>
+#include <utility>
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_mat/matpar_material.H"
+#include "mixture_constituent.H"
+
+// forward declarations
+namespace DRT
+{
+  class PackBuffer;
+}
 
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

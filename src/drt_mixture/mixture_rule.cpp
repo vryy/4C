@@ -15,6 +15,25 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 #include "mixture_rule_growthremodel.H"
+#include <algorithm>
+#include "../drt_inpar/inpar_material.H"
+#include "../drt_lib/drt_parobject.H"
+#include "../drt_mat/matpar_parameter.H"
+#include "mixture_constituent.H"
+
+// forward declarations
+namespace DRT
+{
+  class PackBuffer;
+  namespace INPUT
+  {
+    class LineDefinition;
+  }
+}  // namespace DRT
+namespace Teuchos
+{
+  class ParameterList;
+}
 
 // Constructor of the material parameters
 MIXTURE::PAR::MixtureRule::MixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)

@@ -45,7 +45,7 @@ namespace MIXTURE
           const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent() override;
+      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -69,7 +69,7 @@ namespace MIXTURE
      * \param params Material parameters
      */
     explicit MixtureConstituent_ElastHyperDamage(
-        MIXTURE::PAR::MixtureConstituent_ElastHyperDamage* params);
+        MIXTURE::PAR::MixtureConstituent_ElastHyperDamage* params, int id);
 
     /// Returns the material type enum
     INPAR::MAT::MaterialType MaterialType() const override;

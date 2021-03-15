@@ -102,12 +102,13 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
   return nullptr;
 }
 
-MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params)
+MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id)
     : params_(params),
       initialReferenceDensity_(0.0),
       numgp_(0),
       has_read_element_(false),
-      is_setup_(false)
+      is_setup_(false),
+      id_(id)
 {
 }
 

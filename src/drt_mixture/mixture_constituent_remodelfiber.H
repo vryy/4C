@@ -120,7 +120,8 @@ namespace MIXTURE
      *
      * \param params Input parameters
      */
-    explicit MixtureConstituent_RemodelFiber(MIXTURE::PAR::MixtureConstituent_RemodelFiber* params);
+    explicit MixtureConstituent_RemodelFiber(
+        MIXTURE::PAR::MixtureConstituent_RemodelFiber* params, int id);
 
     //! @copydoc MIXTURE::MixtureConstituent::PackConstituent(DRT::PackBuffer&)
     void PackConstituent(DRT::PackBuffer& data) const override;
