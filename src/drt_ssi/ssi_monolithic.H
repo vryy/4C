@@ -49,6 +49,7 @@ namespace SSI
 
   class AssembleStrategyBase;
   class DBCHandlerBase;
+  class MeshtyingStrategyBase;
   class ScatraStructureOffDiagCoupling;
 
   //! equilibration methods applied to system matrix
@@ -151,6 +152,9 @@ namespace SSI
     //! apply the Dirichlet boundary conditions to the ssi system, i.e. matrices and residuals
     void ApplyDBCToSystem();
 
+    //! perform mesh tying on matrices and residuals as obtained from sub problems
+    void ApplyMeshtyingToSubProblems();
+
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
@@ -249,6 +253,9 @@ namespace SSI
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
+
+    //! strategy how to apply mesh tying to system matrix and rhs
+    Teuchos::RCP<SSI::MeshtyingStrategyBase> strategy_meshtying_;
 
     //! timer for Newton-Raphson iteration
     Teuchos::RCP<Epetra_Time> timer_;

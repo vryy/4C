@@ -32,7 +32,7 @@ namespace SSI
   class SSIMono;
 
   /*!
-  We have three options how the global system matrix and the submatrices are arranged:
+  We have three options how the global system matrix and the sub matrices are arranged:
   1) System matrix: sparse
     ->Scatra matrix sparse
     ->Structure matrix sparse
@@ -47,10 +47,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit AssembleStrategyBase(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
-
-    //! write 1.0 on main diagonal of slave side dofs
-    virtual void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) = 0;
+    explicit AssembleStrategyBase(const SSI::SSIMono& ssi_mono);
 
     //! assemble RHS
     void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
@@ -83,65 +80,12 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) = 0;
 
    protected:
-    //! write 1.0 on main diagonal of slave side dofs
-    void ApplyMeshtyingSysMat(LINALG::SparseMatrix& systemmatrix_structure);
-
-    //! assemble xxx-structure block into system matrix for meshtying
-    void AssembleXXXStructureMeshtying(LINALG::SparseMatrix& systemmatrix_xxx_structure,
-        const LINALG::SparseMatrix& xxx_structurematrix);
-
-    //! assemble structure block  into system matrix for meshtying
-    void AssembleStructureMeshtying(LINALG::SparseMatrix& systemmatrix_structure,
-        Teuchos::RCP<LINALG::SparseMatrix> structurematrix);
-
-    //! assemble structure-xxx block into system matrix for meshtying
-    void AssembleStructureXXXMeshtying(LINALG::SparseMatrix& systemmatrix_structure_xxx,
-        const LINALG::SparseMatrix& structures_xxx_matrix);
-
     //! monolithic algorithm for scalar-structure interaction
-    const Teuchos::RCP<const SSI::SSIMono> ssi_mono_;
-
-    //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
-    //! side)
-    //@{
-    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const { return mapstructurecondensed_; }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const { return mapstructureslave_; }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const
-    {
-      return mapstructureslave3domainintersection_;
-    }
-    //@}
-
-    // Slave structure converter for structure coupling
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const
-    {
-      return slave_side_converter_->InterfaceCouplingAdapterStructureSlaveConverter();
-    }
-
-    //! Slave structure converter for structure coupling with 3 domain intersection
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter3DomainIntersection() const
-    {
-      return slave_side_converter_
-          ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection();
-    }
-
-    //! indicates, if meshtying includes three entities
-    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
+    const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
 
    private:
-    //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
-    //! side)
-    //@{
-    Teuchos::RCP<const Epetra_Map> mapstructurecondensed_;
-    Teuchos::RCP<const Epetra_Map> mapstructureslave_;
-    Teuchos::RCP<const Epetra_Map> mapstructureslave3domainintersection_;
-    //@}
-
-    //! slave side converter
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
-
-    //! indicates, if meshtying includes three entities
-    bool meshtying_3_domain_intersection_;
+    //! monolithic algorithm for scalar-structure interaction
+    const SSI::SSIMono& ssi_mono_;
   };
 
   //======================================================================================================
@@ -149,9 +93,7 @@ namespace SSI
   class AssembleStrategyBlock : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategyBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
-
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override = 0;
+    explicit AssembleStrategyBlock(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override = 0;
@@ -201,9 +143,7 @@ namespace SSI
   class AssembleStrategyBlockBlock : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockBlock(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
-
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
+    explicit AssembleStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
@@ -230,9 +170,7 @@ namespace SSI
   class AssembleStrategyBlockSparse : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockSparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
-
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
+    explicit AssembleStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
@@ -259,9 +197,7 @@ namespace SSI
   class AssembleStrategySparse : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategySparse(const Teuchos::RCP<const SSI::SSIMono> ssi_mono);
-
-    void ApplyMeshtyingSystemMatrix(Teuchos::RCP<LINALG::SparseOperator> systemmatrix) override;
+    explicit AssembleStrategySparse(const SSI::SSIMono& ssi_mono);
 
     void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
@@ -284,9 +220,8 @@ namespace SSI
   };
 
   //! build specific assemble strategy
-  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
-      Teuchos::RCP<const SSI::SSIMono> ssi_mono, LINALG::MatrixType matrixtype_ssi,
-      LINALG::MatrixType matrixtype_scatra);
+  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(const SSI::SSIMono& ssi_mono,
+      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
