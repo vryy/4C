@@ -354,7 +354,7 @@ void INPAR::SSI::SetValidConditions(
       "DESIGN SSI MANIFOLD SURF CONDITIONS", "SSISurfaceManifold", "scalar transport on manifold",
       DRT::Condition::SSISurfaceManifold, true, DRT::Condition::Surface));
 
-  ssisurfacemanifold->AddComponent(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  ssisurfacemanifold->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
   condlist.emplace_back(ssisurfacemanifold);
 
@@ -373,7 +373,7 @@ void INPAR::SSI::SetValidConditions(
   condlist.emplace_back(surfmanifoldinitfields);
 
   /*--------------------------------------------------------------------*/
-  // Dirichlet conditions
+  // Dirichlet conditions for scatra on manifold
   auto pointmanifolddirichlet = Teuchos::rcp(
       new ConditionDefinition("DESIGN POINT MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet",
           "Point Dirichlet", DRT::Condition::PointDirichlet, false, DRT::Condition::Point));

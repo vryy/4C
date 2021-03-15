@@ -64,10 +64,11 @@ int DRT::DofSetDefinedMappingWrapper::AssignDegreesOfFreedom(
   sourcedis_->GetCondition(couplingcond_, conds_source);
 
   // get the respective nodes which are in the condition
+  const bool use_coupling_id = condids_.size() != 1;
   std::map<int, Teuchos::RCP<std::vector<int>>> nodes;
-  DRT::UTILS::FindConditionedNodes(dis, conds, nodes);
+  DRT::UTILS::FindConditionedNodes(dis, conds, nodes, use_coupling_id);
   std::map<int, Teuchos::RCP<std::vector<int>>> nodes_source;
-  DRT::UTILS::FindConditionedNodes(*sourcedis_, conds_source, nodes_source);
+  DRT::UTILS::FindConditionedNodes(*sourcedis_, conds_source, nodes_source, use_coupling_id);
 
   // map that will be filled with coupled nodes
   // mapping: target node gid to (source node gid, distance)

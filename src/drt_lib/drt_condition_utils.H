@@ -99,7 +99,7 @@ namespace DRT
     /// put them into a vector indexed by Id of the condition
     void FindConditionedNodes(const DRT::Discretization& dis,
         const std::vector<DRT::Condition*>& conds,
-        std::map<int, Teuchos::RCP<std::vector<int>>>& nodes);
+        std::map<int, Teuchos::RCP<std::vector<int>>>& nodes, bool use_coupling_id = true);
 
     /// find all local nodes from discretization marked with condition
     void FindConditionedNodes(const DRT::Discretization& dis,
@@ -237,10 +237,11 @@ namespace DRT
      *
      * @param[in] condition1  first condition to be tested
      * @param[in] condition2  second condition to be tested
+     * @param[in] mustmatch   both conditions must match
      * @return flag indicating if both conditions are defined on the same set of nodes
      */
-    bool HaveSameNodes(
-        const DRT::Condition* const condition1, const DRT::Condition* const condition2);
+    bool HaveSameNodes(const DRT::Condition* const condition1,
+        const DRT::Condition* const condition2, bool mustmatch);
 
   }  // namespace UTILS
 }  // namespace DRT

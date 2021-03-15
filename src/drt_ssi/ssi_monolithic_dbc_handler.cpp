@@ -51,27 +51,35 @@ SSI::DBCHandlerBlock::DBCHandlerBlock(const Teuchos::RCP<const SSI::SSIMono> ssi
 void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
 {
   // apply Dirichlet boundary conditions to the structure part of the right hand side
+  const auto& locsysmanager_structure = SSIMono()->StructureField()->LocsysManager();
   auto rhs_struct = ssi_mono_->MapsSubProblems()->ExtractVector(
       rhs, SSIMono()->GetProblemPosition(SSI::Subproblem::structure));
-  const auto zeros_struct = Teuchos::rcp(new Epetra_Vector(rhs_struct->Map()));
+  const auto zeros_struct = Teuchos::rcp(
+      new Epetra_Vector(*ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap()));
+
+  if (locsysmanager_structure != Teuchos::null)
+    locsysmanager_structure->RotateGlobalToLocal(rhs_struct);
   LINALG::ApplyDirichlettoSystem(
       rhs_struct, zeros_struct, *ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap());
+  if (locsysmanager_structure != Teuchos::null)
+    locsysmanager_structure->RotateLocalToGlobal(rhs_struct);
+
+  ssi_mono_->MapsSubProblems()->InsertVector(
+      rhs_struct, SSIMono()->GetProblemPosition(SSI::Subproblem::structure), rhs);
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
-  auto rhs_scatra = ssi_mono_->MapsSubProblems()->ExtractVector(
-      rhs, SSIMono()->GetProblemPosition(SSI::Subproblem::scalar_transport));
-  const auto zeros_scatra = Teuchos::rcp(new Epetra_Vector(rhs_scatra->Map()));
+  const auto zeros_scatra =
+      Teuchos::rcp(new Epetra_Vector(*ssi_mono_->ScaTraField()->DirichMaps()->CondMap()));
   LINALG::ApplyDirichlettoSystem(
-      rhs_scatra, zeros_scatra, *ssi_mono_->ScaTraField()->DirichMaps()->CondMap());
+      rhs, zeros_scatra, *ssi_mono_->ScaTraField()->DirichMaps()->CondMap());
 
   // apply Dirichlet boundary conditions to the scatra manifold part of the right hand side
   if (ssi_mono_->IsScaTraManifold())
   {
-    auto rhs_scatramanifold = ssi_mono_->MapsSubProblems()->ExtractVector(
-        rhs, SSIMono()->GetProblemPosition(SSI::Subproblem::manifold));
-    const auto zeros_scatramanifold = Teuchos::rcp(new Epetra_Vector(rhs_scatramanifold->Map()));
-    LINALG::ApplyDirichlettoSystem(rhs_scatramanifold, zeros_scatramanifold,
-        *ssi_mono_->ScaTraManifold()->DirichMaps()->CondMap());
+    const auto zeros_scatramanifold =
+        Teuchos::rcp(new Epetra_Vector(*ssi_mono_->ScaTraManifold()->DirichMaps()->CondMap()));
+    LINALG::ApplyDirichlettoSystem(
+        rhs, zeros_scatramanifold, *ssi_mono_->ScaTraManifold()->DirichMaps()->CondMap());
   }
 }
 
