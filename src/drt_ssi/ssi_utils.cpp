@@ -8,10 +8,12 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "ssi_utils.H"
+
 #include "ssi_monolithic.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_inpar/inpar_s2i.H"
 
@@ -247,8 +249,8 @@ SSI::UTILS::BuildSlaveMasterPairing(const std::vector<DRT::Condition*>& conditio
     {
       if (slave_condition.first == master_condition.first)
       {
-        condition_pairs.emplace_back(std::pair<DRT::Condition* const, DRT::Condition* const>(
-            slave_condition.second, master_condition.second));
+        condition_pairs.emplace_back(
+            std::make_pair(slave_condition.second, master_condition.second));
         break;
       }
     }

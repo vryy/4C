@@ -9,8 +9,9 @@ within electrodes
 */
 /*--------------------------------------------------------------------------*/
 #include "scatra_ele_calc_elch_electrode.H"
-
+#include "scatra_ele_parameter_elch_manifold.H"
 #include "scatra_ele_parameter_std.H"
+#include "scatra_ele_parameter_timint.H"
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
@@ -307,6 +308,163 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::SetInternalVar
   VarManager()->SetInternalVariablesElchElectrode(
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }  // DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::SetInternalVariablesForMatAndRHS()
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaTraManifoldFlux(
+    const DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual)
+{
+  // get states from this field and respective coupled field
+  auto manifoldfield = discretization.GetState("phinp");
+  if (manifoldfield == Teuchos::null) dserror("Cannot get state vector phinp!");
+  auto coupledfield = elchmanifoldparams_->UseOtherSide()
+                          ? discretization.GetState(2, "imasterscatra")
+                          : discretization.GetState(2, "scalarfield");
+  if (coupledfield == Teuchos::null) dserror("Cannot get state vector scalarfield!");
+
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+
+  // extract local nodal values from global state vectors
+  std::vector<LINALG::Matrix<my::nen_, 1>> ecoupledfield(
+      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  DRT::UTILS::ExtractMyValues(*manifoldfield, my::ephinp_, la[0].lm_);
+  DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[2].lm_);
+
+  const int kinetic_model = elchmanifoldparams_->KineticModel();
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
+
+    // evaluate overall integration factors
+    const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
+    const double timefacrhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
+
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+
+    const double manifoldpotint = my::funct_.Dot(my::ephinp_[1]);
+    const double coupledpotint = my::funct_.Dot(ecoupledfield[1]);
+
+    switch (kinetic_model)
+    {
+      case INPAR::SSI::kinetics_constantinterfaceresistance:
+      {
+        const double resistance = elchmanifoldparams_->Resistance();
+        const int num_electrons = elchmanifoldparams_->NumElectrons();
+
+        const double inv_fluxresistance = 1.0 / resistance;
+
+        const double j = (manifoldpotint - coupledpotint) * inv_fluxresistance;
+
+        switch (differentiationtype)
+        {
+          case static_cast<int>(SCATRA::DifferentiationType::elch):
+          {
+            // residual
+            const double jtimefacrhsfac = timefacrhsfac * j;
+
+            // linearizations
+            const double dj_dpot_slave_timefacfac = timefacfac * inv_fluxresistance;
+            const double dj_dpot_master_timefacfac = -dj_dpot_slave_timefacfac;
+
+            for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+            {
+              const int row_conc = vi * 2;
+              const int row_pot = vi * 2 + 1;
+
+              for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+              {
+                const int col_conc = ui * 2;
+                const int col_pot = ui * 2 + 1;
+
+                eslavematrix(row_conc, col_conc) +=
+                    my::funct_(vi) * dj_dpot_slave_timefacfac * my::funct_(ui);
+                eslavematrix(row_pot, col_pot) +=
+                    my::funct_(vi) * num_electrons * dj_dpot_slave_timefacfac * my::funct_(ui);
+              }
+
+              const int nen_master = static_cast<int>(my::nen_);
+              for (int ui = 0; ui < nen_master; ++ui)
+              {
+                const int col_conc = ui * 2;
+                const int col_pot = ui * 2 + 1;
+
+                emastermatrix(row_conc, col_conc) +=
+                    my::funct_(vi) * dj_dpot_master_timefacfac * my::funct_(ui);
+                emastermatrix(row_pot, col_pot) +=
+                    my::funct_(vi) * num_electrons * dj_dpot_master_timefacfac * my::funct_(ui);
+              }
+
+              eslaveresidual[row_conc] -= my::funct_(vi) * jtimefacrhsfac;
+              eslaveresidual[row_pot] -= my::funct_(vi) * num_electrons * jtimefacrhsfac;
+            }
+            break;
+          }
+          case static_cast<int>(SCATRA::DifferentiationType::disp):
+          {
+            static LINALG::Matrix<1, my::nsd_ * my::nen_> dJ_dmesh(false);
+            const double J = my::xjm_.Determinant();
+            for (unsigned node = 0; node < my::nen_; node++)
+              for (unsigned dim = 0; dim < my::nsd_; dim++)
+                dJ_dmesh(dim + node * my::nsd_) = J * my::derxy_(dim, node);
+
+            const double timefacwgt = my::scatraparatimint_->TimeFac() * intpoints.IP().qwgt[gpid];
+            const double dj_dd_slave_timefacwgt = timefacwgt * j;
+
+            // loop over matrix rows
+            for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+            {
+              const int row_conc = vi * my::numdofpernode_;
+              const int row_pot = row_conc + 1;
+              const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
+
+              // loop over matrix columns
+              for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+              {
+                // loop over spatial dimensions
+                for (int dim = 0; dim < static_cast<int>(my::nsd_); ++dim)
+                {
+                  const int col_disp = ui * static_cast<int>(my::nsd_) + dim;
+
+                  // compute linearizations w.r.t. slave-side structural displacements
+                  eslavematrix(row_conc, col_disp) += vi_dj_dd_slave * dJ_dmesh(col_disp);
+                  eslavematrix(row_pot, col_disp) +=
+                      num_electrons * vi_dj_dd_slave * dJ_dmesh(col_disp);
+                }
+              }
+            }
+            break;
+          }
+          default:
+          {
+            dserror("Unknown differentiation type");
+            break;
+          }
+        }
+        break;
+      }
+      case INPAR::SSI::kinetics_noflux:
+      {
+        // do nothing
+        break;
+      }
+      default:
+      {
+        dserror("kinetic model not implemented.");
+        break;
+      }
+    }
+  }
+}
 
 // template classes
 // 1D elements

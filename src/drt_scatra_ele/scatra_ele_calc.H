@@ -330,6 +330,14 @@ namespace DRT
           Epetra_SerialDenseVector& erhs                       //!< element rhs to calculate
       );
 
+      //! calculate flux scatra <-> scatra manifold incl. linearizations
+      virtual void CalcScaTraScaTraManifoldFlux(const DRT::Element* ele,
+          Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+          Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual)
+      {
+        dserror("not implemented");
+      }
 
       /*========================================================================*/
       //! @name material and related functions

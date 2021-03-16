@@ -14,11 +14,6 @@
 #include "ssi_base.H"
 
 // forward declarations
-namespace ADAPTER
-{
-  class Coupling;
-}
-
 namespace CONTACT
 {
   class CoNitscheStrategySsi;
@@ -26,18 +21,11 @@ namespace CONTACT
 
 namespace LINALG
 {
-  class MultiMapExtractor;
   class Solver;
-  class SparseMatrix;
   class Equilibration;
   enum class EquilibrationMethod;
   enum class MatrixType;
 }  // namespace LINALG
-
-namespace SCATRA
-{
-  class MeshtyingStrategyS2I;
-}
 
 namespace SSI
 {
@@ -51,6 +39,7 @@ namespace SSI
   class DBCHandlerBase;
   class MeshtyingStrategyBase;
   class ScatraStructureOffDiagCoupling;
+  class ScaTraManifoldScaTraFluxEvaluator;
 
   //! equilibration methods applied to system matrix
   struct SSIMonoEquilibrationMethod
@@ -152,13 +141,25 @@ namespace SSI
     //! assemble global system of equations
     void AssembleMatAndRHS();
 
+    //! assemble linearization of scatra residuals to system matrix
+    void AssembleMatScaTra();
+
+    //! assemble linearization of scatra on manifold residuals to system matrix
+    void AssembleMatScaTraManifold();
+
+    //! assemble linearization of structural residuals to system matrix
+    void AssembleMatStructure();
+
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
     //! evaluate all off-diagonal matrix contributions
     void EvaluateOffDiagContributions();
 
-    //! get matrix and right-hand-side for all sub problems including coupling
+    // Evaluate ScaTra on manifold incl. coupling with scatra
+    void EvaluateScaTraManifold();
+
+    //! get matrix and right-hand-side for all subproblems incl. coupling
     void EvaluateSubproblems();
 
     // build and return vector of equilibration methods for each block of system matrix
@@ -208,6 +209,9 @@ namespace SSI
 
     //! equilibration method applied to system matrix
     const struct SSIMonoEquilibrationMethod equilibration_method_;
+
+    //! Evaluation of coupling flux between scatra and manifold on scatra
+    Teuchos::RCP<SSI::ScaTraManifoldScaTraFluxEvaluator> manifoldscatraflux_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;

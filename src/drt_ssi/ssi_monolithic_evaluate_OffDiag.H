@@ -22,8 +22,8 @@ namespace ADAPTER
 
 namespace LINALG
 {
-  class SparseOperator;
   class MultiMapExtractor;
+  class SparseOperator;
 }  // namespace LINALG
 
 namespace SCATRA

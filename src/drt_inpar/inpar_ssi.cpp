@@ -373,6 +373,55 @@ void INPAR::SSI::SetValidConditions(
   condlist.emplace_back(surfmanifoldinitfields);
 
   /*--------------------------------------------------------------------*/
+  // kinetics condition for flux scatra <-> scatra on manifold
+  auto surfmanifoldkinetics = Teuchos::rcp(new ConditionDefinition(
+      "DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS", "SSISurfaceManifoldKinetics",
+      "kintetics model for coupling scatra <-> scatra on manifold",
+      DRT::Condition::SSISurfaceManifoldKinetics, true, DRT::Condition::Surface));
+
+  {
+    surfmanifoldkinetics->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("ManifoldConditionID")));
+    surfmanifoldkinetics->AddComponent(
+        Teuchos::rcp(new IntConditionComponent("ManifoldConditionID")));
+
+    std::vector<Teuchos::RCP<CondCompBundle>> kineticmodels;
+    {
+      {
+        std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
+        constantinterfaceresistance.emplace_back(
+            Teuchos::rcp(new SeparatorConditionComponent("resistance")));
+        constantinterfaceresistance.emplace_back(
+            Teuchos::rcp(new RealConditionComponent("resistance")));
+        constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("e-"));
+        constantinterfaceresistance.emplace_back(new IntConditionComponent("e-"));
+
+        kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("ConstantInterfaceResistance",
+            constantinterfaceresistance, INPAR::SSI::kinetics_constantinterfaceresistance)));
+      }
+
+      {
+        std::vector<Teuchos::RCP<ConditionComponent>> noflux;
+
+        kineticmodels.emplace_back(
+            Teuchos::rcp(new CondCompBundle("NoFlux", noflux, INPAR::SSI::kinetics_noflux)));
+      }
+    }
+
+    surfmanifoldkinetics->AddComponent(
+        Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
+    surfmanifoldkinetics->AddComponent(Teuchos::rcp(
+        new CondCompBundleSelector("kintetics model for coupling scatra <-> scatra on manifold",
+            Teuchos::rcp(new StringConditionComponent("KineticModel", "NoFlux",
+                Teuchos::tuple<std::string>("ConstantInterfaceResistance", "NoFlux"),
+                Teuchos::tuple<int>(INPAR::SSI::kinetics_constantinterfaceresistance,
+                    INPAR::SSI::kinetics_noflux))),
+            kineticmodels)));
+  }
+
+  condlist.emplace_back(surfmanifoldkinetics);
+
+  /*--------------------------------------------------------------------*/
   // Dirichlet conditions for scatra on manifold
   auto pointmanifolddirichlet = Teuchos::rcp(
       new ConditionDefinition("DESIGN POINT MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet",

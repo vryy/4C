@@ -770,6 +770,13 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
+    case SCATRA::calc_scatra_manifold_flux:
+    {
+      CalcScaTraScaTraManifoldFlux(
+          ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra);
+      break;
+    }
+
     default:
     {
       dserror("Not acting on this action. Forgot implementation?");

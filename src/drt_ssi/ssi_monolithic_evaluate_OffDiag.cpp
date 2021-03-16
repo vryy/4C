@@ -12,8 +12,6 @@
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
 
-#include "../drt_inpar/inpar_ssi.H"
-
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -28,9 +26,6 @@
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_matrixtransform.H"
-#include "../drt_lib/drt_condition_utils.H"
-
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

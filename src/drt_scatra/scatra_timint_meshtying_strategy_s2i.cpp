@@ -451,9 +451,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
           break;
         }
-
-          {
-          }
         case LINALG::MatrixType::block_condition:
         case LINALG::MatrixType::block_condition_dof:
         {

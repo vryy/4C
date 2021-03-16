@@ -428,6 +428,10 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure interaction interface meshtying condition: ";
   else if (Type() == SSIMeshtying3DomainIntersection)
     os << "Scalar-Structure interaction interface meshtying condition including 3 domains: ";
+  else if (Type() == SSISurfaceManifold)
+    os << "ScaTra Manifold field in SSI: ";
+  else if (Type() == SSISurfaceManifoldKinetics)
+    os << "Kinetics model for coupling scatra <-> scatra on manifold: ";
   else if (Type() == SSTIInterfaceMeshtying)
     os << "Scalar-Structure-Thermo interaction interface meshtying condition: ";
   else if (Type() == SSTIMeshtying3DomainIntersection)

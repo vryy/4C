@@ -1407,6 +1407,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra_ele/scatra_ele_parameter_boundary.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch.cpp
   src/drt_scatra_ele/scatra_ele_parameter_elch_diffcond.cpp
+  src/drt_scatra_ele/scatra_ele_parameter_elch_manifold.cpp  
   src/drt_scatra_ele/scatra_ele_parameter_lsreinit.cpp
   src/drt_scatra_ele/scatra_ele_parameter_std.cpp
   src/drt_scatra_ele/scatra_ele_parameter_timint.cpp
@@ -2512,6 +2513,7 @@ src/drt_ssi/ssi_dyn.cpp
 src/drt_ssi/ssi_base.cpp
 src/drt_ssi/ssi_clonestrategy.cpp
 src/drt_ssi/ssi_coupling.cpp
+src/drt_ssi/ssi_manifold_flux_evaluator.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_convcheck_strategies.cpp

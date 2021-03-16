@@ -53,6 +53,7 @@ namespace SCATRA
     calc_node_based_reinit_velocity,    // level-set action: compute node-based velocity field for
                                         // reinitialization equation
     calc_scatra_box_filter,             // calc_scatra_box_filter,
+    calc_scatra_manifold_flux,          // flux scatra <-> scatra on manifold
     calc_scatra_mono_odblock_fluid,  // calculate off diagonal matrix block for coupling with fluid
     calc_scatra_mono_odblock_mesh,   // calculate off diagonal matrix block for coupling with mesh
                                      // (shape derivatives)
@@ -90,20 +91,22 @@ namespace SCATRA
     reinitialize_levelset,          // reinitialize_levelset,
     set_diffcond_scatra_parameter,  // set diffusion-conduction parameters for element evaluation
     set_elch_scatra_parameter,      // set elch parameters for element evaluation
-    set_general_scatra_parameter,   // set general parameters for element evaluation
-    set_initial_field,              // set initial field for hdg
-    set_lsreinit_scatra_parameter,  // set reinitialization parameters for element evaluation
-    set_material_internal_state,    // set material internal state (for restart for example),
-    set_mean_Cai,                   // special action for mfs
-    set_scatra_ele_boundary_parameter,  // set scatra boundary parameter for interface
-    set_time_parameter,                 // set time-integration parameters for element evaluation
-    set_turbulence_scatra_parameter,    // set turbulence parameters for element evaluation
-    time_update_material,               // time update for materials
-    update_interior_variables,          // update interior variables for hdg
-    transform_real_to_reference_point,  // gets a point in real coordinates and returns reference
-                                        // coordinates
-    evaluate_field_in_point             // evaluates field in given point (in reference coordinates)
-  };                                    // enum Action
+    set_elch_scatra_manifold_parameter,  // set parameters to evaluate kintetics model scatra <->
+                                         // scatra manifold
+    set_general_scatra_parameter,        // set general parameters for element evaluation
+    set_initial_field,                   // set initial field for hdg
+    set_lsreinit_scatra_parameter,       // set reinitialization parameters for element evaluation
+    set_material_internal_state,         // set material internal state (for restart for example),
+    set_mean_Cai,                        // special action for mfs
+    set_scatra_ele_boundary_parameter,   // set scatra boundary parameter for interface
+    set_time_parameter,                  // set time-integration parameters for element evaluation
+    set_turbulence_scatra_parameter,     // set turbulence parameters for element evaluation
+    time_update_material,                // time update for materials
+    update_interior_variables,           // update interior variables for hdg
+    transform_real_to_reference_point,   // gets a point in real coordinates and returns reference
+                                         // coordinates
+    evaluate_field_in_point  // evaluates field in given point (in reference coordinates)
+  };                         // enum Action
 
 
   /*--------------------------------------------------------------------------*/

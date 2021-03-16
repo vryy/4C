@@ -43,8 +43,9 @@ namespace LINALG
 
 namespace SCATRA
 {
+  class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
-}
+}  // namespace SCATRA
 
 namespace SSI
 {
@@ -187,12 +188,6 @@ namespace SSI
     {
       return map_structure_condensed_;
     };
-
-    //! MultiMapExtractor with Map 0: scatra dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> MapScaTraOnScaTraManifold() const
-    {
-      return map_scatra_on_scatra_manifold_;
-    }
 
     //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
     Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureOnScaTraManifold() const
@@ -390,9 +385,6 @@ namespace SSI
 
     //! map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
-
-    //! MultiMapExtractor with Map 0: scatra dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> map_scatra_on_scatra_manifold_;
 
     //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
     Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_on_scatra_manifold_;
