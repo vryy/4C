@@ -370,5 +370,12 @@ double STR::ResultTest::GetNodalStressComponent(const std::string& label, int no
         "IO->STRUCT_STRESS");
   }
 
-  return (*nodalStressData)[idx][node_id];
+  int local_id = nodalStressData->Map().LID(node_id);
+
+  if (local_id < 0)
+  {
+    dserror("You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
+  }
+
+  return (*nodalStressData)[idx][local_id];
 }
