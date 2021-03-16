@@ -302,42 +302,7 @@ variables:
         variables:
             - $GITLAB_SCHEDULER_TYPE == "1"
 
-# This kind of job is started when a user triggers a job in the gitlab UI.
-#
-# The doxygen_web job is meant for merge request testing.
-.doxygen_web: &doxygen_web
-    stage: doxygen
-    script:
-        - "echo Doxygen"
-        # Delete old build files.
-        - rm -rf ../baci-build/
-        # Output to log because it is too much for the gitlab console.
-        - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
-        # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
-        - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
-    after_script:
-        # Write Selection of the output into the terminal and therefore to GITLAB
-        - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
-        # Write information about possible Latex errors to terminal
-        - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
-        # Move the log file to the source folder, so it can be found by artifacts.
-        - mv ../doxygen.log doxygen.log
-    artifacts:
-        name: "$CI_JOB_NAME-$CI_JOB_ID"
-        paths:
-            - doxygen.log
-        when: on_failure
-        expire_in: 1 day
-    only:
-        refs:
-            - web
-    except:
-        variables:
-            - $GITLAB_SCHEDULER_TYPE == "3"
-            - $GITLAB_INTERACTIVE_MODE == "1"
-
-# This kind of job is started only on the master branch
-# Doxygen is build and moved to a folder with known path.
+# Doxygen job
 .doxygen: &doxygen
     stage: doxygen
     script:
@@ -348,10 +313,8 @@ variables:
         - "ctest -S $CI_PROJECT_DIR/tests/testconfig/test_doxygen.cmake -VV > ../doxygen.log"
         # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
         - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
-        # Copy final doxygen files to pre-defined location
-        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $DOXYGEN_PATH"
         # Move final doxygen into the base folder for the next stage
-        - "cp -r $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen"
+        - "mv $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen"
     after_script:
         # Write Selection of the output into the terminal and therefore to GITLAB
         - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
@@ -359,17 +322,6 @@ variables:
         - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during doxygen build."; else echo "Doxygen builds without LaTeX errors."; fi
         # Move the log file to the source folder, so it can be found by artifacts.
         - mv ../doxygen.log doxygen.log
-    artifacts:
-        name: "$CI_JOB_NAME-$CI_JOB_ID"
-        paths:
-            - doxygen.log
-            - doxygen/
-        when: always
-        expire_in: 1 day
-    only:
-        # Build doxygen only on master builds
-        refs:
-            - master
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -756,13 +708,26 @@ lnm-buildtest_daily_debug:
     needs: ["checkcode"]
 
 lnm-doxygen-web:
-    <<: *doxygen_web
+    <<: *doxygen
     variables:
         CTEST_MAKE: "make documentation"
         CTEST_BUILD_NAME_GITLAB: "Doxygen-GITLAB"
         CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation.config"
     tags:
         - lnm-release-user-full
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - doxygen.log
+        when: on_failure
+        expire_in: 1 day
+    only:
+        refs:
+            - web
+    except:
+        variables:
+            - $GITLAB_SCHEDULER_TYPE == "3"
+            - $GITLAB_INTERACTIVE_MODE == "1"
 
 lnm-doxygen:
     <<: *doxygen
@@ -775,3 +740,14 @@ lnm-doxygen:
         DOXYGEN_PATH: "/home/gitlab-runner/."
     tags:
         - lnm-nightly-doxygen
+    artifacts:
+        name: "$CI_JOB_NAME-$CI_JOB_ID"
+        paths:
+            - doxygen.log
+            - doxygen/
+        when: always
+        expire_in: 1 day
+    only:
+        # Build doxygen only on master builds
+        refs:
+            - master
