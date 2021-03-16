@@ -85,26 +85,26 @@ namespace DRT
       ScaTraEleCalc(const int numdofpernode, const int numscal, const std::string& disname);
 
      public:
-      virtual ~ScaTraEleCalc() {}
+      ~ScaTraEleCalc() override = default;
 
       /// called upon destruction
-      virtual void Done() = 0;
+      void Done() override = 0;
 
       /// In this class we do not define a static ScaTraEle...* Instance
       /// since only derived child classes are free to be allocated!!
 
       /// Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);
+      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
 
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          Epetra_SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -125,13 +125,13 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          Epetra_SerialDenseVector& elevec3_epetra) override;
 
       int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
           Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          Epetra_SerialDenseVector& elevec3_epetra) override;
 
       /*========================================================================*/
       //! @name static member variables
@@ -153,7 +153,7 @@ namespace DRT
       // 6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
       static const unsigned numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
-      typedef ScaTraEleInternalVariableManager<nsd_, nen_> varmanager;
+      using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
      protected:
       /*========================================================================*/
@@ -217,11 +217,7 @@ namespace DRT
       virtual void SetInternalVariablesForMatAndRHS();
 
       // add nodal displacements to point coordinates
-      virtual void UpdateNodeCoordinates()
-      {
-        xyze_ += edispnp_;
-        return;
-      };
+      virtual void UpdateNodeCoordinates() { xyze_ += edispnp_; };
 
       //! finite difference check for debugging purposes
       virtual void FDCheck(DRT::Element* ele,  //!< the element we are dealing with
@@ -663,7 +659,6 @@ namespace DRT
         {
           val += derxy_(j, vi) * derxy_(j, ui);
         }
-        return;
       };
 
       //! calculate the Laplacian (weak form)
@@ -681,7 +676,6 @@ namespace DRT
             val += derxy_(j, vi) * diffus3(j, i) * derxy_(i, ui);
           }
         }
-        return;
       };
 
       //! calculate the Laplacian (weak form)
@@ -695,7 +689,6 @@ namespace DRT
         {
           val += derxy_(j, vi) * gradphi(j);
         }
-        return;
       };
 
       //! compute rhs containing bodyforce
@@ -779,10 +772,7 @@ namespace DRT
       virtual void CalcMatChemo(Epetra_SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
           const double scatrares, const LINALG::Matrix<nen_, 1>& sgconv,
-          const LINALG::Matrix<nen_, 1>& diff)
-      {
-        return;
-      };
+          const LINALG::Matrix<nen_, 1>& diff){};
 
       //! calculation of linearized mass rhs vector
       void CalcRHSLinMass(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
@@ -862,10 +852,7 @@ namespace DRT
       );
 
       virtual void CalcRHSChemo(Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
-          const double rhstaufac, const double scatrares, const double densnp)
-      {
-        return;
-      };
+          const double rhstaufac, const double scatrares, const double densnp){};
 
       //! fine-scale subgrid-diffusivity term on right hand side
       void CalcRHSFSSGD(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
@@ -1182,9 +1169,9 @@ namespace DRT
     class ScaTraEleDiffManager
     {
      public:
-      ScaTraEleDiffManager(int numscal) : diff_(numscal, 0.0), sgdiff_(numscal, 0.0) { return; }
+      ScaTraEleDiffManager(int numscal) : diff_(numscal, 0.0), sgdiff_(numscal, 0.0) {}
 
-      virtual ~ScaTraEleDiffManager(){};
+      virtual ~ScaTraEleDiffManager() = default;
 
       //! Set the isotropic diffusion coefficient
       virtual void SetIsotropicDiff(const double& diff, const int& k)
@@ -1192,7 +1179,6 @@ namespace DRT
         //      if (diff < 0.0) dserror("negative (physical) diffusivity: %f",0,diff);
 
         diff_[k] = diff;
-        return;
       }
 
       //! Set the isotropic subgrid diffusion coefficient
@@ -1200,7 +1186,6 @@ namespace DRT
       {
         diff_[k] += sgdiff;
         sgdiff_[k] += sgdiff;
-        return;
       }
 
       //! Return the stored isotropic diffusion coefficients
@@ -1232,10 +1217,9 @@ namespace DRT
           : include_me_(false),      // is reaction manager active?
             reacoeff_(numscal, 0.0)  // size of vector + initialized to zero
       {
-        return;
       }
 
-      virtual ~ScaTraEleReaManager(){};
+      virtual ~ScaTraEleReaManager() = default;
 
       //! @name set routines
 
@@ -1247,7 +1231,6 @@ namespace DRT
         // resize
         reacoeff_.resize(numscal, 0.0);
         include_me_ = false;
-        return;
       }
 
       //! Set the reaction coefficient
@@ -1257,8 +1240,6 @@ namespace DRT
         // concentration. If so, use the advanced reaction framework to get a proper linearisation.
         reacoeff_[k] = reacoeff;
         if (reacoeff != 0.0) include_me_ = true;
-
-        return;
       }
 
       //! @name access routines
@@ -1307,10 +1288,9 @@ namespace DRT
             hist_(numscal, 0.0),
             numscal_(numscal)
       {
-        return;
       }
 
-      virtual ~ScaTraEleInternalVariableManager(){};
+      virtual ~ScaTraEleInternalVariableManager() = default;
 
       // compute and set internal variables
       void SetInternalVariables(const LINALG::Matrix<NEN, 1>& funct,  //! array for shape functions
@@ -1342,8 +1322,6 @@ namespace DRT
           // history data (or acceleration)
           hist_[k] = funct.Dot(ehist[k]);
         }
-
-        return;
       };
 
       /*========================================================================*/

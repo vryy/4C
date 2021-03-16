@@ -16,8 +16,6 @@
 
 #include <Epetra_Vector.h>
 
-#include "../drt_inpar/inpar_ssi.H"
-
 // forward declarations
 namespace ADAPTER
 {
@@ -28,6 +26,15 @@ namespace ADAPTER
   class SSIStructureWrapper;
   class StructureBaseAlgorithmNew;
 }  // namespace ADAPTER
+
+namespace INPAR
+{
+  namespace SSI
+  {
+    enum class FieldCoupling;
+  }
+
+}  // namespace INPAR
 
 namespace LINALG
 {

@@ -23,9 +23,9 @@
 #include "../drt_adapter/ad_str_structure_new.H"
 
 #include "../drt_inpar/inpar_volmortar.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"

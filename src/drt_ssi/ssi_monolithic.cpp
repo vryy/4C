@@ -25,6 +25,7 @@
 #include "../drt_contact/contact_nitsche_strategy_ssi.H"
 
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_io/io_control.H"
 
