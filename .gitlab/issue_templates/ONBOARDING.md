@@ -47,7 +47,8 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [ ] Set up your Integrated Development Environment (IDE)
 - [ ] Browse through some open issues and merge requests to get a first impression
 - [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/baci/baci/wikis/home) containing a loose collection of further helpful information
-- [ ] Browse through the list of [BACI teams](https://gitlab.lrz.de/baci) and request access to at least two (or more) teams that fit your research topics/interests
+- [ ] Get familiar with our [BACI teams concept](https://gitlab.lrz.de/baci/baci/-/wikis/the-baci-community#baci-teams) and browse through the [list of BACI teams](https://gitlab.lrz.de/baci)
+- [ ] Request access to at least two BACI **core teams** and to any other teams that fit your research topics/interests
 
 ## Checklist for the BACI group owners
 <!---
