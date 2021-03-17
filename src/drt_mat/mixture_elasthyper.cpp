@@ -270,13 +270,18 @@ void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params, const in
 {
   So3Material::PostSetup(params, eleGID);
   anisotropy_.ReadAnisotropyFromParameterList(params);
-
-  for (auto const& constituent : *constituents_)
+  if (constituents_ != Teuchos::null)
   {
-    constituent->Setup(params, eleGID);
+    for (auto const& constituent : *constituents_)
+    {
+      constituent->Setup(params, eleGID);
+    }
   }
 
-  mixture_rule_->Setup(params, eleGID);
+  if (mixture_rule_ != Teuchos::null)
+  {
+    mixture_rule_->Setup(params, eleGID);
+  }
 
   setup_ = true;
 }

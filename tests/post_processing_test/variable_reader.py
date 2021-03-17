@@ -5,7 +5,7 @@ import os
 DIM = {
     'scalar': 1,
     'vector': 3,
-    'tensor sym': 6,
+    'tensor symm': 6,
 }
 
 
@@ -28,7 +28,7 @@ class VariableStream:
         self.number_items = numnodes
         self.current_timestep = 0
 
-        self.dim = DIM[variable['type'].split(' ')[0]]
+        self.dim = DIM[variable['type'].split(' per ')[0]]
 
         self.path = os.path.join(basepath, variable['file'])
 
