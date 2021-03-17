@@ -17,6 +17,18 @@ def get_corresponding_quantity(dis, quantity):
             return 'displacement', 1
         elif quantity == 'dispz':
             return 'displacement', 2
+        elif quantity == 'stress_xx':
+            return 'nodal_2PK_stresses_xyz', 0
+        elif quantity == 'stress_yy':
+            return 'nodal_2PK_stresses_xyz', 1
+        elif quantity == 'stress_zz':
+            return 'nodal_2PK_stresses_xyz', 2
+        elif quantity == 'stress_xy':
+            return 'nodal_2PK_stresses_xyz', 3
+        elif quantity == 'stress_xz':
+            return 'nodal_2PK_stresses_xyz', 4
+        elif quantity == 'stress_yz':
+            return 'nodal_2PK_stresses_xyz', 5
 
     elif dis == 'cardiovascular0d':
         # cardiovascular quantities
@@ -53,6 +65,11 @@ if __name__ == '__main__':
     errors = 0
     success = 0
     for r in result_description:
+        if not r['enabled']:
+            print (
+                '{0}: {1} is DISABLED. SKIPPING!'.format(r['dis'], r['quantity']))
+            continue
+
         try:
             variable_name, dim = get_corresponding_quantity(
                 r['dis'], r['quantity'])
@@ -101,7 +118,7 @@ if __name__ == '__main__':
                 variable, timestep, node_index, dim, len(geometry['node_ids']), basepath)
 
             # check correctness
-            tolerance = max(1e-7, r['tolerance'])
+            tolerance = max(1e-6, r['tolerance'])
             if abs(myvalue - r['value']) > tolerance:
                 print (
                     '{0}: {1} at node {2} is WRONG --> actresult={3}, givenresult={4}, abs(diff)={5} > {6}'.format(r['dis'], r['quantity'], r['node'], myvalue, r['value'], abs(myvalue - r['value']), tolerance))

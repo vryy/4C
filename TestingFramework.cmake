@@ -76,14 +76,14 @@ macro (baci_test_and_post_ensight_test arg nproc restart)
 
 
   # additionally run postprocessing in serial mode
-  set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --outputtype=bin)
+  set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx\ --output=xxx_SER\ --outputtype=bin\ --stress=ndxyz)
 
   add_test(NAME ${arg}-p${nproc}-post_ensight-ser
     COMMAND sh -c " ${RUNPOSTFILTER_SER} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_SER_structure.case")
   set_tests_properties(${arg}-p${nproc}-post_ensight-ser PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
 
   # additionally run postprocessing in parallel mode
-  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --outputtype=bin)
+  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --outputtype=bin\ --stress=ndxyz)
 
   add_test(NAME ${arg}-p${nproc}-post_ensight-par
     COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_PAR_structure.case")

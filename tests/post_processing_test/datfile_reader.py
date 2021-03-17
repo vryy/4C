@@ -37,6 +37,14 @@ def read_result_description(datfile):
             this_result['special_quantity'] = read_option_item(
                 r, 'SPECIAL QUANTITY', 1)[0]
 
+            this_result['enabled'] = True
+            if '//' in r:
+                comment = r.split('//')[1]
+
+                if comment.strip() == 'disable post ensight test':
+                    # this quantity is manually disabled for testing
+                    this_result['enabled'] = False
+
             results.append(this_result)
         except:
             pass

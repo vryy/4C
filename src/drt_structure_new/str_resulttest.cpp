@@ -327,33 +327,33 @@ int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
 
 double STR::ResultTest::GetNodalStressComponent(const std::string& label, int node_id) const
 {
-  int idx = -1;
+  int stress_voigt_index = -1;
   if (label == "stress_xx")
   {
-    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 0);
+    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 0);
   }
   else if (label == "stress_yy")
   {
-    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 1);
+    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 1);
   }
   else if (label == "stress_zz")
   {
-    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(2, 2);
+    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(2, 2);
   }
   else if (label == "stress_xy")
   {
-    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 1);
+    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 1);
   }
   else if (label == "stress_xz")
   {
-    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 2);
+    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 2);
   }
   else if (label == "stress_yz")
   {
-    idx = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 2);
+    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 2);
   }
 
-  if (idx < 0)
+  if (stress_voigt_index < 0)
   {
     dserror(
         "You try to test an unknown stress component %s. Use one of [stress_xx, stress_yy, "
@@ -370,5 +370,12 @@ double STR::ResultTest::GetNodalStressComponent(const std::string& label, int no
         "IO->STRUCT_STRESS");
   }
 
-  return (*nodalStressData)[idx][node_id];
+  int local_id = nodalStressData->Map().LID(node_id);
+
+  if (local_id < 0)
+  {
+    dserror("You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
+  }
+
+  return (*nodalStressData)[stress_voigt_index][local_id];
 }
