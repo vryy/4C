@@ -75,53 +75,61 @@ namespace MAT
       dserror("Material does not support evaluation for GEMM");
     };
 
-    /**
-     * \brief Evaluate the Cauchy stress and linearizations with given deformation gradient.
+    /*!
+     * @brief  Evaluate the Cauchy stress contracted with normal and direction vector and
+     * its linearizations with given deformation gradient.
      *
      * Cauchy stress is evaluated within this function call. If requested, the required
      * linearizations are calculated. A potential thermal dependency is handled if the temperature
      * is handed in.
      *
-     * \param[in]     defgrd    deformation gradient (\f[\bold{F}\f])
-     * \param[in]     n         vector n (\f[\bold{n}\f])
-     * \param[in]     t         vector t (\f[\bold{t}\f])
-     * \param[out]    snt       cauchy stress tensor contracted using the vectors n and t (\f[
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
-     * \param[out]    DsntDn    derivative of snt w.r.t. vector n (\f[ \frac{\mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{n}}
-                                \f])
-     * \param[out]    DsntDt    derivative of snt w.r.t. vector t (\f[ \frac{\mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{t}}
-                                \f])
-     * \param[out]    DsntDF    derivative of snt w.r.t. deformation gradient (\f[\frac{\mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d}\bold{F}}\f])
-     * \param[out]    D2sntDF2  second derivative of snt w.r.t. deformation gradient (\f[ \frac{
-                                \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{F}^2} \f])
-     * \param[out]    D2sntDFDn second derivative of snt w.r.t. deformation gradient and vector n
-                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
-                                \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
-     * \param[out]    D2sntDFDt second derivative of snt w.r.t. deformation gradient and vector n
-                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot
-                                \bold{t}} {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
-     * \param[in]     gp        Gauss point
-     * \param[in]     eleGID         global ID of element
-     * \param[in]     concentration  concentration at gauss point
-     * \param[in]     temp           temperature (if thermal dependency shall be handeled)
-     * \param[out]    DsntDT    derivative of snt w.r.t. temperature (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t} }{\mathrm{d} T} \f])
-     * \param[out]    D2sntDFDT second derivative of snt w.r.t. deformation gradient and temperature
-                                (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}
-                                } {\mathrm{d} \bold{F} \mathrm{d} T } \f])
+     * @param[in] defgrd  deformation gradient (\f[\bold{F}\f])
+     * @param[in] n       normal vector (\f[\bold{n}\f])
+     * @param[in] dir     direction vector (\f[\bold{v}\f]), can be either normal or tangential
+     *                    vector
+     * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
+     *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+     * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
+     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                  { \mathrm{d} \bold{n}} \f])
+     * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
+     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                  { \mathrm{d} \bold{v}} \f])
+     * @param[out] d_cauchyndir_dF    derivative of cauchy_n_dir w.r.t. deformation gradient
+     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                  { \mathrm{d} \bold{F}} \f])
+     * @param[out] d2_cauchyndir_dF2  second derivative of cauchy_n_dir w.r.t. deformation gradient
+     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                 {\mathrm{d} \bold{F} \mathrm{d} \bold{F} } \f])
+     * @param[out] d2_cauchyndir_dF_dn  second derivative of cauchy_n_dir w.r.t. deformation
+     *                                  gradient and normal vector
+     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                 {\mathrm{d} \bold{F} \mathrm{d} \bold{n} } \f])
+     * @param[out] d2_cauchyndir_dF_ddir  second derivative of cauchy_n_dir w.r.t. deformation
+     *                                  gradient and direction vector
+     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                 {\mathrm{d} \bold{F} \mathrm{d} \bold{v} } \f])
+     * @param[in] gp             Gauss point id
+     * @param[in] eleGID         global id of element
+     * @param[in] concentration  concentration
+     * @param[in] temp           temperature
+     * @param[out] d_cauchyndir_dT    derivative of cauchy_n_dir w.r.t. temperature
+     *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                  { \mathrm{d} T} \f])
+     * @param[out] d2_cauchyndir_dF_dT  second derivative of cauchy_n_dir w.r.t. deformation
+     *                                  gradient and temperature
+     *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+     *                                 {\mathrm{d} \bold{F} \mathrm{d} T } \f])
      */
-    virtual void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
-        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int gp, int eleGID,
-        const double* concentration, const double* temp, double* DsntDT,
-        LINALG::Matrix<9, 1>* D2sntDFDT)
+    virtual void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
+        int gp, int eleGID, const double* concentration, const double* temp,
+        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
-      dserror("EvaluateCauchy not implemented for this material");
+      dserror("EvaluateCauchyNDirAndDerivatives not implemented for this material");
     }
 
     /*!
@@ -129,10 +137,10 @@ namespace MAT
      *
      * @param[in] defgrd         deformation gradient
      * @param[in] concentration  concentration at gauss point
-     * @param[out] DFDx          derivative of deformation gradient w.r.t. degree of freedom x
+     * @param[out] d_F_dx        derivative of deformation gradient w.r.t. degree of freedom x
      */
     virtual void EvaluateLinearizationOD(
-        const LINALG::Matrix<3, 3>& defgrd, double concentration, LINALG::Matrix<9, 1>* DFDx)
+        const LINALG::Matrix<3, 3>& defgrd, double concentration, LINALG::Matrix<9, 1>* d_F_dx)
     {
       dserror("EvaluateLinearizationOD not implemented for this material");
     }

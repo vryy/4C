@@ -276,16 +276,17 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::CoElement* cele, const LINALG::M
   if (!cele->MoData().ParentPFPres().size())
   {
     dynamic_cast<DRT::ELEMENTS::So_base*>(cele->ParentElement())
-        ->GetCauchyAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt, nullptr, nullptr,
+        ->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(), n, dir, sigma_nt,
             nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-            nullptr, nullptr);
+            nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
     dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
         cele->ParentElement())
-        ->GetCauchyAtXi(
-            pxsi, cele->MoData().ParentDisp(), cele->MoData().ParentPFPres(), n, dir, sigma_nt);
+        ->GetCauchyNDirAndDerivativesAtXi(pxsi, cele->MoData().ParentDisp(),
+            cele->MoData().ParentPFPres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,
+            nullptr);
   }
   return sigma_nt;
 }

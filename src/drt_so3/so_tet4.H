@@ -335,15 +335,17 @@ namespace DRT
           return 10.0;
       }
 
-      void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
-          const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
-          Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
-          Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
-          Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
-          LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
-          const std::vector<double>* temp, Epetra_SerialDenseMatrix* DsntDT,
-          Epetra_SerialDenseMatrix* D2sntDdDT, const double* concentration,
-          double* DsntDc) override;
+      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
+          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc) override;
       //@}
 
      protected:

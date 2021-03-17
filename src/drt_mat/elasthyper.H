@@ -205,13 +205,13 @@ namespace MAT
     /// number of materials
     virtual int NumMat() const { return params_->nummat_; }
 
-    /// deliver material ID of index i'th potential summand in collection
-    virtual int MatID(unsigned index  ///< index i
-        ) const;
-
-    /// provide access to material by its ID
-    //     virtual Teuchos::RCP<const MAT::ELASTIC::Summand> MaterialById(const int id) const {
-    //     return params_->MaterialById(id); }
+    /*!
+     * @brief deliver material ID of index i'th potential summand in collection
+     *
+     * @param[in] index index
+     * @return material id
+     */
+    virtual int MatID(unsigned index) const;
 
     /// material mass density
     double Density() const override { return params_->density_; }
@@ -251,12 +251,13 @@ namespace MAT
         int gp,                                      ///< Gauss point
         int eleGID) override;                        ///< Element GID
 
-    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
-        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, int gp, int eleGID,
-        const double* concentration, const double* temp, double* DsntDT,
-        LINALG::Matrix<9, 1>* D2sntDFDT) override;
+    void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
+        int gp, int eleGID, const double* concentration, const double* temp,
+        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override;
 
     /**
      * \brief The derivatives of the strain energy function w.r.t. the principle invariants are

@@ -3063,49 +3063,50 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeDefGradient(
 }  // ComputeDefGradient
 
 /*----------------------------------------------------------------------*
- | evaluate Cauchy stress at given point in parameter space   ager 04/18|
  *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
-    const std::vector<double>& disp, const std::vector<double>& pres, const LINALG::Matrix<3, 1>& n,
-    const LINALG::Matrix<3, 1>& t, double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd,
-    Epetra_SerialDenseMatrix* dsntdp, LINALG::Matrix<3, 1>* dsntdn, LINALG::Matrix<3, 1>* dsntdt,
-    LINALG::Matrix<3, 1>* dsntdpxi)
+void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
+    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+    const std::vector<double>& pres, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir,
+    double& cauchy_n_dir, Epetra_SerialDenseMatrix* d_cauchyndir_dd,
+    Epetra_SerialDenseMatrix* d_cauchyndir_dp, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+    LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi)
 {
   if (fluidmat_->Type() != MAT::PAR::darcy)
     dserror("GetCauchyAtXi just implemented for pure Darcy flow!");
 
   if (distype != DRT::Element::hex8) dserror("GetCauchyAtXi for Poro just implemented for hex8!");
 
-  so3_ele::GetCauchyAtXi(xi, disp, n, t, sigma_nt, dsntdd, nullptr, nullptr, nullptr, nullptr,
-      dsntdn, dsntdt, dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
+  so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd, nullptr,
+      nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, nullptr,
+      nullptr, nullptr, nullptr, nullptr);
 
   // Add pressure to sigma_nt
-  const double dot = n(0, 0) * t(0, 0) + n(1, 0) * t(1, 0) + n(2, 0) * t(2, 0);
+  const double dot = n(0, 0) * dir(0, 0) + n(1, 0) * dir(1, 0) + n(2, 0) * dir(2, 0);
   if (fabs(dot) > 1e-30)
   {
     LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
     DRT::UTILS::shape_function<DRT::Element::hex8>(xi, shapefcts);
 
     for (uint nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
-      sigma_nt -= pres[nlid] * shapefcts(nlid, 0) * dot;
+      cauchy_n_dir -= pres[nlid] * shapefcts(nlid, 0) * dot;
 
-    if (dsntdp || dsntdn || dsntdt || dsntdpxi)
+    if (d_cauchyndir_dp || d_cauchyndir_dn || d_cauchyndir_ddir || d_cauchyndir_dxi)
     {
       LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv;
       DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
 
-      dsntdp->Reshape(NUMNOD_SOH8, 1);
-      LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(dsntdp->A(), true);
+      d_cauchyndir_dp->Reshape(NUMNOD_SOH8, 1);
+      LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->A(), true);
 
       for (uint nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       {
         dsntdp_m(nlid, 0) = -dot * shapefcts(nlid, 0);
         for (uint dim = 0; dim < 3; ++dim)
         {
-          (*dsntdn)(dim, 0) -= pres[nlid] * shapefcts(nlid, 0) * t(dim, 0);
-          (*dsntdt)(dim, 0) -= pres[nlid] * shapefcts(nlid, 0) * n(dim, 0);
-          (*dsntdpxi)(dim, 0) -= pres[nlid] * deriv(dim, nlid) * dot;
+          (*d_cauchyndir_dn)(dim, 0) -= pres[nlid] * shapefcts(nlid, 0) * dir(dim, 0);
+          (*d_cauchyndir_ddir)(dim, 0) -= pres[nlid] * shapefcts(nlid, 0) * n(dim, 0);
+          (*d_cauchyndir_dxi)(dim, 0) -= pres[nlid] * deriv(dim, nlid) * dot;
         }
       }
     }

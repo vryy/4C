@@ -229,17 +229,25 @@ namespace MAT
     virtual void PoroSetup(int numgp,  ///< number of Gauss points
         DRT::INPUT::LineDefinition* linedef);
 
-    //! Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
-    void CouplStress(const LINALG::Matrix<3, 3>& defgrad,  ///< (i) deformation gradient
-        const double& press,                               ///< (i) pressure in gauss point
-        LINALG::Matrix<6, 1>& couplstress                  ///< (o) coupling stress in gauss point
-        ) const;
+    /*!
+     * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
+     *
+     * @param[in] defgrad       deformation gradient
+     * @param[in] press         pressure at gauss point
+     * @param[out] couplstress  coupling stress at gauss point
+     */
+    void CouplStress(const LINALG::Matrix<3, 3>& defgrad, const double& press,
+        LINALG::Matrix<6, 1>& couplstress) const;
 
-    //! Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
-    void CouplStress(const LINALG::Matrix<2, 2>& defgrad,  ///< (i) deformation gradient
-        const double& press,                               ///< (i) pressure in gauss point
-        LINALG::Matrix<4, 1>& couplstress                  ///< (o) coupling stress in gauss point
-        ) const;
+    /*!
+     * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
+     *
+     * @param[in] defgrad       deformation gradient
+     * @param[in] press         pressure at gauss point
+     * @param[out] couplstress  coupling stress at gauss point
+     */
+    void CouplStress(const LINALG::Matrix<2, 2>& defgrad, const double& press,
+        LINALG::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
@@ -302,15 +310,18 @@ namespace MAT
           rcg_old, gp, eleGID);
     };
 
-    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
-        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int gp,
-        const int eleGID, const double* concentration, const double* temp, double* DsntDT,
-        LINALG::Matrix<9, 1>* D2sntDFDT) override
+    void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
+        int gp, int eleGID, const double* concentration, const double* temp,
+        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
     {
-      mat_->EvaluateCauchy(defgrd, n, t, snt, DsntDn, DsntDt, DsntDF, D2sntDF2, D2sntDFDn,
-          D2sntDFDt, gp, eleGID, concentration, temp, DsntDT, D2sntDFDT);
+      mat_->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
+          d_cauchyndir_ddir, d_cauchyndir_dF, d2_cauchyndir_dF2, d2_cauchyndir_dF_dn,
+          d2_cauchyndir_dF_ddir, gp, eleGID, concentration, temp, d_cauchyndir_dT,
+          d2_cauchyndir_dF_dT);
     }
 
     //@}

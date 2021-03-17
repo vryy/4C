@@ -782,9 +782,9 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchy(MORTAR::MortarElement& moEle,
   Epetra_SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT, dsntdT;
   LINALG::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
-      ->GetCauchyAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction, sigma_nt, &dsntdd,
-          &d2sntdd2, &d2sntDdDn, &d2sntDdDt, &d2sntDdDpxi, &dsntdn, &dsntdt, &dsntdpxi,
-          &moEle.MoData().ParentTemp(), &dsntdT, &d2sntDdDT, nullptr, nullptr);
+      ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
+          sigma_nt, &dsntdd, &d2sntdd2, &d2sntDdDn, &d2sntDdDt, &d2sntDdDpxi, &dsntdn, &dsntdt,
+          &dsntdpxi, &moEle.MoData().ParentTemp(), &dsntdT, &d2sntDdDT, nullptr, nullptr);
 
   cauchy_nt += w * sigma_nt;
 

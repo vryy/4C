@@ -171,9 +171,9 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
   if (mortar_ele.MoData().ParentScalar().empty())
   {
     dynamic_cast<DRT::ELEMENTS::So_base*>(mortar_ele.ParentElement())
-        ->GetCauchyAtXi(parent_xi, mortar_ele.MoData().ParentDisp(), gp_normal, test_dir, sigma_nt,
-            &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr, &d_sigma_nt_dn, &d_sigma_nt_dt,
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+        ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(), gp_normal,
+            test_dir, sigma_nt, &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr, &d_sigma_nt_dn,
+            &d_sigma_nt_dt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
@@ -183,7 +183,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
       {
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
             mortar_ele.ParentElement())
-            ->GetCauchyAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
                 &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, nullptr);
         break;
@@ -192,7 +192,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
       {
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
             mortar_ele.ParentElement())
-            ->GetCauchyAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
                 &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, nullptr);
         break;

@@ -351,55 +351,56 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
     TESTING::AssertDelta(cMatAdd, cMatAdd_ref, 1.0e-10);
   }
 
-  void TestEvaluateCauchy()
+  void TestEvaluateCauchyNDirAndDerivatives()
   {
     // we need to first set this dummy concentration. otherwise the call below results in a segfault
     const double dummy_conc(-1.0);
     SetConcentrationToInelasticMaterial(dummy_conc);
 
     // input variables
-    LINALG::Matrix<3, 1> n, t;
+    LINALG::Matrix<3, 1> n, dir;
     n(0) = 1.0 / std::sqrt(2.0);
     n(1) = 0.0;
     n(2) = -1.0 / std::sqrt(2.0);
-    t(0) = 1.0 / std::sqrt(3.0);
-    t(1) = -1.0 / std::sqrt(3.0);
-    t(2) = -1.0 / std::sqrt(3.0);
+    dir(0) = 1.0 / std::sqrt(3.0);
+    dir(1) = -1.0 / std::sqrt(3.0);
+    dir(2) = -1.0 / std::sqrt(3.0);
     const double concentration(1.0);
 
     // output variables
-    double sigma_nt(0.0);
-    LINALG::Matrix<3, 1> DsntDn(true), DsntDt(true);
-    LINALG::Matrix<9, 1> DsntDF(true);
+    double cauchy_n_dir(0.0);
+    LINALG::Matrix<3, 1> d_cauchyndir_dn(true), d_cauchyndir_ddir(true);
+    LINALG::Matrix<9, 1> d_cauchyndir_dF(true);
 
-    multiplicative_split_defgrad_->EvaluateCauchy(FM_, n, t, sigma_nt, &DsntDn, &DsntDt, &DsntDF,
-        nullptr, nullptr, nullptr, 0, 0, &concentration, nullptr, nullptr, nullptr);
+    multiplicative_split_defgrad_->EvaluateCauchyNDirAndDerivatives(FM_, n, dir, cauchy_n_dir,
+        &d_cauchyndir_dn, &d_cauchyndir_ddir, &d_cauchyndir_dF, nullptr, nullptr, nullptr, 0, 0,
+        &concentration, nullptr, nullptr, nullptr);
 
-    const double sigma_nt_ref(6.019860168755);
-    LINALG::Matrix<3, 1> DsntDn_ref(true), DsntDt_ref(true);
-    LINALG::Matrix<9, 1> DsntDF_ref(true);
-    DsntDn_ref(0) = -2.856437080521;
-    DsntDn_ref(1) = -6.736850094992;
-    DsntDn_ref(2) = -1.136980497476e+01;
+    const double cauchy_n_dir_ref(6.019860168755);
+    LINALG::Matrix<3, 1> d_cauchyndir_dn_ref(true), d_cauchyndir_ddir_ref(true);
+    LINALG::Matrix<9, 1> d_cauchyndir_dF_ref(true);
+    d_cauchyndir_dn_ref(0) = -2.856437080521;
+    d_cauchyndir_dn_ref(1) = -6.736850094992;
+    d_cauchyndir_dn_ref(2) = -1.136980497476e+01;
 
-    DsntDt_ref(0) = -1.933304201727;
-    DsntDt_ref(1) = -8.793331859785e-01;
-    DsntDt_ref(2) = -1.148067468249e+01;
+    d_cauchyndir_ddir_ref(0) = -1.933304201727;
+    d_cauchyndir_ddir_ref(1) = -8.793331859785e-01;
+    d_cauchyndir_ddir_ref(2) = -1.148067468249e+01;
 
-    DsntDF_ref(0) = 7.834365817988e+01;
-    DsntDF_ref(1) = 4.257334930649e+01;
-    DsntDF_ref(2) = 7.961614320095e+01;
-    DsntDF_ref(3) = -2.192663678809e+01;
-    DsntDF_ref(4) = 1.867810957230e+01;
-    DsntDF_ref(5) = -4.292543557935e+01;
-    DsntDF_ref(6) = -1.694113997401e+01;
-    DsntDF_ref(7) = 1.982432031426e+01;
-    DsntDF_ref(8) = -3.361951777558e+01;
+    d_cauchyndir_dF_ref(0) = 7.834365817988e+01;
+    d_cauchyndir_dF_ref(1) = 4.257334930649e+01;
+    d_cauchyndir_dF_ref(2) = 7.961614320095e+01;
+    d_cauchyndir_dF_ref(3) = -2.192663678809e+01;
+    d_cauchyndir_dF_ref(4) = 1.867810957230e+01;
+    d_cauchyndir_dF_ref(5) = -4.292543557935e+01;
+    d_cauchyndir_dF_ref(6) = -1.694113997401e+01;
+    d_cauchyndir_dF_ref(7) = 1.982432031426e+01;
+    d_cauchyndir_dF_ref(8) = -3.361951777558e+01;
 
-    TS_ASSERT_DELTA(sigma_nt, sigma_nt_ref, 1.0e-10)
-    TESTING::AssertDelta(DsntDn, DsntDn_ref, 1.0e-10);
-    TESTING::AssertDelta(DsntDt, DsntDt_ref, 1.0e-10);
-    TESTING::AssertDelta(DsntDF, DsntDF_ref, 1.0e-10);
+    TS_ASSERT_DELTA(cauchy_n_dir, cauchy_n_dir_ref, 1.0e-10)
+    TESTING::AssertDelta(d_cauchyndir_dn, d_cauchyndir_dn_ref, 1.0e-10);
+    TESTING::AssertDelta(d_cauchyndir_ddir, d_cauchyndir_ddir_ref, 1.0e-10);
+    TESTING::AssertDelta(d_cauchyndir_dF, d_cauchyndir_dF_ref, 1.0e-10);
   }
 
   void TestEvaluatedSdiFin()
