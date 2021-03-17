@@ -53,6 +53,11 @@ if __name__ == '__main__':
     errors = 0
     success = 0
     for r in result_description:
+        if not r['enabled']:
+            print (
+                '{0}: {1} is DISABLED. SKIPPING!'.format(r['dis'], r['quantity']))
+            continue
+
         try:
             variable_name, dim = get_corresponding_quantity(
                 r['dis'], r['quantity'])
