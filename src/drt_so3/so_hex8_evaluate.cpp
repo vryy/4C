@@ -4112,16 +4112,15 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF2_d_F_dd, 0.0);
   }
 
-  if (d2_cauchyndir_dd_dxi)
-  {
-    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
-        d2_cauchyndir_dd_dxi->A(), true);
+  // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
+  static LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
+  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, NUMNOD_SOH8>
+      deriv2(true);
+  d_F_dxi.Clear();
+  deriv2.Clear();
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
-        NUMNOD_SOH8>
-        deriv2(true);
-    deriv2.Clear();
+  if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
+  {
     DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xXF(true);
@@ -4132,8 +4131,6 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    static LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
-    d_F_dxi.Clear();
     for (int a = 0; a < NUMDIM_SOH8; ++a)
     {
       for (int b = 0; b < NUMDIM_SOH8; ++b)
@@ -4146,8 +4143,24 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
     }
+  }
 
+  if (d_cauchyndir_dxi)
+  {
     d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
+  }
+
+  if (d2_cauchyndir_dd_dxi)
+  {
+    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
+        d2_cauchyndir_dd_dxi->A(), true);
+
+    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+        NUMNOD_SOH8>
+        deriv2(true);
+    deriv2.Clear();
+    DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMDIM_SOH8>

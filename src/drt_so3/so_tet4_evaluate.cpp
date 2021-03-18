@@ -2503,16 +2503,16 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dd2_d_F_dd, 0.0);
   }
 
-  if (d2_cauchyndir_dd_dxi)
-  {
-    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
-    LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
-        d2_cauchyndir_dd_dxi->A(), true);
+  // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
+  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+      NUMNOD_SOTET4>
+      deriv2(true);
+  static LINALG::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
+  deriv2.Clear();
+  d_F_dxi.Clear();
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
-        NUMNOD_SOTET4>
-        deriv2(true);
-    deriv2.Clear();
+  if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
+  {
     DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xXF(true);
@@ -2523,8 +2523,6 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    static LINALG::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
-    d_F_dxi.Clear();
     for (int a = 0; a < NUMDIM_SOTET4; ++a)
     {
       for (int b = 0; b < NUMDIM_SOTET4; ++b)
@@ -2537,8 +2535,18 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
     }
+  }
 
+  if (d_cauchyndir_dxi)
+  {
     d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
+  }
+
+  if (d2_cauchyndir_dd_dxi)
+  {
+    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+    LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
+        d2_cauchyndir_dd_dxi->A(), true);
 
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
         NUMDIM_SOTET4>

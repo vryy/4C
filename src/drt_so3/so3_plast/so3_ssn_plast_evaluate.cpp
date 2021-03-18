@@ -2166,14 +2166,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF2_d_F_dd, 0.0);
   }
 
-  if (d2_cauchyndir_dd_dxi)
-  {
-    d2_cauchyndir_dd_dxi->Shape(numdofperelement_, nsd_);
-    LINALG::Matrix<numdofperelement_, nsd_> d2_cauchyndir_dd_dxi_mat(
-        d2_cauchyndir_dd_dxi->A(), true);
+  // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
+  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
+  static LINALG::Matrix<9, nsd_> d_F_dxi(true);
+  deriv2.Clear();
+  d_F_dxi.Clear();
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
-    deriv2.Clear();
+  if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
+  {
     if (distype == DRT::Element::nurbs27)
     {
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
@@ -2188,8 +2188,6 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    static LINALG::Matrix<9, nsd_> d_F_dxi(true);
-    d_F_dxi.Clear();
     for (int a = 0; a < nsd_; ++a)
     {
       for (int b = 0; b < nsd_; ++b)
@@ -2202,9 +2200,19 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
     }
+  }
 
+  if (d_cauchyndir_dxi)
+  {
     d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
     if (temp) d_cauchyndir_dxi->Update(d_cauchyndir_dT_gp, d_T_dxi, 1.0);
+  }
+
+  if (d2_cauchyndir_dd_dxi)
+  {
+    d2_cauchyndir_dd_dxi->Shape(numdofperelement_, nsd_);
+    LINALG::Matrix<numdofperelement_, nsd_> d2_cauchyndir_dd_dxi_mat(
+        d2_cauchyndir_dd_dxi->A(), true);
 
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nsd_> Xsec(true);
     static LINALG::Matrix<nen_, 6> N_XYZ_Xsec(true);
