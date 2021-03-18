@@ -89,10 +89,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
-
-      //! Destructor
-      virtual ~So3_Plast(){};
+      DRT::Element* Clone() const override;
 
       //@}
 
@@ -119,72 +116,72 @@ namespace DRT
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
-      bool HaveEAS() const { return (eastype_ != soh8p_easnone); };
+      bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! Get number of degrees of freedom of a certain node in case of multiple
       //! dofsets (implements pure virtual DRT::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
-      virtual int NumDofPerNode(const DRT::Node& node) const { return nsd_; };
+      int NumDofPerNode(const DRT::Node& node) const override { return nsd_; };
 
       //! Get number of degrees of freedom of this element
-      virtual int NumDofPerElement() const { return 0; };
+      int NumDofPerElement() const override { return 0; };
 
       //@}
 
       //! @name Access methods
 
       //! Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //! return elementtype
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
       //! return element shape
-      virtual DiscretizationType Shape() const { return distype; };
+      DiscretizationType Shape() const override { return distype; };
 
       /*!
       \brief Return number of volumes of this element
       */
-      virtual int NumVolume() const;
+      int NumVolume() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const;
+      int NumSurface() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const;
+      int NumLine() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volumes of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
       //@}
 
       //! @name Input and Creation
@@ -208,7 +205,7 @@ namespace DRT
       //!  names (out): On return, the derived class has filled names with key
       //!               names of data it wants to visualize and with int dimensions
       //!               of that data.
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       //!  Query data to be visualized using BINIO of a given name
       //!
@@ -222,13 +219,13 @@ namespace DRT
       //!
       //!  name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       //! read input for this element
       bool ReadElement(const std::string& eletype,  //!< so3plast(fbar)
           const std::string& eledistype,            //!< hex8,tet4,...
           DRT::INPUT::LineDefinition* linedef       //!< what parameters have to be read
-      );
+          ) override;
 
       //@}
 
@@ -253,7 +250,7 @@ namespace DRT
               elevec1_epetra,  //!< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
           Epetra_SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
-      );
+          ) override;
 
       //@}
 
@@ -271,9 +268,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
@@ -326,7 +323,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So3_Plast& operator=(const So3_Plast& old);
+      So3_Plast& operator=(const So3_Plast& old) = delete;
 
       //! number of plastic variables at each gauss point
       enum PlSpinType

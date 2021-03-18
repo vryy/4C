@@ -34,10 +34,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
     {
       if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
               distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+      {
         dserror(
             "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
             "The following should work, but keep your eyes open (especially with the order of the "
             "Gauß points)");
+      }
 
       /* =========================================================================*/
       // start concentration business
@@ -107,14 +109,17 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
     // if temperatures were set
     if (discretization.NumDofSets() == 3)
+    {
       if (discretization.HasState(2, "tempfield"))
       {
         if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
                 distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+        {
           dserror(
               "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
               "The following should work, but keep your eyes open (especially with the order of "
               "the Gauß points");
+        }
 
         /* =========================================================================*/
         // start temperature business
@@ -153,6 +158,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
         params.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
       }
+    }
 
     // If you need a pointer to the scatra material, use these lines:
     // we assume that the second material of the structure is the scatra element material

@@ -2032,11 +2032,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     if (!temp || !d_cauchyndir_dT || !d2_cauchyndir_dd_dT)
       dserror("inconsistent temperature dependency input");
   if (temp && Material()->MaterialType() != INPAR::MAT::m_plelasthyper)
+  {
     dserror(
         "thermo-mechanical Nitsche contact only with PlasticElastHyper"
         "\nIf you want to do elasticity, set a negative yield stress ;)");
+  }
 
-  MAT::PlasticElastHyper* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
+  auto* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
 
   cauchy_n_dir = 0.0;
 
@@ -2103,14 +2105,18 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
   static LINALG::Matrix<9, 1> d2_cauchyndir_dF_dT(true);
 
   if (plmat && temp)
+  {
     plmat->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
         d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
         &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, &gp_temp, &d_cauchyndir_dT_gp,
         &d2_cauchyndir_dF_dT);
+  }
   else
+  {
     SolidMaterial()->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
         d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
         &d2_cauchyndir_dF_ddir, -1, Id(), nullptr, nullptr, nullptr, nullptr);
+  }
 
   if (d_cauchyndir_dd)
   {
@@ -2169,8 +2175,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2, nen_> deriv2(true);
     deriv2.Clear();
     if (distype == DRT::Element::nurbs27)
+    {
       DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv_deriv2(
           SetShapeFunction(), SetDerivShapeFunction(), deriv2, xi, Knots(), Weights(), distype);
+    }
     else
       DRT::UTILS::shape_function_deriv2<distype>(xi, deriv2);
 
@@ -2183,6 +2191,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
     static LINALG::Matrix<9, nsd_> d_F_dxi(true);
     d_F_dxi.Clear();
     for (int a = 0; a < nsd_; ++a)
+    {
       for (int b = 0; b < nsd_; ++b)
       {
         d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
@@ -2192,6 +2201,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
         d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
+    }
 
     d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
     if (temp) d_cauchyndir_dxi->Update(d_cauchyndir_dT_gp, d_T_dxi, 1.0);
@@ -2214,38 +2224,43 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
 
     static LINALG::Matrix<9, nsd_ * numdofperelement_> d2_F_dxi_dd(true);
     d2_F_dxi_dd.Clear();
-    for (int m = 0; m < nsd_; ++m)
-      for (int n = 0; n < nsd_; ++n)
+    for (int i = 0; i < nsd_; ++i)
+    {
+      for (int j = 0; j < nsd_; ++j)
+      {
         for (int k = 0; k < nen_; ++k)
         {
           d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(m, n), numdofpernode_ * (numdofpernode_ * k + m) + 0) +=
-              deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 4) * invJ(n, 2);
+              VoigtMapping::NonSymToVoigt9(i, j), numdofpernode_ * (numdofpernode_ * k + i) + 0) +=
+              deriv2(0, k) * invJ(j, 0) + deriv2(3, k) * invJ(j, 1) + deriv2(4, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 0) * invJ(j, 0) - N_XYZ_Xsec(k, 3) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 4) * invJ(j, 2);
 
           d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(m, n), numdofpernode_ * (numdofpernode_ * k + m) + 1) +=
-              deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 5) * invJ(n, 2);
+              VoigtMapping::NonSymToVoigt9(i, j), numdofpernode_ * (numdofpernode_ * k + i) + 1) +=
+              deriv2(3, k) * invJ(j, 0) + deriv2(1, k) * invJ(j, 1) + deriv2(5, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 3) * invJ(j, 0) - N_XYZ_Xsec(k, 1) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 5) * invJ(j, 2);
 
           d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(m, n), numdofpernode_ * (numdofpernode_ * k + m) + 2) +=
-              deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 2) * invJ(n, 2);
+              VoigtMapping::NonSymToVoigt9(i, j), numdofpernode_ * (numdofpernode_ * k + i) + 2) +=
+              deriv2(4, k) * invJ(j, 0) + deriv2(5, k) * invJ(j, 1) + deriv2(2, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 4) * invJ(j, 0) - N_XYZ_Xsec(k, 5) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 2) * invJ(j, 2);
 
           for (int l = 0; l < nsd_; ++l)
-            d2_cauchyndir_dd_dxi_mat(k * 3 + m, l) +=
-                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(m, n), 0) *
-                d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(m, n),
-                    numdofpernode_ * (numdofpernode_ * k + m) + l);
+          {
+            d2_cauchyndir_dd_dxi_mat(k * 3 + i, l) +=
+                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(i, j), 0) *
+                d2_F_dxi_dd(VoigtMapping::NonSymToVoigt9(i, j),
+                    numdofpernode_ * (numdofpernode_ * k + i) + l);
+          }
         }
+      }
+    }
   }
   InvalidEleData();
   InvalidGpData();
-  return;
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -2320,7 +2335,9 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
 
   LINALG::Matrix<numstr_, nsd_> d_ndirdirn_v_dn, d_ndirdirn_v_dt;
   for (int i = 0; i < nsd_; ++i)
+  {
     for (int j = 0; j < nsd_; ++j)
+    {
       for (int a = 0; a < nsd_; ++a)
       {
         d_ndirdirn_v_dn(VoigtMapping::SymToVoigt6(i, j), a) +=
@@ -2328,6 +2345,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiPlast(
         d_ndirdirn_v_dt(VoigtMapping::SymToVoigt6(i, j), a) +=
             .5 * ((i == a) * n(j) + (j == a) * n(i));
       }
+    }
+  }
   if (d_cauchyndir_dn) d_cauchyndir_dn->MultiplyTN(d_ndirdirn_v_dn, cauchy_expol);
   if (d_cauchyndir_ddir) d_cauchyndir_ddir->MultiplyTN(d_ndirdirn_v_dt, cauchy_expol);
 
@@ -2365,23 +2384,27 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXi(
 {
   if (d_cauchyndir_dc != nullptr) dserror("Not implemented");
 
-  bool el = true;
-  MAT::PlasticElastHyper* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
+  bool elastic = true;
+  auto* plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
   if (!plmat)
-    el = true;
+    elastic = true;
   else
-    el = plmat->AllElastic();
+    elastic = plmat->AllElastic();
 
-  if (el == false)
+  if (!elastic)
+  {
     GetCauchyNDirAndDerivativesAtXiPlast(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd,
         d2_cauchyndir_dd2, d2_cauchyndir_dd_dn, d2_cauchyndir_dd_ddir, d2_cauchyndir_dd_dxi,
         d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, temp, d_cauchyndir_dT,
         d2_cauchyndir_dd_dT);
+  }
   else
+  {
     GetCauchyNDirAndDerivativesAtXiElast(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd,
         d2_cauchyndir_dd2, d2_cauchyndir_dd_dn, d2_cauchyndir_dd_ddir, d2_cauchyndir_dd_dxi,
         d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, temp, d_cauchyndir_dT,
         d2_cauchyndir_dd_dT);
+  }
 }
 
 template <DRT::Element::DiscretizationType distype>

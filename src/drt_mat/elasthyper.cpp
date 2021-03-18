@@ -16,8 +16,6 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 #include "elasthyper.H"
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_matelast/elast_summand.H"
-#include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
@@ -304,9 +302,11 @@ void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   ElastHyperProperties(potsum_, summandProperties_);
 
   if (summandProperties_.viscoGeneral)
+  {
     dserror(
         "Never use viscoelastic-materials in Elasthyper-Toolbox. Use Viscoelasthyper-Toolbox "
         "instead.");
+  }
 }
 
 void MAT::ElastHyper::PostSetup(Teuchos::ParameterList& params, const int eleGID)
@@ -693,18 +693,26 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
     const double fac = prefac * dPI(0);
     tempvec1x3.MultiplyTN(1.0, dir, defgrd, 0.0);
     for (int k = 0; k < 3; ++k)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         for (int z = 0; z < 3; ++z)
           (*d2_cauchyndir_dF_dn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (dir(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
+      }
+    }
 
     // third part is term arising from d/dn(d(b^{-1} * n * t)/dF
     const double fac2 = prefac * prinv(2) * dPI(1);
     for (int k = 0; k < 3; ++k)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         for (int z = 0; z < 3; ++z)
           (*d2_cauchyndir_dF_dn)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibddir(k, 0) * ibdF(z, l) + ib(z, k) * dirdibdF(0, l));
+      }
+    }
 
     // add parts originating from d/dn(d(sigma * n * t)/dI1 \otimes dI1/dF)
     tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), dir, 0.0);
@@ -738,18 +746,26 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
     const double fac = prefac * dPI(0);
     tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
     for (int k = 0; k < 3; ++k)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         for (int z = 0; z < 3; ++z)
           (*d2_cauchyndir_dF_ddir)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac * (n(k, 0) * defgrd(z, l) + static_cast<double>(k == z) * tempvec1x3(0, l));
+      }
+    }
 
     // third part is term arising from d/dn(d(b^{-1} * n * v)/dF
     const double fac2 = prefac * prinv(2) * dPI(1);
     for (int k = 0; k < 3; ++k)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         for (int z = 0; z < 3; ++z)
           (*d2_cauchyndir_dF_ddir)(UTILS::VOIGT::IndexMappings::NonSymToVoigt9(k, l), z) +=
               fac2 * (ibdn(k, 0) * ibdF(z, l) + ib(z, k) * ndibdF(0, l));
+      }
+    }
 
     // add parts originating from d/dt(d(sigma * n * v)/dI1 \otimes dI1/dF)
     tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), n, 0.0);
@@ -792,8 +808,11 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
     using map = UTILS::VOIGT::IndexMappings;
 
     for (int k = 0; k < 3; ++k)
+    {
       for (int l = 0; l < 3; ++l)
+      {
         for (int m = 0; m < 3; ++m)
+        {
           for (int a = 0; a < 3; ++a)
           {
             d_iFT_dF(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) = -iF(l, m) * iF(a, k);
@@ -813,6 +832,9 @@ void MAT::ElastHyper::EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3
             d2_I3_dF2(map::NonSymToVoigt9(k, l), map::NonSymToVoigt9(m, a)) =
                 2.0 * prinv(2) * (2.0 * ibdF(m, a) * ibdF(k, l) - ibdF(m, l) * ibdF(k, a));
           }
+        }
+      }
+    }
 
     // terms below add contributions originating from d(1st term of DsntDF)/dF
     d2_cauchyndir_dF2->MultiplyNT(prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +

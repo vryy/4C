@@ -4004,11 +4004,7 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 
   }  // if last gp of element is reached
 #endif
-
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -4139,6 +4135,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
     static LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
     d_F_dxi.Clear();
     for (int a = 0; a < NUMDIM_SOH8; ++a)
+    {
       for (int b = 0; b < NUMDIM_SOH8; ++b)
       {
         d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
@@ -4148,6 +4145,7 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
         d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
+    }
 
     d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
 
@@ -4166,34 +4164,40 @@ void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matri
 
     static LINALG::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> d2_F_dxi_dd(true);
     d2_F_dxi_dd.Clear();
-    for (int m = 0; m < NUMDIM_SOH8; ++m)
-      for (int n = 0; n < NUMDIM_SOH8; ++n)
+    for (int i = 0; i < NUMDIM_SOH8; ++i)
+    {
+      for (int j = 0; j < NUMDIM_SOH8; ++j)
+      {
         for (int k = 0; k < NUMNOD_SOH8; ++k)
         {
           d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 0) +=
-              deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 4) * invJ(n, 2);
+              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 0) +=
+              deriv2(0, k) * invJ(j, 0) + deriv2(3, k) * invJ(j, 1) + deriv2(4, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 0) * invJ(j, 0) - N_XYZ_Xsec(k, 3) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 4) * invJ(j, 2);
 
           d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 1) +=
-              deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 5) * invJ(n, 2);
+              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 1) +=
+              deriv2(3, k) * invJ(j, 0) + deriv2(1, k) * invJ(j, 1) + deriv2(5, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 3) * invJ(j, 0) - N_XYZ_Xsec(k, 1) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 5) * invJ(j, 2);
 
           d2_F_dxi_dd(
-              VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 2) +=
-              deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 2) * invJ(n, 2);
+              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 2) +=
+              deriv2(4, k) * invJ(j, 0) + deriv2(5, k) * invJ(j, 1) + deriv2(2, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 4) * invJ(j, 0) - N_XYZ_Xsec(k, 5) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 2) * invJ(j, 2);
 
           for (int l = 0; l < NUMDIM_SOH8; ++l)
-            d2_cauchyndir_dd_dxi_mat(k * 3 + m, l) +=
-                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(m, n), 0) *
+          {
+            d2_cauchyndir_dd_dxi_mat(k * 3 + i, l) +=
+                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(i, j), 0) *
                 d2_F_dxi_dd(
-                    VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + l);
+                    VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + l);
+          }
         }
+      }
+    }
   }
 
   if (d_cauchyndir_dc != nullptr)

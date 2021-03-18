@@ -54,9 +54,11 @@ namespace DRT
       */
       So_base(const So_base& old);
 
-      //! Destructor
-      virtual ~So_base(){};
+      /*!
+      \brief Default Constructor must not be called
 
+      */
+      So_base() = delete;
       //@}
 
       /*!
@@ -65,7 +67,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -73,7 +75,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       // get the kinematic type from the element
       INPAR::STR::KinemType KinematicType() const { return kintype_; }
@@ -243,19 +245,19 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
       /** \brief returns true if the parameter interface is defined and initialized, otherwise false
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual inline bool IsParamsInterface() const { return (not interface_ptr_.is_null()); }
+      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
      protected:
       /** \brief get access to the interface
@@ -277,8 +279,8 @@ namespace DRT
       /** \brief error handling for structural elements
        *
        *  \author hiermeier \date 09/18 */
-      void ErrorHandling(const double& det_curr, Teuchos::ParameterList& params, const int line_id,
-          const STR::ELEMENTS::EvalErrorFlag flag);
+      void ErrorHandling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
+          STR::ELEMENTS::EvalErrorFlag flag);
 
      protected:
       /*!
@@ -310,13 +312,6 @@ namespace DRT
 
       //! Flag of the status of the material post setup routine
       bool material_post_setup_;
-
-     private:
-      /*!
-      \brief Default Constructor must not be called
-
-      */
-      So_base();
 
     };  // class So_base
 
