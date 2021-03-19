@@ -4,13 +4,14 @@
 \brief Implementation of the Weickenmeier active skeletal muscle material model constituent
 
 \level 3
+
 */
 /*----------------------------------------------------------------------*/
 
 #include "mixture_constituent_muscle_weickenmeier.H"
-#include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/voigt_notation.H"
 #include "../drt_matelast/elast_aniso_structuraltensor_strategy.H"
 #include "../drt_mat/elasthyper_service.H"
@@ -18,7 +19,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/mixture_elasthyper.H"
 
-// Constructor for the parameter class
+
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
     const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
     : MixtureConstituent(matdata, ref_mass_fraction),
@@ -87,14 +88,12 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
     dserror("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
 }
 
-// Create an instance of MIXTURE::MixtureConstituent_Muscle_Weickenmeier from the parameters
 Teuchos::RCP<MIXTURE::MixtureConstituent>
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::CreateConstituent(int id)
 {
   return Teuchos::rcp(new MIXTURE::MixtureConstituent_Muscle_Weickenmeier(this, id));
 }
 
-// Constructor of the constituent holding the material parameters
 MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
     MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params, int id)
     : MixtureConstituent(params, id),
@@ -144,7 +143,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::PackConstituent(DRT::PackB
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-// Unpack the constituent
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::UnpackConstituent(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
@@ -177,14 +175,12 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::UnpackConstituent(
   anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
-// Pre Evaluate
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::PreEvaluate(
     MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   anisotropy_.ReadAnisotropyFromParameterList(params);
 }
 
-// Initialize the constituent with the parameters of the input line
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::ReadElement(
     int numgp, DRT::INPUT::LineDefinition* linedef)
 {
@@ -196,7 +192,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::ReadElement(
   anisotropy_.ReadAnisotropyFromElement(linedef);
 }
 
-// Evaluate stress and material tangent of the constituent and add to mixture stress and cmat
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>& F,
     const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
@@ -348,10 +343,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   cmat.Update(CurrentRefDensity(gp), ccmat, 1.0);
 }
 
-/*----------------------------------------------------------------------*
- | Evaluate active nominal stress Pact and its derivative w.r.t. the    |
- | fiber stretch                                                        |
- *----------------------------------------------------------------------*/
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStress(
     Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa)
 {
@@ -477,10 +468,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   derivPa = Poptft * (fv * dFsdLamdaM + fxi * dFvdDotLambdaM * dDotLambdaMdLambdaM);
 }
 
-/*----------------------------------------------------------------------*
- | Evaluate activation level omegaa and its derivative w.r.t. the right |
- | Cauchy Green tensor                                                  |
- *----------------------------------------------------------------------*/
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
     Teuchos::ParameterList& params, const double lambdaM, LINALG::Matrix<3, 3>& M, double Pa,
     double derivPa, double& omegaa, LINALG::Matrix<3, 3>& domegaadC)
@@ -528,10 +515,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
       derivderivIp / (4.0 * std::pow(lambdaM, 2.)) + derivIp / (4.0 * std::pow(lambdaM, 3.)));
 }
 
-/*----------------------------------------------------------------------*
- |  Compute the solution of the principal branch of the Lambert W       |
- |  functions using Halley's method                                     |
- *----------------------------------------------------------------------*/
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateLambert(
     double xi, double& W0, double tol, double maxiter)
 {
@@ -558,18 +541,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateLambert(
   }
 }
 
-/*----------------------------------------------------------------------*
-  |  Add the following contribution to the constitutive tensor cmat(6,6) based on
-  |  - the inverse of the right Cauchy-Green vector invC
-  |  - the term invC*L*invC with the structural tensor L:
-  |              \partial tensor(C)^-1 tensor(L) tensor(C)^-1
-  |  scalar *    --------------------------------------------
-  |              \partial tensor(C)
-  |
-  |  wherein the derivative frac{\partial tensor(C)^-1 tensor(L) tensor(C)^-1}{\partial tensor(C)}
-  is computed to: |  - 1/2 * ( Cinv_{ik} Cinv_{jm} L_{mn} Cinv_{nl} + Cinv_{il} Cinv_{jm} L_{mn}
-  Cinv_{nk} + Cinv_{jk} Cinv_{im} L_{mn} Cinv_{nl} + Cinv_{jl} Cinv_{im} L_{mn} Cinv_{nk})
-  *----------------------------------------------------------------------*/
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::AddtoCmatDerivInvCLInvCProduct(
     LINALG::Matrix<6, 6>& cmat, const LINALG::Matrix<3, 3>& invC,
     const LINALG::Matrix<3, 3>& invCLinvC, double scalar)

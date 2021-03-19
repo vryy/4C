@@ -59,16 +59,16 @@ DIVERCONT                       adapt_step
 TIMESTEP                        0.0001
 NUMSTEP                         150
 MAXTIME                         0.015
-PREDICT                         ConstDis              
+PREDICT                         ConstDis
 NORM_DISP                       Abs
 NORM_RESF                       Abs
 NORMCOMBI_RESFDISP              And
-TOLDISP                         1.0E-06
-TOLRES                          1.0E-06
+TOLDISP                         1.0E-09
+TOLRES                          1.0E-09
 ADAPTCONV                       no
 ADAPTCONV_BETTER                0.01
 MAXITER                         100
-MATERIALTANGENT			analytical
+MATERIALTANGENT                 analytical
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
@@ -93,22 +93,22 @@ Outer Iteration                 = No
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 -------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY stress_zz VALUE 1.4404917739999e+02 TOLERANCE 1e-9 // top nodes passive material cube
-STRUCTURE DIS structure NODE 4 QUANTITY stress_zz VALUE 1.4404917739998e+02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 5 QUANTITY stress_zz VALUE 1.4404917739998e+02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 8 QUANTITY stress_zz VALUE 1.4404917739998e+02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -3.02116716345384e-01 TOLERANCE 1e-9 // top nodes active material cube
-STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE -3.02116716345385e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -3.02116716345385e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE -3.02116716345384e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 17 QUANTITY stress_zz VALUE 1.4404917739999e+02 TOLERANCE 1e-9 // top nodes passive material cube
-STRUCTURE DIS structure NODE 20 QUANTITY stress_zz VALUE 1.4404917739998e+02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 21 QUANTITY stress_zz VALUE 1.4404917739998e+02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 24 QUANTITY stress_zz VALUE 1.4404917739998e+02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 25 QUANTITY dispz VALUE -3.02116716345384e-01 TOLERANCE 1e-9 // top nodes active material cube
-STRUCTURE DIS structure NODE 28 QUANTITY dispz VALUE -3.02116716345385e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 29 QUANTITY dispz VALUE -3.02116716345385e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 32 QUANTITY dispz VALUE -3.02116716345384e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 1 QUANTITY stress_zz VALUE 1.44049177364090411e+02 TOLERANCE 1e-9 // top nodes passive material cube
+STRUCTURE DIS structure NODE 4 QUANTITY stress_zz VALUE 1.44049177364080776e+02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 5 QUANTITY stress_zz VALUE 1.44049177364084812e+02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 8 QUANTITY stress_zz VALUE 1.44049177364093111e+02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -3.02116716379998818e-01 TOLERANCE 1e-9 // top nodes active material cube
+STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE -3.02116716379999262e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 13 QUANTITY dispz VALUE -3.02116716379999262e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE -3.02116716379998873e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 17 QUANTITY stress_zz VALUE 1.44049177364088848e+02 TOLERANCE 1e-9 // top nodes passive material cube
+STRUCTURE DIS structure NODE 20 QUANTITY stress_zz VALUE 1.44049177364092486e+02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 21 QUANTITY stress_zz VALUE 1.44049177364088109e+02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 24 QUANTITY stress_zz VALUE 1.44049177364075859e+02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 25 QUANTITY dispz VALUE -3.02116716379999595e-01 TOLERANCE 1e-9 // top nodes active material cube
+STRUCTURE DIS structure NODE 28 QUANTITY dispz VALUE -3.02116716379998818e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 29 QUANTITY dispz VALUE -3.02116716379998651e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 32 QUANTITY dispz VALUE -3.02116716379999317e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------MATERIALS
 // passive unmixed material used for cube 1
 MAT 1 MAT_MixtureElastHyper NUMCONST 1 MATIDSCONST 11 MASSFRAC 1.0 MATIDMIXTURERULE 10 DENS 1.0

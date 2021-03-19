@@ -10,17 +10,13 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
 #define BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
 
-#include "../headers/FADmatrix_utils.H"
-#include "../drt_mat/matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/anisotropy.H"
-#include "../drt_mat/so3_material.H"
 #include "../drt_mat/anisotropy_extension_default.H"
 #include "../drt_mat/anisotropy_extension_provider.H"
 #include "mixture_constituent.H"
-#include <Teuchos_RCPDecl.hpp>
-
-
+#include <Teuchos_RCP.hpp>
 namespace MIXTURE
 {
   namespace PAR
@@ -32,12 +28,8 @@ namespace MIXTURE
       explicit MixtureConstituent_Muscle_Weickenmeier(
           const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
 
-      ~MixtureConstituent_Muscle_Weickenmeier() override = default;
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
-
-      // Teuchos::RCP<MAT::Material> CreateMaterial();
 
       /// @name material parameters
       //@{
@@ -99,6 +91,11 @@ namespace MIXTURE
    *
    * This constituent represents the Weickenmeier muscle material. It has to
    * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
+   *
+   * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, ‘A
+   * physically motivated constitutive model for 3D numerical simulation of skeletal muscles’,
+   * International journal for numerical methods in biomedical engineering, vol. 30, no. 5, pp.
+   * 545–562, 2014, doi: 10.1002/cnm.2618.
    */
   class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::MixtureConstituent
   {
@@ -127,7 +124,7 @@ namespace MIXTURE
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    // Evaluate
+    // Evaluate stress and material tangent of the constituent and add to mixture stress and cmat
     void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) override;
@@ -182,15 +179,18 @@ namespace MIXTURE
      *
      *  Add the following contribution to the constitutive tensor cmat(6,6) based on
      *  - the inverse of the right Cauchy-Green vector invC
-     *  - the term invC*L*invC with the structural tensor L
+     *  - the term invC*L*invC (\f$ \mathbf{C}^{-1} \mathbf{L} \mathbf{C}^{-1} \f$) with the
+     *  structural tensor L (\f$ \mathbf{L} \f$)
      *
-     *              \partial tensor(C)^-1 tensor(L) tensor(C)^-1
-     *  scalar *    --------------------------------------------
-     *              \partial tensor(C)
-     *  wherein the derivative frac{\partial tensor(C)^-1 tensor(L) tensor(C)^-1}{\partial
-     *  tensor(C)} is computed to:  - 1/2 * ( Cinv_{ik} Cinv_{jm} L_{mn} Cinv_{nl} + Cinv_{il}
-     *  Cinv_{jm} L_{mn} Cinv_{nk} + Cinv_{jk} Cinv_{im} L_{mn} Cinv_{nl} + Cinv_{jl} Cinv_{im}
-     *  L_{mn} Cinv_{nk})
+     *  \f$\text{scalar} \cdot \frac{\partial \mathbf{C}^{-1} \mathbf{L} \mathbf{C}^{-1}}{\partial
+     *  \mathbf{C}} \f$
+     *
+     *  wherein the derivative \f$ \frac{\partial \mathbf{C}^-1 \mathbf{L} \mathbf{C}^-1}{\partial
+     *  \mathbf{C}}  \f$ is computed to:  \f$ - 1/2 \cdot ( \mathbf{C}^{-1}_{ik}
+     *  \mathbf{C}^{-1}_{jm} L_{mn} \mathbf{C}^{-1}_{nl} + \mathbf{C}^{-1}_{il} \mathbf{C}^{-1}_{jm}
+     *  L_{mn} \mathbf{C}^{-1}_{nk} + \mathbf{C}^{-1}_{jk} \mathbf{C}^{-1}_{im} L_{mn}
+     *  \mathbf{C}^{-1}_{nl} + \mathbf{C}^{-1}_{jl} \mathbf{C}^{-1}_{im} L_{mn}
+     * \mathbf{C}^{-1}_{nk}) \f$
      *
      *  \param[in,out] cmat Constitutive matrix
      *  \param[in]     invC Inverse of right Cauchy Green tensor in matrix notation
