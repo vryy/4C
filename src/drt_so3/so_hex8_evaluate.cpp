@@ -4004,28 +4004,24 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 
   }  // if last gp of element is reached
 #endif
-
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  evaluate cauchy stress tensor                           seitz 11/16|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
-    const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t,
-    double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
-    Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
-    Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
-    LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi, const std::vector<double>* temp,
-    Epetra_SerialDenseMatrix* DsntDT, Epetra_SerialDenseMatrix* D2sntDdDT,
-    const double* concentration, double* DsntDc)
+void DRT::ELEMENTS::So_hex8::GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+    const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir,
+    double& cauchy_n_dir, Epetra_SerialDenseMatrix* d_cauchyndir_dd,
+    Epetra_SerialDenseMatrix* d2_cauchyndir_dd2, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
+    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+    LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+    LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+    Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
+    const double* concentration, double* d_cauchyndir_dc)
 {
-  if (temp || DsntDT || D2sntDdDT)
+  if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
     dserror("Thermo-elastic Nitsche contact not yet implemented in so hex8");
 
-  sigma_nt = 0.0;
+  cauchy_n_dir = 0.0;
 
   static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(true);  // reference coord. of element
   static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(true);  // current  coord. of element
@@ -4056,71 +4052,75 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
   defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
 
   // linearization of deformation gradient F w.r.t. displacements
-  static LINALG::Matrix<9, NUMDOF_SOH8> DFDd(true);
-  DFDd.Clear();
-  if (DsntDd || D2sntDdDn || D2sntDdDt || D2sntDd2 || D2sntDdDxi)
+  static LINALG::Matrix<9, NUMDOF_SOH8> d_F_dd(true);
+  d_F_dd.Clear();
+  if (d_cauchyndir_dd || d2_cauchyndir_dd_dn || d2_cauchyndir_dd_ddir || d2_cauchyndir_dd2 ||
+      d2_cauchyndir_dd_dxi)
   {
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
-      DFDd(0, NODDOF_SOH8 * i + 0) = N_XYZ(0, i);
-      DFDd(1, NODDOF_SOH8 * i + 1) = N_XYZ(1, i);
-      DFDd(2, NODDOF_SOH8 * i + 2) = N_XYZ(2, i);
-      DFDd(3, NODDOF_SOH8 * i + 0) = N_XYZ(1, i);
-      DFDd(4, NODDOF_SOH8 * i + 1) = N_XYZ(2, i);
-      DFDd(5, NODDOF_SOH8 * i + 0) = N_XYZ(2, i);
-      DFDd(6, NODDOF_SOH8 * i + 1) = N_XYZ(0, i);
-      DFDd(7, NODDOF_SOH8 * i + 2) = N_XYZ(1, i);
-      DFDd(8, NODDOF_SOH8 * i + 2) = N_XYZ(0, i);
+      d_F_dd(0, NODDOF_SOH8 * i + 0) = N_XYZ(0, i);
+      d_F_dd(1, NODDOF_SOH8 * i + 1) = N_XYZ(1, i);
+      d_F_dd(2, NODDOF_SOH8 * i + 2) = N_XYZ(2, i);
+      d_F_dd(3, NODDOF_SOH8 * i + 0) = N_XYZ(1, i);
+      d_F_dd(4, NODDOF_SOH8 * i + 1) = N_XYZ(2, i);
+      d_F_dd(5, NODDOF_SOH8 * i + 0) = N_XYZ(2, i);
+      d_F_dd(6, NODDOF_SOH8 * i + 1) = N_XYZ(0, i);
+      d_F_dd(7, NODDOF_SOH8 * i + 2) = N_XYZ(1, i);
+      d_F_dd(8, NODDOF_SOH8 * i + 2) = N_XYZ(0, i);
     }
   }
 
-  static LINALG::Matrix<9, 1> DsntDF(true);
-  static LINALG::Matrix<9, 9> D2sntDF2(true);
-  static LINALG::Matrix<9, NUMDIM_SOH8> D2sntDFDn(true);
-  static LINALG::Matrix<9, NUMDIM_SOH8> D2sntDFDt(true);
+  static LINALG::Matrix<9, 1> d_cauchyndir_dF(true);
+  static LINALG::Matrix<9, 9> d2_cauchyndir_dF2(true);
+  static LINALG::Matrix<9, NUMDIM_SOH8> d2_cauchyndir_dF_dn(true);
+  static LINALG::Matrix<9, NUMDIM_SOH8> d2_cauchyndir_dF_ddir(true);
 
-  SolidMaterial()->EvaluateCauchy(defgrd, n, t, sigma_nt, DsntDn, DsntDt, &DsntDF, &D2sntDF2,
-      &D2sntDFDn, &D2sntDFDt, -1, Id(), concentration, nullptr, nullptr, nullptr);
+  SolidMaterial()->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
+      d_cauchyndir_ddir, &d_cauchyndir_dF, &d2_cauchyndir_dF2, &d2_cauchyndir_dF_dn,
+      &d2_cauchyndir_dF_ddir, -1, Id(), concentration, nullptr, nullptr, nullptr);
 
-  if (DsntDd)
+  if (d_cauchyndir_dd)
   {
-    DsntDd->Reshape(NUMDOF_SOH8, 1);
-    LINALG::Matrix<NUMDOF_SOH8, 1> DsntDd_m(DsntDd->A(), true);
-    DsntDd_m.MultiplyTN(1.0, DFDd, DsntDF, 0.0);
+    d_cauchyndir_dd->Reshape(NUMDOF_SOH8, 1);
+    LINALG::Matrix<NUMDOF_SOH8, 1> d_cauchyndir_dd_mat(d_cauchyndir_dd->A(), true);
+    d_cauchyndir_dd_mat.MultiplyTN(1.0, d_F_dd, d_cauchyndir_dF, 0.0);
   }
 
-  if (D2sntDdDn)
+  if (d2_cauchyndir_dd_dn)
   {
-    D2sntDdDn->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> D2sntDdDn_m(D2sntDdDn->A(), true);
-    D2sntDdDn_m.MultiplyTN(1.0, DFDd, D2sntDFDn, 0.0);
+    d2_cauchyndir_dd_dn->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dn_mat(
+        d2_cauchyndir_dd_dn->A(), true);
+    d2_cauchyndir_dd_dn_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_dn, 0.0);
   }
 
-  if (D2sntDdDt)
+  if (d2_cauchyndir_dd_ddir)
   {
-    D2sntDdDt->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> D2sntDdDt_m(D2sntDdDt->A(), true);
-    D2sntDdDt_m.MultiplyTN(1.0, DFDd, D2sntDFDt, 0.0);
+    d2_cauchyndir_dd_ddir->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_ddir_mat(
+        d2_cauchyndir_dd_ddir->A(), true);
+    d2_cauchyndir_dd_ddir_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_ddir, 0.0);
   }
 
-  if (D2sntDd2)
+  if (d2_cauchyndir_dd2)
   {
-    D2sntDd2->Reshape(NUMDOF_SOH8, NUMDOF_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> D2sntDd2_m(D2sntDd2->A(), true);
-    static LINALG::Matrix<9, NUMDOF_SOH8> D2sntDF2DFDd(true);
-    D2sntDF2DFDd.Multiply(1.0, D2sntDF2, DFDd, 0.0);
-    D2sntDd2_m.MultiplyTN(1.0, DFDd, D2sntDF2DFDd, 0.0);
+    d2_cauchyndir_dd2->Reshape(NUMDOF_SOH8, NUMDOF_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> d2_cauchyndir_dd2_mat(d2_cauchyndir_dd2->A(), true);
+    static LINALG::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF2_d_F_dd(true);
+    d2_cauchyndir_dF2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF2_d_F_dd, 0.0);
   }
 
-  if (D2sntDdDxi)
-  {
-    D2sntDdDxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> D2sntDdDxi_m(D2sntDdDxi->A(), true);
+  // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
+  static LINALG::Matrix<9, NUMDIM_SOH8> d_F_dxi(true);
+  static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2, NUMNOD_SOH8>
+      deriv2(true);
+  d_F_dxi.Clear();
+  deriv2.Clear();
 
-    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
-        NUMNOD_SOH8>
-        deriv2(true);
-    deriv2.Clear();
+  if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
+  {
     DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
     static LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xXF(true);
@@ -4131,20 +4131,36 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
     xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
 
-    static LINALG::Matrix<9, NUMDIM_SOH8> DFDxi(true);
-    DFDxi.Clear();
     for (int a = 0; a < NUMDIM_SOH8; ++a)
+    {
       for (int b = 0; b < NUMDIM_SOH8; ++b)
       {
-        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
+        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 0) +=
             xXFsec(a, 0) * invJ(b, 0) + xXFsec(a, 3) * invJ(b, 1) + xXFsec(a, 4) * invJ(b, 2);
-        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
+        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 1) +=
             xXFsec(a, 3) * invJ(b, 0) + xXFsec(a, 1) * invJ(b, 1) + xXFsec(a, 5) * invJ(b, 2);
-        DFDxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
+        d_F_dxi(VoigtMapping::NonSymToVoigt9(a, b), 2) +=
             xXFsec(a, 4) * invJ(b, 0) + xXFsec(a, 5) * invJ(b, 1) + xXFsec(a, 2) * invJ(b, 2);
       }
+    }
+  }
 
-    DsntDxi->MultiplyTN(1.0, DFDxi, DsntDF, 0.0);
+  if (d_cauchyndir_dxi)
+  {
+    d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
+  }
+
+  if (d2_cauchyndir_dd_dxi)
+  {
+    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> d2_cauchyndir_dd_dxi_mat(
+        d2_cauchyndir_dd_dxi->A(), true);
+
+    static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
+        NUMNOD_SOH8>
+        deriv2(true);
+    deriv2.Clear();
+    DRT::UTILS::shape_function_deriv2<DRT::Element::hex8>(xi, deriv2);
 
     static LINALG::Matrix<DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::hex8>::numderiv2,
         NUMDIM_SOH8>
@@ -4155,42 +4171,52 @@ void DRT::ELEMENTS::So_hex8::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
 
-    static LINALG::Matrix<9, NUMDOF_SOH8> D2sntDF2DFDd(true);
-    D2sntDF2DFDd.Multiply(1.0, D2sntDF2, DFDd, 0.0);
-    D2sntDdDxi_m.MultiplyTN(1.0, D2sntDF2DFDd, DFDxi, 0.0);
+    static LINALG::Matrix<9, NUMDOF_SOH8> d2_cauchyndir_dF2_d_F_dd(true);
+    d2_cauchyndir_dF2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd_dxi_mat.MultiplyTN(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
 
-    static LINALG::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> D2FDxiDd(true);
-    D2FDxiDd.Clear();
-    for (int m = 0; m < NUMDIM_SOH8; ++m)
-      for (int n = 0; n < NUMDIM_SOH8; ++n)
+    static LINALG::Matrix<9, NUMDIM_SOH8 * NUMDOF_SOH8> d2_F_dxi_dd(true);
+    d2_F_dxi_dd.Clear();
+    for (int i = 0; i < NUMDIM_SOH8; ++i)
+    {
+      for (int j = 0; j < NUMDIM_SOH8; ++j)
+      {
         for (int k = 0; k < NUMNOD_SOH8; ++k)
         {
-          D2FDxiDd(VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 0) +=
-              deriv2(0, k) * invJ(n, 0) + deriv2(3, k) * invJ(n, 1) + deriv2(4, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 0) * invJ(n, 0) - N_XYZ_Xsec(k, 3) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 4) * invJ(n, 2);
+          d2_F_dxi_dd(
+              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 0) +=
+              deriv2(0, k) * invJ(j, 0) + deriv2(3, k) * invJ(j, 1) + deriv2(4, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 0) * invJ(j, 0) - N_XYZ_Xsec(k, 3) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 4) * invJ(j, 2);
 
-          D2FDxiDd(VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 1) +=
-              deriv2(3, k) * invJ(n, 0) + deriv2(1, k) * invJ(n, 1) + deriv2(5, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 3) * invJ(n, 0) - N_XYZ_Xsec(k, 1) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 5) * invJ(n, 2);
+          d2_F_dxi_dd(
+              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 1) +=
+              deriv2(3, k) * invJ(j, 0) + deriv2(1, k) * invJ(j, 1) + deriv2(5, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 3) * invJ(j, 0) - N_XYZ_Xsec(k, 1) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 5) * invJ(j, 2);
 
-          D2FDxiDd(VoigtMapping::NonSymToVoigt9(m, n), NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + 2) +=
-              deriv2(4, k) * invJ(n, 0) + deriv2(5, k) * invJ(n, 1) + deriv2(2, k) * invJ(n, 2) -
-              N_XYZ_Xsec(k, 4) * invJ(n, 0) - N_XYZ_Xsec(k, 5) * invJ(n, 1) -
-              N_XYZ_Xsec(k, 2) * invJ(n, 2);
+          d2_F_dxi_dd(
+              VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + 2) +=
+              deriv2(4, k) * invJ(j, 0) + deriv2(5, k) * invJ(j, 1) + deriv2(2, k) * invJ(j, 2) -
+              N_XYZ_Xsec(k, 4) * invJ(j, 0) - N_XYZ_Xsec(k, 5) * invJ(j, 1) -
+              N_XYZ_Xsec(k, 2) * invJ(j, 2);
 
           for (int l = 0; l < NUMDIM_SOH8; ++l)
-            D2sntDdDxi_m(k * 3 + m, l) += DsntDF(VoigtMapping::NonSymToVoigt9(m, n), 0) *
-                                          D2FDxiDd(VoigtMapping::NonSymToVoigt9(m, n),
-                                              NODDOF_SOH8 * (NODDOF_SOH8 * k + m) + l);
+          {
+            d2_cauchyndir_dd_dxi_mat(k * 3 + i, l) +=
+                d_cauchyndir_dF(VoigtMapping::NonSymToVoigt9(i, j), 0) *
+                d2_F_dxi_dd(
+                    VoigtMapping::NonSymToVoigt9(i, j), NODDOF_SOH8 * (NODDOF_SOH8 * k + i) + l);
+          }
         }
+      }
+    }
   }
 
-  if (DsntDc != nullptr)
+  if (d_cauchyndir_dc != nullptr)
   {
-    static LINALG::Matrix<9, 1> DFDc(true);
-    SolidMaterial()->EvaluateLinearizationOD(defgrd, *concentration, &DFDc);
-    *DsntDc = DsntDF.Dot(DFDc);
+    static LINALG::Matrix<9, 1> d_F_dc(true);
+    SolidMaterial()->EvaluateLinearizationOD(defgrd, *concentration, &d_F_dc);
+    *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
   }
 }

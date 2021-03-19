@@ -273,11 +273,12 @@ namespace DRT
       virtual double RefPorosityTimeDeriv();
 
       //! evaluate Cauchy stress at given point in parameter space
-      virtual void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
-          const std::vector<double>& pres, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& t, double& sigma_nt, Epetra_SerialDenseMatrix* dsntdd = NULL,
-          Epetra_SerialDenseMatrix* dsntdp = NULL, LINALG::Matrix<3, 1>* dsntdn = NULL,
-          LINALG::Matrix<3, 1>* dsntdt = NULL, LINALG::Matrix<3, 1>* dsntdpxi = NULL);
+      virtual void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const std::vector<double>& pres,
+          const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_dp,
+          LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+          LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
 
      protected:
       //! don't want = operator

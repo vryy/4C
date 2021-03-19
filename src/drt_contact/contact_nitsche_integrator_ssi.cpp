@@ -159,21 +159,21 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
     GEN::pairedvector<int, double>& d_cauchy_nt_ds)
 {
   static LINALG::Matrix<dim, 1> parent_xi(true);
-  static LINALG::Matrix<dim, dim> d_local_to_parent_trafo_dd(true);
+  static LINALG::Matrix<dim, dim> local_to_parent_trafo(true);
   CONTACT::UTILS::MapGPtoParent<dim>(
-      mortar_ele, gp_coord, gp_wgt, parent_xi, d_local_to_parent_trafo_dd);
+      mortar_ele, gp_coord, gp_wgt, parent_xi, local_to_parent_trafo);
 
   // cauchy stress tensor contracted with normal and test direction
   double sigma_nt(0.0);
   Epetra_SerialDenseMatrix d_sigma_nt_dd, d_sigma_nt_ds;
-  static LINALG::Matrix<dim, 1> d_sigma_nt_dn(true), d_sigma_nt_dt(true);
+  static LINALG::Matrix<dim, 1> d_sigma_nt_dn(true), d_sigma_nt_dt(true), d_sigma_nt_dxi(true);
 
   if (mortar_ele.MoData().ParentScalar().empty())
   {
     dynamic_cast<DRT::ELEMENTS::So_base*>(mortar_ele.ParentElement())
-        ->GetCauchyAtXi(parent_xi, mortar_ele.MoData().ParentDisp(), gp_normal, test_dir, sigma_nt,
-            &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr, &d_sigma_nt_dn, &d_sigma_nt_dt,
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+        ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(), gp_normal,
+            test_dir, sigma_nt, &d_sigma_nt_dd, nullptr, nullptr, nullptr, nullptr, &d_sigma_nt_dn,
+            &d_sigma_nt_dt, &d_sigma_nt_dxi, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
@@ -183,18 +183,18 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
       {
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
             mortar_ele.ParentElement())
-            ->GetCauchyAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
-                &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, nullptr);
+                &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
       }
       case DRT::Element::tet4:
       {
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
             mortar_ele.ParentElement())
-            ->GetCauchyAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
+            ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
-                &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, nullptr);
+                &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
       }
       default:
@@ -209,6 +209,18 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
 
   for (int i = 0; i < mortar_ele.ParentElement()->NumNode() * dim; ++i)
     d_cauchy_nt_dd[mortar_ele.MoData().ParentDof().at(i)] += nitsche_wgt * d_sigma_nt_dd(i, 0);
+
+  for (int i = 0; i < dim - 1; ++i)
+  {
+    for (const auto& d_gp_coord_dd_i : d_gp_coord_dd[i])
+    {
+      for (int k = 0; k < dim; ++k)
+      {
+        d_cauchy_nt_dd[d_gp_coord_dd_i.first] +=
+            nitsche_wgt * d_sigma_nt_dxi(k) * local_to_parent_trafo(k, i) * d_gp_coord_dd_i.second;
+      }
+    }
+  }
 
   for (int i = 0; i < dim; ++i)
   {

@@ -89,10 +89,7 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
-
-      //! Destructor
-      virtual ~So3_Plast(){};
+      DRT::Element* Clone() const override;
 
       //@}
 
@@ -119,72 +116,72 @@ namespace DRT
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
-      bool HaveEAS() const { return (eastype_ != soh8p_easnone); };
+      bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! Get number of degrees of freedom of a certain node in case of multiple
       //! dofsets (implements pure virtual DRT::Element)
       //!
       //! The element decides how many degrees of freedom its nodes must have.
-      virtual int NumDofPerNode(const DRT::Node& node) const { return nsd_; };
+      int NumDofPerNode(const DRT::Node& node) const override { return nsd_; };
 
       //! Get number of degrees of freedom of this element
-      virtual int NumDofPerElement() const { return 0; };
+      int NumDofPerElement() const override { return 0; };
 
       //@}
 
       //! @name Access methods
 
       //! Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //! return elementtype
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
       //! return element shape
-      virtual DiscretizationType Shape() const { return distype; };
+      DiscretizationType Shape() const override { return distype; };
 
       /*!
       \brief Return number of volumes of this element
       */
-      virtual int NumVolume() const;
+      int NumVolume() const override;
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const;
+      int NumSurface() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const;
+      int NumLine() const override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volumes of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
       //@}
 
       //! @name Input and Creation
@@ -208,7 +205,7 @@ namespace DRT
       //!  names (out): On return, the derived class has filled names with key
       //!               names of data it wants to visualize and with int dimensions
       //!               of that data.
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       //!  Query data to be visualized using BINIO of a given name
       //!
@@ -222,13 +219,13 @@ namespace DRT
       //!
       //!  name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       //! read input for this element
       bool ReadElement(const std::string& eletype,  //!< so3plast(fbar)
           const std::string& eledistype,            //!< hex8,tet4,...
           DRT::INPUT::LineDefinition* linedef       //!< what parameters have to be read
-      );
+          ) override;
 
       //@}
 
@@ -253,7 +250,7 @@ namespace DRT
               elevec1_epetra,  //!< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
           Epetra_SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
-      );
+          ) override;
 
       //@}
 
@@ -271,9 +268,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
@@ -282,15 +279,17 @@ namespace DRT
       // get parameter list from ssn_plast_manager
       virtual void ReadParameterList(Teuchos::RCP<Teuchos::ParameterList> plparams);
 
-      void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
-          const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
-          Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
-          Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
-          Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
-          LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
-          const std::vector<double>* temp, Epetra_SerialDenseMatrix* DsntDT,
-          Epetra_SerialDenseMatrix* D2sntDdDT, const double* concentration,
-          double* DsntDc) override;
+      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
+          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc) override;
 
       void HeatFlux(const std::vector<double>& temp, const std::vector<double>& disp,
           const LINALG::Matrix<nsd_, 1>& xi, const LINALG::Matrix<nsd_, 1>& n, double& q,
@@ -324,7 +323,7 @@ namespace DRT
 
      protected:
       //! don't want = operator
-      So3_Plast& operator=(const So3_Plast& old);
+      So3_Plast& operator=(const So3_Plast& old) = delete;
 
       //! number of plastic variables at each gauss point
       enum PlSpinType
@@ -456,111 +455,125 @@ namespace DRT
 
       //@}
 
-      /**
-       * \brief Evaluate Cauchy stress at given point in parameter space and calculate
-       * linearizations
+      /*!
+       * @brief Evaluate Cauchy stress contracted with the normal vector and another direction
+       * vector at given point in parameter space and calculate linearizations
        *
-       * \param xi[in]          position in parameter space xi
-       * \param disp[in]        vector of displacements
-       * \param n[in]           vector n (\f[\bold{n}\f])
-       * \param t[in]           vector t (\f[\bold{t}\f])
-       * \param sigma_nt[out]   cauchy stress tensor contracted using the vectors n and t
-                                (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
-       * \param DsntDd[out]     derivative of sigma_nt w.r.t. displacements (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{d}}
-                                \f])
-       * \param D2sntDd2[out]   second derivative of sigma_nt w.r.t. displacements (\f[ \frac{
-                                \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d}^2} \f])
-       * \param D2sntDdDn[out]  second derivative of sigma_nt w.r.t. displacements and vector n (\f[
-                                \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
-       * \param D2sntDdDt[out]  second derivative of sigma_nt w.r.t. displacements and vector t (\f[
-                                \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d} \mathrm{d} \bold{t} } \f])
-       * \param D2sntDdDxi[out] second derivative of sigma_nt w.r.t. displacements and local
-                                parameter coordinate xi (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot
-                                \bold{n} \cdot \bold{t}} {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi}
-                                } \f])
-       * \param DsntDn[out]     derivative of sigma_nt w.r.t. vector n (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{n}}
-                                \f])
-       * \param DsntDt[out]     derivative of sigma_nt w.r.t. vector n (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{t}}
-                                \f])
-       * \param DsntDxi[out]    derivative of sigma_nt w.r.t. local parameter coordinate xi (\f[
-                                \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
-                                \bold{t}}{\mathrm{d} \bold{\xi}} \f])
-       * \param temp[in]        temperature
-       * \param DsntDT[out]     derivative of sigma_nt w.r.t. temperature (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} T} \f])
-       * \param D2sntDdDT[out]  second derivative of sigma_nt w.r.t. displacements and temperature
-                                (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d} \mathrm{d} T } \f])
+       * @param[in] xi            position in parameter space xi
+       * @param[in] disp          vector of displacements
+       * @param[in] n             normal vector (\f[\bold{n}\f])
+       * @param[in] dir           direction vector (\f[\bold{v}\f]), can be either normal or
+       *                          tangential vector
+       * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
+       *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+       * @param[out] d_cauchyndir_dd    derivative of cauchy_n_dir w.r.t. displacements
+       *                         (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                   { \mathrm{d} \bold{d}} \f])
+       * @param[out] d2_cauchyndir_dd2  second derivative of cauchy_n_dir w.r.t. displacements
+       *                      (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                { \mathrm{d} \bold{d}^2 } \f])
+       * @param[out] d2_cauchyndir_dd_dn  second derivative of cauchy_n_dir w.r.t. displacements and
+       *                                  vector n
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
+       * @param[out] d2_cauchyndir_dd_ddir  second derivative of cauchy_n_dir w.r.t. displacements
+       *                                    and direction vector v
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{v} } \f])
+       * @param[out] d2_cauchyndir_dd_dxi  second derivative of cauchy_n_dir w.r.t. displacements
+       *                                   and local parameter coordinate xi
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi} } \f])
+       * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{n}} \f])
+       * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{v}} \f])
+       * @param[out] d_cauchyndir_dxi  derivative of cauchy_n_dir w.r.t. local parameter coord. xi
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{\xi}} \f])
+       * @param[in] temp                temperature
+       * @param[out] d_cauchyndir_dT    derivative of cauchy_n_dir w.r.t. temperature
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} T} \f])
+       * @param[out] d2_cauchyndir_dd_dT  second derivative of cauchy_n_dir w.r.t. displacements
+       *                                   and temperature
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} T } \f])
        *
-       * \note At the moment this method is only used for the nitsche contact formulation
+       * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void GetCauchyAtXiPlast(const LINALG::Matrix<3, 1>& xi,
+      virtual void GetCauchyNDirAndDerivativesAtXiPlast(const LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& t, double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd,
-          Epetra_SerialDenseMatrix* D2sntDd2, Epetra_SerialDenseMatrix* D2sntDdDn,
-          Epetra_SerialDenseMatrix* D2sntDdDt, Epetra_SerialDenseMatrix* D2sntDdDxi,
-          LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
-          const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* DsntDT = NULL,
-          Epetra_SerialDenseMatrix* D2sntDdDT = NULL);
+          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT);
 
-      /**
-       * \brief Evaluate Cauchy stress at given point in parameter space and calculate
-       * linearizations
+      /*!
+       * @brief Evaluate Cauchy stress contracted with the normal vector and another direction
+       * vector at given point in parameter space and calculate linearizations
        *
-       * \param xi[in]          position in parameter space xi
-       * \param disp[in]        vector of displacements
-       * \param n[in]           vector n (\f[\bold{n}\f])
-       * \param t[in]           vector t (\f[\bold{t}\f])
-       * \param sigma_nt[out]   cauchy stress tensor contracted using the vectors n and t
-                                (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
-       * \param DsntDd[out]     derivative of sigma_nt w.r.t. displacements (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{d}}
-                                \f])
-       * \param D2sntDd2[out]   second derivative of sigma_nt w.r.t. displacements (\f[ \frac{
-                                \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d}^2} \f])
-       * \param D2sntDdDn[out]  second derivative of sigma_nt w.r.t. displacements and vector n (\f[
-                                \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
-       * \param D2sntDdDt[out]  second derivative of sigma_nt w.r.t. displacements and vector t (\f[
-                                \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d} \mathrm{d} \bold{t} } \f])
-       * \param D2sntDdDxi[out] second derivative of sigma_nt w.r.t. displacements and local
-                                parameter coordinate xi (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot
-                                \bold{n} \cdot \bold{t}} {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi}
-                                } \f])
-       * \param DsntDn[out]     derivative of sigma_nt w.r.t. vector n (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{n}}
-                                \f])
-       * \param DsntDt[out]     derivative of sigma_nt w.r.t. vector n (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} \bold{t}}
-                                \f])
-       * \param DsntDxi[out]    derivative of sigma_nt w.r.t. local parameter coordinate xi (\f[
-                                \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
-                                \bold{t}}{\mathrm{d} \bold{\xi}} \f])
-       * \param temp[in]        temperature
-       * \param DsntDT[out]     derivative of sigma_nt w.r.t. temperature (\f[ \frac{ \mathrm{d}
-                                \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}{\mathrm{d} T} \f])
-       * \param D2sntDdDT[out]  second derivative of sigma_nt w.r.t. displacements and temperature
-                                (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{t}}
-                                {\mathrm{d} \bold{d} \mathrm{d} T } \f])
+       * @param[in] xi            position in parameter space xi
+       * @param[in] disp          vector of displacements
+       * @param[in] n             normal vector (\f[\bold{n}\f])
+       * @param[in] dir           direction vector (\f[\bold{v}\f]), can be either normal or
+       *                          tangential vector
+       * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
+       *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+       * @param[out] d_cauchyndir_dd    derivative of cauchy_n_dir w.r.t. displacements
+       *                         (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                   { \mathrm{d} \bold{d}} \f])
+       * @param[out] d2_cauchyndir_dd2  second derivative of cauchy_n_dir w.r.t. displacements
+       *                      (\f[ \frac{ \mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                { \mathrm{d} \bold{d}^2 } \f])
+       * @param[out] d2_cauchyndir_dd_dn  second derivative of cauchy_n_dir w.r.t. displacements and
+       *                                  vector n
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{n} } \f])
+       * @param[out] d2_cauchyndir_dd_ddir  second derivative of cauchy_n_dir w.r.t. displacements
+       *                                    and direction vector v
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{v} } \f])
+       * @param[out] d2_cauchyndir_dd_dxi  second derivative of cauchy_n_dir w.r.t. displacements
+       *                                   and local parameter coordinate xi
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} \bold{\xi} } \f])
+       * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{n}} \f])
+       * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{v}} \f])
+       * @param[out] d_cauchyndir_dxi  derivative of cauchy_n_dir w.r.t. local parameter coord. xi
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{\xi}} \f])
+       * @param[in] temp                temperature
+       * @param[out] d_cauchyndir_dT    derivative of cauchy_n_dir w.r.t. temperature
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} T} \f])
+       * @param[out] d2_cauchyndir_dd_dT  second derivative of cauchy_n_dir w.r.t. displacements
+       *                                   and temperature
+       *                       (\f[ \frac{\mathrm{d}^2 \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                 {\mathrm{d} \bold{d} \mathrm{d} T } \f])
        *
-       * \note At the moment this method is only used for the nitsche contact formulation
+       * @note At the moment this method is only used for the nitsche contact formulation
        */
-      virtual void GetCauchyAtXiElast(const LINALG::Matrix<3, 1>& xi,
+      virtual void GetCauchyNDirAndDerivativesAtXiElast(const LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& t, double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd,
-          Epetra_SerialDenseMatrix* D2sntDd2, Epetra_SerialDenseMatrix* D2sntDdDn,
-          Epetra_SerialDenseMatrix* D2sntDdDt, Epetra_SerialDenseMatrix* D2sntDdDxi,
-          LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
-          const std::vector<double>* temp = NULL, Epetra_SerialDenseMatrix* DsntDT = NULL,
-          Epetra_SerialDenseMatrix* D2sntDdDT = NULL);
+          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT);
 
       virtual void OutputStrains(const int gp,
           const INPAR::STR::StrainType iostrain,           // strain output option

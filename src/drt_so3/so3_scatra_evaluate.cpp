@@ -34,10 +34,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
     {
       if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
               distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+      {
         dserror(
             "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
             "The following should work, but keep your eyes open (especially with the order of the "
             "Gauß points)");
+      }
 
       /* =========================================================================*/
       // start concentration business
@@ -107,14 +109,17 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
     // if temperatures were set
     if (discretization.NumDofSets() == 3)
+    {
       if (discretization.HasState(2, "tempfield"))
       {
         if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
                 distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+        {
           dserror(
               "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
               "The following should work, but keep your eyes open (especially with the order of "
               "the Gauß points");
+        }
 
         /* =========================================================================*/
         // start temperature business
@@ -153,6 +158,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
         params.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
       }
+    }
 
     // If you need a pointer to the scatra material, use these lines:
     // we assume that the second material of the structure is the scatra element material
@@ -228,26 +234,30 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi,
-    const std::vector<double>& disp, const std::vector<double>& scalar,
-    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
-    Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* DsntDs,
-    LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi)
+void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
+    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
+    const std::vector<double>& scalar, const LINALG::Matrix<3, 1>& n,
+    const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+    Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
+    LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+    LINALG::Matrix<3, 1>* d_cauchyndir_dxi)
 {
   const double concentration_gp = DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar);
-  double DsntDs_gp(0.0);
+  double d_cauchyndir_ds_gp(0.0);
   // call base class
-  so3_ele::GetCauchyAtXi(xi, disp, n, t, sigma_nt, DsntDd, nullptr, nullptr, nullptr, nullptr,
-      DsntDn, DsntDt, DsntDxi, nullptr, nullptr, nullptr, &concentration_gp, &DsntDs_gp);
+  so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd, nullptr,
+      nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, nullptr,
+      nullptr, nullptr, &concentration_gp, &d_cauchyndir_ds_gp);
 
-  if (DsntDs != nullptr)
+  if (d_cauchyndir_ds != nullptr)
   {
-    DsntDs->Shape(numnod_, 1);
+    d_cauchyndir_ds->Shape(numnod_, 1);
     // get the shape functions
     LINALG::Matrix<numnod_, 1> shapefunct(true);
     DRT::UTILS::shape_function<distype>(xi, shapefunct);
     // calculate DsntDs
-    LINALG::Matrix<numnod_, 1>(DsntDs->A(), true).Update(DsntDs_gp, shapefunct, 1.0);
+    LINALG::Matrix<numnod_, 1>(d_cauchyndir_ds->A(), true)
+        .Update(d_cauchyndir_ds_gp, shapefunct, 1.0);
   }
 }
 

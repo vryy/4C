@@ -64,6 +64,9 @@ namespace DRT
 
       */
       So3_Scatra(const So3_Scatra& old);
+
+      //! don't want = operator
+      So3_Scatra& operator=(const So3_Scatra& old) = delete;
       //@}
 
       // static const DRT::UTILS::GaussIntegration intpoints_ =
@@ -104,36 +107,25 @@ namespace DRT
         {
           case DRT::Element::tet4:
           {
-            // const DRT::ELEMENTS::So_tet4* ele = dynamic_cast<const
-            // DRT::ELEMENTS::So_tet4*>(this); if(ele != NULL)
             return So_tet4ScatraType::Instance().UniqueParObjectId();
-            // else
-            // return NStet5ScatraType::Instance().UniqueParObjectId();
-            break;
           }
           case DRT::Element::tet10:
             return So_tet10ScatraType::Instance().UniqueParObjectId();
-            break;
           case DRT::Element::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
-            const DRT::ELEMENTS::So_hex8fbar* ele =
-                dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+            const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
 
-            if (ele != NULL)
+            if (ele != nullptr)
               return So_hex8fbarScatraType::Instance().UniqueParObjectId();
             else
               return So_hex8ScatraType::Instance().UniqueParObjectId();
-
-            break;
           }
           case DRT::Element::hex27:
             return So_hex27ScatraType::Instance().UniqueParObjectId();
-            break;
           case DRT::Element::wedge6:
             return So_weg6ScatraType::Instance().UniqueParObjectId();
-            break;
           default:
             dserror("unknown element type!");
             break;
@@ -174,38 +166,27 @@ namespace DRT
         {
           case DRT::Element::tet4:
           {
-            const DRT::ELEMENTS::So_tet4* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
-            if (ele != NULL) return So_tet4ScatraType::Instance();
-            // else
-            //  return NStet5ScatraType::Instance();
+            const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
+            if (ele != nullptr) return So_tet4ScatraType::Instance();
             break;
           }
-          break;
           case DRT::Element::tet10:
             return So_tet10ScatraType::Instance();
-            break;
           case DRT::Element::hex8:
           {
             // cast the most specialised element
             // otherwise cast fails, because hex8fbar == hex8
-            const DRT::ELEMENTS::So_hex8fbar* ele =
-                dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
+            const auto* ele = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
 
-            if (ele != NULL)
+            if (ele != nullptr)
               return So_hex8fbarScatraType::Instance();
             else
               return So_hex8ScatraType::Instance();
-
-            break;
           }
-            return so3_ele::ElementType();
-            break;
           case DRT::Element::hex27:
             return So_hex27ScatraType::Instance();
-            break;
           case DRT::Element::wedge6:
             return So_weg6ScatraType::Instance();
-            break;
           default:
             dserror("unknown element type!");
             break;
@@ -287,33 +268,35 @@ namespace DRT
        * @param[in] xi          position in parameter space xi
        * @param[in] disp        vector of displacements
        * @param[in] scalar      vector of scalars
-       * @param[in] n           vector n (\f[\bold{n}\f])
-       * @param[in] t           vector t (\f[\bold{t}\f])
-       * @param[out] sigma_nt   cauchy stress tensor contracted using the vectors n and t
-       *                        (\f[\bold{\sigma} \cdot \bold{n} \cdot \bold{t} \f])
-       * @param[out] DsntDd     derivative of sigma_nt w.r.t. displacements
-       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
-       *                        \bold{t}}{\mathrm{d} \bold{d}}\f])
-       * @param[out] DsntDs     derivative of sigma_nt w.r.t. vector of scalars s
-       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
-       *                        \bold{t}}{\mathrm{d} \bold{s}}\f])
-       * @param[out] DsntDn     derivative of sigma_nt w.r.t. vector n
-       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
-       *                        \bold{t}}{\mathrm{d} \bold{n}}\f])
-       * @param[out] DsntDt     derivative of sigma_nt w.r.t. vector t
-       *                        (\f[ \frac{\mathrm{d}\bold{\sigma} \cdot \bold{n} \cdot
-       *                        \bold{t}}{\mathrm{d} \bold{t}}\f])
-       * @param[out] DsntDxi    derivative of sigma_nt w.r.t. local parameter coordinate xi
-       *                        (\f[\frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot
-       *                        \bold{t}}{\mathrm{d} \bold{\xi}} \f])
+       * @param[in] n           vector (\f[\bold{n}\f])
+       * @param[in] dir         direction vector (\f[\bold{v}\f]), can be either normal or
+       *                        tangential vector
+       * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
+       *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
+       * @param[out] d_cauchyndir_dd  derivative of cauchy_n_dir w.r.t. displacements
+       *                         (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                   { \mathrm{d} \bold{d}} \f])
+       * @param d_cauchyndir_ds  derivative of cauchy_n_dir w.r.t. vector of scalars s
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{s}} \f])
+       * @param[out] d_cauchyndir_dn   derivative of cauchy_n_dir w.r.t. vector n
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{n}} \f])
+       * @param[out] d_cauchyndir_ddir  derivative of cauchy_n_dir w.r.t. direction vector v
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{v}} \f])
+       * @param[out] d_cauchyndir_dxi  derivative of cauchy_n_dir w.r.t. local parameter coord. xi
+       *                        (\f[ \frac{ \mathrm{d} \bold{\sigma} \cdot \bold{n} \cdot \bold{v}}
+       *                                  { \mathrm{d} \bold{\xi}} \f])
        *
        * @note At the moment this method is only used for the nitsche contact formulation
        */
-      void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
-          const std::vector<double>& scalar, const LINALG::Matrix<3, 1>& n,
-          const LINALG::Matrix<3, 1>& t, double& sigma_nt, Epetra_SerialDenseMatrix* DsntDd,
-          Epetra_SerialDenseMatrix* DsntDs, LINALG::Matrix<3, 1>* DsntDn,
-          LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi);
+      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const std::vector<double>& scalar,
+          const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
+          LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+          LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
 
       /// @name params
       /// return SCATRA::ImplType
@@ -344,11 +327,6 @@ namespace DRT
           const LINALG::Matrix<numdim_, numnod_>* N_XYZ) const;
       //@}
 
-     protected:
-      //! don't want = operator
-      So3_Scatra& operator=(const So3_Scatra& old);
-
-     private:
       // action type recognized by So3_Scatra elements
       enum ActionType
       {

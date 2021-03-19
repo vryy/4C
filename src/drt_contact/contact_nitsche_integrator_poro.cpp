@@ -184,16 +184,17 @@ void CONTACT::CoIntegratorNitschePoro::SoEleCauchy(MORTAR::MortarElement& moEle,
   if (!moEle.MoData().ParentPFPres().size())
   {
     dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
-        ->GetCauchyAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction, sigma_nt, &dsntdd,
-            nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt, &dsntdpxi, nullptr, nullptr,
-            nullptr, nullptr, nullptr);
+        ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
+            sigma_nt, &dsntdd, nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt, &dsntdpxi,
+            nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
     dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
         moEle.ParentElement())
-        ->GetCauchyAtXi(pxsi, moEle.MoData().ParentDisp(), moEle.MoData().ParentPFPres(), normal,
-            direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn, &dsntdt, &dsntdpxi);
+        ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(),
+            moEle.MoData().ParentPFPres(), normal, direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn,
+            &dsntdt, &dsntdpxi);
   }
 
   cauchy_nt += w * sigma_nt;

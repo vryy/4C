@@ -33,11 +33,8 @@ namespace MAT
       /// standard constructor
       StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      virtual ~StructPoro() { ; }
-
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -63,11 +60,11 @@ namespace MAT
   class StructPoroType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "StructPoroType"; }
+    std::string Name() const override { return "StructPoroType"; }
 
     static StructPoroType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static StructPoroType instance_;
@@ -119,7 +116,10 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of drt_parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const { return StructPoroType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override
+    {
+      return StructPoroType::Instance().UniqueParObjectId();
+    }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -131,7 +131,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -145,12 +145,12 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_structporo; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_structporo; }
 
     /// poro law type
     virtual INPAR::MAT::MaterialType PoroLawType() const;
@@ -159,7 +159,7 @@ namespace MAT
     double InvBulkmodulus() const;
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem) { mat_->ValidKinematics(kinem); }
+    void ValidKinematics(INPAR::STR::KinemType kinem) override { mat_->ValidKinematics(kinem); }
 
     /// return material
     Teuchos::RCP<MAT::Material> GetMaterial() const { return mat_; }
@@ -223,23 +223,31 @@ namespace MAT
         bool save = true);
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new StructPoro(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new StructPoro(*this)); }
 
     /// Initialize internal variables
     virtual void PoroSetup(int numgp,  ///< number of Gauss points
         DRT::INPUT::LineDefinition* linedef);
 
-    //! Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
-    void CouplStress(const LINALG::Matrix<3, 3>& defgrad,  ///< (i) deformation gradient
-        const double& press,                               ///< (i) pressure in gauss point
-        LINALG::Matrix<6, 1>& couplstress                  ///< (o) coupling stress in gauss point
-        ) const;
+    /*!
+     * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (3D)
+     *
+     * @param[in] defgrad       deformation gradient
+     * @param[in] press         pressure at gauss point
+     * @param[out] couplstress  coupling stress at gauss point
+     */
+    void CouplStress(const LINALG::Matrix<3, 3>& defgrad, const double& press,
+        LINALG::Matrix<6, 1>& couplstress) const;
 
-    //! Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
-    void CouplStress(const LINALG::Matrix<2, 2>& defgrad,  ///< (i) deformation gradient
-        const double& press,                               ///< (i) pressure in gauss point
-        LINALG::Matrix<4, 1>& couplstress                  ///< (o) coupling stress in gauss point
-        ) const;
+    /*!
+     * @brief Calculate coupling part of homogenized 2 Piola-Kirchhoff stress (2D)
+     *
+     * @param[in] defgrad       deformation gradient
+     * @param[in] press         pressure at gauss point
+     * @param[out] couplstress  coupling stress at gauss point
+     */
+    void CouplStress(const LINALG::Matrix<2, 2>& defgrad, const double& press,
+        LINALG::Matrix<4, 1>& couplstress) const;
 
     //! evaluate constitutive relation for porosity and compute derivatives
     virtual void ConstitutiveDerivatives(Teuchos::ParameterList& params,  ///< (i) parameter list
@@ -267,88 +275,77 @@ namespace MAT
     );
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! @name Evaluation methods
 
-    /// evaluate material law
-    virtual void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  ///< (i) deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,                  ///< (i) green lagrange strain
-        Teuchos::ParameterList& params,                        ///< (i) parameter list
-        LINALG::Matrix<6, 1>* stress,  ///< (o) second piola kirchhoff stress
-        LINALG::Matrix<6, 6>* cmat,    ///< (o) constitutive matrix
-        int gp,                        ///< (i) Gauss point
-        int EleID)                     ///< (i) element GID
+    void Evaluate(const LINALG::Matrix<3, 3>* defgrd, const LINALG::Matrix<6, 1>* glstrain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>* stress, LINALG::Matrix<6, 6>* cmat,
+        int gp, int EleID) override
     {
       mat_->Evaluate(defgrd, glstrain, params, stress, cmat, gp, EleID);
     };
 
-    /// Evaluate strain energy function (for hyperelastic materials only)
-    virtual void StrainEnergy(
-        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int EleID)
+    void StrainEnergy(
+        const LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int EleID) override
     {
       mat_->StrainEnergy(glstrain, psi, gp, EleID);
     };
 
-    /// Evaluate material law for GEMM
-    virtual void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+    void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
         LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID) override
     {
       mat_->EvaluateGEMM(stress, cmat, density, glstrain_m, glstrain_new, glstrain_old, rcg_new,
           rcg_old, gp, eleGID);
     };
 
-    void EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
-        const LINALG::Matrix<3, 1>& t, double& snt, LINALG::Matrix<3, 1>* DsntDn,
-        LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF, LINALG::Matrix<9, 9>* D2sntDF2,
-        LINALG::Matrix<9, 3>* D2sntDFDn, LINALG::Matrix<9, 3>* D2sntDFDt, const int gp,
-        const int eleGID, const double* concentration, const double* temp, double* DsntDT,
-        LINALG::Matrix<9, 1>* D2sntDFDT) override
+    void EvaluateCauchyNDirAndDerivatives(const LINALG::Matrix<3, 3>& defgrd,
+        const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+        LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+        LINALG::Matrix<9, 1>* d_cauchyndir_dF, LINALG::Matrix<9, 9>* d2_cauchyndir_dF2,
+        LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir,
+        int gp, int eleGID, const double* concentration, const double* temp,
+        double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT) override
     {
-      mat_->EvaluateCauchy(defgrd, n, t, snt, DsntDn, DsntDt, DsntDF, D2sntDF2, D2sntDFDn,
-          D2sntDFDt, gp, eleGID, concentration, temp, DsntDT, D2sntDFDT);
+      mat_->EvaluateCauchyNDirAndDerivatives(defgrd, n, dir, cauchy_n_dir, d_cauchyndir_dn,
+          d_cauchyndir_ddir, d_cauchyndir_dF, d2_cauchyndir_dF2, d2_cauchyndir_dF_dn,
+          d2_cauchyndir_dF_ddir, gp, eleGID, concentration, temp, d_cauchyndir_dT,
+          d2_cauchyndir_dF_dT);
     }
 
     //@}
 
     /// Return material density (if provided by the specific material)
-    virtual double Density() const;
+    double Density() const override;
     virtual double DensitySolidPhase() const;
 
     //! @name Handling of Gauss point data. Here, the poro material just calls the underlying
     //! material
 
-    /// Set up for materials with GP data (e.g., history variables)
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override
     {
       // setup the underlying material
       // Note: poro material itself is setup when calling PoroSetup()
       mat_->Setup(numgp, linedef);
     };
 
-    /// Update of GP data (e.g., history variables)
-    virtual void Update() { mat_->Update(); };
+    void Update() override { mat_->Update(); };
 
-    /// Reset time step (for time adaptivity)
-    virtual void ResetStep() { mat_->ResetStep(); };
+    void ResetStep() override { mat_->ResetStep(); };
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    virtual void ResetAll(int numgp) { mat_->ResetAll(numgp); };
+    void ResetAll(int numgp) override { mat_->ResetAll(numgp); };
 
     //@}
 
     //! @name Visualization methods
 
-    /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
-    /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     //@}
 

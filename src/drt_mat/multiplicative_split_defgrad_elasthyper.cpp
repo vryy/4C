@@ -261,17 +261,18 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(const LINALG::Matrix<3
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Matrix<3, 3>& defgrd,
-    const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& snt,
-    LINALG::Matrix<3, 1>* DsntDn, LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<9, 1>* DsntDF,
-    LINALG::Matrix<9, 9>* D2sntDF2, LINALG::Matrix<9, 3>* D2sntDFDn,
-    LINALG::Matrix<9, 3>* D2sntDFDt, const int gp, const int eleGID, const double* concentration,
-    const double* temp, double* DsntDT, LINALG::Matrix<9, 1>* D2sntDFDT)
+void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchyNDirAndDerivatives(
+    const LINALG::Matrix<3, 3>& defgrd, const LINALG::Matrix<3, 1>& n,
+    const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+    LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<9, 1>* d_cauchyndir_dF,
+    LINALG::Matrix<9, 9>* d2_cauchyndir_dF2, LINALG::Matrix<9, 3>* d2_cauchyndir_dF_dn,
+    LINALG::Matrix<9, 3>* d2_cauchyndir_dF_ddir, int gp, int eleGID, const double* concentration,
+    const double* temp, double* d_cauchyndir_dT, LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
 {
   if (concentration != nullptr) SetConcentrationGP(*concentration);
 
-  // reset sigma contracted with n and t
-  snt = 0.0;
+  // reset sigma contracted with n and dir
+  cauchy_n_dir = 0.0;
 
   static LINALG::Matrix<6, 1> idV(true);
   for (int i = 0; i < 3; ++i) idV(i) = 1.0;
@@ -294,9 +295,9 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Ma
 
   static LINALG::Matrix<3, 1> beMdn(true);
   beMdn.Multiply(1.0, beM, n, 0.0);
-  const double beMdndt = beMdn.Dot(t);
-  static LINALG::Matrix<3, 1> beMdt(true);
-  beMdt.Multiply(1.0, beM, t, 0.0);
+  const double beMdnddir = beMdn.Dot(dir);
+  static LINALG::Matrix<3, 1> beMddir(true);
+  beMddir.Multiply(1.0, beM, dir, 0.0);
 
   static LINALG::Matrix<3, 3> ibeM(true);
   ibeM.Invert(beM);
@@ -304,9 +305,9 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Ma
   UTILS::VOIGT::Stresses::MatrixToVector(ibeM, ibeV_stress);
   static LINALG::Matrix<3, 1> ibeMdn(true);
   ibeMdn.Multiply(1.0, ibeM, n, 0.0);
-  const double ibeMdndt = ibeMdn.Dot(t);
-  static LINALG::Matrix<3, 1> ibeMdt(true);
-  ibeMdt.Multiply(1.0, ibeM, t, 0.0);
+  const double ibeMdnddir = ibeMdn.Dot(dir);
+  static LINALG::Matrix<3, 1> ibeMddir(true);
+  ibeMddir.Multiply(1.0, ibeM, dir, 0.0);
 
   // derivatives of principle invariants of elastic left cauchy-green tensor
   static LINALG::Matrix<3, 1> dPI(true);
@@ -314,70 +315,71 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Ma
   EvaluateInvariantDerivatives(prinv, gp, eleGID, dPI, ddPII);
 
   const double detFe = FeM.Determinant();
-  const double ndt = n.Dot(t);
+  const double nddir = n.Dot(dir);
   const double prefac = 2.0 / detFe;
 
-  // calculate \mat{\sigma} \cdot \vec{n} \cdot \vec{t}
-  snt = prefac * (prinv(1) * dPI(1) * ndt + prinv(2) * dPI(2) * ndt + dPI(0) * beMdndt -
-                     prinv(2) * dPI(1) * ibeMdndt);
+  // calculate \mat{\sigma} \cdot \vec{n} \cdot \vec{v}
+  cauchy_n_dir = prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
+                              dPI(0) * beMdnddir - prinv(2) * dPI(1) * ibeMdnddir);
 
-  if (DsntDn)
+  if (d_cauchyndir_dn)
   {
-    DsntDn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), t, 0.0);  // DsntDn is cleared here
-    DsntDn->Update(dPI(0), beMdt, 1.0);
-    DsntDn->Update(-prinv(2) * dPI(1), ibeMdt, 1.0);
-    DsntDn->Scale(prefac);
+    d_cauchyndir_dn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
+    d_cauchyndir_dn->Update(dPI(0), beMddir, 1.0);
+    d_cauchyndir_dn->Update(-prinv(2) * dPI(1), ibeMddir, 1.0);
+    d_cauchyndir_dn->Scale(prefac);
   }
 
-  if (DsntDt)
+  if (d_cauchyndir_ddir)
   {
-    DsntDt->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);  // DsntDt is cleared here
-    DsntDt->Update(dPI(0), beMdn, 1.0);
-    DsntDt->Update(-prinv(2) * dPI(1), ibeMdn, 1.0);
-    DsntDt->Scale(prefac);
+    d_cauchyndir_ddir->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
+    d_cauchyndir_ddir->Update(dPI(0), beMdn, 1.0);
+    d_cauchyndir_ddir->Update(-prinv(2) * dPI(1), ibeMdn, 1.0);
+    d_cauchyndir_ddir->Scale(prefac);
   }
 
-  if (DsntDF)
+  if (d_cauchyndir_dF)
   {
-    static LINALG::Matrix<6, 1> DI1Dbe(true);
-    DI1Dbe = idV;
-    static LINALG::Matrix<6, 1> DI2Dbe(true);
-    DI2Dbe.Update(prinv(0), idV, -1.0, beV_stress);
-    static LINALG::Matrix<6, 1> DI3Dbe(true);
-    DI3Dbe.Update(prinv(2), ibeV_stress, 0.0);
+    static LINALG::Matrix<6, 1> d_I1_dbe(true);
+    d_I1_dbe = idV;
+    static LINALG::Matrix<6, 1> d_I2_dbe(true);
+    d_I2_dbe.Update(prinv(0), idV, -1.0, beV_stress);
+    static LINALG::Matrix<6, 1> d_I3_dbe(true);
+    d_I3_dbe.Update(prinv(2), ibeV_stress, 0.0);
 
     // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
     // gradient)
-    static LINALG::Matrix<6, 9> DbeDFe(true);
-    DbeDFe.Clear();
-    AddRightNonSymmetricHolzapfelProductStrainLike(DbeDFe, idM, FeM, 1.0);
-    static LINALG::Matrix<9, 9> DFeDF(true);
-    DFeDF.Clear();
-    AddNonSymmetricProduct(1.0, idM, iFinM, DFeDF);
-    static LINALG::Matrix<6, 9> DbeDF(true);
-    DbeDF.Multiply(1.0, DbeDFe, DFeDF, 0.0);
+    static LINALG::Matrix<6, 9> d_be_dFe(true);
+    d_be_dFe.Clear();
+    AddRightNonSymmetricHolzapfelProductStrainLike(d_be_dFe, idM, FeM, 1.0);
+    static LINALG::Matrix<9, 9> d_Fe_dF(true);
+    d_Fe_dF.Clear();
+    AddNonSymmetricProduct(1.0, idM, iFinM, d_Fe_dF);
+    static LINALG::Matrix<6, 9> d_be_dF(true);
+    d_be_dF.Multiply(1.0, d_be_dFe, d_Fe_dF, 0.0);
 
     // calculation of \partial I_i / \partial F (Invariants of b_{el} w.r.t. deformation gradient)
-    static LINALG::Matrix<9, 1> DI1DF(true);
-    static LINALG::Matrix<9, 1> DI2DF(true);
-    static LINALG::Matrix<9, 1> DI3DF(true);
-    DI1DF.MultiplyTN(1.0, DbeDF, DI1Dbe, 0.0);
-    DI2DF.MultiplyTN(1.0, DbeDF, DI2Dbe, 0.0);
-    DI3DF.MultiplyTN(1.0, DbeDF, DI3Dbe, 0.0);
+    static LINALG::Matrix<9, 1> d_I1_dF(true);
+    static LINALG::Matrix<9, 1> d_I2_dF(true);
+    static LINALG::Matrix<9, 1> d_I3_dF(true);
+    d_I1_dF.MultiplyTN(1.0, d_be_dF, d_I1_dbe, 0.0);
+    d_I2_dF.MultiplyTN(1.0, d_be_dF, d_I2_dbe, 0.0);
+    d_I3_dF.MultiplyTN(1.0, d_be_dF, d_I3_dbe, 0.0);
 
-    // add DsntDI1 \odot DI1DF and clear static matrix
-    DsntDF->Update(prefac * (prinv(1) * ddPII(5) * ndt + prinv(2) * ddPII(4) * ndt +
-                                ddPII(0) * beMdndt - prinv(2) * ddPII(5) * ibeMdndt),
-        DI1DF, 0.0);
-    // add DsntDI2 \odot DI2DF
-    DsntDF->Update(prefac * (dPI(1) * ndt + prinv(1) * ddPII(1) * ndt + prinv(2) * ddPII(3) * ndt +
-                                ddPII(5) * beMdndt - prinv(2) * ddPII(1) * ibeMdndt),
-        DI2DF, 1.0);
-    // add DsntDI3 \odot DI3DF
-    DsntDF->Update(
-        prefac * (prinv(1) * ddPII(3) * ndt + dPI(2) * ndt + prinv(2) * ddPII(2) * ndt +
-                     ddPII(4) * beMdndt - dPI(1) * ibeMdndt - prinv(2) * ddPII(3) * ibeMdndt),
-        DI3DF, 1.0);
+    // add d_cauchyndir_dI1 \odot d_I1_dF and clear static matrix
+    d_cauchyndir_dF->Update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
+                                         ddPII(0) * beMdnddir - prinv(2) * ddPII(5) * ibeMdnddir),
+        d_I1_dF, 0.0);
+    // add d_cauchyndir_dI2 \odot d_I2_dF
+    d_cauchyndir_dF->Update(
+        prefac * (dPI(1) * nddir + prinv(1) * ddPII(1) * nddir + prinv(2) * ddPII(3) * nddir +
+                     ddPII(5) * beMdnddir - prinv(2) * ddPII(1) * ibeMdnddir),
+        d_I2_dF, 1.0);
+    // add d_cauchyndir_dI3 \odot d_I3_dF
+    d_cauchyndir_dF->Update(
+        prefac * (prinv(1) * ddPII(3) * nddir + dPI(2) * nddir + prinv(2) * ddPII(2) * nddir +
+                     ddPII(4) * beMdnddir - dPI(1) * ibeMdnddir - prinv(2) * ddPII(3) * ibeMdnddir),
+        d_I3_dF, 1.0);
 
     // next three updates add partial derivative of snt w.r.t. the deformation gradient F for
     // constant invariants first part is term arising from \partial Je^{-1} / \partial F
@@ -387,47 +389,47 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateCauchy(const LINALG::Ma
     iFeTM.UpdateT(1.0, iFeM, 0.0);
     static LINALG::Matrix<9, 1> iFeTV(true);
     UTILS::VOIGT::Matrix3x3to9x1(iFeTM, iFeTV);
-    static LINALG::Matrix<1, 9> DiJeDFV(true);
-    DiJeDFV.MultiplyTN(1.0, iFeTV, DFeDF, 0.0);
-    DsntDF->UpdateT(-snt, DiJeDFV, 1.0);
+    static LINALG::Matrix<1, 9> d_iJe_dFV(true);
+    d_iJe_dFV.MultiplyTN(1.0, iFeTV, d_Fe_dF, 0.0);
+    d_cauchyndir_dF->UpdateT(-cauchy_n_dir, d_iJe_dFV, 1.0);
 
-    // second part is term arising from \partial b_el * n * t / \partial F
+    // second part is term arising from \partial b_el * n * v / \partial F
     static LINALG::Matrix<3, 3> FeMiFinTM(true);
     FeMiFinTM.MultiplyNT(1.0, FeM, iFinM, 0.0);
     static LINALG::Matrix<3, 1> tempvec(true);
     tempvec.MultiplyTN(1.0, FeMiFinTM, n, 0.0);
-    static LINALG::Matrix<3, 3> DbedndtDF(true);
-    DbedndtDF.MultiplyNT(1.0, t, tempvec, 0.0);
+    static LINALG::Matrix<3, 3> d_bednddir_dF(true);
+    d_bednddir_dF.MultiplyNT(1.0, dir, tempvec, 0.0);
     // now reuse tempvec
-    tempvec.MultiplyTN(1.0, FeMiFinTM, t, 0.0);
-    DbedndtDF.MultiplyNT(1.0, n, tempvec, 1.0);
-    static LINALG::Matrix<9, 1> DbedndtDFV(true);
-    UTILS::VOIGT::Matrix3x3to9x1(DbedndtDF, DbedndtDFV);
-    DsntDF->Update(prefac * dPI(0), DbedndtDFV, 1.0);
+    tempvec.MultiplyTN(1.0, FeMiFinTM, dir, 0.0);
+    d_bednddir_dF.MultiplyNT(1.0, n, tempvec, 1.0);
+    static LINALG::Matrix<9, 1> d_bednddir_dFV(true);
+    UTILS::VOIGT::Matrix3x3to9x1(d_bednddir_dF, d_bednddir_dFV);
+    d_cauchyndir_dF->Update(prefac * dPI(0), d_bednddir_dFV, 1.0);
 
-    // third part is term arising from \partial b_el^{-1} * n * t / \partial F
+    // third part is term arising from \partial b_el^{-1} * n * v / \partial F
     static LINALG::Matrix<3, 3> iFM(true);
     iFM.Invert(defgrd);
     static LINALG::Matrix<3, 1> tempvec2(true);
-    tempvec.Multiply(1.0, ibeM, t, 0.0);
+    tempvec.Multiply(1.0, ibeM, dir, 0.0);
     tempvec2.Multiply(1.0, iFM, n, 0.0);
-    static LINALG::Matrix<3, 3> DibedndtDFM(true);
-    DibedndtDFM.MultiplyNT(1.0, tempvec, tempvec2, 0.0);
+    static LINALG::Matrix<3, 3> d_ibednddir_dFM(true);
+    d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 0.0);
     // now reuse tempvecs
     tempvec.Multiply(1.0, ibeM, n, 0.0);
-    tempvec2.Multiply(1.0, iFM, t, 0.0);
-    DibedndtDFM.MultiplyNT(1.0, tempvec, tempvec2, 1.0);
-    DibedndtDFM.Scale(-1.0);
-    static LINALG::Matrix<9, 1> DibedndtDFV(true);
-    UTILS::VOIGT::Matrix3x3to9x1(DibedndtDFM, DibedndtDFV);
-    DsntDF->Update(-prefac * prinv(2) * dPI(1), DibedndtDFV, 1.0);
+    tempvec2.Multiply(1.0, iFM, dir, 0.0);
+    d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 1.0);
+    d_ibednddir_dFM.Scale(-1.0);
+    static LINALG::Matrix<9, 1> d_ibednddir_dFV(true);
+    UTILS::VOIGT::Matrix3x3to9x1(d_ibednddir_dFM, d_ibednddir_dFV);
+    d_cauchyndir_dF->Update(-prefac * prinv(2) * dPI(1), d_ibednddir_dFV, 1.0);
   }
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
-    const LINALG::Matrix<3, 3>& defgrd, const double concentration, LINALG::Matrix<9, 1>* DFDx)
+    const LINALG::Matrix<3, 3>& defgrd, const double concentration, LINALG::Matrix<9, 1>* d_F_dx)
 {
   SetConcentrationGP(concentration);
 
@@ -447,22 +449,22 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::EvaluateLinearizationOD(
   FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
 
   // calculate the derivative of the deformation gradient w.r.t. the inelastic deformation gradient
-  static LINALG::Matrix<9, 9> DFDFin(true);
-  DFDFin.Clear();
-  AddNonSymmetricProduct(1.0, FeM, idM, DFDFin);
+  static LINALG::Matrix<9, 9> d_F_dFin(true);
+  d_F_dFin.Clear();
+  AddNonSymmetricProduct(1.0, FeM, idM, d_F_dFin);
 
-  static LINALG::Matrix<9, 1> DFinDx(true);
+  static LINALG::Matrix<9, 1> d_Fin_dx(true);
 
   // check number of factors the inelastic deformation gradient consists of and choose
   // implementation accordingly
   if (num_contributions == 1)
   {
-    facdefgradin[0].second->EvaluateInelasticDefGradDerivative(defgrd.Determinant(), DFinDx);
+    facdefgradin[0].second->EvaluateInelasticDefGradDerivative(defgrd.Determinant(), d_Fin_dx);
   }
   else
     dserror("NOT YET IMPLEMENTED");
 
-  DFDx->MultiplyNN(1.0, DFDFin, DFinDx, 0.0);
+  d_F_dx->MultiplyNN(1.0, d_F_dFin, d_Fin_dx, 0.0);
 }
 
 /*--------------------------------------------------------------------*

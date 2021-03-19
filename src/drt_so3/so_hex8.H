@@ -63,27 +63,28 @@ namespace DRT
     class So_hex8Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "So_hex8Type"; }
+      std::string Name() const override { return "So_hex8Type"; }
 
       static So_hex8Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(
+          std::string eletype, std::string eledistype, int id, int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(int id, int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex8Type instance_;
@@ -128,6 +129,9 @@ namespace DRT
       */
       So_hex8(const So_hex8& old);
 
+      //! don't want = operator
+      So_hex8& operator=(const So_hex8& old) = delete;
+
       /*!
       \brief Deep copy this instance of Solid3 and return pointer to the copy
 
@@ -135,45 +139,45 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       /*!
       \brief Return number of volumes of this element
       */
-      virtual int NumVolume() const { return 1; }
+      int NumVolume() const override { return 1; }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return 6; }
+      int NumSurface() const override { return 6; }
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return 12; }
+      int NumLine() const override { return 12; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volumes of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
 
       virtual std::vector<double> ElementCenterRefeCoords();
@@ -185,7 +189,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return So_hex8Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return So_hex8Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -193,7 +197,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -201,13 +205,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
-
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~So_hex8();
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -215,7 +213,7 @@ namespace DRT
       /*!
       \brief Does this element use EAS?
       */
-      bool HaveEAS() const { return (eastype_ != soh8_easnone); };
+      bool HaveEAS() const override { return (eastype_ != soh8_easnone); };
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -226,7 +224,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
 
       /*!
@@ -240,16 +238,15 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
 
-
-      virtual DRT::ElementType& ElementType() const { return So_hex8Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return So_hex8Type::Instance(); }
 
       //@}
 
@@ -279,7 +276,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -295,7 +292,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       //@}
 
@@ -306,8 +303,8 @@ namespace DRT
       /*!
       \brief Read input for this element
       */
-      virtual bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -339,10 +336,10 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -358,9 +355,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
@@ -374,14 +371,14 @@ namespace DRT
       void soh8_GaussPointRefeCoords(
           LINALG::Matrix<1, NUMDIM_SOH8>& gpcoord,  ///< Gauß-Point coordinates in reference system
           LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe,  ///< material coord. of element
-          const int gp) const;                                    ///< current Gauß-Point
+          int gp) const;                                          ///< current Gauß-Point
 
       /*!
       \brief Return value how expensive it is to evaluate this element
 
       \param double (out): cost to evaluate this element
       */
-      virtual double EvaluationCost()
+      double EvaluationCost() override
       {
         if (Material()->MaterialType() == INPAR::MAT::m_struct_multiscale)
           return 25000.0;
@@ -389,15 +386,17 @@ namespace DRT
           return 10.0;
       }
 
-      void GetCauchyAtXi(const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
-          const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& t, double& sigma_nt,
-          Epetra_SerialDenseMatrix* DsntDd, Epetra_SerialDenseMatrix* D2sntDd2,
-          Epetra_SerialDenseMatrix* D2sntDdDn, Epetra_SerialDenseMatrix* D2sntDdDt,
-          Epetra_SerialDenseMatrix* D2sntDdDxi, LINALG::Matrix<3, 1>* DsntDn,
-          LINALG::Matrix<3, 1>* DsntDt, LINALG::Matrix<3, 1>* DsntDxi,
-          const std::vector<double>* temp, Epetra_SerialDenseMatrix* DsntDT,
-          Epetra_SerialDenseMatrix* D2sntDdDT, const double* concentration,
-          double* DsntDc) override;
+      void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
+          const std::vector<double>& disp, const LINALG::Matrix<3, 1>& n,
+          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+          LINALG::Matrix<3, 1>* d_cauchyndir_ddir, LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
+          const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
+          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc) override;
       //@}
 
      protected:
@@ -513,9 +512,6 @@ namespace DRT
 
       // internal calculation methods
 
-      //! don't want = operator
-      So_hex8& operator=(const So_hex8& old);
-
       /** \brief access one coordinate of all defined GPs
        *
        *  A pointer to the array of the GP-coordinate is returned. If dim==0
@@ -524,15 +520,15 @@ namespace DRT
        *
        *  \param(in) dim: Desired coordinate.
        *  \author hiermeier \date 12/17 */
-      const double* soh8_get_coordinate_of_gausspoints(const unsigned dim) const;
+      const double* soh8_get_coordinate_of_gausspoints(unsigned dim) const;
 
       /** \brief Evaluate the determinant of the current jacobian at each element
        *  corner and return the smallest value */
       double soh8_get_min_det_jac_at_corners(
           const LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
 
-      void soh8_error_handling(const double& det_curr, Teuchos::ParameterList& params,
-          const int line_id, const STR::ELEMENTS::EvalErrorFlag flag);
+      void soh8_error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
+          STR::ELEMENTS::EvalErrorFlag flag);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void InitJacobianMapping();
@@ -556,10 +552,10 @@ namespace DRT
           LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
           LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
           LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,     ///< stress output option
-          const INPAR::STR::StrainType iostrain,     ///< strain output option
-          const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
+          Teuchos::ParameterList& params,      ///< algorithmic parameters e.g. time
+          INPAR::STR::StressType iostress,     ///< stress output option
+          INPAR::STR::StrainType iostrain,     ///< strain output option
+          INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Calculate nonlinear stiffness and mass matrix (GEMM)
       virtual void soh8_nlnstiffmass_gemm(std::vector<int>& lm,   ///< location matrix
@@ -572,10 +568,10 @@ namespace DRT
           LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestress,    ///< stresses at GP
           LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* elestrain,    ///< strains at GP
           LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,     ///< stress output option
-          const INPAR::STR::StrainType iostrain,     ///< strain output option
-          const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
+          Teuchos::ParameterList& params,      ///< algorithmic parameters e.g. time
+          INPAR::STR::StressType iostress,     ///< stress output option
+          INPAR::STR::StrainType iostrain,     ///< strain output option
+          INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
       void soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass);
@@ -627,7 +623,7 @@ namespace DRT
       void soh8_easinit();
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASType EASType);
+      void soh8_reiniteas(DRT::ELEMENTS::So_hex8::EASType EASType);
 
       //! EAS technology, setup necessary data
       void soh8_eassetup(std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
@@ -717,14 +713,14 @@ namespace DRT
           LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
           const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& stress,
           std::vector<double>& disp,  ///< current displacements
-          const double detJ_w,        ///< jacobian determinant times gauss weigth
-          const double detJ, const double detJ0, const double charelelength,
+          double detJ_w,              ///< jacobian determinant times gauss weigth
+          double detJ, double detJ0, double charelelength,
           const LINALG::Matrix<MAT::NUM_STRESS_3D, NUMDOF_SOH8>& bop,
           const LINALG::Matrix<6, NUMDOF_SOH8>& cb,
           const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& N_XYZ,
           const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
           const std::vector<Epetra_SerialDenseMatrix>* M_GP, const Epetra_SerialDenseMatrix* alpha,
-          LINALG::SerialDenseMatrix& M, const int gp, Teuchos::ParameterList& params);
+          LINALG::SerialDenseMatrix& M, int gp, Teuchos::ParameterList& params);
 
      private:
       /** recover elementwise stored stuff

@@ -2361,9 +2361,9 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
     {
       LINALG::Matrix<NUMDIM_SOH8, 1> ei(true);
       ei(i, 0) = 1.;
-      solid_ele->GetCauchyAtXi(rst_slave, eledisp, normal, ei, traction(i, 0), &dtraction_dd_i,
-          &solid_stress[2 + i], nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-          nullptr, nullptr, nullptr, nullptr);
+      solid_ele->GetCauchyNDirAndDerivativesAtXi(rst_slave, eledisp, normal, ei, traction(i, 0),
+          &dtraction_dd_i, &solid_stress[2 + i], nullptr, nullptr, nullptr, nullptr, nullptr,
+          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
       LINALG::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.A(), true);
       for (int col = 0; col < NUMDOF_SOH8; ++col) dtraction_dd_l(col, i) = dtraction_dd_i_l(col, 0);
     }
