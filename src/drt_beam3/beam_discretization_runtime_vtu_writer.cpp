@@ -900,25 +900,32 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
     }
   }
 
+
+  int global_num_GPs_per_element_translational =
+      GlobalMaximumNumGP(num_GPs_per_element_strains_translational);
+  int global_num_GPs_per_element_rotational =
+      GlobalMaximumNumGP(num_GPs_per_element_strains_rotational);
+
+
   // append the solution vectors to the visualization data of the vtu writer object
   runtime_vtuwriter_->AppendVisualizationCellDataVector(axial_strain_GPs_all_row_elements,
-      num_GPs_per_element_strains_translational, "axial_strain_GPs");
+      global_num_GPs_per_element_translational, "axial_strain_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(shear_strain_2_GPs_all_row_elements,
-      num_GPs_per_element_strains_translational, "shear_strain_2_GPs");
+      global_num_GPs_per_element_translational, "shear_strain_2_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(shear_strain_3_GPs_all_row_elements,
-      num_GPs_per_element_strains_translational, "shear_strain_3_GPs");
+      global_num_GPs_per_element_translational, "shear_strain_3_GPs");
 
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      twist_GPs_all_row_elements, num_GPs_per_element_strains_rotational, "twist_GPs");
+      twist_GPs_all_row_elements, global_num_GPs_per_element_rotational, "twist_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      curvature_2_GPs_all_row_elements, num_GPs_per_element_strains_rotational, "curvature_2_GPs");
+      curvature_2_GPs_all_row_elements, global_num_GPs_per_element_rotational, "curvature_2_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      curvature_3_GPs_all_row_elements, num_GPs_per_element_strains_rotational, "curvature_3_GPs");
+      curvature_3_GPs_all_row_elements, global_num_GPs_per_element_rotational, "curvature_3_GPs");
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1068,26 +1075,33 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
     }
   }
 
+
+  int global_num_GPs_per_element_translational =
+      GlobalMaximumNumGP(num_GPs_per_element_stresses_translational);
+  int global_num_GPs_per_element_rotational =
+      GlobalMaximumNumGP(num_GPs_per_element_stresses_rotational);
+
+
   // append the solution vectors to the visualization data of the vtu writer object
   runtime_vtuwriter_->AppendVisualizationCellDataVector(material_axial_force_GPs_all_row_elements,
-      num_GPs_per_element_stresses_translational, "material_axial_force_GPs");
+      global_num_GPs_per_element_translational, "material_axial_force_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(material_shear_force_2_GPs_all_row_elements,
-      num_GPs_per_element_stresses_translational, "material_shear_force_2_GPs");
+      global_num_GPs_per_element_translational, "material_shear_force_2_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(material_shear_force_3_GPs_all_row_elements,
-      num_GPs_per_element_stresses_translational, "material_shear_force_3_GPs");
+      global_num_GPs_per_element_translational, "material_shear_force_3_GPs");
 
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(material_torque_GPs_all_row_elements,
-      num_GPs_per_element_stresses_rotational, "material_torque_GPs");
+      global_num_GPs_per_element_rotational, "material_torque_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      material_bending_moment_2_GPs_all_row_elements, num_GPs_per_element_stresses_rotational,
+      material_bending_moment_2_GPs_all_row_elements, global_num_GPs_per_element_rotational,
       "material_bending_moment_2_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      material_bending_moment_3_GPs_all_row_elements, num_GPs_per_element_stresses_rotational,
+      material_bending_moment_3_GPs_all_row_elements, global_num_GPs_per_element_rotational,
       "material_bending_moment_3_GPs");
 }
 
@@ -1237,26 +1251,33 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStre
     }
   }
 
+
+  int global_num_GPs_per_element_translational =
+      GlobalMaximumNumGP(num_GPs_per_element_stresses_translational);
+  int global_num_GPs_per_element_rotational =
+      GlobalMaximumNumGP(num_GPs_per_element_stresses_rotational);
+
+
   // append the solution vectors to the visualization data of the vtu writer object
   runtime_vtuwriter_->AppendVisualizationCellDataVector(spatial_axial_force_GPs_all_row_elements,
-      num_GPs_per_element_stresses_translational, "spatial_axial_force_GPs");
+      global_num_GPs_per_element_translational, "spatial_axial_force_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(spatial_shear_force_2_GPs_all_row_elements,
-      num_GPs_per_element_stresses_translational, "spatial_shear_force_2_GPs");
+      global_num_GPs_per_element_translational, "spatial_shear_force_2_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(spatial_shear_force_3_GPs_all_row_elements,
-      num_GPs_per_element_stresses_translational, "spatial_shear_force_3_GPs");
+      global_num_GPs_per_element_translational, "spatial_shear_force_3_GPs");
 
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(spatial_torque_GPs_all_row_elements,
-      num_GPs_per_element_stresses_rotational, "spatial_torque_GPs");
+      global_num_GPs_per_element_rotational, "spatial_torque_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      spatial_bending_moment_2_GPs_all_row_elements, num_GPs_per_element_stresses_rotational,
+      spatial_bending_moment_2_GPs_all_row_elements, global_num_GPs_per_element_rotational,
       "spatial_bending_moment_2_GPs");
 
   runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      spatial_bending_moment_3_GPs_all_row_elements, num_GPs_per_element_stresses_rotational,
+      spatial_bending_moment_3_GPs_all_row_elements, global_num_GPs_per_element_rotational,
       "spatial_bending_moment_3_GPs");
 }
 
@@ -1561,4 +1582,30 @@ void BeamDiscretizationRuntimeVtuWriter::InsertVectorValuesAtBackOfOtherVector(
   vector_output.reserve(vector_output.size() + vector_input.size());
 
   std::copy(vector_input.begin(), vector_input.end(), std::back_inserter(vector_output));
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+int BeamDiscretizationRuntimeVtuWriter::GlobalMaximumNumGP(unsigned int my_num_gp) const
+{
+  int my_num_gp_signed = (int)my_num_gp;
+
+  // Get number of Gauss points on all ranks.
+  std::vector<int> num_gp_per_rank(discretization_->Comm().NumProc(), 0);
+  discretization_->Comm().GatherAll(&my_num_gp_signed, &num_gp_per_rank[0], 1);
+
+  // Check that all ranks have the same (or zero) number of Gauss points.
+  int global_num_gp = 0;
+  for (auto const& val : num_gp_per_rank)
+  {
+    if (val > 0)
+    {
+      if (global_num_gp == 0)
+        global_num_gp = val;
+      else if (global_num_gp != val)
+        dserror("number of Gauss points must be the same for all elements in discretization!");
+    }
+  }
+
+  return global_num_gp;
 }
