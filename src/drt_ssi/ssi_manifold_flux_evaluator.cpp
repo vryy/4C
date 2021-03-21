@@ -249,9 +249,9 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
 
     eleparams.set<int>("action", SCATRA::set_elch_scatra_manifold_parameter);
 
-    eleparams.set<bool>(
-        "use_other_side", !(DRT::UTILS::HaveSameNodes(scatra_manifold_coupling->ConditionManifold(),
-                              scatra_manifold_coupling->ConditionKinetics(), false)));
+    eleparams.set<bool>("evaluate_master_side",
+        !(DRT::UTILS::HaveSameNodes(scatra_manifold_coupling->ConditionManifold(),
+            scatra_manifold_coupling->ConditionKinetics(), false)));
 
     eleparams.set<int>(
         "kinetic_model", scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel"));
@@ -299,6 +299,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
       systemmatrix_manifold_cond->Complete();
       matrix_manifold_scatra_manifold_side->Complete();
 
+      // column dofs are so far on manifold dis. They are transformed to scatra dis
       LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_manifold_side,
           *full_map_manifold_, *interface_map_scatra_, 1.0, nullptr,
           &*scatra_manifold_coupling->SlaveConverter(), *matrix_manifold_scatra_cond, true, true);
@@ -365,10 +366,12 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraManifoldScaTraMasterSide(
     rhs_scatra_cond->Scale(-1.0);
   }
 
+  // djscatra_dmanifold: manifold rows are transformed to scatra side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_manifold_cond, *interface_map_scatra_,
       *full_map_manifold_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *matrix_scatra_manifold_cond, true, true);
 
+  // djscatra_dscatra: manifold rows are transformed to scatra side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_cond, *interface_map_scatra_,
       *interface_map_scatra_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *systemmatrix_scatra_cond, true, true);
@@ -376,6 +379,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraManifoldScaTraMasterSide(
   matrix_scatra_manifold_cond->Complete(*full_map_manifold_, *interface_map_scatra_);
   systemmatrix_scatra_cond->Complete();
 
+  // djscatra_dstructure: manifold rows are transformed to scatra side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_structure_cond, *interface_map_scatra_,
       *full_map_structure_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *matrix_scatra_structure_cond, true, true);

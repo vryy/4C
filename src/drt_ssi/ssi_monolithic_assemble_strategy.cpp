@@ -613,8 +613,8 @@ void SSI::AssembleStrategySparse::AssembleScaTraManifoldStructure(
 void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
     Teuchos::RCP<const Epetra_Vector> rhs_scatra, Teuchos::RCP<const Epetra_Vector> rhs_structure,
     Teuchos::RCP<const Epetra_Vector> rhs_manifold,
-    Teuchos::RCP<const Epetra_Vector> flux_manifold_scatra_m,
-    Teuchos::RCP<const Epetra_Vector> flux_manifold_scatra_s)
+    Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_manifold_side,
+    Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_scatra_side)
 {
   SSIMono().MapsSubProblems()->InsertVector(
       rhs_scatra, SSIMono().GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
@@ -627,11 +627,11 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
     SSIMono().MapsSubProblems()->InsertVector(
         rhs_manifold, SSIMono().GetProblemPosition(SSI::Subproblem::manifold), rhs);
 
-    SSIMono().MapsSubProblems()->AddVector(
-        flux_manifold_scatra_m, SSIMono().GetProblemPosition(Subproblem::manifold), rhs);
+    SSIMono().MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_manifold_side,
+        SSIMono().GetProblemPosition(Subproblem::manifold), rhs);
 
-    SSIMono().MapsSubProblems()->AddVector(
-        flux_manifold_scatra_s, SSIMono().GetProblemPosition(Subproblem::scalar_transport), rhs);
+    SSIMono().MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_scatra_side,
+        SSIMono().GetProblemPosition(Subproblem::scalar_transport), rhs);
   }
 
   SSIMono().MapsSubProblems()->AddVector(

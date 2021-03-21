@@ -47,10 +47,10 @@ void DRT::ELEMENTS::ScaTraEleParameterElchManifold::Done()
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterElchManifold::ScaTraEleParameterElchManifold(
     const std::string& disname)
-    : kinetic_model_(INPAR::SSI::kinetics_noflux),
+    : evaluate_master_side_(false),
+      kinetic_model_(INPAR::SSI::kinetics_noflux),
       num_electrons_(-1),
-      resistance_(-1.0),
-      use_other_side_(false)
+      resistance_(-1.0)
 {
 }
 
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::ScaTraEleParameterElchManifold::SetParameters(
     num_electrons_ = parameters.get<int>("num_electrons");
   }
 
-  use_other_side_ = parameters.get<bool>("use_other_side");
+  evaluate_master_side_ = parameters.get<bool>("evaluate_master_side");
 
   // safety checks
   if (kinetic_model_ == INPAR::SSI::kinetics_constantinterfaceresistance)

@@ -34,7 +34,7 @@ namespace DRT
       int KineticModel() const { return kinetic_model_; }
       int NumElectrons() const { return num_electrons_; }
       double Resistance() const { return resistance_; }
-      bool UseOtherSide() const { return use_other_side_; }
+      bool EvaluateMasterSide() const { return evaluate_master_side_; }
       //@}
 
      private:
@@ -43,10 +43,10 @@ namespace DRT
 
       //! parameters
       //@{
+      bool evaluate_master_side_;
       int kinetic_model_;
       int num_electrons_;
       double resistance_;
-      bool use_other_side_;
       //@}
 
       //! map of all instance

@@ -323,7 +323,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
   // get states from this field and respective coupled field
   auto manifoldfield = discretization.GetState("phinp");
   if (manifoldfield == Teuchos::null) dserror("Cannot get state vector phinp!");
-  auto coupledfield = elchmanifoldparams_->UseOtherSide()
+  auto coupledfield = elchmanifoldparams_->EvaluateMasterSide()
                           ? discretization.GetState(2, "imasterscatra")
                           : discretization.GetState(2, "scalarfield");
   if (coupledfield == Teuchos::null) dserror("Cannot get state vector scalarfield!");
