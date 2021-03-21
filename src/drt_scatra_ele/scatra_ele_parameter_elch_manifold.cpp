@@ -15,38 +15,16 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterElchManifold*
-DRT::ELEMENTS::ScaTraEleParameterElchManifold::Instance(
-    const std::string& disname, const ScaTraEleParameterElchManifold* delete_me)
+DRT::ELEMENTS::ScaTraEleParameterElchManifold::Instance(const std::string& disname)
 {
-  // each discretization is associated with exactly one instance of this class according to a static
-  // map
-  static std::map<std::string, ScaTraEleParameterElchManifold*> instances;
+  auto& selected = instances_[disname];
 
-  // check whether instance already exists for current discretization, and perform instantiation if
-  // not
-  if (delete_me == nullptr)
-  {
-    if (instances.find(disname) == instances.end())
-      instances[disname] = new ScaTraEleParameterElchManifold(disname);
-  }
+  // check whether instance already exists for current discretization, otherwise create it
+  if (selected == nullptr)
+    selected = std::unique_ptr<ScaTraEleParameterElchManifold>(
+        new ScaTraEleParameterElchManifold(disname));
 
-  // destruct instance
-  else
-  {
-    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
-    {
-      if (instance->second == delete_me)
-      {
-        delete instance->second;
-        instances.erase(instance);
-        return nullptr;
-      }
-    }
-    dserror("Could not locate the desired instance. Internal error.");
-  }
-
-  // return existing or newly created instance
-  return instances[disname];
+  return selected.get();
 }
 
 
@@ -54,8 +32,14 @@ DRT::ELEMENTS::ScaTraEleParameterElchManifold::Instance(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterElchManifold::Done()
 {
-  // delete singleton
-  Instance("", this);
+  for (const auto& instance : instances_)
+  {
+    if (instance.second.get() == this)
+    {
+      instances_.erase(instance.first);
+      break;
+    }
+  }
 }
 
 
@@ -67,7 +51,6 @@ DRT::ELEMENTS::ScaTraEleParameterElchManifold::ScaTraEleParameterElchManifold(
       num_electrons_(-1),
       resistance_(-1.0),
       use_other_side_(false)
-
 {
 }
 
@@ -95,3 +78,8 @@ void DRT::ELEMENTS::ScaTraEleParameterElchManifold::SetParameters(
     if (num_electrons_ <= 0) dserror("Number of electrons must be positive!");
   }
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+std::map<std::string, std::unique_ptr<DRT::ELEMENTS::ScaTraEleParameterElchManifold>>
+    DRT::ELEMENTS::ScaTraEleParameterElchManifold::instances_;

@@ -20,13 +20,10 @@ namespace DRT
     class ScaTraEleParameterElchManifold : public ScaTraEleParameterBase
     {
      public:
-      ~ScaTraEleParameterElchManifold() override = default;
-
       //!  singleton access method
       //! \param disname       name of discretization
       //! \param delete_me     creation/destruction indication
-      static ScaTraEleParameterElchManifold* Instance(
-          const std::string& disname, const ScaTraEleParameterElchManifold* delete_me = nullptr);
+      static ScaTraEleParameterElchManifold* Instance(const std::string& disname);
 
       void Done() override;
 
@@ -51,6 +48,9 @@ namespace DRT
       double resistance_;
       bool use_other_side_;
       //@}
+
+      //! map of all instance
+      static std::map<std::string, std::unique_ptr<ScaTraEleParameterElchManifold>> instances_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

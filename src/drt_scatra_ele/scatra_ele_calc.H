@@ -85,8 +85,6 @@ namespace DRT
       ScaTraEleCalc(const int numdofpernode, const int numscal, const std::string& disname);
 
      public:
-      ~ScaTraEleCalc() override = default;
-
       /// called upon destruction
       void Done() override = 0;
 
@@ -1226,8 +1224,6 @@ namespace DRT
             reacoeff_(numscal, 0.0)  // size of vector + initialized to zero
       {
       }
-
-      virtual ~ScaTraEleReaManager() = default;
 
       //! @name set routines
 

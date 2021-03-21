@@ -759,12 +759,8 @@ void SSI::SSIMono::SetupSystem()
         StructureField(), Meshtying3DomainIntersection()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
-    manifoldscatraflux_ = Teuchos::rcp(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this,
-        ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)), interface_map_scatra,
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
-        InterfaceCouplingAdapterStructure(), MapStructure()));
+    manifoldscatraflux_ = Teuchos::rcp(
+        new SSI::ScaTraManifoldScaTraFluxEvaluator(*this, interface_map_scatra, MapStructure()));
   }
   else
   {

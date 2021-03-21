@@ -103,13 +103,7 @@ namespace SSI
   {
    public:
     ScaTraManifoldScaTraFluxEvaluator(const SSI::SSIMono& ssi_mono,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold,
-        Teuchos::RCP<const Epetra_Map> map_manifold,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-        Teuchos::RCP<const Epetra_Map> full_map_scatra,
-        Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure);
 
     //! Evaluate everything including couling
@@ -172,6 +166,9 @@ namespace SSI
     //! map extractor associated with all degrees of freedom inside structure field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
 
+    //! map of all scatra manifold dofs
+    Teuchos::RCP<const Epetra_Map> full_map_manifold_;
+
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const Epetra_Map> full_map_scatra_;
 
@@ -183,9 +180,6 @@ namespace SSI
 
     //! map associated with all degrees of freedom on scatra interface
     Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
-
-    //! map of all scatra manifold dofs
-    Teuchos::RCP<const Epetra_Map> map_manifold_;
 
     //! coupling matrices
     //@{

@@ -317,6 +317,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
     DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
     Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual)
 {
+  const int nsd = static_cast<int>(my::nsd_);
+  const int nen = static_cast<int>(my::nen_);
+
   // get states from this field and respective coupled field
   auto manifoldfield = discretization.GetState("phinp");
   if (manifoldfield == Teuchos::null) dserror("Cannot get state vector phinp!");
@@ -329,8 +332,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
       params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
 
   // extract local nodal values from global state vectors
-  std::vector<LINALG::Matrix<my::nen_, 1>> ecoupledfield(
-      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<nen, 1>> ecoupledfield(
+      my::numdofpernode_, LINALG::Matrix<nen, 1>(true));
   DRT::UTILS::ExtractMyValues(*manifoldfield, my::ephinp_, la[0].lm_);
   DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[2].lm_);
 
@@ -349,7 +352,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
     const double timefacfac = my::scatraparatimint_->TimeFac() * fac;
     const double timefacrhsfac = my::scatraparatimint_->TimeFacRhs() * fac;
 
+#ifdef DEBUG
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+#endif
 
     const double manifoldpotint = my::funct_.Dot(my::ephinp_[1]);
     const double coupledpotint = my::funct_.Dot(ecoupledfield[1]);
@@ -376,12 +381,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
             const double dj_dpot_slave_timefacfac = timefacfac * inv_fluxresistance;
             const double dj_dpot_master_timefacfac = -dj_dpot_slave_timefacfac;
 
-            for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+            for (int vi = 0; vi < nen; ++vi)
             {
               const int row_conc = vi * 2;
               const int row_pot = vi * 2 + 1;
 
-              for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+              for (int ui = 0; ui < nen; ++ui)
               {
                 const int col_conc = ui * 2;
                 const int col_pot = ui * 2 + 1;
@@ -392,7 +397,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
                     my::funct_(vi) * num_electrons * dj_dpot_slave_timefacfac * my::funct_(ui);
               }
 
-              const int nen_master = static_cast<int>(my::nen_);
+              const int nen_master = nen;
               for (int ui = 0; ui < nen_master; ++ui)
               {
                 const int col_conc = ui * 2;
@@ -411,29 +416,29 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
           }
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
-            static LINALG::Matrix<1, my::nsd_ * my::nen_> dJ_dmesh(false);
+            static LINALG::Matrix<1, nsd * nen> dJ_dmesh(false);
             const double J = my::xjm_.Determinant();
-            for (unsigned node = 0; node < my::nen_; node++)
-              for (unsigned dim = 0; dim < my::nsd_; dim++)
-                dJ_dmesh(dim + node * my::nsd_) = J * my::derxy_(dim, node);
+            for (unsigned node = 0; node < nen; node++)
+              for (int dim = 0; dim < nsd; dim++)
+                dJ_dmesh(dim + node * nsd) = J * my::derxy_(dim, node);
 
             const double timefacwgt = my::scatraparatimint_->TimeFac() * intpoints.IP().qwgt[gpid];
             const double dj_dd_slave_timefacwgt = timefacwgt * j;
 
             // loop over matrix rows
-            for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+            for (int vi = 0; vi < nen; ++vi)
             {
               const int row_conc = vi * my::numdofpernode_;
               const int row_pot = row_conc + 1;
               const double vi_dj_dd_slave = my::funct_(vi) * dj_dd_slave_timefacwgt;
 
               // loop over matrix columns
-              for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+              for (int ui = 0; ui < nen; ++ui)
               {
                 // loop over spatial dimensions
-                for (int dim = 0; dim < static_cast<int>(my::nsd_); ++dim)
+                for (int dim = 0; dim < nsd; ++dim)
                 {
-                  const int col_disp = ui * static_cast<int>(my::nsd_) + dim;
+                  const int col_disp = ui * nsd + dim;
 
                   // compute linearizations w.r.t. slave-side structural displacements
                   eslavematrix(row_conc, col_disp) += vi_dj_dd_slave * dJ_dmesh(col_disp);
