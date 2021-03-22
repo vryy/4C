@@ -204,10 +204,11 @@ namespace DRT
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchElectrode>(my::diffmanager_);
       };
 
+      //! calculate flux scatra <-> scatra manifold incl. linearizations
       void CalcScaTraScaTraManifoldFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
-          Epetra_SerialDenseVector& eslaveresidual) override;
+          Epetra_SerialDenseVector& eslaveresidual);
 
      private:
       //! get internal variable manager for electrodes

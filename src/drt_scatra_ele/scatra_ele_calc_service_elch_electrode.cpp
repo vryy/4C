@@ -38,6 +38,14 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
 
       break;
     }
+
+    case SCATRA::calc_scatra_manifold_flux:
+    {
+      CalcScaTraScaTraManifoldFlux(
+          ele, params, discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra);
+      break;
+    }
+
     default:
     {
       myelch::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
@@ -416,11 +424,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
           }
           case static_cast<int>(SCATRA::DifferentiationType::disp):
           {
+            // derivative of J w.r.t. displacements
             static LINALG::Matrix<1, nsd * nen> dJ_dmesh(false);
-            const double J = my::xjm_.Determinant();
-            for (unsigned node = 0; node < nen; node++)
-              for (int dim = 0; dim < nsd; dim++)
-                dJ_dmesh(dim + node * nsd) = J * my::derxy_(dim, node);
+            my::CalcDJDMesh(dJ_dmesh);
 
             const double timefacwgt = my::scatraparatimint_->TimeFac() * intpoints.IP().qwgt[gpid];
             const double dj_dd_slave_timefacwgt = timefacwgt * j;

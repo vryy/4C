@@ -166,9 +166,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds)
     static LINALG::Matrix<1, nsd_ * nen_> dJ_dmesh(false);
+    CalcDJDMesh(dJ_dmesh);
     const double J = xjm_.Determinant();
-    for (unsigned i = 0; i < nen_; i++)
-      for (unsigned j = 0; j < nsd_; j++) dJ_dmesh(j + i * nsd_) = J * derxy_(j, i);
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
@@ -1040,6 +1039,17 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODFluid(
 {
   // do nothing
   return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDJDMesh(
+    LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
+{
+  const double J = xjm_.Determinant();
+  for (unsigned node = 0; node < nen_; node++)
+    for (int dim = 0; dim < nsd_; dim++) dJ_dmesh(dim + node * nsd_) = J * derxy_(dim, node);
 }
 
 /*----------------------------------------------------------------------*
