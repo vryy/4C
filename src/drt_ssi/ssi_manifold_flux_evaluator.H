@@ -134,31 +134,14 @@ namespace SSI
 
    private:
     //! Evaluate flux and linearizations on manifold side
-    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling,
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_manifold_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_scatra_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_structure_cond,
-        Teuchos::RCP<Epetra_Vector> rhs_manifold_cond);
+    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Copy and scale (-1.0) to scatra side
     void CopyScaTraManifoldScaTraMasterSide(
-        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling,
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_manifold_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_scatra_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_structure_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_scatra_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_scatra_manifold_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_scatra_structure_cond,
-        Teuchos::RCP<Epetra_Vector> rhs_manifold_cond, Teuchos::RCP<Epetra_Vector> rhs_scatra_cond);
+        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Add to global matrices and rhs
-    void AddConditionContribution(Teuchos::RCP<LINALG::SparseMatrix> symstemmatrix_manifold_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_scatra_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_structure_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_scatra_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_scatra_manifold_cond,
-        Teuchos::RCP<LINALG::SparseMatrix> matrix_scatra_structure_cond,
-        Teuchos::RCP<Epetra_Vector> rhs_manifold_cond, Teuchos::RCP<Epetra_Vector> rhs_scatra_cond);
+    void AddConditionContribution();
 
     //! map extractor associated with all degrees of freedom on scatra interfaces
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_interface_;
@@ -184,15 +167,21 @@ namespace SSI
     //! coupling matrices
     //@{
     Teuchos::RCP<LINALG::SparseOperator> matrix_manifold_scatra_;
+    Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_scatra_cond_;
     Teuchos::RCP<LINALG::SparseOperator> matrix_manifold_structure_;
+    Teuchos::RCP<LINALG::SparseMatrix> matrix_manifold_structure_cond_;
     Teuchos::RCP<LINALG::SparseOperator> matrix_scatra_manifold_;
+    Teuchos::RCP<LINALG::SparseMatrix> matrix_scatra_manifold_cond_;
     Teuchos::RCP<LINALG::SparseOperator> matrix_scatra_structure_;
+    Teuchos::RCP<LINALG::SparseMatrix> matrix_scatra_structure_cond_;
     //@}
 
     //! rhs for manifold and scatra
     //@{
     Teuchos::RCP<Epetra_Vector> rhs_manifold_;
+    Teuchos::RCP<Epetra_Vector> rhs_manifold_cond_;
     Teuchos::RCP<Epetra_Vector> rhs_scatra_;
+    Teuchos::RCP<Epetra_Vector> rhs_scatra_cond_;
     //@}
 
     //! scatra problem
@@ -207,7 +196,9 @@ namespace SSI
     //! system matrices of scatra and manifold
     //@{
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix_manifold_;
+    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_manifold_cond_;
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix_scatra_;
+    Teuchos::RCP<LINALG::SparseMatrix> systemmatrix_scatra_cond_;
     //@}
   };
 }  // namespace SSI
