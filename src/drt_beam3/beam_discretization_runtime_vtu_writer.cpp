@@ -902,9 +902,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 
   int global_num_GPs_per_element_translational =
-      GlobalMaximumNumGP(num_GPs_per_element_strains_translational);
+      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_strains_translational);
   int global_num_GPs_per_element_rotational =
-      GlobalMaximumNumGP(num_GPs_per_element_strains_rotational);
+      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_strains_rotational);
 
 
   // append the solution vectors to the visualization data of the vtu writer object
@@ -1077,9 +1077,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 
   int global_num_GPs_per_element_translational =
-      GlobalMaximumNumGP(num_GPs_per_element_stresses_translational);
+      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_translational);
   int global_num_GPs_per_element_rotational =
-      GlobalMaximumNumGP(num_GPs_per_element_stresses_rotational);
+      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_rotational);
 
 
   // append the solution vectors to the visualization data of the vtu writer object
@@ -1253,9 +1253,9 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStre
 
 
   int global_num_GPs_per_element_translational =
-      GlobalMaximumNumGP(num_GPs_per_element_stresses_translational);
+      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_translational);
   int global_num_GPs_per_element_rotational =
-      GlobalMaximumNumGP(num_GPs_per_element_stresses_rotational);
+      GetGlobalNumberOfGaussPointsPerBeam(num_GPs_per_element_stresses_rotational);
 
 
   // append the solution vectors to the visualization data of the vtu writer object
@@ -1586,26 +1586,18 @@ void BeamDiscretizationRuntimeVtuWriter::InsertVectorValuesAtBackOfOtherVector(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-int BeamDiscretizationRuntimeVtuWriter::GlobalMaximumNumGP(unsigned int my_num_gp) const
+int BeamDiscretizationRuntimeVtuWriter::GetGlobalNumberOfGaussPointsPerBeam(
+    unsigned int my_num_gp) const
 {
   int my_num_gp_signed = (int)my_num_gp;
-
-  // Get number of Gauss points on all ranks.
-  std::vector<int> num_gp_per_rank(discretization_->Comm().NumProc(), 0);
-  discretization_->Comm().GatherAll(&my_num_gp_signed, &num_gp_per_rank[0], 1);
-
-  // Check that all ranks have the same (or zero) number of Gauss points.
   int global_num_gp = 0;
-  for (auto const& val : num_gp_per_rank)
-  {
-    if (val > 0)
-    {
-      if (global_num_gp == 0)
-        global_num_gp = val;
-      else if (global_num_gp != val)
-        dserror("number of Gauss points must be the same for all elements in discretization!");
-    }
-  }
+  discretization_->Comm().MaxAll(&my_num_gp_signed, &global_num_gp, 1);
+
+  // Safety checks.
+  if (my_num_gp_signed > 0 and my_num_gp_signed != global_num_gp)
+    dserror("The number of Gauss points must be the same for all elements in discretization!");
+  else if (global_num_gp < 0)
+    dserror("The number of Gauss points must be zero or a positve integer!");
 
   return global_num_gp;
 }
