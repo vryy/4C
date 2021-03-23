@@ -222,6 +222,11 @@ class BeamDiscretizationRuntimeVtuWriter
   void InsertVectorValuesAtBackOfOtherVector(
       const std::vector<double>& vector_input, std::vector<double>& vector_output);
 
+  /**
+   * \brief Get the global (on all ranks) maximum value of Gauss Point resultants for stress /
+   * strain output.
+   **/
+  int GetGlobalNumberOfGaussPointsPerBeam(unsigned int my_num_gp) const;
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
