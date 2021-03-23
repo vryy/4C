@@ -23,15 +23,17 @@
 #include "../drt_adapter/ad_str_structure_new.H"
 
 #include "../drt_inpar/inpar_volmortar.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
-#include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_rebalancing.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+
 #include "../drt_scatra_ele/scatra_ele.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
@@ -53,11 +55,11 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       maps_coup_struct_(Teuchos::null),
       maps_coup_struct_3_domain_intersection_(Teuchos::null),
       map_structure_condensed_(Teuchos::null),
-      map_scatra_on_scatra_manifold_(Teuchos::null),
       map_structure_on_scatra_manifold_(Teuchos::null),
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
           "MESHTYING_3_DOMAIN_INTERSECTION")),
+      meshtying_strategy_s2i_(Teuchos::null),
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
       slave_side_converter_(Teuchos::null),
@@ -250,6 +252,14 @@ void SSI::SSIBase::Setup()
           new LINALG::MultiMapExtractor(*structure_->Discretization()->DofRowMap(), maps_line));
       maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
     }
+
+    // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    meshtying_strategy_s2i_ =
+        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
+
+    // safety checks
+    if (meshtying_strategy_s2i_ == Teuchos::null)
+      dserror("Invalid scatra-scatra interface coupling strategy!");
   }
 
   // create map of dofs on structure/scatra discretization that have the same nodes as manifold
@@ -258,9 +268,6 @@ void SSI::SSIBase::Setup()
   {
     map_structure_on_scatra_manifold_ =
         SSI::UTILS::CreateManifoldMultiMapExtractor(StructureField()->Discretization());
-
-    map_scatra_on_scatra_manifold_ =
-        SSI::UTILS::CreateManifoldMultiMapExtractor(ScaTraField()->Discretization());
   }
 
   // construct vector of zeroes
@@ -540,7 +547,24 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   CheckIsSetup();
 
   ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
-  if (IsScaTraManifold()) ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
+  if (IsScaTraManifold())
+  {
+    ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
+
+    // pass master-side scatra to scatra manifold discretization
+    auto imasterphinp_on_manifold =
+        LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
+
+    auto imasterphinp = MeshtyingStrategyS2I()->InterfaceMaps()->ExtractVector(*phi, 2);
+
+    auto imasterphinp_on_slave_side =
+        MeshtyingStrategyS2I()->CouplingAdapter()->MasterToSlave(imasterphinp);
+
+    MeshtyingStrategyS2I()->InterfaceMaps()->InsertVector(
+        imasterphinp_on_slave_side, 1, imasterphinp_on_manifold);
+
+    ScaTraManifold()->Discretization()->SetState(2, "imasterscatra", imasterphinp_on_manifold);
+  }
 }
 
 /*----------------------------------------------------------------------*/

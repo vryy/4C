@@ -364,6 +364,7 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface)
 {
   // apply mesh tying to the domain contributions
+  if (scatra_structure_domain != Teuchos::null)
   {
     temp_scatra_struct_domain_mat_->Zero();
     auto temp_scatra_struct_domain_sparse_matrix =
@@ -413,6 +414,7 @@ void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface)
 {
   // apply mesh tying to the domain contributions
+  if (scatra_structure_domain != Teuchos::null)
   {
     temp_scatra_struct_domain_mat_->Zero();
     auto temp_scatra_struct_domain_sparse_matrix =
@@ -462,6 +464,7 @@ void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> scatra_structure_interface)
 {
   // apply mesh tying to the domain contributions
+  if (scatra_structure_domain != Teuchos::null)
   {
     temp_scatra_struct_domain_mat_->Zero();
     auto temp_scatra_struct_domain_block_sparse_matrix =

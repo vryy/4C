@@ -252,6 +252,7 @@ namespace DRT
       SSIInterfaceMeshtying,
       SSIMeshtying3DomainIntersection,
       SSISurfaceManifold,
+      SSISurfaceManifoldKinetics,
       SSTIInterfaceMeshtying,
       SSTIMeshtying3DomainIntersection,
       RedAirwayVentilatorCond,

@@ -46,7 +46,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateOD(DRT::Element* ele
   //--------------------------------------------------------------------------------
 
   // extract action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
 
   // evaluate action
   EvaluateActionOD(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -166,9 +166,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
     // J denotes the determinant of the Jacobian of the mapping between current and parameter space,
     // i.e. det(dx/ds)
     static LINALG::Matrix<1, nsd_ * nen_> dJ_dmesh(false);
+    CalcDJDMesh(dJ_dmesh);
     const double J = xjm_.Determinant();
-    for (unsigned i = 0; i < nen_; i++)
-      for (unsigned j = 0; j < nsd_; j++) dJ_dmesh(j + i * nsd_) = J * derxy_(j, i);
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
@@ -234,8 +233,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
       // standard Galerkin terms - convective term
       //----------------------------------------------------------------
       if (not scatrapara_->IsConservative())
+      {
         CalcConvODMesh(emat, k, ndofpernodemesh, fac, rhsfac, densnp[k], J,
             scatravarmanager_->GradPhi(k), scatravarmanager_->ConVel(k));
+      }
       else
         CalcConvConsODMesh(emat, k, fac, scatraparatimint_->TimeFac() * fac, densnp[k], J);
 
@@ -253,9 +254,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
     }  // end loop all scalars
 
   }  // end loop Gauss points
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -380,8 +378,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
     }  // end loop all scalars
 
   }  // end loop Gauss points
-
-  return;
 }
 
 
@@ -396,20 +392,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvODFluid(
 {
   // convective term in convective form
   const double densfac = timefacfac * densnp;
-  for (unsigned vi = 0; vi < nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     const double v = densfac * funct_(vi);
     const int fvi = vi * numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       const int fui = ui * ndofpernodefluid;
 
-      for (unsigned udim = 0; udim < nsd_; ++udim)
+      for (int udim = 0; udim < static_cast<int>(nsd_); ++udim)
         emat(fvi, fui + udim) += v * funct_(ui) * gradphi(udim);
     }
   }
-  return;
 }
 
 /*-----------------------------------------------------------------------------*
@@ -422,19 +417,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddConsODFluid(
     const double timefacfac, const double densnp, const double phinp)
 {
   const double consfac = timefacfac * densnp * phinp;
-  for (unsigned vi = 0; vi < nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     const double v = consfac * funct_(vi);
     const int fvi = vi * numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       const int fui = ui * ndofpernodefluid;
 
       for (unsigned udim = 0; udim < nsd_; ++udim) emat(fvi, fui) += v * derxy_(udim, udim);
     }
   }
-  return;
 }
 
 /*------------------------------------------------------------------- *
@@ -456,21 +450,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODMesh(
     vtrans = fac * densnp * phinp / J;
   }
 
-  for (unsigned vi = 0; vi < nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     const int fvi = vi * numdofpernode_ + k;
 
     const double val = vtrans * funct_(vi);
-    for (unsigned ui = 0; ui < nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       const int fui = ui * ndofpernodemesh;
 
-      for (unsigned udim = 0; udim < nsd_; ++udim)
+      for (int udim = 0; udim < static_cast<int>(nsd_); ++udim)
         emat(fvi, fui + udim) += val * dJ_dmesh(fui + udim);
     }
   }
-
-  return;
 }
 
 /*-------------------------------------------------------------------------------------- *
@@ -483,16 +475,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODMesh(
     const double densnp)
 {
   double vrhs = -1.0 * fac / J * rhsint;
-  for (unsigned vi = 0; vi < nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     const int fvi = vi * numdofpernode_ + k;
     const double val = vrhs * funct_(vi);
 
-    for (unsigned ui = 0; ui < nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       const int fui = ui * ndofpernodemesh;
 
-      for (unsigned udim = 0; udim < nsd_; ++udim)
+      for (int udim = 0; udim < static_cast<int>(nsd_); ++udim)
         emat(fvi, fui + udim) += val * dJ_dmesh(fui + udim);
     }
   }
@@ -511,16 +503,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(Epetra_Seria
   {
     // convective term in convective form
     const double densfac = fac * densnp;
-    for (unsigned vi = 0; vi < nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       const double v = densfac * funct_(vi);
       const int fvi = vi * numdofpernode_ + k;
 
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         const int fui = ui * ndofpernodemesh;
 
-        for (unsigned udim = 0; udim < nsd_; ++udim)
+        for (int udim = 0; udim < static_cast<int>(nsd_); ++udim)
           emat(fvi, fui + udim) += -1.0 * v * funct_(ui) * gradphi(udim);
       }
     }
@@ -530,8 +522,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(Epetra_Seria
   // standard Galerkin terms  -- "shapederivatives" convective term
   //----------------------------------------------------------------
   ApplyShapeDerivsConv(emat, k, rhsfac, densnp, J, gradphi, convelint);
-
-  return;
 }
 
 
@@ -573,7 +563,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
 
   if (nsd_ == 3)
   {
-    for (unsigned ui = 0; ui < nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       const double v0 =
           gridvelderiv(1, 0) * (deriv_(2, ui) * xjm_(1, 2) - deriv_(1, ui) * xjm_(2, 2)) +
@@ -611,12 +601,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
 
   else if (nsd_ == 2)
   {
-    for (unsigned vi = 0; vi < nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       const int fvi = vi * numdofpernode_ + k;
       const double v = scatravarmanager_->Phinp(k) * timefacfac / J * funct_(vi);
 
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         emat(fvi, ui * 2) +=
             v * (-gridvelderiv(1, 0) * deriv_(1, ui) + gridvelderiv(1, 1) * deriv_(0, ui));
@@ -628,8 +618,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
 
   else
     dserror("Shape derivatives not implemented for 1D problems!");
-
-  return;
 }
 
 
@@ -674,7 +662,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
 
       const double vrhs = rhsfac * densnp / J;
 
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         const double v00 =
             +convelint_1 * (refgradphi_0 * (deriv_(2, ui) * xjm_1_2 - deriv_(1, ui) * xjm_2_2) +
@@ -698,7 +686,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
                               refgradphi_1 * (deriv_(2, ui) * xjm_0_0 - deriv_(0, ui) * xjm_2_0) +
                               refgradphi_2 * (deriv_(0, ui) * xjm_1_0 - deriv_(1, ui) * xjm_0_0));
 
-        for (unsigned vi = 0; vi < nen_; ++vi)
+        for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
         {
           const int fvi = vi * numdofpernode_ + k;
           const double v = vrhs * funct_(vi);
@@ -725,14 +713,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
 
       const double vrhs = rhsfac * densnp / J;
 
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         const double v00 =
             +convelint_1 * (-refgradphi_0 * deriv_(1, ui) + refgradphi_1 * deriv_(0, ui));
         const double v01 =
             +convelint_0 * (refgradphi_0 * deriv_(1, ui) - refgradphi_1 * deriv_(0, ui));
 
-        for (unsigned vi = 0; vi < nen_; ++vi)
+        for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
         {
           const int fvi = vi * numdofpernode_ + k;
           const double v = vrhs * funct_(vi);
@@ -745,9 +733,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
   }
   else
     dserror("shapederivatives not implemented for 1D!");
-
-
-  return;
 }
 
 
@@ -762,7 +747,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
 {
   const double vrhs = -rhsfac / J * diffcoeff;
 
-  for (unsigned vi = 0; vi < nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
     double laplawf(0.0);
     GetLaplacianWeakFormRHS(laplawf, gradphi, vi);
@@ -770,11 +755,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
 
     const int fvi = vi * numdofpernode_ + k;
 
-    for (unsigned ui = 0; ui < nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
     {
       const int fui = ui * ndofpernodemesh;
 
-      for (unsigned udim = 0; udim < nsd_; ++udim)
+      for (int udim = 0; udim < static_cast<int>(nsd_); ++udim)
         emat(fvi, fui + udim) += val * dJ_dmesh(fui + udim);
     }
   }
@@ -801,7 +786,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
       const double gradphi_1 = gradphi(1);
       const double gradphi_2 = gradphi(2);
 
-      for (unsigned vi = 0; vi < nen_; ++vi)
+      for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
       {
         const double deriv_vi_0 = deriv_(0, vi);
         const double deriv_vi_1 = deriv_(1, vi);
@@ -809,7 +794,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
 
         const int fvi = vi * numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < nen_; ++ui)
+        for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
         {
           const double v00 =
               +gradphi_1 * (deriv_vi_0 * (deriv_(2, ui) * xjm_1_2 - deriv_(1, ui) * xjm_2_2) +
@@ -850,7 +835,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
     const double refgradphi_1 = refgradphi(1);
     const double refgradphi_2 = refgradphi(2);
 
-    for (unsigned vi = 0; vi < nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       const double derxy_vi_0 = derxy_(0, vi);
       const double derxy_vi_1 = derxy_(1, vi);
@@ -858,7 +843,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
 
       const int fvi = vi * numdofpernode_ + k;
 
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         const double v00 =
             +derxy_vi_1 * (refgradphi_0 * (deriv_(2, ui) * xjm_1_2 - deriv_(1, ui) * xjm_2_2) +
@@ -896,14 +881,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
       const double gradphi_0 = gradphi(0);
       const double gradphi_1 = gradphi(1);
 
-      for (unsigned vi = 0; vi < nen_; ++vi)
+      for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
       {
         const double deriv_vi_0 = deriv_(0, vi);
         const double deriv_vi_1 = deriv_(1, vi);
 
         const int fvi = vi * numdofpernode_ + k;
 
-        for (unsigned ui = 0; ui < nen_; ++ui)
+        for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
         {
           const double v00 =
               +gradphi_1 * (-deriv_vi_0 * deriv_(1, ui) + deriv_vi_1 * deriv_(0, ui));
@@ -924,14 +909,14 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
     const double refgradphi_0 = refgradphi(0);
     const double refgradphi_1 = refgradphi(1);
 
-    for (unsigned vi = 0; vi < nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       const double derxy_vi_0 = derxy_(0, vi);
       const double derxy_vi_1 = derxy_(1, vi);
 
       const int fvi = vi * numdofpernode_ + k;
 
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         const double v00 =
             +derxy_vi_1 * (-refgradphi_0 * deriv_(1, ui) + refgradphi_1 * deriv_(0, ui));
@@ -960,32 +945,19 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODMesh(Epetra_Seri
     // standard Galerkin term
     double vrhs = rhsfac * rea_phi / J;
 
-    for (unsigned vi = 0; vi < nen_; ++vi)
+    for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
     {
       const int fvi = vi * numdofpernode_ + k;
 
       const double val = vrhs * funct_(vi);
-      for (unsigned ui = 0; ui < nen_; ++ui)
+      for (int ui = 0; ui < static_cast<int>(nen_); ++ui)
       {
         const int fui = ui * ndofpernodemesh;
 
-        for (unsigned udim = 0; udim < nsd_; ++udim)
+        for (int udim = 0; udim < static_cast<int>(nsd_); ++udim)
           emat(fvi, fui + udim) += val * dJ_dmesh(fui + udim);
       }
     }
-
-    //        // reactive rhs stabilization
-    //        if (scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization)
-    //        {
-    //          vrhs =
-    //          scatrapara_->USFEMGLSFac()*rhstaufac*densnp*reamanager_->GetReaCoeff(k)*scatrares;
-    //          for (unsigned vi=0; vi<nen_; ++vi)
-    //          {
-    //            const int fvi = vi*numdofpernode_+k;
-    //
-    //            erhs[fvi] -= vrhs*funct_(vi);
-    //          }
-    //        }
   }
 }
 
@@ -998,8 +970,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODFluid(
     const double fac, const double densam, const double densnp, const double phinp,
     const double hist)
 {
-  // do nothing
-  return;
 }
 
 /*------------------------------------------------------------------------------------------ *
@@ -1010,8 +980,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODFluid(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double densnp)
 {
-  // do nothing
-  return;
 }
 
 /*------------------------------------------------------------------ *
@@ -1022,8 +990,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODFluid(
     Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
     const double rea_phi)
 {
-  // do nothing
-  return;
 }
 
 /*------------------------------------------------------------------ *
@@ -1038,8 +1004,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODFluid(
     const LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
 )
 {
-  // do nothing
-  return;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDJDMesh(
+    LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
+{
+  const double J = xjm_.Determinant();
+  for (unsigned node = 0; node < nen_; node++)
+    for (int dim = 0; dim < static_cast<int>(nsd_); dim++)
+      dJ_dmesh(dim + node * nsd_) = J * derxy_(dim, node);
 }
 
 /*----------------------------------------------------------------------*

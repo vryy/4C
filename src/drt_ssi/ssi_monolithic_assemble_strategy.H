@@ -52,7 +52,9 @@ namespace SSI
     //! assemble RHS
     void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
         Teuchos::RCP<const Epetra_Vector> rhs_structure,
-        Teuchos::RCP<const Epetra_Vector> rhs_manifold);
+        Teuchos::RCP<const Epetra_Vector> rhs_manifold,
+        Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_manifold_side,
+        Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_scatra_side);
 
     //! assemble ScaTra-Block into system matrix
     virtual void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
@@ -78,6 +80,14 @@ namespace SSI
     //! assemble ScaTra Manifold-Structure-Block into system matrix
     virtual void AssembleScaTraManifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) = 0;
+
+    //! assemble ScaTra Manifold-Scatra-Block into system matrix
+    virtual void AssembleScaTraManifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> manifoldscatradomain) = 0;
+
+    //! assemble ScaTra-Manifold Scatra-Block into system matrix
+    virtual void AssembleScatraScaTraManifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatramanifolddomain) = 0;
 
    protected:
     //! monolithic algorithm for scalar-structure interaction
@@ -113,6 +123,12 @@ namespace SSI
 
     void AssembleScaTraManifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override = 0;
+
+    void AssembleScaTraManifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> manifoldscatradomain) override = 0;
+
+    void AssembleScatraScaTraManifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatramanifolddomain) override = 0;
 
    protected:
     //! position of scatra blocks in system matrix
@@ -163,6 +179,12 @@ namespace SSI
 
     void AssembleScaTraManifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override;
+
+    void AssembleScaTraManifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> manifoldscatradomain) override;
+
+    void AssembleScatraScaTraManifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatramanifolddomain) override;
   };
 
   // *********************************************************************************************
@@ -190,6 +212,12 @@ namespace SSI
 
     void AssembleScaTraManifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override;
+
+    void AssembleScaTraManifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> manifoldscatradomain) override;
+
+    void AssembleScatraScaTraManifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatramanifolddomain) override;
   };
 
   //======================================================================================================
@@ -217,6 +245,12 @@ namespace SSI
 
     void AssembleScaTraManifoldStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> manifoldstructuredomain) override;
+
+    void AssembleScaTraManifoldScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> manifoldscatradomain) override;
+
+    void AssembleScatraScaTraManifold(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatramanifolddomain) override;
   };
 
   //! build specific assemble strategy

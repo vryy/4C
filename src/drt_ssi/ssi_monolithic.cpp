@@ -9,6 +9,7 @@
 #include "ssi_monolithic.H"
 
 #include "ssi_coupling.H"
+#include "ssi_manifold_flux_evaluator.H"
 #include "ssi_monolithic_assemble_strategy.H"
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_monolithic_dbc_handler.H"
@@ -25,6 +26,7 @@
 #include "../drt_contact/contact_nitsche_strategy_ssi.H"
 
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_io/io_control.H"
 
@@ -61,13 +63,13 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
           Teuchos::getIntegralValue<LINALG::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
+      manifoldscatraflux_(Teuchos::null),
       map_structure_(Teuchos::null),
       maps_scatra_(Teuchos::null),
       maps_sub_problems_(Teuchos::null),
       maps_systemmatrix_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      meshtying_strategy_s2i_(Teuchos::null),
       scatrastructureOffDiagcoupling_(Teuchos::null),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
@@ -101,8 +103,16 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
   if (SSIInterfaceMeshtying())
   {
     if (IsScaTraManifold())
+    {
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
           ssi_matrices_->ScaTraManifoldStructureDomain());
+
+      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
+          manifoldscatraflux_->MatrixManifoldStructure());
+
+      strategy_meshtying_->ApplyMeshtyingToScatraStructure(
+          Teuchos::null, manifoldscatraflux_->MatrixScaTraStructure());
+    }
 
     strategy_meshtying_->ApplyMeshtyingToScatraStructure(
         ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
@@ -129,32 +139,11 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
-  // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatra(
-      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+  AssembleMatScaTra();
 
-  // assemble scatra-structure block into system matrix
-  strategy_assemble_->AssembleScatraStructure(ssi_matrices_->SystemMatrix(),
-      ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
+  AssembleMatStructure();
 
-  // assemble structure-scatra block into system matrix
-  strategy_assemble_->AssembleStructureScatra(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
-
-  // assemble structure block into system matrix
-  strategy_assemble_->AssembleStructure(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureMatrix());
-
-  if (IsScaTraManifold())
-  {
-    // assemble manifold block into system matrix
-    strategy_assemble_->AssembleScaTraManifold(
-        ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
-
-    // assemble manifold-structure block into system matrix
-    strategy_assemble_->AssembleScaTraManifoldStructure(
-        ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
-  }
+  if (IsScaTraManifold()) AssembleMatScaTraManifold();
 
   // finalize global system matrix
   ssi_matrices_->SystemMatrix()->Complete();
@@ -162,7 +151,73 @@ void SSI::SSIMono::AssembleMatAndRHS()
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(ssi_vectors_->Residual(), ScaTraField()->Residual(),
       ssi_vectors_->StructureResidual(),
-      IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null);
+      IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null,
+      IsScaTraManifold() ? manifoldscatraflux_->RHSManifold() : Teuchos::null,
+      IsScaTraManifold() ? manifoldscatraflux_->RHSScaTra() : Teuchos::null);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::AssembleMatScaTra()
+{
+  // assemble scatra block into system matrix
+  strategy_assemble_->AssembleScatra(
+      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+
+  // assemble scatra-structure block into system matrix
+  strategy_assemble_->AssembleScatraStructure(ssi_matrices_->SystemMatrix(),
+      ssi_matrices_->ScaTraStructureDomain(), ssi_matrices_->ScaTraStructureInterface());
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::AssembleMatScaTraManifold()
+{
+  // assemble manifold block into system matrix
+  strategy_assemble_->AssembleScaTraManifold(
+      ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
+
+  // assemble manifold-structure block into system matrix
+  strategy_assemble_->AssembleScaTraManifoldStructure(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
+
+  // assemble contribtions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
+  // manifold side
+  strategy_assemble_->AssembleScaTraManifold(
+      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->SystemMatrixManifold());
+
+  // assemble contribtions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
+  // scatra side
+  strategy_assemble_->AssembleScatra(
+      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->SystemMatrixScaTra());
+
+  // assemble contribtions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
+  // scatra side
+  strategy_assemble_->AssembleScatraScaTraManifold(
+      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixScaTraManifold());
+
+  // assemble contribtions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
+  // manifold side
+  strategy_assemble_->AssembleScaTraManifoldScatra(
+      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixManifoldScatra());
+
+  strategy_assemble_->AssembleScaTraManifoldStructure(
+      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixManifoldStructure());
+
+  strategy_assemble_->AssembleScatraStructure(
+      ssi_matrices_->SystemMatrix(), Teuchos::null, manifoldscatraflux_->MatrixScaTraStructure());
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::AssembleMatStructure()
+{  // assemble structure-scatra block into system matrix
+  strategy_assemble_->AssembleStructureScatra(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
+
+  // assemble structure block into system matrix
+  strategy_assemble_->AssembleStructure(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureMatrix());
 }
 
 /*--------------------------------------------------------------------------*
@@ -191,7 +246,7 @@ void SSI::SSIMono::EvaluateSubproblems()
   ScaTraField()->PrepareLinearSolve();
 
   // build system matrix and residual for scalar transport field on manifold
-  if (IsScaTraManifold()) ScaTraManifold()->PrepareLinearSolve();
+  if (IsScaTraManifold()) EvaluateScaTraManifold();
 
   // build all off diagonal matrices
   EvaluateOffDiagContributions();
@@ -218,10 +273,12 @@ void SSI::SSIMono::EvaluateOffDiagContributions()
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
       ssi_matrices_->StructureScaTraDomain());
 
-  // evaluate off-diagonal manifold-structure block of global system matrix
   if (IsScaTraManifold())
+  {
+    // evaluate off-diagonal manifold-structure block of global system matrix
     scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
         ssi_matrices_->ScaTraManifoldStructureDomain());
+  }
 }
 
 /*-------------------------------------------------------------------------------*
@@ -515,22 +572,12 @@ void SSI::SSIMono::Setup()
   if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
 
-  // set up scatra-scatra interface meshtying if set in input file
-  if (SSIInterfaceMeshtying())
+  if (SSIInterfaceMeshtying() and
+      MeshtyingStrategyS2I()->CouplingType() != INPAR::S2I::coupling_matching_nodes)
   {
-    // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    meshtying_strategy_s2i_ =
-        Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(ScaTraField()->Strategy());
-
-    // safety checks
-    if (meshtying_strategy_s2i_ == Teuchos::null)
-      dserror("Invalid scatra-scatra interface coupling strategy!");
-    if (meshtying_strategy_s2i_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
-    {
-      dserror(
-          "Monolithic scalar-structure interaction only implemented for scatra-scatra "
-          "interface coupling with matching interface nodes!");
-    }
+    dserror(
+        "Monolithic scalar-structure interaction only implemented for scatra-scatra "
+        "interface coupling with matching interface nodes!");
   }
 
   if (SSIInterfaceContact() and !IsRestart()) SetupContactStrategy();
@@ -553,8 +600,8 @@ void SSI::SSIMono::SetupSystem()
       dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
 
     interface_map_scatra = LINALG::MultiMapExtractor::MergeMaps(
-        {meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap(),
-            meshtying_strategy_s2i_->CouplingAdapter()->SlaveDofMap()});
+        {MeshtyingStrategyS2I()->CouplingAdapter()->MasterDofMap(),
+            MeshtyingStrategyS2I()->CouplingAdapter()->SlaveDofMap()});
   }
 
   // initialize global map extractor
@@ -699,17 +746,21 @@ void SSI::SSIMono::SetupSystem()
   // initialize strategy for assembly
   strategy_assemble_ = SSI::BuildAssembleStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
 
-  // initialize object, that performs evaluations of OD coupling
   if (IsScaTraManifold())
   {
+    // initialize object, that performs evaluations of OD coupling
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
         MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
         MapStructureOnScaTraManifold()->Map(0), InterfaceCouplingAdapterStructure(),
         InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
-        meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
+        MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
         StructureField(), Meshtying3DomainIntersection()));
+
+    // initialize object, that performs evaluations of scatra - scatra on manifold coupling
+    manifoldscatraflux_ = Teuchos::rcp(
+        new SSI::ScaTraManifoldScaTraFluxEvaluator(*this, interface_map_scatra, MapStructure()));
   }
   else
   {
@@ -717,7 +768,7 @@ void SSI::SSIMono::SetupSystem()
         MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
         MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
-        interface_map_scatra, meshtying_strategy_s2i_, ScaTraBaseAlgorithm(), StructureField(),
+        interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), StructureField(),
         Meshtying3DomainIntersection()));
   }
   // instantiate appropriate equilibration class
@@ -1119,4 +1170,15 @@ Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEqu
     }
   }
   return equilibration_method_vector;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::EvaluateScaTraManifold()
+{
+  // evaluate single problem
+  ScaTraManifold()->PrepareLinearSolve();
+
+  // evaluate coupling fluxes
+  manifoldscatraflux_->Evaluate();
 }

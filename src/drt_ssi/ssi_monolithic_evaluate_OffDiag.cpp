@@ -27,7 +27,6 @@
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_matrixtransform.H"
 
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(

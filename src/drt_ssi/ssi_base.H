@@ -16,8 +16,6 @@
 
 #include <Epetra_Vector.h>
 
-#include "../drt_inpar/inpar_ssi.H"
-
 // forward declarations
 namespace ADAPTER
 {
@@ -29,6 +27,15 @@ namespace ADAPTER
   class StructureBaseAlgorithmNew;
 }  // namespace ADAPTER
 
+namespace INPAR
+{
+  namespace SSI
+  {
+    enum class FieldCoupling;
+  }
+
+}  // namespace INPAR
+
 namespace LINALG
 {
   class MultiMapExtractor;
@@ -36,8 +43,9 @@ namespace LINALG
 
 namespace SCATRA
 {
+  class MeshtyingStrategyS2I;
   class ScaTraTimIntImpl;
-}
+}  // namespace SCATRA
 
 namespace SSI
 {
@@ -181,12 +189,6 @@ namespace SSI
       return map_structure_condensed_;
     };
 
-    //! MultiMapExtractor with Map 0: scatra dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> MapScaTraOnScaTraManifold() const
-    {
-      return map_scatra_on_scatra_manifold_;
-    }
-
     //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
     Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureOnScaTraManifold() const
     {
@@ -262,6 +264,12 @@ namespace SSI
 
     //! indicates, if meshtying includes triple points
     bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; };
+
+    //! return the scatra-scatra interface meshtying strategy
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
+    {
+      return meshtying_strategy_s2i_;
+    }
 
     //! solve additional scatra field on manifolds
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
@@ -378,14 +386,14 @@ namespace SSI
     //! map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
 
-    //! MultiMapExtractor with Map 0: scatra dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> map_scatra_on_scatra_manifold_;
-
     //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
     Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_on_scatra_manifold_;
 
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;
+
+    //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! underlying scatra problem base algorithm
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_base_algorithm_;

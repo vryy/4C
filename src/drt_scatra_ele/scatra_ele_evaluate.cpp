@@ -16,17 +16,12 @@
 
 #include "scatra_ele_parameter_elch.H"
 #include "scatra_ele_parameter_elch_diffcond.H"
+#include "scatra_ele_parameter_elch_manifold.H"
 #include "scatra_ele_parameter_lsreinit.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_turbulence.H"
 #include "scatra_ele_parameter_boundary.H"
-
-#include "scatra_ele_calc_utils.H"
-
-#include "../drt_inpar/inpar_scatra.H"
-
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "../drt_mat/elchmat.H"
 
@@ -42,7 +37,7 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
     Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
 {
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(p, "action");
+  const auto action = DRT::INPUT::get<SCATRA::Action>(p, "action");
 
   switch (action)
   {
@@ -96,6 +91,13 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
       break;
     }
 
+    case SCATRA::set_elch_scatra_manifold_parameter:
+    {
+      ScaTraEleParameterElchManifold::Instance(dis.Name())->SetParameters(p);
+
+      break;
+    }
+
     case SCATRA::set_scatra_ele_boundary_parameter:
     {
       // set additional, problem-dependent parameters
@@ -120,8 +122,6 @@ void DRT::ELEMENTS::TransportType::PreEvaluate(DRT::Discretization& dis, Teuchos
       // do nothing in all other cases
       break;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -168,7 +168,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<MAT::Material> material = Material();
       if (material->MaterialType() == INPAR::MAT::m_elchmat)
       {
-        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+        const auto* actmat = static_cast<const MAT::ElchMat*>(material.get());
 
         numscal = actmat->NumScal();
       }
@@ -215,7 +215,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
   }
 
   // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
@@ -282,6 +282,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::calc_mass_matrix:
     case SCATRA::transform_real_to_reference_point:
     case SCATRA::evaluate_field_in_point:
+    case SCATRA::calc_scatra_manifold_flux:
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())
@@ -295,6 +296,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::set_mean_Cai:
     case SCATRA::set_lsreinit_scatra_parameter:
     case SCATRA::set_elch_scatra_parameter:
+    case SCATRA::set_elch_scatra_manifold_parameter:
     case SCATRA::set_scatra_ele_boundary_parameter:
     case SCATRA::set_diffcond_scatra_parameter:
       // these actions have already been evaluated during element pre-evaluate
