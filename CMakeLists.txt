@@ -507,7 +507,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/modpowerlaw.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper.cpp
   src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H
-  src/drt_mat/muscle_weickenmeier.cpp
   src/drt_mat/myocard.cpp
   src/drt_mat/myocard_fitzhugh_nagumo.cpp
   src/drt_mat/myocard_inada.cpp
@@ -2600,6 +2599,7 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_constituent_elasthyper.cpp
   src/drt_mixture/mixture_constituent_elasthyper_damage.cpp
   src/drt_mixture/mixture_constituent_elasthyper_elastin_membrane.cpp
+  src/drt_mixture/mixture_constituent_muscle_weickenmeier.cpp
   src/drt_mixture/mixture_constituent_remodelfiber.cpp
   src/drt_mixture/mixture_constituent_remodelfiber_expl.cpp
   src/drt_mixture/mixture_rule.cpp

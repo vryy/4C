@@ -1,48 +1,35 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Weickenmeier active skeletal muscle material model
+
+\brief Definition of the Weickenmeier active skeletal muscle material model constituent
 
 \level 3
 */
 /*----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- |  definitions                                                         |
- *----------------------------------------------------------------------*/
-#ifndef MUSCLE_WEICKENMEIER_H
-#define MUSCLE_WEICKENMEIER_H
+#ifndef BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
+#define BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H
 
-/*----------------------------------------------------------------------*
- |  Headers                                                             |
- *----------------------------------------------------------------------*/
-#include "../headers/FADmatrix_utils.H"
-#include "matpar_parameter.H"
-#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+#include "../drt_mat/matpar_parameter.H"
 #include "../drt_mat/anisotropy.H"
 #include "../drt_mat/anisotropy_extension_default.H"
 #include "../drt_mat/anisotropy_extension_provider.H"
-
-/*---------------------------------------------------------------------------*
- | Class definitions                                                         |
- *---------------------------------------------------------------------------*/
-namespace MAT
+#include "mixture_constituent.H"
+#include <Teuchos_RCP.hpp>
+namespace MIXTURE
 {
-  // forward declaration
-  class Muscle_Weickenmeier;
-
   namespace PAR
   {
-    class Muscle_Weickenmeier : public Parameter
+    class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::PAR::MixtureConstituent
     {
-      friend class MAT::Muscle_Weickenmeier;
-
      public:
-      /// standard constructor
-      ///
-      /// This constructor recursively calls the constructors of the
-      /// parameter sets of the hyperelastic summands.
-      Muscle_Weickenmeier(Teuchos::RCP<MAT::PAR::Material> matdata);
+      /// constructor
+      explicit MixtureConstituent_Muscle_Weickenmeier(
+          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+
+      /// create material instance of matching type with my parameters
+      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       //@{
@@ -94,92 +81,53 @@ namespace MAT
       const std::vector<double> actValues_;  ///< scaling factor in intervals
                                              ///< (1=full activation, 0=no activation)
       //! @}
-
-      /// density
-      const double density_;
       //@}
 
-      /// create material instance of matching type with my parameters
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
-    };  // end class Muscle_Weickenmeier
+    };  // end class MixtureConstituent_Muscle_Weickenmeier
   }     // end namespace PAR
 
-
-  class Muscle_WeickenmeierType : public DRT::ParObjectType
+  /*!
+   * \brief Constituent for the Weickenmeier muscle material
+   *
+   * This constituent represents the Weickenmeier muscle material. It has to
+   * be paired with the MAT::Mixture_ElastHyper material and a MIXTURE::MixtureRule.
+   *
+   * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, ‘A
+   * physically motivated constitutive model for 3D numerical simulation of skeletal muscles’,
+   * International journal for numerical methods in biomedical engineering, vol. 30, no. 5, pp.
+   * 545–562, 2014, doi: 10.1002/cnm.2618.
+   */
+  class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::MixtureConstituent
   {
    public:
-    std::string Name() const { return "Muscle_WeickenmeierType"; }
-
-    static Muscle_WeickenmeierType& Instance() { return instance_; };
-
-    DRT::ParObject* Create(const std::vector<char>& data) override;
-
-   private:
-    static Muscle_WeickenmeierType instance_;
-  };  // end class Muscle_WeickenmeierType
-
-
-  class Muscle_Weickenmeier : public So3Material
-  {
-   public:
-    // Construct empty material object
-    Muscle_Weickenmeier();
-
-    // Construct the material object given material parameters
-    explicit Muscle_Weickenmeier(MAT::PAR::Muscle_Weickenmeier* params);
-
-    // Return unique ParObject id
-    int UniqueParObjectId() const override
-    {
-      return Muscle_WeickenmeierType::Instance().UniqueParObjectId();
-    }
+    /// Constructor for the material given the material parameters
+    explicit MixtureConstituent_Muscle_Weickenmeier(
+        MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params, int id);
 
     // Pack this class so it can be communicated
-    void Pack(DRT::PackBuffer& data) const override;
+    void PackConstituent(DRT::PackBuffer& data) const override;
 
     // Unpack data from a char vector into this class
-    void Unpack(const std::vector<char>& data) override;
-
-    // Check if element kinematics and material kinematics are compatible
-    void ValidKinematics(INPAR::STR::KinemType kinem) override
-    {
-      if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
-        dserror("element and material kinematics are not compatible");
-    }
+    void UnpackConstituent(
+        std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
     // Material type
-    INPAR::MAT::MaterialType MaterialType() const override
-    {
-      return INPAR::MAT::m_muscle_weickenmeier;
-    }
+    INPAR::MAT::MaterialType MaterialType() const override;
 
-    // Return copy of this material object
-    Teuchos::RCP<Material> Clone() const override
-    {
-      return Teuchos::rcp(new Muscle_Weickenmeier(*this));
-    }
+    // Returns the reference mass density
+    double CurrentRefDensity(int gp) const override;
 
-    // Material mass density
-    double Density() const override { return params_->density_; }
+    // Initialize the constituent with the parameters of the input line
+    void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
-    // Hyperelastic stress response plus elasticity tensor
-    void Evaluate(const LINALG::Matrix<3, 3>* defgrd,  // Deformation gradient
-        const LINALG::Matrix<6, 1>* glstrain,          // Green-Lagrange strain
-        Teuchos::ParameterList& params,                // Container for additional information
-        LINALG::Matrix<6, 1>* stress,                  // 2nd Piola-Kirchhoff stresses
-        LINALG::Matrix<6, 6>* cmat,                    // Constitutive matrix
-        const int gp,                                  // Gauss point
-        const int eleGID) override;                    // Element ID
+    // Method that is executed before the first evaluate call, once for each Gauss point
+    void PreEvaluate(
+        MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-
-    // Setup
-    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
-
-    // Post setup routine called before first Evaluate call to read anisotropy from parameter list
-    void PostSetup(Teuchos::ParameterList& params, int eleGID) override;
-
-    // Return quick accessible material parameter data
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    // Evaluate stress and material tangent of the constituent and add to mixture stress and cmat
+    void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
+        Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
+        int gp, int eleGID) override;
 
    private:
     /*!
@@ -231,15 +179,18 @@ namespace MAT
      *
      *  Add the following contribution to the constitutive tensor cmat(6,6) based on
      *  - the inverse of the right Cauchy-Green vector invC
-     *  - the term invC*L*invC with the structural tensor L
+     *  - the term invC*L*invC (\f$ \mathbf{C}^{-1} \mathbf{L} \mathbf{C}^{-1} \f$) with the
+     *  structural tensor L (\f$ \mathbf{L} \f$)
      *
-     *              \partial tensor(C)^-1 tensor(L) tensor(C)^-1
-     *  scalar *    --------------------------------------------
-     *              \partial tensor(C)
-     *  wherein the derivative frac{\partial tensor(C)^-1 tensor(L) tensor(C)^-1}{\partial
-     *  tensor(C)} is computed to:  - 1/2 * ( Cinv_{ik} Cinv_{jm} L_{mn} Cinv_{nl} + Cinv_{il}
-     *  Cinv_{jm} L_{mn} Cinv_{nk} + Cinv_{jk} Cinv_{im} L_{mn} Cinv_{nl} + Cinv_{jl} Cinv_{im}
-     *  L_{mn} Cinv_{nk})
+     *  \f$\text{scalar} \cdot \frac{\partial \mathbf{C}^{-1} \mathbf{L} \mathbf{C}^{-1}}{\partial
+     *  \mathbf{C}} \f$
+     *
+     *  wherein the derivative \f$ \frac{\partial \mathbf{C}^-1 \mathbf{L} \mathbf{C}^-1}{\partial
+     *  \mathbf{C}}  \f$ is computed to:  \f$ - 1/2 \cdot ( \mathbf{C}^{-1}_{ik}
+     *  \mathbf{C}^{-1}_{jm} L_{mn} \mathbf{C}^{-1}_{nl} + \mathbf{C}^{-1}_{il} \mathbf{C}^{-1}_{jm}
+     *  L_{mn} \mathbf{C}^{-1}_{nk} + \mathbf{C}^{-1}_{jk} \mathbf{C}^{-1}_{im} L_{mn}
+     *  \mathbf{C}^{-1}_{nl} + \mathbf{C}^{-1}_{jl} \mathbf{C}^{-1}_{im} L_{mn}
+     * \mathbf{C}^{-1}_{nk}) \f$
      *
      *  \param[in,out] cmat Constitutive matrix
      *  \param[in]     invC Inverse of right Cauchy Green tensor in matrix notation
@@ -251,7 +202,7 @@ namespace MAT
         const LINALG::Matrix<3, 3>& invC, const LINALG::Matrix<3, 3>& invCLinvC, double scalar);
 
     /// Weickenmeier material parameters
-    MAT::PAR::Muscle_Weickenmeier* params_;
+    MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params_{};
 
     /// Total simulation time
     double t_tot_;
@@ -261,8 +212,8 @@ namespace MAT
 
     /// Anisotropy extension holder
     MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
-  };  // end class Muscle_Weickenmeier
+  };  // end class MixtureConstituent_Muscle_Weickenmeier
 
-}  // end namespace MAT
+}  // end namespace MIXTURE
 
-#endif
+#endif  // BACI_MIXTURE_CONSTITUENT_MUSCLE_WEICKENMEIER_H

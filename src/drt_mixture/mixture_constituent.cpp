@@ -19,6 +19,7 @@
 #include "mixture_constituent_elasthyper_damage.H"
 #include "mixture_constituent_elasthyper_elastin_membrane.H"
 #include "mixture_constituent_remodelfiber_expl.H"
+#include "mixture_constituent_muscle_weickenmeier.H"
 
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
@@ -92,6 +93,15 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
       {
         curmat->SetParameter(
             new MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl(curmat, ref_mass_fraction));
+      }
+      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
+    }
+    case INPAR::MAT::mix_muscle_weickenmeier:
+    {
+      if (curmat->Parameter() == nullptr)
+      {
+        curmat->SetParameter(
+            new MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier(curmat, ref_mass_fraction));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
