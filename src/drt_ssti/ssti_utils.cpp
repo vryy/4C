@@ -660,6 +660,8 @@ std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::Conditio
 
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "Meshtying3DomainIntersection", "Meshtying3DomainIntersection"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("TotalAndMeanScalar", "TotalAndMeanScalar"));
 
   return conditions_to_copy;
 }

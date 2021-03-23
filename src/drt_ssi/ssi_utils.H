@@ -75,11 +75,14 @@ namespace SSI
 
     //! clone scatra specific parameters for solver of manifold. Add manifold specific parameters
     Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
-        const Teuchos::ParameterList& sublist_manifold_params, const Epetra_Comm& comm);
+        const Teuchos::ParameterList& sublist_manifold_params);
 
     //! create MultiMapExtractor with dofs on SSISurfaceManifold and others
     Teuchos::RCP<LINALG::MultiMapExtractor> CreateManifoldMultiMapExtractor(
         Teuchos::RCP<DRT::Discretization> dis);
+
+    //! modify scatra parameters for ssi specific values
+    Teuchos::ParameterList ModifyScaTraParams(const Teuchos::ParameterList& scatraparams);
 
 
     /*---------------------------------------------------------------------------------*

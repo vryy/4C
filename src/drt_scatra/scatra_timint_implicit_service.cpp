@@ -40,6 +40,8 @@
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_pstream.H"
 
+#include "../drt_io/runtime_csv_writer.H"
+
 
 /*==========================================================================*
  |                                                                          |
@@ -2709,7 +2711,6 @@ void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
 
 
 /*----------------------------------------------------------------------*
- |  Prepare evaluation of mean scalars                     vuong   04/16|
  *----------------------------------------------------------------------*/
 void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
     const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams)
@@ -2729,130 +2730,95 @@ void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
 
   // provide number of dof set for transport veloctiy
   eleparams.set<int>("ndsvel", scatratimint->nds_vel_);
-}  // SCATRA::OutputScalarsStrategyBase::PrepareEvaluate
+}
 
 /*----------------------------------------------------------------------------------*
- |  print header of table for summary of mean values to screen         vuong   04/16|
  *----------------------------------------------------------------------------------*/
 void SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen()
 {
-  // screen output
-  std::cout << std::endl;
-  std::cout << "Total and mean values of transported scalars:" << std::endl;
-  std::cout
-      << "+-----------+-----------+--------------------+-----------------+-------------------+"
-      << std::endl;
-  std::cout
-      << "| domain ID | scalar ID | total scalar value | domain integral | mean scalar value |"
-      << std::endl;
-  std::cout
-      << "+-----------+-----------+--------------------+-----------------+-------------------+"
-      << std::endl;
-
-  return;
-}  // SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen()
-
-/*----------------------------------------------------------------------------------*
- |  print default header of table for summary of mean values to file   vuong   04/16|
- *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyBase::PrintDefaultHeaderToFile(const std::string& fname)
-{
-  std::ofstream f;
-  f.open(fname.c_str(), std::fstream::trunc);
-  f << "Step , Time";
-
-  f.flush();
-  f.close();
-
-  return;
-}  // SCATRA::OutputScalarsStrategyBase::PrintDefaultHeaderToFile
-
-/*----------------------------------------------------------------------------------*
- |  finalize the output of screen and file                             vuong   04/16|
- *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyBase::FinalizeOutput(
-    const std::string& fname, const bool isheader)
-{
-  if (!isheader)
+  if (myrank_ == 0)
   {
     // screen output
+    std::cout << std::endl;
+    std::cout << "Total and mean values of transported scalars:" << std::endl;
+    std::cout
+        << "+-----------+-----------+--------------------+-----------------+-------------------+"
+        << std::endl;
+    std::cout
+        << "| domain ID | scalar ID | total scalar value | domain integral | mean scalar value |"
+        << std::endl;
+    std::cout
+        << "+-----------+-----------+--------------------+-----------------+-------------------+"
+        << std::endl;
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyBase::FinalizeScreenOutput()
+{
+  if (myrank_ == 0)
+  {
     std::cout
         << "+-----------+-----------+--------------------+-----------------+-------------------+"
         << std::endl;
   }
 
-  // file output
-  std::ofstream f;
-  f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-  f << std::endl;
-  f.flush();
-  f.close();
-
   return;
-}  // SCATRA::OutputScalarsStrategyBase::FinalizeOutput
+}
 
 /*----------------------------------------------------------------------------------*
- |  output total and mean values of transported scalars                vuong   04/16|
  *----------------------------------------------------------------------------------*/
 void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
     const ScaTraTimIntImpl* const scatratimint, const int num)
 {
-  const Teuchos::RCP<DRT::Discretization>& discret = scatratimint->discret_;
+  // evaluate domain/condition integrals
+  EvaluateIntegrals(scatratimint);
+  scatratimint->discret_->ClearState();
 
-  // create parameter list
-  Teuchos::ParameterList eleparams;
+  // print evaluated data to screen
+  PrintHeaderToScreen();
+  PrintToScreen();
+  FinalizeScreenOutput();
 
-  // generate name of output file
-  std::ostringstream number;
-  number << num;
-  const std::string fname =
-      scatratimint->DiscWriter()->Output()->FileName() + number.str() + ".scalarvalues.csv";
-
-  // print header of output table to screen and file
-  if (scatratimint->myrank_ == 0)
-  {
-    // screen output
-    PrintHeaderToScreen();
-
-    // file output
-    if (scatratimint->Step() == 0)
-    {
-      PrintDefaultHeaderToFile(fname);
-      PrintHeaderToFile(fname);
-      FinalizeOutput(fname, true);
-    }
-  }
-
-  // file output
-  if (scatratimint->myrank_ == 0)
-  {
-    std::ofstream f;
-    f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-    f << scatratimint->Step() << "," << scatratimint->Time();
-    f.flush();
-    f.close();
-  }
-
-  // evaluate scalar integrals and domain integral for for entire domain
-  EvaluateIntegralsAndPrintResults(scatratimint, fname, eleparams);
-
-  // finalize screen and file outputs
-  if (scatratimint->myrank_ == 0) FinalizeOutput(fname);
-
-  // clean up
-  discret->ClearState();
+  // write evaluated data to file
+  PassToCSVWriter();
+  runtime_csvwriter_->ResetTimeAndTimeStep(scatratimint->Time(), scatratimint->Step());
+  runtime_csvwriter_->WriteFile();
 
   return;
-}  // SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars
+}
+
 
 /*--------------------------------------------------------------------------------------*
- |  Initialize output class                                                vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::Init(const ScaTraTimIntImpl* const scatratimint)
+void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatratimint)
+{
+  myrank_ = scatratimint->myrank_;
+  runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(myrank_);
+
+  std::string filename("");
+  if (scatratimint->ScatraParameterList()->isParameter("output_file_name_discretization") and
+      scatratimint->ScatraParameterList()->get<bool>("output_file_name_discretization"))
+    filename = scatratimint->Discretization()->Name() + "_scalarvalues";
+  else
+    filename = "scalarvalues";
+
+  runtime_csvwriter_->Init(filename);
+  InitStrategySpecific(scatratimint);
+
+  runtime_csvwriter_->Setup();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
+    const ScaTraTimIntImpl* const scatratimint)
 {
   if (not scatratimint->scalarhandler_->EqualNumDof())
     dserror(
-        "Output of scalars for entire domain not valid for different numbers of DOFs per nodein "
+        "Output of scalars for entire domain not valid for different numbers of DOFs per node in "
         "ScaTra discretization. \n"
         "Use option `by_condition' for the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT "
         "DYNAMIC section instead!");
@@ -2860,43 +2826,67 @@ void SCATRA::OutputScalarsStrategyDomain::Init(const ScaTraTimIntImpl* const sca
   numdofpernode_ = scatratimint->scalarhandler_->NumDofPerNode();
 
   // initialize result vectors associated with entire domain
-  totalscalars_[-1].resize(numdofpernode_, 0.);
-  meanscalars_[-1].resize(numdofpernode_, 0.);
+  totalscalars_[-1].resize(numdofpernode_, 0.0);
+  meanscalars_[-1].resize(numdofpernode_, 0.0);
+  domainintegral_[-1] = 0.0;
+
+  // register output in csv writer
+  runtime_csvwriter_->RegisterDataVector("Integral of entire domain", 1, 16);
+  for (int k = 0; k < numdofpernode_; ++k)
+  {
+    runtime_csvwriter_->RegisterDataVector(
+        "Total value of scalar " + std::to_string(k + 1) + " in entire domain", 1, 16);
+    runtime_csvwriter_->RegisterDataVector(
+        "Mean value of scalar " + std::to_string(k + 1) + " in entire domain", 1, 16);
+  }
 
   return;
 }
 
 /*----------------------------------------------------------------------------------*
- |  print header of table for summary of mean values to file           vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::PrintHeaderToFile(const std::string& fname)
+void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
 {
-  std::ofstream f;
-  f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-  f << " , Integral of entire domain";
+  if (myrank_ == 0)
+  {
+    std::cout
+        << "+-----------+-----------+--------------------+-----------------+-------------------+"
+        << std::endl;
+    std::ostringstream domainid_string;
+    domainid_string << "|  overall  |";
+    for (int k = 0; k < numdofpernode_; ++k)
+      std::cout << domainid_string.str() << "    " << std::setw(2) << k + 1 << "     |    "
+                << std::scientific << std::setprecision(6) << totalscalars_[domainid_][k]
+                << "    |   " << domainintegral_[domainid_] << "  |    "
+                << meanscalars_[domainid_][k] << "   |" << std::endl;
+  }
+}
+
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyDomain::PassToCSVWriter()
+{
+  runtime_csvwriter_->AppendDataVector("Integral of entire domain", {domainintegral_[domainid_]});
   for (int k = 0; k < numdofpernode_; ++k)
   {
-    f << " , Total value of scalar " << k + 1 << " in entire domain";
-    f << " , Mean value of scalar " << k + 1 << " in entire domain";
+    runtime_csvwriter_->AppendDataVector(
+        "Total value of scalar " + std::to_string(k + 1) + " in entire domain",
+        {totalscalars_[domainid_][k]});
+    runtime_csvwriter_->AppendDataVector(
+        "Mean value of scalar " + std::to_string(k + 1) + " in entire domain",
+        {meanscalars_[domainid_][k]});
   }
-  f.flush();
-  f.close();
-
-  return;
-}  // SCATRA::OutputScalarsStrategyDomain::PrintHeaderToFile
+}
 
 /*--------------------------------------------------------------------------------------*
- |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(
-    const ScaTraTimIntImpl* const scatratimint, const std::string& fname,
-    Teuchos::ParameterList& eleparams)
+void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
+    const ScaTraTimIntImpl* const scatratimint)
 {
+  Teuchos::ParameterList eleparams;
+
   // fill parameter list and set states in discretization
   PrepareEvaluate(scatratimint, eleparams);
-
-  // set domain ID equal to -1 for entire domain
-  int domainid_int(-1);
 
   // initialize result vector
   // first NumDofPerNode() components = scalar integrals, last component = domain integral
@@ -2911,46 +2901,23 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(
     scalars->Scale(4. * PI);
 
   // extract domain integral
-  const double domint = (*scalars)[numdofpernode_];
+  domainintegral_[domainid_] = (*scalars)[numdofpernode_];
 
   // compute results
   for (int k = 0; k < numdofpernode_; ++k)
   {
-    totalscalars_[domainid_int][k] = (*scalars)[k];
-    meanscalars_[domainid_int][k] = (*scalars)[k] / domint;
-  }
-
-  // print out results to screen and file
-  if (scatratimint->myrank_ == 0)
-  {
-    // screen output
-    std::cout
-        << "+-----------+-----------+--------------------+-----------------+-------------------+"
-        << std::endl;
-    std::ostringstream domainid_string;
-    domainid_string << "|  overall  |";
-    for (int k = 0; k < numdofpernode_; ++k)
-      std::cout << domainid_string.str() << "    " << std::setw(2) << k + 1 << "     |    "
-                << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   " << domint
-                << "  |    " << (*scalars)[k] / domint << "   |" << std::endl;
-
-    // file output
-    std::ofstream f;
-    f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-    f << "," << std::setprecision(9) << domint;
-    for (int k = 0; k < numdofpernode_; ++k)
-      f << "," << (*scalars)[k] << "," << (*scalars)[k] / domint;
-    f.flush();
-    f.close();
+    totalscalars_[domainid_][k] = (*scalars)[k];
+    meanscalars_[domainid_][k] = (*scalars)[k] / domainintegral_[domainid_];
   }
 
   return;
-}  // SCATRA::OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults
+}
 
 /*--------------------------------------------------------------------------------------*
  |  Initialize output class                                                vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::Init(const ScaTraTimIntImpl* const scatratimint)
+void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
+    const ScaTraTimIntImpl* const scatratimint)
 {
   // extract conditions for calculation of total and mean values of transported scalars
   scatratimint->discret_->GetCondition("TotalAndMeanScalar", conditions_);
@@ -2980,6 +2947,19 @@ void SCATRA::OutputScalarsStrategyCondition::Init(const ScaTraTimIntImpl* const 
     // initialize result vectors associated with current condition
     totalscalars_[condid].resize(numdofpernode, 0.);
     meanscalars_[condid].resize(numdofpernode, 0.);
+    domainintegral_[condid] = 0.0;
+
+    // register all data vectors
+    runtime_csvwriter_->RegisterDataVector("Integral of domain " + std::to_string(condid), 1, 16);
+    for (int k = 0; k < numdofpernodepercondition_[icond]; ++k)
+    {
+      runtime_csvwriter_->RegisterDataVector(
+          "Total value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
+          1, 16);
+      runtime_csvwriter_->RegisterDataVector(
+          "Mean value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
+          1, 16);
+    }
   }
 
   return;
@@ -3005,6 +2985,53 @@ void SCATRA::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const sc
   boundaryintegralvalues_.resize(conditionsboundary_.size());
 
   return;
+}
+
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
+{
+  if (myrank_ == 0)
+  {
+    for (unsigned icond = 0; icond < conditions_.size(); ++icond)
+    {
+      // set domain ID equal to condition ID for subdomains, or equal to -1 for entire domain
+      int domainid_int(conditions_[icond]->GetInt("ConditionID"));
+
+      // determine the number of dofs on the current condition
+      const int numdofpernode = numdofpernodepercondition_[icond];
+
+      std::ostringstream domainid_string;
+      domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
+      for (int k = 0; k < numdofpernode; ++k)
+        std::cout << domainid_string.str() << "    " << std::setw(2) << k + 1 << "     |    "
+                  << std::scientific << std::setprecision(6) << totalscalars_[domainid_int][k]
+                  << "    |   " << domainintegral_[domainid_int] << "  |    "
+                  << meanscalars_[domainid_int][k] << "   |" << std::endl;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
+{
+  // register all data vectors
+  for (unsigned icond = 0; icond < conditions_.size(); ++icond)
+  {
+    int condid(conditions_[icond]->GetInt("ConditionID"));
+    runtime_csvwriter_->AppendDataVector(
+        "Integral of domain " + std::to_string(condid), {domainintegral_[condid]});
+    for (int k = 0; k < numdofpernodepercondition_[icond]; ++k)
+    {
+      runtime_csvwriter_->AppendDataVector(
+          "Total value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
+          {totalscalars_[condid][k]});
+      runtime_csvwriter_->AppendDataVector(
+          "Mean value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
+          {meanscalars_[condid][k]});
+    }
+  }
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -3106,41 +3133,18 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
   return;
 }
 
-/*----------------------------------------------------------------------------------*
- |  print header of table for summary of mean values to file           vuong   04/16|
- *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::PrintHeaderToFile(const std::string& fname)
-{
-  std::ofstream f;
-  f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-  for (unsigned icond = 0; icond < conditions_.size(); ++icond)
-  {
-    const int condid(conditions_[icond]->GetInt("ConditionID"));
-    f << " , Integral of domain " << condid;
-    for (int k = 0; k < numdofpernodepercondition_[icond]; ++k)
-    {
-      f << " , Total value of scalar " << k + 1 << " in domain " << condid;
-      f << " , Mean value of scalar " << k + 1 << " in domain " << condid;
-    }
-  }
-  f.flush();
-  f.close();
-
-  return;
-}  // SCATRA::OutputScalarsStrategyCondition::PrintHeaderToFile
-
 /*--------------------------------------------------------------------------------------*
- |  evaluate mean and total scalars and print them to file and screen      vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
-    const ScaTraTimIntImpl* const scatratimint, const std::string& fname,
-    Teuchos::ParameterList& eleparams)
+void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
+    const ScaTraTimIntImpl* const scatratimint)
 {
+  Teuchos::ParameterList eleparams;
+
   // fill parameter list and set states in discretization
   PrepareEvaluate(scatratimint, eleparams);
 
-  // evaluate scalar integrals and domain integral for each subdomain (icond < conditions.size()) as
-  // well as for entire domain (icond == conditions.size())
+  // evaluate scalar integrals and domain integral for each subdomain (icond < conditions.size())
+  // as well as for entire domain (icond == conditions.size())
   for (unsigned icond = 0; icond < conditions_.size(); ++icond)
   {
     // set domain ID equal to condition ID for subdomains, or equal to -1 for entire domain
@@ -3162,78 +3166,58 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(
       scalars->Scale(4. * PI);
 
     // extract domain integral
-    const double domint = (*scalars)[numdofpernode];
+    domainintegral_[domainid_int] = (*scalars)[numdofpernode];
 
     // compute results
     for (int k = 0; k < numdofpernode; ++k)
     {
       totalscalars_[domainid_int][k] = (*scalars)[k];
-      meanscalars_[domainid_int][k] = (*scalars)[k] / domint;
+      meanscalars_[domainid_int][k] = (*scalars)[k] / domainintegral_[domainid_int];
     }
-
-    // print out results to screen and file
-    if (scatratimint->myrank_ == 0)
-    {
-      // screen output
-      std::ostringstream domainid_string;
-      domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
-      for (int k = 0; k < numdofpernode; ++k)
-        std::cout << domainid_string.str() << "    " << std::setw(2) << k + 1 << "     |    "
-                  << std::scientific << std::setprecision(6) << (*scalars)[k] << "    |   "
-                  << domint << "  |    " << (*scalars)[k] / domint << "   |" << std::endl;
-
-      // file output
-      std::ofstream f;
-      f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
-      f << "," << std::setprecision(9) << domint;
-      for (int k = 0; k < numdofpernode; ++k)
-        f << "," << (*scalars)[k] << "," << (*scalars)[k] / domint;
-      f.flush();
-      f.close();
-    }
-  }  // for(unsigned icond=0; icond<conditions.size(); ++icond)
+  }
 
   return;
-}  // SCATRA::OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults
+}
 
 /*--------------------------------------------------------------------------------------*
- |  Initialize output class                                                vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::Init(
+void SCATRA::OutputScalarsStrategyDomainAndCondition::InitStrategySpecific(
     const ScaTraTimIntImpl* const scatratimint)
 {
   // initialize base classes
-  OutputScalarsStrategyCondition::Init(scatratimint);
-  OutputScalarsStrategyDomain::Init(scatratimint);
+  OutputScalarsStrategyCondition::InitStrategySpecific(scatratimint);
+  OutputScalarsStrategyDomain::InitStrategySpecific(scatratimint);
 
   return;
-}  // SCATRA::OutputScalarsStrategyDomainAndCondition::Init
+}
 
 /*----------------------------------------------------------------------------------*
- |  print header of table for summary of mean values to file            vuong   04/16|
  *----------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::PrintHeaderToFile(const std::string& fname)
+void SCATRA::OutputScalarsStrategyDomainAndCondition::PrintToScreen()
 {
-  // call base classes
-  OutputScalarsStrategyCondition::PrintHeaderToFile(fname);
-  OutputScalarsStrategyDomain::PrintHeaderToFile(fname);
+  OutputScalarsStrategyCondition::PrintToScreen();
+  OutputScalarsStrategyDomain::PrintToScreen();
+}
 
-  return;
-}  // SCATRA::OutputScalarsStrategyDomainAndCondition::PrintHeaderToFile
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
+void SCATRA::OutputScalarsStrategyDomainAndCondition::PassToCSVWriter()
+{
+  OutputScalarsStrategyCondition::PassToCSVWriter();
+  OutputScalarsStrategyDomain::PassToCSVWriter();
+}
 
 /*--------------------------------------------------------------------------------------*
- |  evaluate mean and total scalars and print them to file and screen       vuong   04/16|
  *--------------------------------------------------------------------------------------*/
-void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegralsAndPrintResults(
-    const ScaTraTimIntImpl* const scatratimint, const std::string& fname,
-    Teuchos::ParameterList& eleparams)
+void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegrals(
+    const ScaTraTimIntImpl* const scatratimint)
 {
   // call base classes
-  OutputScalarsStrategyCondition::EvaluateIntegralsAndPrintResults(scatratimint, fname, eleparams);
-  OutputScalarsStrategyDomain::EvaluateIntegralsAndPrintResults(scatratimint, fname, eleparams);
+  OutputScalarsStrategyCondition::EvaluateIntegrals(scatratimint);
+  OutputScalarsStrategyDomain::EvaluateIntegrals(scatratimint);
 
   return;
-}  // SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegralsAndPrintResults
+}
 
 
 /*----------------------------------------------------------------------*
@@ -3344,7 +3328,8 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
 
   if (not(numdofpernode.size() == 1))
     dserror(
-        "Different number of DOFs within condition. This is not supported. Split the condition in "
+        "Different number of DOFs within condition. This is not supported. Split the condition "
+        "in "
         "your input file!");
 
   return maxnumdofpernode;

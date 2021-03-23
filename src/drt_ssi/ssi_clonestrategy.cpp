@@ -87,13 +87,6 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
 std::map<std::string, std::string> SSI::ScatraStructureCloneStrategyManifold::ConditionsToCopy()
 {
   std::map<std::string, std::string> conditions_to_copy;
-
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("SSISurfaceManifold", "SSISurfaceManifold"));
-  conditions_to_copy.insert(
-      std::pair<std::string, std::string>("ScaTraManifoldInitfield", "Initfield"));
-  conditions_to_copy.insert(std::pair<std::string, std::string>("ManifoldDirichlet", "Dirichlet"));
-
   return conditions_to_copy;
 }
 

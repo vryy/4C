@@ -92,7 +92,7 @@ void SSTI::SSTIAlgorithm::Init(const Epetra_Comm& comm,
 
   // create and initialize scatra problem and thermo problem
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  scatra_->Init(sstitimeparams, scatraparams,
+  scatra_->Init(sstitimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true);
   thermo_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
   thermo_->Init(sstitimeparams, CloneThermoParams(scatraparams, thermoparams),
@@ -444,7 +444,10 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
 
   thermoparams_copy->set<int>("INITFUNCNO", thermoparams.get<int>("INITTHERMOFUNCT"));
   thermoparams_copy->sublist("S2I COUPLING").set<std::string>("SLAVEONLY", "No");
-  thermoparams_copy->set<std::string>("OUTPUTSCALARS", "none");
+
+  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+      INPAR::SCATRA::outputscalars_none)
+    thermoparams_copy->set<bool>("output_file_name_discretization", true);
 
   // adaptive time stepping only from scatra
   thermoparams_copy->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
