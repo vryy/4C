@@ -18,6 +18,8 @@ of the global time integrator, and then never touched again throughout the simul
 
 #include "../drt_lib/drt_singletondestruction.H"
 
+#include <memory>
+
 // forward declaration
 namespace Teuchos
 {
