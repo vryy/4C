@@ -505,6 +505,7 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
     : is_scatra_manifold_(ssi_mono_algorithm.IsScaTraManifold()),
       system_matrix_(Teuchos::null),
+      scatra_matrix_(Teuchos::null),
       scatramanifold_structure_matrix_(Teuchos::null),
       scatra_structure_matrix_(Teuchos::null),
       structure_scatra_matrix_(Teuchos::null),
@@ -512,9 +513,40 @@ SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
 {
   InitializeSystemMatrix(ssi_mono_algorithm);
 
-  structure_matrix_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
+  InitializeMainDiagMatrices(ssi_mono_algorithm);
 
   InitializeOffDiagMatrices(ssi_mono_algorithm);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm)
+{
+  structure_matrix_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
+
+  switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      scatra_matrix_ =
+          SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()),
+              Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()));
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      scatra_matrix_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------------*
@@ -577,6 +609,7 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
 void SSI::UTILS::SSIMatrices::ClearMatrices()
 {
   system_matrix_->Zero();
+  scatra_matrix_->Zero();
   if (is_scatra_manifold_) scatramanifold_structure_matrix_->Zero();
   scatra_structure_matrix_->Zero();
   structure_scatra_matrix_->Zero();
@@ -585,13 +618,12 @@ void SSI::UTILS::SSIMatrices::ClearMatrices()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::UTILS::SSIVectors::SSIVectors(const SSI::SSIMono& ssi_mono_algorithm)
-    : increment_(Teuchos::null), residual_(Teuchos::null), structure_residual_(Teuchos::null)
+SSI::UTILS::SSIVectors::SSIVectors(const SSI::SSIMono& ssi_mono)
+    : increment_(LINALG::CreateVector(*(ssi_mono.DofRowMap()), true)),
+      residual_(LINALG::CreateVector(*(ssi_mono.DofRowMap()), true)),
+      scatra_residual_(LINALG::CreateVector(*(ssi_mono.ScaTraField()->DofRowMap()), true)),
+      structure_residual_(LINALG::CreateVector(*(ssi_mono.StructureField()->DofRowMap()), true))
 {
-  increment_ = LINALG::CreateVector(*(ssi_mono_algorithm.DofRowMap()), true);
-  residual_ = LINALG::CreateVector(*(ssi_mono_algorithm.DofRowMap()), true);
-  structure_residual_ =
-      LINALG::CreateVector(*(ssi_mono_algorithm.StructureField()->DofRowMap()), true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -603,6 +635,7 @@ void SSI::UTILS::SSIVectors::ClearIncrement() { increment_->PutScalar(0.0); }
 void SSI::UTILS::SSIVectors::ClearResiduals()
 {
   residual_->PutScalar(0.0);
+  scatra_residual_->PutScalar(0.0);
   structure_residual_->PutScalar(0.0);
 }
 

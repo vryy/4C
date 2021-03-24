@@ -11,6 +11,7 @@
 #include "ssi_coupling.H"
 #include "ssi_manifold_flux_evaluator.H"
 #include "ssi_monolithic_assemble_strategy.H"
+#include "ssi_monolithic_contact_strategy.H"
 #include "ssi_monolithic_convcheck_strategies.H"
 #include "ssi_monolithic_dbc_handler.H"
 #include "ssi_monolithic_evaluate_OffDiag.H"
@@ -78,11 +79,25 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       ssi_matrices_(Teuchos::null),
       ssi_vectors_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
+      strategy_contact_(Teuchos::null),
       strategy_convcheck_(Teuchos::null),
       strategy_equilibration_(Teuchos::null),
       strategy_meshtying_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
+void SSI::SSIMono::ApplyContactToSubProblems()
+{
+  strategy_contact_->ApplyContactToScatraResidual(ssi_vectors_->ScatraResidual());
+
+  strategy_contact_->ApplyContactToScatraScatra(ssi_matrices_->ScaTraMatrix());
+
+  strategy_contact_->ApplyContactToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
+
+  strategy_contact_->ApplyContactToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
 }
 
 /*-------------------------------------------------------------------------------*
@@ -148,7 +163,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
   ssi_matrices_->SystemMatrix()->Complete();
 
   // assemble monolithic RHS
-  strategy_assemble_->AssembleRHS(ssi_vectors_->Residual(), ScaTraField()->Residual(),
+  strategy_assemble_->AssembleRHS(ssi_vectors_->Residual(), ssi_vectors_->ScatraResidual(),
       ssi_vectors_->StructureResidual(),
       IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null,
       IsScaTraManifold() ? manifoldscatraflux_->RHSManifold() : Teuchos::null,
@@ -160,8 +175,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
 void SSI::SSIMono::AssembleMatScaTra()
 {
   // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatra(
-      ssi_matrices_->SystemMatrix(), ScaTraField()->SystemMatrixOperator());
+  strategy_assemble_->AssembleScatra(ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraMatrix());
 
   // assemble scatra-structure block into system matrix
   strategy_assemble_->AssembleScatraStructure(
@@ -242,7 +256,7 @@ void SSI::SSIMono::EvaluateSubproblems()
   StructureField()->Evaluate();
 
   // build system matrix and residual for scalar transport field
-  ScaTraField()->PrepareLinearSolve();
+  EvaluateScaTra();
 
   // build system matrix and residual for scalar transport field on manifold
   if (IsScaTraManifold()) EvaluateScaTraManifold();
@@ -252,6 +266,9 @@ void SSI::SSIMono::EvaluateSubproblems()
 
   // apply mesh tying to sub problems
   ApplyMeshtyingToSubProblems();
+
+  // apply contact contributions to sub problems
+  if (SSIInterfaceContact()) ApplyContactToSubProblems();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -773,6 +790,9 @@ void SSI::SSIMono::SetupSystem()
   strategy_equilibration_ = LINALG::BuildEquilibration(
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 
+  // instantiate appropriate contact class
+  strategy_contact_ = SSI::BuildContactStrategy(*this, ScaTraField()->MatrixType());
+
   // instantiate appropriate mesh tying class
   strategy_meshtying_ =
       SSI::BuildMeshtyingStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
@@ -1168,6 +1188,23 @@ Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEqu
     }
   }
   return equilibration_method_vector;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::EvaluateScaTra()
+{
+  // evaluate the scatra field
+  ScaTraField()->PrepareLinearSolve();
+
+  // copy the matrix to the corresponding ssi matrix and complete it such that additional
+  // contributions like contact contributions can be added before assembly
+  ssi_matrices_->ScaTraMatrix()->Add(*ScaTraField()->SystemMatrixOperator(), false, 1.0, 1.0);
+  ssi_matrices_->ScaTraMatrix()->Complete();
+
+  // copy the residual to the corresponding ssi vector to enable application of contact
+  // contributions before assembly
+  ssi_vectors_->ScatraResidual()->Update(1.0, *ScaTraField()->Residual(), 1.0);
 }
 
 /*--------------------------------------------------------------------------------------*

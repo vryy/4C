@@ -99,6 +99,7 @@ namespace SSI
 
       //! return sub blocks of system matrix
       //@{
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraMatrix() { return scatra_matrix_; }
       Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureMatrix()
       {
         return scatramanifold_structure_matrix_;
@@ -136,6 +137,13 @@ namespace SSI
 
      private:
       /*!
+       * @brief initialize the scatra-structure interaction main-diagonal matrices
+       *
+       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       */
+      void InitializeMainDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+
+      /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
        * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
@@ -156,6 +164,7 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseOperator> system_matrix_;
       //! sub blocks of system matrix
       //@{
+      Teuchos::RCP<LINALG::SparseOperator> scatra_matrix_;
       Teuchos::RCP<LINALG::SparseOperator> scatramanifold_structure_matrix_;
       Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix_;
       Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix_;
@@ -170,7 +179,7 @@ namespace SSI
     {
      public:
       //! constructor
-      explicit SSIVectors(const SSI::SSIMono& ssi_mono_algorithm);
+      explicit SSIVectors(const SSI::SSIMono& ssi_mono);
 
       //! clear the increment vector
       void ClearIncrement();
@@ -184,6 +193,9 @@ namespace SSI
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
 
+      //! residual vector on right-hand side of scalar transport system
+      Teuchos::RCP<Epetra_Vector> ScatraResidual() { return scatra_residual_; }
+
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> StructureResidual() { return structure_residual_; }
 
@@ -193,6 +205,9 @@ namespace SSI
 
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;
+
+      //! residual vector on right-hand side of scalar transport system
+      Teuchos::RCP<Epetra_Vector> scatra_residual_;
 
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> structure_residual_;
