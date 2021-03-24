@@ -638,7 +638,7 @@ namespace SCATRA
     virtual void OutputTotalAndMeanScalars(const int num = 0);
 
     //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
-    void OutputDomainOrBoundaryIntegrals(const std::string condstring);
+    void OutputDomainOrBoundaryIntegrals(const std::string& condstring);
 
     //! output of reaction(s) integral
     void OutputIntegrReac(const int num = 0);
@@ -864,12 +864,12 @@ namespace SCATRA
 
     //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
-        const Teuchos::RCP<const Epetra_Vector>& state, const std::string statename,
+        const Teuchos::RCP<const Epetra_Vector>& state, const std::string& statename,
         const int numvec, Teuchos::ParameterList& params, const int solvernumber);
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
     Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
-        Teuchos::RCP<const Epetra_Vector> state, const std::string statename, const int numvec,
+        Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
         Teuchos::ParameterList& params, const int dim);
 
     //! compute contributions of solution-depending boundary and interface conditions to global
@@ -1716,7 +1716,7 @@ namespace SCATRA
 
     //! evaluate domain integrals and print to screen
     void EvaluateIntegralsAndPrintResults(
-        const ScaTraTimIntImpl* const scatratimint, const std::string condstring);
+        const ScaTraTimIntImpl* const scatratimint, const std::string& condstring);
 
     /*========================================================================*/
     //! @name Access methods

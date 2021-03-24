@@ -38,7 +38,6 @@
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
-#include "../drt_io/io_pstream.H"
 
 #include "../drt_io/runtime_csv_writer.H"
 
@@ -107,8 +106,6 @@ void SCATRA::ScaTraTimIntImpl::CalcFlux(
       break;
     }
   }
-
-  return;
 }
 
 
@@ -220,7 +217,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // determine the averaged normal vector field for indicated boundaries
   // used for the output of the normal flux as a vector field
   // is computed only once; for ALE formulation recalculation is necessary
-  if ((normals_ == Teuchos::null) or (isale_ == true))
+  if ((normals_ == Teuchos::null) or isale_)
     normals_ = ComputeNormalVectors(std::vector<std::string>(1, "ScaTraFluxCalc"));
 
   if (calcflux_boundary_ == INPAR::SCATRA::flux_convective)
@@ -358,7 +355,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   for (int condid = 0; condid < (int)cond.size(); condid++)
   {
     // is there already a ConditionID?
-    const std::vector<int>* CondIDVec = cond[condid]->Get<std::vector<int>>("ConditionID");
+    const auto* CondIDVec = cond[condid]->Get<std::vector<int>>("ConditionID");
     if (CondIDVec)
     {
       if ((*CondIDVec)[0] != condid)
@@ -372,7 +369,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   }
 
   // now we evaluate the conditions and separate via ConditionID
-  for (unsigned icond = 0; icond < cond.size(); ++icond)
+  for (int icond = 0; icond < static_cast<int>(cond.size()); ++icond)
   {
     // extract dofrowmap associated with current boundary segment
     const Epetra_Map& dofrowmap = *flux_boundary_maps_->Map(icond + 1);
@@ -548,7 +545,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     }
 
     // print out results to file as well (only if really desired)
-    if ((myrank_ == 0) and (writetofile == true))
+    if ((myrank_ == 0) and writetofile)
     {
       std::ostringstream temp;
       temp << icond;
@@ -584,9 +581,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   }  // loop over condid
 
   if (myrank_ == 0)
+  {
     std::cout
         << "+----+-----+-------------------------+------------------+--------------------------+"
         << std::endl;
+  }
 
   // print out the accumulated normal flux over all indicated boundaries
   // the accumulated normal flux over all indicated boundaries is not printed for numscal+1
@@ -618,9 +617,11 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // initial screen output
   if (myrank_ == 0)
+  {
     std::cout
         << "SCATRA: calculating initial time derivative of state variables on discretization \""
         << discret_->Name().c_str() << "\" (step " << Step() << ", time " << Time() << ") ... ... ";
+  }
 
   // evaluate Dirichlet and Neumann boundary conditions at time t = 0 to ensure consistent
   // computation of initial time derivative vector Dirichlet boundary conditions should be
@@ -713,8 +714,6 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // final screen output
   if (myrank_ == 0) std::cout << "done!" << std::endl;
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative
 
 
@@ -772,7 +771,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 
     if (err) dserror("Error while inserting nodal density value into global density vector!");
   }  // loop over all local nodes
-  return;
 }  // SCATRA::ScaTraTimIntImpl::ComputeDensity
 
 
@@ -783,8 +781,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeTimeDerivative()
 {
   // compute time derivatives of discrete state variables associated with meshtying strategy
   strategy_->ComputeTimeDerivative();
-
-  return;
 }
 
 
@@ -798,8 +794,6 @@ void SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars(const int num)
     if (outputscalarstrategy_ == Teuchos::null) dserror("output strategy was not initialized!");
     outputscalarstrategy_->OutputTotalAndMeanScalars(this, num);
   }  // if(outputscalars_)
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars
 
 
@@ -807,7 +801,7 @@ void SCATRA::ScaTraTimIntImpl::OutputTotalAndMeanScalars(const int num)
  | output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets   fang
  06/15 |
  *--------------------------------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string condstring)
+void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string& condstring)
 {
   // check whether output is applicable
   if ((computeintegrals_ == INPAR::SCATRA::computeintegrals_initial and Step() == 0) or
@@ -818,8 +812,6 @@ void SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals(const std::string
 
     outputdomainintegralstrategy_->EvaluateIntegralsAndPrintResults(this, condstring);
   }  // check whether output is applicable
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::OutputDomainOrBoundaryIntegrals
 
 
@@ -877,8 +869,6 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   discret_->ClearState();
 
   matrix->Complete();
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::SurfacePermeability
 
 /*----------------------------------------------------------------------------*
@@ -916,9 +906,11 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
         "WSS must already been set into one of the secondary dofset before calling this function!");
 
   if (not discret_->HasState(nds_pres_, "Pressure"))
+  {
     dserror(
         "Pressure must already been set into one of the secondary dofset before calling this "
         "function!");
+  }
 
   if (membrane_conc_ == Teuchos::null)
     dserror("Membrane concentration must already been saved before calling this function!");
@@ -930,8 +922,6 @@ void SCATRA::ScaTraTimIntImpl::KedemKatchalsky(
   discret_->ClearState();
 
   matrix->Complete();
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::KedemKatchalsky
 
 
@@ -974,7 +964,6 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(Teuchos::ParameterLi
     }
     discret_->AddMultiVectorToParameterList(p, name, fluxk);
   }
-  return;
 }  // SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList
 
 
@@ -1001,9 +990,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
   // loop over all intended types of conditions
-  for (unsigned int i = 0; i < condnames.size(); i++)
+  for (const auto& condname : condnames)
   {
-    discret_->EvaluateCondition(eleparams, condnames[i]);
+    discret_->EvaluateCondition(eleparams, condname);
   }
 
   // clean up
@@ -1061,16 +1050,16 @@ void SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary() const
     }
 
     else
+    {
       dserror(
           "Point-based null space calculation currently only implemented for MueLu "
           "preconditioner!");
+    }
   }
 
   else
     // compute standard, vector-based null space information if applicable
     discret_->ComputeNullSpaceIfNecessary(solverparams, true);
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::ComputeNullSpaceIfNecessary()
 
 
@@ -1107,8 +1096,6 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
   discret_->ClearState();
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow
 
 /*----------------------------------------------------------------------*
@@ -1139,8 +1126,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   discret_->EvaluateCondition(
       condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, condstring);
   discret_->ClearState();
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer
 
 
@@ -1186,8 +1171,6 @@ void SCATRA::ScaTraTimIntImpl::OutputLinSolverStats(
     // close file
     file.close();
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::OutputLinSolverStats
 
 
@@ -1225,8 +1208,6 @@ void SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats(
     // close file
     file.close();
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::OutputNonlinSolverStats
 
 
@@ -1298,8 +1279,6 @@ void SCATRA::ScaTraTimIntImpl::OutputRestart() const
 {
   // output restart information associated with meshtying strategy
   strategy_->OutputRestart();
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::OutputRestart()
 
 
@@ -1319,9 +1298,8 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
   // WORK-AROUND FOR NURBS DISCRETIZATIONS
   // using noderowmap is problematic. Thus, we do not add normal vectors
   // to the scalar result field (scalar information is enough anyway)
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
-  if (nurbsdis != NULL)
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
+  if (nurbsdis != nullptr)
   {
     Teuchos::RCP<Epetra_Vector> normalflux = Teuchos::rcp(((*flux)(0)), false);
     output_->WriteVector("normalflux", normalflux, IO::dofvector);
@@ -1335,17 +1313,15 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk =
       Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
-  for (std::vector<int>::iterator it = writefluxids_->begin(); it != writefluxids_->end(); ++it)
+  for (int writefluxid : *writefluxids_)
   {
-    int k = (*it);
-
     std::ostringstream temp;
-    temp << k;
+    temp << writefluxid;
     std::string name = "flux_" + fluxtype + "_phi_" + temp.str();
     for (int i = 0; i < fluxk->MyLength(); ++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(0, actnode, k - 1);
+      int dofgid = discret_->Dof(0, actnode, writefluxid - 1);
       // get value for each component of flux vector
       double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
       double yvalue = ((*flux)[1])[(flux->Map()).LID(dofgid)];
@@ -1368,8 +1344,6 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(Teuchos::RCP<Epetra_MultiVector> flux,
     }
     output_->WriteVector(name, fluxk, IO::nodevector);
   }
-  // that's it
-  return;
 }  // ScaTraTimIntImpl::OutputFlux
 
 
@@ -1448,8 +1422,6 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
     }
 
   }  // if(outintegrreac_)
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::OutputIntegrReac
 
 
@@ -1520,7 +1492,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     const Teuchos::RCP<const Epetra_Vector> dbct = DirichletToggle();
 
     // get nullspace parameters
-    double* nullspace = mlparams.get("null space: vectors", (double*)NULL);
+    double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
     if (!nullspace) dserror("No nullspace supplied in parameter list");
     int nsdim = mlparams.get("null space: dimension", 1);
 
@@ -1563,8 +1535,6 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       // Mnsv_ = LINALG::Multiply(*Sep_,true,*Mnsv_,false);
     }
   }
-
-  return;
 }  // ScaTraTimIntImpl::AVM3Preparation
 
 /*----------------------------------------------------------------------*
@@ -1577,7 +1547,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
 
   // some necessary definitions
   int ierr;
-  double* sgvsqrt = 0;
+  double* sgvsqrt = nullptr;
   int length = subgrdiff_->MyLength();
 
   // square-root of subgrid-viscosity-scaling vector for left and right scaling
@@ -1604,8 +1574,6 @@ void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
 
   // set subgrid-diffusivity vector to zero after scaling procedure
   subgrdiff_->PutScalar(0.0);
-
-  return;
 }  // ScaTraTimIntImpl::AVM3Scaling
 
 /*----------------------------------------------------------------------*
@@ -1648,8 +1616,6 @@ void SCATRA::ScaTraTimIntImpl::AccessDynSmagFilter(Teuchos::RCP<FLD::DynSmagFilt
     }
     DynSmag_->AddScatra(discret_);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1672,8 +1638,6 @@ void SCATRA::ScaTraTimIntImpl::AccessVreman(Teuchos::RCP<FLD::Vreman> vrem)
     }
     Vrem_->AddScatra(discret_);
   }
-
-  return;
 }
 
 
@@ -1684,8 +1648,6 @@ void SCATRA::ScaTraTimIntImpl::ReadRestart(const int step, Teuchos::RCP<IO::Inpu
 {
   // read restart data associated with meshtying strategy
   strategy_->ReadRestart(step, input);
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::ReadRestart()
 
 
@@ -1780,8 +1742,6 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     discret_->Evaluate(
         myparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
-
-  return;
 }
 
 
@@ -1846,8 +1806,6 @@ void SCATRA::ScaTraTimIntImpl::CalcIntermediateSolution()
       // set force to zero
       forcing_->PutScalar(0.0);
   }
-
-  return;
 }
 
 
@@ -1861,8 +1819,6 @@ void SCATRA::ScaTraTimIntImpl::SetScFldGrDisp(
     Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp)
 {
   scfldgrdisp_ = scatra_fluid_growth_disp;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1871,8 +1827,6 @@ void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(
     Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp)
 {
   scstrgrdisp_ = scatra_struct_growth_disp;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1913,7 +1867,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAt
  | Calculate the reconstructed nodal gradient of phi        winter 04/17|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeSuperconvergentPatchRecovery(
-    Teuchos::RCP<const Epetra_Vector> state, const std::string statename, const int numvec,
+    Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
     Teuchos::ParameterList& eleparams, const int dim)
 {
   // Warning, this is only tested so far for 1 scalar field!!!
@@ -2020,7 +1974,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ReconstructGradientAt
  | Calculate the L2-projection of a scalar                  winter 04/14|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNodalL2Projection(
-    const Teuchos::RCP<const Epetra_Vector>& state, const std::string statename, const int numvec,
+    const Teuchos::RCP<const Epetra_Vector>& state, const std::string& statename, const int numvec,
     Teuchos::ParameterList& eleparams, const int solvernumber)
 {
   // Warning, this is only tested so far for 1 scalar field!!!
@@ -2250,14 +2204,18 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
   if (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_) != Teuchos::null)
+  {
     sysmat_original =
         (new LINALG::SparseMatrix(*(Teuchos::rcp_static_cast<LINALG::SparseMatrix>(sysmat_))))
             ->EpetraMatrix();
+  }
   else if (Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(sysmat_) != Teuchos::null)
+  {
     sysmat_original =
         (new LINALG::SparseMatrix(
              *(Teuchos::rcp_static_cast<LINALG::BlockSparseMatrixBase>(sysmat_)->Merge())))
             ->EpetraMatrix();
+  }
   else
     dserror("Type of system matrix unknown!");
   sysmat_original->FillComplete();
@@ -2413,9 +2371,11 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
       dserror("Finite difference check failed for scalar transport system matrix!");
     }
     else
+    {
       printf(
           "--> PASSED WITH MAXIMUM ABSOLUTE ERROR %+12.5e AND MAXIMUM RELATIVE ERROR %+12.5e\n\n",
           maxabserrglobal, maxrelerrglobal);
+    }
   }
 
   // undo perturbations of state variables
@@ -2424,8 +2384,6 @@ void SCATRA::ScaTraTimIntImpl::FDCheck()
 
   // recompute system matrix and right-hand side vector based on original state variables
   AssembleMatAndRHS();
-
-  return;
 }
 
 /*----------------------------------------------------------------------------------*
@@ -2572,8 +2530,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
 
           // compute relative H1 error
           if (std::abs((*errors)[k * 4 + 3]) > 1e-14)
+          {
             (*relerrors_)[offset + k * 2 + 1] =
                 sqrt((*errors)[k * 4 + 1]) / sqrt((*errors)[k * 4 + 3]);
+          }
           else
             dserror("Can't compute relative H1 error due to numerical roundoff sensitivity!");
         }
@@ -2655,8 +2615,6 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       break;
     }
   }
-
-  return;
 }  // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol
 
 
@@ -2668,8 +2626,6 @@ void SCATRA::ScaTraTimIntImpl::ExplicitPredictor() const
 {
   // predict discrete solution variables associated with meshtying strategy
   strategy_->ExplicitPredictor();
-
-  return;
 }
 
 
@@ -2705,8 +2661,6 @@ void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
 
   else
     dserror("Invalid Aitken method!");
-
-  return;
 }
 
 
@@ -2751,7 +2705,6 @@ void SCATRA::OutputScalarsStrategyBase::PrintHeaderToScreen()
         << "+-----------+-----------+--------------------+-----------------+-------------------+"
         << std::endl;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------------------*
@@ -2764,8 +2717,6 @@ void SCATRA::OutputScalarsStrategyBase::FinalizeScreenOutput()
         << "+-----------+-----------+--------------------+-----------------+-------------------+"
         << std::endl;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------------*
@@ -2786,8 +2737,6 @@ void SCATRA::OutputScalarsStrategyBase::OutputTotalAndMeanScalars(
   PassToCSVWriter();
   runtime_csvwriter_->ResetTimeAndTimeStep(scatratimint->Time(), scatratimint->Step());
   runtime_csvwriter_->WriteFile();
-
-  return;
 }
 
 
@@ -2817,11 +2766,13 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
     const ScaTraTimIntImpl* const scatratimint)
 {
   if (not scatratimint->scalarhandler_->EqualNumDof())
+  {
     dserror(
         "Output of scalars for entire domain not valid for different numbers of DOFs per node in "
         "ScaTra discretization. \n"
         "Use option `by_condition' for the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT "
         "DYNAMIC section instead!");
+  }
 
   numdofpernode_ = scatratimint->scalarhandler_->NumDofPerNode();
 
@@ -2839,8 +2790,6 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
     runtime_csvwriter_->RegisterDataVector(
         "Mean value of scalar " + std::to_string(k + 1) + " in entire domain", 1, 16);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------------------*
@@ -2855,10 +2804,12 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
     std::ostringstream domainid_string;
     domainid_string << "|  overall  |";
     for (int k = 0; k < numdofpernode_; ++k)
+    {
       std::cout << domainid_string.str() << "    " << std::setw(2) << k + 1 << "     |    "
                 << std::scientific << std::setprecision(6) << totalscalars_[domainid_][k]
                 << "    |   " << domainintegral_[domainid_] << "  |    "
                 << meanscalars_[domainid_][k] << "   |" << std::endl;
+    }
   }
 }
 
@@ -2909,8 +2860,6 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
     totalscalars_[domainid_][k] = (*scalars)[k];
     meanscalars_[domainid_][k] = (*scalars)[k] / domainintegral_[domainid_];
   }
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -2923,10 +2872,12 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
   scatratimint->discret_->GetCondition("TotalAndMeanScalar", conditions_);
 
   if (conditions_.empty())
+  {
     dserror(
         "No 'TotalAndMeanScalar' conditions defined for scalar output by condition!\n"
         "Change the parameter 'OUTPUTSCALARS' in the SCALAR TRANSPORT DYNAMIC section \n"
         "or include 'DESIGN TOTAL AND MEAN SCALAR' conditions!");
+  }
 
   numdofpernodepercondition_.clear();
   numdofpernodepercondition_.resize(conditions_.size(), 0);
@@ -2961,8 +2912,6 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
           1, 16);
     }
   }
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -2975,16 +2924,16 @@ void SCATRA::OutputDomainIntegralStrategy::Init(const ScaTraTimIntImpl* const sc
   scatratimint->Discretization()->GetCondition("BoundaryIntegral", conditionsboundary_);
 
   if (conditionsdomain_.empty() && conditionsboundary_.empty())
+  {
     dserror(
         "No 'DomainIntegral' or 'BoundaryIntegral' conditions defined for scalar output by "
         "condition!\n"
         "Change the parameter 'COMPUTEINTEGRALS' in the SCALAR TRANSPORT DYNAMIC section \n"
         "or include 'DESIGN DOMAIN INTEGRAL * CONDITIONS' conditions!");
+  }
 
   domainintegralvalues_.resize(conditionsdomain_.size());
   boundaryintegralvalues_.resize(conditionsboundary_.size());
-
-  return;
 }
 
 /*----------------------------------------------------------------------------------*
@@ -3004,10 +2953,12 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
       std::ostringstream domainid_string;
       domainid_string << "|    " << std::setw(2) << domainid_int << "     |";
       for (int k = 0; k < numdofpernode; ++k)
+      {
         std::cout << domainid_string.str() << "    " << std::setw(2) << k + 1 << "     |    "
                   << std::scientific << std::setprecision(6) << totalscalars_[domainid_int][k]
                   << "    |   " << domainintegral_[domainid_int] << "  |    "
                   << meanscalars_[domainid_int][k] << "   |" << std::endl;
+      }
     }
   }
 }
@@ -3038,7 +2989,7 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
  |  evaluate domain integrals and print them to file and screen        kremheller 11/19 |
  *--------------------------------------------------------------------------------------*/
 void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
-    const ScaTraTimIntImpl* const scatratimint, const std::string condstring)
+    const ScaTraTimIntImpl* const scatratimint, const std::string& condstring)
 {
   // initialize label
   std::string label;
@@ -3076,7 +3027,7 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
   }
 
   // loop over all conditions
-  for (unsigned condid = 0; condid < conditions.size(); ++condid)
+  for (int condid = 0; condid < static_cast<int>(conditions.size()); ++condid)
   {
     // clear state vectors on discretization
     discret->ClearState();
@@ -3129,8 +3080,6 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
   // print finish line to screen
   if (conditions.size() and myrank == 0)
     std::cout << "+----+-------------------------+" << std::endl;
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -3175,8 +3124,6 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
       meanscalars_[domainid_int][k] = (*scalars)[k] / domainintegral_[domainid_int];
     }
   }
-
-  return;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -3187,8 +3134,6 @@ void SCATRA::OutputScalarsStrategyDomainAndCondition::InitStrategySpecific(
   // initialize base classes
   OutputScalarsStrategyCondition::InitStrategySpecific(scatratimint);
   OutputScalarsStrategyDomain::InitStrategySpecific(scatratimint);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------------*
@@ -3215,8 +3160,6 @@ void SCATRA::OutputScalarsStrategyDomainAndCondition::EvaluateIntegrals(
   // call base classes
   OutputScalarsStrategyCondition::EvaluateIntegrals(scatratimint);
   OutputScalarsStrategyDomain::EvaluateIntegrals(scatratimint);
-
-  return;
 }
 
 
@@ -3257,16 +3200,14 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
       &vecmynumdofpernode[0], &vecnumdofpernode[0], vecmynumdofpernode.size());
 
   // copy back into set
-  for (unsigned i = 0; i < vecnumdofpernode.size(); ++i)
-    if (vecnumdofpernode[i] != 0) numdofpernode_.insert(vecnumdofpernode[i]);
+  for (int& ndofpernode : vecnumdofpernode)
+    if (ndofpernode != 0) numdofpernode_.insert(ndofpernode);
 
   // check for equal number of Dofs on all nodes in whole discretization
   equalnumdof_ = (numdofpernode_.size() == 1);
 
   // done
   issetup_ = true;
-
-  return;
 }
 
 /*-------------------------------------------------------------------------*
@@ -3286,11 +3227,8 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   std::set<int> mynumdofpernode;
 
   // determine all number of dofs per node on this proc
-  for (unsigned inode = 0; inode < nodegids->size(); inode++)
+  for (int nodegid : *nodegids)
   {
-    // get node GID
-    const int nodegid = (*nodegids)[inode];
-
     // if on this proc
     if (discret->NodeRowMap()->MyGID(nodegid))
     {
@@ -3320,17 +3258,18 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
       &vecmynumdofpernode[0], &vecnumdofpernode[0], vecmynumdofpernode.size());
 
   // copy back into set
-  for (unsigned i = 0; i < vecnumdofpernode.size(); i++)
-    if (vecnumdofpernode[i] != 0) numdofpernode.insert(vecnumdofpernode[i]);
+  for (int& ndofpernode : vecnumdofpernode)
+    if (ndofpernode != 0) numdofpernode.insert(ndofpernode);
 
   // this is the maximum number of dofs per node within the discretization on all procs
   int maxnumdofpernode = *numdofpernode.rbegin();
 
-  if (not(numdofpernode.size() == 1))
+  if (numdofpernode.size() != 1)
+  {
     dserror(
         "Different number of DOFs within condition. This is not supported. Split the condition "
-        "in "
-        "your input file!");
+        "in your input file!");
+  }
 
   return maxnumdofpernode;
 }
@@ -3343,9 +3282,11 @@ int SCATRA::ScalarHandler::NumDofPerNode() const
   CheckIsSetup();
 
   if (not equalnumdof_)
+  {
     dserror(
         "Number of DOFs per node is not equal for all nodes within the ScaTra discretization!\n"
         "Calling this method is not valid in this case!");
+  }
   return *(numdofpernode_.rbegin());
 }
 
