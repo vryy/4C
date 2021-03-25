@@ -225,16 +225,28 @@ macro(post_processing arg nproc stresstype straintype startstep)
   set_tests_properties(${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp PROPERTIES ENVIRONMENT "PATH=$ENV{PATH}")
 endmacro(post_processing)
 
-# compare arbitrary result file to corresponding reference file
-macro(result_file arg nproc filetag resultfilename referencefilename tolerance)
+# compare arbitrary result file to corresponding reference file with absolute difference
+macro(result_file_abs arg nproc filetag resultfilename referencefilename tolerance)
 
   # add test to testing framework
-  add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance} ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename})
+  add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance} ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename} abs_tol 0.0)
 
   # set maximum test runtime
   set_tests_properties(${arg}-p${nproc}-${filetag} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
 
-endmacro(result_file)
+endmacro(result_file_abs)
+
+# compare arbitrary result file to corresponding reference file with relative difference
+macro(result_file_rel arg nproc filetag resultfilename referencefilename tolerance min_val)
+
+  # add test to testing framework
+  add_test(NAME ${arg}-p${nproc}-${filetag} COMMAND ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance} ${PROJECT_BINARY_DIR}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename} rel_tol ${min_val})
+
+  # set maximum test runtime
+  set_tests_properties(${arg}-p${nproc}-${filetag} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
+
+endmacro(result_file_rel)
+
 
 # compare XML formatted .vtk result data set referenced by .pvd files to corresponding reference files
 macro(vtk_test name nproc pvd_resultfilename pvd_referencefilename tolerance)
