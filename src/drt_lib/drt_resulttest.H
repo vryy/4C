@@ -53,14 +53,26 @@ namespace DRT
     /// perform element value test
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
-    /// perform nodal value test
+    /*!
+     * @brief  perform nodal value test
+     *
+     * @param[in] res         input file line containing result test specification
+     * @param[in] nerr        number of failed result tests
+     * @param[in] test_count  number of result tests
+     */
     virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// perform special case test
     virtual void TestSpecial(
         DRT::INPUT::LineDefinition& res, int& nerr, int& test_count, int& unevaluated_test_count);
 
-    /// perform special case test
+    /*!
+     * @brief  perform special case test
+     *
+     * @param[in] res         input file line containing result test specification
+     * @param[in] nerr        number of failed result tests
+     * @param[in] test_count  number of result tests
+     */
     virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
 
     /// tell whether this field test matches to a given line

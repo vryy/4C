@@ -39,34 +39,34 @@ namespace SSI
   class SSIResultTest : public DRT::ResultTest
   {
    public:
-    //! constructor
-    SSIResultTest(const Teuchos::RCP<const SSI::SSIBase>
-            ssi_base  //!< time integrator for scalar-structure interaction
-    );
+    /*!
+     * @brief constructor
+     *
+     * @param[in] ssi_base  time integrator for scalar-structure interaction
+     */
+    explicit SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base);
 
-    //! test quantity associated with a particular node
-    void TestNode(
-        DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
-        int& nerr,                        //!< number of failed result tests
-        int& test_count                   //!< number of result tests
-        ) override;
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
-    //! test special quantity not associated with a particular element or node
-    void TestSpecial(
-        DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
-        int& nerr,                        //!< number of failed result tests
-        int& test_count                   //!< number of result tests
-        ) override;
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
-    //! get nodal result to be tested
-    double ResultNode(const std::string& quantity,  //!< name of quantity to be tested
-        DRT::Node* node                             //!< node carrying the result to be tested
-        ) const;
+    /*!
+     * @brief get nodal result to be tested
+     *
+     * @param[in] quantity  name of quantity to be tested
+     * @param[in] node      node carrying the result to be tested
+     * @return nodal result
+     */
+    double ResultNode(const std::string& quantity, DRT::Node* node) const;
 
-    //! get special result to be tested
-    double ResultSpecial(const std::string& quantity  //!< name of quantity to be tested
-        ) const;
+    /*!
+     * @brief get special result to be tested
+     *
+     * @param[in] quantity  name of quantity to be tested
+     * @return special result
+     */
+    double ResultSpecial(const std::string& quantity) const;
 
     //! return time integrator for monolithic scalar-structure interaction
     const SSI::SSIMono& SSIMono() const;
