@@ -45,10 +45,7 @@ namespace DRT
   {
    public:
     /// not yet documented
-    ResultTest(const std::string name = "NONE");
-
-    /// not yet documented
-    virtual ~ResultTest();
+    explicit ResultTest(std::string name = "NONE");
 
     /// perform element value test
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
