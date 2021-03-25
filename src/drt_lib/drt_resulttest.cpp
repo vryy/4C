@@ -355,6 +355,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
       .AddNamedDouble("VALUE")
       .AddNamedDouble("TOLERANCE");
 
+  DRT::INPUT::LineDefinition ssti_special;
+  ssti_special.AddTag("SSTI")
+      .AddTag("SPECIAL")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE");
+
   DRT::INPUT::LineDefinition sti_special;
   sti_special.AddTag("STI")
       .AddTag("SPECIAL")
@@ -522,6 +529,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(scatra_special);
   lines->Add(ssi);
   lines->Add(ssi_special);
+  lines->Add(ssti_special);
   lines->Add(sti_special);
   lines->Add(red_airway);
   lines->Add(red_airway_ele);

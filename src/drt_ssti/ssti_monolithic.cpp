@@ -434,7 +434,7 @@ void SSTI::SSTIMono::NewtonLoop()
   double starttime = timer_->WallTime();
 
   // initialize counter for Newton-Raphson iteration
-  iter_ = 0;
+  ResetIter();
 
   // start Newton-Raphson iteration
   while (true)
@@ -628,7 +628,7 @@ void SSTI::SSTIMono::LinearSolve()
       ssti_matrices_->SystemMatrix(), residual_, *AllMaps()->MapsSystemMatrixSubblocks());
 
   solver_->Solve(
-      ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, iter_ == 1);
+      ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, Iter() == 1);
 
   strategy_equilibration_->UnequilibrateIncrement(increment_);
 
@@ -654,7 +654,7 @@ void SSTI::SSTIMono::UpdateIterStates()
 void SSTI::SSTIMono::PrepareNewtonStep()
 {
   // update iteration counter
-  ++iter_;
+  IncrementIter();
 
   // reset timer
   timer_->ResetStartTime();

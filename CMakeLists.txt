@@ -2534,6 +2534,7 @@ src/drt_ssti/ssti_dyn.cpp
 src/drt_ssti/ssti_monolithic.cpp
 src/drt_ssti/ssti_monolithic_assemble_strategy.cpp
 src/drt_ssti/ssti_monolithic_evaluate_OffDiag.cpp
+src/drt_ssti/ssti_resulttest.cpp
 src/drt_ssti/ssti_utils.cpp
 )
 
