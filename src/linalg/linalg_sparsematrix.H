@@ -171,9 +171,6 @@ namespace LINALG
      */
     SparseMatrix(const SparseMatrix& mat, DataAccess access = Copy);
 
-    /// Destructor
-    virtual ~SparseMatrix();
-
     /// Assignment operator. Makes a deep copy.
     SparseMatrix& operator=(const SparseMatrix& mat);
 
@@ -520,7 +517,7 @@ namespace LINALG
         const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
-    void Dump(std::string filename);
+    void Dump(const std::string& filename);
 
     /// load a dump
     void Load(const Epetra_Comm& comm, std::string& filename);
