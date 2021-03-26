@@ -54,9 +54,6 @@ namespace SSTI
     /// create using a Epetra_Comm
     explicit SSTIAlgorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
 
-    /// virtual destructor
-    ~SSTIAlgorithm() override = default;
-
     //! Setup of algorithm
     //! Clone Discretizations, init and setup subproblems, setup coupling adapters at interfaces,
     //! setup submatrices for coupling between fields
@@ -67,6 +64,15 @@ namespace SSTI
     virtual void Setup();
     virtual void SetupSystem() = 0;
     //@}
+
+    //! increment the counter for Newton-Raphson iterations (monolithic algorithm)
+    void IncrementIter() { ++iter_; }
+
+    //! return the counter for Newton-Raphson iterations (monolithic algorithm)
+    unsigned int Iter() const { return iter_; }
+
+    //! reset the counter for Newton-Raphson iterations (monolithic algorithm)
+    void ResetIter() { iter_ = 0; }
 
     //! return coupling
     //@{
@@ -123,12 +129,11 @@ namespace SSTI
     void DistributeThermoSolution();
     //@}
 
-    //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling iterations
-    //! (partitioned algorithm)
+   private:
+    //! counter for Newton-Raphson iterations (monolithic algorithm)
     unsigned int iter_;
 
-   private:
-    //! excahnge materials between discretizations
+    //! exchange materials between discretizations
     void AssignMaterialPointers();
 
     void CheckIsInit();

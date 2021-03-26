@@ -9,6 +9,8 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include <utility>
+
 #include "drt_resulttest.H"
 #include "drt_dserror.H"
 #include "../drt_lib/drt_colors.H"
@@ -19,9 +21,7 @@
 #include "drt_inputreader.H"
 
 
-DRT::ResultTest::ResultTest(const std::string name) : myname_(name) {}
-
-DRT::ResultTest::~ResultTest() {}
+DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
 void DRT::ResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
@@ -86,7 +86,7 @@ int DRT::ResultTest::CompareValues(
 
   // write to error file
   FILE* err = DRT::Problem::Instance()->ErrorFile()->Handle();
-  if (err != NULL)
+  if (err != nullptr)
   {
     fprintf(err, "actual = %.17e, given = %.17e, diff = %.17e\n", actresult, givenresult,
         actresult - givenresult);
@@ -110,13 +110,13 @@ int DRT::ResultTest::CompareValues(
   }
 
   // write something to screen depending if the result check was ok or not
-  if (!(fabs(fabs(actresult - givenresult) - fabs(actresult - givenresult)) < tolerance))
+  if (std::isnan(actresult))
   {
     // Result is 'not a number'
     std::cout << msghead.str() << "\t is NAN!\n";
     ret = 1;
   }
-  else if (fabs(actresult - givenresult) > tolerance)
+  else if (std::abs(actresult - givenresult) > tolerance)
   {
     // Result is wrong
     std::cout << msghead.str() << "\t is WRONG --> actresult=" << std::setw(24)
@@ -161,20 +161,18 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
   if (comm.MyPID() == 0) IO::cout << "\nChecking results of " << size << " tests:\n";
 
-  for (unsigned i = 0; i < results_.size(); ++i)
+  for (auto& result : results_)
   {
-    DRT::INPUT::LineDefinition& res = *results_[i];
-
-    for (unsigned j = 0; j < fieldtest_.size(); ++j)
+    for (auto& fieldtest : fieldtest_)
     {
-      if (fieldtest_[j]->Match(res))
+      if (fieldtest->Match(*result))
       {
-        if (res.HaveNamed("ELEMENT"))
-          fieldtest_[j]->TestElement(res, nerr, test_count);
-        else if (res.HaveNamed("NODE"))
-          fieldtest_[j]->TestNode(res, nerr, test_count);
+        if (result->HaveNamed("ELEMENT"))
+          fieldtest->TestElement(*result, nerr, test_count);
+        else if (result->HaveNamed("NODE"))
+          fieldtest->TestNode(*result, nerr, test_count);
         else
-          fieldtest_[j]->TestSpecial(res, nerr, test_count, uneval_test_count);
+          fieldtest->TestSpecial(*result, nerr, test_count, uneval_test_count);
       }
     }
   }
@@ -196,7 +194,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
   else
   {
     FILE* err = DRT::Problem::Instance()->ErrorFile()->Handle();
-    if (err != NULL) fprintf(err, "===========================================\n");
+    if (err != nullptr) fprintf(err, "===========================================\n");
   }
 
   /* test_count == -1 means we had a special test routine. It's thus
@@ -352,6 +350,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 
   DRT::INPUT::LineDefinition ssi_special;
   ssi_special.AddTag("SSI")
+      .AddTag("SPECIAL")
+      .AddNamedString("QUANTITY")
+      .AddNamedDouble("VALUE")
+      .AddNamedDouble("TOLERANCE");
+
+  DRT::INPUT::LineDefinition ssti_special;
+  ssti_special.AddTag("SSTI")
       .AddTag("SPECIAL")
       .AddNamedString("QUANTITY")
       .AddNamedDouble("VALUE")
@@ -524,6 +529,7 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
   lines->Add(scatra_special);
   lines->Add(ssi);
   lines->Add(ssi_special);
+  lines->Add(ssti_special);
   lines->Add(sti_special);
   lines->Add(red_airway);
   lines->Add(red_airway_ele);

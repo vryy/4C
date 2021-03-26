@@ -9,6 +9,7 @@
 #include "ssti_algorithm.H"
 
 #include "ssti_monolithic.H"
+#include "ssti_resulttest.H"
 #include "ssti_utils.H"
 
 #include "../drt_adapter/ad_str_factory.H"
@@ -256,6 +257,7 @@ void SSTI::SSTIAlgorithm::TestResults(const Epetra_Comm& comm) const
   problem->AddFieldTest(structure_->CreateFieldTest());
   problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
   problem->AddFieldTest(thermo_->CreateScaTraFieldTest());
+  problem->AddFieldTest(Teuchos::rcp(new SSTI::SSTIResultTest(*this)));
   problem->TestAll(comm);
 }
 

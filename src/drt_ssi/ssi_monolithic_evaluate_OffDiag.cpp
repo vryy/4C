@@ -417,8 +417,11 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       }
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
-      blockmastermatrix = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
+      auto mastermatrix_split = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
           *block_map_structure_, scatra_->ScaTraField()->BlockMaps());
+      mastermatrix_split->Complete();
+      blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
+
       mastermatrix->Complete();
 
       break;

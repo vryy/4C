@@ -97,7 +97,7 @@ namespace SSTI
     const Teuchos::RCP<SSTI::SSTIMapsMono> AllMaps() const { return ssti_maps_mono_; };
 
     //! number of current Newton Iteration
-    unsigned int NewtonIteration() const { return iter_; };
+    unsigned int NewtonIteration() const { return Iter(); };
 
     //! state vectors
     //@{

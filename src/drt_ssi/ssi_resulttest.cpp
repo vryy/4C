@@ -22,27 +22,18 @@
 #include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                               fang 11/17 |
  *----------------------------------------------------------------------*/
-SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase>
-        ssi_base  //!< time integrator for scalar-structure interaction
-    )
-    // call base class constructor
-    : DRT::ResultTest("SSI"),
-
-      // store pointer to time integrator for scalar-structure interaction
-      ssi_base_(ssi_base)
+SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base)
+    : DRT::ResultTest("SSI"), ssi_base_(ssi_base)
 {
 }
 
-
 /*----------------------------------------------------------------------*
- | get nodal result to be tested                             fang 12/17 |
  *----------------------------------------------------------------------*/
 double SSI::SSIResultTest::ResultNode(const std::string& quantity, DRT::Node* node) const
 {
   // initialize variable for result
-  double result(0.);
+  double result(0.0);
 
   // extract result
   if (!quantity.compare(0, 6, "stress"))
@@ -78,20 +69,21 @@ double SSI::SSIResultTest::ResultNode(const std::string& quantity, DRT::Node* no
     dserror("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // SSI::SSIResultTest::ResultNode
-
+}
 
 /*----------------------------------------------------------------------*
- | get special result to be tested                           fang 11/17 |
  *----------------------------------------------------------------------*/
 double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
 {
   // initialize variable for result
-  double result(0.);
+  double result(0.0);
 
   // number of outer coupling iterations (partitioned SSI) or Newton-Raphson iterations (monolithic
   // SSI) in last time step
-  if (quantity == "numiterlastnonlinearsolve") result = (double)ssi_base_->IterationCount();
+  if (quantity == "numiterlastnonlinearsolve")
+  {
+    result = static_cast<double>(ssi_base_->IterationCount());
+  }
 
   // number of iterations performed by linear solver during last Newton-Raphson iteration
   // (monolithic SSI only)
@@ -104,13 +96,14 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
           "Must have Aztec solver for result test involving number of solver iterations during "
           "last Newton-Raphson iteration!");
     }
-    result = (double)SSIMono().Solver().getNumIters();
+    result = static_cast<double>(SSIMono().Solver().getNumIters());
   }
 
   // test total number of time steps
   else if (!quantity.compare(0, 7, "numstep"))
-    result = (double)ssi_base_->Step();
-
+  {
+    result = static_cast<double>(ssi_base_->Step());
+  }
   // catch unknown quantity strings
   else
   {
@@ -121,11 +114,9 @@ double SSI::SSIResultTest::ResultSpecial(const std::string& quantity) const
   }
 
   return result;
-}  // SSI::SSIResultTest::ResultSpecial
-
+}
 
 /*---------------------------------------------------------------------------------*
- | return time integrator for monolithic scalar-structure interaction   fang 01/18 |
  *---------------------------------------------------------------------------------*/
 const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
 {
@@ -135,15 +126,9 @@ const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
   return *ssi_mono;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- | test quantity associated with a particular node                          fang 12/17 |
  *-------------------------------------------------------------------------------------*/
-void SSI::SSIResultTest::TestNode(
-    DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
-    int& nerr,                        //!< number of failed result tests
-    int& test_count                   //!< number of result tests
-)
+void SSI::SSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // determine discretization
   std::string dis;
@@ -179,17 +164,11 @@ void SSI::SSIResultTest::TestNode(
     nerr += CompareValues(ResultNode(quantity, discretization->gNode(node)), "NODE", res);
     ++test_count;
   }
-}  // SSI::SSIResultTest::TestNode
-
+}
 
 /*-------------------------------------------------------------------------------------*
- | test special quantity not associated with a particular element or node   fang 11/17 |
  *-------------------------------------------------------------------------------------*/
-void SSI::SSIResultTest::TestSpecial(
-    DRT::INPUT::LineDefinition& res,  //!< input file line containing result test specification
-    int& nerr,                        //!< number of failed result tests
-    int& test_count                   //!< number of result tests
-)
+void SSI::SSIResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only by one processor
   if (ssi_base_->Comm().MyPID() == 0)
@@ -206,4 +185,4 @@ void SSI::SSIResultTest::TestSpecial(
     nerr += err;
     ++test_count;
   }
-}  // SSI::SSIResultTest::TestSpecial
+}
