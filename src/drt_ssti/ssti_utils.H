@@ -126,7 +126,7 @@ namespace SSTI
 
   /*---------------------------------------------------------------------------------*
    *---------------------------------------------------------------------------------*/
-  //! sets up and holds all subblocks of system matrices and system matrix for SSTI simulations
+  //! sets up and holds all sub blocks of system matrices and system matrix for SSTI simulations
   class SSTIMatrices
   {
    public:
@@ -137,9 +137,12 @@ namespace SSTI
         Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
         Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool isinterfacemeshtying);
 
+    //! method that clears all ssi matrices
+    void ClearMatrices();
+
     Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
 
-    //! return subblocks of system matrix
+    //! return sub blocks of system matrix
     //@{
     Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureDomain() { return scatrastructuredomain_; };
     Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureInterface()

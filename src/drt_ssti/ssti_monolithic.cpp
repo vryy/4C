@@ -573,6 +573,9 @@ void SSTI::SSTIMono::EvaluateSubproblems()
 {
   double starttime = timer_->WallTime();
 
+  // clear all matrices from previous Newton iteration
+  ssti_matrices_->ClearMatrices();
+
   // needed to communicate to NOX state
   StructureField()->SetState(StructureField()->WriteAccessDispnp());
 

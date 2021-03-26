@@ -502,14 +502,11 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::UTILS::SSIMatrices::SSIMatrices(
-    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
+SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
     : is_scatra_manifold_(ssi_mono_algorithm.IsScaTraManifold()),
-      is_ssi_interface_meshtying_(ssi_mono_algorithm.SSIInterfaceMeshtying()),
       systemmatrix_(Teuchos::null),
       scatramanifoldstructuredomain_(Teuchos::null),
       scatrastructuredomain_(Teuchos::null),
-      scatrastructureinterface_(Teuchos::null),
       structurescatradomain_(Teuchos::null),
       structurematrix_(Teuchos::null)
 {
@@ -517,60 +514,12 @@ SSI::UTILS::SSIMatrices::SSIMatrices(
 
   structurematrix_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
 
-  InitializeOffDiagMatrices(ssi_mono_algorithm, interface_map_scatra);
+  InitializeOffDiagMatrices(ssi_mono_algorithm);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMatrices::GetScaTraInterfaceBlockMap(
-    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
-{
-  Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_interface(Teuchos::null);
-
-  switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::sparse:
-    {
-      // do nothing
-      break;
-    }
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
-    {
-      if (ssi_mono_algorithm.SSIInterfaceMeshtying())
-      {
-        const int maps_systemmatrix_scatra = ssi_mono_algorithm.MapsScatra()->NumMaps();
-
-        // build block map for scatra interface by merging slave and master side for each block
-        std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapscatrainterface(
-            maps_systemmatrix_scatra, Teuchos::null);
-        for (int iblockmap = 0; iblockmap < maps_systemmatrix_scatra; ++iblockmap)
-        {
-          partial_blockmapscatrainterface.at(iblockmap) = LINALG::MultiMapExtractor::MergeMaps(
-              {ssi_mono_algorithm.MeshtyingStrategyS2I()->BlockMapsSlave().Map(iblockmap),
-                  ssi_mono_algorithm.MeshtyingStrategyS2I()->BlockMapsMaster().Map(iblockmap)});
-        }
-        block_map_scatra_interface = Teuchos::rcp(
-            new LINALG::MultiMapExtractor(*interface_map_scatra, partial_blockmapscatrainterface));
-        block_map_scatra_interface->CheckForValidMapExtractor();
-      }
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
-
-  return block_map_scatra_interface;
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
-    const SSI::SSIMono& ssi_mono_algorithm, Teuchos::RCP<const Epetra_Map> interface_map_scatra)
+void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm)
 {
   switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
   {
@@ -597,15 +546,6 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
                 map_structure_manifold);
       }
 
-      if (is_ssi_interface_meshtying_)
-      {
-        auto block_map_scatra_interface =
-            GetScaTraInterfaceBlockMap(ssi_mono_algorithm, interface_map_scatra);
-
-        scatrastructureinterface_ =
-            SetupBlockMatrix(block_map_scatra_interface, ssi_mono_algorithm.MapStructure());
-      }
-
       break;
     }
 
@@ -619,9 +559,6 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
         scatramanifoldstructuredomain_ =
             SetupSparseMatrix(ssi_mono_algorithm.ScaTraManifold()->DofRowMap());
       }
-
-      if (is_ssi_interface_meshtying_)
-        scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
 
       break;
     }
@@ -641,7 +578,6 @@ void SSI::UTILS::SSIMatrices::ClearMatrices()
   systemmatrix_->Zero();
   if (is_scatra_manifold_) scatramanifoldstructuredomain_->Zero();
   scatrastructuredomain_->Zero();
-  if (is_ssi_interface_meshtying_) scatrastructureinterface_->Zero();
   structurescatradomain_->Zero();
   structurematrix_->Zero();
 }

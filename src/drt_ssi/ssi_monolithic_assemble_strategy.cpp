@@ -199,24 +199,11 @@ void SSI::AssembleStrategySparse::AssembleStructure(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
-
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructuredomain_block(Teuchos::null);
-  if (scatrastructuredomain != Teuchos::null)
-  {
-    scatrastructuredomain_block =
-        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructuredomain);
-  }
-
-  // cast interface matrix if necessary
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> scatrastructureinterface_block = Teuchos::null;
-  if (SSIMono().SSIInterfaceMeshtying())
-    scatrastructureinterface_block =
-        LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrastructureinterface);
+  auto scatra_structure_matrix_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
@@ -224,17 +211,8 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
     auto& systemmatrix_block_iscatra_struct =
         systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
 
-    if (scatrastructuredomain != Teuchos::null)
-    {
-      systemmatrix_block_iscatra_struct.Add(
-          scatrastructuredomain_block->Matrix(iblock, 0), false, 1.0, 1.0);
-    }
-
-    if (SSIMono().SSIInterfaceMeshtying())
-    {
-      systemmatrix_block_iscatra_struct.Add(
-          scatrastructureinterface_block->Matrix(iblock, 0), false, 1.0, 1.0);
-    }
+    systemmatrix_block_iscatra_struct.Add(
+        scatra_structure_matrix_block->Matrix(iblock, 0), false, 1.0, 1.0);
   }
 
   if (SSIMono().SSIInterfaceContact())
@@ -265,28 +243,16 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto scatra_structure_matrix_sparse =
+      LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
 
   auto& systemmatrix_block_scatra_struct =
       systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
 
-  if (scatrastructuredomain != Teuchos::null)
-  {
-    auto scatrastructuredomain_sparse =
-        LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructuredomain);
-
-    systemmatrix_block_scatra_struct.Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
-  }
-
-  if (SSIMono().SSIInterfaceMeshtying())
-  {
-    auto scatrastructureinterface_sparse =
-        LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
-    systemmatrix_block_scatra_struct.Add(*scatrastructureinterface_sparse, false, 1.0, 1.0);
-  }
+  systemmatrix_block_scatra_struct.Add(*scatra_structure_matrix_sparse, false, 1.0, 1.0);
 
   if (SSIMono().SSIInterfaceContact())
   {
@@ -301,24 +267,13 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategySparse::AssembleScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-    Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
+    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix)
 {
   auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
-  if (scatrastructuredomain != Teuchos::null)
-  {
-    auto scatrastructuredomain_sparse =
-        LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructuredomain);
+  auto scatra_structure_matrix_sparse =
+      LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
 
-    systemmatrix_sparse->Add(*scatrastructuredomain_sparse, false, 1.0, 1.0);
-  }
-
-  if (SSIMono().SSIInterfaceMeshtying())
-  {
-    auto scatrastructureinterface_sparse =
-        LINALG::CastToSparseMatrixAndCheckSuccess(scatrastructureinterface);
-    systemmatrix_sparse->Add(*scatrastructureinterface_sparse, false, 1.0, 1.0);
-  }
+  systemmatrix_sparse->Add(*scatra_structure_matrix_sparse, false, 1.0, 1.0);
 
   if (SSIMono().SSIInterfaceContact())
   {

@@ -88,8 +88,8 @@ namespace SSI
     class SSIMatrices
     {
      public:
-      SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+      //! constructor
+      explicit SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm);
 
       //! method that clears all ssi matrices
       void ClearMatrices();
@@ -107,27 +107,12 @@ namespace SSI
       {
         return scatrastructuredomain_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureInterface()
-      {
-        return scatrastructureinterface_;
-      }
       Teuchos::RCP<LINALG::SparseOperator> StructureScaTraDomain()
       {
         return structurescatradomain_;
       }
       Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structurematrix_; }
       //@}
-
-      /*!
-       * @brief set up and return the scatra interface block map
-       *
-       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
-       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
-       * @return scatra interface block map
-       */
-      static Teuchos::RCP<const LINALG::MultiMapExtractor> GetScaTraInterfaceBlockMap(
-          const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
 
       /*!
        * @brief set up a pointer to a block matrix
@@ -154,10 +139,8 @@ namespace SSI
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
        * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
-       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
        */
-      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
 
       /*!
        * @brief initialize the system matrix
@@ -168,15 +151,13 @@ namespace SSI
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
-      //! flag indicating if we have ssi interface mesh tying
-      const bool is_ssi_interface_meshtying_;
+
       //! system matrix
       Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
       //! sub blocks of system matrix
       //@{
       Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructuredomain_;
       Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
-      Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
       Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
       Teuchos::RCP<LINALG::SparseMatrix> structurematrix_;
       //@}

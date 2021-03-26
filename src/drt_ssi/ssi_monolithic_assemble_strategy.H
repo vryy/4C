@@ -60,10 +60,9 @@ namespace SSI
     virtual void AssembleScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) = 0;
 
-    //! assemble ScaTra-Structure-Block  into system matrix
+    //! assemble ScaTra-Structure-Block into system matrix
     virtual void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) = 0;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) = 0;
 
     //! assemble Structure-Block into system matrix
     virtual void AssembleStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
@@ -109,8 +108,7 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override = 0;
 
     void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override = 0;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override = 0;
 
     void AssembleStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override = 0;
@@ -165,8 +163,7 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
     void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
 
     void AssembleStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override;
@@ -198,8 +195,7 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
     void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
 
     void AssembleStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override;
@@ -231,8 +227,7 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> scatradomain) override;
 
     void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain,
-        Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
 
     void AssembleStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<LINALG::SparseMatrix> structuredomain) override;

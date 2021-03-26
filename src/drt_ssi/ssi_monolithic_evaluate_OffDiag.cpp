@@ -83,9 +83,6 @@ SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupl
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDomain(
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureblock)
 {
-  // initialize scatra-structure matrix block
-  scatrastructureblock->Zero();
-
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
 
@@ -157,9 +154,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStru
 void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraManifoldStructureDomain(
     Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock)
 {
-  // initialize scatra-structure matrix block
-  scatramanifoldstructureblock->Zero();
-
   // create parameter list for element evaluation
   Teuchos::ParameterList eleparams;
 
@@ -224,8 +218,6 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInterface(
     Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface)
 {
-  scatrastructureinterface->Zero();
-
   // slave and master matrix for evaluation of conditions
   Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
   Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
@@ -295,9 +287,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
 void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(
     Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const
 {
-  // initialize structure-scatra matrix block
-  structurescatradomain->Zero();
-
   // create parameter list for element evaluation and fill it
   Teuchos::ParameterList eleparams;
   // set action
