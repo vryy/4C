@@ -105,7 +105,7 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     if (IsScaTraManifold())
     {
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          ssi_matrices_->ScaTraManifoldStructureDomain());
+          ssi_matrices_->ScaTraManifoldStructureMatrix());
 
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
           manifoldscatraflux_->MatrixManifoldStructure());
@@ -114,12 +114,12 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
           manifoldscatraflux_->MatrixScaTraStructure());
     }
 
-    strategy_meshtying_->ApplyMeshtyingToScatraStructure(ssi_matrices_->ScaTraStructureDomain());
+    strategy_meshtying_->ApplyMeshtyingToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
 
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
 
-    strategy_meshtying_->ApplyMeshtyingToStructureScatra(ssi_matrices_->StructureScaTraDomain());
+    strategy_meshtying_->ApplyMeshtyingToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
 
     ssi_vectors_->StructureResidual()->Update(
         1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
@@ -165,7 +165,7 @@ void SSI::SSIMono::AssembleMatScaTra()
 
   // assemble scatra-structure block into system matrix
   strategy_assemble_->AssembleScatraStructure(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureDomain());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraStructureMatrix());
 }
 
 /*--------------------------------------------------------------------------*
@@ -178,7 +178,7 @@ void SSI::SSIMono::AssembleMatScaTraManifold()
 
   // assemble manifold-structure block into system matrix
   strategy_assemble_->AssembleScaTraManifoldStructure(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureDomain());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureMatrix());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
   // manifold side
@@ -212,7 +212,7 @@ void SSI::SSIMono::AssembleMatScaTraManifold()
 void SSI::SSIMono::AssembleMatStructure()
 {  // assemble structure-scatra block into system matrix
   strategy_assemble_->AssembleStructureScatra(
-      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraDomain());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraMatrix());
 
   // assemble structure block into system matrix
   strategy_assemble_->AssembleStructure(
@@ -260,23 +260,23 @@ void SSI::SSIMono::EvaluateOffDiagContributions()
 {
   // evaluate off-diagonal scatra-structure block (domain contributions) of global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureDomain(
-      ssi_matrices_->ScaTraStructureDomain());
+      ssi_matrices_->ScaTraStructureMatrix());
 
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (SSIInterfaceMeshtying())
     scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraStructureInterface(
-        ssi_matrices_->ScaTraStructureDomain());
+        ssi_matrices_->ScaTraStructureMatrix());
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
   scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockStructureScatraDomain(
-      ssi_matrices_->StructureScaTraDomain());
+      ssi_matrices_->StructureScaTraMatrix());
 
   if (IsScaTraManifold())
   {
     // evaluate off-diagonal manifold-structure block of global system matrix
     scatrastructureOffDiagcoupling_->EvaluateOffDiagBlockScatraManifoldStructureDomain(
-        ssi_matrices_->ScaTraManifoldStructureDomain());
+        ssi_matrices_->ScaTraManifoldStructureMatrix());
   }
 }
 

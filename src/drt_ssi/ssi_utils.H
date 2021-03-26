@@ -95,23 +95,23 @@ namespace SSI
       void ClearMatrices();
 
       //! return the system matrix
-      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; }
+      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return system_matrix_; }
 
       //! return sub blocks of system matrix
       //@{
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureDomain()
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureMatrix()
       {
-        return scatramanifoldstructuredomain_;
+        return scatramanifold_structure_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureDomain()
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureMatrix()
       {
-        return scatrastructuredomain_;
+        return scatra_structure_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> StructureScaTraDomain()
+      Teuchos::RCP<LINALG::SparseOperator> StructureScaTraMatrix()
       {
-        return structurescatradomain_;
+        return structure_scatra_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structurematrix_; }
+      Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structure_matrix_; }
       //@}
 
       /*!
@@ -153,13 +153,13 @@ namespace SSI
       const bool is_scatra_manifold_;
 
       //! system matrix
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
+      Teuchos::RCP<LINALG::SparseOperator> system_matrix_;
       //! sub blocks of system matrix
       //@{
-      Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructuredomain_;
-      Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
-      Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
-      Teuchos::RCP<LINALG::SparseMatrix> structurematrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatramanifold_structure_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix_;
+      Teuchos::RCP<LINALG::SparseMatrix> structure_matrix_;
       //@}
     };
 

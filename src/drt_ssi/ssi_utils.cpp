@@ -504,15 +504,15 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 /*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
     : is_scatra_manifold_(ssi_mono_algorithm.IsScaTraManifold()),
-      systemmatrix_(Teuchos::null),
-      scatramanifoldstructuredomain_(Teuchos::null),
-      scatrastructuredomain_(Teuchos::null),
-      structurescatradomain_(Teuchos::null),
-      structurematrix_(Teuchos::null)
+      system_matrix_(Teuchos::null),
+      scatramanifold_structure_matrix_(Teuchos::null),
+      scatra_structure_matrix_(Teuchos::null),
+      structure_scatra_matrix_(Teuchos::null),
+      structure_matrix_(Teuchos::null)
 {
   InitializeSystemMatrix(ssi_mono_algorithm);
 
-  structurematrix_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
+  structure_matrix_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
 
   InitializeOffDiagMatrices(ssi_mono_algorithm);
 }
@@ -526,11 +526,11 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      scatrastructuredomain_ =
+      scatra_structure_matrix_ =
           SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()),
               ssi_mono_algorithm.MapStructure());
 
-      structurescatradomain_ = SetupBlockMatrix(ssi_mono_algorithm.MapStructure(),
+      structure_scatra_matrix_ = SetupBlockMatrix(ssi_mono_algorithm.MapStructure(),
           Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps()));
 
       if (is_scatra_manifold_)
@@ -541,7 +541,7 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
             std::vector<Teuchos::RCP<const Epetra_Map>>(
                 1, ssi_mono_algorithm.MapStructureOnScaTraManifold()->Map(0))));
 
-        scatramanifoldstructuredomain_ =
+        scatramanifold_structure_matrix_ =
             SetupBlockMatrix(Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraManifold()->BlockMaps()),
                 map_structure_manifold);
       }
@@ -551,12 +551,13 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
 
     case LINALG::MatrixType::sparse:
     {
-      scatrastructuredomain_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
-      structurescatradomain_ = SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
+      scatra_structure_matrix_ = SetupSparseMatrix(ssi_mono_algorithm.ScaTraField()->DofRowMap());
+      structure_scatra_matrix_ =
+          SetupSparseMatrix(ssi_mono_algorithm.StructureField()->DofRowMap());
 
       if (is_scatra_manifold_)
       {
-        scatramanifoldstructuredomain_ =
+        scatramanifold_structure_matrix_ =
             SetupSparseMatrix(ssi_mono_algorithm.ScaTraManifold()->DofRowMap());
       }
 
@@ -575,11 +576,11 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
 /*----------------------------------------------------------------------*/
 void SSI::UTILS::SSIMatrices::ClearMatrices()
 {
-  systemmatrix_->Zero();
-  if (is_scatra_manifold_) scatramanifoldstructuredomain_->Zero();
-  scatrastructuredomain_->Zero();
-  structurescatradomain_->Zero();
-  structurematrix_->Zero();
+  system_matrix_->Zero();
+  if (is_scatra_manifold_) scatramanifold_structure_matrix_->Zero();
+  scatra_structure_matrix_->Zero();
+  structure_scatra_matrix_->Zero();
+  structure_matrix_->Zero();
 }
 
 /*----------------------------------------------------------------------*/
@@ -613,14 +614,14 @@ void SSI::UTILS::SSIMatrices::InitializeSystemMatrix(const SSI::SSIMono& ssi_mon
   {
     case LINALG::MatrixType::block_field:
     {
-      systemmatrix_ = SetupBlockMatrix(
+      system_matrix_ = SetupBlockMatrix(
           ssi_mono_algorithm.MapsSystemMatrix(), ssi_mono_algorithm.MapsSystemMatrix());
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
-      systemmatrix_ = SetupSparseMatrix(ssi_mono_algorithm.DofRowMap());
+      system_matrix_ = SetupSparseMatrix(ssi_mono_algorithm.DofRowMap());
       break;
     }
 
