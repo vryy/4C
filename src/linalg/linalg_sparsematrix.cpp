@@ -1943,7 +1943,18 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrixAndCheckSuccess(
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(input_matrix);
-  if (sparse_matrix == Teuchos::null) dserror("Matrix is not a sparse matrix!");
+  dsassert(sparse_matrix == Teuchos::null, "Matrix is not a sparse matrix!");
+
+  return sparse_matrix;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::SparseMatrix> LINALG::CastToConstSparseMatrixAndCheckSuccess(
+    Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
+{
+  auto sparse_matrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(input_matrix);
+  dsassert(sparse_matrix == Teuchos::null, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
 }
