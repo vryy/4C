@@ -36,6 +36,7 @@ namespace SSI
   }  // namespace UTILS
 
   class AssembleStrategyBase;
+  class ContactStrategyBase;
   class DBCHandlerBase;
   class MeshtyingStrategyBase;
   class ScatraStructureOffDiagCoupling;
@@ -132,6 +133,9 @@ namespace SSI
     class ConvCheckStrategyElchScaTraManifold;
     class ConvCheckStrategyStd;
 
+    //! apply the contact contributions to matrices and residuals of the sub problems
+    void ApplyContactToSubProblems();
+
     //! apply the Dirichlet boundary conditions to the ssi system, i.e. matrices and residuals
     void ApplyDBCToSystem();
 
@@ -155,6 +159,9 @@ namespace SSI
 
     //! evaluate all off-diagonal matrix contributions
     void EvaluateOffDiagContributions();
+
+    // Evaluate ScaTra including copy to corresponding ssi matrix
+    void EvaluateScaTra();
 
     // Evaluate ScaTra on manifold incl. coupling with scatra
     void EvaluateScaTraManifold();
@@ -242,6 +249,9 @@ namespace SSI
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;
+
+    //! strategy how to apply contact contributions to sub matrices and rhs
+    Teuchos::RCP<SSI::ContactStrategyBase> strategy_contact_;
 
     //! strategy for Newton-Raphson convergence check
     Teuchos::RCP<const SSI::SSIMono::ConvCheckStrategyBase> strategy_convcheck_;

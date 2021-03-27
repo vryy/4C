@@ -88,46 +88,32 @@ namespace SSI
     class SSIMatrices
     {
      public:
-      SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+      //! constructor
+      explicit SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm);
 
       //! method that clears all ssi matrices
       void ClearMatrices();
 
       //! return the system matrix
-      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; }
+      Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return system_matrix_; }
 
       //! return sub blocks of system matrix
       //@{
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureDomain()
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraMatrix() { return scatra_matrix_; }
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldStructureMatrix()
       {
-        return scatramanifoldstructuredomain_;
+        return scatramanifold_structure_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureDomain()
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureMatrix()
       {
-        return scatrastructuredomain_;
+        return scatra_structure_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> ScaTraStructureInterface()
+      Teuchos::RCP<LINALG::SparseOperator> StructureScaTraMatrix()
       {
-        return scatrastructureinterface_;
+        return structure_scatra_matrix_;
       }
-      Teuchos::RCP<LINALG::SparseOperator> StructureScaTraDomain()
-      {
-        return structurescatradomain_;
-      }
-      Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structurematrix_; }
+      Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structure_matrix_; }
       //@}
-
-      /*!
-       * @brief set up and return the scatra interface block map
-       *
-       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
-       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
-       * @return scatra interface block map
-       */
-      static Teuchos::RCP<const LINALG::MultiMapExtractor> GetScaTraInterfaceBlockMap(
-          const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
 
       /*!
        * @brief set up a pointer to a block matrix
@@ -151,13 +137,18 @@ namespace SSI
 
      private:
       /*!
+       * @brief initialize the scatra-structure interaction main-diagonal matrices
+       *
+       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       */
+      void InitializeMainDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+
+      /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
        * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
-       * @param[in] interface_map_scatra  slave- and master-side of scatra interface map
        */
-      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm,
-          Teuchos::RCP<const Epetra_Map> interface_map_scatra);
+      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
 
       /*!
        * @brief initialize the system matrix
@@ -168,17 +159,16 @@ namespace SSI
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
-      //! flag indicating if we have ssi interface mesh tying
-      const bool is_ssi_interface_meshtying_;
+
       //! system matrix
-      Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
+      Teuchos::RCP<LINALG::SparseOperator> system_matrix_;
       //! sub blocks of system matrix
       //@{
-      Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructuredomain_;
-      Teuchos::RCP<LINALG::SparseOperator> scatrastructuredomain_;
-      Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface_;
-      Teuchos::RCP<LINALG::SparseOperator> structurescatradomain_;
-      Teuchos::RCP<LINALG::SparseMatrix> structurematrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatra_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatramanifold_structure_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix_;
+      Teuchos::RCP<LINALG::SparseMatrix> structure_matrix_;
       //@}
     };
 
@@ -189,7 +179,7 @@ namespace SSI
     {
      public:
       //! constructor
-      explicit SSIVectors(const SSI::SSIMono& ssi_mono_algorithm);
+      explicit SSIVectors(const SSI::SSIMono& ssi_mono);
 
       //! clear the increment vector
       void ClearIncrement();
@@ -203,6 +193,9 @@ namespace SSI
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> Residual() { return residual_; }
 
+      //! residual vector on right-hand side of scalar transport system
+      Teuchos::RCP<Epetra_Vector> ScatraResidual() { return scatra_residual_; }
+
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> StructureResidual() { return structure_residual_; }
 
@@ -212,6 +205,9 @@ namespace SSI
 
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;
+
+      //! residual vector on right-hand side of scalar transport system
+      Teuchos::RCP<Epetra_Vector> scatra_residual_;
 
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> structure_residual_;

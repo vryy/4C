@@ -63,11 +63,9 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
-    const SSI::SSIMono& ssi_mono, Teuchos::RCP<const Epetra_Map> interface_map_scatra,
-    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure)
-    : block_map_scatra_interface_(
-          SSI::UTILS::SSIMatrices::GetScaTraInterfaceBlockMap(ssi_mono, interface_map_scatra)),
-      block_map_structure_(std::move(block_map_structure)),
+    const SSI::SSIMono& ssi_mono)
+    : block_map_scatra_(ssi_mono.MapsScatra()),
+      block_map_structure_(ssi_mono.MapStructure()),
       full_map_manifold_(
           ssi_mono.MapsSubProblems()->Map(ssi_mono.GetProblemPosition(Subproblem::manifold))),
       full_map_scatra_(ssi_mono.MapsSubProblems()->Map(
@@ -75,7 +73,6 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       full_map_structure_(
           ssi_mono.MapsSubProblems()->Map(ssi_mono.GetProblemPosition(Subproblem::structure))),
       icoup_structure_(ssi_mono.InterfaceCouplingAdapterStructure()),
-      interface_map_scatra_(interface_map_scatra),
       matrix_manifold_scatra_(Teuchos::null),
       matrix_manifold_structure_(Teuchos::null),
       matrix_scatra_manifold_(Teuchos::null),
@@ -124,27 +121,27 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
 
       systemmatrix_manifold_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
           scatramanifoldblockmaps, scatramanifoldblockmaps);
-      systemmatrix_scatra_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-          block_map_scatra_interface_, block_map_scatra_interface_);
+      systemmatrix_scatra_ =
+          SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, block_map_scatra_);
       matrix_manifold_structure_ =
           SSI::UTILS::SSIMatrices::SetupBlockMatrix(scatramanifoldblockmaps, block_map_structure_);
-      matrix_manifold_scatra_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-          scatramanifoldblockmaps, block_map_scatra_interface_);
-      matrix_scatra_manifold_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-          block_map_scatra_interface_, scatramanifoldblockmaps);
-      matrix_scatra_structure_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-          block_map_scatra_interface_, block_map_structure_);
+      matrix_manifold_scatra_ =
+          SSI::UTILS::SSIMatrices::SetupBlockMatrix(scatramanifoldblockmaps, block_map_scatra_);
+      matrix_scatra_manifold_ =
+          SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, scatramanifoldblockmaps);
+      matrix_scatra_structure_ =
+          SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, block_map_structure_);
 
       break;
     }
     case LINALG::MatrixType::sparse:
     {
       systemmatrix_manifold_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
-      systemmatrix_scatra_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra_);
+      systemmatrix_scatra_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
       matrix_manifold_structure_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
       matrix_manifold_scatra_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
-      matrix_scatra_manifold_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra_);
-      matrix_scatra_structure_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra_);
+      matrix_scatra_manifold_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
+      matrix_scatra_structure_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
 
       break;
     }
@@ -159,11 +156,11 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   rhs_scatra_cond_ = LINALG::CreateVector(*full_map_scatra_, true);
 
   systemmatrix_manifold_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
-  systemmatrix_scatra_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra_);
+  systemmatrix_scatra_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
   matrix_manifold_scatra_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
   matrix_manifold_structure_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
-  matrix_scatra_manifold_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra_);
-  matrix_scatra_structure_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(interface_map_scatra_);
+  matrix_scatra_manifold_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
+  matrix_scatra_structure_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
 }
 
 /*----------------------------------------------------------------------*
@@ -225,10 +222,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
     }
     case LINALG::MatrixType::sparse:
     {
-      matrix_manifold_scatra_->Complete(*interface_map_scatra_, *full_map_manifold_);
+      matrix_manifold_scatra_->Complete(*full_map_scatra_, *full_map_manifold_);
       matrix_manifold_structure_->Complete(*full_map_structure_, *full_map_manifold_);
-      matrix_scatra_manifold_->Complete(*full_map_manifold_, *interface_map_scatra_);
-      matrix_scatra_structure_->Complete(*full_map_structure_, *interface_map_scatra_);
+      matrix_scatra_manifold_->Complete(*full_map_manifold_, *full_map_scatra_);
+      matrix_scatra_structure_->Complete(*full_map_structure_, *full_map_scatra_);
 
       break;
     }
@@ -303,10 +300,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
 
       // column dofs are so far on manifold dis. They are transformed to scatra dis
       LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_manifold_side,
-          *full_map_manifold_, *interface_map_scatra_, 1.0, nullptr,
+          *full_map_manifold_, *full_map_scatra_, 1.0, nullptr,
           &*scatra_manifold_coupling->SlaveConverter(), *matrix_manifold_scatra_cond_, true, true);
 
-      matrix_manifold_scatra_cond_->Complete(*interface_map_scatra_, *full_map_manifold_);
+      matrix_manifold_scatra_cond_->Complete(*full_map_scatra_, *full_map_manifold_);
     }
 
     // Evaluation of linearization w.r.t. displacement
@@ -362,24 +359,24 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraManifoldScaTraMasterSide(
   }
 
   // djscatra_dmanifold: manifold rows are transformed to scatra side (flux is scaled by -1.0)
-  LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_manifold_cond_, *interface_map_scatra_,
+  LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_manifold_cond_, *full_map_scatra_,
       *full_map_manifold_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *matrix_scatra_manifold_cond_, true, true);
 
   // djscatra_dscatra: manifold rows are transformed to scatra side (flux is scaled by -1.0)
-  LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_cond_, *interface_map_scatra_,
-      *interface_map_scatra_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
+  LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_cond_, *full_map_scatra_,
+      *full_map_scatra_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *systemmatrix_scatra_cond_, true, true);
 
-  matrix_scatra_manifold_cond_->Complete(*full_map_manifold_, *interface_map_scatra_);
+  matrix_scatra_manifold_cond_->Complete(*full_map_manifold_, *full_map_scatra_);
   systemmatrix_scatra_cond_->Complete();
 
   // djscatra_dstructure: manifold rows are transformed to scatra side (flux is scaled by -1.0)
-  LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_structure_cond_, *interface_map_scatra_,
+  LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_structure_cond_, *full_map_scatra_,
       *full_map_structure_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *matrix_scatra_structure_cond_, true, true);
 
-  matrix_scatra_structure_cond_->Complete(*full_map_structure_, *interface_map_scatra_);
+  matrix_scatra_structure_cond_->Complete(*full_map_structure_, *full_map_scatra_);
 }
 
 /*----------------------------------------------------------------------*
@@ -404,16 +401,16 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::AddConditionContribution()
               *block_map_structure_, blockmaps_manifold);
       auto flux_manifold_scatra_ms_block =
           matrix_manifold_scatra_cond_->Split<LINALG::DefaultBlockMatrixStrategy>(
-              *block_map_scatra_interface_, blockmaps_manifold);
+              *block_map_scatra_, blockmaps_manifold);
       auto flux_manifold_scatra_sm_block =
           matrix_scatra_manifold_cond_->Split<LINALG::DefaultBlockMatrixStrategy>(
-              blockmaps_manifold, *block_map_scatra_interface_);
+              blockmaps_manifold, *block_map_scatra_);
       auto flux_manifold_scatra_sd_block =
           matrix_scatra_structure_cond_->Split<LINALG::DefaultBlockMatrixStrategy>(
-              *block_map_structure_, *block_map_scatra_interface_);
+              *block_map_structure_, *block_map_scatra_);
       auto flux_manifold_scatra_ss_block =
           systemmatrix_scatra_cond_->Split<LINALG::DefaultBlockMatrixStrategy>(
-              *block_map_scatra_interface_, *block_map_scatra_interface_);
+              *block_map_scatra_, *block_map_scatra_);
 
       flux_manifold_scatra_mm_block->Complete();
       flux_manifold_scatra_md_block->Complete();

@@ -338,6 +338,23 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
+void SSTI::SSTIMatrices::ClearMatrices()
+{
+  systemmatrix_->Zero();
+  scatrastructuredomain_->Zero();
+  scatrastructureinterface_->Zero();
+  scatrathermodomain_->Zero();
+  scatrathermointerface_->Zero();
+  structurescatradomain_->Zero();
+  structurethermodomain_->Zero();
+  thermoscatradomain_->Zero();
+  thermoscatrainterface_->Zero();
+  thermostructuredomain_->Zero();
+  thermostructureinterface_->Zero();
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
 Teuchos::RCP<LINALG::BlockSparseMatrixBase> SSTI::SSTIMatrices::SetupBlockMatrix(
     Teuchos::RCP<const LINALG::MultiMapExtractor> row_map,
     Teuchos::RCP<const LINALG::MultiMapExtractor> col_map)
