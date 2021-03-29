@@ -210,6 +210,10 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
           Epetra_SerialDenseVector& eslaveresidual);
 
+      //! Integrate all positive fluxes (inflow) into manifold domain from scatra-manifold coupling
+      void CalcManifoldInflow(const DRT::Element* ele, DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& scalars);
+
      private:
       //! get internal variable manager for electrodes
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchElectrode<my::nsd_, my::nen_>> VarManager()

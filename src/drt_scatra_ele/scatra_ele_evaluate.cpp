@@ -283,6 +283,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::transform_real_to_reference_point:
     case SCATRA::evaluate_field_in_point:
     case SCATRA::calc_scatra_manifold_flux:
+    case SCATRA::calc_manifold_inflow:
     {
       return ScaTraFactory::ProvideImpl(
           Shape(), impltype_, numdofpernode, numscal, discretization.Name())

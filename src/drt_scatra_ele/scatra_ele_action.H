@@ -53,6 +53,7 @@ namespace SCATRA
                                         ///< reinitialization equation
     calc_scatra_box_filter,             ///< calc_scatra_box_filter,
     calc_scatra_manifold_flux,          ///< flux scatra <-> scatra on manifold
+    calc_manifold_inflow,               ///< integral of all positive fluxes into manifold
     calc_scatra_mono_odblock_fluid,     ///< calculate off diagonal matrix block for coupling with
                                         ///< fluid
     calc_scatra_mono_odblock_mesh,  ///< calculate off diagonal matrix block for coupling with mesh
