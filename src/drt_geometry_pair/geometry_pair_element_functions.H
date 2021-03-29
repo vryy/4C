@@ -78,8 +78,8 @@ namespace GEOMETRYPAIR
    * @param r (out) Position on the element.
    * @param element (in) Pointer to the element, needed for beam elements.
    */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
+  template <typename element_type, typename T, typename V, typename scalar_type, unsigned int n_dim>
+  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<n_dim, 1, scalar_type>& r,
       const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
@@ -92,9 +92,9 @@ namespace GEOMETRYPAIR
     // Calculate the position.
     r.Clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-      for (unsigned int dim = 0; dim < 3; dim++)
+      for (unsigned int dim = 0; dim < n_dim; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)
-          r(dim) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+          r(dim) += q(n_dim * element_type::n_val_ * node + n_dim * val + dim) *
                     N(element_type::n_val_ * node + val);
   }
 
@@ -145,39 +145,56 @@ namespace GEOMETRYPAIR
    * @param q (in) DOF for of the line.
    * @param r (out) Spatial position in the cross section.
    * @param element (in) Pointer to the line element.
+   * @param triad (in) Pointer to the cross section triad. If this parameter is given, this triad
+   * will be used not the one described above.
    */
   template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
   void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
-      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr)
+      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr,
+      const LINALG::Matrix<3, 3, scalar_type>* triad = nullptr)
   {
     // Get the radius from the beam element.
     const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
                               ->GetCircularCrossSectionRadiusForInteractions();
 
-    // Get the position and tangent along the centerline.
+    // Get the position along the centerline.
     EvaluatePosition<element_type>(eta, q, r, element);
-    LINALG::Matrix<3, 1, scalar_type> tangent, cross_section_director_2, cross_section_director_3;
-    EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
 
-    // The current implementation only allows tangential vectors in the x-y plane.
-    if (abs(tangent(2)) > CONSTANTS::pos_tol)
-      dserror("The tangent vector can not have a component in z direction! The component is %f!",
-          FADUTILS::CastToDouble(tangent(2)));
+    if (triad == nullptr)
+    {
+      LINALG::Matrix<3, 1, scalar_type> tangent, cross_section_director_2, cross_section_director_3;
+      EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
 
-    // Create the director vectors in the cross section.
-    // Director 2 is the one in the y-axis (reference configuration).
-    // Director 3 is the one in the z-axis (reference configuration).
-    tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
-    cross_section_director_2.Clear();
-    cross_section_director_2(0) = -tangent(1);
-    cross_section_director_2(1) = tangent(0);
-    cross_section_director_3.Clear();
-    cross_section_director_3(2) = 1.;
+      // The current implementation only allows tangential vectors in the x-y plane.
+      if (abs(tangent(2)) > CONSTANTS::pos_tol)
+        dserror("The tangent vector can not have a component in z direction! The component is %f!",
+            FADUTILS::CastToDouble(tangent(2)));
 
-    // Add the in cross section components of the position.
-    for (unsigned int dir = 0; dir < 3; dir++)
-      r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
-                             eta_cross_section(1) * cross_section_director_3(dir));
+      // Create the director vectors in the cross section.
+      // Director 2 is the one in the y-axis (reference configuration).
+      // Director 3 is the one in the z-axis (reference configuration).
+      tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
+      cross_section_director_2.Clear();
+      cross_section_director_2(0) = -tangent(1);
+      cross_section_director_2(1) = tangent(0);
+      cross_section_director_3.Clear();
+      cross_section_director_3(2) = 1.;
+
+      // Add the in cross section components of the position.
+      for (unsigned int dir = 0; dir < 3; dir++)
+        r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
+                               eta_cross_section(1) * cross_section_director_3(dir));
+    }
+    else
+    {
+      // Use the given triad.
+      LINALG::Matrix<3, 1, scalar_type> cross_section_coordinates(true);
+      cross_section_coordinates(1) = radius * eta_cross_section(0);
+      cross_section_coordinates(2) = radius * eta_cross_section(1);
+      LINALG::Matrix<3, 1, scalar_type> cross_section_position;
+      cross_section_position.Multiply(*triad, cross_section_coordinates);
+      r += cross_section_position;
+    }
   }
 
   /**

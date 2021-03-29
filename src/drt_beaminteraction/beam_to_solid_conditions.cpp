@@ -15,6 +15,7 @@
 #include "beam_to_solid_volume_meshtying_pair_mortar.H"
 #include "beam_to_solid_volume_meshtying_pair_mortar_rotation.H"
 #include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.H"
+#include "beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_rotation.H"
 #include "beam_to_solid_surface_meshtying_pair_gauss_point.H"
 #include "beam_to_solid_surface_meshtying_pair_gauss_point_FAD.H"
 #include "beam_to_solid_surface_meshtying_pair_mortar.H"
@@ -669,8 +670,8 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
         dserror("Wrong mortar shape function.");
     }
   }
-  if (contact_discretization ==
-      INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_cross_section)
+  else if (contact_discretization ==
+           INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_cross_section)
   {
     switch (shape)
     {
@@ -693,6 +694,35 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
       case DRT::Element::tet10:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSection<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>());
+      default:
+        dserror("Wrong element type for solid element.");
+    }
+  }
+  else if (contact_discretization ==
+           INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_cross_section_rotation)
+  {
+    switch (shape)
+    {
+      case DRT::Element::hex8:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8>());
+      case DRT::Element::hex20:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20>());
+      case DRT::Element::hex27:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27>());
+      case DRT::Element::tet4:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<
+                GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4>());
+      case DRT::Element::tet10:
+        return Teuchos::rcp(
+            new BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation<
                 GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10>());
       default:
         dserror("Wrong element type for solid element.");

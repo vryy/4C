@@ -881,6 +881,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_rotation.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar_rotation.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
