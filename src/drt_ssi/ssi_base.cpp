@@ -309,13 +309,28 @@ void SSI::SSIBase::InitDiscretizations(
       auto scatra_manifold_dis = problem->GetDis("scatra_manifold");
       DRT::UTILS::CloneDiscretizationFromCondition<SSI::ScatraStructureCloneStrategyManifold>(
           *structdis, *scatra_manifold_dis, "SSISurfaceManifold");
+
+      // clone conditions. Needed this way, as many conditions are cloned from SSISurfaceManifold.
+      std::vector<std::map<std::string, std::string>> conditions_to_copy = {
+          {std::make_pair("SSISurfaceManifold", "SSISurfaceManifold")},
+          {std::make_pair("SSISurfaceManifold", "ScatraPartitioning")},
+          {std::make_pair("ScaTraManifoldInitfield", "Initfield")},
+          {std::make_pair("ManifoldDirichlet", "Dirichlet")}};
+
+      if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
+              problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS") !=
+          INPAR::SCATRA::outputscalars_none)
       {
-        std::map<std::string, std::string> conditions_to_copy;
-        conditions_to_copy.insert(
-            std::pair<std::string, std::string>("SSISurfaceManifold", "ScatraPartitioning"));
-        DRT::UTILS::DiscretizationCreatorBase creator;
-        creator.CopyConditions(*structdis, *scatra_manifold_dis, conditions_to_copy);
+        std::map<std::string, std::string> tempmap = {
+            std::make_pair("SSISurfaceManifold", "TotalAndMeanScalar")};
+
+        conditions_to_copy.emplace_back(tempmap);
       }
+
+      DRT::UTILS::DiscretizationCreatorBase creator;
+      for (const auto& condition_to_copy : conditions_to_copy)
+        creator.CopyConditions(*structdis, *scatra_manifold_dis, condition_to_copy);
+
       scatra_manifold_dis->FillComplete();
     }
   }
@@ -811,7 +826,8 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
   scatra_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
-  ScaTraBaseAlgorithm()->Init(*scatratimeparams, scatraparams,
+
+  ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
 
   // create and initialize scatra base algorithm for manifolds
@@ -820,8 +836,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     scatra_manifold_base_algorithm_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm());
 
     ScaTraManifoldBaseAlgorithm()->Init(*scatratimeparams,
-        SSI::UTILS::CloneScaTraManifoldParams(
-            scatraparams, globaltimeparams.sublist("MANIFOLD"), Comm()),
+        SSI::UTILS::CloneScaTraManifoldParams(scatraparams, globaltimeparams.sublist("MANIFOLD")),
         problem->SolverParams(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
         "scatra_manifold", isAle);
   }

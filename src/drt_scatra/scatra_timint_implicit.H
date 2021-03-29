@@ -34,6 +34,8 @@
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_scatra.H"
 
+#include <memory>
+
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12
@@ -50,6 +52,7 @@
 /*==========================================================================*/
 // forward declarations
 /*==========================================================================*/
+class RuntimeCsvWriter;
 
 namespace DRT
 {
@@ -635,7 +638,7 @@ namespace SCATRA
     virtual void OutputTotalAndMeanScalars(const int num = 0);
 
     //! output domain or boundary integrals, i.e., surface areas or volumes of specified nodesets
-    void OutputDomainOrBoundaryIntegrals(const std::string condstring);
+    void OutputDomainOrBoundaryIntegrals(const std::string& condstring);
 
     //! output of reaction(s) integral
     void OutputIntegrReac(const int num = 0);
@@ -861,12 +864,12 @@ namespace SCATRA
 
     //! Calculate the reconstructed nodal gradient of phi by means of L2-projection
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(
-        const Teuchos::RCP<const Epetra_Vector>& state, const std::string statename,
+        const Teuchos::RCP<const Epetra_Vector>& state, const std::string& statename,
         const int numvec, Teuchos::ParameterList& params, const int solvernumber);
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
     Teuchos::RCP<Epetra_MultiVector> ComputeSuperconvergentPatchRecovery(
-        Teuchos::RCP<const Epetra_Vector> state, const std::string statename, const int numvec,
+        Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
         Teuchos::ParameterList& params, const int dim);
 
     //! compute contributions of solution-depending boundary and interface conditions to global
@@ -1530,18 +1533,15 @@ namespace SCATRA
     //! @name Constructors and destructors and related methods
     /*========================================================================*/
 
-    //! Standard Constructor
     OutputScalarsStrategyBase(){};
 
-    //! Destructor
-    virtual ~OutputScalarsStrategyBase(){};
+    virtual ~OutputScalarsStrategyBase() = default;
 
     //! initialize time integration
-    virtual void Init(const ScaTraTimIntImpl* const scatratimint) = 0;
+    void Init(const ScaTraTimIntImpl* const scatratimint);
 
     //! do the output
-    virtual void OutputTotalAndMeanScalars(
-        const ScaTraTimIntImpl* const scatratimint, const int num);
+    void OutputTotalAndMeanScalars(const ScaTraTimIntImpl* const scatratimint, const int num);
 
     /*========================================================================*/
     //! @name Access methods
@@ -1558,6 +1558,18 @@ namespace SCATRA
     //! @name Helper methods
     /*========================================================================*/
 
+    //! evaluate mean and total scalars and print them to file and screen
+    virtual void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) = 0;
+
+    //! print bar to screen as bottom of table
+    void FinalizeScreenOutput();
+
+    //! init objects that are specific for output strategy
+    virtual void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) = 0;
+
+    //! Pass evaluated data to csv writer
+    virtual void PassToCSVWriter() = 0;
+
     //! fill parameter list and set variables in discretization for evaluation of mean scalars
     void PrepareEvaluate(
         const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams);
@@ -1565,28 +1577,26 @@ namespace SCATRA
     //! print header of table for summary of mean values to screen
     void PrintHeaderToScreen();
 
-    //! print default header (step and time) to file with name fname
-    virtual void PrintDefaultHeaderToFile(const std::string& fname);
-
-    //! print output-type-specific header to file with name fname
-    virtual void PrintHeaderToFile(const std::string& fname) = 0;
-
-    //! finalize the output of screen and file (just for beauty)
-    void FinalizeOutput(const std::string& fname, const bool isheader = false);
-
-    //! evaluate mean and total scalars and print them to file and screen
-    virtual void EvaluateIntegralsAndPrintResults(const ScaTraTimIntImpl* const scatratimint,
-        const std::string& fname, Teuchos::ParameterList& eleparams) = 0;
+    //! Print evaluated data to screen
+    virtual void PrintToScreen() = 0;
 
     /*========================================================================*/
     //! @name Internal variables
     /*========================================================================*/
-
-    //! total values of transported scalars
-    std::map<const int, std::vector<double>> totalscalars_;
+    //! mean values of transported scalars
+    std::map<const int, double> domainintegral_;
 
     //! mean values of transported scalars
     std::map<const int, std::vector<double>> meanscalars_;
+
+    //! process number
+    int myrank_;
+
+    // writes evaluated data to output
+    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
+
+    //! total values of transported scalars
+    std::map<const int, std::vector<double>> totalscalars_;
   };
 
   /*!
@@ -1599,23 +1609,23 @@ namespace SCATRA
     //! @name Constructors and destructors and related methods
     /*========================================================================*/
 
-    //! Standard Constructor
-    OutputScalarsStrategyDomain() : numdofpernode_(0){};
+    OutputScalarsStrategyDomain() : domainid_(-1), numdofpernode_(0){};
 
-    //! Destructor
-    virtual ~OutputScalarsStrategyDomain(){};
-
-    //! initialize time integration
-    virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+    ~OutputScalarsStrategyDomain() override = default;
 
    protected:
-    //! print output-type-specific header to file with name fname
-    virtual void PrintHeaderToFile(const std::string& fname);
+    void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
-    virtual void EvaluateIntegralsAndPrintResults(const ScaTraTimIntImpl* const scatratimint,
-        const std::string& fname, Teuchos::ParameterList& eleparams);
+    void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
+
+    void PassToCSVWriter() override;
+
+    void PrintToScreen() override;
 
    private:
+    // set domain ID equal to -1 for entire domain (as dummy to also use map)
+    const int domainid_;
+
     //! number of degrees of freedom per node
     int numdofpernode_;
   };
@@ -1632,22 +1642,18 @@ namespace SCATRA
     //! @name Constructors and destructors and related methods
     /*========================================================================*/
 
-    //! Standard Constructor
     OutputScalarsStrategyCondition() : conditions_(), numdofpernodepercondition_(){};
 
-    //! Destructor
-    virtual ~OutputScalarsStrategyCondition(){};
-
-    //! initialize time integration
-    virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+    ~OutputScalarsStrategyCondition() override = default;
 
    protected:
-    //! print output-type-specific header to file with name fname
-    virtual void PrintHeaderToFile(const std::string& fname);
+    void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
-    //! evaluate mean and total scalars and print them to file and screen
-    virtual void EvaluateIntegralsAndPrintResults(const ScaTraTimIntImpl* const scatratimint,
-        const std::string& fname, Teuchos::ParameterList& eleparams);
+    void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
+
+    void PassToCSVWriter() override;
+
+    void PrintToScreen() override;
 
    private:
     //! vector of 'TotalAndMeanScalar'-conditions
@@ -1669,22 +1675,18 @@ namespace SCATRA
     //! @name Constructors and destructors and related methods
     /*========================================================================*/
 
-    //! Standard Constructor
     OutputScalarsStrategyDomainAndCondition(){};
 
-    //! Destructor
-    virtual ~OutputScalarsStrategyDomainAndCondition(){};
-
-    //! initialize time integration
-    virtual void Init(const ScaTraTimIntImpl* const scatratimint);
+    ~OutputScalarsStrategyDomainAndCondition() override = default;
 
    protected:
-    //! print output-type-specific header to file with name fname
-    virtual void PrintHeaderToFile(const std::string& fname);
+    void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
-    //! evaluate mean and total scalars and print them to file and screen
-    virtual void EvaluateIntegralsAndPrintResults(const ScaTraTimIntImpl* const scatratimint,
-        const std::string& fname, Teuchos::ParameterList& eleparams);
+    void InitStrategySpecific(const ScaTraTimIntImpl* const scatratimint) override;
+
+    void PassToCSVWriter() override;
+
+    void PrintToScreen() override;
   };
 
   /*========================================================================*/
@@ -1714,7 +1716,7 @@ namespace SCATRA
 
     //! evaluate domain integrals and print to screen
     void EvaluateIntegralsAndPrintResults(
-        const ScaTraTimIntImpl* const scatratimint, const std::string condstring);
+        const ScaTraTimIntImpl* const scatratimint, const std::string& condstring);
 
     /*========================================================================*/
     //! @name Access methods

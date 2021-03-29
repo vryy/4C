@@ -39,6 +39,7 @@ INITIALFIELD                    field_by_condition
 LINEAR_SOLVER                   1
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
+OUTPUTSCALARS                   entire_domain_and_by_condition
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
@@ -215,6 +216,11 @@ E 3 - ManifoldConditionID 1 KineticModel ConstantInterfaceResistance resistance 
 E 4 - ManifoldConditionID 2 KineticModel ConstantInterfaceResistance resistance 1.0e5 e- 1
 // electrolyte side
 E 5 - ManifoldConditionID 2 KineticModel ConstantInterfaceResistance resistance 1.0e5 e- 1
+-----------------------DESIGN TOTAL AND MEAN SCALAR VOL CONDITIONS
+DVOL   3
+E 1 - ID 0
+E 2 - ID 1
+E 3 - ID 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    36 DNODE 1
 NODE    163 DNODE 1

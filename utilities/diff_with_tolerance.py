@@ -64,23 +64,35 @@ if __name__ == '__main__':
     """
 
     # Read arguments.
-    if not len(sys.argv) == 4:
+    if not len(sys.argv) == 6:
         raise ValueError(('Wrong number of input arguments. Got {} instead '
-            + 'of 4!').format(len(sys.argv)))
+            + 'of 6!').format(len(sys.argv)))
     eps = float(sys.argv[1])
     file_ref = sys.argv[2]
     file_comp = sys.argv[3]
+    tolerance_type = sys.argv[4]
+    min_value = float(sys.argv[5])
 
-    print('\n\nCompare files with tolerance {}:\n{}\n{}'.format(eps, file_ref, file_comp))
+    if tolerance_type == 'abs_tol':
+        print('\n\nCompare files with absolute tolerance {}:\n{}\n{}'.format(eps, file_ref, file_comp))
+    elif tolerance_type == 'rel_tol':
+        print('\n\nCompare files with relative tolerance {}:\n{}\n{}'.format(eps, file_ref, file_comp))
+    else:
+        raise ValueError('received illegal tolerance type. Must either be "rel_tol" or "abs_tol"')
 
     # Load each file as a real array.
     data_ref = read_csv(file_ref)
     data_comp = read_csv(file_comp)
 
-    # Calculate the absolute error in the data entries.
-    abs_diff = np.abs(data_comp - data_ref)
-    if eps > np.max(abs_diff):
+    # Calculate the error in the data entries.
+    diff = 0.0
+    if tolerance_type == 'abs_tol':
+        diff = np.abs(data_comp - data_ref)
+    else:
+        diff = np.abs((data_comp - data_ref) / np.where(np.abs(data_ref) < min_value, min_value, data_ref))
+
+    if eps > np.max(diff):
         print('CSV comparison successful!')
     else:
-        print('Largest error is {}'.format(np.max(abs_diff)))
+        print('Largest error is {}'.format(np.max(diff)))
         raise ValueError('CSV comparison failed!')

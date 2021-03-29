@@ -430,7 +430,7 @@ SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
 /*----------------------------------------------------------------------*/
 Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
     const Teuchos::ParameterList& scatraparams,
-    const Teuchos::ParameterList& sublist_manifold_params, const Epetra_Comm& comm)
+    const Teuchos::ParameterList& sublist_manifold_params)
 {
   auto* scatra_manifold_params = new Teuchos::ParameterList(scatraparams);
 
@@ -461,10 +461,25 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
       break;
   }
 
-  scatra_manifold_params->set<std::string>("OUTPUTSCALARS", "none");
+  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+      INPAR::SCATRA::outputscalars_none)
+    scatra_manifold_params->set<bool>("output_file_name_discretization", true);
+
   scatra_manifold_params->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
 
   return *scatra_manifold_params;
+}
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::ParameterList SSI::UTILS::ModifyScaTraParams(const Teuchos::ParameterList& scatraparams)
+{
+  auto* scatraparams_mutable = new Teuchos::ParameterList(scatraparams);
+
+  if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(scatraparams, "OUTPUTSCALARS") !=
+      INPAR::SCATRA::outputscalars_none)
+    scatraparams_mutable->set<bool>("output_file_name_discretization", true);
+
+  return *scatraparams_mutable;
 }
 
 /*----------------------------------------------------------------------*/
