@@ -332,7 +332,7 @@ void LINALG::SparseMatrix::Reset()
 
   if (Filled())
   {
-    for (int i = 0; i < numentries.size(); ++i)
+    for (std::size_t i = 0; i < numentries.size(); ++i)
     {
       int* indices;
       int err = graph.ExtractMyRowView(i, numentries[i], indices);
@@ -343,7 +343,7 @@ void LINALG::SparseMatrix::Reset()
   {
     // use information about number of allocated entries not to fall back to matrix with zero size
     // otherwise assembly would be extremely expensive!
-    for (int i = 0; i < numentries.size(); ++i)
+    for (std::size_t i = 0; i < numentries.size(); ++i)
     {
       numentries[i] = graph.NumAllocatedMyIndices(i);
     }
@@ -1727,8 +1727,8 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::SplitMxN");
 
   // extract number of row/column blocks
-  const unsigned M = ABlock.Rows();
-  const unsigned N = ABlock.Cols();
+  const int M = ABlock.Rows();
+  const int N = ABlock.Cols();
 
   // safety checks
   if (!Filled()) dserror("SparseMatrix must be filled before splitting!");
@@ -1948,7 +1948,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrixAndCheckSuccess(
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(input_matrix);
-  dsassert(sparse_matrix == Teuchos::null, "Matrix is not a sparse matrix!");
+  dsassert(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
 }
@@ -1959,7 +1959,7 @@ Teuchos::RCP<const LINALG::SparseMatrix> LINALG::CastToConstSparseMatrixAndCheck
     Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(input_matrix);
-  dsassert(sparse_matrix == Teuchos::null, "Matrix is not a sparse matrix!");
+  dsassert(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
 }

@@ -30,7 +30,7 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
   {
     for (int c = 0; c < Cols(); ++c)
     {
-      blocks_.emplace_back(SparseMatrix(RangeMap(r), npr, explicitdirichlet, savegraph));
+      blocks_.emplace_back(RangeMap(r), npr, explicitdirichlet, savegraph);
     }
   }
 }
@@ -729,7 +729,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockSparseMatrixBaseA
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto block_matrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(input_matrix);
-  dsassert(block_matrix == Teuchos::null, Matrix is not a block matrix !);
+  dsassert(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
 
   return block_matrix;
 }
@@ -741,7 +741,7 @@ LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
     Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
 {
   auto block_matrix = Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(input_matrix);
-  dsassert(block_matrix == Teuchos::null, Matrix is not a block matrix !);
+  dsassert(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
 
   return block_matrix;
 }
