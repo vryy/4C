@@ -149,18 +149,15 @@ namespace SSI
     void Output();
 
    private:
-    //! Evaluate flux and linearizations on manifold side
-    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    //! Add to global matrices and rhs
+    void AddConditionContribution();
 
     //! Copy and scale (-1.0) to scatra side
     void CopyScaTraManifoldScaTraMasterSide(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
-    //! Add to global matrices and rhs
-    void AddConditionContribution();
-
-    //! prepare evaluation of coupling condition: set elemental data
-    void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    //! Evaluate flux and linearizations on manifold side
+    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
     void EvaluateScaTraManifoldDomainIntegral(
@@ -169,6 +166,9 @@ namespace SSI
     //! Evaluate integral on scatra manifold over positive fluxes
     void EvaluateScaTraManifoldInflowIntegral(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
+    //! prepare evaluation of coupling condition: set elemental data
+    void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_;
