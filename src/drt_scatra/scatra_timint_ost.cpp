@@ -19,16 +19,11 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
-SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
-    Teuchos::RCP<DRT::Discretization> actdis,          //!< discretization
-    Teuchos::RCP<LINALG::Solver> solver,               //!< linear solver
-    Teuchos::RCP<Teuchos::ParameterList> params,       //!< parameter list
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,  //!< supplementary parameter list
-    Teuchos::RCP<IO::DiscretizationWriter> output,     //!< output writer
-    const int probnum                                  //!< global problem number
-    )
+SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<DRT::Discretization> actdis,
+    Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> extraparams, Teuchos::RCP<IO::DiscretizationWriter> output,
+    const int probnum)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output, probnum),
       theta_(params_->get<double>("THETA")),
       fsphinp_(Teuchos::null)
@@ -37,24 +32,17 @@ SCATRA::TimIntOneStepTheta::TimIntOneStepTheta(
   // this is important since we have problems which require an extended ghosting and
   // other kinds of parallel redistribution.
   // This has to be done before all state vectors are initialized.
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Init()
 {
   // initialize base class
   ScaTraTimIntImpl::Init();
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Setup()
 {
@@ -117,19 +105,9 @@ void SCATRA::TimIntOneStepTheta::Setup()
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    gjb 08/08 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntOneStepTheta::~TimIntOneStepTheta() { return; }
-
-
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementalsolver) const
 {
@@ -138,7 +116,7 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementals
   eleparams.set<int>("action", SCATRA::set_time_parameter);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
-  if (forcedincrementalsolver == false)
+  if (!forcedincrementalsolver)
     eleparams.set<bool>("incremental solver", incremental_);
   else
     eleparams.set<bool>("incremental solver", true);
@@ -151,24 +129,17 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementals
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
-
 /*--------------------------------------------------------------------------*
- | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
-| Print information about current time step to screen                   |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
 {
   if (myrank_ == 0 and not micro_scale_)
@@ -181,13 +152,9 @@ void SCATRA::TimIntOneStepTheta::PrintTimeStepInfo()
               << theta_ << ") STEP = " << std::setw(4) << step_ << "/" << std::setw(4) << stepmax_
               << std::endl;
   }
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | set part of the residual vector belonging to the old timestep        |
- |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 {
@@ -196,13 +163,9 @@ void SCATRA::TimIntOneStepTheta::SetOldPartOfRighthandside()
 
   // hist_ = phin_ + dt*(1-Theta)*phidtn_
   hist_->Update(1.0, *phin_, dta_ * (1.0 - theta_), *phidtn_, 0.0);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | perform an explicit predictor step                         gjb 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ExplicitPredictor() const
 {
@@ -211,24 +174,16 @@ void SCATRA::TimIntOneStepTheta::ExplicitPredictor() const
 
   // predict discrete solution variables
   phinp_->Update(dta_, *phidtn_, 1.0);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | add actual Neumann loads                                             |
- | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AddNeumannToResidual()
 {
   residual_->Update(theta_ * dta_, *neumann_loads_, 1.0);
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AVM3Separation()
 {
@@ -240,13 +195,9 @@ void SCATRA::TimIntOneStepTheta::AVM3Separation()
 
   // set fine-scale vector
   discret_->SetState("fsphinp", fsphinp_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | dynamic Smagorinsky model                           rasthofer  08/12 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
 {
@@ -258,13 +209,9 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
     DynSmag_->ApplyFilterForDynamicComputationOfPrt(
         phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | dynamic Smagorinsky model                           krank  09/13     |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
 {
@@ -273,13 +220,9 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCv()
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     Vrem_->ApplyFilterForDynamicComputationOfDt(phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
-
 /*--------------------------------------------------------------------------*
- | add global state vectors specific for time-integration scheme   vg 11/08 |
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
@@ -288,13 +231,9 @@ void SCATRA::TimIntOneStepTheta::AddTimeIntegrationSpecificVectors(bool forcedin
 
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp", phinp_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
 {
@@ -312,14 +251,9 @@ void SCATRA::TimIntOneStepTheta::ComputeTimeDerivative()
   // as stated above. We do not want to set Dirichlet values for
   // dependent values like phidtnp_. This turned out to be inconsistent.
   // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::Update(const int num)
 {
@@ -362,13 +296,9 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
     // loop over macro-scale elements
     discret_->Evaluate(eleparams);
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::OutputRestart() const
 {
@@ -378,13 +308,9 @@ void SCATRA::TimIntOneStepTheta::OutputRestart() const
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
@@ -427,15 +353,10 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
     // loop over macro-scale elements
     discret_->Evaluate(eleparams);
   }
-
-  return;
 }
 
-
-/*-----------------------------------------------------------------------------------------------------------*
- | calculate consistent initial scalar time derivatives in compliance with initial scalar field fang
- 09/15 |
- *-----------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
 {
   // standard general element parameter without stabilization
@@ -457,28 +378,15 @@ void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
   SetElementGeneralParameters(false);
   SetElementTimeParameter(false);
   SetElementTurbulenceParameters(false);
-
-  return;
 }
 
-
 /*--------------------------------------------------------------------*
- | set state on micro scale in multi-scale simulations     fang 11/15 |
  *--------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::SetState(
-    Teuchos::RCP<Epetra_Vector> phin,   //!< micro-scale state vector at old time step
-    Teuchos::RCP<Epetra_Vector> phinp,  //!< micro-scale state vector at new time step
-    Teuchos::RCP<Epetra_Vector>
-        phidtn,  //!< time derivative of micro-scale state vector at old time step
-    Teuchos::RCP<Epetra_Vector>
-        phidtnp,  //!< time derivative of micro-scale state vector at new time step
-    Teuchos::RCP<Epetra_Vector> hist,               //!< micro-scale history vector
-    Teuchos::RCP<IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
-    const std::vector<double>&
-        phinp_macro,   //!< values of state variables at macro-scale Gauss point
-    const int step,    //!< time step
-    const double time  //!< time
-)
+void SCATRA::TimIntOneStepTheta::SetState(Teuchos::RCP<Epetra_Vector> phin,
+    Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidtn,
+    Teuchos::RCP<Epetra_Vector> phidtnp, Teuchos::RCP<Epetra_Vector> hist,
+    Teuchos::RCP<IO::DiscretizationWriter> output, const std::vector<double>& phinp_macro,
+    const int step, const double time)
 {
   phin_ = phin;
   phinp_ = phinp;
@@ -490,13 +398,9 @@ void SCATRA::TimIntOneStepTheta::SetState(
   dq_dphi_.resize(phinp_macro_.size(), 0.);
   step_ = step;
   time_ = time;
-
-  return;
-}  // SCATRA::TimIntOneStepTheta::SetState
-
+}
 
 /*--------------------------------------------------------------------*
- | clear state on micro scale in multi-scale simulations   fang 11/15 |
  *--------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::ClearState()
 {
@@ -509,7 +413,5 @@ void SCATRA::TimIntOneStepTheta::ClearState()
   phinp_macro_.clear();
   dq_dphi_.clear();
   step_ = -1;
-  time_ = 0.;
-
-  return;
-}  // SCATRA::TimIntOneStepTheta::ClearState
+  time_ = 0.0;
+}

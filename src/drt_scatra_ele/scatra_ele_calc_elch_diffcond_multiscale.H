@@ -35,8 +35,8 @@ namespace DRT
 
      private:
       //! abbreviation
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
+      using my = ScaTraEleCalc<distype>;
+      using mydiffcond = ScaTraEleCalcElchDiffCond<distype>;
 
       //! constructor
       ScaTraEleCalcElchDiffCondMultiScale(
@@ -91,34 +91,22 @@ namespace DRT
      public:
       //! constructor
       ScaTraEleDiffManagerElchDiffCondMultiScale(int numscal)
-          : ScaTraEleDiffManagerElchDiffCond(numscal), sigma_(0.)
-      {
-        return;
-      };
-
-      //! destructor
-      virtual ~ScaTraEleDiffManagerElchDiffCondMultiScale() { return; };
+          : ScaTraEleDiffManagerElchDiffCond(numscal), sigma_(0.0){};
 
       //! set electronic conductivity
-      void SetSigma(const double sigma)
-      {
-        sigma_ = sigma;
-        return;
-      };
+      void SetSigma(const double sigma) { sigma_ = sigma; };
 
       //! access electronic conductivity
       double GetSigma() const { return sigma_; };
 
       //! Output of transport parameter (to screen)
-      void OutputTransportParams(const int numscal)
+      void OutputTransportParams(const int numscal) override
       {
         // call base class routine
         ScaTraEleDiffManagerElchDiffCond::OutputTransportParams(numscal);
 
         // additional output
         std::cout << "electronic conductivity:   " << sigma_ << std::endl;
-
-        return;
       };
 
      private:

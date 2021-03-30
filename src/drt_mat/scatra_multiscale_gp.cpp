@@ -28,12 +28,9 @@ std::map<int, Teuchos::RCP<SCATRA::TimIntOneStepTheta>>
 std::map<int, int> MAT::ScatraMultiScaleGP::microdisnum_nummacrogp_map_;
 
 /*--------------------------------------------------------------------*
- | constructor                                             fang 11/15 |
  *--------------------------------------------------------------------*/
-MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(const int ele_id,  //!< macro-scale element ID
-    const int gp_id,                                           //!< macro-scale Gauss point ID
-    const int microdisnum  //!< number of micro-scale discretization
-    )
+MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(
+    const int ele_id, const int gp_id, const int microdisnum)
     : gp_id_(gp_id),
       ele_id_(ele_id),
       eleowner_(DRT::Problem::Instance()->GetDis("scatra")->ElementRowMap()->MyGID(ele_id)),
@@ -47,12 +44,9 @@ MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(const int ele_id,  //!< macro-scale 
       micro_output_(Teuchos::null),
       restartname_("")
 {
-  return;
-}  // MAT::ScatraMultiScaleGP::ScatraMultiScaleGP
-
+}
 
 /*--------------------------------------------------------------------*
- | destructor                                              fang 11/15 |
  *--------------------------------------------------------------------*/
 MAT::ScatraMultiScaleGP::~ScatraMultiScaleGP()
 {
@@ -62,13 +56,9 @@ MAT::ScatraMultiScaleGP::~ScatraMultiScaleGP()
   // once all macro-scale Gauss point submaterials are removed, destruct micro-scale time integrator
   if (microdisnum_nummacrogp_map_[microdisnum_] == 0)
     microdisnum_microtimint_map_[microdisnum_] = Teuchos::null;
-
-  return;
-}  // MAT::ScatraMultiScaleGP::~ScatraMultiScaleGP
-
+}
 
 /*--------------------------------------------------------------------*
- | perform initializations                                 fang 02/16 |
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::Init()
 {
@@ -101,16 +91,20 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // preliminary safety check
     if (DRT::Problem::Instance(microdisnum_)->NDim() != 1)
+    {
       dserror(
           "Must have one-dimensional micro scale in multi-scale simulations of scalar transport "
           "problems!");
+    }
     if (DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(sdyn_macro, "TIMEINTEGR") !=
             INPAR::SCATRA::timeint_one_step_theta or
         DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
             *sdyn_micro, "TIMEINTEGR") != INPAR::SCATRA::timeint_one_step_theta)
+    {
       dserror(
           "Multi-scale calculations for scalar transport only implemented for one-step-theta time "
           "integration scheme!");
+    }
     if (DRT::INPUT::IntegralValue<bool>(sdyn_macro, "SKIPINITDER") !=
         DRT::INPUT::IntegralValue<bool>(*sdyn_micro, "SKIPINITDER"))
       dserror("Flag SKIPINITDER in input file must be equal on macro and micro scales!");
@@ -123,10 +117,12 @@ void MAT::ScatraMultiScaleGP::Init()
           "Must have identical one-step-theta time integration factor on macro and micro scales!");
     if (microdis->NumGlobalElements() == 0)
       dserror("No elements in TRANSPORT ELEMENTS section of micro-scale input file!");
-    if (microdis->gNode(0)->X()[0] != 0.)
+    if (microdis->gNode(0)->X()[0] != 0.0)
+    {
       dserror(
           "Micro-scale domain must have one end at coordinate 0 and the other end at a coordinate "
           "> 0!");
+    }
 
     // extract multi-scale coupling conditions from micro-scale discretization
     std::vector<Teuchos::RCP<DRT::Condition>> conditions;
@@ -137,25 +133,27 @@ void MAT::ScatraMultiScaleGP::Init()
       dserror("Couldn't extract multi-scale coupling condition from micro-scale discretization!");
 
     // loop over all multi-scale coupling conditions
-    for (unsigned icond = 0; icond < conditions.size(); ++icond)
+    for (auto& condition : conditions)
     {
       // extract nodal cloud
-      const std::vector<int>* const nodeids = conditions[icond]->Nodes();
-      if (nodeids == NULL) dserror("Multi-scale coupling condition does not have nodal cloud!");
+      const std::vector<int>* const nodeids = condition->Nodes();
+      if (nodeids == nullptr) dserror("Multi-scale coupling condition does not have nodal cloud!");
 
       // loop over all nodes in nodal cloud
-      for (unsigned inode = 0; inode < (*nodeids).size(); ++inode)
+      for (int inode : *nodeids)
       {
-        if (microdis->NodeRowMap()->MyGID((*nodeids)[inode]))
+        if (microdis->NodeRowMap()->MyGID(inode))
         {
           // extract node from micro-scale discretization
-          DRT::Node* node = microdis->gNode((*nodeids)[inode]);
+          DRT::Node* node = microdis->gNode(inode);
 
           // safety checks
-          if (node == NULL)
-            dserror("Cannot extract node with global ID %d from micro-scale discretization!",
-                (*nodeids)[inode]);
-          if (node->X()[0] <= 0.)
+          if (node == nullptr)
+          {
+            dserror(
+                "Cannot extract node with global ID %d from micro-scale discretization!", inode);
+          }
+          else if (node->X()[0] <= 0.0)
             dserror(
                 "Multi-scale coupling condition must be enforced on a node with coordinate > 0!");
         }
@@ -176,9 +174,11 @@ void MAT::ScatraMultiScaleGP::Init()
 
     // check solver number
     if (linsolvernumber < 0)
+    {
       dserror(
           "No linear solver defined for scalar field in input file for micro scale! Please set "
           "LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
+    }
 
     // create solver
     Teuchos::RCP<LINALG::Solver> solver = Teuchos::rcp(
@@ -220,17 +220,11 @@ void MAT::ScatraMultiScaleGP::Init()
 
   // create new result file
   NewResultFile();
-
-  return;
-}  // MAT::ScatraMultiScaleGP::Init
-
+}
 
 /*--------------------------------------------------------------------*
- | prepare time step                                       fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScaleGP::PrepareTimeStep(
-    const std::vector<double>& phinp_macro  //!< macro-scale state variables
-)
+void MAT::ScatraMultiScaleGP::PrepareTimeStep(const std::vector<double>& phinp_macro)
 {
   // extract micro-scale time integrator
   const Teuchos::RCP<SCATRA::TimIntOneStepTheta>& microtimint =
@@ -248,21 +242,12 @@ void MAT::ScatraMultiScaleGP::PrepareTimeStep(
 
   // increment time step
   ++step_;
-
-  return;
-}  // MAT::ScatraMultiScaleGP::PrepareTimeStep
-
+}
 
 /*--------------------------------------------------------------------*
- | evaluate micro scale                                    fang 11/15 |
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScaleGP::Evaluate(
-    const std::vector<double>& phinp_macro,  //!< macro-scale state variables
-    double& q_micro,                         //!< micro-scale coupling flux
-    std::vector<double>& dq_dphi_micro,      //!< derivatives of micro-scale coupling flux w.r.t.
-                                             //!< macro-scale state variables
-    const bool solve  //!< flag indicating whether micro-scale problem should be solved
-)
+void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
+    std::vector<double>& dq_dphi_micro, const bool solve)
 {
   // extract micro-scale time integrator
   const Teuchos::RCP<SCATRA::TimIntOneStepTheta>& microtimint =
@@ -273,30 +258,30 @@ void MAT::ScatraMultiScaleGP::Evaluate(
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
   if (step_ == 0 or !solve)
+  {
     // only evaluate the micro-scale coupling quantities without solving the entire micro-scale
     // problem relevant for truly partitioned multi-scale simulations or for calculation of initial
     // time derivative of macro-scale state vector
     microtimint->EvaluateMacroMicroCoupling();
+  }
   else
+  {
     // solve micro-scale problem
     // note that it is not necessary to transfer the final micro-scale state vectors back to the
     // Gauss-point submaterial due to RCP usage
     microtimint->Solve();
+  }
 
   // transfer micro-scale coupling quantities to macro scale
   q_micro = -microtimint->Q();
   dq_dphi_micro = microtimint->DqDphi();
-  for (unsigned i = 0; i < dq_dphi_micro.size(); ++i) dq_dphi_micro[i] *= -1.;
+  for (double& dq_dphi_micro_component : dq_dphi_micro) dq_dphi_micro_component *= -1.0;
 
   // clear state in micro-scale time integrator
   microtimint->ClearState();
-
-  return;
-}  // MAT::ScatraMultiScaleGP::Evaluate
-
+}
 
 /*--------------------------------------------------------------------*
- | evaluate mean concentration on micro scale              fang 08/17 |
  *--------------------------------------------------------------------*/
 double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 {
@@ -325,11 +310,9 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
 
   // compute and return mean concentration on micro scale
   return (*integrals)[0] / (*integrals)[1];
-}  // MAT::ScatraMultiScaleGP::EvaluateMeanConcentration
-
+}
 
 /*-------------------------------------------------------------------------*
- | evaluate mean concentration time derivative on micro scale   fang 03/18 |
  *-------------------------------------------------------------------------*/
 double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
 {
@@ -357,11 +340,9 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
 
   // compute and return mean concentration time derivative on micro scale
   return (*integrals)[0] / (*integrals)[1];
-}  // MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative
-
+}
 
 /*------------------------------------------------------------------------------*
- | update micro-scale time integrator at the end of each time step   fang 12/15 |
  *------------------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::Update()
 {
@@ -378,13 +359,9 @@ void MAT::ScatraMultiScaleGP::Update()
 
   // clear state in micro-scale time integrator
   microtimint->ClearState();
-
-  return;
-}  // MAT::ScatraMultiScaleGP::Update
-
+}
 
 /*--------------------------------------------------------------------*
- | create new result file                                  fang 02/16 |
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::NewResultFile()
 {
@@ -459,13 +436,9 @@ void MAT::ScatraMultiScaleGP::NewResultFile()
     micro_output_->WriteMesh(
         step_, DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
   }
-
-  return;
-}  // MAT::ScatraMultiScaleGP::NewResultFile
-
+}
 
 /*--------------------------------------------------------------------*
- | output micro-scale quantities                           fang 02/16 |
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::Output()
 {
@@ -487,13 +460,9 @@ void MAT::ScatraMultiScaleGP::Output()
     // clear state in micro-scale time integrator
     microtimint->ClearState();
   }
-
-  return;
-}  // MAT::ScatraMultiScaleGP::Output
-
+}
 
 /*--------------------------------------------------------------------*
- | read restart on micro scale                             fang 03/16 |
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::ReadRestart()
 {
@@ -518,6 +487,4 @@ void MAT::ScatraMultiScaleGP::ReadRestart()
 
   // clear state in micro-scale time integrator
   microtimint->ClearState();
-
-  return;
-}  // MAT::ScatraMultiScaleGP::ReadRestart
+}

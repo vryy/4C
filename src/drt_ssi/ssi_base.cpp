@@ -710,7 +710,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
           scatra_manifold_node_col_vec.push_back(scatradis->NodeColMap()->GID(lid));
       }
       auto scatra_node_col_map =
-          Teuchos::rcp(new Epetra_Map(-1, scatra_manifold_node_col_vec.size(),
+          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(scatra_manifold_node_col_vec.size()),
               &scatra_manifold_node_col_vec[0], 0, scatradis->Comm()));
 
       // export new distributed column nodes on other fields to enable field coupling

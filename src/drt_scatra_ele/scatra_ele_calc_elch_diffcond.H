@@ -33,9 +33,9 @@ namespace DRT
       ScaTraEleCalcElchDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElch<distype> myelch;
-      typedef ScaTraEleCalcElchElectrode<distype> myelectrode;
+      using my = ScaTraEleCalc<distype>;
+      using myelch = ScaTraEleCalcElch<distype>;
+      using myelectrode = ScaTraEleCalcElchElectrode<distype>;
 
      public:
       /// Singleton access method
@@ -333,15 +333,6 @@ namespace DRT
           const double phinp               //!< scalar at time_(n+1)
       );
 
-      //! get conductivity
-      void GetConductivity(const enum INPAR::ELCH::EquPot
-                               equpot,  //!< type of closing equation for electric potential
-          double& sigma_all,            //!< conductivity of electrolyte solution
-          std::vector<double>&
-              sigma,    //!< conductivity or a single ion + overall electrolyte solution
-          bool effCond  //!< flag if effective conductivity should be calculated
-      );
-
       //!  calculate weighted mass flux (no reactive flux so far) -> elch-specific implementation
       void CalculateFlux(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k
           const INPAR::SCATRA::FluxType fluxtype,         //!< type fo flux
@@ -419,8 +410,8 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCond : public ScaTraEleDiffManagerElchElectrode
     {
      public:
-      typedef ScaTraEleDiffManagerElch dmelch;
-      typedef ScaTraEleDiffManagerElchElectrode dmelectrode;
+      using dmelch = ScaTraEleDiffManagerElch;
+      using dmelectrode = ScaTraEleDiffManagerElchElectrode;
 
       ScaTraEleDiffManagerElchDiffCond(int numscal)
           : ScaTraEleDiffManagerElchElectrode(numscal),
@@ -434,17 +425,14 @@ namespace DRT
             eps_(1, 1.0),
             tort_(1, 1.0)
       {
-        return;
       }
-
-      virtual ~ScaTraEleDiffManagerElchDiffCond() { return; };
 
       /*========================================================================*/
       //! @name access methods for transport parameter
       /*========================================================================*/
 
       //! set valence and related parameters for single ionic species
-      void SetValence(const double valence, const int k)
+      void SetValence(const double valence, const int k) override
       {
         // call base class routine
         dmelch::SetValence(valence, k);
@@ -454,16 +442,10 @@ namespace DRT
         // set additional parameters involving inverse of valence
         invval_[k] = 1. / valence;
         invfval_[k] = 1. / faraday / valence;
-
-        return;
       };
 
       //! Set transference numbers with respect to single ionic species
-      void SetTransNum(const double transnum, const int k)
-      {
-        transnum_[k] = transnum;
-        return;
-      };
+      void SetTransNum(const double transnum, const int k) { transnum_[k] = transnum; };
 
       //! Access routine for transference numbers with respect to single ionic species
       double GetTransNum(const int k) { return transnum_[k]; };
@@ -472,18 +454,13 @@ namespace DRT
       void SetDerivTransNum(const double derivtransnum, const int k, const int iscal)
       {
         (derivtransnum_[k])[iscal] = derivtransnum;
-        return;
       };
 
       //! Access routine for derivative of transference numbers with respect to concentrations
       double GetDerivTransNum(const int k, const int iscal) { return (derivtransnum_[k])[iscal]; };
 
       //! Set thermodynamic factor for a specific electrolyte solution
-      void SetThermFac(const double thermfac)
-      {
-        thermfac_ = thermfac;
-        return;
-      };
+      void SetThermFac(const double thermfac) { thermfac_ = thermfac; };
 
       //! Access routine for the thermodynamic factor for a specific electrolyte solution
       double GetThermFac() { return thermfac_; };
@@ -492,7 +469,6 @@ namespace DRT
       void SetDerivThermFac(const double derivthermfac, const int k)
       {
         derivthermfac_[k] = derivthermfac;
-        return;
       };
 
       //! Access routine for derivative of thermodynamic factor with respect to concentrations
@@ -511,8 +487,6 @@ namespace DRT
         }
 
         cond_ = cond;
-
-        return;
       };
 
       //! Calculate transference numbers based on diffusion coefficients
@@ -533,17 +507,20 @@ namespace DRT
           for (int iscal = 0; iscal < numscal; ++iscal)
           {
             if (k == iscal)
+            {
               (derivtransnum_[k])[iscal] =
                   (valence_[k] * valence_[k] * diff_[k] *
                       (sum - valence_[k] * valence_[k] * diff_[k] * conint[k])) /
                   denomin;
+            }
             else
+            {
               (derivtransnum_[k])[iscal] = (-valence_[k] * valence_[k] * diff_[k] * conint[k] *
                                                valence_[iscal] * valence_[iscal] * diff_[iscal]) /
                                            denomin;
+            }
           }
         }
-        return;
       };
 
       double InvFVal(const int k) const { return invfval_[k]; };
@@ -554,23 +531,12 @@ namespace DRT
       /*========================================================================*/
 
       //! Set transference numbers with respect to single ionic species
-      void SetPhasePoro(const double eps, const int phase)
-      {
-        eps_[phase] = eps;
-        return;
-      }
+      void SetPhasePoro(const double eps, const int phase) { eps_[phase] = eps; }
 
       double GetPhasePoro(const int phase) const { return eps_[phase]; };
 
       //! Set transference numbers with respect to single ionic species
-      void SetPhaseTort(const double tort, const int phase)
-      {
-        tort_[phase] = tort;
-        return;
-      }
-
-      // get geometrical parameter: tortuosity
-      double GetPhaseTort(const int phase) const { return tort_[phase]; };
+      void SetPhaseTort(const double tort, const int phase) { tort_[phase] = tort; }
 
       // get geometrical parameter: porosity*tortuosity
       double GetPhasePoroTort(const int phase) const
@@ -584,7 +550,7 @@ namespace DRT
       /*========================================================================*/
 
       //! Output of transport parameter (to screen)
-      virtual void OutputTransportParams(const int numscal)
+      void OutputTransportParams(const int numscal) override
       {
         // call base class routine
         dmelectrode::OutputTransportParams(numscal);
@@ -618,8 +584,6 @@ namespace DRT
 
         std::cout << "tortuosity species" << 0 << ":   " << tort_[0] << std::endl;
         std::cout << std::endl;
-
-        return;
       };
 
      private:
@@ -666,9 +630,9 @@ namespace DRT
         : public ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>
     {
      public:
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> vm;
-      typedef ScaTraEleInternalVariableManagerElch<NSD, NEN> vmelch;
-      typedef ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN> vmelectrode;
+      using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
+      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
+      using vmelectrode = ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>;
 
       ScaTraEleInternalVariableManagerElchDiffCond(int numscal,
           const DRT::ELEMENTS::ScaTraEleParameterElch* elchparams,
@@ -679,10 +643,7 @@ namespace DRT
             rtffc_(0.),
             curint_(true)
       {
-        return;
       }
-
-      virtual ~ScaTraEleInternalVariableManagerElchDiffCond() { return; };
 
       //! compute and set internal variables only used by the Diffusion-Conduction formulation
       void SetInternalVariablesElchDiffCond(
@@ -703,7 +664,7 @@ namespace DRT
             funct, derxy, ephinp, ephin, econvelnp, ehist);
 
         // set constant parameter RT/F
-        rtf_ = 1. / vmelch::frt_;
+        rtf_ = 1.0 / vmelch::frt_;
 
         // set constant parameter RT/(F^2*Newman_const_C)
         rtffc_ = rtf_ * vmelectrode::invf_ / diffcondparams_->NewmanConstC();
@@ -711,8 +672,6 @@ namespace DRT
         if (diffcondparams_->CurSolVar())
           for (unsigned idim = 0; idim < NSD; ++idim)
             curint_(idim, 0) = ephinp[vm::numscal_ + 1 + idim].Dot(funct);
-
-        return;
       };
 
       /*========================================================================*/

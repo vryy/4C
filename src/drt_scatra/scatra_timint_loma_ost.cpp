@@ -15,17 +15,13 @@
 #include "../drt_scatra_ele/scatra_ele_action.H"
 #include "turbulence_hit_scalar_forcing.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_fluid_turbulence/dyn_smag.H"
 #include "../drt_fluid_turbulence/dyn_vreman.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                       vg 11/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntLomaOST::TimIntLomaOST(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
@@ -38,12 +34,9 @@ SCATRA::TimIntLomaOST::TimIntLomaOST(Teuchos::RCP<DRT::Discretization> actdis,
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  initialize time integration                             rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::Init()
 {
@@ -51,13 +44,9 @@ void SCATRA::TimIntLomaOST::Init()
   // note: this order is important
   TimIntOneStepTheta::Init();
   ScaTraTimIntLoma::Init();
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  setup time integration                                  rauch 09/16 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::Setup()
 {
@@ -65,35 +54,9 @@ void SCATRA::TimIntLomaOST::Setup()
   // note: this order is important
   TimIntOneStepTheta::Setup();
   ScaTraTimIntLoma::Setup();
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     vg 11/08 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntLomaOST::~TimIntLomaOST() { return; }
-
-
-/*----------------------------------------------------------------------*
- | predict thermodynamic pressure and time derivative          vg 12/08 |
- *----------------------------------------------------------------------*/
-void SCATRA::TimIntLomaOST::PredictThermPressure()
-{
-  // same-thermodynamic-pressure predictor (not required to be performed,
-  // since we just updated the thermodynamic pressure, and thus,
-  // thermpressnp_ = thermpressn_)
-
-  // same-thermodynamic-pressure-derivative predictor (currently not used)
-  // thermpressnp_ += dta_*thermpressdtn_;
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | dynamic Smagorinsky model                           rasthofer  08/12 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::DynamicComputationOfCs()
 {
@@ -105,13 +68,9 @@ void SCATRA::TimIntLomaOST::DynamicComputationOfCs()
     DynSmag_->ApplyFilterForDynamicComputationOfPrt(
         phinp_, thermpressnp_, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | dynamic Smagorinsky model                           krank  09/13     |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::DynamicComputationOfCv()
 {
@@ -121,25 +80,17 @@ void SCATRA::TimIntLomaOST::DynamicComputationOfCv()
     Vrem_->ApplyFilterForDynamicComputationOfDt(
         phinp_, thermpressnp_, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- | add thermodynamic pressure to parameter list for element evaluation rasthofer 12/13 |
  *-------------------------------------------------------------------------------------*/
-void SCATRA::TimIntLomaOST::AddThermPressToParameterList(
-    Teuchos::ParameterList& params  //!< parameter list
-)
+void SCATRA::TimIntLomaOST::AddThermPressToParameterList(Teuchos::ParameterList& params)
 {
   params.set("thermodynamic pressure", thermpressnp_);
   params.set("time derivative of thermodynamic pressure", thermpressdtnp_);
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | compute thermodynamic pressure for low-Mach-number flow     vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::ComputeThermPressure()
 {
@@ -188,11 +139,11 @@ void SCATRA::TimIntLomaOST::ComputeThermPressure()
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
   std::vector<std::string> condnames;
-  condnames.push_back("ScaTraFluxCalc");
-  for (unsigned int i = 0; i < condnames.size(); i++)
+  condnames.emplace_back("ScaTraFluxCalc");
+  for (auto& condname : condnames)
   {
     discret_->EvaluateCondition(eleparams, Teuchos::null, Teuchos::null, Teuchos::null,
-        Teuchos::null, Teuchos::null, condnames[i]);
+        Teuchos::null, Teuchos::null, condname);
   }
 
   // get integral values on this proc
@@ -229,13 +180,9 @@ void SCATRA::TimIntLomaOST::ComputeThermPressure()
                  "------------+"
               << std::endl;
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | compute time derivative of thermodynamic pressure           vg 09/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::ComputeThermPressureTimeDerivative()
 {
@@ -244,33 +191,22 @@ void SCATRA::TimIntLomaOST::ComputeThermPressureTimeDerivative()
   double fact1 = 1.0 / (theta_ * dta_);
   double fact2 = (theta_ - 1.0) / theta_;
   thermpressdtnp_ = fact1 * (thermpressnp_ - thermpressn_) + fact2 * thermpressdtn_;
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | update thermodynamic pressure at n for low-Mach-number flow vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::UpdateThermPressure()
 {
   thermpressn_ = thermpressnp_;
   thermpressdtn_ = thermpressdtnp_;
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::OutputRestart() const
 {
   // do standard output
   TimIntOneStepTheta::OutputRestart();
-
-  // write additional restart data for loma
-  // required for restart of closed systems
 
   // thermodynamic pressure at time n+1
   output_->WriteDouble("thermpressnp", thermpressnp_);
@@ -282,21 +218,14 @@ void SCATRA::TimIntLomaOST::OutputRestart() const
   output_->WriteDouble("thermpressdtn", thermpressdtn_);
   // as well as initial mass
   output_->WriteDouble("initialmass", initialmass_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntLomaOST::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
   // do standard output
   TimIntOneStepTheta::ReadRestart(step, input);
-
-  // restart data of loma problems
-  // required for restart of closed systems
 
   Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
@@ -314,6 +243,4 @@ void SCATRA::TimIntLomaOST::ReadRestart(const int step, Teuchos::RCP<IO::InputCo
   thermpressdtn_ = reader->ReadDouble("thermpressdtn");
   // as well as initial mass
   initialmass_ = reader->ReadDouble("initialmass");
-
-  return;
 }
