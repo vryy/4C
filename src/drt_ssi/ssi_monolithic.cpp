@@ -174,8 +174,9 @@ void SSI::SSIMono::AssembleMatAndRHS()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatScaTra()
 {
-  // assemble scatra block into system matrix
-  strategy_assemble_->AssembleScatra(ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraMatrix());
+  // assemble scatra-scatra block into system matrix
+  strategy_assemble_->AssembleScatraScatra(
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraMatrix());
 
   // assemble scatra-structure block into system matrix
   strategy_assemble_->AssembleScatraStructure(
@@ -186,35 +187,35 @@ void SSI::SSIMono::AssembleMatScaTra()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatScaTraManifold()
 {
-  // assemble manifold block into system matrix
-  strategy_assemble_->AssembleScaTraManifold(
+  // assemble scatra manifold - scatra manifold block into system matrix
+  strategy_assemble_->AssembleScatramanifoldScatramanifold(
       ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
 
-  // assemble manifold-structure block into system matrix
-  strategy_assemble_->AssembleScaTraManifoldStructure(
+  // assemble scatra manifold-structure block into system matrix
+  strategy_assemble_->AssembleScatramanifoldStructure(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureMatrix());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
   // manifold side
-  strategy_assemble_->AssembleScaTraManifold(
+  strategy_assemble_->AssembleScatramanifoldScatramanifold(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->SystemMatrixManifold());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
   // scatra side
-  strategy_assemble_->AssembleScatra(
+  strategy_assemble_->AssembleScatraScatra(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->SystemMatrixScaTra());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
   // scatra side
-  strategy_assemble_->AssembleScatraScaTraManifold(
+  strategy_assemble_->AssembleScatraScatramanifold(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixScaTraManifold());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
   // manifold side
-  strategy_assemble_->AssembleScaTraManifoldScatra(
+  strategy_assemble_->AssembleScatramanifoldScatra(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixManifoldScatra());
 
-  strategy_assemble_->AssembleScaTraManifoldStructure(
+  strategy_assemble_->AssembleScatramanifoldStructure(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixManifoldStructure());
 
   strategy_assemble_->AssembleScatraStructure(
@@ -228,8 +229,8 @@ void SSI::SSIMono::AssembleMatStructure()
   strategy_assemble_->AssembleStructureScatra(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureScaTraMatrix());
 
-  // assemble structure block into system matrix
-  strategy_assemble_->AssembleStructure(
+  // assemble structure-structure block into system matrix
+  strategy_assemble_->AssembleStructureStructure(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->StructureMatrix());
 }
 
