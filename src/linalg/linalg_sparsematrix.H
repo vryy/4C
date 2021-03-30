@@ -171,9 +171,6 @@ namespace LINALG
      */
     SparseMatrix(const SparseMatrix& mat, DataAccess access = Copy);
 
-    /// Destructor
-    virtual ~SparseMatrix();
-
     /// Assignment operator. Makes a deep copy.
     SparseMatrix& operator=(const SparseMatrix& mat);
 
@@ -520,7 +517,7 @@ namespace LINALG
         const MultiMapExtractor& domainmaps, const MultiMapExtractor& rangemaps) const;
 
     /// binary dump of matrix for debugging
-    void Dump(std::string filename);
+    void Dump(const std::string& filename);
 
     /// load a dump
     void Load(const Epetra_Comm& comm, std::string& filename);
@@ -574,7 +571,13 @@ namespace LINALG
 
   Teuchos::RCP<LINALG::SparseMatrix> Eye(const Epetra_Map& map);
 
-  //! Cast matrix of type SparseOperator to SparseMatrix and check if cast was successful
+  //! Cast matrix of type SparseOperator to const SparseMatrix and check in debug mode if cast was
+  //! successful
+  Teuchos::RCP<const LINALG::SparseMatrix> CastToConstSparseMatrixAndCheckSuccess(
+      Teuchos::RCP<const LINALG::SparseOperator> input_matrix);
+
+  //! Cast matrix of type SparseOperator to SparseMatrix and check in debug mode if cast was
+  //! successful
   Teuchos::RCP<LINALG::SparseMatrix> CastToSparseMatrixAndCheckSuccess(
       Teuchos::RCP<LINALG::SparseOperator> input_matrix);
 }  // namespace LINALG

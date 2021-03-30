@@ -11,7 +11,6 @@
 #include "linalg_sparsematrix.H"
 #include "linalg_utils_sparse_algebra_math.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
-#include "../drt_lib/drt_dserror.H"
 
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <EpetraExt_MatrixMatrix.h>
@@ -91,8 +90,10 @@ LINALG::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAc
     if (matrixtype_ == CRS_MATRIX)
       sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*matrix));
     else if (matrixtype_ == FE_MATRIX)
+    {
       sysmat_ = Teuchos::rcp(
           new Epetra_FECrsMatrix(*(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix))));
+    }
     else
       dserror("matrix type is not correct");
   }
@@ -211,11 +212,6 @@ bool LINALG::SparseMatrix::Destroy(bool throw_exception)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::SparseMatrix::~SparseMatrix() {}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
 {
   explicitdirichlet_ = mat.explicitdirichlet_;
@@ -236,8 +232,10 @@ LINALG::SparseMatrix& LINALG::SparseMatrix::operator=(const SparseMatrix& mat)
     if (matrixtype_ == CRS_MATRIX)
       sysmat_ = Teuchos::rcp(new Epetra_CrsMatrix(*mat.sysmat_));
     else if (matrixtype_ == FE_MATRIX)
+    {
       sysmat_ =
           Teuchos::rcp(new Epetra_FECrsMatrix(dynamic_cast<Epetra_FECrsMatrix&>(*mat.sysmat_)));
+    }
     else
       dserror("matrix type is not correct");
   }
@@ -334,7 +332,7 @@ void LINALG::SparseMatrix::Reset()
 
   if (Filled())
   {
-    for (unsigned i = 0; i < numentries.size(); ++i)
+    for (std::size_t i = 0; i < numentries.size(); ++i)
     {
       int* indices;
       int err = graph.ExtractMyRowView(i, numentries[i], indices);
@@ -345,7 +343,7 @@ void LINALG::SparseMatrix::Reset()
   {
     // use information about number of allocated entries not to fall back to matrix with zero size
     // otherwise assembly would be extremely expensive!
-    for (unsigned i = 0; i < numentries.size(); ++i)
+    for (std::size_t i = 0; i < numentries.size(); ++i)
     {
       numentries[i] = graph.NumAllocatedMyIndices(i);
     }
@@ -388,7 +386,7 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
   const Epetra_Map& colmap = sysmat_->ColMap();
 
   //-----------------------------------------------------------------------------------
-  Epetra_SerialDenseMatrix& A = (Epetra_SerialDenseMatrix&)Aele;
+  auto& A = (Epetra_SerialDenseMatrix&)Aele;
   if (sysmat_->Filled())  // assembly in local indices
   {
 #ifdef DEBUG
@@ -464,7 +462,9 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
         if (stride + pos > length)
           continuous = false;
         else
+        {
           for (int j = 1; j < stride; ++j)
+          {
             if (indices[pos + j] == localcol[dofcount + j])
               continue;
             else
@@ -472,6 +472,8 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
               continuous = false;
               break;
             }
+          }
+        }
 
         if (continuous)
         {
@@ -554,7 +556,6 @@ void LINALG::SparseMatrix::Assemble(int eid, const std::vector<int>& lmstride,
     }    // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
 #endif
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -662,7 +663,6 @@ void LINALG::SparseMatrix::Assemble(int eid, const Epetra_SerialDenseMatrix& Ael
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
     }    // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -698,7 +698,6 @@ void LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
       FEAssemble(val, rgid, cgid);
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -726,7 +725,6 @@ void LINALG::SparseMatrix::FEAssemble(const Epetra_SerialDenseMatrix& Aele,
       FEAssemble(val, rgid, cgid);
     }
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1452,14 +1450,14 @@ void LINALG::SparseMatrix::Put(
     dserror("Please check code and see wether it is save to apply it to matrix type %d",
         A.GetMatrixtype());
   Epetra_CrsMatrix* Aprime = const_cast<Epetra_CrsMatrix*>(&(*(A.EpetraMatrix())));
-  if (Aprime == NULL) dserror("Cast failed");
+  if (Aprime == nullptr) dserror("Cast failed");
 
   // Loop over Aprime's rows, extract row content and replace respective row in sysmat
   const int MaxNumEntries = EPETRA_MAX(Aprime->MaxNumEntries(), sysmat_->MaxNumEntries());
 
   // define row map to tackle
   // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is perfomed
-  const Epetra_Map* tomap = NULL;
+  const Epetra_Map* tomap = nullptr;
   if (rowmap != Teuchos::null)
     tomap = &(*rowmap);
   else
@@ -1483,13 +1481,11 @@ void LINALG::SparseMatrix::Put(
     err = sysmat_->ReplaceGlobalValues(Row, NumEntries, &(Values[0]), &(Indices[0]));
     if (err) dserror("Epetra_CrsMatrix::ReplaceGlobalValues returned err=%d", err);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void LINALG::SparseMatrix::Dump(std::string filename)
+void LINALG::SparseMatrix::Dump(const std::string& filename)
 {
   int MyRow;
   int NumEntries;
@@ -1711,13 +1707,14 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
     }
     //#ifdef DEBUG
     if (err1 < 0 || err2 < 0)
+    {
       dserror(
           "SparseMatrix::Split2x2: Epetra_CrsMatrix::InsertGlobalValues returned err1=%d / err2=%d",
           err1, err2);
+    }
     //#endif
   }  // for (int i=0; i<A->NumMyRows(); ++i)
   // Do not complete BlockMatrix
-  return;
 }
 
 
@@ -1730,15 +1727,17 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::SparseMatrix::SplitMxN");
 
   // extract number of row/column blocks
-  const unsigned M = ABlock.Rows();
-  const unsigned N = ABlock.Cols();
+  const int M = ABlock.Rows();
+  const int N = ABlock.Cols();
 
   // safety checks
   if (!Filled()) dserror("SparseMatrix must be filled before splitting!");
-  for (unsigned m = 0; m < M; ++m)
-    for (unsigned n = 0; n < N; ++n)
+  for (int m = 0; m < M; ++m)
+  {
+    for (int n = 0; n < N; ++n)
       if (ABlock(m, n).EpetraMatrix()->Filled())
         dserror("BlockSparseMatrixBase must not be filled before splitting!");
+  }
 
   // extract EpetraMatrix
   const Epetra_CrsMatrix& A = *EpetraMatrix();
@@ -1754,7 +1753,7 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
     if (colgid < 0) dserror("Couldn't find local column ID %d in domain map!", collid);
 
     // determine block ID of BlockSparseMatrixBase associated with current column
-    unsigned n(0);
+    int n(0);
     for (n = 0; n < N; ++n)
     {
       if (ABlock.DomainMap(n).MyGID(colgid))
@@ -1781,8 +1780,8 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
   {
     // extract current row of SparseMatrix
     int numentries(0);
-    double* values(NULL);
-    int* indices(NULL);
+    double* values(nullptr);
+    int* indices(nullptr);
     if (A.ExtractMyRowView(rowlid, numentries, values, indices))
       dserror("Row of SparseMatrix couldn't be extracted during splitting!");
 
@@ -1797,7 +1796,7 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
       if (collid >= selector.MyLength()) dserror("Invalid local column ID %d!", collid);
 
       // assign current matrix entry to associated block of BlockSparseMatrixBase
-      const int blockid = selector[collid];
+      const int blockid = static_cast<int>(selector[collid]);
       colgids[blockid][counters[blockid]] = A.ColMap().GID(collid);
       rowvalues[blockid][counters[blockid]++] = values[j];
     }
@@ -1806,23 +1805,27 @@ void LINALG::SparseMatrix::SplitMxN(BlockSparseMatrixBase& ABlock) const
     const int rowgid = A.GRID(rowlid);
 
     // fill current row of BlockSparseMatrixBase by copying row entries of SparseMatrix
-    unsigned m(0);
+    int m(0);
     for (m = 0; m < M; ++m)
+    {
       if (ABlock.RangeMap(m).MyGID(rowgid))
       {
-        for (unsigned n = 0; n < N; ++n)
+        for (int n = 0; n < N; ++n)
+        {
           if (counters[n])
+          {
             if (ABlock(m, n).EpetraMatrix()->InsertGlobalValues(
                     rowgid, counters[n], &rowvalues[n][0], &colgids[n][0]))
               dserror("Couldn't insert matrix entries into BlockSparseMatrixBase!");
+          }
+        }
         break;
       }
+    }
 
     // safety check
     if (m == M) dserror("Matrix row was not found in BlockSparseMatrixBase!");
   }  // loop over matrix rows
-
-  return;
 }
 
 
@@ -1833,8 +1836,10 @@ std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::SparseMatrix& m
   if (mat.GetMatrixtype() == SparseMatrix::CRS_MATRIX)
     os << *(const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix());
   else if (mat.GetMatrixtype() == SparseMatrix::FE_MATRIX)
+  {
     os << *(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(
         const_cast<LINALG::SparseMatrix&>(mat).EpetraMatrix()));
+  }
   else
     dserror("matrixtype does not exist");
   return os;
@@ -1943,7 +1948,18 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::CastToSparseMatrixAndCheckSuccess(
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto sparse_matrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(input_matrix);
-  if (sparse_matrix == Teuchos::null) dserror("Matrix is not a sparse matrix!");
+  dsassert(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
+
+  return sparse_matrix;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::SparseMatrix> LINALG::CastToConstSparseMatrixAndCheckSuccess(
+    Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
+{
+  auto sparse_matrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(input_matrix);
+  dsassert(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
 }

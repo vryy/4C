@@ -11,7 +11,6 @@
 #include "linalg_blocksparsematrix.H"
 #include "linalg_utils_sparse_algebra_manipulation.H"
 #include "linalg_utils_densematrix_communication.H"
-#include "../drt_lib/drt_dserror.H"
 
 #include <EpetraExt_Transpose_RowMatrix.h>
 #include <EpetraExt_MatrixMatrix.h>
@@ -31,7 +30,7 @@ LINALG::BlockSparseMatrixBase::BlockSparseMatrixBase(const MultiMapExtractor& do
   {
     for (int c = 0; c < Cols(); ++c)
     {
-      blocks_.push_back(SparseMatrix(RangeMap(r), npr, explicitdirichlet, savegraph));
+      blocks_.emplace_back(RangeMap(r), npr, explicitdirichlet, savegraph);
     }
   }
 }
@@ -43,11 +42,11 @@ bool LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_blocks)
 {
   /// destroy matrix blocks
   unsigned cblock = 0;
-  for (std::vector<SparseMatrix>::iterator it = blocks_.begin(); it != blocks_.end(); ++it)
+  for (auto& block : blocks_)
   {
     try
     {
-      it->Destroy(throw_exception_for_blocks);
+      block.Destroy(throw_exception_for_blocks);
       ++cblock;
     }
     catch (const std::runtime_error& e)
@@ -59,18 +58,18 @@ bool LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_blocks)
   }
   /// destroy full matrix row map
   if (fullrowmap_.strong_count() > 1)
-    dserror(
-        "fullrowmap_ cannot be finally deleted - any RCP (%i>1) still "
-        "points to it",
+  {
+    dserror("fullrowmap_ cannot be finally deleted - any RCP (%i>1) still points to it",
         fullrowmap_.strong_count());
+  }
   fullrowmap_ = Teuchos::null;
 
   /// destroy full matrix column map
   if (fullcolmap_.strong_count() > 1)
-    dserror(
-        "fullrowmap_ cannot be finally deleted - any RCP (%i>1) still "
-        "points to it",
+  {
+    dserror("fullrowmap_ cannot be finally deleted - any RCP (%i>1) still points to it",
         fullrowmap_.strong_count());
+  }
   fullcolmap_ = Teuchos::null;
 
   return true;
@@ -88,9 +87,9 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::BlockSparseMatrixBase::Merge(
 
   Teuchos::RCP<SparseMatrix> sparse =
       Teuchos::rcp(new SparseMatrix(*fullrowmap_, m00.MaxNumEntries(), explicitdirichlet));
-  for (unsigned i = 0; i < blocks_.size(); ++i)
+  for (const auto& block : blocks_)
   {
-    sparse->Add(blocks_[i], false, 1.0, 1.0);
+    sparse->Add(block, false, 1.0, 1.0);
   }
   if (Filled())
   {
@@ -115,7 +114,7 @@ void LINALG::BlockSparseMatrixBase::Assign(int r, int c, DataAccess access, cons
  *----------------------------------------------------------------------*/
 void LINALG::BlockSparseMatrixBase::Zero()
 {
-  for (unsigned i = 0; i < blocks_.size(); ++i) blocks_[i].Zero();
+  for (auto& block : blocks_) block.Zero();
 }
 
 
@@ -182,8 +181,8 @@ void LINALG::BlockSparseMatrixBase::Complete(
  *----------------------------------------------------------------------*/
 bool LINALG::BlockSparseMatrixBase::Filled() const
 {
-  for (unsigned i = 0; i < blocks_.size(); ++i)
-    if (not blocks_[i].Filled()) return false;
+  for (const auto& block : blocks_)
+    if (not block.Filled()) return false;
   return true;
 }
 
@@ -192,7 +191,7 @@ bool LINALG::BlockSparseMatrixBase::Filled() const
  *----------------------------------------------------------------------*/
 void LINALG::BlockSparseMatrixBase::UnComplete()
 {
-  for (unsigned i = 0; i < blocks_.size(); ++i) blocks_[i].UnComplete();
+  for (auto& block : blocks_) block.UnComplete();
 }
 
 
@@ -255,7 +254,7 @@ bool LINALG::BlockSparseMatrixBase::IsDbcApplied(
  *----------------------------------------------------------------------*/
 int LINALG::BlockSparseMatrixBase::SetUseTranspose(bool UseTranspose)
 {
-  for (unsigned i = 0; i < blocks_.size(); ++i) blocks_[i].SetUseTranspose(UseTranspose);
+  for (auto& block : blocks_) block.SetUseTranspose(UseTranspose);
   usetranspose_ = UseTranspose;
   return 0;
 }
@@ -439,7 +438,7 @@ void LINALG::BlockSparseMatrixBase::GetPartialExtractor(const MultiMapExtractor&
   std::vector<Teuchos::RCP<const Epetra_Map>> p_block_maps;
   p_block_maps.reserve(num_blocks);
 
-  for (const unsigned id : block_ids)
+  for (const int id : block_ids)
   {
     p_block_maps.push_back(full_extractor.Map(id));
 
@@ -517,8 +516,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> LINA
   std::vector<Teuchos::RCP<const Epetra_Map>> range_maps;
   range_maps.reserve(2);
 
-  range_maps.push_back(Teuchos::rcp(new Epetra_Map(A00.RangeMap())));
-  range_maps.push_back(Teuchos::rcp(new Epetra_Map(A10.RangeMap())));
+  range_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A00.RangeMap())));
+  range_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A10.RangeMap())));
   Teuchos::RCP<const Epetra_Map> range_map = MultiMapExtractor::MergeMaps(range_maps);
   Teuchos::RCP<MultiMapExtractor> rangeMMex =
       Teuchos::rcp(new MultiMapExtractor(*range_map, range_maps));
@@ -527,8 +526,8 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> LINA
   std::vector<Teuchos::RCP<const Epetra_Map>> domain_maps;
   domain_maps.reserve(2);
 
-  domain_maps.push_back(Teuchos::rcp(new Epetra_Map(A00.DomainMap())));
-  domain_maps.push_back(Teuchos::rcp(new Epetra_Map(A01.DomainMap())));
+  domain_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A00.DomainMap())));
+  domain_maps.emplace_back(Teuchos::rcp(new Epetra_Map(A01.DomainMap())));
   Teuchos::RCP<const Epetra_Map> domain_map = MultiMapExtractor::MergeMaps(domain_maps);
   Teuchos::RCP<MultiMapExtractor> domainMMex =
       Teuchos::rcp(new MultiMapExtractor(*domain_map, domain_maps));
@@ -554,6 +553,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>> LINA
 std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::BlockSparseMatrixBase& mat)
 {
   for (int i = 0; i < mat.Rows(); ++i)
+  {
     for (int j = 0; j < mat.Cols(); ++j)
     {
       if (mat.Comm().MyPID() == 0)
@@ -562,6 +562,7 @@ std::ostream& LINALG::operator<<(std::ostream& os, const LINALG::BlockSparseMatr
       fflush(stdout);
       os << mat(i, j);
     }
+  }
   return os;
 }
 
@@ -618,7 +619,7 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 
   std::vector<int> cpidlist(cgidlist.size());
 
-  int err = mat_.FullDomainMap().RemoteIDList(cgidlist.size(), &cgidlist[0], &cpidlist[0], NULL);
+  int err = mat_.FullDomainMap().RemoteIDList(cgidlist.size(), &cgidlist[0], &cpidlist[0], nullptr);
   if (err != 0) dserror("RemoteIDList failed");
 
   const Epetra_Comm& comm = mat_.FullRangeMap().Comm();
@@ -699,22 +700,20 @@ void LINALG::DefaultBlockMatrixStrategy::Complete()
 
   // and finally do the assembly of ghost entries
 
-  for (std::map<int, std::map<int, double>>::iterator irow = ghost_.begin(); irow != ghost_.end();
-       ++irow)
+  for (auto& irow : ghost_)
   {
     // most stupid way to find the right row
-    int rgid = irow->first;
+    int rgid = irow.first;
     int rblock = RowBlock(rgid);
     if (rblock == -1) dserror("row finding panic");
 
-    for (std::map<int, double>::iterator icol = irow->second.begin(); icol != irow->second.end();
-         ++icol)
+    for (auto& icol : irow.second)
     {
-      int cgid = icol->first;
+      int cgid = icol.first;
       if (ghostmap.find(cgid) == ghostmap.end()) dserror("unknown ghost gid %d", cgid);
 
       int cblock = ghostmap[cgid];
-      double val = icol->second;
+      double val = icol.second;
 
       SparseMatrix& matrix = mat_.Matrix(rblock, cblock);
       matrix.Assemble(val, rgid, cgid);
@@ -730,7 +729,19 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> LINALG::CastToBlockSparseMatrixBaseA
     Teuchos::RCP<LINALG::SparseOperator> input_matrix)
 {
   auto block_matrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(input_matrix);
-  if (block_matrix == Teuchos::null) dserror("Matrix is not a block matrix!");
+  dsassert(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
+
+  return block_matrix;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::BlockSparseMatrixBase>
+LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
+    Teuchos::RCP<const LINALG::SparseOperator> input_matrix)
+{
+  auto block_matrix = Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(input_matrix);
+  dsassert(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
 
   return block_matrix;
 }
