@@ -196,7 +196,8 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "LINEAR_SOLVER", -1, "linear solver for scalar transport on manifold", &ssidynmanifold);
 
   BoolParameter("OUTPUT_INFLOW", "no",
-      "write output of inflow of manifold - scatra coupling into scatra manifold to csv file",
+      "write output of inflow of scatra manifold - scatra coupling into scatra manifold to csv "
+      "file",
       &ssidynmanifold);
 }
 

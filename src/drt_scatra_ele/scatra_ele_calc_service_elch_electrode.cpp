@@ -541,7 +541,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcManifoldIn
         {
           const double jfac = fac * j;
 
-          for (unsigned i = 0; i < nen; i++)
+          for (int i = 0; i < nen; i++)
           {
             const double jfac_funct = jfac * my::funct_(i);
             scalars[0] += jfac_funct;                  // concentration

@@ -1231,5 +1231,5 @@ void SSI::SSIMono::PrepareOutput()
 
   // prepare output of coupling sctra manifold - scatra
   if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())
-    manifoldscatraflux_->EvaluateManifoldInflow();
+    manifoldscatraflux_->EvaluateScaTraManifoldInflow();
 }

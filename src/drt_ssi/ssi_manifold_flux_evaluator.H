@@ -77,7 +77,7 @@ namespace SSI
     }
 
     //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
-    bool UseOtherSide() const { return use_other_side_; }
+    bool EvaluateMasterSide() const { return evaluate_master_side_; }
 
    private:
     //! Kinetics condition on scatra dis
@@ -101,8 +101,8 @@ namespace SSI
     //! Slave converter for scatra - manifold coupling
     Teuchos::RCP<ADAPTER::CouplingSlaveConverter> slave_converter_;
 
-    //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
-    const bool use_other_side_;
+    //! Evaluate coupling on slave side of scatra-scatra interface or on master side
+    const bool evaluate_master_side_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -120,7 +120,7 @@ namespace SSI
     void Evaluate();
 
     //! Evaluate inflow into manifold field from coupling with scatra field
-    void EvaluateManifoldInflow();
+    void EvaluateScaTraManifoldInflow();
 
     //! get all RHS
     //@{
@@ -159,8 +159,16 @@ namespace SSI
     //! Add to global matrices and rhs
     void AddConditionContribution();
 
-    //! prepare evaluation of coupling condition: 3et elemental data
+    //! prepare evaluation of coupling condition: set elemental data
     void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
+    //! Evaluate integral on scatra manifold over 1.0
+    void EvaluateScaTraManifoldDomainIntegral(
+        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
+    //! Evaluate integral on scatra manifold over positive fluxes
+    void EvaluateScaTraManifoldInflowIntegral(
+        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_;

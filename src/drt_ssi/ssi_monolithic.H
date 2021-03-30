@@ -176,7 +176,7 @@ namespace SSI
 
     void PrepareTimeStep() override;
 
-    //! output for subproblems if needed
+    //! prepare output for subproblems if needed
     void PrepareOutput();
 
     //! set up a pointer to the contact strategy of the structural field and store it
