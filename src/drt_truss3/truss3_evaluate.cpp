@@ -30,7 +30,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 {
   SetParamsInterfacePtr(params);
 
-  // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
 
   if (IsParamsInterface())
@@ -154,89 +153,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       else if (act == ELEMENTS::struct_calc_internalforce)
         t3_nlnstiffmass(params, myvel, mydisp, nullptr, nullptr, &elevec1);
 
-      /*
-        //the following code block can be used to check quickly whether the nonlinear stiffness
-        matrix is calculated
-        //correctly or not by means of a numerically approximated stiffness matrix
-        //The code block will work for all higher order elements.
-        if(Id() == 3) //limiting the following tests to certain element numbers
-        {
-          //assuming the same number of DOF for all nodes
-          int numdof = NumDofPerNode(*(Nodes()[0]));
-          int nnode  = NumNode();
-
-          //variable to store numerically approximated stiffness matrix
-          Epetra_SerialDenseMatrix stiff_approx;
-          stiff_approx.Shape(numdof*nnode,numdof*nnode);
-
-
-          //relative error of numerically approximated stiffness matrix
-          Epetra_SerialDenseMatrix stiff_relerr;
-          stiff_relerr.Shape(numdof*nnode,numdof*nnode);
-
-          //characteristic length for numerical approximation of stiffness
-          double h_rel = 1e-9;
-
-          //flag indicating whether approximation leads to significant relative error
-          int outputflag = 0;
-
-          //calculating strains in new configuration
-          for(int i=0; i<numdof; i++) //for all dof
-          {
-            for(int k=0; k<nnode; k++)//for all nodes
-            {
-
-              Epetra_SerialDenseVector force_aux;
-              force_aux.Size(numdof*nnode);
-
-              //create new displacement and velocity vectors in order to store artificially modified
-        displacements std::vector<double> vel_aux(myvel); std::vector<double> disp_aux(mydisp);
-
-              //modifying displacement artificially (for numerical derivative of internal forces):
-              disp_aux[numdof*k + i] += h_rel;
-              vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
-
-              t3_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
-
-              //computing derivative d(fint)/du numerically by finite difference
-              for(int u = 0 ; u < numdof*nnode ; u++ )
-                stiff_approx(u,k*numdof+i) = ( pow(force_aux[u],2) - pow(elevec1(u),2) )/ (h_rel *
-        (force_aux[u] + elevec1(u) ) );
-
-            } //for(int k=0; k<nnode; k++)//for all nodes
-          } //for(int i=0; i<numdof; i++) //for all dof
-
-
-          for(int line=0; line<numdof*nnode; line++)
-          {
-            for(int col=0; col<numdof*nnode; col++)
-            {
-              stiff_relerr(line,col)= fabs( ( pow(elemat1(line,col),2) -
-        pow(stiff_approx(line,col),2) )/ ( (elemat1(line,col) + stiff_approx(line,col)) *
-        elemat1(line,col) ));
-
-              //suppressing small entries whose effect is only confusing and NaN entires (which
-        arise due to zero entries) if ( fabs( stiff_relerr(line,col) ) < h_rel*1000 || isnan(
-        stiff_relerr(line,col)) || elemat1(line,col) == 0) //isnan = is not a number
-                stiff_relerr(line,col) = 0;
-
-              if ( stiff_relerr(line,col) > 0)
-                outputflag = 1;
-
-            } //for(int col=0; col<numdof*nnode; col++)
-          } //for(int line=0; line<numdof*nnode; line++)
-
-          if(outputflag ==1)
-          {
-            std::cout<<"\n\n acutally calculated stiffness matrix in Element "<<Id()<<": "<<
-        elemat1; std::cout<<"\n\n approximated stiffness matrix in Element "<<Id()<<": "<<
-        stiff_approx; std::cout<<"\n\n rel error stiffness matrix in Element "<<Id()<<": "<<
-        stiff_relerr;
-          }
-
-        } //end of section in which numerical approximation for stiffness matrix is computed
-       */
-
       break;
     }
     case ELEMENTS::struct_calc_update_istep:
@@ -323,7 +239,6 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
   std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-
   // find out whether we will use a time curve
   double time = -1.0;
 
@@ -390,8 +305,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
       // computing entries for first node
       elevec1[3 + dof] += funct[1] * ar[dof];
     }
-
-  }  // for (int ip=0; ip<intpoints.nquad; ++ip)
+  }
 
   return 0;
 }
@@ -400,8 +314,7 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
 /*-----------------------------------------------------------------------------------------------------------*
  | Evaluate PTC damping (public) cyron 04/10|
  *----------------------------------------------------------------------------------------------------------*/
-template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
-                                         // space, number of degrees of freedom per node
+template <int nnode, int ndim, int dof>
 void DRT::ELEMENTS::Truss3::EvaluatePTC(
     Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
 {
@@ -634,37 +547,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList& params,
       }
     }
   }
-
-  //  Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  //
-  //  if(sdyn.get<std::string> ("DYNAMICTYP", "none")=="StatMech")
-  //    torsion_stiffmass(params, disp, stiffmatrix, force);
-
-  /*****************Compare magnitude of calculated forces********************/
-  //  LINALG::Matrix<6,1> axialforce;
-  //  axialforce.Clear();
-  //  LINALG::Matrix<6,1> moment;
-  //  moment.Clear();
-  //  for (int i=0; i<3; i++)
-  //  {
-  //    axialforce(i)=(*force)(i);
-  //    axialforce(i+3)=(*force)(i+6);
-  //    moment(i)=(*force)(i+3);
-  //    moment(i+3)=(*force)(i+9);
-  //  }
-
-  //  NormForce=axialforce.Norm2();
-  //  NormMoment=moment.Norm2();
-  //  if (NormMoment!=0)
-  //    RatioNormForceMoment=NormForce/NormMoment;
-  //  else
-  //    RatioNormForceMoment=0;
-  //  std::cout<<"Truss3 Element ID="<<this->Id()<<std::endl;
-  //  std::cout<<"Norm Axial Force="<<NormForce<<std::endl;
-  //  std::cout<<"Norm Moment="<<NormMoment<<std::endl;
-  /*****************Compare magnitude of calculated forces********************/
 }
-
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) cyron 08/08|
@@ -685,7 +568,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDi
 
   // calculate force vector and stiffness matrix
   CalcInternalForceStiffTotLag(xcurr, DummyForce, DummyStiffMatrix);
-
 
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -717,7 +599,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDi
     }
   }
 }
-
 
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) tk 10/08| | engineering strain measure, large
@@ -782,7 +663,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   // computing global internal forces
   for (int i = 0; i < 6; ++i) DummyForce(i) = forcescalar * aux(i);
 
-
   // computing linear stiffness matrix
   for (int i = 0; i < 3; ++i)
   {
@@ -810,7 +690,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
     }
   }
 }
-
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -1082,129 +961,11 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList& params,
     tcurrNode2(j) = trefNode_[1](j) + disp[9 + j];  // second node
   }
 
-  //  if (tcurrNode1.MaxValue()>0.999 || tcurrNode2.MaxValue()>0.999)
-  //    return;
-
   deltatheta_.Clear();
   LINALG::Matrix<1, 3> thetacurr(true);
   CalcDeltaTheta(disp, thetacurr);
   double ThetaBoundary1 = M_PI / 4;
   double ThetaBoundary2 = 3 * M_PI / 4;
-
-  /********************Check if work potential function is
-   * unique*************************************/
-  //  //Energy potential
-  //  FAD W = 0.0;
-  //  // Current tangents
-  //  LINALG::Matrix<3,1,FAD> t1(true);
-  //    LINALG::Matrix<3,1,FAD> t2(true);
-  //    LINALG::Matrix<3,1,FAD> t1_unit(true);
-  //    LINALG::Matrix<3,1,FAD> t2_unit(true);
-  //
-  //    // Reference tangents
-  //  LINALG::Matrix<3,1,FAD> t10(true);
-  //    LINALG::Matrix<3,1,FAD> t20(true);
-  //    LINALG::Matrix<3,1,FAD> t10_unit(true);
-  //    LINALG::Matrix<3,1,FAD> t20_unit(true);
-  //
-  //    t1(0)=1.0;
-  //    t2(1)=1.0;
-  //    // Compute terms at reference config.
-  //    t10(0)=1.0;
-  //    t20(1)=1.0;
-  //    FAD norm_t20 = pow(FADUTILS::ScalarProduct(t20,t20),0.5);
-  //    t20_unit.Update(1.0/norm_t20,t20,0.0);
-  //
-  //    FAD norm_t10 = pow(FADUTILS::ScalarProduct(t10,t10),0.5);
-  //    t10_unit.Update(1.0/norm_t10,t10,0.0);
-  //    double delta=1.0e-6;
-  //
-  //
-  //    for(int i=0;i<=360;i++)
-  //    {
-  //      double theta = 360-1.0*i;
-  //      t2(0)=cos(theta/180.0*M_PI);
-  //      t2(1)=sin(theta/180.0*M_PI);
-  //
-  //      for(int j=0;j<3;j++)
-  //      {
-  //        t1(j).diff(j,6);
-  //        t2(j).diff(j+3,6);
-  //      }
-  //
-  //      FAD norm_t2 = pow(FADUTILS::ScalarProduct(t2,t2),0.5);
-  //      t2_unit.Update(1.0/norm_t2,t2,0.0);
-  //
-  //      FAD norm_t1 = pow(FADUTILS::ScalarProduct(t1,t1),0.5);
-  //      t1_unit.Update(1.0/norm_t1,t1,0.0);
-  //
-  //      W=pow((FADUTILS::ScalarProduct(t1_unit,t2_unit)-FADUTILS::ScalarProduct(t10_unit,t20_unit)),2);
-  //
-  //      std::cout<<"Energy Potential FAD="<<W<<std::endl;
-  //
-  //      std::cout << "theta: " << theta << std::endl;
-  //      std::cout << "t1: " << t1 << std::endl;
-  //      std::cout << "t2: " << t2 << std::endl;
-  //      std::cout << "t1_unit: " << t1_unit << std::endl;
-  //      std::cout << "t2_unit: " << t2_unit << std::endl;
-
-  /*%%%%%%%%%%%%%Check with  analytical results %%%%%%%%%%%%%%%%%%%%%*/
-  //
-  //      // Reference tangents
-  //      LINALG::Matrix<3,1> tangent10(true);
-  //      LINALG::Matrix<3,1> tangent20(true);
-  //      LINALG::Matrix<3,1> tangent10_unit(true);
-  //      LINALG::Matrix<3,1> tangent20_unit(true);
-  //
-  //      // Compute terms at reference config.
-  //      tangent10(0)=1.0;
-  //      tangent20(1)=1.0;
-  //      tangent20_unit.Scale(1.0/tangent20.Norm2());
-  //      tangent10_unit.Scale(1.0/tangent10.Norm2());
-  //
-  //
-  //      LINALG::Matrix<3,1> t1_m(true);
-  //      LINALG::Matrix<3,1> t1_l(true);
-  //      LINALG::Matrix<3,1> t1_r(true);
-  //      LINALG::Matrix<3,1> t2_m(true);
-  //
-  //      t1_m(0)=1.0;
-  //      t1_l(0)=1.0;
-  //      t1_r(0)=1.0;
-  //
-  //      for (int j=0;j<3;j++)
-  //      {
-  //        t2_m(j)=t2(j).val();
-  //      }
-  //
-  //      for(int k=0;k<3;k++)
-  //      {
-  //        t1_l(k)-=delta;
-  //        t1_r(k)+=delta;
-  //
-  //        t1_l.Scale(1.0/t1_l.Norm2());
-  //        t1_r.Scale(1.0/t1_r.Norm2());
-  //
-  //        double W_m =
-  //        pow((FADUTILS::ScalarProduct(t1_m,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
-  //        double W_l =
-  //        pow((FADUTILS::ScalarProduct(t1_l,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
-  //        double W_r =
-  //        pow((FADUTILS::ScalarProduct(t1_r,t2_m)-FADUTILS::ScalarProduct(tangent20_unit,tangent10_unit)),2);
-  //
-  //        std::cout << "W_m: " << W_m << std::endl;
-  //        std::cout << "W_l: " << W_l << std::endl;
-  //        std::cout << "W_r: " << W_r << std::endl;
-  //
-  //        std::cout << "left difference: " << (W_m-W_l)/delta << std::endl;
-  //        std::cout << "right difference: " << (W_r-W_m)/delta << std::endl;
-  //
-  //        t1_l(k)+=delta;
-  //        t1_r(k)-=delta;
-  //      }
-
-  //    }
-  /*******************End check work potential****************************************/
 
   /*%%%%%%%%%%%%%%%%% Calculate torsional stiffness matrices and forces at node 1
    * linker%%%%%%%%%%%%%%%%%%%%*/
@@ -1221,24 +982,12 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList& params,
   {
     // Calculation based on dot product of vectors
     MyTorsionalStiffatNodeDot(params, 1, tcurrNode1, xcurr, TorStiffmatrixNode1, TorForceNode1);
-
-    // Calculation based on Cosine of the inclusive angles
-    //    MyTorsionalStiffatNodeCos(params, double(thetacurr(0)), double(deltatheta_(0)),
-    //    tcurrNode1, diff_disp_curr, TorStiffmatrixNode1, TorForceNode1);
-
-    // Uncomment this part to verify the stiffness matrix with FAD type of variable
-    //    FADMyTorsionalStiffatNodeCos(params, double(ThetaRef_[0]), tcurrNode1, xcurr,
-    //    TorStiffmatrixNode1, TorForceNode1);
   }
   else if ((thetacurr(0) >= 0 && thetacurr(0) < ThetaBoundary1) ||
            (thetacurr(0) > ThetaBoundary2 && thetacurr(0) <= M_PI))
   {
     // Calculation based on dot product of vectors
     MyTorsionalStiffatNodeDot(params, 1, tcurrNode1, xcurr, TorStiffmatrixNode1, TorForceNode1);
-
-    // Calculation based on sin of the inclusive angles
-    //  MyTorsionalStiffatNodeSin(params, double(thetacurr(0)), double(deltatheta_(0)), tcurrNode1,
-    //  xcurr, TorStiffmatrixNode1, TorForceNode1);
   }
   else
     dserror("Angle out of range!");
@@ -1292,24 +1041,12 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList& params,
   {
     // Calculation based on dot product of vectors
     MyTorsionalStiffatNodeDot(params, 2, tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
-
-    // Calculation based on Cosine of the inclusive angles
-    //    MyTorsionalStiffatNodeCos(params,double(thetacurr(1)), double(deltatheta_(1)), tcurrNode2,
-    //    diff_disp_curr, TorStiffmatrixNode2, TorForceNode2);
-
-    // Uncomment this part to verify the stiffness matrix with FAD type of variable
-    //    FADMyTorsionalStiffatNodeCos(params, double(ThetaRef_[1]), tcurrNode2, xcurr,
-    //    TorStiffmatrixNode2, TorForceNode2);
   }
   else if ((thetacurr(1) >= 0 && thetacurr(1) < ThetaBoundary1) ||
            (thetacurr(1) > ThetaBoundary2 && thetacurr(1) <= M_PI))
   {
     // Calculation based on dot product of vectors
     MyTorsionalStiffatNodeDot(params, 2, tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
-
-    // Calculation based on sin of the inclusive angles
-    //    MyTorsionalStiffatNodeSin(params, double(thetacurr(1)), double(deltatheta_(1)),
-    //    tcurrNode2, xcurr, TorStiffmatrixNode2, TorForceNode2);
   }
   else
     dserror("Angle out of range!");
@@ -1364,24 +1101,12 @@ void DRT::ELEMENTS::Truss3::torsion_stiffmass(Teuchos::ParameterList& params,
   {
     // Calculation based on dot product of vectors
     MyTorsionalStiffTangentDot(params, tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
-
-    // Calculation based on Cosine of the inclusive angles
-    //    MyTorsionalStiffTangentCos(params, double(thetacurr(2)), double(deltatheta_(2)),
-    //    tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
-
-    // Uncomment this part to verify the stiffness matrix with FAD type of variable
-    //     FADMyTorsionalStiffTangentCos(params, double(ThetaRef_[2]), tcurrNode1, tcurrNode2,
-    //     TorStiffmatrixNode3, TorForceNode3);
   }
   else if ((thetacurr(2) >= 0 && thetacurr(2) < ThetaBoundary1) ||
            (thetacurr(2) > ThetaBoundary2 && thetacurr(2) <= M_PI))
   {
     // Calculation based on dot product of vectors
     MyTorsionalStiffTangentDot(params, tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
-
-    // Calculation based on Cosine of the inclusive angles
-    //    MyTorsionalStiffatTangentSin(params, double(thetacurr(2)), double(deltatheta_(2)),
-    //    tcurrNode1, tcurrNode2, TorStiffmatrixNode3, TorForceNode3);
   }
   else
     dserror("Angle out of range!");
@@ -1449,18 +1174,12 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeCos(Teuchos::ParameterList& pa
     aux_c(j + 6) = B(j);
   }
 
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // Torsional Spring stiffness
-  //  double spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
   double spring = 0.0;
 
   // Calculate torsional forces
   for (int j = 0; j < 9; j++) TorForce(j) = spring * deltatheta * aux_c(j);
 
   //%%%%%%% Calculation of stiffness matrix %%%%%%%%
-
-  //  FADThetaLinearisation(diff_disp, tcurr, A, B);
 
   // Calculate auxiliary vectors for computation of stiffnessmatrices
   LINALG::Matrix<3, 3> dadt1(true);
@@ -1585,10 +1304,6 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeDot(Teuchos::ParameterList& pa
   tcurr_unit.Update(1.0 / norm_tcurr, tcurr, 0.0);
   vcurr_unit.Update(1.0 / norm_vcurr, vcurr, 0.0);
 
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // Spring stiffness
-  //  FAD spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
   FAD spring = 0.0;
 
   // computing energy potential (equation 3.3)
@@ -1733,26 +1448,10 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatNodeSin(Teuchos::ParameterList& pa
     aux_c(j + 6) = B(j);
   }
 
-  /*    //Uncomment this part to see if the linearisation is correct.
-    // ****Important not to further use the linearised expression to calculate stiffness matrix
-    ****** //
-    // Linearisation of theta w.r.t. dofs. i.e. {t1 or t2, d1, d2}
-    LINALG::Matrix<1,totdof,FAD> LinTheta;
-    for(int i = 0; i < totdof; i++)
-    {
-      LinTheta(i) = Theta.dx(i);
-    }
-    std::cout<<"LinTheta="<<LinTheta<<std::endl;
-    std::cout<<"aux_c="<<aux_c<<std::endl;
-   */
-
   // FAD Force vector for calculating stiffness matrix
   LINALG::Matrix<1, totdof, FAD> TorForceFAD;
 
   // Spring stiffness
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams(); FAD spring =statmechparams.get<double>
-  //  ("KTOR1_LINK", 0.0);
   FAD spring = 0.0;
 
   FAD deltathetaFAD = deltatheta;
@@ -1804,9 +1503,6 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& p
   }
 
   // Spring stiffness
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams(); double spring
-  //  =statmechparams.get<double> ("KTOR2_LINK", 0.0);
   double spring = 0.0;
 
   // Calculate torsional forces
@@ -1926,10 +1622,6 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& p
   tcurr1_unit.Update(1.0 / norm_tcurr1, tcurr1, 0.0);
   tcurr2_unit.Update(1.0 / norm_tcurr2, tcurr2, 0.0);
 
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams();
-  // Spring stiffness
-  //  FAD spring =statmechparams.get<double> ("KTOR2_LINK", 0.0);
   FAD spring = 0.0;
 
   // computing energy potential (equation 3.3)
@@ -2072,26 +1764,9 @@ void DRT::ELEMENTS::Truss3::MyTorsionalStiffatTangentSin(Teuchos::ParameterList&
     aux_c(j + 3) = B(j);
   }
 
-  /*    //Uncomment this part to see if the linearisation is correct.
-    // ****Important not to further use the linearised expression to calculate stiffness matrix
-    ****** //
-    // Linearisation of theta w.r.t. dofs. i.e. {t1 or t2, d1, d2}
-    LINALG::Matrix<1,totdof,FAD> LinTheta;
-    for(int i = 0; i < totdof; i++)
-    {
-      LinTheta(i) = Theta.dx(i);
-    }
-    std::cout<<"LinTheta="<<LinTheta<<std::endl;
-    std::cout<<"aux_c="<<aux_c<<std::endl;
-   */
-
   // FAD Force vector for calculating stiffness matrix
   LINALG::Matrix<1, totdof, FAD> TorForceFAD;
 
-  // Spring stiffness
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams(); FAD spring =statmechparams.get<double>
-  //  ("KTOR2_LINK", 0.0);
   FAD spring = 0.0;
 
   FAD deltathetaFAD = deltatheta;
@@ -2191,9 +1866,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNodeCos(Teuchos::ParameterList&
 
   deltatheta = theta - theta_0;  // Change in angle
 
-  //  Teuchos::ParameterList statmechparams =
-  //  DRT::Problem::Instance()->StatisticalMechanicsParams();
-
   // Calculate auxiliary vectors for computation of forces and stiffnessmatrix
   LINALG::Matrix<1, 3, FAD> aux_a(true);  // Identical to "a" in derivation
   LINALG::Matrix<1, 3, FAD> aux_b(true);  // Identical to "b" in derivation
@@ -2211,7 +1883,6 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNodeCos(Teuchos::ParameterList&
   }
 
   // Spring stiffness
-  //  FAD spring =statmechparams.get<double> ("KTOR1_LINK", 0.0);
   FAD spring = 0.0;
 
   // Calculate torsional forces
@@ -2224,7 +1895,7 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNodeCos(Teuchos::ParameterList&
     {
       stiffmatrix_check(i, j) = force_check(0, i).dx(j);
     }
-  }  // for(int i = 0; i < dofpn*nnode; i++)
+  }
 
   LINALG::Matrix<9, 9, FAD> stiff_relerr;
   stiff_relerr.Clear();
@@ -2242,8 +1913,8 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffatNodeCos(Teuchos::ParameterList&
       // to zero entries)
       if (fabs(stiff_relerr(row, col)) < 1.0e-15)  // isnan = is not a number
         stiff_relerr(row, col) = 0;
-    }  // for(int col=0; col<3*nnode; col++)
-  }    // for(int line=0; line<3*nnode; line++)
+    }
+  }
 
   std::cout << "\n\n original stiffness matrix: " << std::endl;
   for (int i = 0; i < 9; i++)
@@ -2409,8 +2080,8 @@ void DRT::ELEMENTS::Truss3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterList
       // to zero entries)
       if (fabs(stiff_relerr(row, col)) < 1.0e-15)  // isnan = is not a number
         stiff_relerr(row, col) = 0;
-    }  // for(int col=0; col<3*nnode; col++)
-  }    // for(int line=0; line<3*nnode; line++)
+    }
+  }
 
 
   std::cout << "\n\n original stiffness matrix corresponding to tangential dofs: " << std::endl;
@@ -2570,46 +2241,9 @@ void DRT::ELEMENTS::Truss3::MyBackgroundVelocity(
    * increases linearly in z and equals zero for z = 0. In 2D the velocity increases linearly in y
    * and equals zero for y = 0. */
 
-  //  //velocity at upper boundary of domain
-  //  double uppervel = 0.0;
-
   // default values for background velocity and its gradient
   velbackground.PutScalar(0);
   velbackgroundgrad.PutScalar(0);
-
-  //  double time = params.get<double>("total time",0.0);
-  //  double starttime = params.get<double>("STARTTIMEACT",0.0);
-  //  double dt = params.get<double>("delta time");
-  //  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
-  //  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
-  //  int dbcdispdir = params.get<int> ("DBCDISPDIR", -1)-1;
-  //  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE",
-  //  INPAR::STATMECH::dbctype_std); Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new
-  //  std::vector<double>(3,0.0)); Teuchos::RCP<std::vector<double> > periodlength =
-  //  params.get("PERIODLENGTH", defvalues);
-  //
-  //  bool shearflow = false;
-  //  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-  //     dbctype==INPAR::STATMECH::dbctype_shearfixeddel ||
-  //     dbctype==INPAR::STATMECH::dbctype_sheartrans ||
-  //     dbctype==INPAR::STATMECH::dbctype_affineshear||
-  //     dbctype==INPAR::STATMECH::dbctype_affinesheardel)
-  //    shearflow = true;
-  //  //oscillations start only at params.get<double>("STARTTIMEACT",0.0)
-  //  if(periodlength->at(0) > 0.0)
-  //    if(shearflow && time>starttime && fabs(time-starttime)>dt/1e4 && curvenumber >=  0 &&
-  //    dbcdispdir >= 0 )
-  //    {
-  //      uppervel = shearamplitude *
-  //      (DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time,1))[1];
-  //
-  //      //compute background velocity
-  //      velbackground(dbcdispdir) = (evaluationpoint(ndim-1) / periodlength->at(ndim-1)) *
-  //      uppervel;
-  //
-  //      //compute gradient of background velocity
-  //      velbackgroundgrad(dbcdispdir,ndim-1) = uppervel / periodlength->at(ndim-1);
-  //    }
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
@@ -2879,77 +2513,4 @@ inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //
       "Truss3::NodeShift is deprecated; if needed adapt parameter handling according to parameter "
       "interface pointer "
       " and new sections in input file (statmech section is no longer existent ) first!");
-
-  //  /* get number of degrees of freedom per node; note: the following function assumes the same
-  //  number of degrees
-  //   * of freedom for each element node*/
-  //  int numdof = NumDofPerNode(*(Nodes()[0]));
-  //  if (nnode==2 && disp.size()==12)
-  //    numdof = 6;
-  //  double time = params.get<double>("total time",0.0);
-  //  double starttime = params.get<double>("STARTTIMEACT",0.0);
-  //  double dt = params.get<double>("delta time");
-  //  double shearamplitude = params.get<double> ("SHEARAMPLITUDE", 0.0);
-  //  int curvenumber = params.get<int> ("CURVENUMBER", -1)-1;
-  //  int dbcdispdir = params.get<int> ("DBCDISPDIR", -1)-1;
-  //  Teuchos::RCP<std::vector<double> > defvalues = Teuchos::rcp(new std::vector<double>(3,0.0));
-  //  Teuchos::RCP<std::vector<double> > periodlength = params.get("PERIODLENGTH", defvalues);
-  //  INPAR::STATMECH::DBCType dbctype = params.get<INPAR::STATMECH::DBCType>("DBCTYPE",
-  //  INPAR::STATMECH::dbctype_std); bool shearflow = false;
-  //  if(dbctype==INPAR::STATMECH::dbctype_shearfixed ||
-  //  dbctype==INPAR::STATMECH::dbctype_sheartrans || dbctype==INPAR::STATMECH::dbctype_affineshear)
-  //    shearflow = true;
-  //  /*only if periodic boundary conditions are in use, i.e. params.get<double>("PeriodLength",0.0)
-  //  > 0.0, this
-  //   * method has to change the displacement variables*/
-  //  if(periodlength->at(0) > 0.0)
-  //    //loop through all nodes except for the first node which remains fixed as reference node
-  //    for(int i=1;i<nnode;i++)
-  //    {
-  //      for(int dof= ndim - 1; dof > -1; dof--)
-  //      {
-  //        /*if the distance in some coordinate direction between some node and the first node
-  //        becomes smaller by adding or subtracting
-  //         * the period length, the respective node has obviously been shifted due to periodic
-  //         boundary conditions and should be shifted
-  //         * back for evaluation of element matrices and vectors; this way of detecting shifted
-  //         nodes works as long as the element length
-  //         * is smaller than half the periodic length*/
-  //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) -
-  //        (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs(
-  //        (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) )
-  //        )
-  //        {
-  //          disp[numdof*i+dof] += periodlength->at(dof);
-  //
-  //          /*the upper domain surface orthogonal to the z-direction may be subject to shear
-  //          Dirichlet boundary condition; the lower surface
-  //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the upper
-  //           z-surface and reenter through the lower *z-surface, the shear has to be substracted
-  //           from nodal coordinates in that case */
-  //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime &&
-  //          fabs(time-starttime)>dt/1e4)
-  //            disp[numdof*i+dbcdispdir] +=
-  //            shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
-  //        }
-  //
-  //        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) -
-  //        (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs(
-  //        (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) )
-  //        )
-  //        {
-  //          disp[numdof*i+dof] -= periodlength->at(dof);
-  //
-  //          /*the upper domain surface orthogonal to the z-direction may be subject to shear
-  //          Dirichlet boundary condition; the lower surface
-  //           *may be fixed by DBC. To avoid problmes when nodes exit the domain through the lower
-  //           z-surface and reenter through the upper *z-surface, the shear has to be added to
-  //           nodal coordinates in that case */
-  //          if(shearflow && dof == 2 && curvenumber >= 0 && time>starttime &&
-  //          fabs(time-starttime)>dt/1e4)
-  //            disp[numdof*i+dbcdispdir] -=
-  //            shearamplitude*DRT::Problem::Instance()->Funct(curvenumber).EvaluateTimeDerivative(time);
-  //        }
-  //      }
-  //    }
 }
