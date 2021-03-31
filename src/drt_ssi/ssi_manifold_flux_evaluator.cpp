@@ -18,8 +18,11 @@
 #include "../drt_inpar/inpar_s2i.H"
 #include "../drt_inpar/inpar_ssi.H"
 
+#include "../drt_io/runtime_csv_writer.H"
+
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_condition_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -40,7 +43,9 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
       manifold_conditionID_(condition_manifold->GetInt("ConditionID")),
       manifold_map_extractor_(Teuchos::null),
       scatra_map_extractor_(Teuchos::null),
-      slave_converter_(Teuchos::null)
+      slave_converter_(Teuchos::null),
+      evaluate_master_side_(
+          !(DRT::UTILS::HaveSameNodes(condition_manifold, condition_kinetics, false)))
 {
   std::vector<int> inodegidvec_manifold;
   DRT::UTILS::AddOwnedNodeGIDVector(
@@ -66,6 +71,8 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     const SSI::SSIMono& ssi_mono)
     : block_map_scatra_(ssi_mono.MapsScatra()),
       block_map_structure_(ssi_mono.MapStructure()),
+      do_output_(DRT::INPUT::IntegralValue<bool>(
+          DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD")),
       full_map_manifold_(
           ssi_mono.MapsSubProblems()->Map(ssi_mono.GetProblemPosition(Subproblem::manifold))),
       full_map_scatra_(ssi_mono.MapsSubProblems()->Map(
@@ -79,6 +86,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       matrix_scatra_structure_(Teuchos::null),
       rhs_manifold_(Teuchos::null),
       rhs_scatra_(Teuchos::null),
+      runtime_csvwriter_(nullptr),
       scatra_(ssi_mono.ScaTraBaseAlgorithm()),
       scatra_manifold_(ssi_mono.ScaTraManifoldBaseAlgorithm()),
       scatra_manifold_couplings_(Teuchos::null),
@@ -161,6 +169,33 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   matrix_manifold_structure_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_manifold_);
   matrix_scatra_manifold_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
   matrix_scatra_structure_cond_ = SSI::UTILS::SSIMatrices::SetupSparseMatrix(full_map_scatra_);
+
+  // Prepare runtime csv writer
+  if (DoOutput())
+  {
+    runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(ssi_mono.Comm().MyPID());
+
+    runtime_csvwriter_->Init("manifold_inflow");
+
+    for (const auto& condition_manifold : conditions_manifold)
+    {
+      const std::string manifold_string =
+          "manifold " + std::to_string(condition_manifold->GetInt("ConditionID"));
+
+      runtime_csvwriter_->RegisterDataVector("Integral of " + manifold_string, 1, 16);
+
+      for (int k = 0; k < ssi_mono.ScaTraManifold()->NumDofPerNode(); ++k)
+      {
+        runtime_csvwriter_->RegisterDataVector(
+            "Total flux of scalar " + std::to_string(k + 1) + " into " + manifold_string, 1, 16);
+
+        runtime_csvwriter_->RegisterDataVector(
+            "Mean flux of scalar " + std::to_string(k + 1) + " into " + manifold_string, 1, 16);
+      }
+    }
+
+    runtime_csvwriter_->Setup();
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -243,30 +278,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
   // First: Set parameters to elements
-  {
-    Teuchos::ParameterList eleparams;
-
-    eleparams.set<int>("action", SCATRA::set_elch_scatra_manifold_parameter);
-
-    eleparams.set<bool>("evaluate_master_side",
-        !(DRT::UTILS::HaveSameNodes(scatra_manifold_coupling->ConditionManifold(),
-            scatra_manifold_coupling->ConditionKinetics(), false)));
-
-    eleparams.set<int>(
-        "kinetic_model", scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel"));
-
-    if (scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel") ==
-        INPAR::SSI::kinetics_constantinterfaceresistance)
-    {
-      eleparams.set<int>(
-          "num_electrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
-      eleparams.set<double>(
-          "resistance", scatra_manifold_coupling->ConditionKinetics()->GetDouble("resistance"));
-    }
-
-    scatra_manifold_->ScaTraField()->Discretization()->Evaluate(
-        eleparams, Teuchos::null, Teuchos::null);
-  }
+  PreEvaluate(scatra_manifold_coupling);
 
   // Second: Evaluate condition
   {
@@ -445,4 +457,141 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::AddConditionContribution()
       break;
     }
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflow()
+{
+  inflow_.clear();
+  domainintegral_.clear();
+
+  scatra_manifold_->ScaTraField()->Discretization()->SetState(
+      "phinp", scatra_manifold_->ScaTraField()->Phinp());
+
+  for (const auto& scatra_manifold_coupling : scatra_manifold_couplings_)
+  {
+    const int manifoldID = scatra_manifold_coupling->ManifoldConditionID();
+
+    std::vector<double> zero_scalar_vector(scatra_manifold_->ScaTraField()->NumDofPerNode(), 0.0);
+    inflow_.insert(std::make_pair(manifoldID, zero_scalar_vector));
+
+    // First: set parameters to elements
+    PreEvaluate(scatra_manifold_coupling);
+
+    // Second: evaluate condition
+    EvaluateScaTraManifoldInflowIntegral(scatra_manifold_coupling);
+
+    // Third: evaluate domain integral
+    EvaluateScaTraManifoldDomainIntegral(scatra_manifold_coupling);
+  }
+  scatra_manifold_->ScaTraField()->Discretization()->ClearState();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldDomainIntegral(
+    Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
+{
+  const int manifoldID = scatra_manifold_coupling->ManifoldConditionID();
+
+  // integrate only if not done so far
+  if (domainintegral_.find(manifoldID) == domainintegral_.end())
+  {
+    Teuchos::ParameterList condparams;
+
+    condparams.set<int>("action", SCATRA::calc_domain_integral);
+
+    condparams.set<int>("ndsdisp", 1);
+
+    // integrated domain of this condition
+    auto domainintegral_cond = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+
+    scatra_manifold_->ScaTraField()->Discretization()->EvaluateScalars(
+        condparams, domainintegral_cond, "SSISurfaceManifold", manifoldID);
+
+    domainintegral_.insert(std::make_pair(manifoldID, domainintegral_cond->Values()[0]));
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateScaTraManifoldInflowIntegral(
+    Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
+{
+  const int manifoldID = scatra_manifold_coupling->ManifoldConditionID();
+
+  Teuchos::ParameterList condparams;
+
+  condparams.set<int>("action", SCATRA::calc_manifold_inflow);
+
+  condparams.set<int>("ndsdisp", 1);
+
+  // integrated scalars of this condition
+  auto inflow_cond =
+      Teuchos::rcp(new Epetra_SerialDenseVector(scatra_manifold_->ScaTraField()->NumDofPerNode()));
+
+  scatra_manifold_->ScaTraField()->Discretization()->EvaluateScalars(
+      condparams, inflow_cond, "SSISurfaceManifold", manifoldID);
+
+  for (int i = 0; i < inflow_cond->Length(); ++i)
+    inflow_.at(scatra_manifold_coupling->ManifoldConditionID()).at(i) += inflow_cond->Values()[i];
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::PreEvaluate(
+    Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action", SCATRA::set_elch_scatra_manifold_parameter);
+
+  eleparams.set<bool>("evaluate_master_side", scatra_manifold_coupling->EvaluateMasterSide());
+
+  eleparams.set<int>(
+      "kinetic_model", scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel"));
+
+  if (scatra_manifold_coupling->ConditionKinetics()->GetInt("KineticModel") ==
+      INPAR::SSI::kinetics_constantinterfaceresistance)
+  {
+    eleparams.set<int>(
+        "num_electrons", scatra_manifold_coupling->ConditionKinetics()->GetInt("e-"));
+    eleparams.set<double>(
+        "resistance", scatra_manifold_coupling->ConditionKinetics()->GetDouble("resistance"));
+  }
+
+  scatra_manifold_->ScaTraField()->Discretization()->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
+{
+  for (const auto& inflow_comp : inflow_)
+  {
+    const std::string manifold_string = "manifold " + std::to_string(inflow_comp.first);
+
+    // find pair of domain integrals with same key for current condition and get domain integral
+    const auto domainintegral_cond = domainintegral_.find(inflow_comp.first);
+    const double domainint = domainintegral_cond->second;
+
+    runtime_csvwriter_->AppendDataVector("Integral of " + manifold_string, {domainint});
+
+    for (int i = 0; i < static_cast<int>(inflow_comp.second.size()); ++i)
+    {
+      runtime_csvwriter_->AppendDataVector(
+          "Total flux of scalar " + std::to_string(i + 1) + " into " + manifold_string,
+          {inflow_comp.second[i]});
+      runtime_csvwriter_->AppendDataVector(
+          "Mean flux of scalar " + std::to_string(i + 1) + " into " + manifold_string,
+          {inflow_comp.second[i] / domainint});
+    }
+  }
+
+  runtime_csvwriter_->ResetTimeAndTimeStep(
+      scatra_manifold_->ScaTraField()->Time(), scatra_manifold_->ScaTraField()->Step());
+
+  runtime_csvwriter_->WriteFile();
 }

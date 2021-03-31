@@ -12,6 +12,9 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include "memory"
+
+class RuntimeCsvWriter;
 
 namespace ADAPTER
 {
@@ -73,6 +76,9 @@ namespace SSI
       return slave_converter_;
     }
 
+    //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
+    bool EvaluateMasterSide() const { return evaluate_master_side_; }
+
    private:
     //! Kinetics condition on scatra dis
     DRT::Condition* condition_kinetics_;
@@ -94,6 +100,9 @@ namespace SSI
 
     //! Slave converter for scatra - manifold coupling
     Teuchos::RCP<ADAPTER::CouplingSlaveConverter> slave_converter_;
+
+    //! Evaluate coupling on slave side of scatra-scatra interface or on master side
+    const bool evaluate_master_side_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -104,8 +113,14 @@ namespace SSI
    public:
     explicit ScaTraManifoldScaTraFluxEvaluator(const SSI::SSIMono& ssi_mono);
 
+    //! write inflow fluxes to csv file
+    bool DoOutput() const { return do_output_; }
+
     //! Evaluate everything including coupling
     void Evaluate();
+
+    //! Evaluate inflow into manifold field from coupling with scatra field
+    void EvaluateScaTraManifoldInflow();
 
     //! get all RHS
     //@{
@@ -130,22 +145,42 @@ namespace SSI
     }
     //@}
 
+    //! write coupling fluxes (inflow into manifold) to csv file
+    void Output();
+
    private:
-    //! Evaluate flux and linearizations on manifold side
-    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    //! Add to global matrices and rhs
+    void AddConditionContribution();
 
     //! Copy and scale (-1.0) to scatra side
     void CopyScaTraManifoldScaTraMasterSide(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
-    //! Add to global matrices and rhs
-    void AddConditionContribution();
+    //! Evaluate flux and linearizations on manifold side
+    void EvaluateManifoldSide(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
+    //! Evaluate integral on scatra manifold over 1.0
+    void EvaluateScaTraManifoldDomainIntegral(
+        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
+    //! Evaluate integral on scatra manifold over positive fluxes
+    void EvaluateScaTraManifoldInflowIntegral(
+        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
+    //! prepare evaluation of coupling condition: set elemental data
+    void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_;
 
     //! map extractor associated with all degrees of freedom inside structure field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
+
+    //! write inflow fluxes to csv file
+    const bool do_output_;
+
+    //! integral of manifold domain
+    std::map<int, double> domainintegral_;
 
     //! map of all scatra manifold dofs
     Teuchos::RCP<const Epetra_Map> full_map_manifold_;
@@ -158,6 +193,9 @@ namespace SSI
 
     //! scatra-scatra interface coupling adapter for structure field
     Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_;
+
+    //! integrated flux for each scalar into manifold
+    std::map<int, std::vector<double>> inflow_;
 
     //! coupling matrices
     //@{
@@ -178,6 +216,9 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> rhs_scatra_;
     Teuchos::RCP<Epetra_Vector> rhs_scatra_cond_;
     //@}
+
+    // writes evaluated data to output
+    std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
 
     //! scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;

@@ -460,7 +460,13 @@ void SSI::SSIMono::Output()
 {
   // output scalar transport field
   ScaTraField()->Output();
-  if (IsScaTraManifold()) ScaTraManifold()->Output();
+  if (IsScaTraManifold())
+  {
+    // domain output
+    ScaTraManifold()->Output();
+    // coupling output
+    if (manifoldscatraflux_->DoOutput()) manifoldscatraflux_->Output();
+  }
 
   // output structure field
   StructureField()->Output();
@@ -965,8 +971,7 @@ void SSI::SSIMono::Timeloop()
             *ScaTraField()->ScatraParameterList(), "OUTPUTNONLINSOLVERSTATS"))
       ScaTraField()->OutputNonlinSolverStats(IterationCount(), dtnonlinsolve, Step(), Comm());
 
-    // prepare structure output
-    StructureField()->PrepareOutput();
+    PrepareOutput();
 
     // update scalar transport and structure fields
     Update();
@@ -1217,4 +1222,15 @@ void SSI::SSIMono::EvaluateScaTraManifold()
 
   // evaluate coupling fluxes
   manifoldscatraflux_->Evaluate();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::PrepareOutput()
+{
+  StructureField()->PrepareOutput();
+
+  // prepare output of coupling sctra manifold - scatra
+  if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())
+    manifoldscatraflux_->EvaluateScaTraManifoldInflow();
 }

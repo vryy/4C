@@ -182,7 +182,6 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   BoolParameter("ADD_MANIFOLD", "no", "activate additional manifold?", &ssidynmanifold);
 
-
   setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
       "Initial field for scalar transport on manifold",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),
@@ -195,6 +194,11 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   IntParameter(
       "LINEAR_SOLVER", -1, "linear solver for scalar transport on manifold", &ssidynmanifold);
+
+  BoolParameter("OUTPUT_INFLOW", "no",
+      "write output of inflow of scatra manifold - scatra coupling into scatra manifold to csv "
+      "file",
+      &ssidynmanifold);
 }
 
 /*--------------------------------------------------------------------

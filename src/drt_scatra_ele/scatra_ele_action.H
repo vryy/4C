@@ -32,31 +32,35 @@ namespace SCATRA
     calc_error,                          ///< calc_error,
     calc_error_reinit,                   ///< calc_error_reinit,
     calc_flux_domain,                    ///< calc_condif_flux,
-    calc_immersed_element_source,        ///< calculate sink/source term due to segregation from an
-                                         ///< immersed discretizaton
-    calc_initial_time_deriv,             ///< calc_initial_time_deriv,
-    calc_integr_reaction,                ///< calculate integral reaction
-    calc_mass_center_smoothingfunct,     ///< calculate mass center of minus domain, using the
-                                         ///< smoothing function. (Interface thickness required)
-    calc_mass_matrix,                    ///< calculate mass matrix
-    calc_mat_and_rhs,                    ///< calc_condif_systemmat_and_residual,
-    calc_rhs,                            ///< calc_condif_residual
-    calc_mat,                            ///< calc_condif_systemmat
+    calc_grad_ele_center,                ///< reconstruct gradient at ele center
+    calc_heteroreac_mat_and_rhs,   ///< calculate RHS and linearizations of heterogeneous reaction
+                                   ///< terms
+    calc_immersed_element_source,  ///< calculate sink/source term due to segregation from an
+                                   ///< immersed discretizaton
+    calc_initial_time_deriv,       ///< calc_initial_time_deriv,
+    calc_integr_reaction,          ///< calculate integral reaction
+    calc_manifold_inflow,          ///< integral of all positive fluxes into manifold
+    calc_mass_center_smoothingfunct,  ///< calculate mass center of minus domain, using the
+                                      ///< smoothing function. (Interface thickness required)
+    calc_mass_matrix,                 ///< calculate mass matrix
+    calc_mat,                         ///< calc_condif_systemmat
+    calc_mat_and_rhs,                 ///< calc_condif_systemmat_and_residual,
     calc_mat_and_rhs_lsreinit_correction_step,  ///< level-set action: setup of system for
                                                 ///< correction step
     calc_mat_initial,                           ///< calc initial mat for hdg
     calc_mean_Cai,                              ///< calc_mean_Cai (multifractal subgrid-scales)
-    calc_padaptivity,                           ///< calc error and set p-adativity on element
-    calc_total_and_mean_scalars,        ///< calculate total and mean values of transported scalars
     calc_mean_scalar_time_derivatives,  ///< calculate mean time derivatives of transported scalars
     calc_node_based_reinit_velocity,    ///< level-set action: compute node-based velocity field for
                                         ///< reinitialization equation
+    calc_padaptivity,                   ///< calc error and set p-adativity on element
+    calc_rhs,                           ///< calc_condif_residual
     calc_scatra_box_filter,             ///< calc_scatra_box_filter,
     calc_scatra_manifold_flux,          ///< flux scatra <-> scatra on manifold
-    calc_scatra_mono_odblock_fluid,     ///< calculate off diagonal matrix block for coupling with
-                                        ///< fluid
-    calc_scatra_mono_odblock_mesh,  ///< calculate off diagonal matrix block for coupling with mesh
-                                    ///< (shape derivatives)
+
+    calc_scatra_mono_odblock_fluid,  ///< calculate off diagonal matrix block for coupling with
+                                     ///< fluid
+    calc_scatra_mono_odblock_mesh,   ///< calculate off diagonal matrix block for coupling with mesh
+                                     ///< (shape derivatives)
     calc_scatra_mono_odblock_scatrathermo,  ///< calculate off-diagonal matrix block (derivatives of
                                             ///< scatra residuals w.r.t. thermo dofs) for
                                             ///< scatra-thermo interaction
@@ -64,12 +68,11 @@ namespace SCATRA
                                             ///< thermo residuals w.r.t. scatra dofs) for
                                             ///< scatra-thermo interaction
     calc_subgrid_diffusivity_matrix,        ///< calc_subgrid_diffusivity_matrix,
-    calc_TG_mat_and_rhs,                    ///< levelset_TaylorGalerkin,
-    calc_turbulent_prandtl_number,          ///< calc_turbulent_prandtl_number
-    calc_vreman_scatra,                     ///< calc_vreman_scatra,
-    calc_heteroreac_mat_and_rhs,     ///< calculate RHS and linearizations of heterogeneous reaction
-                                     ///< terms
+    calc_total_and_mean_scalars,     ///< calculate total and mean values of transported scalars
+    calc_turbulent_prandtl_number,   ///< calc_turbulent_prandtl_number
+    calc_vreman_scatra,              ///< calc_vreman_scatra,
     check_scatra_element_parameter,  ///< set parameter defined in every single element
+    evaluate_field_in_point,         ///< evaluates field in given point (in reference coordinates)
     get_material_internal_state,  ///< get material internal state (for postprocessing for example),
     get_material_ionic_currents,  ///< get material ionic currents (for postprocessing for example),
     get_material_parameters,      ///< get_material_parameters,
@@ -87,12 +90,10 @@ namespace SCATRA
     project_neumann_field,          ///< project neumann field for hdg
     recon_curvature_at_nodes,       ///< reconstruct curvature at node points through L2-projection
     recon_gradients_at_nodes,       ///< reconstruct gradients at node points through L2-projection
-    calc_grad_ele_center,           ///< reconstruct gradient at ele center
-    reinitialize_levelset,          ///< reinitialize_levelset,
     set_diffcond_scatra_parameter,  ///< set diffusion-conduction parameters for element evaluation
-    set_elch_scatra_parameter,      ///< set elch parameters for element evaluation
     set_elch_scatra_manifold_parameter,  ///< set parameters to evaluate kinetics model scatra <->
                                          ///< scatra manifold
+    set_elch_scatra_parameter,           ///< set elch parameters for element evaluation
     set_general_scatra_parameter,        ///< set general parameters for element evaluation
     set_initial_field,                   ///< set initial field for hdg
     set_lsreinit_scatra_parameter,       ///< set reinitialization parameters for element evaluation
@@ -102,11 +103,10 @@ namespace SCATRA
     set_time_parameter,                  ///< set time-integration parameters for element evaluation
     set_turbulence_scatra_parameter,     ///< set turbulence parameters for element evaluation
     time_update_material,                ///< time update for materials
-    update_interior_variables,           ///< update interior variables for hdg
     transform_real_to_reference_point,   ///< gets a point in real coordinates and returns reference
                                          ///< coordinates
-    evaluate_field_in_point  ///< evaluates field in given point (in reference coordinates)
-  };                         // enum Action
+    update_interior_variables            ///< update interior variables for hdg
+  };                                     // enum Action
 
 
   /*--------------------------------------------------------------------------*/

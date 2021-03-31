@@ -465,7 +465,8 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphson(
                 << std::endl;
       std::cout << "|                     Newton-Raphson method has not converged after a maximum "
                    "number of "
-                << std::setw(2) << itermax_ << " iterations!                     |" << std::endl;
+                << std::setw(2) << itermax_
+                << " iterations!                                                   |" << std::endl;
     }
 
     // proceed to next time step

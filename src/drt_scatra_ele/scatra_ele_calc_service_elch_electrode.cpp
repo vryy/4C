@@ -46,6 +46,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
       break;
     }
 
+    case SCATRA::calc_manifold_inflow:
+    {
+      CalcManifoldInflow(ele, discretization, la, elevec1_epetra);
+      break;
+    }
+
     default:
     {
       myelch::EvaluateAction(ele, params, discretization, action, la, elemat1_epetra,
@@ -330,11 +336,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
 
   // get states from this field and respective coupled field
   auto manifoldfield = discretization.GetState("phinp");
-  if (manifoldfield == Teuchos::null) dserror("Cannot get state vector phinp!");
   auto coupledfield = elchmanifoldparams_->EvaluateMasterSide()
                           ? discretization.GetState(2, "imasterscatra")
                           : discretization.GetState(2, "scalarfield");
+
+#ifdef DEBUG
+  if (manifoldfield == Teuchos::null) dserror("Cannot get state vector phinp!");
   if (coupledfield == Teuchos::null) dserror("Cannot get state vector scalarfield!");
+#endif
 
   const int differentiationtype =
       params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
@@ -461,6 +470,85 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
             break;
           }
         }
+        break;
+      }
+      case INPAR::SSI::kinetics_noflux:
+      {
+        // do nothing
+        break;
+      }
+      default:
+      {
+        dserror("kinetic model not implemented.");
+        break;
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcManifoldInflow(
+    const DRT::Element* ele, DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseVector& scalars)
+{
+  const int nen = static_cast<int>(my::nen_);
+
+  // get states from this field and respective coupled field
+  auto manifoldfield = discretization.GetState("phinp");
+  auto coupledfield = elchmanifoldparams_->EvaluateMasterSide()
+                          ? discretization.GetState(2, "imasterscatra")
+                          : discretization.GetState(2, "scalarfield");
+
+#ifdef DEBUG
+  if (manifoldfield == Teuchos::null) dserror("Cannot get state vector phinp!");
+  if (coupledfield == Teuchos::null) dserror("Cannot get state vector scalarfield!");
+#endif
+
+  // extract local nodal values from global state vectors
+  std::vector<LINALG::Matrix<nen, 1>> ecoupledfield(
+      my::numdofpernode_, LINALG::Matrix<nen, 1>(true));
+  DRT::UTILS::ExtractMyValues(*manifoldfield, my::ephinp_, la[0].lm_);
+  DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[2].lm_);
+
+  const int kinetic_model = elchmanifoldparams_->KineticModel();
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions and domain integration factor at current integration point
+    const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, gpid);
+
+    const double manifoldpotint = my::funct_.Dot(my::ephinp_[1]);
+    const double coupledpotint = my::funct_.Dot(ecoupledfield[1]);
+
+    switch (kinetic_model)
+    {
+      case INPAR::SSI::kinetics_constantinterfaceresistance:
+      {
+        const double resistance = elchmanifoldparams_->Resistance();
+        const int num_electrons = elchmanifoldparams_->NumElectrons();
+
+        const double inv_fluxresistance = 1.0 / resistance;
+
+        const double j = (manifoldpotint - coupledpotint) * inv_fluxresistance;
+
+        if (j > 0.0)
+        {
+          const double jfac = fac * j;
+
+          for (int i = 0; i < nen; i++)
+          {
+            const double jfac_funct = jfac * my::funct_(i);
+            scalars[0] += jfac_funct;                  // concentration
+            scalars[1] += num_electrons * jfac_funct;  // potential
+          }
+        }
+
         break;
       }
       case INPAR::SSI::kinetics_noflux:

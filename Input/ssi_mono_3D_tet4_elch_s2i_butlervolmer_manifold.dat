@@ -68,6 +68,7 @@ ADD_MANIFOLD                    Yes
 INITIALFIELD                    field_by_condition
 INITFUNCNO                      5
 LINEAR_SOLVER                   1
+OUTPUT_INFLOW                   Yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
