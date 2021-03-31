@@ -295,7 +295,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
   aux(1) = (xcurr(1) - xcurr(4));
   aux(2) = (xcurr(2) - xcurr(5));
 
-  double lcurr = sqrt(pow(aux(0), 2) + pow(aux(1), 2) + pow(aux(2), 2));
+  double lcurr = std::sqrt(std::pow(aux(0), 2) + std::pow(aux(1), 2) + std::pow(aux(2), 2));
 
 
   switch (kintype_)
@@ -303,10 +303,10 @@ void DRT::ELEMENTS::Truss3::t3_energy(
     case tr3_totlag:
     {
       // calculating Green-Lagrange strain epsilon
-      epsilon = 0.5 * (pow(lcurr / lrefe_, 2) - 1.0);
+      epsilon = 0.5 * (std::pow(lcurr / lrefe_, 2) - 1.0);
 
       // W_int = 1/2*E*A*lrefe*\epsilon^2
-      (*intenergy)(0) = 0.5 * (ym * crosssec_ * lrefe_ * pow(epsilon, 2));
+      (*intenergy)(0) = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
     }
     break;
     case tr3_engstrain:
@@ -315,7 +315,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
       epsilon = (lcurr - lrefe_) / lrefe_;
 
       // W_int = 1/2*E*A*lrefe*\epsilon^2
-      (*intenergy)(0) = 0.5 * (ym * crosssec_ * lrefe_ * pow(epsilon, 2));
+      (*intenergy)(0) = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
     }
     break;
     default:
@@ -530,7 +530,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   aux(4) = (xcurr(4) - xcurr(1));
   aux(5) = (xcurr(5) - xcurr(2));
 
-  double lcurr = sqrt(pow(aux(0), 2) + pow(aux(1), 2) + pow(aux(2), 2));
+  double lcurr = std::sqrt(std::pow(aux(0), 2) + std::pow(aux(1), 2) + std::pow(aux(2), 2));
 
   // calculating strain epsilon from node position by scalar product:
   epsilon = (lcurr - lrefe_) / lrefe_;
@@ -574,7 +574,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
 
   for (int i = 0; i < 6; ++i)
     for (int j = 0; j < 6; ++j)
-      DummyStiffMatrix(i, j) += (ym * crosssec_ / pow(lcurr, 3)) * aux(i) * aux(j);
+      DummyStiffMatrix(i, j) += (ym * crosssec_ / std::pow(lcurr, 3)) * aux(i) * aux(j);
 
   // calculating mass matrix.
   if (massmatrix != nullptr)
@@ -619,7 +619,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   aux(5) = nodal_positions_totlag(5) - nodal_positions_totlag(2);
 
   // current length
-  lcurr_ = sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
+  lcurr_ = std::sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
 
   // calculating strain epsilon from node position by scalar product:
   // epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
