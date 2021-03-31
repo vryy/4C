@@ -12,24 +12,18 @@
 #ifndef TRUSS3_H
 #define TRUSS3_H
 
-#include "Teuchos_RCP.hpp"
-#include "Epetra_SerialDenseMatrix.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Vector.h"
-
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 
 #include "Sacado.hpp"
-typedef Sacado::Fad::DFad<double> FAD;
+using FAD = Sacado::Fad::DFad<double>;
 
-// forward declaration ...
 namespace STR
 {
   namespace ELEMENTS
   {
     class ParamsInterface;
-  }  // namespace ELEMENTS
+  }
 }  // namespace STR
 
 namespace DRT
@@ -39,27 +33,28 @@ namespace DRT
     class Truss3Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Truss3Type"; }
+      std::string Name() const override { return "Truss3Type"; }
 
       static Truss3Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Truss3Type instance_;
@@ -93,62 +88,27 @@ namespace DRT
        */
       Truss3(const Truss3& old);
 
-      /*!
-       \brief Destructor
-       */
-      virtual ~Truss3();
+      ~Truss3() override = default;
 
-      /*!
-       \brief Deep copy this instance of Truss3 and return pointer to the copy
 
-       The Clone() method is used by the virtual base class Element in cases
-       where the type of the derived class is unknown and a copy-ctor is needed
-       .
-       */
-      virtual DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
-      /*!
-      \brief Return the location vector of this element
-      */
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
-      virtual void LocationVector(
-          const Discretization& dis, LocationArray& la, bool doDirichlet) const;
+      void LocationVector(
+          const Discretization& dis, LocationArray& la, bool doDirichlet) const override;
 
-      /*!
-       \brief Get shape type of element
-       */
-      virtual DiscretizationType Shape() const;
 
-      /*Print the change in angle of this element*/
+      DiscretizationType Shape() const override;
 
-      virtual LINALG::Matrix<1, 3> DeltaTheta() const;
+      int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 
-      /*!
-       \brief Return unique ParObject id
+      void Pack(DRT::PackBuffer& data) const override;
 
-       Every class implementing ParObject needs a unique id defined at the
-       top of drt_parobject.H
-       */
-      virtual int UniqueParObjectId() const { return Truss3Type::Instance().UniqueParObjectId(); }
 
-      /*!
-       \brief Pack this class so it can be communicated
+      void Unpack(const std::vector<char>& data) override;
 
-       \ref Pack and \ref Unpack are used to communicate this element
-
-       */
-      virtual void Pack(DRT::PackBuffer& data) const;
-
-      /*!
-       \brief Unpack data from a char vector into this class
-
-       \ref Pack and \ref Unpack are used to communicate this element
-
-       */
-      virtual void Unpack(const std::vector<char>& data);
-
-      virtual DRT::ElementType& ElementType() const { return Truss3Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
       //@}
 
@@ -162,22 +122,11 @@ namespace DRT
       //! scale truss reference length
       void ScaleReferenceLength(double scalefac);
 
-      //@}
+      int NumLine() const override { return 1; }
 
-      /*!
-       \brief Return number of lines to this element
-       */
-      virtual int NumLine() const { return 1; }
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
-      /*!
-       \brief Get vector of Teuchos::RCPs to the lines of this element
-       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
-
-      /*!
-       \brief Get number of degrees of freedom of a single node
-       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -186,10 +135,7 @@ namespace DRT
         return 3;
       }
 
-      /*!
-       \brief Get number of degrees of freedom per element not including nodal degrees of freedom
-       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
        \brief Set cross section area of this element
@@ -202,78 +148,19 @@ namespace DRT
        */
       int HowManyRandomNumbersINeed();
 
-      /*!
-       \brief Print this element
-       */
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      //@}
-
-      //! @name Construction
-
-      /*!
-       \brief Read input for this element
-       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
-      //@}
-
-      //! @name Evaluation methods
-
-      /*!
-       \brief Evaluate an element
-
-       An element derived from this class uses the Evaluate method to receive commands
-       and parameters from some control routine in params and evaluates element matrices and
-       vectors accoring to the command in params.
-
-       \note This class implements a dummy of this method that prints a warning and
-       returns false.
-
-       \param params (in/out)    : ParameterList for communication between control routine
-       and elements
-       \param discretization (in): A reference to the underlying discretization
-       \param lm (in)            : location vector of this element
-       \param elemat1 (out)      : matrix to be filled by element depending on commands
-       given in params
-       \param elemat2 (out)      : matrix to be filled by element depending on commands
-       given in params
-       \param elevec1 (out)      : vector to be filled by element depending on commands
-       given in params
-       \param elevec2 (out)      : vector to be filled by element depending on commands
-       given in params
-       \param elevec3 (out)      : vector to be filled by element depending on commands
-       given in params
-       \return 0 if successful, negative otherwise
-       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
-      /*!
-       \brief Evaluate a Neumann boundary condition
-
-       An element derived from this class uses the EvaluateNeumann method to receive commands
-       and parameters from some control routine in params and evaluates a Neumann boundary condition
-       given in condition
-
-       \note This class implements a dummy of this method that prints a warning and
-       returns false.
-
-       \param params (in/out)    : ParameterList for communication between control routine
-       and elements
-       \param discretization (in): A reference to the underlying discretization
-       \param condition (in)     : The condition to be evaluated
-       \param lm (in)            : location vector of this element
-       \param elevec1 (out)      : Force vector to be filled by element
-
-       \return 0 if successful, negative otherwise
-       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
        \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -292,64 +179,17 @@ namespace DRT
                                                // space, number of degrees of freedom per node
       void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
 
-      //!\brief return cross section of the truss
-      const double& CSec() const { return crosssec_; }
-
-      double ReturnNormMoment() const
-      {
-        // for now constant, since we only implemented 4-noded interpolated element with linear
-        // shape functions
-        return NormMoment;
-      }
-
-      double ReturnNormForce() const
-      {
-        // for now constant, since we only implemented 4-noded interpolated element with linear
-        // shape functions
-        return NormForce;
-      }
-
-      double ReturnRatioNormForceMoment() const
-      {
-        // for now constant, since we only implemented 4-noded interpolated element with linear
-        // shape functions
-        return RatioNormForceMoment;
-      }
-
-      //! \brief return reference length
-      const double& L0() const { return lrefe_; }
-
       //! \brief return reference length
       double Lcurr() const { return lcurr_; }
 
       //! get internal (elastic) energy of element
-      double GetInternalEnergy() const { return Eint_; };
+      double GetInternalEnergy() const { return eint_; };
 
-      //! \brief return change in angle between filaments
-      double GetDeltaTheta() const { return abs(deltatheta_(2)); }
+      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
+      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
-      //@}
-
-      /*! \brief set the parameter interface ptr for the solid elements
-       *
-       *  \param p (in): Parameter list coming from the time integrator.
-       *
-       *  \author hiermeier
-       *  \date 04/16 */
-      virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
-
-      /*! \brief returns true if the parameter interface is defined and initialized, otherwise false
-       *
-       *  \author hiermeier
-       *  \date 04/16 */
-      virtual inline bool IsParamsInterface() const { return (not interface_ptr_.is_null()); }
-
-      /*! \brief get access to the parameter interface pointer
-       *
-       *  \author hiermeier
-       *  \date 04/16 */
-      virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
       /*! \brief calculate internal force vector and stiffness matrix based
        *         on absolute nodal positions (using kinematic type tr3_totlag)
@@ -430,14 +270,8 @@ namespace DRT
       //! cross section area
       double crosssec_;
 
-      // L2 norm of total moment
-      double NormMoment;
-      // L2 norm of total force
-      double NormForce;
-      // Ratio of norm of Force to Moment
-      double RatioNormForceMoment;
       //! internal energy of element
-      double Eint_;
+      double eint_;
 
       //! angle of last time step (necessary for PTC scheme)
       LINALG::Matrix<3, 1> Theta0_;
@@ -592,13 +426,10 @@ namespace DRT
       void NodeShift(Teuchos::ParameterList& params,  //!< parameter list
           std::vector<double>& disp);                 //!< element disp vector
 
-      //@}
-      //! Calculates Signum function of a given "value"
-      double Signum(double value);
+
       // don't want = operator
       Truss3& operator=(const Truss3& old);
     };
-    // class Truss3
 
     // << operator
     std::ostream& operator<<(std::ostream& os, const DRT::Element& ele);

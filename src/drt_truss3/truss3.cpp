@@ -10,10 +10,7 @@
 
 #include "truss3.H"
 #include "../drt_beam3/beam3eb.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils_nullspace.H"
-//#include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -23,7 +20,7 @@ DRT::ELEMENTS::Truss3Type& DRT::ELEMENTS::Truss3Type::Instance() { return instan
 
 DRT::ParObject* DRT::ELEMENTS::Truss3Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::Truss3* object = new DRT::ELEMENTS::Truss3(-1, -1);
+  auto* object = new DRT::ELEMENTS::Truss3(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -85,12 +82,9 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
       deltatheta_(LINALG::Matrix<1, 3>(true)),
       material_(0),
-      lrefe_(0),
-      lcurr_(0),
-      crosssec_(0),
-      NormMoment(0),
-      NormForce(0),
-      RatioNormForceMoment(0),
+      lrefe_(0.0),
+      lcurr_(0.0),
+      crosssec_(0.0),
       Theta0_(LINALG::Matrix<3, 1>(true)),
       Theta_(LINALG::Matrix<3, 1>(true)),
       kintype_(tr3_totlag),
@@ -98,7 +92,6 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       // hence enough to integrate 3rd order polynomials exactly
       gaussrule_(DRT::UTILS::intrule_line_2point)
 {
-  return;
 }
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 08/08|
@@ -118,15 +111,11 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
       jacobimass_(old.jacobimass_),
       jacobinode_(old.jacobinode_),
       crosssec_(old.crosssec_),
-      NormMoment(old.NormMoment),
-      NormForce(old.NormForce),
-      RatioNormForceMoment(old.RatioNormForceMoment),
       Theta0_(old.Theta0_),
       Theta_(old.Theta_),
       kintype_(old.kintype_),
       gaussrule_(old.gaussrule_)
 {
-  return;
 }
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Truss3 and return pointer to it (public) |
@@ -134,14 +123,9 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Truss3::Clone() const
 {
-  DRT::ELEMENTS::Truss3* newelement = new DRT::ELEMENTS::Truss3(*this);
+  auto* newelement = new DRT::ELEMENTS::Truss3(*this);
   return newelement;
 }
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            cyron 08/08|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Truss3::~Truss3() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -152,19 +136,6 @@ void DRT::ELEMENTS::Truss3::Print(std::ostream& os) const
   os << "Truss3 ";
   Element::Print(os);
   os << " gaussrule_: " << gaussrule_ << " ";
-  return;
-}
-
-
-
-/*----------------------------------------------------------------------*
- | Print the change in angle of this element            mukherjee 10/14 |
- *----------------------------------------------------------------------*/
-LINALG::Matrix<1, 3> DRT::ELEMENTS::Truss3::DeltaTheta() const
-{
-  // for now constant, since we only implemented 4-noded interpolated element with linear shape
-  // functions
-  return deltatheta_;
 }
 
 /*----------------------------------------------------------------------*
@@ -199,16 +170,11 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, jacobimass_);
   AddtoPack(data, jacobinode_);
   AddtoPack(data, crosssec_);
-  AddtoPack(data, NormMoment);
-  AddtoPack(data, NormForce);
-  AddtoPack(data, RatioNormForceMoment);
   AddtoPack<3, 1>(data, Theta0_);
   AddtoPack<3, 1>(data, Theta_);
   AddtoPack(data, gaussrule_);  // implicit conversion from enum to integer
   AddtoPack(data, kintype_);
   AddtoPack(data, data_);
-
-  return;
 }
 
 
@@ -239,9 +205,6 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, jacobimass_);
   ExtractfromPack(position, data, jacobinode_);
   ExtractfromPack(position, data, crosssec_);
-  ExtractfromPack(position, data, NormMoment);
-  ExtractfromPack(position, data, NormForce);
-  ExtractfromPack(position, data, RatioNormForceMoment);
   ExtractfromPack<3, 1>(position, data, Theta0_);
   ExtractfromPack<3, 1>(position, data, Theta_);
   // gaussrule_
@@ -257,7 +220,6 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -380,9 +342,11 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(
     const std::vector<double>& xrefe, const std::vector<double>& rotrefe)
 {
   if (isinit_)
+  {
     dserror(
         " You are about to setup an element that has already been set up. That does not make "
         "sense.");
+  }
 
   isinit_ = true;
 
@@ -431,8 +395,8 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(
     {
       double dotprod = 0.0;
       LINALG::Matrix<1, 3> crossprod(true);
-      double CosTheta = 0.0;
-      double SinTheta = 0.0;
+
+      double CosTheta, SinTheta;
 
       if (location == 0)
       {
@@ -513,9 +477,6 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(
       Theta0_(location) = ThetaRef_[location];
     }
   }
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -578,7 +539,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
 
         if (doDirichlet)
         {
-          const std::vector<int>* flag = NULL;
+          const std::vector<int>* flag = nullptr;
           DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
@@ -602,17 +563,17 @@ void DRT::ELEMENTS::Truss3::LocationVector(
 
     // fill the vector with element dofs
     const int owner = Owner();
-    std::vector<int> dof = dis.Dof(dofset, this);
-    if (dof.size()) lmstride.push_back(dof.size());
-    for (unsigned j = 0; j < dof.size(); ++j)
+    std::vector<int> dofs = dis.Dof(dofset, this);
+    if (dofs.size()) lmstride.push_back(dofs.size());
+    for (int& dof : dofs)
     {
       lmowner.push_back(owner);
-      lm.push_back(dof[j]);
+      lm.push_back(dof);
     }
 
     if (doDirichlet)
     {
-      const std::vector<int>* flag = NULL;
+      const std::vector<int>* flag = nullptr;
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
@@ -623,7 +584,7 @@ void DRT::ELEMENTS::Truss3::LocationVector(
           dserror("condition with name Dirichlet is not of type Dirichlet");
         flag = dirich->Get<std::vector<int>>("onoff");
       }
-      for (unsigned j = 0; j < dof.size(); ++j)
+      for (unsigned j = 0; j < dofs.size(); ++j)
       {
         if (flag && (*flag)[j])
           lmdirich.push_back(1);
@@ -631,16 +592,12 @@ void DRT::ELEMENTS::Truss3::LocationVector(
           lmdirich.push_back(0);
       }
     }
-
-  }  // for (int dofset=0; dofset<la.Size(); ++dofset)
-
-  return;
+  }
 }
 
 
 int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 {
-  //  dserror("stop. Please modify the way reference tangent is calculated!");
   // reference node positions
   std::vector<double> xrefe;
 
@@ -660,11 +617,11 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
     // if we get so far current element is a truss3 element and  we get a pointer at it
-    DRT::ELEMENTS::Truss3* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));
+    auto* currele = dynamic_cast<DRT::ELEMENTS::Truss3*>(dis.lColElement(i));
     if (!currele) dserror("cast to Truss3* failed");
 
     // getting element's nodal coordinates and treating them as reference configuration
-    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+    if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
     {
@@ -675,22 +632,21 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
     // ask the truss element about the first element the first node is connected to
     DRT::Element* Element = currele->Nodes()[0]->Elements()[0];
     // Check via dynamic cast, if it's a beam3eb element
-    DRT::ELEMENTS::Beam3eb* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
-    if (BeamElement != NULL)
+    auto* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
+    if (BeamElement != nullptr)
     {
       for (int k = 0; k < 2; k++)  // element has two nodes
+      {
         for (int l = 0; l < 3; l++)
         {
           trefNodeAux = BeamElement->Tref()[k];
           rotrefe[k * 3 + l] = trefNodeAux(l);
         }
+      }
     }
 
     currele->SetUpReferenceGeometry(xrefe, rotrefe);
-
-
-  }  // for (int i=0; i<dis_.NumMyColElements(); ++i)
-
+  }
 
   return 0;
 }
@@ -701,8 +657,10 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 void DRT::ELEMENTS::Truss3::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
+  {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
         p.get<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface"));
+  }
   else
     interface_ptr_ = Teuchos::null;
 }
