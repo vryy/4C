@@ -80,13 +80,10 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
       data_(),
       isinit_(false),
       diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
-      deltatheta_(LINALG::Matrix<1, 3>(true)),
       material_(0),
       lrefe_(0.0),
       lcurr_(0.0),
       crosssec_(0.0),
-      Theta0_(LINALG::Matrix<3, 1>(true)),
-      Theta_(LINALG::Matrix<3, 1>(true)),
       kintype_(tr3_totlag),
       // note: for corotational approach integration for Neumann conditions only
       // hence enough to integrate 3rd order polynomials exactly
@@ -102,17 +99,13 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
       isinit_(old.isinit_),
       X_(old.X_),
       trefNode_(old.trefNode_),
-      ThetaRef_(old.ThetaRef_),
       diff_disp_ref_(old.diff_disp_ref_),
-      deltatheta_(old.deltatheta_),
       material_(old.material_),
       lrefe_(old.lrefe_),
       lcurr_(old.lcurr_),
       jacobimass_(old.jacobimass_),
       jacobinode_(old.jacobinode_),
       crosssec_(old.crosssec_),
-      Theta0_(old.Theta0_),
-      Theta_(old.Theta_),
       kintype_(old.kintype_),
       gaussrule_(old.gaussrule_)
 {
@@ -161,17 +154,13 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, isinit_);
   AddtoPack<6, 1>(data, X_);
   AddtoPack(data, trefNode_);
-  AddtoPack(data, ThetaRef_);
   AddtoPack<1, 3>(data, diff_disp_ref_);
-  AddtoPack<1, 3>(data, deltatheta_);
   AddtoPack(data, material_);
   AddtoPack(data, lrefe_);
   AddtoPack(data, lcurr_);
   AddtoPack(data, jacobimass_);
   AddtoPack(data, jacobinode_);
   AddtoPack(data, crosssec_);
-  AddtoPack<3, 1>(data, Theta0_);
-  AddtoPack<3, 1>(data, Theta_);
   AddtoPack(data, gaussrule_);  // implicit conversion from enum to integer
   AddtoPack(data, kintype_);
   AddtoPack(data, data_);
@@ -196,17 +185,13 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   isinit_ = ExtractInt(position, data);
   ExtractfromPack<6, 1>(position, data, X_);
   ExtractfromPack(position, data, trefNode_);
-  ExtractfromPack(position, data, ThetaRef_);
   ExtractfromPack<1, 3>(position, data, diff_disp_ref_);
-  ExtractfromPack<1, 3>(position, data, deltatheta_);
   ExtractfromPack(position, data, material_);
   ExtractfromPack(position, data, lrefe_);
   ExtractfromPack(position, data, lcurr_);
   ExtractfromPack(position, data, jacobimass_);
   ExtractfromPack(position, data, jacobinode_);
   ExtractfromPack(position, data, crosssec_);
-  ExtractfromPack<3, 1>(position, data, Theta0_);
-  ExtractfromPack<3, 1>(position, data, Theta_);
   // gaussrule_
   int gausrule_integer;
   ExtractfromPack(position, data, gausrule_integer);
@@ -338,8 +323,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(
-    const std::vector<double>& xrefe, const std::vector<double>& rotrefe)
+void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xrefe)
 {
   if (isinit_)
   {
@@ -367,116 +351,6 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(
   jacobinode_.resize(2);
   jacobinode_[0] = lrefe_ / 2.0;
   jacobinode_[1] = lrefe_ / 2.0;
-
-  double abs_rotrefe = 0;
-  for (int i = 0; i < 6; ++i) abs_rotrefe += rotrefe[i] * rotrefe[i];
-
-  if (abs_rotrefe != 0)
-  {
-    // assign size to the vector
-    ThetaRef_.resize(3);
-    trefNode_.resize(3);
-
-    for (int node = 0; node < 2; node++)
-    {
-      trefNode_[node].Clear();
-      for (int dof = 0; dof < 3; dof++) trefNode_[node](dof) = rotrefe[3 * node + dof];
-    }
-    diff_disp_ref_.Clear();
-
-    // Calculate reference directional vector of the truss element
-    for (int j = 0; j < 3; ++j)
-    {
-      diff_disp_ref_(j) = Nodes()[1]->X()[j] - Nodes()[0]->X()[j];
-    }
-
-    for (int location = 0; location < 3;
-         location++)  // Location of torsional spring. There are three locations
-    {
-      double dotprod = 0.0;
-      LINALG::Matrix<1, 3> crossprod(true);
-
-      double CosTheta, SinTheta;
-
-      if (location == 0)
-      {
-        double norm_v_ref = diff_disp_ref_.Norm2();
-        double norm_t1_ref = trefNode_[location].Norm2();
-        for (int j = 0; j < 3; ++j) dotprod += trefNode_[location](j) * diff_disp_ref_(j);
-
-        CosTheta = dotprod / (norm_v_ref * norm_t1_ref);
-
-        // Cross Product
-        crossprod(0) =
-            trefNode_[location](1) * diff_disp_ref_(2) - trefNode_[location](2) * diff_disp_ref_(1);
-        crossprod(1) =
-            trefNode_[location](2) * diff_disp_ref_(0) - trefNode_[location](0) * diff_disp_ref_(2);
-        crossprod(2) =
-            trefNode_[location](0) * diff_disp_ref_(1) - trefNode_[location](1) * diff_disp_ref_(0);
-
-        double norm = crossprod.Norm2();
-        SinTheta = norm / (norm_v_ref * norm_t1_ref);
-      }
-      else if (location == 1)
-      {
-        double norm_v_ref = diff_disp_ref_.Norm2();
-        double norm_t2_ref = trefNode_[location].Norm2();
-        for (int j = 0; j < 3; ++j)
-          dotprod +=
-              trefNode_[location](j) * diff_disp_ref_(j);  // From the opposite direction v_2 =-v_1
-
-        CosTheta = dotprod / (norm_v_ref * norm_t2_ref);
-
-        // cross product
-        crossprod(0) =
-            trefNode_[location](1) * diff_disp_ref_(2) - trefNode_[location](2) * diff_disp_ref_(1);
-        crossprod(1) =
-            trefNode_[location](2) * diff_disp_ref_(0) - trefNode_[location](0) * diff_disp_ref_(2);
-        crossprod(2) =
-            trefNode_[location](0) * diff_disp_ref_(1) - trefNode_[location](1) * diff_disp_ref_(0);
-        double norm = crossprod.Norm2();
-        SinTheta = norm / (norm_v_ref * norm_t2_ref);
-      }
-      else  // i.e. for calculation of reference angle between t1 & t2
-      {
-        double norm_t1_ref = trefNode_[location - 2].Norm2();
-        double norm_t2_ref = trefNode_[location - 1].Norm2();
-        for (int j = 0; j < 3; ++j)
-          dotprod += trefNode_[location - 1](j) * trefNode_[location - 2](j);
-
-        CosTheta = dotprod / (norm_t1_ref * norm_t2_ref);
-
-        // cross product
-        crossprod(0) = trefNode_[location - 2](1) * trefNode_[location - 1](2) -
-                       trefNode_[location - 2](2) * trefNode_[location - 1](1);
-        crossprod(1) = trefNode_[location - 2](2) * trefNode_[location - 1](0) -
-                       trefNode_[location - 2](0) * trefNode_[location - 1](2);
-        crossprod(2) = trefNode_[location - 2](0) * trefNode_[location - 1](1) -
-                       trefNode_[location - 2](1) * trefNode_[location - 1](0);
-
-        double norm = crossprod.Norm2();
-        SinTheta = norm / (norm_t1_ref * norm_t2_ref);
-      }
-
-      double ThetaBoundary1 = M_PI / 4;
-      double ThetaBoundary2 = 3 * M_PI / 4;
-
-      ThetaRef_[location] = 0;
-      if (SinTheta >= 0)
-      {
-        if (CosTheta >= cos(ThetaBoundary1))
-          ThetaRef_[location] = asin(SinTheta);
-        else if (CosTheta <= cos(ThetaBoundary2))
-          ThetaRef_[location] = M_PI - asin(SinTheta);
-        else
-          ThetaRef_[location] = acos(CosTheta);
-      }
-      else
-        dserror("Angle more than 180 degrees!");
-
-      Theta0_(location) = ThetaRef_[location];
-    }
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -602,12 +476,9 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
   std::vector<double> xrefe;
 
   // reference nodal tangent positions
-  std::vector<double> rotrefe;
   LINALG::Matrix<3, 1> trefNodeAux(true);
   // resize vectors for the number of coordinates we need to store
   xrefe.resize(3 * 2);
-  rotrefe.resize(3 * 2);
-  for (int i = 0; i < 6; i++) rotrefe[i] = 0;
 
   // setting beam reference director correctly
   for (int i = 0; i < dis.NumMyColElements(); ++i)
@@ -629,23 +500,7 @@ int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
         for (int l = 0; l < 3; l++) xrefe[k * 3 + l] = currele->Nodes()[k]->X()[l];
     }
 
-    // ask the truss element about the first element the first node is connected to
-    DRT::Element* Element = currele->Nodes()[0]->Elements()[0];
-    // Check via dynamic cast, if it's a beam3eb element
-    auto* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
-    if (BeamElement != nullptr)
-    {
-      for (int k = 0; k < 2; k++)  // element has two nodes
-      {
-        for (int l = 0; l < 3; l++)
-        {
-          trefNodeAux = BeamElement->Tref()[k];
-          rotrefe[k * 3 + l] = trefNodeAux(l);
-        }
-      }
-    }
-
-    currele->SetUpReferenceGeometry(xrefe, rotrefe);
+    currele->SetUpReferenceGeometry(xrefe);
   }
 
   return 0;
