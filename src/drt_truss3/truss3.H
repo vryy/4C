@@ -70,13 +70,10 @@ namespace DRT
       //! @name Friends
       friend class Truss3Type;
 
-      //! @name Constructors and destructors and related methods
-
       /*!
        \brief Standard Constructor
 
        \param id    (in): A globally unique element id
-       \param etype (in): Type of element
        \param owner (in): owner processor of the element
        */
       Truss3(int id, int owner);
@@ -90,7 +87,6 @@ namespace DRT
 
       ~Truss3() override = default;
 
-
       DRT::Element* Clone() const override;
 
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
@@ -98,13 +94,11 @@ namespace DRT
       void LocationVector(
           const Discretization& dis, LocationArray& la, bool doDirichlet) const override;
 
-
       DiscretizationType Shape() const override;
 
       int UniqueParObjectId() const override { return Truss3Type::Instance().UniqueParObjectId(); }
 
       void Pack(DRT::PackBuffer& data) const override;
-
 
       void Unpack(const std::vector<char>& data) override;
 
@@ -134,15 +128,11 @@ namespace DRT
 
       int NumDofPerElement() const override { return 0; }
 
-      /*!
-       \brief Set cross section area of this element
-       */
+      //! set cross section area of this element
       void SetCrossSec(const double& crosssec);
 
-      /*!
-       \brief computes the number of different random numbers required in each time step for
-       generation of stochastic forces
-       */
+      //! computes the number of different random numbers required in each time step for  generation
+      //! of stochastic forces
       int HowManyRandomNumbersINeed();
 
       void Print(std::ostream& os) const override;
@@ -159,24 +149,17 @@ namespace DRT
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
           Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
-      /*!
-       \brief Evaluate PTC addition to stiffness for free Brownian motion
-
-       An element derived from this class uses the Evaluate method to receive commands
-       and parameters from some control routine in params and evaluates a  statistical Neumann
-       boundary condition as used in the problem type STATISTICAL MECHANICS
-
-       \param params (in/out)       : ParameterList for communication between control routine and
-       elements \param vector<double> mydisp : current nodal displacement \param elemat1 (out) :
-       artificial damping matrix to be filled by element
-
-       \return 0 if successful, negative otherwise
-       */
-      template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
-                                               // space, number of degrees of freedom per node
+      //! \brief
+      //!
+      //! \tparam nnode    number of nodes
+      //! \tparam ndim     number of dimensions of embedding space
+      //! \tparam dof      number of degrees of freedom per node
+      //! \param params    parameter list
+      //! \param elemat1   elemental matrix
+      template <int nnode, int ndim, int dof>
       void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
 
-      //! \brief return reference length
+      //! return reference length
       double Lcurr() const { return lcurr_; }
 
       //! get internal (elastic) energy of element
@@ -188,19 +171,13 @@ namespace DRT
 
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
-      /*! \brief calculate internal force vector and stiffness matrix based
-       *         on absolute nodal positions (using kinematic type tr3_totlag)
-       *
-       *  \author grill
-       *  \date 08/17 */
+      //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
+      //! positions (using kinematic type tr3_totlag)
       void CalcInternalForceStiffTotLag(const LINALG::Matrix<6, 1>& nodal_positions_totlag,
           Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat);
 
      protected:
-      /** \brief get access to the interface
-       *
-       *  \author hiermeier
-       *  \date 04/16 */
+      //! get access to the parameter interface
       inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
       {
         if (not IsParamsInterface()) dserror("The interface ptr is not set!");
@@ -223,9 +200,7 @@ namespace DRT
         tr3_engstrain
       };
 
-      /*! \brief interface ptr
-       *
-       *  data exchange between the element and the time integrator. */
+      //!  data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
       //! container containing all kind of Truss3 thisandthat
@@ -270,13 +245,11 @@ namespace DRT
       //! gaussrule_ will be initialized automatically to a 2 point integration rule
       DRT::UTILS::GaussRule1D gaussrule_;
 
-      //! @name Internal calculation methods
-
       //! determine Gauss rule from required type of integration
       DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
-      //! calculation of nonlinear stiffness and mass matrix switching between total lagrange and
-      //! enginerring strains
+      //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
+      //! and enginerring strains
       void t3_nlnstiffmass(Teuchos::ParameterList& params, std::vector<double>& vel,
           std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
           Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force);
@@ -290,14 +263,12 @@ namespace DRT
           Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
           Epetra_SerialDenseVector& DummyForce);
 
-      /*!
-       * \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain
-       * measure.
-       *
-       * Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses
-       * \f$\varepsilon=\Delta d / d\f$ as strain measure.
-       *
-       */
+      //!
+      //! \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain
+      //! measure.
+      //!
+      //! Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses
+      //! \f$\varepsilon=\Delta d / d\f$ as strain measure.
       void t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& DummyDisp,
           Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
           Epetra_SerialDenseVector& DummyForce);
@@ -305,21 +276,25 @@ namespace DRT
       //! lump mass matrix
       void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
 
-      //@}
-
-      //! @name Methods for Brownian dynamics simulations
-
       //! compute damping matrix and statistical forces according to fluctuation dissipation theorem
+      //!
+      //! \tparam nnode             number of nodes
+      //! \tparam ndim              number of dimensions of embedding space
+      //! \tparam dof               number of degrees of freedom per node
+      //! \tparam randompergauss    number of random numbers required per Gauss point
+      //! \param params             parameter list
+      //! \param DummyVel           element velocity vector
+      //! \param DummyDisp          element disp vector
+      //! \param DummyStiffMatrix   element stiffness matrix
+      //! \param DummyForce         element internal force vector
       template <int nnode, int ndim, int dof,
-          int randompergauss>  // number of nodes, number of dimensions of embedding space, number
-                               // of degrees of freedom per node, number of random numbers required
-                               // per Gauss point
+          int randompergauss>  //
       void
-      CalcBrownian(Teuchos::ParameterList& params,     //!< parameter list
-          const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
-          const LINALG::Matrix<1, 6>& DummyDisp,       //!< element disp vector
-          Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector& DummyForce);       //!< element internal force vector
+      CalcBrownian(Teuchos::ParameterList& params,     //!<
+          const LINALG::Matrix<1, 6>& DummyVel,        //!<
+          const LINALG::Matrix<1, 6>& DummyDisp,       //!<
+          Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!<
+          Epetra_SerialDenseVector& DummyForce);       //!<
 
       //!  \brief shifts nodes so that proper evaluation is possible even in case of periodic
       //!  boundary conditions
@@ -330,7 +305,6 @@ namespace DRT
       //! \param disp     element disp vector
       template <int nnode, int ndim>
       void NodeShift(Teuchos::ParameterList& params, std::vector<double>& disp);
-
 
       // don't want = operator
       Truss3& operator=(const Truss3& old);

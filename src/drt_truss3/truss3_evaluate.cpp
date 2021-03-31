@@ -710,21 +710,14 @@ int DRT::ELEMENTS::Truss3::HowManyRandomNumbersINeed()
 
 }  // DRT::ELEMENTS::Beam3::HowManyRandomNumbersINeed
 
-
 /*-----------------------------------------------------------------------------------------------------------*
  | Assemble stochastic and viscous forces and respective stiffness according to fluctuation
  dissipation      | | theorem (public) cyron 03/10|
  *----------------------------------------------------------------------------------------------------------*/
-template <int nnode, int ndim, int dof,
-    int randompergauss>  // number of nodes, number of dimensions of embedding space, number of
-                         // degrees of freedom per node, number of random numbers required per Gauss
-                         // point
-inline void
-DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList& params,
-    const LINALG::Matrix<1, 6>& DummyVel,        //!< element velocity vector
-    const LINALG::Matrix<1, 6>& DummyDisp,       //!< element displacement vector
-    Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector& DummyForce)        //!< element internal force vector
+template <int nnode, int ndim, int dof, int randompergauss>
+inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList& params,
+    const LINALG::Matrix<1, 6>& DummyVel, const LINALG::Matrix<1, 6>& DummyDisp,
+    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseVector& DummyForce)
 {
   // if no random numbers for generation of stochastic forces are passed to the element no Brownian
   // dynamics calculations are conducted
@@ -745,9 +738,9 @@ DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList& params,
  change in global variables performed)          |                                 | | (public) cyron
  10/09|
  *----------------------------------------------------------------------------------------------------------*/
-template <int nnode, int ndim>  // number of nodes, number of dimensions
-inline void DRT::ELEMENTS::Truss3::NodeShift(Teuchos::ParameterList& params,  //!< parameter list
-    std::vector<double>& disp)  //!< element disp vector
+template <int nnode, int ndim>
+inline void DRT::ELEMENTS::Truss3::NodeShift(
+    Teuchos::ParameterList& params, std::vector<double>& disp)
 {
   dserror(
       "Truss3::NodeShift is deprecated; if needed adapt parameter handling according to parameter "
