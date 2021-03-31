@@ -145,12 +145,14 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
         t3_nlnstiffmass(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
+      {
         t3_nlnstiffmass(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
+        t3_lumpmass(&elemat2);
+      }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
         t3_nlnstiffmass(params, myvel, mydisp, &elemat1, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_internalforce)
         t3_nlnstiffmass(params, myvel, mydisp, nullptr, nullptr, &elevec1);
-
 
       /*
         //the following code block can be used to check quickly whether the nonlinear stiffness
@@ -438,6 +440,8 @@ void DRT::ELEMENTS::Truss3::EvaluatePTC(
 void DRT::ELEMENTS::Truss3::t3_energy(
     Teuchos::ParameterList& params, std::vector<double>& disp, Epetra_SerialDenseVector* intenergy)
 {
+  intenergy->Resize(1);
+
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
   double ym = 0.0;
@@ -463,7 +467,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
   LINALG::Matrix<6, 1> xcurr;
 
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6, 1> aux;
+  LINALG::Matrix<3, 1> aux;
 
   // strain
   double epsilon;
@@ -479,9 +483,6 @@ void DRT::ELEMENTS::Truss3::t3_energy(
   aux(0) = (xcurr(0) - xcurr(3));
   aux(1) = (xcurr(1) - xcurr(4));
   aux(2) = (xcurr(2) - xcurr(5));
-  aux(3) = (xcurr(3) - xcurr(0));
-  aux(4) = (xcurr(4) - xcurr(1));
-  aux(5) = (xcurr(5) - xcurr(2));
 
   double lcurr = sqrt(pow(aux(0), 2) + pow(aux(1), 2) + pow(aux(2), 2));
 
