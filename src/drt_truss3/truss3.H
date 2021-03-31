@@ -321,48 +321,15 @@ namespace DRT
           Epetra_SerialDenseMatrix& DummyStiffMatrix,  //!< element stiffness matrix
           Epetra_SerialDenseVector& DummyForce);       //!< element internal force vector
 
-      //! computes damping coefficients for employed friction model
-      void MyDampingConstants(Teuchos::ParameterList& params, LINALG::Matrix<3, 1>& gamma);
-
-      //! computes translational damping forces and stiffness
-      template <int nnode, int ndim,
-          int dof>  // number of nodes, number of dimensions of embedding space, number of degrees
-                    // of freedom per node
-      void
-      MyTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<1, 6>& DummyVel,               //!< element velocity vector
-          const LINALG::Matrix<1, 6>& DummyDisp,              //!< element disp vector
-          Epetra_SerialDenseMatrix& DummyStiffMatrix,         //!< element stiffness matrix
-          Epetra_SerialDenseVector& DummyForce);              //!< element internal force vector
-
-      //! computes stochastic translational forces and resulting stiffness
-      template <int nnode, int ndim, int dof,
-          int randompergauss>  // number of nodes, number of dimensions of embedding space, number
-                               // of degrees of freedom per node, number of random numbers required
-                               // per Gauss point
-      void
-      MyStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<1, 6>& DummyVel,           //!< element velocity vector
-          const LINALG::Matrix<1, 6>& DummyDisp,          //!< element disp vector
-          Epetra_SerialDenseMatrix& DummyStiffMatrix,     //!< element stiffness matrix
-          Epetra_SerialDenseVector& DummyForce);          //!< element internal force vector
-
-      //! computes velocity of background fluid and gradient of that velocity at a certain
-      //! evaluation point in the physical space and adds respective terms to internal forces and
-      //! damping matrix
-      template <int ndim>  // number of dimensions of embedding space
-      void MyBackgroundVelocity(Teuchos::ParameterList& params,  //!< parameter list
-          const LINALG::Matrix<ndim, 1>& evaluationpoint,  //!< point at which background velocity
-                                                           //!< and its gradient has to be computed
-          LINALG::Matrix<ndim, 1>& velbackground,          //!< velocity of background fluid
-          LINALG::Matrix<ndim, ndim>&
-              velbackgroundgrad);  //!< gradient of velocity of background fluid
-
-      //! shifts nodes so that proper evaluation is possible even in case of periodic boundary
-      //! conditions
-      template <int nnode, int ndim>                  // number of nodes, number of dimensions
-      void NodeShift(Teuchos::ParameterList& params,  //!< parameter list
-          std::vector<double>& disp);                 //!< element disp vector
+      //!  \brief shifts nodes so that proper evaluation is possible even in case of periodic
+      //!  boundary conditions
+      //!
+      //! \tparam nnode   number of nodes
+      //! \tparam ndim    number of dimensions
+      //! \param params   parameter list
+      //! \param disp     element disp vector
+      template <int nnode, int ndim>
+      void NodeShift(Teuchos::ParameterList& params, std::vector<double>& disp);
 
 
       // don't want = operator
