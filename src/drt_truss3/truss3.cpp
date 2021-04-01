@@ -77,17 +77,17 @@ void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
     : DRT::Element(id, owner),
-      data_(),
-      isinit_(false),
-      diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
-      material_(0),
-      lrefe_(0.0),
-      lcurr_(0.0),
       crosssec_(0.0),
-      kintype_(tr3_totlag),
+      data_(),
+      diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
       // note: for corotational approach integration for Neumann conditions only
       // hence enough to integrate 3rd order polynomials exactly
-      gaussrule_(DRT::UTILS::intrule_line_2point)
+      gaussrule_(DRT::UTILS::intrule_line_2point),
+      isinit_(false),
+      kintype_(tr3_totlag),
+      lcurr_(0.0),
+      lrefe_(0.0),
+      material_(0)
 {
 }
 /*----------------------------------------------------------------------*
@@ -95,19 +95,19 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
     : DRT::Element(old),
+      crosssec_(old.crosssec_),
       data_(old.data_),
-      isinit_(old.isinit_),
-      X_(old.X_),
-      trefNode_(old.trefNode_),
       diff_disp_ref_(old.diff_disp_ref_),
-      material_(old.material_),
-      lrefe_(old.lrefe_),
-      lcurr_(old.lcurr_),
+      gaussrule_(old.gaussrule_),
+      isinit_(old.isinit_),
       jacobimass_(old.jacobimass_),
       jacobinode_(old.jacobinode_),
-      crosssec_(old.crosssec_),
       kintype_(old.kintype_),
-      gaussrule_(old.gaussrule_)
+      lcurr_(old.lcurr_),
+      lrefe_(old.lrefe_),
+      material_(old.material_),
+      trefNode_(old.trefNode_),
+      X_(old.X_)
 {
 }
 /*----------------------------------------------------------------------*
