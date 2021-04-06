@@ -25,6 +25,8 @@
 
 #include "../drt_so3/so3_scatra.H"
 
+#include "../drt_truss3/truss3_scatra.H"
+
 #include "../drt_w1/wall1_scatra.H"
 
 /*----------------------------------------------------------------------*
@@ -174,7 +176,14 @@ INPAR::SCATRA::ImplType SSI::ScatraStructureCloneStrategy::GetImplType(DRT::Elem
   }
   // membrane9 scatra element
   else if (eletypename == "MembraneScatra_quad9Type")
+  {
     impltype = (dynamic_cast<DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>*>(ele))->ImplType();
+  }
+  // truss3 scatra element
+  else if (eletypename == "Truss3ScatraType")
+  {
+    impltype = (dynamic_cast<DRT::ELEMENTS::Truss3Scatra*>(ele))->ImplType();
+  }
   else
   {
     if (!(eletypename == "Bele3Type")) return impltype;
@@ -228,7 +237,7 @@ void SSI::ScatraStructureCloneStrategy::SetElementData(
           "discretization, but the STRUCTURE elements that are defined in the .dat file are "
           "either not meant to be copied to scatra elements or the ImplType is set 'Undefined' "
           "which is not meaningful for the created scatra discretization! Use SOLIDSCATRA, "
-          "WALLSCATRA or SHELLSCATRA elements with meaningful ImplType instead!");
+          "WALLSCATRA, SHELLSCATRA or TRUSS3SCATRA elements with meaningful ImplType instead!");
     }
     else
       trans->SetImplType(impltype);

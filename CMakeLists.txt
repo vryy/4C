@@ -2159,6 +2159,7 @@ set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp
   src/drt_truss3/truss3_evaluate.cpp
   src/drt_truss3/truss3_input.cpp
+  src/drt_truss3/truss3_scatra.cpp
 )
 set(OBJS_DRT_DISCSH3_LIB
   src/drt_discsh3/discsh3.cpp

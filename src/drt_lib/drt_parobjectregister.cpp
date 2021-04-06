@@ -9,7 +9,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <sstream>
 #include <string>
 #include <iostream>
 
@@ -23,6 +22,7 @@
 #include "../drt_discsh3/discsh3.H"
 #include "../drt_rigidsphere/rigidsphere.H"
 #include "../drt_truss3/truss3.H"
+#include "../drt_truss3/truss3_scatra.H"
 #include "../drt_torsion3/torsion3.H"
 #include "../drt_s8/shell8.H"
 #include "../drt_s8/shell8_scatra.H"
@@ -63,7 +63,6 @@
 #include "../drt_so3/so_sh8p8.H"
 #include "../drt_so3/so_tet4.H"
 #include "../drt_so3/so_tet4av.H"
-//#include "../drt_so3/so_ptet.H"
 #include "../drt_so3/so_nstet.H"
 #include "../drt_so3/so_nstet5.H"
 #include "../drt_so3/so_tet10.H"
@@ -150,8 +149,6 @@
 #include "../drt_mat/fluidporo_multiphase.H"
 #include "../drt_mat/fluidporo_multiphase_reactions.H"
 #include "../drt_mat/fluidporo_multiphase_singlereaction.H"
-#include "../drt_mat/fluidporo_relpermeability_law.H"
-#include "../drt_mat/fluidporo_viscosity_law.H"
 #include "../drt_mat/electromagnetic.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_mortar/mortar_element.H"
@@ -196,6 +193,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::DiscSh3Type::Instance().Name() << " "
     << DRT::ELEMENTS::RigidsphereType::Instance().Name() << " "
     << DRT::ELEMENTS::Truss3Type::Instance().Name() << " "
+    << DRT::ELEMENTS::Truss3ScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::Torsion3Type::Instance().Name() << " "
     << DRT::ELEMENTS::Shell8Type::Instance().Name() << " "
     << DRT::ELEMENTS::Shell8ScatraType::Instance().Name() << " "
