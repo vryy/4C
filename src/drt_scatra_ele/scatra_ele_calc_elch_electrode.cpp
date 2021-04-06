@@ -155,11 +155,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
   // 3d) element rhs: conservative part of convective term, needed for deforming electrodes,
   //                  i.e., for scalar-structure interaction
   if (my::scatrapara_->IsConservative())
-  {
-    double vrhs = rhsfac * my::scatravarmanager_->Phinp(k) * vdiv;
-    for (unsigned vi = 0; vi < my::nen_; ++vi)
-      erhs[vi * my::numdofpernode_ + k] -= vrhs * my::funct_(vi);
-  }
+    CalcRhsConservativePartOfConvectiveTerm(erhs, k, rhsfac, vdiv);
 
   //----------------------------------------------------------------------------
   // 4) element matrix: stationary terms arising from potential equation
@@ -309,6 +305,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
   }
 }
 
+/*--------------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
+    probdim>::CalcRhsConservativePartOfConvectiveTerm(Epetra_SerialDenseVector& erhs, const int k,
+    const double rhsfac, const double vdiv)
+{
+  double vrhs = rhsfac * my::scatravarmanager_->Phinp(k) * vdiv;
+  for (unsigned vi = 0; vi < my::nen_; ++vi)
+    erhs[vi * my::numdofpernode_ + k] -= vrhs * my::funct_(vi);
+}
 
 /*--------------------------------------------------------------------------------------------*
  | CalcRhs: potential equation div i with inserted current - ohmic overpotential   fang 02/15 |
