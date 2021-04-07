@@ -73,7 +73,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
   {
     case ELEMENTS::struct_calc_ptcstiff:
     {
-      EvaluatePTC<2, 3, 3>(params, elemat1);
+      dserror("EvaluatePTC not implemented");
 
       break;
     }
@@ -155,10 +155,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
       break;
     }
-    case ELEMENTS::struct_calc_update_istep:
-    {
-      break;
-    }
     case ELEMENTS::struct_postprocess_stress:
     {
       // no stress calculation for postprocess. Does not really make sense!
@@ -166,47 +162,13 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
       break;
     }
-    case ELEMENTS::struct_calc_recover:
-    case ELEMENTS::struct_calc_predict:
+    case ELEMENTS::struct_calc_update_istep:
     case ELEMENTS::struct_calc_reset_istep:
     case ELEMENTS::struct_calc_stress:
-    case ELEMENTS::none:
-    case ELEMENTS::struct_calc_internalinertiaforce:
-    case ELEMENTS::struct_calc_linstiffmass:
-    case ELEMENTS::struct_calc_nlnstiff_gemm:
-    case ELEMENTS::struct_calc_thickness:
-    case ELEMENTS::struct_calc_eleload:
-    case ELEMENTS::struct_calc_fsiload:
-    case ELEMENTS::struct_calc_store_istep:
-    case ELEMENTS::struct_calc_recover_istep:
-    case ELEMENTS::struct_calc_reset_all:
-    case ELEMENTS::struct_calc_errornorms:
-    case ELEMENTS::struct_postprocess_thickness:
-    case ELEMENTS::struct_init_gauss_point_data_output:
-    case ELEMENTS::struct_gauss_point_data_output:
-    case ELEMENTS::struct_update_prestress:
-    case ELEMENTS::analyse_jacobian_determinant:
-    case ELEMENTS::inversedesign_update:
-    case ELEMENTS::inversedesign_switch:
-    case ELEMENTS::multi_readrestart:
-    case ELEMENTS::multi_init_eas:
-    case ELEMENTS::multi_set_eas:
-    case ELEMENTS::multi_calc_dens:
-    case ELEMENTS::shell_calc_stc_matrix:
-    case ELEMENTS::shell_calc_stc_matrix_inverse:
-    case ELEMENTS::struct_calc_stifftemp:
-    case ELEMENTS::struct_calc_global_gpstresses_map:
-    case ELEMENTS::struct_interpolate_velocity_to_point:
-    case ELEMENTS::struct_calc_mass_volume:
-    case ELEMENTS::struct_calc_brownianforce:
-    case ELEMENTS::struct_calc_brownianstiff:
-    case ELEMENTS::struct_poro_calc_fluidcoupling:
-    case ELEMENTS::struct_poro_calc_scatracoupling:
-    case ELEMENTS::struct_poro_calc_prescoupling:
-    case ELEMENTS::struct_calc_addjacPTC:
-    case ELEMENTS::struct_create_backup:
-    case ELEMENTS::struct_recover_from_backup:
+    case ELEMENTS::struct_calc_recover:
+    case ELEMENTS::struct_calc_predict:
     {
+      // do nothing here
       break;
     }
     default:
@@ -230,19 +192,6 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
   dserror("This method needs to be modified for bio-polymer networks!");
 
   return 0;
-}
-
-
-/*-----------------------------------------------------------------------------------------------------------*
- | Evaluate PTC damping (public) cyron 04/10|
- *----------------------------------------------------------------------------------------------------------*/
-template <int nnode, int ndim, int dof>
-void DRT::ELEMENTS::Truss3::EvaluatePTC(
-    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
-{
-  dserror(
-      "Truss3::EvaluatePTC is deprecated; if needed adapt parameter handling according to "
-      "parameter interface pointer first!");
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -281,9 +230,6 @@ void DRT::ELEMENTS::Truss3::t3_energy(
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<3, 1> aux;
 
-  // strain
-  double epsilon;
-
   // current nodal position (first
   for (int j = 0; j < 3; ++j)
   {
@@ -296,27 +242,30 @@ void DRT::ELEMENTS::Truss3::t3_energy(
   aux(1) = (xcurr(1) - xcurr(4));
   aux(2) = (xcurr(2) - xcurr(5));
 
-  double lcurr = std::sqrt(std::pow(aux(0), 2) + std::pow(aux(1), 2) + std::pow(aux(2), 2));
+  double lcurr = std::sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
 
 
   switch (kintype_)
   {
     case tr3_totlag:
     {
+      // calculate deformation gradient
+      const double def_grad = lcurr / lrefe_;
+
       // calculating Green-Lagrange strain epsilon
-      epsilon = 0.5 * (std::pow(lcurr / lrefe_, 2) - 1.0);
+      const double epsilon = 0.5 * (def_grad * def_grad - 1.0);
 
       // W_int = 1/2*E*A*lrefe*\epsilon^2
-      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
+      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * epsilon * epsilon);
     }
     break;
     case tr3_engstrain:
     {
       // calculating strain epsilon from node position by scalar product:
-      epsilon = (lcurr - lrefe_) / lrefe_;
+      const double epsilon = (lcurr - lrefe_) / lrefe_;
 
       // W_int = 1/2*E*A*lrefe*\epsilon^2
-      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
+      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * epsilon * epsilon);
     }
     break;
     default:
@@ -408,14 +357,6 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Teuchos::ParameterList& params,
       break;
   }
 
-  /*the following function call applies statistical forces and damping matrix according to the
-   * fluctuation dissipation theorem; it is dedicated to the application of truss3 elements in the
-   * frame of statistical mechanics problems; for these problems a special vector has to be passed
-   * to the element packed in the params parameter list; in case that the control routine calling
-   * the element does not attach this special vector to params the following method is just doing
-   * nothing, which means that for any ordinary problem of structural mechanics it may be ignored*/
-  CalcBrownian<2, 3, 3, 3>(params, DummyVel, DummyDisp, DummyStiffMatrix, DummyForce);
-
   // Map element level into global 12 by 12 element
   if (force->Length() > 12)
     dserror("Vector is larger than 12. Please use different mapping strategy!");
@@ -468,11 +409,14 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDi
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6, 1> xcurr;
 
+  const int ndof = 6;
+  const int ndof_per_node = ndof / 2;
+
   // current nodal position
-  for (int j = 0; j < 3; ++j)
+  for (int j = 0; j < ndof_per_node; ++j)
   {
-    xcurr(j) = Nodes()[0]->X()[j] + DummyDisp(j);          // first node
-    xcurr(j + 3) = Nodes()[1]->X()[j] + DummyDisp(3 + j);  // second node
+    xcurr(j) = Nodes()[0]->X()[j] + DummyDisp(j);                                  // first node
+    xcurr(j + ndof_per_node) = Nodes()[1]->X()[j] + DummyDisp(ndof_per_node + j);  // second node
   }
 
   // calculate force vector and stiffness matrix
@@ -499,12 +443,12 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDi
   // calculating mass matrix
   if (massmatrix != nullptr)
   {
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < ndof_per_node; ++i)
     {
-      (*massmatrix)(i, i) = density * lrefe_ * crosssec_ / 3;
-      (*massmatrix)(i + 3, i + 3) = density * lrefe_ * crosssec_ / 3;
-      (*massmatrix)(i, i + 3) = density * lrefe_ * crosssec_ / 6;
-      (*massmatrix)(i + 3, i) = density * lrefe_ * crosssec_ / 6;
+      (*massmatrix)(i, i) = density * lrefe_ * crosssec_ / 3.0;
+      (*massmatrix)(i + ndof_per_node, i + 3) = density * lrefe_ * crosssec_ / 3.0;
+      (*massmatrix)(i, i + ndof_per_node) = density * lrefe_ * crosssec_ / 6.0;
+      (*massmatrix)(i + ndof_per_node, i) = density * lrefe_ * crosssec_ / 6.0;
     }
   }
 }
@@ -526,11 +470,14 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6, 1> aux;
 
+  const int ndof = 6;
+  const int ndof_per_node = ndof / 2;
+
   // current nodal position (first
-  for (int j = 0; j < 3; ++j)
+  for (int j = 0; j < ndof_per_node; ++j)
   {
-    xcurr(j) = Nodes()[0]->X()[j] + DummyDisp(j);          // first node
-    xcurr(j + 3) = Nodes()[1]->X()[j] + DummyDisp(3 + j);  // second node
+    xcurr(j) = Nodes()[0]->X()[j] + DummyDisp(j);                                  // first node
+    xcurr(j + ndof_per_node) = Nodes()[1]->X()[j] + DummyDisp(ndof_per_node + j);  // second node
   }
 
   // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
@@ -541,7 +488,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   aux(4) = (xcurr(4) - xcurr(1));
   aux(5) = (xcurr(5) - xcurr(2));
 
-  double lcurr = std::sqrt(std::pow(aux(0), 2) + std::pow(aux(1), 2) + std::pow(aux(2), 2));
+  double lcurr = std::sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
 
   // calculating strain epsilon from node position by scalar product:
   epsilon = (lcurr - lrefe_) / lrefe_;
@@ -570,32 +517,32 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   double forcescalar = (ym * crosssec_ * epsilon) / lcurr;
 
   // computing global internal forces
-  for (int i = 0; i < 6; ++i) DummyForce(i) = forcescalar * aux(i);
+  for (int i = 0; i < ndof; ++i) DummyForce(i) = forcescalar * aux(i);
 
   // computing linear stiffness matrix
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < ndof_per_node; ++i)
   {
     // stiffness entries for first node
     DummyStiffMatrix(i, i) = forcescalar;
-    DummyStiffMatrix(i, 3 + i) = -forcescalar;
+    DummyStiffMatrix(i, ndof_per_node + i) = -forcescalar;
     // stiffness entries for second node
-    DummyStiffMatrix(i + 3, i + 3) = forcescalar;
-    DummyStiffMatrix(i + 3, i) = -forcescalar;
+    DummyStiffMatrix(i + ndof_per_node, i + ndof_per_node) = forcescalar;
+    DummyStiffMatrix(i + ndof_per_node, i) = -forcescalar;
   }
 
-  for (int i = 0; i < 6; ++i)
-    for (int j = 0; j < 6; ++j)
-      DummyStiffMatrix(i, j) += (ym * crosssec_ / std::pow(lcurr, 3)) * aux(i) * aux(j);
+  for (int i = 0; i < ndof; ++i)
+    for (int j = 0; j < ndof; ++j)
+      DummyStiffMatrix(i, j) += (ym * crosssec_ / (lcurr * lcurr * lcurr)) * aux(i) * aux(j);
 
   // calculating mass matrix.
   if (massmatrix != nullptr)
   {
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < ndof_per_node; ++i)
     {
-      (*massmatrix)(i, i) = density * lrefe_ * crosssec_ / 3;
-      (*massmatrix)(i + 3, i + 3) = density * lrefe_ * crosssec_ / 3;
-      (*massmatrix)(i, i + 3) = density * lrefe_ * crosssec_ / 6;
-      (*massmatrix)(i + 3, i) = density * lrefe_ * crosssec_ / 6;
+      (*massmatrix)(i, i) = density * lrefe_ * crosssec_ / 3.0;
+      (*massmatrix)(i + ndof_per_node, i + ndof_per_node) = density * lrefe_ * crosssec_ / 3.0;
+      (*massmatrix)(i, i + ndof_per_node) = density * lrefe_ * crosssec_ / 6.0;
+      (*massmatrix)(i + ndof_per_node, i) = density * lrefe_ * crosssec_ / 6.0;
     }
   }
 }
@@ -617,6 +564,9 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   // current displacement = current position - reference position
   LINALG::Matrix<6, 1> ucurr(nodal_positions_totlag);
   ucurr -= X_;
+
+  const int ndof = 6;
+  const int ndof_per_node = ndof / 2;
 
   // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
   LINALG::Matrix<6, 1> aux;
@@ -669,23 +619,25 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   eint_ = 0.5 * ym * crosssec_ * lrefe_ * epsilon * epsilon;
 
   double lrefeinv = 1.0 / lrefe_;
+
   // computing global internal forces
-  for (int i = 0; i < 6; ++i) forcevec(i) = ym * crosssec_ * epsilon * lrefeinv * aux(i);
+  for (int i = 0; i < ndof; ++i) forcevec(i) = ym * crosssec_ * epsilon * lrefeinv * aux(i);
 
   // computing linear stiffness matrix
-  for (int i = 0; i < 3; ++i)
+  for (int i = 0; i < ndof_per_node; ++i)
   {
     // stiffness entries for first node
     stiffmat(i, i) = ym * crosssec_ * epsilon * lrefeinv;
-    stiffmat(i, 3 + i) = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
+    stiffmat(i, ndof_per_node + i) = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
     // stiffness entries for second node
-    stiffmat(i + 3, i + 3) = ym * crosssec_ * epsilon * lrefeinv;
-    stiffmat(i + 3, i) = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
+    stiffmat(i + ndof_per_node, i + ndof_per_node) = ym * crosssec_ * epsilon * lrefeinv;
+    stiffmat(i + ndof_per_node, i) = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
   }
 
   double lrefepow3inv = lrefeinv * lrefeinv * lrefeinv;
-  for (int i = 0; i < 6; ++i)
-    for (int j = 0; j < 6; ++j) stiffmat(i, j) += ym * crosssec_ * lrefepow3inv * aux(i) * aux(j);
+  for (int i = 0; i < ndof; ++i)
+    for (int j = 0; j < ndof; ++j)
+      stiffmat(i, j) += ym * crosssec_ * lrefepow3inv * aux(i) * aux(j);
 }
 
 /*----------------------------------------------------------------------------*
@@ -709,37 +661,6 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
   }
 }
 
-/*-----------------------------------------------------------------------------------------------------------*
- |computes the number of different random numbers required in each time step for generation of
- stochastic    | |forces; (public)           cyron   10/09|
- *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Truss3::HowManyRandomNumbersINeed()
-{
-  /*at each Gauss point one needs as many random numbers as randomly excited degrees of freedom,
-   *i.e. three random numbers for the translational degrees of freedom*/
-  return (3 * 2);
-
-}  // DRT::ELEMENTS::Beam3::HowManyRandomNumbersINeed
-
-/*-----------------------------------------------------------------------------------------------------------*
- | Assemble stochastic and viscous forces and respective stiffness according to fluctuation
- dissipation      | | theorem (public) cyron 03/10|
- *----------------------------------------------------------------------------------------------------------*/
-template <int nnode, int ndim, int dof, int randompergauss>
-inline void DRT::ELEMENTS::Truss3::CalcBrownian(Teuchos::ParameterList& params,
-    const LINALG::Matrix<1, 6>& DummyVel, const LINALG::Matrix<1, 6>& DummyDisp,
-    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseVector& DummyForce)
-{
-  // if no random numbers for generation of stochastic forces are passed to the element no Brownian
-  // dynamics calculations are conducted
-  if (params.get<Teuchos::RCP<Epetra_MultiVector>>("RandomNumbers", Teuchos::null) == Teuchos::null)
-    return;
-
-  dserror(
-      "Truss3::CalcBrownian is deprecated; if needed adapt parameter handling according to "
-      "parameter interface pointer first! Furthermore introduce own action types "
-      "struct_calc_brownianforce and struct_calc_brownianstiff");
-}
 
 /*-----------------------------------------------------------------------------------------------------------*
  | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions;

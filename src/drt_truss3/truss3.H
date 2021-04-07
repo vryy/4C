@@ -83,8 +83,6 @@ namespace DRT
        */
       Truss3(const Truss3& old);
 
-      ~Truss3() override = default;
-
       DRT::Element* Clone() const override;
 
       //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
@@ -103,20 +101,8 @@ namespace DRT
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
           Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
-      //! \tparam nnode    number of nodes
-      //! \tparam ndim     number of dimensions of embedding space
-      //! \tparam dof      number of degrees of freedom per node
-      //! \param params    parameter list
-      //! \param elemat1   elemental matrix
-      template <int nnode, int ndim, int dof>
-      void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
-
       //! get internal (elastic) energy of element
       double GetInternalEnergy() const { return eint_; };
-
-      //! computes the number of different random numbers required in each time step for  generation
-      //! of stochastic forces
-      int HowManyRandomNumbersINeed();
 
       inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
@@ -160,7 +146,7 @@ namespace DRT
 
       void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
-      //! \brief sets reference coordinates X_ and refenrence length lrefe_ for elements added to
+      //! \brief sets reference coordinates X_ and reference length lrefe_ for elements added to
       //! the discretization
       //!
       //! \param xrefe     nodal coordinates in reference frame
@@ -195,22 +181,6 @@ namespace DRT
         tr3_totlag,
         tr3_engstrain
       };
-
-      //! compute damping matrix and statistical forces according to fluctuation dissipation theorem
-      //!
-      //! \tparam nnode             number of nodes
-      //! \tparam ndim              number of dimensions of embedding space
-      //! \tparam dof               number of degrees of freedom per node
-      //! \tparam randompergauss    number of random numbers required per Gauss point
-      //! \param params             parameter list
-      //! \param DummyVel           element velocity vector
-      //! \param DummyDisp          element disp vector
-      //! \param DummyStiffMatrix   element stiffness matrix
-      //! \param DummyForce         element internal force vector
-      template <int nnode, int ndim, int dof, int randompergauss>
-      void CalcBrownian(Teuchos::ParameterList& params, const LINALG::Matrix<1, 6>& DummyVel,
-          const LINALG::Matrix<1, 6>& DummyDisp, Epetra_SerialDenseMatrix& DummyStiffMatrix,
-          Epetra_SerialDenseVector& DummyForce);
 
       //! determine Gauss rule from required type of integration
       DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
