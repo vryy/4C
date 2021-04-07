@@ -25,21 +25,22 @@ namespace DRT
     class ScaTraEleUtilsElchDiffCond;
 
     // class implementation
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElchElectrode<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+    class ScaTraEleCalcElchDiffCond : public ScaTraEleCalcElchElectrode<distype, probdim>
     {
      protected:
       /// protected constructor, since we are a Singleton, but a derived class exists
       ScaTraEleCalcElchDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      using my = ScaTraEleCalc<distype>;
-      using myelch = ScaTraEleCalcElch<distype>;
-      using myelectrode = ScaTraEleCalcElchElectrode<distype>;
+      using my = ScaTraEleCalc<distype, probdim>;
+      using myelch = ScaTraEleCalcElch<distype, probdim>;
+      using myelectrode = ScaTraEleCalcElchElectrode<distype, probdim>;
 
      public:
       /// Singleton access method
-      static ScaTraEleCalcElchDiffCond<distype>* Instance(const int numdofpernode,
+      static ScaTraEleCalcElchDiffCond<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname,
           const ScaTraEleCalcElchDiffCond* delete_me = NULL);
 

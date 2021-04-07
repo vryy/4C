@@ -337,7 +337,7 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     }
     case INPAR::SCATRA::impltype_elch_diffcond:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(
+      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
     }
     case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
