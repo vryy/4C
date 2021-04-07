@@ -227,7 +227,7 @@ namespace DRT
 
       //! calculation of elastic energy
       void t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
-          Epetra_SerialDenseVector* intenergy);
+          Epetra_SerialDenseVector& intenergy);
 
       //! lump mass matrix
       void t3_lumpmass(Epetra_SerialDenseMatrix* emass);

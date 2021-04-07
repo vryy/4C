@@ -325,32 +325,28 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xrefe)
 {
-  if (isinit_)
+  if (!isinit_)
   {
-    dserror(
-        " You are about to setup an element that has already been set up. That does not make "
-        "sense.");
+    // setting reference coordinates
+    for (int i = 0; i < 6; ++i) X_(i) = xrefe[i];
+
+    // length in reference configuration
+    lrefe_ = std::pow((X_(3) - X_(0)) * (X_(3) - X_(0)) + (X_(4) - X_(1)) * (X_(4) - X_(1)) +
+                          (X_(5) - X_(2)) * (X_(5) - X_(2)),
+        0.5);
+
+    lcurr_ = lrefe_;
+
+    // set jacobi determinants for integration of mass matrix and at nodes
+    jacobimass_.resize(2);
+    jacobimass_[0] = lrefe_ / 2.0;
+    jacobimass_[1] = lrefe_ / 2.0;
+    jacobinode_.resize(2);
+    jacobinode_[0] = lrefe_ / 2.0;
+    jacobinode_[1] = lrefe_ / 2.0;
+
+    isinit_ = true;
   }
-
-  isinit_ = true;
-
-  // setting reference coordinates
-  for (int i = 0; i < 6; ++i) X_(i) = xrefe[i];
-
-  // length in reference configuration
-  lrefe_ = std::pow((X_(3) - X_(0)) * (X_(3) - X_(0)) + (X_(4) - X_(1)) * (X_(4) - X_(1)) +
-                        (X_(5) - X_(2)) * (X_(5) - X_(2)),
-      0.5);
-
-  lcurr_ = lrefe_;
-
-  // set jacobi determinants for integration of mass matrix and at nodes
-  jacobimass_.resize(2);
-  jacobimass_[0] = lrefe_ / 2.0;
-  jacobimass_[1] = lrefe_ / 2.0;
-  jacobinode_.resize(2);
-  jacobinode_[0] = lrefe_ / 2.0;
-  jacobinode_[1] = lrefe_ / 2.0;
 }
 
 /*----------------------------------------------------------------------*

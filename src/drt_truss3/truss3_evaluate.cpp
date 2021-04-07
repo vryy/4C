@@ -97,7 +97,7 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      t3_energy(params, mydisp, &elevec1);
+      t3_energy(params, mydisp, elevec1);
 
       break;
     }
@@ -249,9 +249,10 @@ void DRT::ELEMENTS::Truss3::EvaluatePTC(
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::t3_energy(
-    Teuchos::ParameterList& params, std::vector<double>& disp, Epetra_SerialDenseVector* intenergy)
+    Teuchos::ParameterList& params, std::vector<double>& disp, Epetra_SerialDenseVector& intenergy)
 {
-  intenergy->Resize(1);
+  // initialization of internal energy
+  double intenergy_calc = 0.0;
 
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
@@ -306,7 +307,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
       epsilon = 0.5 * (std::pow(lcurr / lrefe_, 2) - 1.0);
 
       // W_int = 1/2*E*A*lrefe*\epsilon^2
-      (*intenergy)(0) = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
+      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
     }
     break;
     case tr3_engstrain:
@@ -315,12 +316,22 @@ void DRT::ELEMENTS::Truss3::t3_energy(
       epsilon = (lcurr - lrefe_) / lrefe_;
 
       // W_int = 1/2*E*A*lrefe*\epsilon^2
-      (*intenergy)(0) = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
+      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * std::pow(epsilon, 2));
     }
     break;
     default:
       dserror("Unknown type kintype_ for Truss3");
       break;
+  }
+
+  if (IsParamsInterface())  // new structural time integration
+    ParamsInterface().AddContributionToEnergyType(intenergy_calc, STR::internal_energy);
+  else  // old structural time integration
+  {
+    // check length of elevec1
+    if (intenergy.Length() < 1) dserror("The given result vector is too short.");
+
+    intenergy(0) = intenergy_calc;
   }
 }
 
