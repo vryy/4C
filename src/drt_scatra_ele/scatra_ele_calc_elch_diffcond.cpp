@@ -27,7 +27,7 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(const int numdofpern
 {
   static std::map<std::string, ScaTraEleCalcElchDiffCond<distype>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleCalcElchDiffCond<distype>(numdofpernode, numscal, disname);
@@ -35,21 +35,20 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(const int numdofpern
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleCalcElchDiffCond<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
-      if (i->second == delete_me)
+    for (auto instance = instances.begin(); instance != instances.end(); ++instance)
+    {
+      if (instance->second == delete_me)
       {
-        delete i->second;
-        instances.erase(i);
-        return NULL;
+        delete instance->second;
+        instances.erase(instance);
+        return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
   return instances[disname];
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -59,10 +58,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Done()
   // delete this pointer! Afterwards we have to go! But since this is a
   // cleanup call, we can do it this way.
   Instance(0, 0, "", this);
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -72,7 +68,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(
     : DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype>::ScaTraEleCalcElchElectrode(
           numdofpernode, numscal, disname),
       diffcondmat_(INPAR::ELCH::diffcondmat_undefined),
-      // parameter class for diffusion-conduction formulation
       diffcondparams_(DRT::ELEMENTS::ScaTraEleParameterElchDiffCond::Instance(disname))
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction
@@ -106,39 +101,28 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(
   // safety checks for stabilization settings
   if (my::scatrapara_->StabType() != INPAR::SCATRA::stabtype_no_stabilization or
       my::scatrapara_->TauDef() != INPAR::SCATRA::tau_zero)
+  {
     dserror(
         "No stabilization available for the diffusion-conduction formulation, since we had no "
         "problems so far.");
+  }
   if (my::scatrapara_->MatGP() == false or my::scatrapara_->TauGP() == false)
+  {
     dserror(
         "Since most of the materials of the Diffusion-conduction formulation depend on the "
         "concentration,\n"
         "an evaluation of the material and the stabilization parameter at the element center is "
         "disabled.");
-
-  return;
+  }
 }
 
-
 /*----------------------------------------------------------------------*
-|  calculate system matrix and rhs                           ehrl  02/14|
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain-integration factor
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
-    const double taufac,      //!< tau times domain-integration factor
-    const double timetaufac,  //!< domain-integration factor times tau times time-integration factor
-    const double
-        rhstaufac,  //!< time-integration factor for rhs times tau times domain-integration factor
-    LINALG::Matrix<my::nen_, 1>&
-        tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
-    double& rhsint  //!< rhs at Gauss point
-)
+    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
+    const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
+    const double rhstaufac, LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
 {
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms
@@ -164,7 +148,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     myelectrode::CalcMatDiffCoeffLin(
         emat, k, timefacfac, VarManager()->GradPhi(k), DiffManager()->GetPhasePoroTort(0));
 
-  // 2c) electrical conduction term (transport equation)
+  // 2c) element matrix: conservative part of convective term, needed for deforming bodies,
+  //                     i.e., for scalar-structure interaction
+  double velocity_divergence(0.0);
+  if (my::scatrapara_->IsConservative())
+  {
+    my::GetDivergence(velocity_divergence, my::evelnp_);
+    my::CalcMatConvAddCons(emat, k, timefacfac, velocity_divergence, 1.0);
+  }
+
+  // 2d) electrical conduction term (transport equation)
   //
   //     mass transport equation:
   //
@@ -188,9 +181,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     //    ii) conduction term + concentration overpotential
     //        (w_k, - t_k RT/F kappa (thermfactor) f(t_k) nabla ln c_k /(z_k F))
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
+    {
       CalcMatCondConc(emat, k, timefacfac, VarManager()->RTFFC() / DiffManager()->GetValence(k),
           diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
           VarManager()->GradPhi(k), VarManager()->ConIntInv());
+    }
   }
   // equation for current is solved independently
   else
@@ -229,6 +224,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   // diffusion term
   my::CalcRHSDiff(erhs, k, rhsfac * DiffManager()->GetPhasePoroTort(0));
 
+  // conservative part of convective term, needed for deforming bodies, i.e., for scalar-structure
+  // interaction
+  if (my::scatrapara_->IsConservative())
+    myelectrode::CalcRhsConservativePartOfConvectiveTerm(erhs, k, rhsfac, velocity_divergence);
+
   // electrical conduction term (transport equation)
   // equation for current is inserted in the mass transport equation
   //
@@ -249,9 +249,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
 
     // if(diffcondmat_==INPAR::ELCH::diffcondmat_ion): all terms cancel out
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
+    {
       CalcRhsCondConc(erhs, k, rhsfac, VarManager()->RTFFC() / DiffManager()->GetValence(k),
           diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
           VarManager()->GradPhi(k), VarManager()->ConIntInv());
+    }
   }
 
   // equation for current is solved independently
@@ -262,22 +264,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
     if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
       CalcRhsCondDiff(erhs, k, rhsfac, VarManager()->GradPhi());
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
-|  calculate system matrix and rhs                           ehrl  02/14|
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScalarLoop(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
-    const double fac,                //!< domain-integration factor
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
-)
+    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const double fac,
+    const double timefacfac, const double rhsfac)
 {
   //----------------------------------------------------------------
   // 3)   governing equation for the electric potential field
@@ -400,22 +394,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhsOutsideScal
     else
       dserror("(div i, ENC) are the options available in the Diffusion-Conduction framework");
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Conduction term with inserted current - ohmic overpotential  ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double invfval,            //!< 1/(F z_k)
-    const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potential at GP
-)
+    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double invfval,
+    const LINALG::Matrix<my::nsd_, 1>& gradpot)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -457,25 +443,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondOhm(
       }
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Conduction term with inserted current - conc. overpotential  ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double rtffcval,           //!< RT/F^2/Newman_const_c/z_k
-    const double newman_const_a,     //!< Newman constant a
-    const double newman_const_b,     //!< Newman constant b
-    const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-    const std::vector<double>& conintinv         //!< inverted concentration at GP
-)
+    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double rtffcval,
+    const double newman_const_a, const double newman_const_b,
+    const LINALG::Matrix<my::nsd_, 1>& gradphi, const std::vector<double>& conintinv)
 {
   // additional safety check in the beginning for Newman materials
   if (k != 0)
@@ -549,22 +525,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondConc(
           laplawfrhs_gradc * DiffManager()->GetDerivThermFac(k) * my::funct_(ui);
     }  // for ui
   }    // for vi
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Conduction term without inserted current                     ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double invfval,            //!< 1/(F z_k)
-    const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
-)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(Epetra_SerialDenseMatrix& emat,
+    const int k, const double timefacfac, const double invfval,
+    const LINALG::Matrix<my::nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -588,28 +556,22 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCond(
         // (grad w, Dt_k(c)/(F z_k) i)
         //
         for (int iscal = 0; iscal < my::numscal_; ++iscal)
+        {
           emat(fvi, ui * my::numdofpernode_ + iscal) +=
               -timefacfac * my::derxy_(idim, vi) * (DiffManager()->GetDerivTransNum(k, iscal)) *
               my::funct_(ui) * invfval * curint(idim);
+        }
       }
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Additional diffusion term without inserted current           ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double invfval,            //!< 1/(F z_k)
-    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi  //!< gradient of concentration at GP
-)
+    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double invfval,
+    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -652,40 +614,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCondDiff(
             (DiffManager()->GetDerivTransNum(k, iscal)) * my::funct_(ui) /
             DiffManager()->GetValence(k) * term_vi;
       }  // for(iscal)
-
-      // formulation b):  plain ionic diffusion coefficients: one species eleminated by ENC
-      //                  -> not implemented yet
-
-      // formulation c):  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i) replaced by
-      // sum (t_i/c_i nabla c_i)
-      //                  -> not activated
-      //                  -> linearization is missing
-      // emat(vi*my::numdofpernode_+k,ui*my::numdofpernode_+iscal)
-      //    +=
-      //    timefacfac*DiffManager()->GetPhasePoroTort(0)/frt/faraday/DiffManager()->GetValence(k)*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetTransNum(iscal)/DiffManager()->GetValence(iscal]/conint[iscal]*laplawf;
-    }  // end for ui
-  }    // end for vi
-
-  return;
+    }    // end for ui
+  }      // end for vi
 }
 
-
 /*---------------------------------------------------------------------------------------*
-|  CalcMat: Potential equation div i inserted current - conc. overpotential   ehrl  02/14|
-*----------------------------------------------------------------------------------------*/
+ *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double rtffc,              //!< RT/(F^2 Newman_const_c)
-    const double rtf,                //!< RT/F
-    const double invf,               //!< 1/F
-    const double newman_const_a,     //!< Newman constant a
-    const double newman_const_b,     //!< Newman constant b
-    const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-    const double conintinv                       //!< inverted concentration at GP
-)
+    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double rtffc,
+    const double rtf, const double invf, const double newman_const_a, const double newman_const_b,
+    const LINALG::Matrix<my::nsd_, 1>& gradphi, const double conintinv)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -739,10 +678,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
       }
       else if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
       {
-        if (diffcondparams_->DiffusionCoeffBased() == true)
+        if (diffcondparams_->DiffusionCoeffBased())
+        {
           emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
               timefacfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetValence(k) *
               DiffManager()->GetIsotropicDiff(k) * laplawf;
+        }
         else
         {
           // Attention:
@@ -757,20 +698,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDiviConc(
         dserror("Diffusion-Conduction material is not specified");
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Potential equation div i without inserted current            ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDivi(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double invf                //!< 1/F
-)
+    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double invf)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -800,25 +734,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatPotEquDivi(
         */
         // version a: (grad phi,  Di)
         emat(fvi, fui) -= timefacfac * invf * my::derxy_(idim, vi) * my::funct_(ui);
-        // version b: (phi, div Di) -> not partially integrated
-        // emat(fvi,fui) += timefacfac*funct_(vi)*derxy_(idim,ui);
       }  // end for(idim)
     }    // end for(ui)
   }      // end for(vi)
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Current equation current                                     ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquCur(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double invf                //!< 1/F
-)
+    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double invf)
 {
   // (v, i)
   for (unsigned vi = 0; vi < my::nen_; ++vi)
@@ -834,21 +759,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquCur(
       }
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Current equation ohmic overpotential                         ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquOhm(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double invf,               //!< 1/F
-    const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potenial at GP
-)
+    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double invf,
+    const LINALG::Matrix<my::nsd_, 1>& gradpot)
 {
   // (v, kappa grad phi)
   for (unsigned vi = 0; vi < my::nen_; ++vi)
@@ -868,32 +786,23 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquOhm(
         // (w, D(kappa(c)) grad phi)
         //
         for (int k = 0; k < my::numscal_; ++k)
+        {
           emat(fvi, ui * my::numdofpernode_ + k) +=
               timefacfac * invf * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
               DiffManager()->GetDerivCond(k) * my::funct_(ui) * gradpot(idim);
+        }
       }
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------------------*
-|  CalcMat: Current equation concentration overpotential                 ehrl  02/14|
-*-----------------------------------------------------------------------------------*/
+ *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double rtf,                //!< RT/F
-    const double rtffc,              //!< RT/(F^2 Newman_const_c)
-    const std::vector<double>& invfval,                       //!< 1/(F z_k)
-    const double newman_const_a,                              //!< Newman constant a
-    const double newman_const_b,                              //!< Newman constant b
-    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi,  //!< gradient of concentration at GP
-    const std::vector<double>& conintinv                      //!< inverted concentration at GP
-)
+    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double rtf, const double rtffc,
+    const std::vector<double>& invfval, const double newman_const_a, const double newman_const_b,
+    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi, const std::vector<double>& conintinv)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -913,36 +822,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
                 DiffManager()->GetCond() *
                 (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
                 my::derxy_(idim, ui);
-
-            // Attention: Newman with current as solution variable
-            // full linearization of transference number, conductivity, ... is still missing
-
-            //  //linearization of coupling term in the current equation is still missing
-            //  emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
-            //    +=
-            //    timefacfac*my::funct_(vi)/frt_*DiffManager()->GetCond()*DiffManager()->GetTransNum(k)/DiffManager()->GetValence(k]/((-1)*conint_[k]*conint_[k])*my::funct_(ui)*gradphicoupling_[k](idim);
-            //
-            //  for(int k2=0; k2<numscal_;++k2)
-            //  {
-            //    //Check if necessary??
-            //    emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
-            //       +=
-            //       timefacfac*my::funct_(vi)/frt_*DiffManager()->GetDerivCond(k)*my::funct_(ui)*trans_[k2]*my::funct_(ui)/DiffManager()->GetValence(k2]/conint_[k2]*gradphicoupling_[k2](idim);
-            //
-            //
-            //    emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+k)
-            //      +=
-            //      timefacfac*my::funct_(vi)/frt_*DiffManager()->GetCond()*(transderiv_[k2])[k]*my::funct_(ui)/DiffManager()->GetValence(k2]/conint_[k2]*gradphicoupling_[k2](idim);
-            //  }
           }
           else if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
           {
-            if (diffcondparams_->DiffusionCoeffBased() == true)
+            if (diffcondparams_->DiffusionCoeffBased())
+            {
               emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
                   ui * my::numdofpernode_ + k) += timefacfac * DiffManager()->GetPhasePoroTort(0) *
                                                   my::funct_(vi) * DiffManager()->GetValence(k) *
                                                   DiffManager()->GetIsotropicDiff(k) *
                                                   my::derxy_(idim, ui);
+            }
             else
             {
               // linearization wrt nabla c_k
@@ -987,22 +877,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatCurEquConc(
       }
     }  // for ui
   }    // for vi
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Conduction term with inserted current - ohmic overpotential    ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondOhm(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
-    const double rhsfac,   //!< time-integration factor for rhs times domain-integration factor
-    const double invfval,  //!< 1/(F z_k)
-    const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potenial at GP
-)
+    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double invfval,
+    const LINALG::Matrix<my::nsd_, 1>& gradpot)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1013,25 +895,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondOhm(
                                          DiffManager()->GetTransNum(k) * DiffManager()->GetCond() *
                                          invfval * laplawfrhs_gradpot;
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Conduction term with inserted current - conc. overpotential    ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondConc(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
-    const double rhsfac,    //!< time-integration factor for rhs times domain-integration factor
-    const double rtffcval,  //!< RT/(F^2 Newman_const_c z_k)
-    const double newman_const_a,                 //!< Newman constant a
-    const double newman_const_b,                 //!< Newman constant b
-    const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-    const std::vector<double>& conintinv         //!< inverted concentration at GP
-)
+    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double rtffcval,
+    const double newman_const_a, const double newman_const_b,
+    const LINALG::Matrix<my::nsd_, 1>& gradphi, const std::vector<double>& conintinv)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1049,26 +921,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondConc(
           DiffManager()->GetCond() * DiffManager()->GetThermFac() *
           (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(iscal))) *
           conintinv[iscal] * laplawfrhs_gradphi;
-
-      // formulation b):  plain ionic diffusion coefficients: one species eleminated by ENC
-      //                  -> not implemented yet
     }
   }
-
-  return;
 }
 
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Conduction term without inserted current                       ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCond(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
-    const double rhsfac,   //!< time-integration factor for rhs times domain-integration factor
-    const double invfval,  //!< 1/(F z_k)
-    const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
-)
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCond(Epetra_SerialDenseVector& erhs,
+    const int k, const double rhsfac, const double invfval,
+    const LINALG::Matrix<my::nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1078,21 +940,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCond(
     erhs[vi * my::numdofpernode_ + k] -=
         -rhsfac * DiffManager()->GetTransNum(k) * invfval * laplawfrhs_cur;
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Additional diffusion term without inserted current             ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondDiff(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
-    const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi  //!< gradient of concentration at GP
-)
+    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
+    const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1108,38 +963,17 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCondDiff(
           -rhsfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetTransNum(k) *
           DiffManager()->GetValence(iscal) / DiffManager()->GetValence(k) *
           DiffManager()->GetIsotropicDiff(iscal) * laplawfrhs_gradphi;
-
-      // formulation b):  plain ionic diffusion coefficients: one species eleminated by ENC
-      //                  -> not implemented yet
-      // formulation c:  plain ionic diffusion coefficients: sum (z_i D_i nabla c_i) replaced by sum
-      // (t_i/c_i nabla c_i)
-      //                  -> not activated
-      // erhs[fvi]
-      //   -=
-      //   rhsfac*DiffManager()->GetPhasePoroTort(0)/frt/faraday/DiffManager()->GetValence(k)*DiffManager()->GetTransNum(k)*DiffManager()->GetCond()*DiffManager()->GetTransNum(iscal)/DiffManager()->GetValence(iscal]/conint[iscal]*laplawf2;
     }
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |CalcRhs: Potential equation div i inserted current - conc. overpotential  ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
-    const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const double rtf,     //!< RT/F
-    const std::vector<double>& invfval,          //!< 1/(F z_k)
-    const double rtffc,                          //!< RT/(F^2 Newman_const_c)
-    const double newman_const_a,                 //!< Newman constant a
-    const double newman_const_b,                 //!< Newman constant b
-    const LINALG::Matrix<my::nsd_, 1>& gradphi,  //!< gradient of concentration at GP
-    const double conintinv                       //!< inverted concentration at GP
-)
+    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double rtf,
+    const std::vector<double>& invfval, const double rtffc, const double newman_const_a,
+    const double newman_const_b, const LINALG::Matrix<my::nsd_, 1>& gradphi, const double conintinv)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1149,14 +983,18 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
       double laplawf2(0.0);
       my::GetLaplacianWeakFormRHS(laplawf2, gradphi, vi);  // compute once, reuse below!
 
-      if (diffcondparams_->DiffusionCoeffBased() == true)
+      if (diffcondparams_->DiffusionCoeffBased())
+      {
         erhs[vi * my::numdofpernode_ + my::numscal_] -=
             rhsfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetValence(k) *
             DiffManager()->GetIsotropicDiff(k) * laplawf2;
+      }
       else
+      {
         erhs[vi * my::numdofpernode_ + my::numscal_] -=
             rhsfac * DiffManager()->GetPhasePoroTort(0) * rtf * invfval[k] *
             DiffManager()->GetCond() * DiffManager()->GetTransNum(k) * conintinv * laplawf2;
+      }
     }
     // thermodynamic factor only implemented for Newman
     else if (diffcondmat_ == INPAR::ELCH::diffcondmat_newman)
@@ -1174,21 +1012,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDiviConc(
     else
       dserror("Diffusion-Conduction material is not specified");
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Potential equation divi without inserted current               ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDivi(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const double invf,    //!< 1/F
-    const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
-)
+    Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
+    const LINALG::Matrix<my::nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1196,24 +1027,15 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsPotEquDivi(
     // version a: (grad phi,  Di)
     my::GetLaplacianWeakFormRHS(laplawf, curint, vi);
     erhs[vi * my::numdofpernode_ + my::numscal_] -= -rhsfac * invf * laplawf;
-    // version b: (phi, div Di) -> not partially integrated
-    // erhs[vi*my::numdofpernode_+my::numscal_] -= rhsfac*my::funct_(vi)*divi;
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Current equation - current                                     ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquCur(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const double invf,    //!< 1/F
-    const LINALG::Matrix<my::nsd_, 1>& curint  //!< current at GP
-)
+    Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
+    const LINALG::Matrix<my::nsd_, 1>& curint)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1224,20 +1046,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquCur(
           rhsfac * invf * my::funct_(vi) * curint(idim);
     }
   }
-
-  return;
 }
 
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Current equation - ohmic overpotential                         ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquOhm(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const double invf,    //!< 1/F
-    const LINALG::Matrix<my::nsd_, 1>& gradpot  //!< gradient of potenial at GP
-)
+    Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
+    const LINALG::Matrix<my::nsd_, 1>& gradpot)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1249,27 +1065,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquOhm(
           DiffManager()->GetCond() * gradpot(idim);
     }
   }
-
-  return;
 }
 
-
 /*-------------------------------------------------------------------------------------*
- |  CalcRhs: Current equation - concentration overpotential                 ehrl 11/13 |
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
-    const double rtf,     //!< RT/F
-    const std::vector<double>& invfval,  //!< 1/(F z_k)
-    const double rtffc,                  //!< RT/(F^2 Newman_const_c)
-    const double newman_const_a,         //!< Newman constant a
-    const double newman_const_b,         //!< Newman constant b
-    const std::vector<LINALG::Matrix<my::nsd_, 1>>&
-        gradphi,                          //!< vector of gradient of concentration at GP
-    const std::vector<double>& conintinv  //!< inverted concentration at GP
-)
+    Epetra_SerialDenseVector& erhs, const double rhsfac, const double rtf,
+    const std::vector<double>& invfval, const double rtffc, const double newman_const_a,
+    const double newman_const_b, const std::vector<LINALG::Matrix<my::nsd_, 1>>& gradphi,
+    const std::vector<double>& conintinv)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -1287,11 +1092,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
         }
         else if (diffcondmat_ == INPAR::ELCH::diffcondmat_ion)
         {
-          if (diffcondparams_->DiffusionCoeffBased() == true)
+          if (diffcondparams_->DiffusionCoeffBased())
+          {
             erhs[vi * my::numdofpernode_ + (my::numscal_ + 1) + idim] -=
                 rhsfac * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
                 DiffManager()->GetValence(k) * DiffManager()->GetIsotropicDiff(k) *
                 gradphi[k](idim);
+          }
           else
           {
             erhs[vi * my::numdofpernode_ + (my::numscal_ + 1) + idim] -=
@@ -1305,14 +1112,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcRhsCurEquConc(
       }
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
-|  Correct sysmat for fluxes across DC                       ehrl  02/14|
-*----------------------------------------------------------------------*/
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossDC(
     DRT::Discretization& discretization, const std::vector<int>& lm, Epetra_SerialDenseMatrix& emat,
@@ -1364,7 +1167,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
           // reacting species 0:
           // Newman material: reacting species is always the first species since there is only one
           // species other materials: one have to find a way to define the reacting species
-          int k = 0;
+          int l = 0;
 
           const int fvi = vi * my::numdofpernode_ + my::numscal_;
           // We use the fact, that the rhs vector value for boundary nodes
@@ -1373,29 +1176,25 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CorrectionForFluxAcrossD
 
           // scaling of div i results in a matrix with better condition number
           val = erhs[fvi];
-          erhs[vi * my::numdofpernode_ + k] += 1.0 / DiffManager()->GetValence(k) * (-val);
+          erhs[vi * my::numdofpernode_ + l] += 1.0 / DiffManager()->GetValence(l) * (-val);
           // corresponding linearization
           for (unsigned ui = 0; ui < my::nen_; ++ui)
           {
-            val = emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k);
-            emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-                1.0 / DiffManager()->GetValence(k) * (-val);
+            val = emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + l);
+            emat(vi * my::numdofpernode_ + l, ui * my::numdofpernode_ + l) +=
+                1.0 / DiffManager()->GetValence(l) * (-val);
             val = emat(
                 vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + my::numscal_);
-            emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + my::numscal_) +=
-                1.0 / DiffManager()->GetValence(k) * (-val);
+            emat(vi * my::numdofpernode_ + l, ui * my::numdofpernode_ + my::numscal_) +=
+                1.0 / DiffManager()->GetValence(l) * (-val);
           }
         }
       }
     }  // for k
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | get material parameters                                   fang 07/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(const DRT::Element* ele,
@@ -1407,9 +1206,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams(const 
 
   // evaluate electrolyte material
   if (material->MaterialType() == INPAR::MAT::m_elchmat)
+  {
     Utils()->MatElchMat(material, VarManager()->Phinp(), VarManager()->Temperature(),
         myelch::elchparams_->EquPot(), myelch::elchparams_->Faraday() * VarManager()->FRT(),
         DiffManager(), diffcondmat_);
+  }
   else
     dserror("Invalid material type!");
 }  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::GetMaterialParams
@@ -1424,16 +1225,12 @@ template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri3>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tri6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad8>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::quad9>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::nurbs9>;
 
 // 3D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex20>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::hex27>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet4>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::wedge6>;
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::nurbs27>;

@@ -143,6 +143,18 @@ namespace DRT
           const double scalar  //!< scaling factor for element matrix contributions
       );
 
+      /*!
+       * @brief calculate the conservative part of the convective term of the right-hand side
+       * vector, due to e.g. deformation of the body
+       *
+       * @param[in,out] erhs  element rhs vector to be filled
+       * @param[in] k         index of current scalar
+       * @param[in] rhsfac    time-integration factor for rhs times domain-integration factor
+       * @param[in] vdiv      divergence of velocity
+       */
+      void CalcRhsConservativePartOfConvectiveTerm(
+          Epetra_SerialDenseVector& erhs, const int k, const double rhsfac, const double vdiv);
+
       //! CalcRhs: potential equation div i with inserted current - ohmic overpotential
       void CalcRhsPotEquDiviOhm(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
