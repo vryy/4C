@@ -123,14 +123,6 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
-      /*first displacement vector is modified for proper element evaluation in case of periodic
-       *boundary conditions; in case that no periodic boundary conditions are to be applied the
-       *following code line may be ignored or deleted*/
-      if (params.get<Teuchos::RCP<Epetra_MultiVector>>("RandomNumbers", Teuchos::null) !=
-          Teuchos::null)
-        NodeShift<2, 3>(params, mydisp);
-
-
       // only if random numbers for Brownian dynamics are passed to element, get element velocities
       std::vector<double> myvel(lm.size());
       if (params.get<Teuchos::RCP<Epetra_MultiVector>>("RandomNumbers", Teuchos::null) !=
@@ -659,23 +651,4 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
       (*emass)(c, c) = d;  // apply sum of row entries on diagonal
     }
   }
-}
-
-
-/*-----------------------------------------------------------------------------------------------------------*
- | shifts nodes so that proper evaluation is possible even in case of periodic boundary conditions;
- if two   | | nodes within one element are separated by a periodic boundary, one of them is shifted
- such that the final | | distance in R^3 is the same as the initial distance in the periodic space;
- the shift affects computation  | | on element level within that very iteration step, only (no
- change in global variables performed)          |                                 | | (public) cyron
- 10/09|
- *----------------------------------------------------------------------------------------------------------*/
-template <int nnode, int ndim>
-inline void DRT::ELEMENTS::Truss3::NodeShift(
-    Teuchos::ParameterList& params, std::vector<double>& disp)
-{
-  dserror(
-      "Truss3::NodeShift is deprecated; if needed adapt parameter handling according to parameter "
-      "interface pointer and new sections in input file (statmech section is no longer existent ) "
-      "first!");
 }

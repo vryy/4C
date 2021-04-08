@@ -106,7 +106,6 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
       lcurr_(old.lcurr_),
       lrefe_(old.lrefe_),
       material_(old.material_),
-      trefNode_(old.trefNode_),
       X_(old.X_)
 {
 }
@@ -153,7 +152,6 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
   AddtoPack(data, isinit_);
   AddtoPack<6, 1>(data, X_);
-  AddtoPack(data, trefNode_);
   AddtoPack<1, 3>(data, diff_disp_ref_);
   AddtoPack(data, material_);
   AddtoPack(data, lrefe_);
@@ -184,7 +182,6 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
   isinit_ = ExtractInt(position, data);
   ExtractfromPack<6, 1>(position, data, X_);
-  ExtractfromPack(position, data, trefNode_);
   ExtractfromPack<1, 3>(position, data, diff_disp_ref_);
   ExtractfromPack(position, data, material_);
   ExtractfromPack(position, data, lrefe_);
@@ -331,9 +328,8 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
     for (int i = 0; i < 6; ++i) X_(i) = xrefe[i];
 
     // length in reference configuration
-    lrefe_ = std::pow((X_(3) - X_(0)) * (X_(3) - X_(0)) + (X_(4) - X_(1)) * (X_(4) - X_(1)) +
-                          (X_(5) - X_(2)) * (X_(5) - X_(2)),
-        0.5);
+    lrefe_ = std::sqrt((X_(3) - X_(0)) * (X_(3) - X_(0)) + (X_(4) - X_(1)) * (X_(4) - X_(1)) +
+                       (X_(5) - X_(2)) * (X_(5) - X_(2)));
 
     lcurr_ = lrefe_;
 

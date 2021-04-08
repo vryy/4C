@@ -185,16 +185,6 @@ namespace DRT
       //! determine Gauss rule from required type of integration
       DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
-      //!  \brief shifts nodes so that proper evaluation is possible even in case of periodic
-      //!  boundary conditions
-      //!
-      //! \tparam nnode   number of nodes
-      //! \tparam ndim    number of dimensions
-      //! \param params   parameter list
-      //! \param disp     element disp vector
-      template <int nnode, int ndim>
-      void NodeShift(Teuchos::ParameterList& params, std::vector<double>& disp);
-
       //! calculation of elastic energy
       void t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
           Epetra_SerialDenseVector& intenergy);
@@ -260,9 +250,6 @@ namespace DRT
 
       //! material type
       int material_;
-
-      //! reference tangent position
-      std::vector<LINALG::Matrix<3, 1>> trefNode_;
 
       //! reference node position
       LINALG::Matrix<6, 1> X_;
