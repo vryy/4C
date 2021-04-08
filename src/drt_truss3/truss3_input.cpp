@@ -27,13 +27,11 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
   std::string buffer;
   linedef->ExtractString("KINEM", buffer);
 
-  // geometrically non-linear with Total Lagrangean approach
-  if (buffer == "totlag") kintype_ = tr3_totlag;
 
-  // geometrically non-linear approach with engineering strains
-  else if (buffer == "engstr")
+  if (buffer == "totlag")  // geometrically non-linear with Total Lagrangean approach
+    kintype_ = tr3_totlag;
+  else if (buffer == "engstr")  // geometrically non-linear approach with engineering strains
     kintype_ = tr3_engstrain;
-
   else
     dserror("Reading of Truss3 element failed because of unknown kinematic type!");
 
@@ -43,8 +41,4 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
 /*------------------------------------------------------------------------*
  | Set cross section area                           (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec)
-{
-  crosssec_ = crosssec;
-  return;
-}
+void DRT::ELEMENTS::Truss3::SetCrossSec(const double& crosssec) { crosssec_ = crosssec; }

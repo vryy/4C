@@ -1,5 +1,16 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Clean up Truss3 framework (untested, commented, and unreachable code)
+- removed in commits 8129f73e1edcd86358de743ae321438015d6665f, 909f2e964a575dad7c6d8e94506ab1b1ce3b8351,
+  2928bfb61b7f6b634ef67ea48f59aeaacb66343a
+- reasons: - The entire torsion framework within truss3 is not tested at all and currently not used
+             by any developer (8129f73e1edcd86358de743ae321438015d6665f)
+           - It contains lot's of commented code (909f2e964a575dad7c6d8e94506ab1b1ce3b8351)
+           - Lot's of code is unreachable due to dserrors. This is removed (2928bfb61b7f6b634ef67ea48f59aeaacb66343a)
+- remark: In case one of the removed functionalities will be reactivated in future it is highly recommended
+          to check the entire implementation line by line
+- removed by Stephan Sinzig
+
 Contact preconditioners via Trilinos/MueLu
 - remove in commit c93a999dc5063c49f22acbaa008daa14319c633e
 - reasons: Due to changes in the MueLu interface, these preconditioner have been disabled several years ago.

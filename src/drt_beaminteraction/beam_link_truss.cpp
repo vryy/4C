@@ -115,7 +115,6 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
 
 
   std::vector<double> refpos(6, 0.0);
-  std::vector<double> refrotvec_dummy(6, 0.0);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -123,7 +122,7 @@ void BEAMINTERACTION::BeamLinkTruss::Setup(const int matnum)
     refpos[3 + i] = GetBindSpotPos2()(i);
   }
 
-  linkele_->SetUpReferenceGeometry(refpos, refrotvec_dummy);
+  linkele_->SetUpReferenceGeometry(refpos);
 
   issetup_ = true;
 }
