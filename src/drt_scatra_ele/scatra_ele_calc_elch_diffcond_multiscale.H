@@ -21,13 +21,14 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCondMultiScale;
 
     // implementation of class ScaTraEleCalcElchDiffCondMultiScale
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+    class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchDiffCondMultiScale<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
+      static ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname,
           const ScaTraEleCalcElchDiffCondMultiScale* delete_me = NULL);
 
       //! singleton destruction
@@ -35,8 +36,8 @@ namespace DRT
 
      private:
       //! abbreviation
-      using my = ScaTraEleCalc<distype>;
-      using mydiffcond = ScaTraEleCalcElchDiffCond<distype>;
+      using my = ScaTraEleCalc<distype, probdim>;
+      using mydiffcond = ScaTraEleCalcElchDiffCond<distype, probdim>;
 
       //! constructor
       ScaTraEleCalcElchDiffCondMultiScale(

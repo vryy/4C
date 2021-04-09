@@ -19,10 +19,11 @@ multi-scale framework
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOCAndCRate(
-    const DRT::Element* const& ele, const DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseVector& scalars)
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
+    probdim>::CalculateElectrodeSOCAndCRate(const DRT::Element* const& ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseVector& scalars)
 {
   // safety check
   if (my::numscal_ != 1)
@@ -42,7 +43,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
   double intdomain(0.0);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -74,9 +75,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::EvaluateAction(
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
@@ -200,19 +201,23 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet10>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet10, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::pyramid5, 3>;
