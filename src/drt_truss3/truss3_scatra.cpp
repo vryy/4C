@@ -91,6 +91,8 @@ bool DRT::ELEMENTS::Truss3Scatra::ReadElement(
 
   if (impltype == "ElchDiffCond")
     impltype_ = INPAR::SCATRA::impltype_elch_diffcond;
+  else if (impltype == "ElchDiffCondMultiScale")
+    impltype_ = INPAR::SCATRA::impltype_elch_diffcond_multiscale;
   else
     dserror("Invalid implementation type for Truss3Scatra elements!");
 

@@ -101,6 +101,9 @@ void SCATRA::TimIntOneStepTheta::Setup()
     // set action
     eleparams.set<int>("action", SCATRA::micro_scale_initialize);
 
+    // provide displacement field in case of ALE
+    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+
     // loop over macro-scale elements
     discret_->Evaluate(
         eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -293,8 +296,12 @@ void SCATRA::TimIntOneStepTheta::Update(const int num)
     // set action
     eleparams.set<int>("action", SCATRA::micro_scale_update);
 
+    // provide displacement field in case of ALE
+    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+
     // loop over macro-scale elements
-    discret_->Evaluate(eleparams);
+    discret_->Evaluate(
+        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 }
 
