@@ -154,7 +154,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   if (my::scatrapara_->IsConservative())
   {
     my::GetDivergence(velocity_divergence, my::evelnp_);
-    my::CalcMatConvAddCons(emat, k, timefacfac, velocity_divergence, 1.0);
+    my::CalcMatConvAddCons(
+        emat, k, timefacfac * DiffManager()->GetPhasePoro(0), velocity_divergence, 1.0);
   }
 
   // 2d) electrical conduction term (transport equation)
@@ -227,7 +228,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::CalcMatAndRhs(
   // conservative part of convective term, needed for deforming bodies, i.e., for scalar-structure
   // interaction
   if (my::scatrapara_->IsConservative())
-    myelectrode::CalcRhsConservativePartOfConvectiveTerm(erhs, k, rhsfac, velocity_divergence);
+    myelectrode::CalcRhsConservativePartOfConvectiveTerm(
+        erhs, k, rhsfac * DiffManager()->GetPhasePoro(0), velocity_divergence);
 
   // electrical conduction term (transport equation)
   // equation for current is inserted in the mass transport equation
