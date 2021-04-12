@@ -124,8 +124,8 @@ namespace SCATRA
         const int probnum = 0                                   //!< global problem number
     );
 
-    //! Destructor
-    virtual ~ScaTraTimIntImpl();
+    //! don't want copy constructor
+    ScaTraTimIntImpl(const ScaTraTimIntImpl& old) = delete;
 
     /*! \brief Initialize this object
 
@@ -180,7 +180,7 @@ namespace SCATRA
     /*--- set, prepare, and predict ------------------------------------------*/
 
     //! add global state vectors specific for time-integration scheme
-    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
     //! initialize system matrix
     Teuchos::RCP<LINALG::SparseOperator> InitSystemMatrix() const;
@@ -213,9 +213,6 @@ namespace SCATRA
       // We have to set the newdt in the ele_calc's as well:
       SetElementTimeParameter();
     };
-
-    //! set upres
-    void SetUpres(const int newupres) { upres_ = newupres; }
 
     //! do explicit predictor step to obtain better starting value for Newton-Raphson iteration
     virtual void ExplicitPredictor() const;
@@ -261,13 +258,13 @@ namespace SCATRA
     virtual void TimeLoop();
 
     //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
-    virtual void PreSolve() { return; };
+    virtual void PreSolve(){};
 
     //! general solver call for coupled algorithms (decides if linear/nonlinear internally)
     virtual void Solve();
 
     //! operator for manipulations after call to \ref Solve() ; May be overridden by subclass.
-    virtual void PostSolve() { return; };
+    virtual void PostSolve(){};
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     virtual void Update(const int num = 0  //!< field number
@@ -347,9 +344,6 @@ namespace SCATRA
     //! return flag for electromagnetic diffusion simulations
     bool IsEMD() const { return isemd_; };
 
-    //! return electromagnetic diffusion current density function
-    int EMDSource() const { return emd_source_; };
-
     //! print information about current time step to screen
     virtual void PrintTimeStepInfo();
 
@@ -384,7 +378,7 @@ namespace SCATRA
     int NdsVel() { return nds_vel_; }
 
     //! return number of dofset associated with displacement dofs
-    int NdsDisp() { return nds_disp_; }
+    int NdsDisp() override { return nds_disp_; }
 
     //! return domain flux vector
     Teuchos::RCP<const Epetra_MultiVector> FluxDomain() const { return flux_domain_; };
@@ -408,7 +402,7 @@ namespace SCATRA
     Teuchos::RCP<const Epetra_Map> DofRowMap(int nds);
 
     //! return discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() const { return discret_; }
+    Teuchos::RCP<DRT::Discretization> Discretization() const override { return discret_; }
 
     //! return the parameter lists
     Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() const { return params_; }
@@ -436,7 +430,7 @@ namespace SCATRA
     double FDCheckTol() const { return fdchecktol_; };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const
+    const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const override
     {
       return strategy_;
     };
@@ -510,7 +504,7 @@ namespace SCATRA
     //! @name Preconditioning
     /*========================================================================*/
 
-    virtual void SetupSplitter() { return; };
+    virtual void SetupSplitter(){};
 
     //! set up the (block) maps of the scatra system matrix and the meshtying object
     void SetupMatrixBlockMapsAndMeshtying();
@@ -587,11 +581,8 @@ namespace SCATRA
     //! return relaxation parameters
     const std::vector<double>& Omega() const { return omega_; };
 
-    //! return scalar field phi at time n-1
-    virtual Teuchos::RCP<Epetra_Vector> Phinm() = 0;
-
     //! return scalar field phi at time n
-    Teuchos::RCP<Epetra_Vector> Phin() { return phin_; }
+    Teuchos::RCP<Epetra_Vector> Phin() override { return phin_; }
 
     //! return scalar field phi at time n+1
     Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
@@ -605,10 +596,6 @@ namespace SCATRA
     //! return increment of scalar field phi at time n+1 from previous outer iteration step for
     //! partitioned simulations
     Teuchos::RCP<Epetra_Vector>& PhinpIncOld() { return phinp_inc_old_; };
-
-    //! return increment of scalar field phi at time n+1 from previous outer iteration step for
-    //! partitioned simulations
-    const Teuchos::RCP<Epetra_Vector>& PhinpIncOld() const { return phinp_inc_old_; };
 
     //! return time derivative of scalar field phi at time n
     Teuchos::RCP<Epetra_Vector> Phidtn() { return phidtn_; }
@@ -647,13 +634,10 @@ namespace SCATRA
     Teuchos::RCP<Epetra_Vector> Densafnp() { return densafnp_; }
 
     //! problem-specific outputs
-    virtual void OutputProblemSpecific() { return; };
+    virtual void OutputProblemSpecific(){};
 
     //! problem-specific restart
-    virtual void ReadRestartProblemSpecific(const int step, IO::DiscretizationReader& reader)
-    {
-      return;
-    };
+    virtual void ReadRestartProblemSpecific(const int step, IO::DiscretizationReader& reader){};
 
     //! return time for evaluation of elements
     const double& DtEle() const { return dtele_; };
@@ -681,15 +665,7 @@ namespace SCATRA
     const std::vector<double>& DqDphi() const { return dq_dphi_; };
 
     //! return rcp ptr to neumann loads vector
-    virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() { return neumann_loads_; };
-
-    //! evaluate field in a given point in real space
-    virtual void GetPointPhiValue(
-        const std::vector<double>& point, double& value, bool evalreac, unsigned int numscal = 0);
-
-    //! evaluate field in a given point in real space
-    virtual void GetPointsPhiValues(const std::vector<std::vector<double>>& points,
-        std::vector<double>& values, bool evalreac, unsigned int numscal = 0);
+    Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override { return neumann_loads_; };
 
     /*========================================================================*/
     //! @name turbulence and related
@@ -740,16 +716,6 @@ namespace SCATRA
     };
 
    protected:
-    /*========================================================================*/
-    //! @name Constructors and destructors and related methods
-    /*========================================================================*/
-
-    //! don't want = operator
-    // ScaTraTimIntImpl operator = (const ScaTraTimIntImpl& old);
-
-    //! don't want copy constructor
-    ScaTraTimIntImpl(const ScaTraTimIntImpl& old);
-
     //! create vectors for Krylov projection if necessary
     void PrepareKrylovProjection();
 
@@ -760,7 +726,7 @@ namespace SCATRA
     virtual void SetElementTimeParameter(bool forcedincrementalsolver = false) const = 0;
 
     //! Set backward Euler time parameter
-    virtual void SetElementTimeParameterBackwardEuler() const { return; };
+    virtual void SetElementTimeParameterBackwardEuler() const {};
 
     //! set time for evaluation of Neumann boundary conditions
     virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
@@ -770,10 +736,7 @@ namespace SCATRA
 
     //! Set additional problem-specific parameters for non-standard scalar transport problems
     //! (electrochemistry etc.)
-    virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const
-    {
-      return;
-    };
+    virtual void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const {};
 
     //! Set element parameter specific for turbulence
     void SetElementTurbulenceParameters(bool calcinitialtimederivative = false) const;
@@ -842,10 +805,7 @@ namespace SCATRA
     //! add parameters depending on the problem, i.e., loma, level-set, ...
     virtual void AddProblemSpecificParametersAndVectors(
         Teuchos::ParameterList& params  //!< parameter list
-    )
-    {
-      return;
-    };
+    ){};
 
     //! return the right time-scaling-factor for the true residual
     virtual double ResidualScaling() const = 0;
@@ -1467,9 +1427,6 @@ namespace SCATRA
     //! Standard Constructor
     ScalarHandler() : numdofpernode_(), equalnumdof_(true), issetup_(false){};
 
-    //! Destructor
-    virtual ~ScalarHandler(){};
-
     //! set up scalar handler
     virtual void Setup(const ScaTraTimIntImpl* const scatratimint);
 
@@ -1529,14 +1486,6 @@ namespace SCATRA
   class OutputScalarsStrategyBase
   {
    public:
-    /*========================================================================*/
-    //! @name Constructors and destructors and related methods
-    /*========================================================================*/
-
-    OutputScalarsStrategyBase(){};
-
-    virtual ~OutputScalarsStrategyBase() = default;
-
     //! initialize time integration
     void Init(const ScaTraTimIntImpl* const scatratimint);
 
@@ -1605,13 +1554,7 @@ namespace SCATRA
   class OutputScalarsStrategyDomain : virtual public OutputScalarsStrategyBase
   {
    public:
-    /*========================================================================*/
-    //! @name Constructors and destructors and related methods
-    /*========================================================================*/
-
     OutputScalarsStrategyDomain() : domainid_(-1), numdofpernode_(0){};
-
-    ~OutputScalarsStrategyDomain() override = default;
 
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
@@ -1638,13 +1581,7 @@ namespace SCATRA
   class OutputScalarsStrategyCondition : virtual public OutputScalarsStrategyBase
   {
    public:
-    /*========================================================================*/
-    //! @name Constructors and destructors and related methods
-    /*========================================================================*/
-
     OutputScalarsStrategyCondition() : conditions_(), numdofpernodepercondition_(){};
-
-    ~OutputScalarsStrategyCondition() override = default;
 
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
@@ -1670,15 +1607,6 @@ namespace SCATRA
   class OutputScalarsStrategyDomainAndCondition : public OutputScalarsStrategyDomain,
                                                   public OutputScalarsStrategyCondition
   {
-   public:
-    /*========================================================================*/
-    //! @name Constructors and destructors and related methods
-    /*========================================================================*/
-
-    OutputScalarsStrategyDomainAndCondition(){};
-
-    ~OutputScalarsStrategyDomainAndCondition() override = default;
-
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
 
@@ -1697,19 +1625,12 @@ namespace SCATRA
   class OutputDomainIntegralStrategy
   {
    public:
-    /*========================================================================*/
-    //! @name Constructors and destructors and related methods
-    /*========================================================================*/
-
     //! Standard Constructor
     OutputDomainIntegralStrategy()
         : conditionsdomain_(),
           conditionsboundary_(),
           domainintegralvalues_(),
           boundaryintegralvalues_(){};
-
-    //! Destructor
-    virtual ~OutputDomainIntegralStrategy(){};
 
     //! initialize time integration
     void Init(const ScaTraTimIntImpl* const scatratimint);
@@ -1738,7 +1659,6 @@ namespace SCATRA
     //! vector of 'BoundaryIntegral'-values
     std::vector<double> boundaryintegralvalues_;
   };
-
 
 }  // namespace SCATRA
 #endif  // #ifndef SCATRA_TIMINT_IMPLICIT_H

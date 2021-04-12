@@ -18,15 +18,12 @@ multi-scale framework
 #include "../drt_mat/newman_multiscale.H"
 
 /*----------------------------------------------------------------------*
- | calculate electrode state of charge and C rate            fang 08/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOCAndCRate(
-    const DRT::Element* const& ele,             //!< the element we are dealing with
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la,            //!< location array
-    Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
-)
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
+    probdim>::CalculateElectrodeSOCAndCRate(const DRT::Element* const& ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseVector& scalars)
 {
   // safety check
   if (my::numscal_ != 1)
@@ -41,12 +38,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
       Teuchos::rcp_dynamic_cast<MAT::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
 
   // initialize variables for integrals of concentration, its time derivative, and domain
-  double intconcentration(0.);
-  double intconcentrationtimederiv(0.);
-  double intdomain(0.);
+  double intconcentration(0.0);
+  double intconcentrationtimederiv(0.0);
+  double intdomain(0.0);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
@@ -74,15 +71,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElect
   scalars(0) = intconcentration;
   scalars(1) = intconcentrationtimederiv;
   scalars(2) = intdomain;
-}  // DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalculateElectrodeSOCAndCRate
-
+}
 
 /*----------------------------------------------------------------------*
- | evaluate action                                           fang 07/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(DRT::Element* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+template <DRT::Element::DiscretizationType distype, int probdim>
+int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::EvaluateAction(
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
     Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
     Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
@@ -145,7 +140,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(
         else
         {
           // solve micro scale
-          std::vector<double> dummy(3, 0.);
+          std::vector<double> dummy(3, 0.0);
           newmanmultiscale->Evaluate(iquad, phinp, dummy[0], dummy);
         }
       }
@@ -204,26 +199,25 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::EvaluateAction(
   return -1;
 }
 
-
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet10, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::pyramid5, 3>;

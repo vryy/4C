@@ -44,7 +44,6 @@
 
 
 /*--------------------------------------------------------------------------*
- |                                               (public) ehrl        Dec13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
     DRT::Element::DiscretizationType distype, INPAR::SCATRA::ImplType problem,
@@ -65,10 +64,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         dserror("invalid problem dimension for HEX8 transport element!");
       break;
     }
-      //  case DRT::Element::hex20:
-      //  {
-      //    return ScaTraImpl<DRT::Element::hex20>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
     case DRT::Element::hex27:
     {
       if (ndim == 3)
@@ -77,16 +72,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
         dserror("invalid problem dimension for HEX27 transport element!");
       break;
     }
-      //  case DRT::Element::nurbs8:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::nurbs8,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
-      //  case DRT::Element::nurbs27:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::nurbs27,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  }
     case DRT::Element::tet4:
     {
       if (ndim == 3)
@@ -203,7 +188,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImpl(
 }
 
 /*--------------------------------------------------------------------------*
- |                                                (public) hoermann   11/15 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
     DRT::Element::DiscretizationType distype, INPAR::SCATRA::ImplType problem,
@@ -226,29 +210,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
         dserror("invalid problem dimension for HEX8 transport element!");
       break;
     }
-      //  case DRT::Element::hex20:
-      //  {
-      //    return ScaTraImpl<DRT::Element::hex20>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
-      //  case DRT::Element::hex27:
-      //  {
-      //    if(ndim==3)
-      //      return
-      //      DefineProblemTypeHDG<DRT::Element::hex27,3>(problem,numdofpernode,numscal,disname);
-      //    else
-      //      dserror("invalid problem dimension for HEX27 transport element!");
-      //    break;
-      //  }
-      //  case DRT::Element::nurbs8:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::nurbs8,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
-      //  case DRT::Element::nurbs27:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::nurbs27,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  }
     case DRT::Element::tet4:
     {
       if (ndim == 3)
@@ -271,16 +232,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
         dserror("invalid problem dimension for TET10 transport element!");
       break;
     }
-      //  case DRT::Element::wedge6:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::wedge6,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  } /*
-      //  case DRT::Element::wedge15:
-      //  {
-      //    return
-      //    ScaTraImpl<DRT::Element::wedge15,3>::Instance(problem,numdofpernode,numscal,disname);
-      //  } */
     case DRT::Element::pyramid5:
     {
       if (ndim == 3)
@@ -319,16 +270,14 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::ProvideImplHDG(
   return nullptr;
 }
 
-
 /*--------------------------------------------------------------------------*
- |                                               (public) ehrl        Dec13 |
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemType(
     INPAR::SCATRA::ImplType problem, const int numdofpernode, const int numscal,
     const std::string& disname)
 {
-  if (DRT::UTILS::DisTypeToDim<distype>::dim != probdim)
+  if ((probdim - DRT::UTILS::DisTypeToDim<distype>::dim) == 1)
   {
     if (problem != INPAR::SCATRA::impltype_std and
         problem != INPAR::SCATRA::impltype_cardiac_monodomain and
@@ -347,135 +296,112 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     {
       return DRT::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_thermo_elch_electrode:
     {
       return DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_thermo_elch_diffcond:
     {
       return DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_levelset:
     {
       return DRT::ELEMENTS::ScaTraEleCalcLS<distype>::Instance(numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_lsreinit:
     {
       return DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_loma:
     {
       return DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::Instance(numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_elch_NP:
     {
       return DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::Instance(numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_elch_electrode:
     case INPAR::SCATRA::impltype_elch_electrode_growth:
     {
       return DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_elch_electrode_thermo:
     {
       return DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_elch_diffcond:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::Instance(
+      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_elch_diffcond_multiscale:
     {
-      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::Instance(
+      return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_elch_diffcond_thermo:
     {
       return DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_poro:
     {
       return DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::Instance(numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_advreac:
     {
       return DRT::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_refconcreac:
     {
       return DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_chemo:
     {
       return DRT::ELEMENTS::ScaTraEleCalcChemo<distype>::Instance(numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_chemoreac:
     {
       return DRT::ELEMENTS::ScaTraEleCalcChemoReac<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_multipororeac:
     {
       return DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_pororeac:
     {
       return DRT::ELEMENTS::ScaTraEleCalcPoroReac<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_pororeacECM:
     {
       return DRT::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_aniso:
     {
       return DRT::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_cardiac_monodomain:
     {
       return DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_one_d_artery:
     {
       return DRT::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_no_physics:
       return DRT::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::Instance(
@@ -492,7 +418,6 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
 }
 
 /*--------------------------------------------------------------------------*
- |                                               (public) hoermann    09/15 |
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTypeHDG(
@@ -513,13 +438,11 @@ DRT::ELEMENTS::ScaTraEleInterface* DRT::ELEMENTS::ScaTraFactory::DefineProblemTy
     {
       return DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     case INPAR::SCATRA::impltype_cardiac_monodomain_hdg:
     {
       return DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
           numdofpernode, numscal, disname);
-      break;
     }
     default:
     {

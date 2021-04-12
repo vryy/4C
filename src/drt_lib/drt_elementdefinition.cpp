@@ -93,6 +93,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream, "SOLIDW6SCATRA");
   PrintElementLines(stream, "TORSION3");
   PrintElementLines(stream, "TRUSS3");
+  PrintElementLines(stream, "TRUSS3SCATRA");
   PrintElementLines(stream, "WALL");
   PrintElementLines(stream, "WALLSCATRA");
   PrintElementLines(stream, "WALLQ4PORO");

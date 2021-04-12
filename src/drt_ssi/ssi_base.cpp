@@ -26,6 +26,7 @@
 #include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
+#include "../drt_lib/drt_inputreader.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"
@@ -124,6 +125,11 @@ void SSI::SSIBase::Setup()
 
   // set up helper class for field coupling
   ssicoupling_->Setup();
+
+  // in case of an ssi  multi scale formulation we need to set the displacement here
+  auto dummy_vec = Teuchos::rcp(
+      new Epetra_Vector(*DRT::Problem::Instance()->GetDis("structure")->DofRowMap(), true));
+  ssicoupling_->SetMeshDisp(ScaTraBaseAlgorithm(), dummy_vec);
 
   // set up scalar transport field
   ScaTraField()->Setup();
@@ -372,6 +378,9 @@ void SSI::SSIBase::InitDiscretizations(
       }
     }
   }
+  // do micro field stuff
+  DRT::INPUT::DatFileReader dummy_reader;
+  problem->ReadMicroFields(dummy_reader);
 }
 
 /*----------------------------------------------------------------------*
@@ -710,7 +719,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
           scatra_manifold_node_col_vec.push_back(scatradis->NodeColMap()->GID(lid));
       }
       auto scatra_node_col_map =
-          Teuchos::rcp(new Epetra_Map(-1, scatra_manifold_node_col_vec.size(),
+          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(scatra_manifold_node_col_vec.size()),
               &scatra_manifold_node_col_vec[0], 0, scatradis->Comm()));
 
       // export new distributed column nodes on other fields to enable field coupling

@@ -20,7 +20,7 @@ namespace DRT
     // forward declarations
     template <DRT::Element::DiscretizationType distype, int probdim>
     class ScaTraEleCalcElch;
-    template <DRT::Element::DiscretizationType distype>
+    template <DRT::Element::DiscretizationType distype, int probdim>
     class ScaTraEleCalcElchDiffCond;
     class ScaTraEleDiffManagerElchDiffCond;
     class ScaTraEleDiffManagerSTIThermo;

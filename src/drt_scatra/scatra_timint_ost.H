@@ -28,64 +28,64 @@ namespace SCATRA
         const int probnum = 0                                     //!< global problem number
     );
 
-    /// Destructor
-    virtual ~TimIntOneStepTheta();
+    /// don't want = operator and cctor
+    TimIntOneStepTheta operator=(const TimIntOneStepTheta& old) = delete;
+
+    /// copy constructor
+    TimIntOneStepTheta(const TimIntOneStepTheta& old) = delete;
 
     /// initialize time integration scheme
-    virtual void Init();
+    void Init() override;
 
     /// setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     //! operator for manipulations before call to \ref Solve() ; May be overridden by subclass.
-    virtual void PreSolve() { return; };
+    void PreSolve() override{};
 
     //! operator for manipulations after call to \ref Solve() ; May be overridden by subclass.
-    virtual void PostSolve() { return; };
+    void PostSolve() override{};
 
     /// Print information about current time step to screen (reimplementation for OST)
-    virtual void PrintTimeStepInfo();
+    void PrintTimeStepInfo() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    virtual void ComputeIntermediateValues() { return; };
+    void ComputeIntermediateValues() override{};
 
     /// compute values at the interior of the elements (required for hdg)
-    virtual void ComputeInteriorValues() { return; };
+    void ComputeInteriorValues() override{};
 
     ///  compute scalar time derivative
-    virtual void ComputeTimeDerivative();
+    void ComputeTimeDerivative() override;
 
     ///  compute scalar time derivate parameters of the input voltage
-    virtual void ComputeTimeDerivPot0(const bool init) { return; };
+    void ComputeTimeDerivPot0(const bool init) override{};
 
     /// update the solution after convergence of the nonlinear iteration.
     /// current solution becomes old solution of next timestep.
-    virtual void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     /// read restart data
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
-
-    // routine to return scalar field phi at time step n-1
-    virtual Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
-    virtual Teuchos::RCP<Epetra_Vector> Phiaf() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
 
     /// routine to return scalar field phi at time step n+alpha_M
-    virtual Teuchos::RCP<Epetra_Vector> Phiam() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> Phiam() override { return Teuchos::null; }
 
     /// routine to return time derivative of scalar field phi at time step n+alpha_M
-    virtual Teuchos::RCP<Epetra_Vector> Phidtam() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> Phidtam() override { return Teuchos::null; }
 
     /// routine to return fine-scale scalar field fsphi at time step n+1
-    virtual Teuchos::RCP<Epetra_Vector> FsPhi()
+    Teuchos::RCP<Epetra_Vector> FsPhi() override
     {
       if (Sep_ != Teuchos::null) Sep_->Multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
     };
 
     /// routine to return time integration specific parameters
-    virtual Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
+    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
     {
       Teuchos::RCP<Teuchos::ParameterList> timeparams;
       timeparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -116,47 +116,41 @@ namespace SCATRA
     void ClearState();
 
    protected:
-    /// don't want = operator and cctor
-    TimIntOneStepTheta operator=(const TimIntOneStepTheta& old);
-
-    /// copy constructor
-    TimIntOneStepTheta(const TimIntOneStepTheta& old);
-
     /// set time parameter for element evaluation
-    virtual void SetElementTimeParameter(bool forcedincrementalsolver = false) const;
+    void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
 
     //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
-    virtual void CalcInitialTimeDerivative();
+    void CalcInitialTimeDerivative() override;
 
     /// set part of residual vector belonging to previous time step
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
-    virtual void ExplicitPredictor() const;
+    void ExplicitPredictor() const override;
 
     /// add actual Neumann loads with time factor
-    virtual void AddNeumannToResidual();
+    void AddNeumannToResidual() override;
 
     /// AVM3-based scale separation
-    virtual void AVM3Separation();
+    void AVM3Separation() override;
 
     /// dynamic Smagorinsky model
-    virtual void DynamicComputationOfCs();
+    void DynamicComputationOfCs() override;
 
     // dynamic Vreman model
-    virtual void DynamicComputationOfCv();
+    void DynamicComputationOfCv() override;
 
     /// add parameters specific for time-integration scheme
-    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
     /// write additional data required for restart
-    virtual void OutputRestart() const;
+    void OutputRestart() const override;
 
     /// return the right time-scaling-factor for the true residual
-    virtual double ResidualScaling() const { return 1.0 / (dta_ * theta_); }
+    double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
     double theta_;

@@ -30,17 +30,14 @@ namespace MAT
       //! constructor
       ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      virtual ~ScatraMultiScale() { return; };
-
       //! return name of micro-scale input file
       const std::string MicroInputFileName() const { return microfile_; };
 
       //! return number of micro-scale discretization
       int MicroDisNum() const { return microdisnum_; };
 
-      //! return specific micro-scale surface area
-      double A_s() const { return A_s_; };
+      //! return specific micro-scale surface area A_s
+      double SpecificMicroScaleSurfaceArea() const { return A_s_; };
 
      protected:
       //! @name material parameters
@@ -62,47 +59,67 @@ namespace MAT
   class ScatraMultiScale
   {
    public:
-    //! destructor
-    virtual ~ScatraMultiScale() { return; };
-
     //! initialize multi-scale scalar transport material
     void Initialize(const int ele_id,  //!< macro-scale element ID
         const int gp_id                //!< macro-scale Gauss point ID
     );
 
-    //! prepare time step on micro scale
-    void PrepareTimeStep(const int gp_id,       //!< macro-scale Gauss point ID
-        const std::vector<double>& phinp_macro  //!< macro-scale state variables
-        ) const;
+    /*!
+     * @brief prepare time step on micro scale
+     *
+     * @param[in] gp_id        macro-scale Gauss point ID
+     * @param[in] phinp_macro  macro-scale state variables
+     */
+    void PrepareTimeStep(const int gp_id, const std::vector<double>& phinp_macro) const;
 
-    //! evaluate multi-scale scalar transport material
-    void Evaluate(const int gp_id,               //!< macro-scale Gauss point ID
-        const std::vector<double>& phinp_macro,  //!< macro-scale state variables
-        double& q_micro,                         //!< micro-scale flux
-        std::vector<double>&
-            dq_dphi_micro,  //!< derivatives of micro-scale flux w.r.t. macro-scale state variables
-        const bool solve = true  //!< flag indicating whether micro-scale problem should be solved
-        ) const;
+    /*!
+     * @brief evaluate multi-scale scalar transport material
+     *
+     * @param[in] gp_id        macro-scale Gauss point ID
+     * @param[in] phinp_macro  macro-scale state variables
+     * @param[out] q_micro        micro-scale flux
+     * @param[out] dq_dphi_micro  derivatives of micro-scale flux w.r.t. macro-scale state variables
+     * @param[in] solve           flag indicating whether micro-scale problem should be solved
+     */
+    void Evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
+        std::vector<double>& dq_dphi_micro, const bool solve = true) const;
 
-    //! evaluate mean concentration on micro scale
-    double EvaluateMeanConcentration(const int gp_id  //!< macro-scale Gauss point ID
-        ) const;
+    /*!
+     * @brief evaluate mean concentration on micro scale
+     *
+     * @param[in] gp_id macro-scale Gauss point ID
+     * @return mean concentration
+     */
+    double EvaluateMeanConcentration(const int gp_id) const;
 
-    //! evaluate mean concentration time derivative on micro scale
-    double EvaluateMeanConcentrationTimeDerivative(const int gp_id  //!< macro-scale Gauss point ID
-        ) const;
+    /*!
+     * @brief evaluate mean concentration time derivative on micro scale
+     *
+     * @param[in] gp_id  macro-scale Gauss point ID
+     * @return time derivative od mean concentration
+     */
+    double EvaluateMeanConcentrationTimeDerivative(const int gp_id) const;
 
-    //! update multi-scale scalar transport material
-    void Update(const int gp_id  //!< macro-scale Gauss point ID
-        ) const;
+    /*!
+     * @brief update multi-scale scalar transport material
+     *
+     * @param[in] gp_id  macro-scale Gauss point ID
+     */
+    void Update(const int gp_id) const;
 
-    //! create output on micro scale
-    void Output(const int gp_id  //!< macro-scale Gauss point ID
-        ) const;
+    /*!
+     * @brief create output on micro scale
+     *
+     * @param[in] gp_id  macro-scale Gauss point ID
+     */
+    void Output(const int gp_id) const;
 
-    //! read restart on micro scale
-    void ReadRestart(const int gp_id  //!< macro-scale Gauss point ID
-        ) const;
+    /*!
+     * @brief  read restart on micro scale
+     *
+     * @param[in] gp_id  macro-scale Gauss point ID
+     */
+    void ReadRestart(const int gp_id) const;
 
     //! return name of micro-scale input file
     const std::string MicroInputFileName() const { return Params()->MicroInputFileName(); };
@@ -110,8 +127,11 @@ namespace MAT
     //! return number of micro-scale discretization
     int MicroDisNum() const { return Params()->MicroDisNum(); };
 
-    //! return specific micro-scale surface area
-    double A_s() const { return Params()->A_s(); };
+    //! return specific micro-scale surface area A_s
+    double SpecificMicroScaleSurfaceArea() const
+    {
+      return Params()->SpecificMicroScaleSurfaceArea();
+    };
 
    protected:
     //! construct empty material

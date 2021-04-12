@@ -2243,17 +2243,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       case prb_fsi:
       case prb_fsi_redmodels:
       case prb_fsi_lung:
-      case prb_scatra:
-      {
-        // read microscale fields from second, third, ... inputfile if necessary
-        // (in case of multi-scale material models in structure field)
-        if (npType != copy_dat_file) ReadMicroFields(reader);
-        break;
-      }
-      case prb_structure:
       case prb_invana:
+      case prb_scatra:
+      case prb_structure:
       {
-        // read microscale fields from second, third, ... inputfile if necessary
+        // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
         if (npType != copy_dat_file) ReadMicroFields(reader);
         break;

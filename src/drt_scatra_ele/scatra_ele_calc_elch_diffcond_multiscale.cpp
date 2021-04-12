@@ -18,87 +18,67 @@ multi-scale framework
 #include "../drt_mat/newman_multiscale.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 07/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>*
-DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::Instance(const int numdofpernode,
-    const int numscal, const std::string& disname,
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>*
+DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Instance(
+    const int numdofpernode, const int numscal, const std::string& disname,
     const ScaTraEleCalcElchDiffCondMultiScale* delete_me)
 {
-  static std::map<std::string, ScaTraEleCalcElchDiffCondMultiScale<distype>*> instances;
+  static std::map<std::string, ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>*> instances;
 
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
-      instances[disname] =
-          new ScaTraEleCalcElchDiffCondMultiScale<distype>(numdofpernode, numscal, disname);
+      instances[disname] = new ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>(
+          numdofpernode, numscal, disname);
   }
 
   else
   {
-    for (typename std::map<std::string, ScaTraEleCalcElchDiffCondMultiScale<distype>*>::iterator i =
-             instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
   return instances[disname];
 }
 
-
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 07/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::Done()
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 07/17 |
  *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::ScaTraEleCalcElchDiffCondMultiScale(
-    const int numdofpernode, const int numscal,
+template <DRT::Element::DiscretizationType distype, int probdim>
+DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
+    probdim>::ScaTraEleCalcElchDiffCondMultiScale(const int numdofpernode, const int numscal,
     const std::string& disname)
-    :  // constructor of base class
-      DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype>::ScaTraEleCalcElchDiffCond(
+    : DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::ScaTraEleCalcElchDiffCond(
           numdofpernode, numscal, disname)
 {
   // replace diffusion manager
   my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCondMultiScale(my::numscal_));
-
-  return;
 }
 
-
-/*-----------------------------------------------------------------------------------------------------------------------*
- | macro-scale matrix and vector contributions arising from macro-micro coupling in multi-scale
- simulations   fang 07/17 |
- *-----------------------------------------------------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalcMatAndRhsMultiScale(
-    const DRT::Element* const ele,   //!< element
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const int k,                     //!< species index
-    const int iquad,                 //!< Gauss point index
-    const double timefacfac,         //!< domain integration factor times time integration factor
-    const double rhsfac  //!< domain integration factor times time integration factor for right-hand
-                         //!< side vector
-)
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcMatAndRhsMultiScale(
+    const DRT::Element* const ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
+    const int k, const int iquad, const double timefacfac, const double rhsfac)
 {
   // extract multi-scale Newman material
   const Teuchos::RCP<const MAT::ElchMat> elchmat =
@@ -114,7 +94,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalcMatAndRhsM
   std::vector<double> dq_dphi_micro(3, 0.);
 
   // initialize vector with macro-scale state variables
-  std::vector<double> phinp(3, 0.);
+  std::vector<double> phinp(3, 0.0);
   phinp[0] = my::scatravarmanager_->Phinp(0);
   phinp[1] = my::funct_.Dot(my::ephinp_[1]);
   phinp[2] = my::funct_.Dot(my::ephinp_[2]);
@@ -142,10 +122,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalcMatAndRhsM
   //                    |___________________|
   //                           = i_ed
   //
-  const double dq_dc_el = timefacfac * dq_dphi_micro[0] * newmanmultiscale->A_s();
-  const double dq_dpot_el = timefacfac * dq_dphi_micro[1] * newmanmultiscale->A_s();
-  const double dq_dpot_ed = timefacfac * dq_dphi_micro[2] * newmanmultiscale->A_s();
-  const double q = rhsfac * q_micro * newmanmultiscale->A_s();
+  const double specific_micro_scale_surface_area =
+      newmanmultiscale->SpecificMicroScaleSurfaceArea();
+  const double dq_dc_el = timefacfac * dq_dphi_micro[0] * specific_micro_scale_surface_area;
+  const double dq_dpot_el = timefacfac * dq_dphi_micro[1] * specific_micro_scale_surface_area;
+  const double dq_dpot_ed = timefacfac * dq_dphi_micro[2] * specific_micro_scale_surface_area;
+  const double q = rhsfac * q_micro * specific_micro_scale_surface_area;
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
     // matrix contributions
@@ -186,34 +168,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::CalcMatAndRhsM
 
     erhs[fvi + 1] -= vi_rhsterm;
 
-    double laplawfrhs_gradpot(0.);
+    double laplawfrhs_gradpot(0.0);
     my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot_ed, vi);
     erhs[fvi + 2] -= rhsfac * mydiffcond::VarManager()->InvF() *
                          DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetSigma() *
                          laplawfrhs_gradpot -
                      vi_rhsterm;
   }
-
-  return;
 }
 
-
 /*------------------------------------------------------------------------*
- | compute element matrix and element right-hand side vector   fang 07/17 |
  *------------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::Sysmat(
-    DRT::Element* ele,                   //!< element
-    Epetra_SerialDenseMatrix& emat,      //!< element matrix
-    Epetra_SerialDenseVector& erhs,      //!< element right-hand side vector
-    Epetra_SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
-)
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysmat(DRT::Element* ele,
+    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
+    Epetra_SerialDenseVector& subgrdiff)
 {
   // call base class routine
   mydiffcond::Sysmat(ele, emat, erhs, subgrdiff);
 
   // integration points and weights
-  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over all integration points
@@ -228,30 +203,27 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype>::Sysmat(
     CalcMatAndRhsMultiScale(ele, emat, erhs, 0, iquad, my::scatraparatimint_->TimeFac() * fac,
         my::scatraparatimint_->TimeFacRhs() * fac);
   }
-
-  return;
 }
-
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 1>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::line3, 1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tri6, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::tet10, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<DRT::Element::pyramid5, 3>;

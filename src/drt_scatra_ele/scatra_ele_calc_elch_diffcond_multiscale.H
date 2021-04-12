@@ -21,13 +21,14 @@ namespace DRT
     class ScaTraEleDiffManagerElchDiffCondMultiScale;
 
     // implementation of class ScaTraEleCalcElchDiffCondMultiScale
-    template <DRT::Element::DiscretizationType distype>
-    class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype>
+    template <DRT::Element::DiscretizationType distype,
+        int probdim = DRT::UTILS::DisTypeToDim<distype>::dim>
+    class ScaTraEleCalcElchDiffCondMultiScale : public ScaTraEleCalcElchDiffCond<distype, probdim>
     {
      public:
       //! singleton access method
-      static ScaTraEleCalcElchDiffCondMultiScale<distype>* Instance(const int numdofpernode,
-          const int numscal, const std::string& disname,
+      static ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname,
           const ScaTraEleCalcElchDiffCondMultiScale* delete_me = NULL);
 
       //! singleton destruction
@@ -35,8 +36,8 @@ namespace DRT
 
      private:
       //! abbreviation
-      typedef ScaTraEleCalc<distype> my;
-      typedef ScaTraEleCalcElchDiffCond<distype> mydiffcond;
+      using my = ScaTraEleCalc<distype, probdim>;
+      using mydiffcond = ScaTraEleCalcElchDiffCond<distype, probdim>;
 
       //! constructor
       ScaTraEleCalcElchDiffCondMultiScale(
@@ -91,34 +92,22 @@ namespace DRT
      public:
       //! constructor
       ScaTraEleDiffManagerElchDiffCondMultiScale(int numscal)
-          : ScaTraEleDiffManagerElchDiffCond(numscal), sigma_(0.)
-      {
-        return;
-      };
-
-      //! destructor
-      virtual ~ScaTraEleDiffManagerElchDiffCondMultiScale() { return; };
+          : ScaTraEleDiffManagerElchDiffCond(numscal), sigma_(0.0){};
 
       //! set electronic conductivity
-      void SetSigma(const double sigma)
-      {
-        sigma_ = sigma;
-        return;
-      };
+      void SetSigma(const double sigma) { sigma_ = sigma; };
 
       //! access electronic conductivity
       double GetSigma() const { return sigma_; };
 
       //! Output of transport parameter (to screen)
-      void OutputTransportParams(const int numscal)
+      void OutputTransportParams(const int numscal) override
       {
         // call base class routine
         ScaTraEleDiffManagerElchDiffCond::OutputTransportParams(numscal);
 
         // additional output
         std::cout << "electronic conductivity:   " << sigma_ << std::endl;
-
-        return;
       };
 
      private:

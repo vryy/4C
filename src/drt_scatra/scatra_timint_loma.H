@@ -26,24 +26,21 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// virtual destructor
-    virtual ~ScaTraTimIntLoma() { return; };
-
     /*========================================================================*/
     //! @name Preconditioning
     /*========================================================================*/
 
-    void SetupSplitter();
+    void SetupSplitter() override;
 
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
     /// initialize algorithm
-    void Setup();
+    void Setup() override;
 
     //! set initial thermodynamic pressure
     void SetInitialThermPressure();
@@ -95,9 +92,12 @@ namespace SCATRA
     virtual double ThermPressDtAm() = 0;
 
    protected:
-    //! add parameters depending on the problem, i.e., loma, level-set, ...
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params  //!< parameter list
-    );
+    /*!
+     * @brief add parameters depending on the problem, i.e., loma, level-set, ...
+     *
+     * @param params parameter list
+     */
+    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
 
     virtual void AddThermPressToParameterList(Teuchos::ParameterList& params  //!< parameter list
         ) = 0;
@@ -118,7 +118,6 @@ namespace SCATRA
     //! time deriv. of thermodynamic pressure at n+1
     double thermpressdtnp_;
   };
-
-};  // namespace SCATRA
+}  // namespace SCATRA
 
 #endif
