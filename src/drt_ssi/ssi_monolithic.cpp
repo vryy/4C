@@ -97,7 +97,11 @@ void SSI::SSIMono::ApplyContactToSubProblems()
 
   strategy_contact_->ApplyContactToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
 
+  ssi_matrices_->CompleteScaTraStructureMatrix();
+
   strategy_contact_->ApplyContactToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
+
+  ssi_matrices_->CompleteStructureScaTraMatrix();
 }
 
 /*-------------------------------------------------------------------------------*
