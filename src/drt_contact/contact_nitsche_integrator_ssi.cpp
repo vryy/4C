@@ -295,7 +295,7 @@ void CONTACT::CoIntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElemen
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), i))] = shape_func(i);
 
   // calculate derivative of concentration w.r.t. displacements
-  int deriv_size = 0;
+  std::size_t deriv_size = 0;
   for (int i = 0; i < dim - 1; ++i) deriv_size += d_xi_dd.at(i).size();
   d_conc_dd.resize(deriv_size);
   d_conc_dd.clear();
@@ -395,30 +395,38 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
   const double time_fac = GetScaTraEleParameterTimInt()->TimeFac();
   const double time_fac_rhs = GetScaTraEleParameterTimInt()->TimeFacRhs();
 
-  const double val = fac * time_fac_rhs * jac * wgt * test_val;
+  const double val = fac * jac * wgt * test_val;
 
   for (int s = 0; s < ele.NumNode(); ++s)
-    *(ele.GetNitscheContainer().RhsS(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-        ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) += val * shape_func(s);
-
-  for (const auto& p : d_test_val_ds)
   {
-    double* row = ele.GetNitscheContainer().Kss(p.first);
+    *(ele.GetNitscheContainer().RhsS(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) +=
+        time_fac_rhs * val * shape_func(s);
+  }
+
+  for (const auto& d_testval_ds : d_test_val_ds)
+  {
+    double* row = ele.GetNitscheContainer().Kss(d_testval_ds.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
-          ele.FaceParentNumber(), s)] -= fac * time_fac * jac * wgt * p.second * shape_func(s);
+    {
+      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] -=
+          time_fac * fac * jac * wgt * d_testval_ds.second * shape_func(s);
+    }
   }
 
   GEN::pairedvector<int, double> d_val_dd(d_jac_dd.size() + d_test_val_dd.size());
-  for (const auto& p : d_jac_dd) d_val_dd[p.first] += fac * time_fac * p.second * wgt * test_val;
-  for (const auto& p : d_test_val_dd) d_val_dd[p.first] += fac * time_fac * jac * wgt * p.second;
+  for (const auto& djac_dd : d_jac_dd)
+    d_val_dd[djac_dd.first] += fac * djac_dd.second * wgt * test_val;
+  for (const auto& d_testval_dd : d_test_val_dd)
+    d_val_dd[d_testval_dd.first] += fac * jac * wgt * d_testval_dd.second;
 
-  for (const auto& p : d_val_dd)
+  for (const auto& dval_dd : d_val_dd)
   {
-    double* row = ele.GetNitscheContainer().Ksd(p.first);
+    double* row = ele.GetNitscheContainer().Ksd(dval_dd.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] -= p.second * shape_func(s);
+      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+          ele.FaceParentNumber(), s)] -= time_fac * dval_dd.second * shape_func(s);
   }
 
   for (int e = 0; e < dim - 1; ++e)
@@ -428,7 +436,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
       double* row = ele.GetNitscheContainer().Ksd(d_xi_dd_e.first);
       for (int s = 0; s < ele.NumNode(); ++s)
         row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
-            ele.FaceParentNumber(), s)] -= val * shape_deriv(s, e) * d_xi_dd_e.second;
+            ele.FaceParentNumber(), s)] -= time_fac * val * shape_deriv(s, e) * d_xi_dd_e.second;
     }
   }
 }
