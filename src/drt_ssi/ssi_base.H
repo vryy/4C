@@ -296,7 +296,13 @@ namespace SSI
       if (not IsInit()) dserror("Init(...) was not called.");
     };
 
-    //! copies modified time step from scatra to structure and to this SSI algorithm
+    //! copy modified time step from scatra to scatra manifold field
+    void SetDtFromScaTraToManifold();
+
+    //! copy modified time step from scatra to this SSI algorithm
+    void SetDtFromScaTraToSSI();
+
+    //! copy modified time step from scatra to structure field
     void SetDtFromScaTraToStructure();
 
     //! set flag true after setup or false if setup became invalid

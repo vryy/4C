@@ -60,7 +60,9 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       cccv_condition_(Teuchos::null),
       cellcrate_(0.),
       cellcrate_old_(-1.0),
-      cycling_timestep_(elchparams_->get<double>("CYCLING_TIMESTEP")),
+      cycling_timestep_(DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING")
+                            ? elchparams_->get<double>("CYCLING_TIMESTEP")
+                            : 0.0),
       adapted_timestep_active_(false),
       dt_adapted_(-1.0),
       splitter_macro_(Teuchos::null)
@@ -79,14 +81,8 @@ void SCATRA::ScaTraTimIntElch::Init()
     ValidParameterDiffCond();
 
   // additional safety checks associated with adaptive time stepping for CCCV cell cycling
-  if (cycling_timestep_ > 0.)
+  if (cycling_timestep_ > 0.0)
   {
-    if (not DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"))
-    {
-      dserror(
-          "Adaptive time stepping for CCCV cell cycling requires ADAPTIVE_TIMESTEPPING flag to be "
-          "set!");
-    }
     if (not discret_->GetCondition("CCCVCycling"))
     {
       dserror(
