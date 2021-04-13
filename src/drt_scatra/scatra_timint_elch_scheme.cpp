@@ -25,7 +25,6 @@ SCATRA::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<DRT::Discretizatio
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
 {
-  return;
 }
 
 
@@ -38,8 +37,6 @@ void SCATRA::ScaTraTimIntElchOST::Init()
   // note: this order is important
   TimIntOneStepTheta::Init();
   ScaTraTimIntElch::Init();
-
-  return;
 }
 
 
@@ -52,16 +49,7 @@ void SCATRA::ScaTraTimIntElchOST::Setup()
   // note: this order is important
   TimIntOneStepTheta::Setup();
   ScaTraTimIntElch::Setup();
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchOST::~ScaTraTimIntElchOST() { return; }
-
 
 /*--------------------------------------------------------------------------*
  | calculate initial electric potential field                    fang 09/15 |
@@ -96,8 +84,6 @@ void SCATRA::ScaTraTimIntElchOST::CalcInitialPotentialField()
   SetElementGeneralParameters(false);
   SetElementTimeParameter(false);
   SetElementTurbulenceParameters(false);
-
-  return;
 }
 
 
@@ -114,7 +100,7 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart() const
 
   // write additional restart data for galvanostatic applications or simulations including a double
   // layer formulation
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -130,7 +116,7 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart() const
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         std::stringstream temp;
         temp << condid;
@@ -153,8 +139,6 @@ void SCATRA::ScaTraTimIntElchOST::OutputRestart() const
       }
     }
   }
-
-  return;
 }
 
 
@@ -174,7 +158,7 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
   // Initialize Nernst-BC
   InitNernstBC();
 
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -192,7 +176,7 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
       // galvanostatic mode: only applied potential of cathode is adapted
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         std::stringstream temp;
         temp << condid;
@@ -213,8 +197,6 @@ void SCATRA::ScaTraTimIntElchOST::ReadRestart(const int step, Teuchos::RCP<IO::I
     }
     if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
   }
-
-  return;
 }
 
 
@@ -226,8 +208,6 @@ void SCATRA::ScaTraTimIntElchOST::Update(const int num)
 {
   TimIntOneStepTheta::Update(num);
   ScaTraTimIntElch::Update(num);
-
-  return;
 }
 
 
@@ -236,26 +216,24 @@ void SCATRA::ScaTraTimIntElchOST::Update(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchOST::ElectrodeKineticsTimeUpdate()
 {
-  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_ == true)
+  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
     ComputeTimeDerivPot0(false);
 
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElchBoundaryKinetics", cond);
-    if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-    for (size_t i = 0; i < cond.size(); i++)  // we update simply every condition!
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("ElchBoundaryKinetics", conditions);
+    if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
+    for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double pot0np = cond[i]->GetDouble("pot");
-        cond[i]->Add("pot0n", pot0np);
+        double pot0np = condition->GetDouble("pot");
+        condition->Add("pot0n", pot0np);
 
-        double pot0dtnp = cond[i]->GetDouble("pot0dtnp");
-        cond[i]->Add("pot0dtn", pot0dtnp);
+        double pot0dtnp = condition->GetDouble("pot0dtnp");
+        condition->Add("pot0dtn", pot0dtnp);
       }
     }
   }
-
-  return;
 }
 
 
@@ -269,8 +247,6 @@ void SCATRA::ScaTraTimIntElchOST::ExplicitPredictor() const
 
   // for the electric potential we just use the old values from the previous time step
   splitter_->InsertCondVector(splitter_->ExtractCondVector(phin_), phinp_);
-
-  return;
 }
 
 
@@ -282,7 +258,7 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-  int numcond = cond.size();
+  int numcond = static_cast<int>(cond.size());
 
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -320,8 +296,6 @@ void SCATRA::ScaTraTimIntElchOST::ComputeTimeDerivPot0(const bool init)
       cond[icond]->Add("pot0dtnp", pot0dtnp);
     }
   }
-
-  return;
 }
 
 
@@ -334,26 +308,24 @@ void SCATRA::ScaTraTimIntElchOST::SetOldPartOfRighthandside()
   TimIntOneStepTheta::SetOldPartOfRighthandside();
 
   // contribution from galvanostatic equation
-  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_ == true)
+  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElchBoundaryKinetics", cond);
-    if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-    for (size_t i = 0; i < cond.size(); i++)  // we update simply every condition!
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("ElchBoundaryKinetics", conditions);
+    if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
+    for (auto& condition : conditions)  // we update simply every condition!
     {
       // prepare "old part of rhs" for galvanostatic equation (to be used at this time step)
       {
         // re-read values (just to be really sure no mix-up occurs)
-        double pot0n = cond[i]->GetDouble("pot0n");
-        double pot0dtn = cond[i]->GetDouble("pot0dtn");
+        double pot0n = condition->GetDouble("pot0n");
+        double pot0dtn = condition->GetDouble("pot0dtn");
         // prepare old part of rhs for galvanostatic mode
         double pothist = pot0n + (1.0 - theta_) * dta_ * pot0dtn;
-        cond[i]->Add("pot0hist", pothist);
+        condition->Add("pot0hist", pothist);
       }
     }
   }
-
-  return;
 }
 
 
@@ -368,7 +340,6 @@ SCATRA::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<DRT::Discretizat
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
 {
-  return;
 }
 
 
@@ -381,8 +352,6 @@ void SCATRA::ScaTraTimIntElchBDF2::Init()
   // note: this order is important
   TimIntBDF2::Init();
   ScaTraTimIntElch::Init();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -394,15 +363,7 @@ void SCATRA::ScaTraTimIntElchBDF2::Setup()
   // note: this order is important
   TimIntBDF2::Setup();
   ScaTraTimIntElch::Setup();
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchBDF2::~ScaTraTimIntElchBDF2() { return; }
 
 
 /*-----------------------------------------------------------------------------------*
@@ -416,8 +377,6 @@ void SCATRA::ScaTraTimIntElchBDF2::CalcInitialPotentialField()
 
   // call core algorithm
   ScaTraTimIntElch::CalcInitialPotentialField();
-
-  return;
 }
 
 
@@ -433,7 +392,7 @@ void SCATRA::ScaTraTimIntElchBDF2::OutputRestart() const
   ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -448,7 +407,7 @@ void SCATRA::ScaTraTimIntElchBDF2::OutputRestart() const
     {
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         double pot = mycond->GetDouble("pot");
@@ -468,8 +427,6 @@ void SCATRA::ScaTraTimIntElchBDF2::OutputRestart() const
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -489,7 +446,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
   InitNernstBC();
 
   // restart for galvanostatic applications
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -506,7 +463,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
     {
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         double pot = reader->ReadDouble("pot");
         mycond->Add("pot", pot);
@@ -524,8 +481,6 @@ void SCATRA::ScaTraTimIntElchBDF2::ReadRestart(const int step, Teuchos::RCP<IO::
     }
     if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -536,8 +491,6 @@ void SCATRA::ScaTraTimIntElchBDF2::Update(const int num)
 {
   TimIntBDF2::Update(num);
   ScaTraTimIntElch::Update(num);
-
-  return;
 }
 
 
@@ -549,26 +502,24 @@ void SCATRA::ScaTraTimIntElchBDF2::ElectrodeKineticsTimeUpdate()
   // The galvanostatic mode and double layer charging has never been tested if it is implemented
   // correctly!! The code have to be checked in detail, if somebody want to use it!!
 
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // ComputeTimeDerivPot0(false);
 
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElchBoundaryKinetics", cond);
-    if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-    for (size_t i = 0; i < cond.size(); i++)  // we update simply every condition!
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("ElchBoundaryKinetics", conditions);
+    if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
+    for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double potnp = cond[i]->GetDouble("pot");
-        double potn = cond[i]->GetDouble("potn");
+        double potnp = condition->GetDouble("pot");
+        double potn = condition->GetDouble("potn");
         // shift status variables
-        cond[i]->Add("potnm", potn);
-        cond[i]->Add("potn", potnp);
+        condition->Add("potnm", potn);
+        condition->Add("potn", potnp);
       }
     }
   }
-
-  return;
 }
 
 
@@ -580,7 +531,7 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-  int numcond = cond.size();
+  int numcond = static_cast<int>(cond.size());
 
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -597,17 +548,20 @@ void SCATRA::ScaTraTimIntElchBDF2::ComputeTimeDerivPot0(const bool init)
       // The galvanostatic mode and double layer charging has never been tested if it is implemented
       // correctly!! The code have to be checked in detail, if somebody want to use it!!
       if (dlcap != 0.0)
+      {
         dserror(
             "Double layer charging and galvanostatic mode are not implemented for BDF2! You have "
             "to use one-step-theta time integration scheme");
+      }
 
       if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
+      {
         dserror(
             "Double layer charging and galvanostatic mode are not implemented for BDF2! You have "
             "to use one-step-theta time integration scheme");
+      }
     }
   }
-  return;
 }
 
 
@@ -620,18 +574,18 @@ void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
   TimIntBDF2::SetOldPartOfRighthandside();
 
   // contribution from galvanostatic equation
-  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_ == true)
+  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElchBoundaryKinetics", cond);
-    if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-    for (size_t i = 0; i < cond.size(); i++)  // we update simply every condition!
-                                              // prepare "old part of rhs" for galvanostatic
-                                              // equation (to be used at next time step)
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("ElchBoundaryKinetics", conditions);
+    if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
+    for (auto& condition : conditions)  // we update simply every condition!
+                                        // prepare "old part of rhs" for galvanostatic
+                                        // equation (to be used at next time step)
     {
-      double pothist(0.0);
-      double potn = cond[i]->GetDouble("pot0n");
-      double potnm = cond[i]->GetDouble("potnm");
+      double pothist;
+      double potn = condition->GetDouble("pot0n");
+      double potnm = condition->GetDouble("potnm");
       if (step_ > 1)
       {
         // ?? tpdt(n+1) = ((3/2)*tp(n+1)-2*tp(n)+(1/2)*tp(n-1))/dt
@@ -644,11 +598,9 @@ void SCATRA::ScaTraTimIntElchBDF2::SetOldPartOfRighthandside()
         // for start-up of BDF2 we do one step with backward Euler
         pothist = potn;
       }
-      cond[i]->Add("pothist", pothist);
+      condition->Add("pothist", pothist);
     }
   }
-
-  return;
 }
 
 
@@ -663,7 +615,6 @@ SCATRA::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(Teuchos::RCP<DRT::Dis
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
 {
-  return;
 }
 
 
@@ -676,8 +627,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Init()
   // note: this order is important
   TimIntGenAlpha::Init();
   ScaTraTimIntElch::Init();
-
-  return;
 }
 
 
@@ -690,15 +639,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Setup()
   // note: this order is important
   TimIntGenAlpha::Setup();
   ScaTraTimIntElch::Setup();
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchGenAlpha::~ScaTraTimIntElchGenAlpha() { return; }
 
 
 /*---------------------------------------------------------------------------*
@@ -736,8 +677,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::CalcInitialPotentialField()
   SetElementGeneralParameters();
   SetElementTimeParameter();
   SetElementTurbulenceParameters();
-
-  return;
 }
 
 
@@ -753,7 +692,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart() const
   ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -768,7 +707,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart() const
     {
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         double pot = mycond->GetDouble("pot");
@@ -780,8 +719,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::OutputRestart() const
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -801,7 +738,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
   // Initialize Nernst-BC
   InitNernstBC();
 
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -818,7 +755,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
     {
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         double pot = reader->ReadDouble("pot");
         mycond->Add("pot", pot);
@@ -834,8 +771,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ReadRestart(
     }
     if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -846,8 +781,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Update(const int num)
 {
   TimIntGenAlpha::Update(num);
   ScaTraTimIntElch::Update(num);
-
-  return;
 }
 
 
@@ -856,23 +789,21 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Update(const int num)
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElchGenAlpha::ElectrodeKineticsTimeUpdate()
 {
-  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_ == true)
+  if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC")) or dlcapexists_)
   {
     ComputeTimeDerivPot0(false);
 
-    std::vector<DRT::Condition*> cond;
-    discret_->GetCondition("ElchBoundaryKinetics", cond);
-    if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-    for (size_t i = 0; i < cond.size(); i++)  // we update simply every condition!
+    std::vector<DRT::Condition*> conditions;
+    discret_->GetCondition("ElchBoundaryKinetics", conditions);
+    if (!conditions.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", conditions);
+    for (auto& condition : conditions)  // we update simply every condition!
     {
       {
-        double pot0np = cond[i]->GetDouble("pot");
-        cond[i]->Add("pot0n", pot0np);
+        double pot0np = condition->GetDouble("pot");
+        condition->Add("pot0n", pot0np);
       }
     }
   }
-
-  return;
 }
 
 
@@ -885,7 +816,7 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-  int numcond = cond.size();
+  int numcond = static_cast<int>(cond.size());
 
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -905,15 +836,12 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       // Double layer charging can not be integrated into the exiting framework without major
       // restructuring on element level: Derivation is based on a history vector!!
       if (dlcap != 0.0)
+      {
         dserror(
             "Double layer charging and galvanostatic mode are not implemented for generalized "
             "alpha time-integration scheme! You have to use one-step-theta time integration "
             "scheme");
-      // dlcapexists_=true;
-
-      // if(DRT::INPUT::IntegralValue<int>(*elchparams_,"GALVANOSTATIC")==true)
-      //    dserror("Double layer charging and galvanostatic mode are not implemented for
-      //    generalized-alpha! You have to use one-step-theta time integration scheme");
+      }
     }
     else
     {
@@ -935,8 +863,6 @@ void SCATRA::ScaTraTimIntElchGenAlpha::ComputeTimeDerivPot0(const bool init)
       cond[icond]->Add("pot0dtnp", pot0dtnp);
     }
   }
-
-  return;
 }
 
 
@@ -953,7 +879,6 @@ SCATRA::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
 {
-  return;
 }
 
 
@@ -966,8 +891,6 @@ void SCATRA::ScaTraTimIntElchStationary::Init()
   // note: this order is important
   TimIntStationary::Init();
   ScaTraTimIntElch::Init();
-
-  return;
 }
 
 
@@ -981,15 +904,7 @@ void SCATRA::ScaTraTimIntElchStationary::Setup()
   // note: this order is important
   TimIntStationary::Setup();
   ScaTraTimIntElch::Setup();
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   ehrl 01/14 |
-*-----------------------------------------------------------------------*/
-SCATRA::ScaTraTimIntElchStationary::~ScaTraTimIntElchStationary() { return; }
 
 
 /*---------------------------------------------------------------------------*
@@ -1003,8 +918,6 @@ void SCATRA::ScaTraTimIntElchStationary::CalcInitialPotentialField()
 
   // call core algorithm
   ScaTraTimIntElch::CalcInitialPotentialField();
-
-  return;
 }
 
 
@@ -1020,7 +933,7 @@ void SCATRA::ScaTraTimIntElchStationary::OutputRestart() const
   ScaTraTimIntElch::OutputRestart();
 
   // write additional restart data for galvanostatic applications
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -1035,7 +948,7 @@ void SCATRA::ScaTraTimIntElchStationary::OutputRestart() const
     {
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         // electrode potential of the adjusted electrode kinetics BC at time n+1
         double pot = mycond->GetDouble("pot");
@@ -1043,8 +956,6 @@ void SCATRA::ScaTraTimIntElchStationary::OutputRestart() const
       }
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1065,7 +976,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
   InitNernstBC();
 
   // restart for galvanostatic applications
-  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_ == true)
+  if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") or dlcapexists_)
   {
     // define a vector with all electrode kinetics BCs
     std::vector<DRT::Condition*> cond;
@@ -1082,7 +993,7 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
     {
       DRT::Condition* mycond = (*(fool));
       const int condid = mycond->GetInt("ConditionID");
-      if (condid_cathode == condid or dlcapexists_ == true)
+      if (condid_cathode == condid or dlcapexists_)
       {
         double pot = reader->ReadDouble("pot");
         mycond->Add("pot", pot);
@@ -1094,20 +1005,13 @@ void SCATRA::ScaTraTimIntElchStationary::ReadRestart(
     }
     if (!read_pot) dserror("Reading of electrode potential for restart not successful.");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::Update(const int num)
-{
-  TimIntStationary::Update(num);
-
-  return;
-}
+void SCATRA::ScaTraTimIntElchStationary::Update(const int num) { TimIntStationary::Update(num); }
 
 /*-------------------------------------------------------------------------------------*
  | compute time derivative of applied electrode potential                   ehrl 08/13 |
@@ -1117,7 +1021,7 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
   std::vector<DRT::Condition*> cond;
   discret_->GetCondition("ElchBoundaryKinetics", cond);
   if (!cond.size()) discret_->GetCondition("ElchBoundaryKineticsPoint", cond);
-  int numcond = cond.size();
+  int numcond = static_cast<int>(cond.size());
 
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -1126,17 +1030,18 @@ void SCATRA::ScaTraTimIntElchStationary::ComputeTimeDerivPot0(const bool init)
     if (init)
     {
       if (dlcap != 0.0)
+      {
         dserror(
             "Double layer charging and galvanostatic mode are not implemented for stationary time "
             "integration scheme! You have to use one-step-theta time integration scheme!");
-      // dlcapexists_=true;
+      }
 
       if (DRT::INPUT::IntegralValue<int>(*elchparams_, "GALVANOSTATIC") == true)
+      {
         dserror(
             "Double layer charging and galvanostatic mode are not implemented for stationary time "
             "integration scheme! You have to use one-step-theta time integration scheme!");
+      }
     }
   }
-
-  return;
 }
