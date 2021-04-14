@@ -60,7 +60,9 @@ SCATRA::ScaTraTimIntElch::ScaTraTimIntElch(Teuchos::RCP<DRT::Discretization> dis
       cccv_condition_(Teuchos::null),
       cellcrate_(0.),
       cellcrate_old_(-1.0),
-      cycling_timestep_(elchparams_->get<double>("CYCLING_TIMESTEP")),
+      cycling_timestep_(DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING")
+                            ? elchparams_->get<double>("CYCLING_TIMESTEP")
+                            : 0.0),
       adapted_timestep_active_(false),
       dt_adapted_(-1.0),
       splitter_macro_(Teuchos::null)
@@ -79,14 +81,8 @@ void SCATRA::ScaTraTimIntElch::Init()
     ValidParameterDiffCond();
 
   // additional safety checks associated with adaptive time stepping for CCCV cell cycling
-  if (cycling_timestep_ > 0.)
+  if (cycling_timestep_ > 0.0)
   {
-    if (not DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"))
-    {
-      dserror(
-          "Adaptive time stepping for CCCV cell cycling requires ADAPTIVE_TIMESTEPPING flag to be "
-          "set!");
-    }
     if (not discret_->GetCondition("CCCVCycling"))
     {
       dserror(
@@ -300,11 +296,11 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotSplit()
 
   // transform sets to maps
   std::vector<int> conddofmapvec(conddofset.begin(), conddofset.end());
-  const Teuchos::RCP<const Epetra_Map> conddofmap = Teuchos::rcp(
-      new Epetra_Map(-1, conddofmapvec.size(), &conddofmapvec[0], 0, discret_->Comm()));
+  const Teuchos::RCP<const Epetra_Map> conddofmap = Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(conddofmapvec.size()), &conddofmapvec[0], 0, discret_->Comm()));
   std::vector<int> otherdofmapvec(otherdofset.begin(), otherdofset.end());
-  const Teuchos::RCP<const Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), &otherdofmapvec[0], 0, discret_->Comm()));
+  const Teuchos::RCP<const Epetra_Map> otherdofmap = Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(otherdofmapvec.size()), &otherdofmapvec[0], 0, discret_->Comm()));
 
   // set up concentration-potential splitter
   splitter_ =
@@ -339,14 +335,14 @@ void SCATRA::ScaTraTimIntElch::SetupConcPotPotSplit()
   // transform sets to maps
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(3, Teuchos::null);
   std::vector<int> dofmapvec_conc_el(dofset_conc_el.begin(), dofset_conc_el.end());
-  maps[0] = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec_conc_el.size(), &dofmapvec_conc_el[0], 0, discret_->Comm()));
+  maps[0] = Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(dofmapvec_conc_el.size()), &dofmapvec_conc_el[0], 0, discret_->Comm()));
   std::vector<int> dofmapvec_pot_el(dofset_pot_el.begin(), dofset_pot_el.end());
-  maps[1] = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec_pot_el.size(), &dofmapvec_pot_el[0], 0, discret_->Comm()));
+  maps[1] = Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(dofmapvec_pot_el.size()), &dofmapvec_pot_el[0], 0, discret_->Comm()));
   std::vector<int> dofmapvec_pot_ed(dofset_pot_ed.begin(), dofset_pot_ed.end());
-  maps[2] = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec_pot_ed.size(), &dofmapvec_pot_ed[0], 0, discret_->Comm()));
+  maps[2] = Teuchos::rcp(new Epetra_Map(
+      -1, static_cast<int>(dofmapvec_pot_ed.size()), &dofmapvec_pot_ed[0], 0, discret_->Comm()));
 
   // set up concentration-potential-potential splitter
   splitter_macro_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*discret_->DofRowMap(), maps));
@@ -1120,8 +1116,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> SCATRA::ScaTraTimIntElch::EvaluateSingleE
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::PostProcessSingleElectrodeInfo(Epetra_SerialDenseVector& scalars,
-    const unsigned id, const bool print, double& currentsum, double& currtangent,
-    double& currresidual, double& electrodeint, double& electrodepot, double& meanoverpot)
+    const int id, const bool print, double& currentsum, double& currtangent, double& currresidual,
+    double& electrodeint, double& electrodepot, double& meanoverpot)
 {
   // get total integral of current
   double currentintegral = scalars(0);
@@ -2935,8 +2931,9 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
 
       // transform set into vector and then into Epetra map
       std::vector<int> dbcgidsvec(dbcgids.begin(), dbcgids.end());
-      const Teuchos::RCP<const Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(
-          -1, dbcgids.size(), &dbcgidsvec[0], DofRowMap()->IndexBase(), DofRowMap()->Comm()));
+      const Teuchos::RCP<const Epetra_Map> dbcmap =
+          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(dbcgids.size()), &dbcgidsvec[0],
+              DofRowMap()->IndexBase(), DofRowMap()->Comm()));
 
       // merge map with existing map for Dirichlet boundary conditions
       AddDirichCond(dbcmap);
@@ -3007,7 +3004,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
             iterator->second->LocationVector(*discret_, lm, lmowner, lmstride);
 
             // initialize element-based vector of Neumann loads
-            Epetra_SerialDenseVector elevector(lm.size());
+            Epetra_SerialDenseVector elevector(static_cast<int>(lm.size()));
 
             // evaluate Neumann boundary condition
             iterator->second->EvaluateNeumann(params, *discret_, condition, lm, elevector);
@@ -3263,7 +3260,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
         {
           dofidvec.reserve(dofids[iset].size());
           dofidvec.assign(dofids[iset].begin(), dofids[iset].end());
-          nummyelements = dofidvec.size();
+          nummyelements = static_cast<int>(dofidvec.size());
           myglobalelements = &(dofidvec[0]);
         }
         blockmaps[NumDofPerNode() * icond + iset] = Teuchos::rcp(new Epetra_Map(-1, nummyelements,

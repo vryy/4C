@@ -30,41 +30,38 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    virtual ~ScaTraTimIntElchOST();
-
     //! initialize time integration scheme
-    virtual void Init();
+    void Init() override;
 
     //! setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
     //! calculate initial electric potential field
-    void CalcInitialPotentialField();
+    void CalcInitialPotentialField() override;
 
     //! write additional data required for restart
-    void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! update time-dependent electrode state variables at the end of an time step
-    void ElectrodeKineticsTimeUpdate();
+    void ElectrodeKineticsTimeUpdate() override;
 
     //! explicit predictor for nonlinear solver
-    void ExplicitPredictor() const;
+    void ExplicitPredictor() const override;
 
     //!  compute scalar time derivate parameters of the input voltage to compute double layer
     //!  current densities
-    void ComputeTimeDerivPot0(const bool init);
+    void ComputeTimeDerivPot0(const bool init) override;
 
     //! set part of residual vector belonging to previous time step
-    void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
   };  // class TimIntElchOST
 
 
@@ -78,38 +75,35 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    virtual ~ScaTraTimIntElchBDF2();
-
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
     //! calculate initial electric potential field
-    void CalcInitialPotentialField();
+    void CalcInitialPotentialField() override;
 
     //! write additional data required for restart
-    void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! update time-dependent electrode state variables at the end of an time step
-    void ElectrodeKineticsTimeUpdate();
+    void ElectrodeKineticsTimeUpdate() override;
 
     //!  compute scalar time derivate parameters of the input voltage to compute double layer
     //!  current densities
-    void ComputeTimeDerivPot0(const bool init);
+    void ComputeTimeDerivPot0(const bool init) override;
 
     //! set part of residual vector belonging to previous time step
-    void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
   };  // class TimIntElchBDF2
 
 
@@ -123,35 +117,32 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    virtual ~ScaTraTimIntElchGenAlpha();
-
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
     //! calculate initial electric potential field
-    void CalcInitialPotentialField();
+    void CalcInitialPotentialField() override;
 
     //! write additional data required for restart
-    void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! update time-dependent electrode state variables at the end of an time step
-    void ElectrodeKineticsTimeUpdate();
+    void ElectrodeKineticsTimeUpdate() override;
 
     //!  compute scalar time derivate parameters of the input voltage to compute double layer
     //!  current densities
-    void ComputeTimeDerivPot0(const bool init);
+    void ComputeTimeDerivPot0(const bool init) override;
   };  // class TimIntElchGenAlpha
 
 
@@ -165,39 +156,35 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    virtual ~ScaTraTimIntElchStationary();
-
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     //! read restart data
-    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    protected:
     //! calculate initial electric potential field
-    void CalcInitialPotentialField();
+    void CalcInitialPotentialField() override;
 
     //! write additional data required for restart
-    void OutputRestart() const;
+    void OutputRestart() const override;
 
     //! update time-dependent electrode state variables at the end of an time step
-    void ElectrodeKineticsTimeUpdate()
+    void ElectrodeKineticsTimeUpdate() override
     {
       dserror("Galvanostatic-BC is not implemented for the stationary time-integration scheme");
-      return;
     };
 
     //!  compute scalar time derivate parameters of the input voltage to compute double layer
     //!  current densities
-    void ComputeTimeDerivPot0(const bool init);
+    void ComputeTimeDerivPot0(const bool init) override;
   };  // class TimIntElchStatationary
 }  // namespace SCATRA
 

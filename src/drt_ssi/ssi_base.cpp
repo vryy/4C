@@ -682,14 +682,30 @@ void SSI::SSIBase::CheckSSIFlags() const
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::SetDtFromScaTraToStructure()
 {
-  // change current time and time step of structure according to ScaTra
   StructureField()->SetDt(ScaTraField()->Dt());
   StructureField()->SetTimen(ScaTraField()->Time());
   StructureField()->PostUpdate();
+}
 
-  // change current time and time step of this algorithm according to ScaTra
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::SetDtFromScaTraToManifold()
+{
+  ScaTraManifold()->SetDt(ScaTraField()->Dt());
+  ScaTraManifold()->SetTimeStep(ScaTraField()->Time(), ScaTraField()->Step());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::SetDtFromScaTraToSSI()
+{
+  // set values for this SSI algorithm
   SetTimeStep(ScaTraField()->Time(), Step());
   SetDt(ScaTraField()->Dt());
+
+  // set values for other fields
+  SetDtFromScaTraToStructure();
+  if (IsScaTraManifold()) SetDtFromScaTraToManifold();
 }
 
 /*----------------------------------------------------------------------*/

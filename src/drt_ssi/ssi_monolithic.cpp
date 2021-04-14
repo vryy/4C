@@ -517,8 +517,8 @@ void SSI::SSIMono::PrepareTimeStep()
   if (IsScaTraManifold()) ScaTraManifold()->PrepareTimeStep();
 
   // if adaptive time stepping and different time step size: calculate time step in scatra
-  // (PrepareTimeStep() of Scatra) and pass to structure
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
+  // (PrepareTimeStep() of Scatra) and pass to other fields
+  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
 
   // pass scalar transport degrees of freedom to structural discretization
   // has to be called AFTER ScaTraField()->PrepareTimeStep() to ensure

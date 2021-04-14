@@ -67,7 +67,7 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
   // activate first half cycle depending on initial relaxation
   if (initrelaxtime_ < 0.0)
     SetFirstCCCVHalfCycle(1);
-  else if (initrelaxtime_ > 0.0 and ihalfcycle_ == -1)
+  else if (initrelaxtime_ > 0.0)
     phaseinitialrelaxation_ = true;
   else
     dserror("Please choose an initial relaxation time larger than 0.0");

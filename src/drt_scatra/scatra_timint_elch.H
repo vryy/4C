@@ -110,30 +110,35 @@ namespace SCATRA
     //! output electrode boundary status information to screen and file
     void OutputElectrodeInfoBoundary();
 
-    //! evaluate status information on single line or surface electrode
+    //! \brief evaluate status information on single line or surface electrode
+    //!
+    //! \param condid      ID of condition to be evaluated
+    //! \param condstring  name of condition to be evaluated
+    //! \return            evaluated scalars
     Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfo(
-        int condid,                    //!< ID of condition to be evaluated
-        const std::string& condstring  //!< name of condition to be evaluated
-    );
+        int condid, const std::string& condstring);
 
-    //! evaluate status information on single point electrode
+    //! \brief evaluate status information on single point electrode
+    //!
+    //! \param condition   condition to be evaluated
+    //! \return            evaluated scalars
     Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfoPoint(
-        Teuchos::RCP<DRT::Condition> condition  //!< condition to be evaluated
-    );
+        Teuchos::RCP<DRT::Condition> condition);
 
-    //! post-process status information on single electrode
-    void PostProcessSingleElectrodeInfo(
-        Epetra_SerialDenseVector&
-            scalars,  //!< scalar quantities associated with electrode status information (in)
-        unsigned id,  //!< electrode ID (in)
-        bool print,   //!< flag for output to screen and file (in)
-        double& currentsum,    //!< net current involving all conditions (out)
-        double& currtangent,   //!< tangent of current w.r.t. electrode potential (out)
-        double& currresidual,  //!< negative residual of current equation (out)
-        double& electrodeint,  //!< physical dimensions of the electrode region (out)
-        double& electrodepot,  //!< electrode potential on electrode side (out)
-        double& meanoverpot    //!< mean overpotential (out)
-    );
+    //! \brief post-process status information on single electrode
+    //!
+    //! \param scalars        scalar quantities associated with electrode status information (in)
+    //! \param                id electrode ID (in)
+    //! \param print          flag for output to screen and file (in)
+    //! \param currentsum     net current involving all conditions (out)
+    //! \param currtangent    tangent of current w.r.t. electrode potential (out)
+    //! \param currresidual   negative residual of current equation (out)
+    //! \param electrodeint   physical dimensions of the electrode region (out)
+    //! \param electrodepot   electrode potential on electrode side (out)
+    //! \param meanoverpot    mean overpotential (out)
+    void PostProcessSingleElectrodeInfo(Epetra_SerialDenseVector& scalars, int id, bool print,
+        double& currentsum, double& currtangent, double& currresidual, double& electrodeint,
+        double& electrodepot, double& meanoverpot);
 
     //! output electrode interior status information to screen and files
     void OutputElectrodeInfoInterior();
@@ -250,27 +255,32 @@ namespace SCATRA
     //! this function is never called directly, but only via overloading
     virtual void CalcInitialPotentialField();
 
-    //! computes different conductivity expressions for electrolyte solutions (ELCH)
-    double ComputeConductivity(Epetra_SerialDenseVector& sigma,  //! result vector
-        bool effCond = false,    //! flag for computation of effective conductivity
-        bool specresist = false  //! flag for computation of specific electrolyte resistance
-    );
+    //! \brief computes different conductivity expressions for electrolyte solutions (ELCH)
+    //!
+    //! \param sigma       result vector
+    //! \param effCond     flag for computation of effective conductivity
+    //! \param specresist  flag for computation of specific electrolyte resistance
+    //! \return            specific resistance
+    double ComputeConductivity(
+        Epetra_SerialDenseVector& sigma, bool effCond = false, bool specresist = false);
 
     //! apply galvanostatic control (update electrode potential) (ELCH)
     bool ApplyGalvanostaticControl();
 
-    //! evaluate domain or boundary conditions for electrode kinetics
-    void EvaluateElectrodeKineticsConditions(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< global system matrix
-        Teuchos::RCP<Epetra_Vector> rhs,                    //!< global right-hand side vector
-        const std::string& condstring                       //!< name of condition to be evaluated
-    );
+    //! \brief evaluate domain or boundary conditions for electrode kinetics
+    //!
+    //! \param systemmatrix    global system matrix
+    //! \param rhs             global right-hand side vector
+    //! \param condstring      name of condition to be evaluated
+    void EvaluateElectrodeKineticsConditions(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<Epetra_Vector> rhs, const std::string& condstring);
 
-    //! evaluate point boundary conditions for electrode kinetics
+    //! \brief evaluate point boundary conditions for electrode kinetics
+    //!
+    //! \param systemmatrix  global system matrix
+    //! \param rhs           global right-hand side vector
     void EvaluateElectrodeBoundaryKineticsPointConditions(
-        Teuchos::RCP<LINALG::SparseOperator> systemmatrix,  //!< global system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< global right-hand side vector
-    );
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs);
 
     //! Add Linearization for Nernst-BC
     void LinearizationNernstCondition();
