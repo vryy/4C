@@ -41,7 +41,10 @@ namespace DRT
       displ_porofluid,      ///< Kdp block (structure-porofluid)
       scatra_scatra,        ///< Kss block (scatra-scatra)
       scatra_displ,         ///< Ksd block (scatra-structure)
-      displ_scatra          ///< Kds block (structure-scatra)
+      displ_scatra,         ///< Kds block (structure-scatra)
+      elch_elch,            ///< Kee block (elch-elch)
+      elch_displ,           ///< Ked block (elch-structure)
+      displ_elch            ///< Kde block (structure-elch)
     };
 
     //! map matrix block type enum to std::string
@@ -75,6 +78,12 @@ namespace DRT
           return "block_scatra_displ";
         case DRT::UTILS::MatBlockType::displ_scatra:
           return "block_displ_scatra";
+        case DRT::UTILS::MatBlockType::elch_elch:
+          return "block_elch_elch";
+        case DRT::UTILS::MatBlockType::elch_displ:
+          return "block_elch_displ";
+        case DRT::UTILS::MatBlockType::displ_elch:
+          return "block_displ_elch";
         default:
           return "unknown matrix block type";
       }
@@ -87,7 +96,8 @@ namespace DRT
       constraint,  ///< lagrange multiplier/constraint block of the corresponding model
       temp,        ///< temperature block (thermal block)
       porofluid,   ///< porofluid block (porofluid block)
-      scatra       ///< scalar transport block (scatra block)
+      scatra,      ///< scalar transport block (scatra block)
+      elch         ///< electrochemistry block (elch block)
     };
 
     //! map vector block type enum to std::string
@@ -105,11 +115,12 @@ namespace DRT
           return "block_porofluid";
         case DRT::UTILS::VecBlockType::scatra:
           return "block_scatra";
+        case DRT::UTILS::VecBlockType::elch:
+          return "block_elch";
         default:
           return "unknown vector block type";
       }
     }
-
   }  // namespace UTILS
 }  // namespace DRT
 

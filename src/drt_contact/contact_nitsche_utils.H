@@ -60,6 +60,12 @@ namespace MORTAR
     virtual double* Kss(int col) = 0;
     virtual double* Ksd(int col) = 0;
     virtual double* Kds(int col) = 0;
+
+    virtual double* RhsE(int dof) = 0;
+    virtual double* Kee(int col) = 0;
+    virtual double* Ked(int col) = 0;
+    virtual double* Ked(int col, int dof) = 0;
+    virtual double* Kde(int col) = 0;
   };
 
   template <DRT::Element::DiscretizationType parent_distype>
@@ -136,6 +142,30 @@ namespace MORTAR
   };
 
   template <DRT::Element::DiscretizationType parent_distype>
+  class MortarElementNitscheDataSsiElch
+  {
+   public:
+    void Clear()
+    {
+      rhs_e_.Clear();
+      k_ee_.clear();
+      k_ed_.clear();
+      k_de_.clear();
+    }
+
+    static const int num_parent_disp_dof =
+        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement *
+        DRT::UTILS::DisTypeToDim<parent_distype>::dim;
+    static const int num_parent_elch_dof =
+        DRT::UTILS::DisTypeToNumNodePerEle<parent_distype>::numNodePerElement * 2;
+
+    LINALG::Matrix<num_parent_elch_dof, 1> rhs_e_;
+    std::unordered_map<int, LINALG::Matrix<num_parent_elch_dof, 1>> k_ee_;
+    std::unordered_map<int, LINALG::Matrix<num_parent_elch_dof, 1>> k_ed_;
+    std::unordered_map<int, LINALG::Matrix<num_parent_disp_dof, 1>> k_de_;
+  };
+
+  template <DRT::Element::DiscretizationType parent_distype>
   class MortarElementNitscheData : public MortarElementNitscheContainer
   {
    public:
@@ -159,6 +189,12 @@ namespace MORTAR
     double* Kss(int col) override { return ssi_data_.k_ss_[col].A(); }
     double* Ksd(int col) override { return ssi_data_.k_sd_[col].A(); }
     double* Kds(int col) override { return ssi_data_.k_ds_[col].A(); }
+
+    double* RhsE(int dof) override { return &ssi_elch_data_.rhs_e_(dof); }
+    double* Kee(int col) override { return ssi_elch_data_.k_ee_[col].A(); }
+    double* Ked(int col) override { return ssi_elch_data_.k_ed_[col].A(); }
+    double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
+    double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
 
     void AssembleRHS(MORTAR::MortarElement* mele, DRT::UTILS::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) override;
@@ -189,6 +225,7 @@ namespace MORTAR
       tsi_data_.Clear();
       poro_data_.Clear();
       ssi_data_.Clear();
+      ssi_elch_data_.Clear();
     }
 
    private:
@@ -204,6 +241,7 @@ namespace MORTAR
     MORTAR::MortarElementNitscheDataTsi<parent_distype> tsi_data_;
     MORTAR::MortarElementNitscheDataPoro<parent_distype> poro_data_;
     MORTAR::MortarElementNitscheDataSsi<parent_distype> ssi_data_;
+    MORTAR::MortarElementNitscheDataSsiElch<parent_distype> ssi_elch_data_;
   };
 
 }  // namespace MORTAR

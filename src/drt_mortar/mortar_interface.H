@@ -56,14 +56,15 @@ namespace MORTAR
    * \author hiermeier */
   enum StateType
   {
-    state_old_displacement,            //!< old displacement state
-    state_new_displacement,            //!< new displacement state
-    state_lagrange_multiplier,         //!< lagrange multiplier (only necessary for poro)
-    state_fvelocity,                   //!< fvelocity (only necessary for poro)
-    state_svelocity,                   //!< svelocity (only necessary for poro)
-    state_fpressure,                   //!< fpressure (only necessary for poro)
-    state_scalar,                      //!< scalar (only necessary for SSI)
-    state_temperature,                 //!< temperature (only necessary for TSI)
+    state_old_displacement,     //!< old displacement state
+    state_new_displacement,     //!< new displacement state
+    state_lagrange_multiplier,  //!< lagrange multiplier (only necessary for poro)
+    state_fvelocity,            //!< fvelocity (only necessary for poro)
+    state_svelocity,            //!< svelocity (only necessary for poro)
+    state_fpressure,            //!< fpressure (only necessary for poro)
+    state_scalar,               //!< scalar (only necessary for SSI)
+    state_elch,         //!< electrochemistry states (only necessary for SSI with electrochemistry)
+    state_temperature,  //!< temperature (only necessary for TSI)
     state_thermo_lagrange_multiplier,  //!< thermo lagrange multiplier (only necessary for TSI)
     state_vague                        //!< undefined state type
   };
@@ -89,6 +90,8 @@ namespace MORTAR
         return "fpressure";
       case state_scalar:
         return "scalar";
+      case state_elch:
+        return "electrochemistry";
       case state_temperature:
         return "temperature";
       case state_thermo_lagrange_multiplier:
@@ -118,6 +121,8 @@ namespace MORTAR
       type = state_fpressure;
     else if (name == "scalar")
       type = state_scalar;
+    else if (name == "electrochemistry")
+      type = state_elch;
     else if (name == "temperature")
       type = state_temperature;
     else if (name == "thermo_lm")

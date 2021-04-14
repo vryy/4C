@@ -57,31 +57,39 @@ void CONTACT::CoNitscheStrategySsi::InitTraceHE()
 void CONTACT::CoNitscheStrategySsi::SetState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  if (statename == MORTAR::state_scalar)
+  switch (statename)
   {
-    double inf_delta = 0.0;
-    if (curr_state_scalar_ == Teuchos::null)
+    case MORTAR::state_elch:
+    case MORTAR::state_scalar:
     {
-      curr_state_scalar_ = Teuchos::rcp(new Epetra_Vector(vec));
-      inf_delta = 1.0e12;
+      double inf_delta = 0.0;
+      if (curr_state_scalar_ == Teuchos::null)
+      {
+        curr_state_scalar_ = Teuchos::rcp(new Epetra_Vector(vec));
+        inf_delta = 1.0e12;
+      }
+      else
+      {
+        auto delta(vec);
+        delta.Update(-1.0, *curr_state_scalar_, 1.0);
+        delta.NormInf(&inf_delta);
+      }
+      if (inf_delta < 1.0e-16)
+        return;
+      else
+      {
+        curr_state_eval_ = false;
+        *curr_state_scalar_ = vec;
+        SetParentState(statename, vec);
+      }
+      break;
     }
-    else
+    default:
     {
-      auto delta(vec);
-      delta.Update(-1.0, *curr_state_scalar_, 1.0);
-      delta.NormInf(&inf_delta);
-    }
-    if (inf_delta < 1.0e-16)
-      return;
-    else
-    {
-      curr_state_eval_ = false;
-      *curr_state_scalar_ = vec;
-      SetParentState(statename, vec);
+      CONTACT::CoNitscheStrategy::SetState(statename, vec);
+      break;
     }
   }
-  else
-    CONTACT::CoNitscheStrategy::SetState(statename, vec);
 }
 
 /*------------------------------------------------------------------------*
@@ -89,50 +97,58 @@ void CONTACT::CoNitscheStrategySsi::SetState(
 void CONTACT::CoNitscheStrategySsi::SetParentState(
     const enum MORTAR::StateType& statename, const Epetra_Vector& vec)
 {
-  if (statename == MORTAR::state_scalar)
+  switch (statename)
   {
-    auto scatra_dis = DRT::Problem::Instance()->GetDis("scatra");
-    if (scatra_dis == Teuchos::null) dserror("didn't get scatra discretization");
-
-    auto global = Teuchos::rcp(new Epetra_Vector(*scatra_dis->DofColMap(), true));
-    LINALG::Export(vec, *global);
-
-    // set state on interfaces
-    for (const auto& interface_i : interface_)
+    case MORTAR::state_elch:
+    case MORTAR::state_scalar:
     {
-      // get the interface discretization
-      const auto& interface_i_discret = interface_i->Discret();
+      auto scatra_dis = DRT::Problem::Instance()->GetDis("scatra");
+      if (scatra_dis == Teuchos::null) dserror("didn't get scatra discretization");
 
-      // loop over all interface column elements owned by current processor
-      for (int j = 0; j < interface_i_discret.ElementColMap()->NumMyElements(); ++j)
+      auto scatra_dofcolmap = Teuchos::rcp(new Epetra_Vector(*scatra_dis->DofColMap(), true));
+      LINALG::Export(vec, *scatra_dofcolmap);
+
+      // set state on interfaces
+      for (const auto& interface : interface_)
       {
-        const int gid = interface_i_discret.ElementColMap()->GID(j);
+        // get the interface discretization
+        const auto& interface_dis = interface->Discret();
 
-        auto* interface_ele = interface_i_discret.gElement(gid);
-        if (interface_ele == nullptr) dserror("Did not find element.");
+        // loop over all interface column elements owned by current processor
+        for (int j = 0; j < interface_dis.ElementColMap()->NumMyElements(); ++j)
+        {
+          const int gid = interface_dis.ElementColMap()->GID(j);
 
-        auto* mortar_ele = dynamic_cast<MORTAR::MortarElement*>(interface_ele);
-        auto* mortar_parent_ele = scatra_dis->gElement(mortar_ele->ParentElementId());
+          auto* interface_ele = interface_dis.gElement(gid);
+          if (interface_ele == nullptr) dserror("Did not find element.");
 
-        std::vector<int> lm;
-        std::vector<int> lmowner;
-        std::vector<int> lmstride;
+          auto* mortar_ele = dynamic_cast<MORTAR::MortarElement*>(interface_ele);
+          auto* mortar_parent_ele = scatra_dis->gElement(mortar_ele->ParentElementId());
 
-        if (mortar_parent_ele == nullptr)
-          dserror("Did not get parent element to extract scalar values");
-        else
-          mortar_parent_ele->LocationVector(*scatra_dis, lm, lmowner, lmstride);
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
 
-        std::vector<double> myval;
-        DRT::UTILS::ExtractMyValues(*global, myval, lm);
+          if (mortar_parent_ele == nullptr)
+            dserror("Did not get parent element to extract scalar values");
+          else
+            mortar_parent_ele->LocationVector(*scatra_dis, lm, lmowner, lmstride);
 
-        mortar_ele->MoData().ParentScalar() = myval;
-        mortar_ele->MoData().ParentScalarDof() = lm;
+          std::vector<double> myval;
+          DRT::UTILS::ExtractMyValues(*scatra_dofcolmap, myval, lm);
+
+          mortar_ele->MoData().ParentScalar() = myval;
+          mortar_ele->MoData().ParentScalarDof() = lm;
+        }
       }
+      break;
+    }
+    default:
+    {
+      CONTACT::CoNitscheStrategy::SetParentState(statename, vec);
+      break;
     }
   }
-  else
-    CONTACT::CoNitscheStrategy::SetParentState(statename, vec);
 }
 
 /*------------------------------------------------------------------------*
@@ -142,6 +158,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::CoNitscheStrategySsi::SetupRhsBlockVec(
 {
   switch (bt)
   {
+    case DRT::UTILS::VecBlockType::elch:
     case DRT::UTILS::VecBlockType::scatra:
       return Teuchos::rcp(
           new Epetra_FEVector(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap()));
@@ -159,6 +176,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::CoNitscheStrategySsi::GetRhsBlockPtr(
 
   switch (bp)
   {
+    case DRT::UTILS::VecBlockType::elch:
     case DRT::UTILS::VecBlockType::scatra:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fs_), 0));
     default:
@@ -173,11 +191,14 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::SetupMatrixBlo
 {
   switch (bt)
   {
+    case DRT::UTILS::MatBlockType::displ_elch:
     case DRT::UTILS::MatBlockType::displ_scatra:
       return Teuchos::rcp(
           new LINALG::SparseMatrix(*Teuchos::rcpFromRef<const Epetra_Map>(
                                        *DRT::Problem::Instance()->GetDis("structure")->DofRowMap()),
               100, true, false, LINALG::SparseMatrix::FE_MATRIX));
+    case DRT::UTILS::MatBlockType::elch_displ:
+    case DRT::UTILS::MatBlockType::elch_elch:
     case DRT::UTILS::MatBlockType::scatra_displ:
     case DRT::UTILS::MatBlockType::scatra_scatra:
       return Teuchos::rcp(
@@ -196,6 +217,7 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
 {
   switch (bt)
   {
+    case DRT::UTILS::MatBlockType::displ_elch:
     case DRT::UTILS::MatBlockType::displ_scatra:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(*DRT::Problem::Instance()->GetDis("scatra")->DofRowMap(),  // col map
@@ -203,6 +225,7 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
+    case DRT::UTILS::MatBlockType::elch_displ:
     case DRT::UTILS::MatBlockType::scatra_displ:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix())
               .GlobalAssemble(
@@ -211,6 +234,7 @@ void CONTACT::CoNitscheStrategySsi::CompleteMatrixBlockPtr(
                   true, Add))
         dserror("GlobalAssemble(...) failed");
       break;
+    case DRT::UTILS::MatBlockType::elch_elch:
     case DRT::UTILS::MatBlockType::scatra_scatra:
       if (dynamic_cast<Epetra_FECrsMatrix&>(*kc->EpetraMatrix()).GlobalAssemble(true, Add))
         dserror("GlobalAssemble(...) failed");
@@ -230,10 +254,13 @@ Teuchos::RCP<LINALG::SparseMatrix> CONTACT::CoNitscheStrategySsi::GetMatrixBlock
 
   switch (bp)
   {
+    case DRT::UTILS::MatBlockType::elch_elch:
     case DRT::UTILS::MatBlockType::scatra_scatra:
       return kss_;
+    case DRT::UTILS::MatBlockType::elch_displ:
     case DRT::UTILS::MatBlockType::scatra_displ:
       return ksd_;
+    case DRT::UTILS::MatBlockType::displ_elch:
     case DRT::UTILS::MatBlockType::displ_scatra:
       return kds_;
     default:

@@ -1843,10 +1843,15 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
   {
     strategy_ = Teuchos::rcp(new MeshtyingStrategyFluidElch(this));
   }
-  // scatra-scatra interface coupling
+  // ScaTra-ScaTra interface meshtying
   else if (IsS2IMeshtying())
   {
     strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElch(this, *params_));
+  }
+  // ScaTra-ScaTra interface contact
+  else if (S2ICoupling() and !IsS2IMeshtying())
+  {
+    strategy_ = Teuchos::rcp(new MeshtyingStrategyStd(this));
   }
   // standard case without meshtying
   else
