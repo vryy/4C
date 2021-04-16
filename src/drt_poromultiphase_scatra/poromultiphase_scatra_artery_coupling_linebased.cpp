@@ -256,7 +256,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
     Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art,
     Teuchos::RCP<Epetra_Vector> rhs_art_with_collapsed)
 {
-  // Zero flux is automatically assumed for nodes which border a a collapsed element
+  // Zero flux is automatically assumed for nodes which border a collapsed element
   // since the respective collapsed element is not evaluated
   // nodes which only border collapsed elements are not evaluated at all, hence, leading to zero
   // rows in global stiffness matrix and to singularity of this matrix
