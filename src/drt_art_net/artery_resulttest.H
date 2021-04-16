@@ -62,8 +62,10 @@ namespace ART
     Teuchos::RCP<DRT::Discretization> dis_;
     /// Teuchos::RCP to solution vector
     Teuchos::RCP<const Epetra_Vector> mysol_;
-    /// Teuchos::RCP to solution vector
+    /// Teuchos::RCP to element volumetric flow
     Teuchos::RCP<const Epetra_Vector> myelevolflow_;
+    /// Teuchos::RCP to element radius
+    Teuchos::RCP<const Epetra_Vector> myeleradius_;
   };
 
 }  // namespace ART

@@ -175,6 +175,8 @@ void DRT::ELEMENTS::ArteryEleCalcPresBased<distype>::Sysmat(Artery* ele,
   // cast the material to artery material material
   const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
 
+  if (actmat->IsCollapsed()) return;
+
   // Read in diameter
   const double diam = actmat->Diam();
   // Read in blood viscosity

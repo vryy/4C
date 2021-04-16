@@ -2100,6 +2100,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "used to scale the diameter for blood viscosity law to microns if your problem is not "
         "given in microns, e.g., if you use mms, set this parameter to 1.0e3",
         1.0, true);
+    AddNamedString(m, "VARYING_DIAMETERLAW",
+        "type of varying diameter law, CONSTANT (default) or BY_FUNCTION", "CONSTANT", true);
+    AddNamedInt(m, "VARYING_DIAMETER_FUNCTION", "function for varying diameter law", -1, true);
+    AddNamedReal(m, "COLLAPSE_THRESHOLD",
+        "Collapse threshold for diameter (below this diameter element is assumed to be collapsed "
+        "with zero diameter and is not evaluated)",
+        -1.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

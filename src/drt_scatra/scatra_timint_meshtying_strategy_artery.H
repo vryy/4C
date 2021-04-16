@@ -56,16 +56,20 @@ namespace SCATRA
     virtual ~MeshtyingStrategyArtery() { return; };
 
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const;
+    const Epetra_Map& DofRowMap() const override;
 
     //! return global map of degrees of freedom
     Teuchos::RCP<const Epetra_Map> ArtScatraDofRowMap() const;
 
-    //! evaluate
-    void EvaluateMeshtying();
+    //! evaluate mesh-tying
+    //! \note  nothing is done here
+    //!        actual coupling (meshtying) is evaluated in Solve
+    //!        reason for that is that we need the system matrix of the continuous scatra
+    //!        problem with DBCs applied which is performed directly before calling solve
+    void EvaluateMeshtying() override{};
 
     //! init
-    void InitMeshtying();
+    void InitMeshtying() override;
 
     bool SystemMatrixInitializationNeeded() const override { return false; }
 
@@ -86,13 +90,13 @@ namespace SCATRA
     }
 
     //! setup
-    void SetupMeshtying();
+    void SetupMeshtying() override;
 
     //! solver
-    const LINALG::Solver& Solver() const;
+    const LINALG::Solver& Solver() const override;
 
     //! init the convergence check
-    void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
     //! solve resulting linear system of equations
     void Solve(const Teuchos::RCP<LINALG::Solver>& solver,         //!< solver
@@ -102,7 +106,7 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,                  //!< state vector at time n+1
         const int& iteration,  //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<LINALG::KrylovProjector>& projector  //!< Krylov projector
-        ) const;
+        ) const override;
 
     void SetupSystem(const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix,  //!< system matrix
         const Teuchos::RCP<Epetra_Vector>& residual                             //!< residual vector
@@ -133,7 +137,7 @@ namespace SCATRA
     }
 
     //! get the combined rhs
-    Teuchos::RCP<Epetra_Vector> CoupledRHS() const { return rhs_; }
+    Teuchos::RCP<Epetra_Vector> CombinedRHS() const { return rhs_; }
 
     //! get the combined increment
     Teuchos::RCP<Epetra_Vector> CombinedIncrement() const { return comb_increment_; }

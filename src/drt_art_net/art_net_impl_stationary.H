@@ -57,6 +57,9 @@ namespace ART
     /// setup Dirichlet Boundary conditions
     void ApplyDirichletBC();
 
+    /// reset artery diameter of previous time step
+    void ResetArteryDiamPreviousTimeStep();
+
     //! Apply Neumann boundary conditions
     void ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
     );
@@ -113,6 +116,9 @@ namespace ART
     //! get element volume flow
     Teuchos::RCP<const Epetra_Vector> EleVolflow() const { return ele_volflow_; }
 
+    //! get element radius
+    Teuchos::RCP<const Epetra_Vector> EleRadius() const { return ele_radius_; }
+
     //! iterative update of primary variable
     virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
     {
@@ -132,6 +138,8 @@ namespace ART
     Teuchos::RCP<Epetra_Vector> neumann_loads_;
     //! volumetric flow (for output)
     Teuchos::RCP<Epetra_Vector> ele_volflow_;
+    //! element radius (for output)
+    Teuchos::RCP<Epetra_Vector> ele_radius_;
     /// underlying scatra problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 

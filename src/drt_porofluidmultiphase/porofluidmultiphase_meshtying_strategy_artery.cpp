@@ -272,13 +272,16 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Output()
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::Evaluate()
 {
-  // evaluate
+  arttoporofluidcoupling_->SetSolutionVectors(
+      porofluidmultitimint_->Phinp(), porofluidmultitimint_->Phin(), artnettimint_->Pressurenp());
+
+  // evaluate the coupling
+  arttoporofluidcoupling_->Evaluate(comb_systemmatrix_, rhs_);
+
+  // evaluate artery
   artnettimint_->AssembleMatAndRHS();
   // apply DBC
   artnettimint_->PrepareLinearSolve();
-
-  arttoporofluidcoupling_->SetSolutionVectors(
-      porofluidmultitimint_->Phinp(), porofluidmultitimint_->Phin(), artnettimint_->Pressurenp());
 
   // SetupCoupledArteryPoroFluidSystem();
   arttoporofluidcoupling_->SetupSystem(comb_systemmatrix_, rhs_,

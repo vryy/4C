@@ -29,6 +29,7 @@ ART::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net) : DRT::Re
   dis_ = art_net.Discretization();
   mysol_ = art_net.Pressurenp();
   myelevolflow_ = art_net.EleVolflow();
+  myeleradius_ = art_net.EleRadius();
 }
 
 /*----------------------------------------------------------------------*/
@@ -128,6 +129,11 @@ void ART::ArteryResultTest::TestElement(DRT::INPUT::LineDefinition& res, int& ne
       {
         if (myelevolflow_ == Teuchos::null) dserror("Element volume flow not available");
         result = (*myelevolflow_)[dis_->ElementRowMap()->LID(actelement->Id())];
+      }
+      else if (quantity == "radius")
+      {
+        if (myeleradius_ == Teuchos::null) dserror("Element radius not available");
+        result = (*myeleradius_)[dis_->ElementRowMap()->LID(actelement->Id())];
       }
       else
       {

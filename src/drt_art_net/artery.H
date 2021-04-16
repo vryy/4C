@@ -238,7 +238,7 @@ namespace DRT
        * Set diameter in material
        * @param diam: diameter to be set
        */
-      void SetDiamInMaterial(const double* diam);
+      void SetDiamInMaterial(const double diam);
 
       //@}
 

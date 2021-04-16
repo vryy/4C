@@ -29,14 +29,24 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
       pext1_(matdata->GetDouble("PEXT1")),
       pext2_(matdata->GetDouble("PEXT2")),
       viscositylaw_(viscositylaw_undefined),
-      blood_visc_scale_diam_to_microns_(matdata->GetDouble("BLOOD_VISC_SCALE_DIAM_TO_MICRONS"))
+      diameterlaw_(diameterlaw_undefined),
+      blood_visc_scale_diam_to_microns_(matdata->GetDouble("BLOOD_VISC_SCALE_DIAM_TO_MICRONS")),
+      diameter_law_funct_(matdata->GetInt("VARYING_DIAMETER_FUNCTION")),
+      collapse_threshold_(matdata->GetDouble("COLLAPSE_THRESHOLD"))
 {
-  const std::string* typestring = matdata->Get<std::string>("VISCOSITYLAW");
+  const std::string* typestring_visc = matdata->Get<std::string>("VISCOSITYLAW");
 
-  if (*typestring == "CONSTANT")
-    viscositylaw_ = constant;
-  else if (*typestring == "BLOOD")
-    viscositylaw_ = blood;
+  if (*typestring_visc == "CONSTANT")
+    viscositylaw_ = viscositylaw_constant;
+  else if (*typestring_visc == "BLOOD")
+    viscositylaw_ = viscositylaw_blood;
+
+  const std::string* typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
+
+  if (*typestring_diam == "CONSTANT")
+    diameterlaw_ = diameterlaw_constant;
+  else if (*typestring_diam == "BY_FUNCTION")
+    diameterlaw_ = diameterlaw_by_function;
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::Cnst_1d_art::CreateMaterial()
@@ -58,12 +68,18 @@ DRT::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst_1d_art::Cnst_1d_art() : params_(NULL), diam_(0.0) {}
+MAT::Cnst_1d_art::Cnst_1d_art()
+    : params_(NULL), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
+{
+}
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params) : params_(params), diam_(0.0) {}
+MAT::Cnst_1d_art::Cnst_1d_art(MAT::PAR::Cnst_1d_art* params)
+    : params_(params), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
+{
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -81,7 +97,9 @@ void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
+  AddtoPack(data, diam_init_);
   AddtoPack(data, diam_);
+  AddtoPack(data, diam_previous_time_step_);
 }
 
 
@@ -113,7 +131,9 @@ void MAT::Cnst_1d_art::Unpack(const std::vector<char>& data)
     }
 
   // diameter
+  ExtractfromPack(position, data, diam_init_);
   ExtractfromPack(position, data, diam_);
+  ExtractfromPack(position, data, diam_previous_time_step_);
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
@@ -124,9 +144,9 @@ double MAT::Cnst_1d_art::Viscosity() const
 {
   switch (params_->viscositylaw_)
   {
-    case MAT::PAR::ArteryViscosityLaw::constant:
+    case MAT::PAR::ArteryViscosityLaw::viscositylaw_constant:
       return params_->viscosity_;
-    case MAT::PAR::ArteryViscosityLaw::blood:
+    case MAT::PAR::ArteryViscosityLaw::viscositylaw_blood:
       return CalculateBloodViscosity(
           diam_ * params_->blood_visc_scale_diam_to_microns_, params_->viscosity_);
     default:
