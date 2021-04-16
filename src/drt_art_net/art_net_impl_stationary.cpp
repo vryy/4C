@@ -378,7 +378,7 @@ void ART::ArtNetImplStationary::ResetArteryDiamPreviousTimeStep()
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
 
     const double diam = arterymat->Diam();
-    arterymat->SetDiamPreviousTimeStep(&diam);
+    arterymat->SetDiamPreviousTimeStep(diam);
   }
 }
 
@@ -631,7 +631,6 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
   Teuchos::RCP<Epetra_Vector> ele_radius_col =
       LINALG::CreateVector(*discret_->ElementColMap(), true);
   LINALG::Export(*ele_radius_, *ele_radius_col);
-  const double zerodiam = 0.0;
 
   // set the diameter in material
   for (int i = 0; i < discret_->NumMyColElements(); ++i)
@@ -647,9 +646,9 @@ void ART::ArtNetImplStationary::ReadRestart(int step, bool coupledTo3D)
     const double diam = 2.0 * (*ele_radius_col)[i];
 
     // reset (if element is collapsed in previous step, set to zero)
-    arterymat->SetDiamPreviousTimeStep(&diam);
-    arterymat->SetDiam(&diam);
-    if (diam < arterymat->CollapseThreshold()) arterymat->SetDiam(&zerodiam);
+    arterymat->SetDiamPreviousTimeStep(diam);
+    arterymat->SetDiam(diam);
+    if (diam < arterymat->CollapseThreshold()) arterymat->SetDiam(0.0);
   }
 
   if (solvescatra_)

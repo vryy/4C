@@ -175,10 +175,10 @@ namespace MAT
     double Nue() const { return params_->nue_; }
 
     /// set the artery diameter
-    void SetDiam(const double* diam) { diam_ = *diam; }
+    void SetDiam(const double diam) { diam_ = diam; }
 
     /// set the initial artery diameter
-    void SetDiamInitial(const double* diam) { diam_init_ = *diam; }
+    void SetDiamInitial(const double diam) { diam_init_ = diam; }
 
     /// return artery diameter
     double Diam() const { return diam_; }
@@ -190,9 +190,9 @@ namespace MAT
     double DiamPreviousTimeStep() const { return diam_previous_time_step_; }
 
     /// set the artery diameter of previous time step
-    void SetDiamPreviousTimeStep(const double* diam_previous_time_step)
+    void SetDiamPreviousTimeStep(const double diam_previous_time_step)
     {
-      diam_previous_time_step_ = *diam_previous_time_step;
+      diam_previous_time_step_ = diam_previous_time_step;
     }
 
     /// check if element is collapsed

@@ -79,14 +79,14 @@ bool DRT::ELEMENTS::Artery::ReadElement(
   linedef->ExtractDouble("DIAM", diam);
 
   // set diameter in material
-  SetDiamInMaterial(&diam);
+  SetDiamInMaterial(diam);
 
   return true;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double* diam)
+void DRT::ELEMENTS::Artery::SetDiamInMaterial(const double diam)
 {
   // now the element knows its material, and we can use it to set the diameter
   Teuchos::RCP<MAT::Material> mat = Material();

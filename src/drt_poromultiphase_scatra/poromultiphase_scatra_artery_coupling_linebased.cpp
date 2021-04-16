@@ -934,7 +934,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
     const double diam =
         ((*integrated_diams_artery_col_)[i] + (*unaffected_integrated_diams_artery_col_)[i]) /
         curr_ele_length;
-    const double zero_diam = 0.0;
 
     // set to zero if collapsed
     if (diam < arterymat->CollapseThreshold())
@@ -943,10 +942,10 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
       if (arterymat->Diam() >= arterymat->CollapseThreshold() && actele->Owner() == myrank_)
         std::cout << ">>>>>> Artery element " << actele->Id() << " just collapsed <<<<<<"
                   << std::endl;
-      arterymat->SetDiam(&zero_diam);
+      arterymat->SetDiam(0.0);
     }
     else  // otherwise set to calculated diameter
-      arterymat->SetDiam(&diam);
+      arterymat->SetDiam(diam);
   }
 }
 

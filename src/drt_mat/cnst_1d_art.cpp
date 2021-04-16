@@ -45,7 +45,7 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
 
   if (*typestring_diam == "CONSTANT")
     diameterlaw_ = diameterlaw_constant;
-  else if (*typestring_diam == "by_function")
+  else if (*typestring_diam == "BY_FUNCTION")
     diameterlaw_ = diameterlaw_by_function;
 }
 
