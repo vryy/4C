@@ -15,9 +15,12 @@
 [ -e wrong_format.txt ] && rm wrong_format.txt
 [ -e wrong_clang_format.txt ] && rm wrong_clang_format.txt
 
+# Load the python virtual environment, which provides clang-format.
+source ./utilities/baci-python-venv/bin/activate
+
 ### Header check ################################################
 echo "Start test for correct file headers ..."
-python2 ./utilities/code_checks/header_check.py --out wrong_format.txt | tee wrong_format.txt
+python ./utilities/code_checks/header_check.py --out wrong_format.txt | tee wrong_format.txt
 
 if [ -s wrong_format.txt ]
 then
@@ -31,7 +34,7 @@ fi
 
 ### Tests check ################################################
 echo "Start test for input files and unittests ..."
-python2 ./utilities/code_checks/testing_frameworks_check.py --out wrong_tests.txt | tee wrong_tests.txt
+python ./utilities/code_checks/testing_frameworks_check.py --out wrong_tests.txt | tee wrong_tests.txt
 
 if [ -s wrong_tests.txt ]
 then
@@ -43,8 +46,6 @@ else
 fi
 
 ########### Execute clang-format with style file settings (taken from https://github.com/sheredom/git-hooks)##################################################
-# Load the python virtual environment, which provides clang-format.
-source ./utilities/baci-python-venv/bin/activate
 
 # set the field separator to new line
 IFS=$'\n'

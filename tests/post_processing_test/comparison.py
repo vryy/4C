@@ -7,7 +7,7 @@ import operator
 
 def isEqual(ref,line,tol):
   if len(ref) != len(line):
-    print 'check your reference csv-file'
+    print('check your reference csv-file')
     sys.exit(1)
   for j in range(0,len(ref)):
     if abs( float(line[j]) - float(ref[j]) ) > float(tol):
@@ -116,11 +116,11 @@ for i in range(0,len(sortlist_ref)):
 # comparison
 for ele1, ele2 in zip(sortlist1, sortlist2):
   if ele1 != ele2:
-    print 'csv lists are not equal for: '
-    print ele1
-    print ele2
+    print('csv lists are not equal for: ')
+    print(ele1)
+    print(ele2)
     sys.exit(1)
-print 'files are identical'
+print('files are identical')
 
 # verification of results
 for i in range(0,len(sortlist_ref)):
@@ -128,7 +128,7 @@ for i in range(0,len(sortlist_ref)):
     if isEqual(sortlist_ref[i],sortlist1[j],tol[i]):
       break
     if j == (len(sortlist1)-1):
-      print 'results in csv-files are NOT correct'
-      print sortlist_ref[i],'in',sys.argv[3],'is not being found in xxx_par.csv'
+      print('results in csv-files are NOT correct')
+      print(sortlist_ref[i],'in',sys.argv[3],'is not being found in xxx_par.csv')
       sys.exit(1)
-print'results in csv-files are correct'
+print('results in csv-files are correct')

@@ -197,7 +197,7 @@ def check_inputtests(look_cmd, allerrors):
                 mpi_ranks.append(None)
 
   # boolean array of all test with mpi rank > 3
-  mpi_bool = [mpi > 3 for mpi in mpi_ranks]
+  mpi_bool = [mpi is not None and mpi > 3 for mpi in mpi_ranks]
 
   from itertools import compress
   high_mpi_tests = list(compress(entries, mpi_bool))
