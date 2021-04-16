@@ -264,8 +264,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
   // Note that this procedure is equivalent to taking collapsed elements out of the simulation
   // entirely
 
-  int artelematerial = 0;
-  if (contdis_->Name() == "scatra") artelematerial = 1;
+  int artelematerial = contdis_->Name() == "scatra" ? 1 : 0;
   std::vector<int> mydirichdofs(0);
 
   const int numrownodes = arterydis_->NumMyRowNodes();
@@ -279,7 +278,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
     for (int iele = 0; iele < (actnode->NumElement()); iele++)
     {
       DRT::Element* actele = eles[iele];
-      const Teuchos::RCP<const MAT::Cnst_1d_art>& arterymat =
+      const auto& arterymat =
           Teuchos::rcp_dynamic_cast<const MAT::Cnst_1d_art>(actele->Material(artelematerial));
       if (not arterymat->IsCollapsed())
       {

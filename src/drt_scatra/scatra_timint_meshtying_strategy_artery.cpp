@@ -176,19 +176,6 @@ Teuchos::RCP<const Epetra_Map> SCATRA::MeshtyingStrategyArtery::ArtScatraDofRowM
   return arttoscatracoupling_->ArteryDofRowMap();
 }
 
-/*----------------------------------------------------------------------*
- | evaluate                                            kremheller 04/18 |
- *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyArtery::EvaluateMeshtying()
-{
-  // nothing is done here
-  // actual coupling (meshtying) is evaluated in Solve
-  // reason for that is that we need the system matrix of the continuous scatra
-  // problem with DBCs applied which is performed directly before calling solve
-
-  return;
-}
-
 /*-------------------------------------------------------------------------------*
  | return linear solver for global system of linear equations   kremheller 04/18 |
  *-------------------------------------------------------------------------------*/
