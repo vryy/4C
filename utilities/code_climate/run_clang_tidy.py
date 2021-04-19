@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #
 # ===- run-clang-tidy.py - Parallel clang-tidy runner ---------*- python -*--===#
 #

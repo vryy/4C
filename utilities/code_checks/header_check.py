@@ -1,4 +1,3 @@
-#!/bin/env python2
 " Baci header check"
 
 import os
@@ -8,7 +7,6 @@ import subprocess
 import common_utils as utils
 
 # CHECK FOR TABS
-
 def contains_tabs(filename):
   " Return True if this version of the file contains tabs. "
   return "\t" in utils.file_contents(filename)

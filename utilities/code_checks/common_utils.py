@@ -85,7 +85,7 @@ def files_changed(look_cmd):
   """
   def filename(line):
     return line
-  looked_files  = command_output(look_cmd).split("\n")
+  looked_files  = command_output(look_cmd).decode().split("\n")
   changed_files = [filename(line) for line in looked_files]
   return changed_files
 
