@@ -11,6 +11,7 @@
 #include "mixture_rule_growthremodel.H"
 #include <Epetra_ConfigDefs.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include <bits/c++config.h>
 #include <cmath>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -28,7 +29,10 @@ namespace DRT
 
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : MixtureRule(matdata), growth_type_(matdata->GetInt("GROWTH_TYPE"))
+    : MixtureRule(matdata),
+      growth_type_(matdata->GetInt("GROWTH_TYPE")),
+      initial_reference_density_(matdata->GetDouble("DENS")),
+      mass_fractions_(*matdata->Get<std::vector<double>>("MASSFRAC"))
 {
 }
 
@@ -96,15 +100,19 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
   static LINALG::Matrix<6, 6> ccmat;
 
   // Iterate over all constituents and apply their contributions to the stress and linearization
-  for (auto const& constituent : *Constituents())
+  for (std::size_t i = 0; i < Constituents()->size(); ++i)
   {
+    MixtureConstituent& constituent = *(*Constituents())[i];
     cstress.Clear();
     ccmat.Clear();
-    constituent->EvaluateElasticPart(F, iF_gM, params, cstress, ccmat, gp, eleGID);
+    constituent.EvaluateElasticPart(F, iF_gM, params, cstress, ccmat, gp, eleGID);
 
     // Add stress contribution to global stress
-    S_stress.Update(1.0, cstress, 1.0);
-    cmat.Update(1.0, ccmat, 1.0);
+    const double current_ref_constituent_density = params_->initial_reference_density_ *
+                                                   params_->mass_fractions_[i] *
+                                                   constituent.GetGrowthScalar(gp);
+    S_stress.Update(current_ref_constituent_density, cstress, 1.0);
+    cmat.Update(current_ref_constituent_density, ccmat, 1.0);
   }
 }
 
@@ -121,7 +129,8 @@ void MIXTURE::GrowthRemodelMixtureRule::EvaluateInverseGrowthDeformationGradient
     {
       for (int i = 0; i < 3; ++i)
       {
-        iFgM(i, i) = std::pow(current_reference_density / GetMaterialMassDensity(), -1.0 / 3.0);
+        iFgM(i, i) =
+            std::pow(current_reference_density / params_->initial_reference_density_, -1.0 / 3.0);
       }
       break;
     }
@@ -144,14 +153,30 @@ void MIXTURE::GrowthRemodelMixtureRule::EvaluateInverseGrowthDeformationGradient
   }
 }
 
-double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceDensity(const int gp) const
+double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceDensity(int gp) const
 {
   double current_reference_density = 0.0;
-  for (const auto& constituent : *Constituents())
+  for (std::size_t i = 0; i < Constituents()->size(); ++i)
   {
-    current_reference_density += constituent->CurrentRefDensity(gp);
+    MixtureConstituent& constituent = *(*Constituents())[i];
+    current_reference_density += params_->initial_reference_density_ * params_->mass_fractions_[i] *
+                                 constituent.GetGrowthScalar(gp);
   }
   return current_reference_density;
+}
+
+double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDensity(
+    const MixtureConstituent& constituent) const
+{
+  for (std::size_t i = 0; i < Constituents()->size(); ++i)
+  {
+    if ((*Constituents())[i]->Id() == constituent.Id())
+    {
+      return params_->initial_reference_density_ * params_->mass_fractions_[i];
+    }
+  }
+  dserror("The constituent could not be found!");
+  return 0.0;
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::RegisterVtkOutputDataNames(

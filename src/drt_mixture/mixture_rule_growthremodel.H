@@ -12,6 +12,7 @@
 #ifndef BACI_MIXTURE_RULE_GROWTHREMODEL_H
 #define BACI_MIXTURE_RULE_GROWTHREMODEL_H
 
+#include "mixture_constituent.H"
 #include "mixture_rule.H"
 #include <Teuchos_RCPDecl.hpp>
 #include <string>
@@ -66,6 +67,12 @@ namespace MIXTURE
 
       const int growth_type_;
 
+      /// Initial reference density of the whole material
+      const double initial_reference_density_;
+
+      /// Initial mass fractions
+      const std::vector<double> mass_fractions_;
+
       /// @}
     };
 
@@ -97,6 +104,15 @@ namespace MIXTURE
     void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) override;
+
+    /*!
+     * \brief Returns the initial reference mass denstity of the constituent
+     *
+     * \param constituent
+     * \return double
+     */
+    double GetConstituentInitialReferenceMassDensity(
+        const MIXTURE::MixtureConstituent& constituent) const;
 
     /*!
      * @brief Evaluates the inverse growth deformation gradient at the Gausspoint #gp

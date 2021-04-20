@@ -38,7 +38,7 @@ MIXTURE::ConstantPrestressStrategy::ConstantPrestressStrategy(
 {
 }
 
-void MIXTURE::ConstantPrestressStrategy::EvaluatePrestress(
+void MIXTURE::ConstantPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
     MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)

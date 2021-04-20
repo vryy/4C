@@ -19,8 +19,8 @@
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyper::MixtureConstituent_ElastHyper(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
-    : MixtureConstituent_ElastHyperBase(matdata, ref_mass_fraction)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent_ElastHyperBase(matdata)
 {
   // do nothing
 }
@@ -61,14 +61,8 @@ void MIXTURE::MixtureConstituent_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>
   MAT::ElastHyperEvaluate(
       F, E_strain, params, Sc_stress, ccmat, gp, eleGID, Summands(), SummandProperties(), false);
 
-  S_stress.Update(CurrentRefDensity(gp), Sc_stress, 1.0);
-  cmat.Update(CurrentRefDensity(gp), ccmat, 1.0);
-}
-
-// Returns the reference mass fraction of the constituent
-double MIXTURE::MixtureConstituent_ElastHyper::CurrentRefDensity(int gp) const
-{
-  return params_->RefMassFraction() * InitialRefDensity();
+  S_stress.Update(1.0, Sc_stress, 1.0);
+  cmat.Update(1.0, ccmat, 1.0);
 }
 
 // Compute the stress resultant with incorporating an elastic and inelastic part of the deformation
@@ -81,7 +75,4 @@ void MIXTURE::MixtureConstituent_ElastHyper::EvaluateElasticPart(const LINALG::M
 
   MAT::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
-
-  S_stress.Scale(CurrentRefDensity(gp));
-  cmat.Scale(CurrentRefDensity(gp));
 }

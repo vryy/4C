@@ -64,9 +64,6 @@ namespace MIXTURE
       /// constructor
       explicit MixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-      /// default destructor
-      ~MixtureRule() override = default;
-
       /// Override this method and throw error, as only the CreateRule() should be used.
       Teuchos::RCP<MAT::Material> CreateMaterial() final
       {
@@ -75,7 +72,7 @@ namespace MIXTURE
       }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MIXTURE::MixtureRule> CreateRule();
+      virtual Teuchos::RCP<MIXTURE::MixtureRule> CreateRule() = 0;
 
       /*!
        * \brief Factory of the mixture rule parameters
@@ -87,10 +84,6 @@ namespace MIXTURE
        * @return Parameters of the referenced mixture rule
        */
       static MIXTURE::PAR::MixtureRule* Factory(int matid);
-
-      /// @name parameters of the mixture rule
-      /// @{
-      /// @}
     };
   }  // namespace PAR
 
@@ -105,7 +98,7 @@ namespace MIXTURE
    * Example input lines:
    * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
    *  DENS 0.1
-   * MAT 10 MIX_Rule_Base
+   * MAT 10 MIX_Rule_Simple
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
    * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
    * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
@@ -145,18 +138,6 @@ namespace MIXTURE
     {
       constituents_ = constituents;
     }
-
-    /*!
-     * @brief This method sets the material mass denisty as part of setting up the rule
-     * @param density material mass density as defined in the DAT file
-     */
-    void SetMaterialMassDensity(double density);
-
-    /*!
-     * @brief Gets the material mass density as defined in the dat file
-     * @return Material mass density
-     */
-    double GetMaterialMassDensity() const;
 
     virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
     {
@@ -249,7 +230,7 @@ namespace MIXTURE
      */
     virtual void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
-        int gp, int eleGID);
+        int gp, int eleGID) = 0;
 
     /*!
      * \brief Register names of the internal data that should be saved during runtime vtk output

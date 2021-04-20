@@ -43,8 +43,7 @@ namespace MIXTURE
     class MixtureConstituent : public MAT::PAR::Parameter
     {
      public:
-      explicit MixtureConstituent(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+      explicit MixtureConstituent(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) = 0;
@@ -52,12 +51,7 @@ namespace MIXTURE
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() final;
 
-      static MIXTURE::PAR::MixtureConstituent* Factory(int matnum, double ref_mass_fraction);
-
-      double RefMassFraction() const { return ref_mass_fraction_; }
-
-     private:
-      const double ref_mass_fraction_;
+      static MIXTURE::PAR::MixtureConstituent* Factory(int matnum);
     };
   }  // namespace PAR
 
@@ -71,7 +65,7 @@ namespace MIXTURE
    * Example input lines:
    * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
    *  DENS 0.1
-   * MAT 10 MIX_Rule_Base
+   * MAT 10 MIX_Rule_Simple
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
    * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
    * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
@@ -132,15 +126,6 @@ namespace MIXTURE
      * @param params (in/out) Parameter list for exchange of parameters
      */
     virtual void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef);
-
-    /*!
-     * Set the mixture parameters
-     * @param mixtureParams parameter of the mixture
-     */
-    void SetInitialReferenceDensity(const double initialReferenceDensity)
-    {
-      initialReferenceDensity_ = initialReferenceDensity;
-    }
 
     /*!
      * Returns whether the constituent is already set up
@@ -224,6 +209,13 @@ namespace MIXTURE
     }
 
     /*!
+     * \brief Returns the scalar indicating the growth scale from the reference configuration
+     *
+     * \return double
+     */
+    virtual double GetGrowthScalar(int gp) const { return 1.0; }
+
+    /*!
      * @brief Evaluates the stress and material linearization of the constituents with an
      * inelastic part of the deformation
      *
@@ -234,11 +226,14 @@ namespace MIXTURE
      * Only elastic part $\boldsymbol{F}_e$ causes stresses. The inelastic part is only needed
      * for the linearization.
      *
+     * @note S_stress and the linearization are specific quantities. They have to be multiplied with
+     * the density of the constituent to obtain the real stress oder linearization.
+     *
      * @param F Total deformation gradient
      * @param iF_in inverse inelastic part of the deformation
      * @param params Container for additional information
-     * @param S_stress 2nd Piola-Kirchhoff stress in stress-like Voigt notation
-     * @param cmat Linearization of the material tensor in Voigt notation
+     * @param S_stress 2nd specific Piola-Kirchhoff stress in stress-like Voigt notation
+     * @param cmat specific linearization of the material tensor in Voigt notation
      * @param gp Gauss-point
      * @param eleGID Global element id
      */
@@ -250,11 +245,15 @@ namespace MIXTURE
      * Evaluates the constituents. Needs to compute the stress contribution of the constituent out
      * of the displacements. Will be called for each Gauß point
      *
+     * @note S_stress and the linearization are specific quantities. They have to be multiplied with
+     * the density of the constituent to obtain the real stress oder linearization.
+     *
      * @param F (in) : Deformation gradient
      * @param E_strain (in) : Green-Lagrange strain in strain-like Voigt notation
      * @param params Container for additional information
-     * @param S_stress (out) : 2nd Piola Kirchhoff stress tensor in stress like Voigt-notation
-     * @param cmat Constitutive tensor in Voigt notation
+     * @param S_stress (out) : 2nd specific Piola Kirchhoff stress tensor in stress like
+     * Voigt-notation
+     * @param cmat (out) : specific constitutive tensor in Voigt notation
      * @param gp (in) : Number of Gauß point
      * @param eleGID (in) : Global element id
      */
@@ -263,15 +262,6 @@ namespace MIXTURE
         int gp, int eleGID) = 0;
 
     /// Returns the refenrence mass density. Needs to be implemented by the deriving class.
-
-    /*!
-     * @brief Returns the current reference mass density at the specific Gauss point. It is the
-     * reference mass density in a reference configuration that may changes during the simulation.
-     *
-     * @param gp Gauss point
-     * @return reference mass density
-     */
-    virtual double CurrentRefDensity(int gp) const = 0;
 
     /*!
      * \brief Register names of the internal data that should be saved during runtime vtk output
@@ -300,21 +290,7 @@ namespace MIXTURE
       return false;
     }
 
-    /*!
-     * Returns the initial reference density of the mixture
-     * @return
-     */
-    double InitialRefDensity() const { return initialReferenceDensity_; }
 
-    /*!
-     * \brief Returns the initial reference density of the constituent
-     *
-     * \return double
-     */
-    double InitialConstituentRefDensity() const
-    {
-      return InitialRefDensity() * params_->RefMassFraction();
-    }
 
    protected:
     /*!
@@ -326,10 +302,7 @@ namespace MIXTURE
 
    private:
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituent* params_;
-
-    ///! Mixture parameters
-    double initialReferenceDensity_;
+    const MIXTURE::PAR::MixtureConstituent* params_;
 
     ///! Number of Gauß points
     int numgp_;

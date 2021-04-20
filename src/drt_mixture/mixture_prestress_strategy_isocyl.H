@@ -70,7 +70,8 @@ namespace MIXTURE
      * @param gp (in) : Gauss-point
      * @param eleGID (in) : Global element id
      */
-    void EvaluatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
+    void EvaluatePrestress(const MixtureRule& mixtureRule,
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 

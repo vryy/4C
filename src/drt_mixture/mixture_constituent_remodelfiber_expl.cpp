@@ -12,8 +12,8 @@
 
 
 MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl::MixtureConstituent_RemodelFiberExpl(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction)
-    : MixtureConstituent_RemodelFiber(matdata, ref_mass_fraction)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent_RemodelFiber(matdata)
 {
   // do nothing here, everything will be done in the base class
 }

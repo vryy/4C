@@ -79,7 +79,7 @@ namespace MIXTURE
        * \param ref_mass_fraction reference mass fraction
        */
       explicit MixtureConstituent_ElastHyperElastinMembrane(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+          const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// default destructor
       ~MixtureConstituent_ElastHyperElastinMembrane() override = default;
@@ -176,14 +176,6 @@ namespace MIXTURE
         int eleGID) override;
 
     /*!
-     * \brief Returns the current reference mass density of the constituent
-     *
-     * @param gp (in) : Gauss point
-     * @return
-     */
-    double CurrentRefDensity(int gp) const override;
-
-    /*!
      * \brief Method that will be called once before the evaluation process. The elastin material
      * evaluates the prestress here.
      *
@@ -194,6 +186,9 @@ namespace MIXTURE
      */
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
+
+
+    double GetGrowthScalar(int gp) const override;
 
     /*!
      * \brief Standard evaluation of the material. This material does only support evaluation with
@@ -315,8 +310,8 @@ namespace MIXTURE
     /// my material parameters
     MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane* params_;
 
-    /// Current reference mass density
-    std::vector<double> current_reference_density_;
+    /// Current growth factor with respect to the reference configuration
+    std::vector<double> current_reference_growth_;
 
     /// fraction of membrane elastin material to ensure equilibrium
     std::vector<double> mue_frac_;

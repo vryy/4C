@@ -41,8 +41,7 @@ namespace MIXTURE
        * \param matdata Material parameters
        * \param ref_mass_fraction reference mass fraction
        */
-      explicit MixtureConstituent_ElastHyperDamage(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+      explicit MixtureConstituent_ElastHyperDamage(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
@@ -120,13 +119,7 @@ namespace MIXTURE
     void Update(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
-    /*!
-     * \brief Returns the current reference mass density of the constituent
-     *
-     * @param gp (in) : Gauss point
-     * @return
-     */
-    double CurrentRefDensity(int gp) const override;
+    double GetGrowthScalar(int gp) const override;
 
     /*!
      * \brief Standard evaluation of the material. This material does only support evaluation with
@@ -163,8 +156,8 @@ namespace MIXTURE
     /// my material parameters
     MIXTURE::PAR::MixtureConstituent_ElastHyperDamage* params_;
 
-    /// Current reference mass density
-    std::vector<double> current_reference_density_;
+    /// Current growth factor with respect to the reference configuration
+    std::vector<double> current_reference_growth_;
   };
 
 }  // namespace MIXTURE

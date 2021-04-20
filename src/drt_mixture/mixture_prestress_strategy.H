@@ -48,6 +48,7 @@ namespace MIXTURE
   // forward declaration
   class PrestressStrategy;
   class MixtureConstituent;
+  class MixtureRule;
 
   namespace PAR
   {
@@ -109,7 +110,7 @@ namespace MIXTURE
      * @param gp (in) : Gauss-point
      * @param eleGID (in) : Global element id
      */
-    virtual void EvaluatePrestress(
+    virtual void EvaluatePrestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;

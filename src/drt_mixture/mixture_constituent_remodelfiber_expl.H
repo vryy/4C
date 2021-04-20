@@ -25,8 +25,7 @@ namespace MIXTURE
     class MixtureConstituent_RemodelFiberExpl : public MIXTURE::PAR::MixtureConstituent_RemodelFiber
     {
      public:
-      explicit MixtureConstituent_RemodelFiberExpl(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+      explicit MixtureConstituent_RemodelFiberExpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       ~MixtureConstituent_RemodelFiberExpl() override = default;
 

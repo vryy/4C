@@ -23,8 +23,8 @@ rule)
 
 
 MIXTURE::PAR::MixtureConstituent_RemodelFiber::MixtureConstituent_RemodelFiber(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction)
-    : MixtureConstituent(matdata, ref_mass_fraction),
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent(matdata),
       matid_(matdata->GetInt("MATID")),
       poisson_decay_time_(matdata->GetDouble("DECAY_TIME")),
       growth_constant_(matdata->GetDouble("GROWTH_CONSTANT")),
@@ -96,7 +96,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::PackConstituent(DRT::PackBuffer& 
 
   DRT::ParObject::AddtoPack(data, iFr_);
 
-  DRT::ParObject::AddtoPack(data, cur_rho_);
+  DRT::ParObject::AddtoPack(data, cur_growth_scalar_);
   DRT::ParObject::AddtoPack(data, cur_lambdar_);
   DRT::ParObject::AddtoPack(data, lambda_pre_);
 
@@ -113,7 +113,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UnpackConstituent(
   MixtureConstituent::UnpackConstituent(position, data);
 
   DRT::ParObject::ExtractfromPack(position, data, iFr_);
-  DRT::ParObject::ExtractfromPack(position, data, cur_rho_);
+  DRT::ParObject::ExtractfromPack(position, data, cur_growth_scalar_);
   DRT::ParObject::ExtractfromPack(position, data, cur_lambdar_);
   DRT::ParObject::ExtractfromPack(position, data, lambda_pre_);
 
@@ -141,7 +141,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::ReadElement(
   // From here we know the number of Gauss-points
   // Resize all GP-vectors
   iFr_.resize(numgp);
-  cur_rho_.resize(numgp, params_->RefMassFraction() * InitialRefDensity());
+  cur_growth_scalar_.resize(numgp, 1.0);
   cur_lambdar_.resize(numgp, 1.0);
   lambda_pre_.resize(numgp, 0.0);
   sig_h_.resize(numgp, 0.0);
@@ -180,9 +180,9 @@ void MIXTURE::MixtureConstituent_RemodelFiber::Evaluate(const LINALG::Matrix<3, 
       "the extension is easily possible.");
 }
 
-double MIXTURE::MixtureConstituent_RemodelFiber::CurrentRefDensity(int gp) const
+double MIXTURE::MixtureConstituent_RemodelFiber::GetGrowthScalar(int gp) const
 {
-  return cur_rho_[gp];
+  return cur_growth_scalar_[gp];
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::UpdateNewton(double dt, int gp)
@@ -270,8 +270,8 @@ void MIXTURE::MixtureConstituent_RemodelFiber::AddStressCmat(const LINALG::Matri
 
   // Add stress contributions
   UTILS::VOIGT::Stresses::MatrixToVector(dPsidC, dPsidC_stress);
-  S_stress.Update(2.0 * CurrentRefDensity(gp), dPsidC_stress, 1.0);
-  cmat.Update(4.0 * CurrentRefDensity(gp), ddPsidCdC_stress, 1.0);
+  S_stress.Update(2.0, dPsidC_stress, 1.0);
+  cmat.Update(4.0, ddPsidCdC_stress, 1.0);
 
   if (!Teuchos::is_null(activeSummand_))
   {
@@ -283,8 +283,8 @@ void MIXTURE::MixtureConstituent_RemodelFiber::AddStressCmat(const LINALG::Matri
     activeSummand_->AddActiveStressCmatAniso(
         C, activeCMat, activeStress, gp, eleGID);  // FIXME: This should be Ce instead of C ???
 
-    S_stress.Update(CurrentRefDensity(gp), activeStress, 1.0);
-    cmat.Update(CurrentRefDensity(gp), activeCMat, 1.0);
+    S_stress.Update(1.0, activeStress, 1.0);
+    cmat.Update(1.0, activeCMat, 1.0);
   }
 }
 
@@ -307,14 +307,14 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UpdateGrowthAndRemodelingExpl(
 
   // Evaluate growth ode
   double delta_sig = (sig - sig_h_[gp]);
-  const double drhodt = EvaluateGrowthEvolutionEquationdt(delta_sig, gp, eleGID);
+  const double dgrowthdt = EvaluateGrowthEvolutionEquationdt(delta_sig, gp, eleGID);
 
   // Evaluate remodel ode
   const double dlambdardt = EvaluateRemodelEvolutionEquationdt(C, iFin, delta_sig, gp, eleGID);
 
   // Apply explicit update step
-  cur_rho_[gp] += drhodt * dt;          // growth
-  cur_lambdar_[gp] += dlambdardt * dt;  // remodel
+  cur_growth_scalar_[gp] += dgrowthdt * dt;  // growth
+  cur_lambdar_[gp] += dlambdardt * dt;       // remodel
 }
 
 double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateFiberCauchyStress(
@@ -342,7 +342,7 @@ double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateGrowthEvolutionEquation
     double delta_sig, int gp, int eleGID) const
 {
   // Evaluate right hand side of growth ode, which is
-  return growth_evolution_->EvaluateRHS(delta_sig / sig_h_[gp]) * cur_rho_[gp];
+  return growth_evolution_->EvaluateRHS(delta_sig / sig_h_[gp]) * cur_growth_scalar_[gp];
 }
 
 double MIXTURE::MixtureConstituent_RemodelFiber::EvaluateRemodelEvolutionEquationdt(

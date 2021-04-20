@@ -15,6 +15,7 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 #include "mixture_rule_growthremodel.H"
+#include "mixture_rule_simple.H"
 #include <algorithm>
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_parobject.H"
@@ -41,12 +42,6 @@ MIXTURE::PAR::MixtureRule::MixtureRule(const Teuchos::RCP<MAT::PAR::Material>& m
 {
 }
 
-// Create rule from the material parameters
-Teuchos::RCP<MIXTURE::MixtureRule> MIXTURE::PAR::MixtureRule::CreateRule()
-{
-  return Teuchos::rcp(new MIXTURE::MixtureRule(this));
-}
-
 // Mixture rule factory generates the mixturerule parameters for a specific material id
 MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 {
@@ -70,9 +65,9 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 
   switch (curmat->Type())
   {
-    case INPAR::MAT::mix_rule_base:
+    case INPAR::MAT::mix_rule_simple:
     {
-      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::MixtureRule>(curmat);
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::SimpleMixtureRule>(curmat);
     }
     case INPAR::MAT::mix_rule_growthremodel:
     {
@@ -93,15 +88,6 @@ MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
       material_mass_density_(0.0)
 {
 }
-
-// Store material mass density
-void MIXTURE::MixtureRule::SetMaterialMassDensity(double density)
-{
-  material_mass_density_ = density;
-}
-
-// Get material mass density
-double MIXTURE::MixtureRule::GetMaterialMassDensity() const { return material_mass_density_; }
 
 // Pack the mixture rule
 void MIXTURE::MixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
@@ -149,28 +135,4 @@ void MIXTURE::MixtureRule::Setup(Teuchos::ParameterList& params, const int eleGI
   // Setup must only be called once
   if (is_setup_) dserror("Setup() is called multiple times. Just once allowed.");
   is_setup_ = true;
-}
-
-// Evaluates the stresses of the mixture
-void MIXTURE::MixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
-    const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
-    LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
-{
-  // define temporary matrices
-  static LINALG::Matrix<6, 1> cstress;
-  static LINALG::Matrix<6, 6> ccmat;
-
-  // This is the simplest mixture rule
-  // Just iterate over all constituents and add all stress/cmat contributions
-  for (auto const& constituent : *Constituents())
-  {
-    cstress.Clear();
-    ccmat.Clear();
-    constituent->Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
-
-    // Add stress contribution to global stress
-    // In this basic mixture rule, the mass fractions do not change
-    S_stress.Update(1.0, cstress, 1.0);
-    cmat.Update(1.0, ccmat, 1.0);
-  }
 }

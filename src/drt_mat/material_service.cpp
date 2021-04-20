@@ -15,6 +15,7 @@
 #include "../drt_mixture/mixture_prestress_strategy_constant.H"
 #include "../drt_mixture/mixture_prestress_strategy_iterative.H"
 #include "../drt_mixture/mixture_rule_growthremodel.H"
+#include "../drt_mixture/mixture_rule_simple.H"
 
 #include "../linalg/linalg_utils_densematrix_eigen.H"
 #include "../linalg/linalg_four_tensor.H"
@@ -1508,7 +1509,7 @@ template MIXTURE::PAR::ConstantPrestressStrategy* MAT::CreateMaterialParameterIn
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
-template MIXTURE::PAR::MixtureRule* MAT::CreateMaterialParameterInstance(
+template MIXTURE::PAR::SimpleMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::GrowthRemodelMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);

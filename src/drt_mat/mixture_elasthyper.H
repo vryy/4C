@@ -42,13 +42,6 @@ namespace MAT
 
       /// @name material parameters
       /// @{
-
-      /// list of mass fractions in the reference configuration at the beginning of the simulation
-      const std::vector<double>* mass_fractions_;
-
-      /// material mass density
-      const double density_;
-
       /// list of the references to the constituents
       std::vector<MIXTURE::PAR::MixtureConstituent*> constituents_;
 
@@ -84,9 +77,9 @@ namespace MAT
    * mixture framework is needed.
    *
    * Example input lines:
-   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
+   * MAT 1 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 11 12 MATIDMIXTURERULE 10
    *  DENS 0.1
-   * MAT 10 MIX_Rule_Base
+   * MAT 10 MIX_Rule_Type NUMCONST 2 MASSFRAC 0.4 0.6
    * MAT 11 MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 101 MAT 12
    * MIX_Constituent_ElastHyper NUMMAT 1 MATIDS 102
    * MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 2.5e4 C2 0.27
@@ -169,13 +162,6 @@ namespace MAT
      * @return Material parameters
      */
     MAT::PAR::Parameter* Parameter() const override { return params_; }
-
-    /*!
-     * \brief Return material mass density
-     *
-     * @return material mass density
-     */
-    double Density() const override { return params_->density_; }
 
     /*!
      * \brief Setup of the material (Read the input line definition of the element)

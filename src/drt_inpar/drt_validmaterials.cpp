@@ -3527,13 +3527,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     auto m = Teuchos::rcp(new MaterialDefinition(
         "MAT_MixtureElastHyper", "General mixture model", INPAR::MAT::m_mixture_elasthyper));
 
-    AddNamedReal(m, "DENS", "");
     AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+    AddNamedInt(m, "MATIDMIXTURERULE", "material id of the mixturerule");
     AddNamedIntVector(
         m, "MATIDSCONST", "list material IDs of the mixture constituents", "NUMCONST");
-    AddNamedRealVector(
-        m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
-    AddNamedInt(m, "MATIDMIXTURERULE", "material id of the mixturerule");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3684,8 +3681,13 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   /*----------------------------------------------------------------------*/
   // Base mixture rule for solid mixtures
   {
-    auto m = Teuchos::rcp(
-        new MaterialDefinition("MIX_Rule_Base", "Base mixture rule", INPAR::MAT::mix_rule_base));
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MIX_Rule_Simple", "Simple mixture rule", INPAR::MAT::mix_rule_simple));
+
+    AddNamedReal(m, "DENS", "");
+    AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+    AddNamedRealVector(
+        m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
 
     AppendMaterialDefinition(matlist, m);
   }
@@ -3698,6 +3700,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         INPAR::MAT::mix_rule_growthremodel));
 
     AddNamedInt(m, "GROWTH_TYPE", "Growth type (0: isotropic growth, 1: anisotropic growth)");
+    AddNamedReal(m, "DENS", "");
+    AddNamedInt(m, "NUMCONST", "number of mixture constituents");
+    AddNamedRealVector(
+        m, "MASSFRAC", "list mass fractions of the mixture constituents", "NUMCONST");
 
     AppendMaterialDefinition(matlist, m);
   }

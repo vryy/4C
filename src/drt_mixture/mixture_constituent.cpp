@@ -23,8 +23,8 @@
 
 // Constructor of the mixture constituent parameters
 MIXTURE::PAR::MixtureConstituent::MixtureConstituent(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
-    : MAT::PAR::Parameter(matdata), ref_mass_fraction_(ref_mass_fraction)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MAT::PAR::Parameter(matdata)
 {
 }
 
@@ -37,8 +37,7 @@ Teuchos::RCP<MAT::Material> MIXTURE::PAR::MixtureConstituent::CreateMaterial()
 
 // Create the parameters of the constituents from the material number and the reference mass
 // fraction
-MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
-    int matnum, const double ref_mass_fraction)
+MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(int matnum)
 {
   // for the sake of safety
   if (DRT::Problem::Instance()->Materials() == Teuchos::null)
@@ -64,8 +63,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(
-            new MIXTURE::PAR::MixtureConstituent_ElastHyper(curmat, ref_mass_fraction));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_ElastHyper(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -73,8 +71,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(
-            new MIXTURE::PAR::MixtureConstituent_ElastHyperDamage(curmat, ref_mass_fraction));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_ElastHyperDamage(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -82,8 +79,8 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane(
-            curmat, ref_mass_fraction));
+        curmat->SetParameter(
+            new MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -91,8 +88,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(
-            new MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl(curmat, ref_mass_fraction));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_RemodelFiberExpl(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -100,8 +96,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
     {
       if (curmat->Parameter() == nullptr)
       {
-        curmat->SetParameter(
-            new MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier(curmat, ref_mass_fraction));
+        curmat->SetParameter(new MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier(curmat));
       }
       return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat->Parameter());
     }
@@ -113,12 +108,7 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::Factory(
 }
 
 MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id)
-    : params_(params),
-      initialReferenceDensity_(0.0),
-      numgp_(0),
-      has_read_element_(false),
-      is_setup_(false),
-      id_(id)
+    : params_(params), numgp_(0), has_read_element_(false), is_setup_(false), id_(id)
 {
 }
 

@@ -64,7 +64,8 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit IterativePrestressStrategy(MIXTURE::PAR::IterativePrestressStrategy* params);
 
-    void EvaluatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+    void EvaluatePrestress(const MixtureRule& mixtureRule,
+        const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
