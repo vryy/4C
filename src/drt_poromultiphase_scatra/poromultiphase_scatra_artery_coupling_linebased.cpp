@@ -41,6 +41,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
       porofluidmanagersset_(false),
       issetup_(false),
       porofluidprob_(false),
+      has_varying_diam_(false),
       timefacrhs_art_(0.0),
       timefacrhs_cont_(0.0),
       coupling_method_(
@@ -120,17 +121,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Init()
   // check global map extractor
   globalex_->CheckForValidMapExtractor();
 
-  // only the porofluid sub-part of the problem deals with the diameter
-  if (contdis_->Name() == "porofluid")
-  {
-    integrated_diams_artery_row_ =
-        Teuchos::rcp(new Epetra_FEVector(*arterydis_->ElementRowMap(), true));
-    unaffected_integrated_diams_artery_col_ =
-        Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
-    integrated_diams_artery_col_ =
-        Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
-  }
-
   return;
 }
 
@@ -152,8 +142,11 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::Setup()
   // 2D/3D mesh moves (basically protruding artery elements or segments)
   FillUnaffectedArteryLength();
 
+  // check if varying diameter is used
+  if (contdis_->Name() == "porofluid") SetVaryingDiamFlag();
+
   // fill unaffected integrated diam (basically protruding artery elements or segments)
-  if (contdis_->Name() == "porofluid") FillUnaffectedIntegratedDiam();
+  if (contdis_->Name() == "porofluid" && has_varying_diam_) FillUnaffectedIntegratedDiam();
 
   // calculate blood vessel volume fraction (only porofluid needs to do this)
   if (contdis_->Name() == "porofluid" &&
@@ -693,6 +686,48 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
   return;
 }
 
+/*------------------------------------------------------------------------*
+ | set flag if varying diameter has to be calculated     kremheller 04/21 |
+ *------------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetVaryingDiamFlag()
+{
+  int has_varying_diam = 0;
+  // check all column elements if one of them uses the diameter law by function
+  for (int i = 0; i < arterydis_->NumMyColElements(); ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = arterydis_->lColElement(i);
+
+    // get the artery-material
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    if (arterymat->DiameterLaw() == MAT::PAR::ArteryDiameterLaw::diameterlaw_by_function)
+    {
+      has_varying_diam = 1;
+      break;
+    }
+  }
+
+  // sum over all procs.
+  int sum_has_varying_diam = 0;
+  Comm().SumAll(&has_varying_diam, &sum_has_varying_diam, 1);
+  // if one has a varying diameter set the flag to true
+  if (sum_has_varying_diam > 0) has_varying_diam_ = true;
+
+  // set up the required vectors
+  if (has_varying_diam_)
+  {
+    integrated_diams_artery_row_ =
+        Teuchos::rcp(new Epetra_FEVector(*arterydis_->ElementRowMap(), true));
+    unaffected_integrated_diams_artery_col_ =
+        Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
+    integrated_diams_artery_col_ =
+        Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
+  }
+}
+
 /*----------------------------------------------------------------------*
  | create the GID to segment vector                    kremheller 05/18 |
  *----------------------------------------------------------------------*/
@@ -839,7 +874,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
     arterydis_->SetState("one_d_artery_pressure", phinp_art_);
     if (not evaluate_in_ref_config_ && not contdis_->HasState(1, "velocity field"))
       dserror("evaluation in current configuration wanted but solid phase velocity not available!");
-    integrated_diams_artery_row_->PutScalar(0.0);
+    if (has_varying_diam_) integrated_diams_artery_row_->PutScalar(0.0);
   }
   else if (contdis_->Name() == "scatra")
   {
@@ -877,7 +912,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::EvaluateCoupli
 
   // set artery diameter in material to be able to evalute the 1D elements with varying diameter
   // and evaluate additional linearization of (integrated) element diameters
-  if (contdis_->Name() == "porofluid")
+  if (contdis_->Name() == "porofluid" && has_varying_diam_)
   {
     SetArteryDiamInMaterial();
     EvaluateAdditionalLinearizationofIntegratedDiam();
@@ -1019,7 +1054,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::
   FErhs_->SumIntoGlobalValues(elevec[0].Length(), &lmrow1[0], elevec[0].Values());
   FErhs_->SumIntoGlobalValues(elevec[1].Length(), &lmrow2[0], elevec[1].Values());
 
-  if (contdis_->Name() == "porofluid")
+  if (contdis_->Name() == "porofluid" && has_varying_diam_)
     integrated_diams_artery_row_->SumIntoGlobalValues(1, &ele1gid, &(integrated_diam));
 
   return;

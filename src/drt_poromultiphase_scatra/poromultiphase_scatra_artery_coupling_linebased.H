@@ -194,6 +194,9 @@ namespace POROMULTIPHASESCATRA
     //! print output of mesh tying pairs
     void OutputSummary() const;
 
+    //! set flag if varying diameter has to be calculated
+    void SetVaryingDiamFlag();
+
     //! fill the vectors
     void FillFunctionAndScaleVectors();
 
@@ -214,6 +217,9 @@ namespace POROMULTIPHASESCATRA
 
     //! is it a pure fluid problem
     bool porofluidprob_;
+
+    //! does it have a varying (by-function)-diameter
+    bool has_varying_diam_;
 
     //! right hand side factor for artery time integration
     double timefacrhs_art_;
