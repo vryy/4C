@@ -14,6 +14,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include <Epetra_FEVector.h>
+#include <Epetra_IntVector.h>
 
 #include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
@@ -42,8 +43,15 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PoroMultiPhaseScaTr
       issetup_(false),
       porofluidprob_(false),
       has_varying_diam_(false),
+      delete_free_hanging_eles_(DRT::INPUT::IntegralValue<int>(
+          DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+          "DELETE_FREE_HANGING_ELES")),
       timefacrhs_art_(0.0),
       timefacrhs_cont_(0.0),
+      delete_free_hanging_eles_threshold_(DRT::Problem::Instance()
+                                              ->PoroFluidMultiPhaseDynamicParams()
+                                              .sublist("ARTERY COUPLING")
+                                              .get<double>("DELETE_SMALL_FREE_HANGING_COMPS")),
       coupling_method_(
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
@@ -725,6 +733,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetVaryingDiam
         Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
     integrated_diams_artery_col_ =
         Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
+    ele_diams_artery_col_ = Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementColMap(), true));
   }
 }
 
@@ -951,24 +960,34 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
   // export to column format
   LINALG::Export(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
 
+  // fill the vector collecting the element diameter
+  FillArteryEleDiamCol();
+
+  // find the free-hanging elements which will be deleted
+  std::vector<int> eles_to_be_deleted;
+  if (delete_free_hanging_eles_) FindFreeHanging1DElements(eles_to_be_deleted);
+
   // set the diameter in material
   for (int i = 0; i < arterydis_->NumMyColElements(); ++i)
   {
     // pointer to current element
     DRT::Element* actele = arterydis_->lColElement(i);
+    const int elegid = actele->Id();
+
+    double diam = (*ele_diams_artery_col_)[i];
+
+    // set to zero for free-hanging elements
+    if (delete_free_hanging_eles_)
+    {
+      if (std::find(eles_to_be_deleted.begin(), eles_to_be_deleted.end(), elegid) !=
+          eles_to_be_deleted.end())
+        diam = 0.0;
+    }
 
     // get the artery-material
     Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
         Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(actele->Material());
     if (arterymat == Teuchos::null) dserror("cast to artery material failed");
-
-    const std::vector<double> seglengths = GetEleSegmentLengths(actele->Id());
-    const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
-    // diam = int(diam)/length_element
-    // also add the unaffected diameter --> diameter of artery elements which protrude
-    const double diam =
-        ((*integrated_diams_artery_col_)[i] + (*unaffected_integrated_diams_artery_col_)[i]) /
-        curr_ele_length;
 
     // set to zero if collapsed
     if (diam < arterymat->CollapseThreshold())
@@ -981,6 +1000,207 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::SetArteryDiamI
     }
     else  // otherwise set to calculated diameter
       arterymat->SetDiam(diam);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | fill the element diameter vector in col-format      kremheller 04/21 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FillArteryEleDiamCol()
+{
+  // reset
+  ele_diams_artery_col_->PutScalar(0.0);
+  // set the diameter in the vector
+  for (int i = 0; i < arterydis_->NumMyColElements(); ++i)
+  {
+    // pointer to current element
+    DRT::Element* actele = arterydis_->lColElement(i);
+    const int elegid = actele->Id();
+
+    const std::vector<double> seglengths = GetEleSegmentLengths(elegid);
+    const double curr_ele_length = std::accumulate(seglengths.begin(), seglengths.end(), 0.0);
+    // diam = int(diam)/length_element
+    // also add the unaffected diameter --> diameter of artery elements which protrude
+    const double diam =
+        ((*integrated_diams_artery_col_)[i] + (*unaffected_integrated_diams_artery_col_)[i]) /
+        curr_ele_length;
+
+    ele_diams_artery_col_->ReplaceMyValue(i, 0, diam);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ | find free-hanging 1D elements                       kremheller 04/21 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::FindFreeHanging1DElements(
+    std::vector<int>& eles_to_be_deleted)
+{
+  // user info
+  if (myrank_ == 0)
+  {
+    std::cout << "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                 "<<<<<<<<<<<<<<<<<<<<<<<"
+              << std::endl;
+    std::cout << ">>>>>>                               Find free-hanging 1D elements               "
+                 "               <<<<<<"
+              << std::endl;
+  }
+  // get fully-overlapping discretization
+  Teuchos::RCP<DRT::Discretization> artconncompdis =
+      POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
+          arterydis_, "conn_comp_dis", true);
+
+  // vector to mark visited nodes
+  Teuchos::RCP<Epetra_IntVector> visited =
+      Teuchos::rcp(new Epetra_IntVector(*artconncompdis->NodeColMap(), true));
+
+  // get fully-overlapping diams vector
+  Teuchos::RCP<Epetra_Vector> ele_diams_artery_full_overlap =
+      Teuchos::rcp(new Epetra_Vector(*artconncompdis->ElementColMap(), true));
+  Teuchos::RCP<Epetra_Vector> ele_diams_artery_row =
+      Teuchos::rcp(new Epetra_Vector(*arterydis_->ElementRowMap(), true));
+  LINALG::Export(*ele_diams_artery_col_, *ele_diams_artery_row);
+  LINALG::Export(*ele_diams_artery_row, *ele_diams_artery_full_overlap);
+
+  // vector of connected components of 1D graph
+  std::vector<std::vector<int>> connected_components;
+  int num_conn_components = 0;
+  int num_conn_components_wo_single_nodes = 0;
+
+  // loop over fully-overlapping discretization
+  for (int i = 0; i < artconncompdis->NumMyColNodes(); ++i)
+  {
+    // pointer to current node
+    DRT::Node* actnode = artconncompdis->lColNode(i);
+    // if not visited start a new connected component
+    if ((*visited)[actnode->LID()] == 0)
+    {
+      connected_components.push_back(std::vector<int>());
+      // recursive call to depth-first search
+      DepthFirstSearchUtil(actnode, visited, artconncompdis, ele_diams_artery_full_overlap,
+          connected_components[num_conn_components]);
+      // single nodes are not of interest as they are detected (and taken out of simulation) anyways
+      if (connected_components[num_conn_components].size() > 1)
+        num_conn_components_wo_single_nodes++;
+
+      num_conn_components++;
+    }
+  }
+
+  // user info
+  if (myrank_ == 0 && num_conn_components_wo_single_nodes > 1)
+  {
+    std::cout << "found " << num_conn_components_wo_single_nodes << " connected components"
+              << std::endl;
+  }
+
+  // loop over all connected components
+  for (unsigned int i = 0; i < connected_components.size(); ++i)
+  {
+    int conn_comp_size = connected_components[i].size();
+    // single nodes are not of interest as they are detected anyways
+    if (conn_comp_size > 1)
+    {
+      // user info
+      if (myrank_ == 0)
+        std::cout << "connected_component with ID " << i << " of size: " << conn_comp_size
+                  << std::endl;
+
+      // check if any of the nodes of this connected component has a Dirichlet BC
+      DRT::Condition* dirich = nullptr;
+      for (int j = 0; j < conn_comp_size; ++j)
+      {
+        DRT::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);
+        dirich = mynode->GetCondition("Dirichlet");
+        if (dirich != nullptr)
+        {
+          if (myrank_ == 0)
+            std::cout << "   ---> has at least one Dirichlet boundary condition" << std::endl;
+          break;
+        }
+      }
+
+      // if no node of this connected component has a DBC or if it is smaller than the
+      // user-specified threshold, all its elements are taken out
+      if (dirich == nullptr or conn_comp_size < (int)(delete_free_hanging_eles_threshold_ *
+                                                      artconncompdis->NumGlobalNodes()))
+      {
+        // get the elements which have to be deleted
+        for (int j = 0; j < conn_comp_size; ++j)
+        {
+          DRT::Node* mynode = artconncompdis->gNode((connected_components[i])[j]);
+          DRT::Element** myeles = mynode->Elements();
+          for (int i_element = 0; i_element < mynode->NumElement(); i_element++)
+            eles_to_be_deleted.push_back(myeles[i_element]->Id());
+        }
+        // user info
+        if (myrank_ == 0)
+        {
+          if (dirich == nullptr)
+            std::cout
+                << "   ---> has no Dirichlet boundary condition --> its elements will be taken out"
+                << std::endl;
+          if (dirich != nullptr and conn_comp_size < (int)(delete_free_hanging_eles_threshold_ *
+                                                           artconncompdis->NumGlobalNodes()))
+            std::cout << "   ---> smaller than threshold size of "
+                      << (int)(delete_free_hanging_eles_threshold_ *
+                               artconncompdis->NumGlobalNodes())
+                      << " --> its elements will be taken out" << std::endl;
+        }
+      }
+    }
+  }
+
+  // user info
+  if (myrank_ == 0)
+  {
+    std::cout << "\n>>>>>>                           End of Find free-hanging 1D elements          "
+                 "                 <<<<<<"
+              << std::endl;
+    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+                 "<<<<<<<<<<<<<<<<<<<<<<<\n"
+              << std::endl;
+  }
+}
+/*----------------------------------------------------------------------*
+ | depth-first search in 1D graph                      kremheller 04/21 |
+ *----------------------------------------------------------------------*/
+void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::DepthFirstSearchUtil(
+    DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+    Teuchos::RCP<DRT::Discretization> artconncompdis,
+    Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
+    std::vector<int>& this_connected_comp)
+{
+  // mark this node visited and add it to this connected component
+  const int lid = visited->Map().LID(actnode->Id());
+  (*visited)[lid] = 1;
+  this_connected_comp.push_back(actnode->Id());
+
+  // check all adjacent elements (edges)
+  DRT::Element** Elements = actnode->Elements();
+  for (int i_element = 0; i_element < actnode->NumElement(); i_element++)
+  {
+    DRT::Node** Nodes = Elements[i_element]->Nodes();
+
+    // get diameter
+    const double diam = (*ele_diams_artery_full_overlap)[Elements[i_element]->LID()];
+
+    // get the artery-material
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_dynamic_cast<MAT::Cnst_1d_art>(Elements[i_element]->Material());
+    if (arterymat == Teuchos::null) dserror("cast to artery material failed");
+
+    // if the element is not collapsed it is connected to this node and we continue with the
+    // depth-first search with all nodes of this element
+    if (diam >= arterymat->CollapseThreshold())
+    {
+      for (int i_node = 0; i_node < Elements[i_element]->NumNode(); i_node++)
+      {
+        if ((*visited)[Nodes[i_node]->LID()] == 0)
+          DepthFirstSearchUtil(Nodes[i_node], visited, artconncompdis,
+              ele_diams_artery_full_overlap, this_connected_comp);
+      }
+    }
   }
 }
 

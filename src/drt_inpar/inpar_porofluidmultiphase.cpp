@@ -217,4 +217,15 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
   // Flag if summary of coupling-pairs should be printed
   BoolParameter("PRINT_OUT_SUMMARY_PAIRS", "no",
       "Flag if summary of coupling-pairs should be printed", &porofluidmultiphasemshtdyn);
+
+  // Flag if free-hanging elements (after blood vessel collapse) should be deleted
+  BoolParameter("DELETE_FREE_HANGING_ELES", "no",
+      "Flag if free-hanging elements (after blood vessel collapse) should be deleted",
+      &porofluidmultiphasemshtdyn);
+
+  // penalty parameter
+  DoubleParameter("DELETE_SMALL_FREE_HANGING_COMPS", -1.0,
+      "Small connected components whose size is smaller than this fraction of the overall network "
+      "size are additionally deleted (a valid choice of this parameter should lie between 0 and 1)",
+      &porofluidmultiphasemshtdyn);
 }

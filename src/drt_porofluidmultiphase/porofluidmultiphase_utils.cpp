@@ -165,7 +165,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   if (!contdis->Filled()) contdis->FillComplete();
 
   // create the fully overlapping search discretization
-  Teuchos::RCP<DRT::Discretization> artsearchdis = CreateSearchDiscretization(artdis);
+  Teuchos::RCP<DRT::Discretization> artsearchdis =
+      CreateFullyOverlappingArteryDiscretization(artdis, "artsearchdis", false);
 
   // to be filled with additional elements to be ghosted
   std::set<int> elecolset;
@@ -217,21 +218,22 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 }
 
 /*--------------------------------------------------------------------------*
- | create the fully overlapping search discretization      kremheller 03/19 |
+ | create the fully overlapping artery discretization      kremheller 03/19 |
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> POROFLUIDMULTIPHASE::UTILS::CreateSearchDiscretization(
-    Teuchos::RCP<DRT::Discretization> artdis)
+Teuchos::RCP<DRT::Discretization>
+POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
+    Teuchos::RCP<DRT::Discretization> artdis, std::string disname, bool doboundaryconditions)
 {
   // we clone a search discretization of the artery discretization on which the search will be
   // performed in a brute force way fully overlapping
   Teuchos::RCP<DRT::UTILS::DiscretizationCreatorBase> discloner =
       Teuchos::rcp(new DRT::UTILS::DiscretizationCreatorBase());
   Teuchos::RCP<DRT::Discretization> artsearchdis =
-      discloner->CreateMatchingDiscretization(artdis, "artsearchdis", false, false, false, false);
+      discloner->CreateMatchingDiscretization(artdis, disname, false, false, false, false);
 
   // ghost on all procs.
   DRT::UTILS::GhostDiscretizationOnAllProcs(artsearchdis);
-  artsearchdis->FillComplete(false, false, false);
+  artsearchdis->FillComplete(false, false, doboundaryconditions);
 
   return artsearchdis;
 }
