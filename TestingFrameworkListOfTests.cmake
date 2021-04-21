@@ -1029,6 +1029,7 @@ baci_test(poromultielastscatra_3D_hex8_linebased_artery_coupling_mono_network 3 
 baci_test(poromultielastscatra_3D_hex8_linebased_artery_coupling_part_network 3 "")
 baci_test(poromultielastscatra_3D_tet4_linebased_artery_coupling_mono_network 3 1)
 baci_test(poromultielastscatra_2D_quad4_linebased_artery_coupling_vessel_collapse 3 48)
+baci_test(poromultielastscatra_2D_quad4_linebased_artery_coupling_vessel_collapse_free_hanging 3 "")
 baci_test(porofluidmulti_2D_quad4_FD 1 "" minimal)
 baci_test(poro_2D_contact_closed_bound 2 "")
 baci_test(poro_2D_quad4_linporo 2 "")
