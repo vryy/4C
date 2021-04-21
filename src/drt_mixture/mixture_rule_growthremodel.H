@@ -60,7 +60,7 @@ namespace MIXTURE
       ~GrowthRemodelMixtureRule() override = default;
 
       /// Create mixturerule instance
-      Teuchos::RCP<MIXTURE::MixtureRule> CreateRule() override;
+      std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
 
       /// @name parameters of the mixture rule
       /// @{

@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
+#include <functional>
 
 // forward declarations
 namespace DRT
@@ -39,9 +40,9 @@ MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::
   if (std::abs(1.0 - sum) > 1e-8) dserror("Mass fractions don't sum up to 1, which is unphysical.");
 }
 
-Teuchos::RCP<MIXTURE::MixtureRule> MIXTURE::PAR::SimpleMixtureRule::CreateRule()
+std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::SimpleMixtureRule::CreateRule()
 {
-  return Teuchos::rcp(new MIXTURE::SimpleMixtureRule(this));
+  return std::unique_ptr<MIXTURE::SimpleMixtureRule>(new MIXTURE::SimpleMixtureRule(this));
 }
 
 MIXTURE::SimpleMixtureRule::SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* params)
@@ -59,11 +60,12 @@ void MIXTURE::SimpleMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
 
   // This is the simplest mixture rule
   // Just iterate over all constituents and add all stress/cmat contributions
-  for (std::size_t i = 0; i < Constituents()->size(); ++i)
+  for (std::size_t i = 0; i < Constituents().size(); ++i)
   {
+    MixtureConstituent& constituent = *Constituents()[i];
     cstress.Clear();
     ccmat.Clear();
-    (*Constituents())[i]->Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
+    constituent.Evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
     // Add stress contribution to global stress
     // In this basic mixture rule, the mass fractions do not change

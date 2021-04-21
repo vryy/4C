@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
+#include <functional>
 
 // forward declarations
 namespace DRT
@@ -36,9 +37,10 @@ MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
 {
 }
 
-Teuchos::RCP<MIXTURE::MixtureRule> MIXTURE::PAR::GrowthRemodelMixtureRule::CreateRule()
+std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::GrowthRemodelMixtureRule::CreateRule()
 {
-  return Teuchos::rcp(new MIXTURE::GrowthRemodelMixtureRule(this));
+  return std::unique_ptr<MIXTURE::GrowthRemodelMixtureRule>(
+      new MIXTURE::GrowthRemodelMixtureRule(this));
 }
 
 MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
@@ -79,7 +81,7 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(
   static LINALG::Matrix<3, 3> iFg;
   EvaluateInverseGrowthDeformationGradient(iFg, gp);
 
-  for (auto const& constituent : *Constituents())
+  for (const auto& constituent : Constituents())
   {
     constituent->UpdateElasticPart(F, iFg, params, dt, gp, eleGID);
   }
@@ -100,9 +102,9 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
   static LINALG::Matrix<6, 6> ccmat;
 
   // Iterate over all constituents and apply their contributions to the stress and linearization
-  for (std::size_t i = 0; i < Constituents()->size(); ++i)
+  for (std::size_t i = 0; i < Constituents().size(); ++i)
   {
-    MixtureConstituent& constituent = *(*Constituents())[i];
+    MixtureConstituent& constituent = *Constituents()[i];
     cstress.Clear();
     ccmat.Clear();
     constituent.EvaluateElasticPart(F, iF_gM, params, cstress, ccmat, gp, eleGID);
@@ -156,9 +158,9 @@ void MIXTURE::GrowthRemodelMixtureRule::EvaluateInverseGrowthDeformationGradient
 double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceDensity(int gp) const
 {
   double current_reference_density = 0.0;
-  for (std::size_t i = 0; i < Constituents()->size(); ++i)
+  for (std::size_t i = 0; i < Constituents().size(); ++i)
   {
-    MixtureConstituent& constituent = *(*Constituents())[i];
+    MixtureConstituent& constituent = *Constituents()[i];
     current_reference_density += params_->initial_reference_density_ * params_->mass_fractions_[i] *
                                  constituent.GetGrowthScalar(gp);
   }
@@ -168,9 +170,10 @@ double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceDensity(int gp)
 double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDensity(
     const MixtureConstituent& constituent) const
 {
-  for (std::size_t i = 0; i < Constituents()->size(); ++i)
+  for (std::size_t i = 0; i < Constituents().size(); ++i)
   {
-    if ((*Constituents())[i]->Id() == constituent.Id())
+    MixtureConstituent& cur_constituent = *Constituents()[i];
+    if (cur_constituent.Id() == constituent.Id())
     {
       return params_->initial_reference_density_ * params_->mass_fractions_[i];
     }

@@ -88,10 +88,11 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
     dserror("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
 }
 
-Teuchos::RCP<MIXTURE::MixtureConstituent>
+std::unique_ptr<MIXTURE::MixtureConstituent>
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_Muscle_Weickenmeier(this, id));
+  return std::unique_ptr<MIXTURE::MixtureConstituent_Muscle_Weickenmeier>(
+      new MIXTURE::MixtureConstituent_Muscle_Weickenmeier(this, id));
 }
 
 MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(

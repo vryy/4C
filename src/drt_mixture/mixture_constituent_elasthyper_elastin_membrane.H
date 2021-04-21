@@ -85,7 +85,7 @@ namespace MIXTURE
       ~MixtureConstituent_ElastHyperElastinMembrane() override = default;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       /// @{

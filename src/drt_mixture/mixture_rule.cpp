@@ -81,7 +81,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 
 // Constructor with parameters
 MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
-    : constituents_(Teuchos::null),
+    : constituents_(nullptr),
       numgp_(0),
       has_read_element_(false),
       is_setup_(false),

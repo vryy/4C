@@ -12,6 +12,7 @@
 #ifndef BACI_MIXTURE_RULE_H
 #define BACI_MIXTURE_RULE_H
 
+#include <memory>
 #include <unordered_map>
 
 #include "../drt_mat/matpar_parameter.H"
@@ -72,7 +73,7 @@ namespace MIXTURE
       }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MIXTURE::MixtureRule> CreateRule() = 0;
+      virtual std::unique_ptr<MIXTURE::MixtureRule> CreateRule() = 0;
 
       /*!
        * \brief Factory of the mixture rule parameters
@@ -134,9 +135,9 @@ namespace MIXTURE
      * @param constituents (in) List of constituents
      */
     void SetConstituents(
-        const Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>>& constituents)
+        std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents)
     {
-      constituents_ = constituents;
+      constituents_ = std::move(constituents);
     }
 
     virtual void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
@@ -264,9 +265,9 @@ namespace MIXTURE
      * \brief Returns a reference to the constituents
      * @return
      */
-    Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>> Constituents() const
+    std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>& Constituents() const
     {
-      return constituents_;
+      return *constituents_;
     }
 
     /*!
@@ -278,7 +279,7 @@ namespace MIXTURE
 
    private:
     ///! list of the references to the constituents
-    Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>> constituents_;
+    std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
 
     ///! Number of Gauß points
     int numgp_;

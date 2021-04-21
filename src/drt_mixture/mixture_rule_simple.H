@@ -53,7 +53,7 @@ namespace MIXTURE
       explicit SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// Create mixturerule instance
-      Teuchos::RCP<MIXTURE::MixtureRule> CreateRule() override;
+      std::unique_ptr<MIXTURE::MixtureRule> CreateRule() override;
 
       /// @name parameters of the mixture rule
       /// @{

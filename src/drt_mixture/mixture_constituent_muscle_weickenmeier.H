@@ -29,7 +29,7 @@ namespace MIXTURE
           const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       //@{

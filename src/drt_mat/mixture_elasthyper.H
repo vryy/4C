@@ -226,10 +226,10 @@ namespace MAT
     MAT::PAR::Mixture_ElastHyper* params_;
 
     /// list of the references to the constituents
-    Teuchos::RCP<std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>> constituents_;
+    std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
 
     /// Reference to the mixturerule
-    Teuchos::RCP<MIXTURE::MixtureRule> mixture_rule_;
+    std::shared_ptr<MIXTURE::MixtureRule> mixture_rule_;
 
     /// Flag whether constituents are already set up.
     bool setup_;
