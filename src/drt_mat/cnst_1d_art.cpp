@@ -40,6 +40,8 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
     viscositylaw_ = viscositylaw_constant;
   else if (*typestring_visc == "BLOOD")
     viscositylaw_ = viscositylaw_blood;
+  else
+    dserror("wrong type of viscosity law for artery material, only CONSTANT and BLOOD are valid");
 
   const std::string* typestring_diam = matdata->Get<std::string>("VARYING_DIAMETERLAW");
 
@@ -47,6 +49,9 @@ MAT::PAR::Cnst_1d_art::Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata)
     diameterlaw_ = diameterlaw_constant;
   else if (*typestring_diam == "BY_FUNCTION")
     diameterlaw_ = diameterlaw_by_function;
+  else
+    dserror(
+        "wrong type of diameter law for artery material, only CONSTANT and BY_FUNCTION are valid");
 }
 
 Teuchos::RCP<MAT::Material> MAT::PAR::Cnst_1d_art::CreateMaterial()
