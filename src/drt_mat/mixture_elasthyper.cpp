@@ -196,7 +196,7 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       // create instance of mixture rule
       mixture_rule_ = params_->mixture_rule_->CreateRule();
 
-      // make sure the referencecd materials in material list have quick access parameters
+      // make sure the referenced materials in material list have quick access parameters
       for (const auto& constituent : *constituents_)
       {
         constituent->UnpackConstituent(position, data);
