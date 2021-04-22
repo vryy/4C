@@ -18,6 +18,7 @@
 
 // forward declaration
 class Epetra_FEVector;
+class Epetra_IntVector;
 namespace DRT
 {
   class Element;
@@ -131,8 +132,35 @@ namespace POROMULTIPHASESCATRA
     void EvaluateCouplingPairs(
         Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
+    //! set the artery diameter in column based vector
+    void FillArteryEleDiamCol();
+
     //! set the artery diameter in material to be able to use it on 1D discretization
     void SetArteryDiamInMaterial();
+
+    /**
+     * Utility function for depth-first search for the connected components of the 1D artery
+     * discretization
+     * @param actnode : currently checked node
+     * @param visited : vector that marks visited nodes
+     * @param artsearchdis : artery-discretization in fully-overlapping format
+     * @param ele_diams_artery_full_overlap : vector of element diameters in fully-overlapping
+     * format
+     * @param this_connected_comp : current connected component
+     */
+    void DepthFirstSearchUtil(DRT::Node* actnode, Teuchos::RCP<Epetra_IntVector> visited,
+        Teuchos::RCP<DRT::Discretization> artconncompdis,
+        Teuchos::RCP<const Epetra_Vector> ele_diams_artery_full_overlap,
+        std::vector<int>& this_connected_comp);
+
+    /*!
+     * Find the free hanging 1D elements which have to be taken out of simulation during blood
+     * vessel collapse. This is realized by getting the connected components of the 1D graph. If no
+     * node of a connected component has a DBC or if it is smaller than a user-specified
+     * threshold, all its elements are taken out
+     * @param : eles_to_be_deleted vector of free-hanging elements
+     */
+    void FindFreeHanging1DElements(std::vector<int>& eles_to_be_deleted);
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
@@ -194,6 +222,9 @@ namespace POROMULTIPHASESCATRA
     //! print output of mesh tying pairs
     void OutputSummary() const;
 
+    //! set flag if varying diameter has to be calculated
+    void SetVaryingDiamFlag();
+
     //! fill the vectors
     void FillFunctionAndScaleVectors();
 
@@ -215,10 +246,20 @@ namespace POROMULTIPHASESCATRA
     //! is it a pure fluid problem
     bool porofluidprob_;
 
+    //! does it have a varying (by-function)-diameter
+    bool has_varying_diam_;
+
+    //! flag to determine if 'free-hanging' elements should be deleted
+    bool delete_free_hanging_eles_;
+
     //! right hand side factor for artery time integration
     double timefacrhs_art_;
     //! right hand side factor for time integration of 2D/3D discretization
     double timefacrhs_cont_;
+
+    //! small connected components whose size is smaller than this fraction of the overall network
+    //! size are additionally deleted (even if they have a Dirichlet boundary condition)
+    double delete_free_hanging_eles_threshold_;
 
     //! result of brute force search
     std::map<int, std::set<int>> nearbyelepairs_;
@@ -272,6 +313,9 @@ namespace POROMULTIPHASESCATRA
 
     //! diameter of artery element integrated over the length of the artery element (col format)
     Teuchos::RCP<Epetra_Vector> integrated_diams_artery_col_;
+
+    //! diameter of artery element (col format)
+    Teuchos::RCP<Epetra_Vector> ele_diams_artery_col_;
 
     //! unaffected diameter integrated over the length of the artery element
     //! (protruding elements for which diameter does not change)

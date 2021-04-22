@@ -123,9 +123,15 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::RCP<const Epetra_Vector> vect             //!< the vector of interest
     );
 
-    //! create (fully overlapping) search discretization
-    Teuchos::RCP<DRT::Discretization> CreateSearchDiscretization(
-        Teuchos::RCP<DRT::Discretization> artdis);
+    /*!
+     * create (fully overlapping) search discretization
+     * @param artdis  1D artery discretization
+     * @param disname  name of fully-overlapping artery discretization
+     * @param doboundaryconditions  also do boundary conditions in fill-complete call
+     * @return  fully-overlapping artery discretization
+     */
+    Teuchos::RCP<DRT::Discretization> CreateFullyOverlappingArteryDiscretization(
+        Teuchos::RCP<DRT::Discretization> artdis, std::string disname, bool doboundaryconditions);
 
   }  // namespace UTILS
   // Print the logo
