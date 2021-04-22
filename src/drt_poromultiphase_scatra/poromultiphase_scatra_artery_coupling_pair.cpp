@@ -43,6 +43,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       funct_coupl_active_(false),
       diam_funct_active_(false),
       evaluate_in_ref_config_(true),
+      evaluate_on_lateral_surface_(true),
       element1_(NULL),
       element2_(NULL),
       arterydiamref_(0.0),
@@ -83,16 +84,20 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont>::Init(
-    std::vector<DRT::Element const*> elements, const Teuchos::ParameterList& meshtyingparams,
-    const std::vector<int>& coupleddofs_cont, const std::vector<int>& coupleddofs_art,
-    const std::vector<std::vector<int>>& scale_vec, const std::vector<std::vector<int>>& funct_vec)
+    std::vector<DRT::Element const*> elements, const Teuchos::ParameterList& couplingparams,
+    const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
+    const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
+    const std::vector<std::vector<int>>& funct_vec)
 {
   // init stuff
   couplmethod_ = DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
-      meshtyingparams, "ARTERY_COUPLING_METHOD");
+      couplingparams, "ARTERY_COUPLING_METHOD");
 
   evaluate_in_ref_config_ =
-      DRT::INPUT::IntegralValue<int>(meshtyingparams, "EVALUATE_IN_REF_CONFIG");
+      DRT::INPUT::IntegralValue<int>(fluidcouplingparams, "EVALUATE_IN_REF_CONFIG");
+
+  evaluate_on_lateral_surface_ =
+      DRT::INPUT::IntegralValue<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
 
   element1_ = elements[0];
   element2_ = elements[1];
@@ -205,7 +210,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   ele2pos_.Update(1.0, ele2posref_, 0.0);
 
   // get penalty parameter
-  pp_ = meshtyingparams.get<double>("PENALTY");
+  pp_ = couplingparams.get<double>("PENALTY");
 
   // get out of here
   isinit_ = true;
@@ -361,6 +366,21 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     }
   }
 
+  // safety checks for lateral surface coupling
+  if (evaluate_on_lateral_surface_)
+  {
+    if (!evaluate_in_ref_config_)
+      dserror(
+          "Evaluation in current configuration is not yet possible in combination with lateral "
+          "surface coupling");
+    if (diam_funct_active_)
+      dserror(
+          "Setting a varying diameter is not yet possible in combination with lateral "
+          "surface coupling");
+    if (not(distypeCont == DRT::Element::hex8 or distypeCont == DRT::Element::tet4))
+      dserror("Only TET4 and HEX8 elements possible for lateral surface coupling");
+  }
+
   numfluidphases_ = multiphasemat->NumFluidPhases();
   numvolfrac_ = multiphasemat->NumVolFrac();
 
@@ -407,6 +427,33 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 {
   if (!isinit_) dserror("MeshTying Pair has not yet been initialized");
 
+  if (evaluate_on_lateral_surface_)
+    PreEvaluateLateralSurfaceCoupling();
+  else
+    PreEvaluateCenterlineCoupling();
+
+  ispreevaluated_ = true;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | pre-evaluate (lateral surface-coupling)             kremheller 12/20 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::PreEvaluateLateralSurfaceCoupling()
+{
+  dserror("to implement");
+}
+
+/*----------------------------------------------------------------------*
+ | pre-evaluate (centerline-coupling)                  kremheller 12/20 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::PreEvaluateCenterlineCoupling()
+{
   // Try to create integration segment [eta_a, eta_b]
   CreateIntegrationSegment();
 
@@ -463,10 +510,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     invJ_[i_gp].MultiplyNT(N2_xi, ele2pos_);
     invJ_[i_gp].Invert();
   }
-
-  ispreevaluated_ = true;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

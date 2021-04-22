@@ -321,6 +321,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
  *----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateCouplingPairs()
 {
+  const Teuchos::ParameterList& fluidcouplingparams =
+      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING");
   // loop over pairs found by search
   std::map<int, std::set<int>>::const_iterator nearbyeleiter;
   for (nearbyeleiter = nearbyelepairs_.begin(); nearbyeleiter != nearbyelepairs_.end();
@@ -341,8 +343,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateCoupling
       Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase> newpair =
           POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::CreateNewArteryCouplingPair(
               ele_ptrs);
-      newpair->Init(
-          ele_ptrs, couplingparams_, coupleddofs_cont_, coupleddofs_art_, scale_vec_, funct_vec_);
+      newpair->Init(ele_ptrs, couplingparams_, fluidcouplingparams, coupleddofs_cont_,
+          coupleddofs_art_, scale_vec_, funct_vec_);
 
       // add to list of current contact pairs
       coupl_elepairs_.push_back(newpair);

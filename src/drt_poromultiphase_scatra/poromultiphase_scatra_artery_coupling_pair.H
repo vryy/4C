@@ -60,7 +60,8 @@ namespace POROMULTIPHASESCATRA
 
     //! Init
     virtual void Init(std::vector<DRT::Element const*> elements,
-        const Teuchos::ParameterList& meshtyingparams, const std::vector<int>& coupleddofs_cont,
+        const Teuchos::ParameterList& couplingparams,
+        const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec) = 0;
 
@@ -146,7 +147,8 @@ namespace POROMULTIPHASESCATRA
 
     //! Init
     void Init(std::vector<DRT::Element const*> elements,
-        const Teuchos::ParameterList& meshtyingparams, const std::vector<int>& coupleddofs_cont,
+        const Teuchos::ParameterList& couplingparams,
+        const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec) override;
 
@@ -221,6 +223,12 @@ namespace POROMULTIPHASESCATRA
     //! set time factor needed for evaluation of right hand side (function coupling) terms
     void SetTimeFacRhs(const double& arterydensity, Teuchos::RCP<MAT::MatList> contscatramat,
         const double& timefacrhs_art, const double& timefacrhs_cont);
+
+    //! pre-evaluate for lateral surface coupling
+    void PreEvaluateLateralSurfaceCoupling();
+
+    //! pre-evaluate for centerline coupling
+    void PreEvaluateCenterlineCoupling();
 
     //! extract velocity of solid phase
     void ExtractSolidVel(Teuchos::RCP<DRT::Discretization> contdis);
@@ -446,6 +454,9 @@ namespace POROMULTIPHASESCATRA
     //! configuration if this flag is set to true, artery elements will not move and are
     //! evaluated in reference configuration
     bool evaluate_in_ref_config_;
+
+    //! evaluate 1D-3D coupling on lateral surface?
+    bool evaluate_on_lateral_surface_;
 
     //! first element of interacting pair (artery element)
     const DRT::Element* element1_;

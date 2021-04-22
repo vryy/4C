@@ -104,7 +104,6 @@ CONVTOL                         1e-8
 ABSTOLRES                       -1
 -----------------------------------SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING
 ARTERY_COUPLING_METHOD          GPTS
-EVALUATE_IN_REF_CONFIG          yes
 PENALTY                         0.0
 SCALEREAC_ART                   -1
 REACFUNCT_ART                   11

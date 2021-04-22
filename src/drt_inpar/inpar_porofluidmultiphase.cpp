@@ -209,6 +209,13 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       "Flag if artery elements are evaluated in reference or current configuration",
       &porofluidmultiphasemshtdyn);
 
+  // Flag if 1D-3D coupling should be evaluated on lateral (cylinder) surface of embedded artery
+  // elements
+  BoolParameter("LATERAL_SURFACE_COUPLING", "no",
+      "Flag if 1D-3D coupling should be evaluated on lateral (cylinder) surface of embedded artery "
+      "elements",
+      &porofluidmultiphasemshtdyn);
+
   // Flag if blood vessel volume fraction should be output
   BoolParameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
       "Flag if output of blood vessel volume fraction should be calculated",

@@ -56,6 +56,11 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
             problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
             "ARTERY_COUPLING_METHOD");
 
+    // lateral surface coupling active?
+    const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
+        problem->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+        "LATERAL_SURFACE_COUPLING");
+
     // get MAXNUMSEGPERARTELE
     const int maxnumsegperele = problem->PoroFluidMultiPhaseDynamicParams()
                                     .sublist("ARTERY COUPLING")
@@ -73,8 +78,8 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::SetupDiscretizationsAndField
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
       {
         // perform extended ghosting on artery discretization
-        nearbyelepairs =
-            POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(structdis, arterydis);
+        nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
+            structdis, arterydis, evaluate_on_lateral_surface);
         break;
       }
       default:

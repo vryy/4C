@@ -430,11 +430,6 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   // scale for coupling (scatra part)
   setNumericStringParameter(
       "SCALEREAC_CONT", "0", "scale for coupling (scatra part)", &scatradyn_art);
-
-  // Flag if artery elements are evaluated in reference or current configuration
-  BoolParameter("EVALUATE_IN_REF_CONFIG", "yes",
-      "Flag if artery elements are evaluated in reference or current configuration",
-      &scatradyn_art);
 }
 
 

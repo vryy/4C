@@ -11,6 +11,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
 
@@ -24,8 +26,9 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
     : arterydis_(arterydis),
       contdis_(contdis),
       myrank_(arterydis->Comm().MyPID()),
-      evaluate_in_ref_config_(
-          DRT::INPUT::IntegralValue<int>(meshtyingparams, "EVALUATE_IN_REF_CONFIG")),
+      evaluate_in_ref_config_(DRT::INPUT::IntegralValue<int>(
+          DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+          "EVALUATE_IN_REF_CONFIG")),
       comm_(arterydis->Comm())
 {
   // safety check
