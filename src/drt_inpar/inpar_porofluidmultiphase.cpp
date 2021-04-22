@@ -216,6 +216,18 @@ void INPAR::POROFLUIDMULTIPHASE::SetValidParameters(Teuchos::RCP<Teuchos::Parame
       "elements",
       &porofluidmultiphasemshtdyn);
 
+  // Number of integration patches per 1D element in axial direction for lateral surface coupling
+  IntParameter("NUMPATCH_AXI", 1,
+      "Number of integration patches per 1D element in axial direction for lateral surface "
+      "coupling",
+      &porofluidmultiphasemshtdyn);
+
+  // Number of integration patches per 1D element in radial direction for lateral surface coupling
+  IntParameter("NUMPATCH_RAD", 1,
+      "Number of integration patches per 1D element in radial direction for lateral surface "
+      "coupling",
+      &porofluidmultiphasemshtdyn);
+
   // Flag if blood vessel volume fraction should be output
   BoolParameter("OUTPUT_BLOODVESSELVOLFRAC", "no",
       "Flag if output of blood vessel volume fraction should be calculated",

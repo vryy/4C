@@ -23,6 +23,7 @@
 #include "../drt_mat/cnst_1d_art.H"
 #include "../headers/FAD_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
+#include "../drt_particle_interaction/particle_interaction_utils.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -71,6 +72,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       porosityname_("porosity"),
       artpressname_("p_art"),
       segmentid_(-1),
+      numpatch_axi_(0),
+      numpatch_rad_(0),
       timefacrhs_art_dens_(0.0),
       timefacrhs_cont_dens_(0.0),
       timefacrhs_art_(0.0),
@@ -98,6 +101,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   evaluate_on_lateral_surface_ =
       DRT::INPUT::IntegralValue<int>(fluidcouplingparams, "LATERAL_SURFACE_COUPLING");
+
+  numpatch_axi_ = fluidcouplingparams.get<int>("NUMPATCH_AXI");
+  numpatch_rad_ = fluidcouplingparams.get<int>("NUMPATCH_RAD");
 
   element1_ = elements[0];
   element2_ = elements[1];
@@ -444,7 +450,84 @@ template <DRT::Element::DiscretizationType distypeArt, DRT::Element::Discretizat
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     distypeCont>::PreEvaluateLateralSurfaceCoupling()
 {
-  dserror("to implement");
+  // unit radial basis vectors
+  double unit_rad_1[3];
+  double unit_rad_2[3];
+  // unit tangential vector
+  double tang_unit[3] = {lambda0_(0), lambda0_(1), lambda0_(2)};
+  PARTICLEINTERACTION::UTILS::unitsurfacetangents(tang_unit, unit_rad_1, unit_rad_2);
+
+  // get radius
+  const int artelematerial = coupltype_ == type_scatra ? 1 : 0;
+  Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+      Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(element1_->Material(artelematerial));
+  if (arterymat == Teuchos::null)
+    dserror("cast to artery material failed for porofluid-artery coupling!");
+  double radius = arterymat->Diam() / 2.0;
+
+  // size of one integration patch: 2*pi*R/numpatch_rad_*L/numpatch_axi_
+  const double patch_size =
+      1.0 / numpatch_axi_ * arteryelelengthref_ * 1.0 / numpatch_rad_ * 2.0 * M_PI * radius;
+
+  // Vectors for shape functions and their derivatives
+  static LINALG::Matrix<1, numnodesart_, double> N1(true);      // = N1
+  static LINALG::Matrix<1, numnodesart_, double> N1_eta(true);  // = N1,eta
+  // Coords and derivatives of 1D and 2D/3D element
+  static LINALG::Matrix<numdim_, 1, double> r1(true);      // = r1
+  static LINALG::Matrix<numdim_, 1, double> r1_eta(true);  // = r1,eta
+
+  // element parameter space coordinates in 3D element
+  std::vector<double> xi(3);
+  // number of GPs
+  n_gp_ = 0;
+
+  // we use always 25 integration points per integration patch
+  DRT::UTILS::IntegrationPoints2D gaussPointsperPatch =
+      DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::intrule_quad_25point);
+  const int ngp = gaussPointsperPatch.nquad;
+
+  // loop over all axial patches
+  for (int i_ax = 0; i_ax < numpatch_axi_; i_ax++)
+  {
+    // loop over all radial patches
+    for (int i_rad = 0; i_rad < numpatch_rad_; i_rad++)
+    {
+      // loop over all GPs of this patch
+      for (int i_gp = 0; i_gp < ngp; i_gp++)
+      {
+        // axial Gauss point eta lies in [-1; 1]
+        double eta = -1.0 - 1.0 / numpatch_axi_ + (i_ax + 1.0) * 2.0 / numpatch_axi_ +
+                     gaussPointsperPatch.qxg[i_gp][0] * 1.0 / numpatch_axi_;
+
+        // Update coordinates and derivatives for 1D and 2D/3D element
+        Get1DShapeFunctions<double>(N1, N1_eta, eta);
+        ComputeArteryCoordsAndDerivsRef<double>(r1, r1_eta, N1, N1_eta);
+
+        // radial Gauss point theta lies in [-pi; pi]
+        double theta = (-1.0 - 1.0 / numpatch_rad_ + (i_rad + 1.0) * 2.0 / numpatch_rad_ +
+                           gaussPointsperPatch.qxg[i_gp][1] * 1.0 / numpatch_rad_) *
+                       M_PI;
+
+        // get point on lateral blood vessel surface
+        for (int idim = 0; idim < 3; idim++)
+          r1(idim) = r1(idim) + unit_rad_1[idim] * radius * cos(theta) +
+                     unit_rad_2[idim] * radius * sin(theta);
+
+        // project into 3D domain
+        bool projection_valid = false;
+        Projection<double>(r1, xi, projection_valid);
+        if (projection_valid)
+        {
+          isactive_ = true;
+          n_gp_++;
+          eta_.push_back(eta);
+          // include jacobian
+          wgp_.push_back(gaussPointsperPatch.qwgt[i_gp] * patch_size / 4.0);
+          xi_.push_back(xi);
+        }
+      }
+    }
+  }
 }
 
 /*----------------------------------------------------------------------*

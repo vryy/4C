@@ -124,6 +124,9 @@ namespace POROMULTIPHASESCATRA
     //! get the volume of the 2D/3D element
     virtual double CalculateVol2D3D() const = 0;
 
+    //! get number of Gauss points
+    virtual int NumGP() const = 0;
+
     //! type of coupling pair
     enum CouplingType
     {
@@ -196,6 +199,9 @@ namespace POROMULTIPHASESCATRA
     int Ele1GID() const override;
     //! element 2 (= cont) GID
     int Ele2GID() const override;
+
+    //! number of GP
+    int NumGP() const override { return n_gp_; };
 
     //! apply mesh movement on artery element
     double ApplyMeshMovement(
@@ -633,6 +639,11 @@ namespace POROMULTIPHASESCATRA
 
     //! segment id
     int segmentid_;
+
+    //! number of integration patches in axial direction (for surface-based coupling)
+    int numpatch_axi_;
+    //! number of integration patches in radial direction (for surface-based coupling)
+    int numpatch_rad_;
 
     //! right hand side factor for artery time integration scaled with inverse density
     double timefacrhs_art_dens_;
