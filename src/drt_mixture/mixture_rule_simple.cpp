@@ -10,23 +10,13 @@
 /*----------------------------------------------------------------------*/
 #include "mixture_rule_simple.H"
 #include <Epetra_ConfigDefs.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <bits/c++config.h>
-#include <cmath>
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include <utility>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
-#include <functional>
-
-// forward declarations
-namespace DRT
-{
-  class PackBuffer;
-}
+#include <iosfwd>
+#include "/home/gebauer/work/baci/baci/src/linalg/linalg_fixedsizematrix.H"
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),

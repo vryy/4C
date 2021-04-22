@@ -114,6 +114,8 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit MixtureRule(MIXTURE::PAR::MixtureRule* params);
 
+    virtual ~MixtureRule() = default;
+
     virtual void PackMixtureRule(DRT::PackBuffer& data) const;
 
     /*!
@@ -289,9 +291,6 @@ namespace MIXTURE
 
     ///! Indicator, whether the constituent is already set up
     bool is_setup_;
-
-    ///! Material mass density as defined in the input file
-    double material_mass_density_;
   };
 }  // namespace MIXTURE
 

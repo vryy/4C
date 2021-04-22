@@ -11,16 +11,15 @@
 #include "mixture_rule_growthremodel.H"
 #include <Epetra_ConfigDefs.h>
 #include <Epetra_SerialDenseMatrix.h>
-#include <bits/c++config.h>
 #include <cmath>
+#include <iosfwd>
+#include "../linalg/linalg_fixedsizematrix.H"
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <algorithm>
-#include <utility>
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
-#include <functional>
 
 // forward declarations
 namespace DRT

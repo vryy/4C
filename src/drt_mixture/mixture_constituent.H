@@ -79,6 +79,8 @@ namespace MIXTURE
    public:
     MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id);
 
+    virtual ~MixtureConstituent() = default;
+
     /// Returns the id of the constituent
     int Id() const { return id_; }
 

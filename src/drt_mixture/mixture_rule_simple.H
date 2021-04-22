@@ -14,17 +14,11 @@
 
 #include "mixture_rule.H"
 #include <Teuchos_RCPDecl.hpp>
-#include <string>
-#include <unordered_map>
 #include <vector>
+#include <memory>
 #include "../linalg/linalg_fixedsizematrix.H"
 
 // forward declarations
-class Epetra_SerialDenseMatrix;
-namespace DRT
-{
-  class PackBuffer;
-}
 namespace MAT
 {
   namespace PAR

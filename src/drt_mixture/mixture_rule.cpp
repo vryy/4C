@@ -16,11 +16,10 @@
 #include "../drt_mat/material_service.H"
 #include "mixture_rule_growthremodel.H"
 #include "mixture_rule_simple.H"
-#include <algorithm>
 #include "../drt_inpar/inpar_material.H"
 #include "../drt_lib/drt_parobject.H"
 #include "../drt_mat/matpar_parameter.H"
-#include "mixture_constituent.H"
+#include "../drt_lib/drt_dserror.H"
 
 // forward declarations
 namespace DRT
@@ -81,11 +80,7 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::Factory(int matid)
 
 // Constructor with parameters
 MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
-    : constituents_(nullptr),
-      numgp_(0),
-      has_read_element_(false),
-      is_setup_(false),
-      material_mass_density_(0.0)
+    : constituents_(nullptr), numgp_(0), has_read_element_(false), is_setup_(false)
 {
 }
 

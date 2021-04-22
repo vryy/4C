@@ -12,13 +12,13 @@
 #ifndef BACI_MIXTURE_RULE_GROWTHREMODEL_H
 #define BACI_MIXTURE_RULE_GROWTHREMODEL_H
 
-#include "mixture_constituent.H"
 #include "mixture_rule.H"
 #include <Teuchos_RCPDecl.hpp>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include "../linalg/linalg_fixedsizematrix.H"
+#include <memory>
 
 // forward declarations
 class Epetra_SerialDenseMatrix;
@@ -42,6 +42,7 @@ namespace MIXTURE
 {
   // forward declaration
   class GrowthRemodelMixtureRule;
+  class MixtureConstituent;
 
   namespace PAR
   {

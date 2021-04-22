@@ -103,6 +103,8 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit PrestressStrategy(MIXTURE::PAR::PrestressStrategy* params){};
 
+    virtual ~PrestressStrategy() = default;
+
     /*!
      * @brief Evaluates the prestretch of the constituent
      * @param G (out) :  Prestretch of the constituent
