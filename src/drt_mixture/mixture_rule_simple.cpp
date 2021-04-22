@@ -16,7 +16,7 @@
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
 #include <iosfwd>
-#include "/home/gebauer/work/baci/baci/src/linalg/linalg_fixedsizematrix.H"
+#include "../linalg/linalg_fixedsizematrix.H"
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
