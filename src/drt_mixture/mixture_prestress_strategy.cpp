@@ -16,6 +16,7 @@
 #include "mixture_prestress_strategy_isocyl.H"
 #include "mixture_prestress_strategy_iterative.H"
 #include "../drt_mat/material_service.H"
+#include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_material.H"
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id

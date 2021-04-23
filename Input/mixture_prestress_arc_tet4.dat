@@ -49,8 +49,8 @@ Inner Iteration                 = No
 Outer Iteration StatusTest      = No
 ---------------------------------------------------------------------MATERIALS
 // Units: [m] = 1.0 kg, [l] = 0.1 m, [t] = 1.0 s, [s] = 1.0 days
-MAT 1 MAT_MixtureElastHyper NUMCONST 3 MATIDSCONST 11 12 14 MASSFRAC 0.3 0.1 0.6 MATIDMIXTURERULE 10 DENS 1.0000000000000002
-MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_TYPE 0
+MAT 1 MAT_MixtureElastHyper NUMCONST 3 MATIDSCONST 11 12 14 MATIDMIXTURERULE 10
+MAT 10 MIX_GrowthRemodelMixtureRule GROWTH_TYPE 0 NUMCONST 3 MASSFRAC 0.3 0.1 0.6 DENS 1.0000000000000002
 // Fiber of the cardiomyocytes
 MAT 11 MIX_Constituent_ExplicitRemodelFiber MATID 110 DECAY_TIME 0.0 GROWTH_CONSTANT 1.0 DEPOSITION_STRETCH 0 DEPOSITION_STRETCH_TIMEFUNCT 1 GROWTH_ENABLED false
 MAT 110 ELAST_CoupAnisoExpo K1 1016.6666666666664 K2 29.05 GAMMA 0.0 K1COMP 0.0 K2COMP 1.0 ADAPT_ANGLE No INIT 3 STR_TENS_ID 1000 FIBER_ID 1

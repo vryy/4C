@@ -17,6 +17,7 @@
 #include "../drt_mat/material_service.H"
 #include "../drt_mat/anisotropy_coordinate_system_provider.H"
 #include "mixture_rule.H"
+#include "mixture_rule_growthremodel.H"
 
 MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -41,7 +42,7 @@ MIXTURE::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
 {
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
+void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,
     MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
@@ -83,6 +84,11 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
         "requirement from the prestressing technique.");
   }
 
+  // This prestress strategy is only valid for G&R simulations
+  const auto& growth_remodel_rule =
+      dynamic_cast<const MIXTURE::GrowthRemodelMixtureRule&>(mixtureRule);
+
+
   Teuchos::RCP<const MAT::CylinderCoordinateSystemProvider> cylinderCosy =
       cosy->GetCylinderCoordinateSystem();
 
@@ -102,13 +108,16 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
     r += cylinderCosy->GetRad()(i) * gprefecoord(i);
   }
 
+  double initial_constituent_reference_density =
+      growth_remodel_rule.GetConstituentInitialReferenceMassDensity(constituent);
+
   double Res = 1.0;
   double dResdlamb_pre;
   double lamb_pre = 1. / (params_->circumferential_prestretch_ * params_->axial_prestretch_);
   while (std::abs(Res) > 1.0e-10)
   {
     Res =
-        constituent.InitialConstituentRefDensity() * matiso->Mue() *
+        matiso->Mue() * initial_constituent_reference_density *
             std::pow(params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre,
                 -4. / 3.) *  // TODO: When deriving these equations by hand, I get -2.0 / 3.0. To be
                              //  compatible with the old implementation I decided for now to keep
@@ -118,14 +127,14 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
                     (params_->circumferential_prestretch_ * params_->circumferential_prestretch_ +
                         params_->axial_prestretch_ * params_->axial_prestretch_ +
                         lamb_pre * lamb_pre)) +
-        constituent.InitialConstituentRefDensity() * matvol->Kappa() *
+        matvol->Kappa() * initial_constituent_reference_density *
             ((params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre) *
                     (params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre) -
                 (params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre)) +
         ((1.0 - (r - params_->inner_radius_) / params_->wall_thickness_) * params_->pressure_);
 
     dResdlamb_pre =
-        matiso->Mue() * constituent.InitialConstituentRefDensity() *
+        matiso->Mue() * initial_constituent_reference_density *
             (-(4. / 3.) *
                 std::pow(
                     params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre,
@@ -136,13 +145,13 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(
                     (params_->circumferential_prestretch_ * params_->circumferential_prestretch_ +
                         params_->axial_prestretch_ * params_->axial_prestretch_ +
                         lamb_pre * lamb_pre)) +
-        matiso->Mue() * constituent.InitialConstituentRefDensity() *
+        matiso->Mue() * initial_constituent_reference_density *
             std::pow(params_->circumferential_prestretch_ * params_->circumferential_prestretch_ *
                          params_->axial_prestretch_ * params_->axial_prestretch_ * lamb_pre *
                          lamb_pre,
                 -2. / 3.) *
             (2.0 * lamb_pre - (1. / 3.) * (2.0 * lamb_pre)) +
-        matvol->Kappa() * constituent.InitialConstituentRefDensity() *
+        matvol->Kappa() * initial_constituent_reference_density *
             (2.0 * (params_->circumferential_prestretch_ * params_->axial_prestretch_ * lamb_pre) *
                     params_->circumferential_prestretch_ * params_->axial_prestretch_ -
                 params_->circumferential_prestretch_ * params_->axial_prestretch_);
@@ -188,8 +197,16 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   Acir(4) = 2.0 * cylinderCosy->GetCir()(1) * cylinderCosy->GetCir()(2);
   Acir(5) = 2.0 * cylinderCosy->GetCir()(0) * cylinderCosy->GetCir()(2);
 
+
+  // This prestress strategy is only valid for G&R simulations
+  const auto& growth_remodel_rule =
+      dynamic_cast<const MIXTURE::GrowthRemodelMixtureRule&>(mixtureRule);
+  double initial_constituent_reference_density =
+      growth_remodel_rule.GetConstituentInitialReferenceMassDensity(constituent);
+
   LINALG::Matrix<6, 1> Smembrane(false);
   membraneEvaluation.EvaluateMembraneStress(Smembrane, params, gp, eleGID);
+  Smembrane.Scale(initial_constituent_reference_density);
 
   double total_stress = S_stress.Dot(Acir);      // stress of all constituents in circular direction
   double membrane_stress = Smembrane.Dot(Acir);  // stress of the membrane in circular direction

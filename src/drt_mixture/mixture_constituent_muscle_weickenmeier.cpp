@@ -21,8 +21,8 @@
 
 
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
-    : MixtureConstituent(matdata, ref_mass_fraction),
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent(matdata),
       alpha_(matdata->GetDouble("ALPHA")),
       beta_(matdata->GetDouble("BETA")),
       gamma_(matdata->GetDouble("GAMMA")),
@@ -88,10 +88,11 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
     dserror("ACTTIMESNUM must be one smaller than ACTINTERVALSNUM");
 }
 
-Teuchos::RCP<MIXTURE::MixtureConstituent>
+std::unique_ptr<MIXTURE::MixtureConstituent>
 MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_Muscle_Weickenmeier(this, id));
+  return std::unique_ptr<MIXTURE::MixtureConstituent_Muscle_Weickenmeier>(
+      new MIXTURE::MixtureConstituent_Muscle_Weickenmeier(this, id));
 }
 
 MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weickenmeier(
@@ -120,12 +121,6 @@ MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weick
 INPAR::MAT::MaterialType MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MaterialType() const
 {
   return INPAR::MAT::mix_muscle_weickenmeier;
-}
-
-// Return the current reference mass density of the constituent
-double MIXTURE::MixtureConstituent_Muscle_Weickenmeier::CurrentRefDensity(int gp) const
-{
-  return params_->RefMassFraction() * InitialRefDensity();
 }
 
 // Pack the constituent
@@ -339,8 +334,8 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
 
   // update constituent stress and material tangent with the computed stress and cmat valuess scaled
   // by reference mass density
-  S_stress.Update(CurrentRefDensity(gp), Sc_stress, 1.0);
-  cmat.Update(CurrentRefDensity(gp), ccmat, 1.0);
+  S_stress.Update(1.0, Sc_stress, 1.0);
+  cmat.Update(1.0, ccmat, 1.0);
 }
 
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStress(

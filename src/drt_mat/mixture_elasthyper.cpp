@@ -14,10 +14,7 @@
 
 // constructor of the parameters
 MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : Parameter(matdata),
-      mass_fractions_(matdata->Get<std::vector<double>>("MASSFRAC")),
-      density_(matdata->GetDouble("DENS")),
-      constituents_(0)
+    : Parameter(matdata), constituents_(0)
 {
   const int num_constituents = matdata->GetInt("NUMCONST");
   const auto* constituent_matids = matdata->Get<std::vector<int>>("MATIDSCONST");
@@ -31,31 +28,15 @@ MAT::PAR::Mixture_ElastHyper::Mixture_ElastHyper(const Teuchos::RCP<MAT::PAR::Ma
         num_constituents, constituent_matids->size());
   }
 
-  // check, if the size of the mass fractions fits to the number of constituents
-  if (num_constituents != (int)mass_fractions_->size())
-  {
-    dserror("Number of constituents %d does not fit to the size of the mass fraction vector %d",
-        num_constituents, mass_fractions_->size());
-  }
-
   // Create constituents
   for (int i = 0; i < num_constituents; ++i)
   {
     // Create constituent material
-    MIXTURE::PAR::MixtureConstituent* mix_const =
-        MIXTURE::PAR::MixtureConstituent::Factory((*constituent_matids)[i], (*mass_fractions_)[i]);
-
-    constituents_.emplace_back(mix_const);
+    constituents_.emplace_back(MIXTURE::PAR::MixtureConstituent::Factory((*constituent_matids)[i]));
   }
 
   // Create mixture rule
   mixture_rule_ = MIXTURE::PAR::MixtureRule::Factory(matdata->GetInt("MATIDMIXTURERULE"));
-
-  // check, whether the mass frac sums up to 1
-  double sum = 0.0;
-  for (double massfrac : *mass_fractions_) sum += massfrac;
-
-  if (std::abs(1.0 - sum) > 1e-8) dserror("Mass fractions don't sum up to 1, which is unphysical.");
 }
 
 // Create a material instance from parameters
@@ -78,7 +59,7 @@ DRT::ParObject* MAT::Mixture_ElastHyperType::Create(const std::vector<char>& dat
 // constructor
 MAT::Mixture_ElastHyper::Mixture_ElastHyper()
     : params_(nullptr),
-      constituents_(Teuchos::rcp(new std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>(0))),
+      constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
       setup_(false),
       anisotropy_()
 {
@@ -87,7 +68,7 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper()
 // constructor
 MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params)
     : params_(params),
-      constituents_(Teuchos::rcp(new std::vector<Teuchos::RCP<MIXTURE::MixtureConstituent>>(0))),
+      constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
       setup_(false),
       anisotropy_()
 {
@@ -95,19 +76,15 @@ MAT::Mixture_ElastHyper::Mixture_ElastHyper(MAT::PAR::Mixture_ElastHyper* params
   int id = 0;
   for (auto const& constituent : params_->constituents_)
   {
-    Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent(id);
-    constituents_->emplace_back(Teuchos::rcp_static_cast<MIXTURE::MixtureConstituent>(c));
-    c->SetInitialReferenceDensity(params_->density_);
-    c->RegisterAnisotropyExtensions(anisotropy_);
+    constituents_->emplace_back(constituent->CreateConstituent(id));
+    constituents_->back()->RegisterAnisotropyExtensions(anisotropy_);
 
     ++id;
   }
 
   // create instance of mixture rule
-  mixture_rule_ =
-      Teuchos::rcp_static_cast<MIXTURE::MixtureRule>(params->mixture_rule_->CreateRule());
+  mixture_rule_ = params->mixture_rule_->CreateRule();
   mixture_rule_->SetConstituents(constituents_);
-  mixture_rule_->SetMaterialMassDensity(params_->density_);
   mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
 }
 
@@ -144,7 +121,7 @@ void MAT::Mixture_ElastHyper::Pack(DRT::PackBuffer& data) const
   // constituents are not accessible during post processing
   if (params_ != nullptr)
   {
-    for (auto const& constituent : *constituents_)
+    for (const auto& constituent : *constituents_)
     {
       constituent->PackConstituent(data);
     }
@@ -211,19 +188,16 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       int id = 0;
       for (auto const& constituent : params_->constituents_)
       {
-        Teuchos::RCP<MIXTURE::MixtureConstituent> c = constituent->CreateConstituent(id);
-        c->SetInitialReferenceDensity(params_->density_);
-        constituents_->emplace_back(c);
+        constituents_->emplace_back(constituent->CreateConstituent(id));
 
         ++id;
       }
 
       // create instance of mixture rule
-      mixture_rule_ =
-          Teuchos::rcp_static_cast<MIXTURE::MixtureRule>(params_->mixture_rule_->CreateRule());
+      mixture_rule_ = params_->mixture_rule_->CreateRule();
 
       // make sure the referenced materials in material list have quick access parameters
-      for (auto const& constituent : *constituents_)
+      for (const auto& constituent : *constituents_)
       {
         constituent->UnpackConstituent(position, data);
         constituent->RegisterAnisotropyExtensions(anisotropy_);
@@ -232,7 +206,6 @@ void MAT::Mixture_ElastHyper::Unpack(const std::vector<char>& data)
       // unpack mixturerule
       mixture_rule_->UnpackMixtureRule(position, data);
       mixture_rule_->SetConstituents(constituents_);
-      mixture_rule_->SetMaterialMassDensity(params_->density_);
       mixture_rule_->RegisterAnisotropyExtensions(anisotropy_);
 
       // position checking is not available in post processing mode
@@ -257,7 +230,7 @@ void MAT::Mixture_ElastHyper::Setup(const int numgp, DRT::INPUT::LineDefinition*
   anisotropy_.ReadAnisotropyFromElement(linedef);
 
   // Let all constituents read the line definition
-  for (auto const& constituent : *constituents_)
+  for (const auto& constituent : *constituents_)
   {
     constituent->ReadElement(numgp, linedef);
   }
@@ -270,15 +243,15 @@ void MAT::Mixture_ElastHyper::PostSetup(Teuchos::ParameterList& params, const in
 {
   So3Material::PostSetup(params, eleGID);
   anisotropy_.ReadAnisotropyFromParameterList(params);
-  if (constituents_ != Teuchos::null)
+  if (constituents_ != nullptr)
   {
-    for (auto const& constituent : *constituents_)
+    for (const auto& constituent : *constituents_)
     {
       constituent->Setup(params, eleGID);
     }
   }
 
-  if (mixture_rule_ != Teuchos::null)
+  if (mixture_rule_ != nullptr)
   {
     mixture_rule_->Setup(params, eleGID);
   }
@@ -291,7 +264,7 @@ void MAT::Mixture_ElastHyper::Update(LINALG::Matrix<3, 3> const& defgrd, const i
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
-  for (auto const& constituent : *constituents_)
+  for (const auto& constituent : *constituents_)
   {
     constituent->Update(defgrd, params, gp, eleGID);
   }
@@ -304,7 +277,7 @@ void MAT::Mixture_ElastHyper::UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd
     Teuchos::ParameterList& params, const int eleGID)
 {
   // Update all constituents
-  for (auto const& constituent : *constituents_)
+  for (const auto& constituent : *constituents_)
   {
     constituent->UpdatePrestress(defgrd, params, gp, eleGID);
   }
@@ -322,7 +295,7 @@ void MAT::Mixture_ElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   if (!isPreEvaluated_[gp])
   {
-    for (auto const& constituent : *constituents_)
+    for (const auto& constituent : *constituents_)
     {
       isPreEvaluated_[gp] = true;
       constituent->PreEvaluate(*mixture_rule_, params, gp, eleGID);
@@ -339,7 +312,7 @@ void MAT::Mixture_ElastHyper::RegisterVtkOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   mixture_rule_->RegisterVtkOutputDataNames(names_and_size);
-  for (auto const& constituent : *constituents_)
+  for (const auto& constituent : *constituents_)
   {
     constituent->RegisterVtkOutputDataNames(names_and_size);
   }
@@ -349,7 +322,7 @@ bool MAT::Mixture_ElastHyper::EvaluateVtkOutputData(
     const std::string& name, Epetra_SerialDenseMatrix& data) const
 {
   bool out = mixture_rule_->EvaluateVtkOutputData(name, data);
-  for (auto const& constituent : *constituents_)
+  for (const auto& constituent : *constituents_)
   {
     out = out || constituent->EvaluateVtkOutputData(name, data);
   }

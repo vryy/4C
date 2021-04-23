@@ -16,18 +16,19 @@
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::MixtureConstituent_ElastHyperDamage(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
-    : MixtureConstituent_ElastHyperBase(matdata, ref_mass_fraction),
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent_ElastHyperBase(matdata),
       damage_function_id_(matdata->GetInt("DAMAGE_FUNCT"))
 {
   // nothing to do here
 }
 
 // Create an instance of MIXTURE::MixtureConstituent_ElastHyper from the parameters
-Teuchos::RCP<MIXTURE::MixtureConstituent>
+std::unique_ptr<MIXTURE::MixtureConstituent>
 MIXTURE::PAR::MixtureConstituent_ElastHyperDamage::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyperDamage(this, id));
+  return std::unique_ptr<MIXTURE::MixtureConstituent_ElastHyperDamage>(
+      new MIXTURE::MixtureConstituent_ElastHyperDamage(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
@@ -49,7 +50,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::PackConstituent(DRT::PackBuff
 {
   MixtureConstituent_ElastHyperBase::PackConstituent(data);
 
-  DRT::ParObject::AddtoPack(data, current_reference_density_);
+  DRT::ParObject::AddtoPack(data, current_reference_growth_);
 }
 
 // Unpack the constituent
@@ -58,7 +59,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::UnpackConstituent(
 {
   MixtureConstituent_ElastHyperBase::UnpackConstituent(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, current_reference_density_);
+  DRT::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 }
 
 // Reads the element from the input file
@@ -67,7 +68,7 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::ReadElement(
 {
   MixtureConstituent_ElastHyperBase::ReadElement(numgp, linedef);
 
-  current_reference_density_.resize(numgp, params_->RefMassFraction() * InitialRefDensity());
+  current_reference_growth_.resize(numgp, 1.0);
 }
 
 // Updates all summands
@@ -83,18 +84,16 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::Update(LINALG::Matrix<3, 3> c
     dserror("Parameter 'total time' could not be read!");
   }
 
-  current_reference_density_[gp] = params_->RefMassFraction() * InitialRefDensity() *
-                                   DRT::Problem::Instance()
-                                       ->Funct(params_->damage_function_id_ - 1)
-                                       .Evaluate(0, gprefecoord.A(), totaltime);
+  current_reference_growth_[gp] = DRT::Problem::Instance()
+                                      ->Funct(params_->damage_function_id_ - 1)
+                                      .Evaluate(0, gprefecoord.A(), totaltime);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
 }
 
-// Returns the reference mass fraction of the constituent
-double MIXTURE::MixtureConstituent_ElastHyperDamage::CurrentRefDensity(int gp) const
+double MIXTURE::MixtureConstituent_ElastHyperDamage::GetGrowthScalar(int gp) const
 {
-  return current_reference_density_[gp];
+  return current_reference_growth_[gp];
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperDamage::Evaluate(const LINALG::Matrix<3, 3>& F,
@@ -116,7 +115,4 @@ void MIXTURE::MixtureConstituent_ElastHyperDamage::EvaluateElasticPart(
   // Evaluate 3D elastic part
   MAT::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
-
-  S_stress.Scale(CurrentRefDensity(gp));
-  cmat.Scale(CurrentRefDensity(gp));
 }

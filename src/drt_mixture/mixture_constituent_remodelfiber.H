@@ -34,8 +34,7 @@ namespace MIXTURE
     class MixtureConstituent_RemodelFiber : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituent_RemodelFiber(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+      explicit MixtureConstituent_RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       ~MixtureConstituent_RemodelFiber() override = default;
 
@@ -164,6 +163,8 @@ namespace MIXTURE
      */
     void UpdateFiberPrestress(Teuchos::ParameterList& params, int gp, int eleGID);
 
+    double GetGrowthScalar(int gp) const override;
+
     /*!
      * @brief Evaluates the elastic part of the fiber
      *
@@ -193,16 +194,6 @@ namespace MIXTURE
     void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) override;
-
-    /*!
-     * \brief Returns the current reference mass density
-     *
-     * Due to growth, the reference mass density changes during the simulation.
-     *
-     * \param gp Gauss point
-     * \return double current reference mass density
-     */
-    double CurrentRefDensity(int gp) const override;
 
    protected:
     /*!
@@ -368,8 +359,8 @@ namespace MIXTURE
     /// Growth evolution equation
     Teuchos::RCP<GrowthEvolution> growth_evolution_;
 
-    /// list of current densities of the fiber for each Gauss-point
-    std::vector<double> cur_rho_;
+    /// list of current growth scalars of the fiber for each Gauss-point
+    std::vector<double> cur_growth_scalar_;
 
     /// Current remodel parameter of the fiber for each Gauss-point
     std::vector<double> cur_lambdar_;

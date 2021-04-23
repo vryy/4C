@@ -2609,6 +2609,7 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_constituent_remodelfiber_expl.cpp
   src/drt_mixture/mixture_rule.cpp
   src/drt_mixture/mixture_rule_growthremodel.cpp
+  src/drt_mixture/mixture_rule_simple.cpp
   src/drt_mixture/mixture_prestress_strategy.cpp
   src/drt_mixture/mixture_prestress_strategy_constant.cpp
   src/drt_mixture/mixture_prestress_strategy_isocyl.cpp

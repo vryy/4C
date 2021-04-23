@@ -32,8 +32,7 @@ namespace MIXTURE
     class MixtureConstituent_ElastHyperBase : public MIXTURE::PAR::MixtureConstituent
     {
      public:
-      explicit MixtureConstituent_ElastHyperBase(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+      explicit MixtureConstituent_ElastHyperBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       ~MixtureConstituent_ElastHyperBase() override = default;
 
@@ -129,14 +128,6 @@ namespace MIXTURE
 
     void UpdatePrestress(LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
-
-    /*!
-     * \brief Returns the current reference mass density of the constituent
-     *
-     * @param gp (in) : Gauss point
-     * @return
-     */
-    double CurrentRefDensity(int gp) const override;
 
     /*!
      * \brief Returns a reference to all summands

@@ -276,7 +276,7 @@ namespace INPAR
       mfi_lin_scalar_iso,  ///< volume change due to (isotropic) inelastic deformation gradient is a
                            ///< linear function of the scalar (in material configuration) that
                            ///< causes the volume change
-      mix_rule_base,       ///< Base rule for the mixture model
+      mix_rule_simple,     ///< Simple rule for the mixture model
       mix_rule_growthremodel,            ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder
       mix_prestress_strategy_iterative,  ///< Iterative prestress strategy for any geometry

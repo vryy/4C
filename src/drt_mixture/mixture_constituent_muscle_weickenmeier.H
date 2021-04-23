@@ -26,10 +26,10 @@ namespace MIXTURE
      public:
       /// constructor
       explicit MixtureConstituent_Muscle_Weickenmeier(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+          const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       //@{
@@ -113,9 +113,6 @@ namespace MIXTURE
 
     // Material type
     INPAR::MAT::MaterialType MaterialType() const override;
-
-    // Returns the reference mass density
-    double CurrentRefDensity(int gp) const override;
 
     // Initialize the constituent with the parameters of the input line
     void ReadElement(int numgp, DRT::INPUT::LineDefinition* linedef) override;

@@ -54,6 +54,12 @@ namespace MAT
       const LINALG::Matrix<3, 1>& GetFiber(int gp) const;
       const LINALG::Matrix<3, 3>& GetStructuralTensor(int gp) const override;
       const LINALG::Matrix<6, 1>& GetStructuralTensor_stress(int gp) const override;
+
+      // Tell the compiler that we still want the methods from FiberAnisotropyExtension with a
+      // different signature
+      using FiberAnisotropyExtension<1>::GetFiber;
+      using FiberAnisotropyExtension<1>::GetStructuralTensor;
+      using FiberAnisotropyExtension<1>::GetStructuralTensor_stress;
     };
 
     namespace PAR

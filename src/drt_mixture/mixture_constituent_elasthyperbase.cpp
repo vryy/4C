@@ -20,8 +20,8 @@
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
-    const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
-    : MixtureConstituent(matdata, ref_mass_fraction),
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent(matdata),
       matid_prestress_strategy_(matdata->GetInt("PRESTRESS_STRATEGY")),
       nummat_(matdata->GetInt("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS"))
@@ -174,12 +174,6 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::ReadElement(
   }
 }
 
-// Returns the reference mass fraction of the constituent
-double MIXTURE::MixtureConstituent_ElastHyperBase::CurrentRefDensity(int gp) const
-{
-  return params_->RefMassFraction() * InitialRefDensity();
-}
-
 // Updates all summands
 void MIXTURE::MixtureConstituent_ElastHyperBase::Update(LINALG::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
@@ -221,7 +215,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    params_->PrestressStrategy()->EvaluatePrestress(
+    params_->PrestressStrategy()->EvaluatePrestress(mixtureRule,
         cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
         gp, eleGID);
   }

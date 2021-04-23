@@ -26,13 +26,12 @@ namespace MIXTURE
     class MixtureConstituent_ElastHyper : public MIXTURE::PAR::MixtureConstituent_ElastHyperBase
     {
      public:
-      explicit MixtureConstituent_ElastHyper(
-          const Teuchos::RCP<MAT::PAR::Material>& matdata, double ref_mass_fraction);
+      explicit MixtureConstituent_ElastHyper(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
       ~MixtureConstituent_ElastHyper() override = default;
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
+      std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -92,14 +91,6 @@ namespace MIXTURE
     void EvaluateElasticPart(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<3, 3>& iF_in,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
         int gp, int eleGID) override;
-
-    /*!
-     * \brief Returns the current reference mass density of the constituent
-     *
-     * @param gp (in) : Gauss point
-     * @return
-     */
-    double CurrentRefDensity(int gp) const override;
 
    private:
     MIXTURE::PAR::MixtureConstituent_ElastHyper* params_;

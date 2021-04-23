@@ -89,9 +89,8 @@ MIXTURE::ElastinMembraneAnisotropyExtension::GetOrthogonalStructuralTensor(int g
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane::
-    MixtureConstituent_ElastHyperElastinMembrane(
-        const Teuchos::RCP<MAT::PAR::Material>& matdata, const double ref_mass_fraction)
-    : MixtureConstituent_ElastHyperBase(matdata, ref_mass_fraction),
+    MixtureConstituent_ElastHyperElastinMembrane(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : MixtureConstituent_ElastHyperBase(matdata),
       damage_function_id_(matdata->GetInt("DAMAGE_FUNCT")),
       nummat_membrane_(matdata->GetInt("MEMBRANENUMMAT")),
       matids_membrane_(matdata->Get<std::vector<int>>("MEMBRANEMATIDS"))
@@ -106,10 +105,11 @@ MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane::
 }
 
 // Create an instance of MIXTURE::MixtureConstituent_ElastHyper from the parameters
-Teuchos::RCP<MIXTURE::MixtureConstituent>
+std::unique_ptr<MIXTURE::MixtureConstituent>
 MIXTURE::PAR::MixtureConstituent_ElastHyperElastinMembrane::CreateConstituent(int id)
 {
-  return Teuchos::rcp(new MIXTURE::MixtureConstituent_ElastHyperElastinMembrane(this, id));
+  return std::unique_ptr<MIXTURE::MixtureConstituent_ElastHyperElastinMembrane>(
+      new MIXTURE::MixtureConstituent_ElastHyperElastinMembrane(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
@@ -152,7 +152,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PackConstituent(
 {
   MixtureConstituent_ElastHyperBase::PackConstituent(data);
 
-  DRT::ParObject::AddtoPack(data, current_reference_density_);
+  DRT::ParObject::AddtoPack(data, current_reference_growth_);
 
   DRT::ParObject::AddtoPack(data, mue_frac_);
 
@@ -171,7 +171,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::UnpackConstituent(
 {
   MixtureConstituent_ElastHyperBase::UnpackConstituent(position, data);
 
-  DRT::ParObject::ExtractfromPack(position, data, current_reference_density_);
+  DRT::ParObject::ExtractfromPack(position, data, current_reference_growth_);
 
   DRT::ParObject::ExtractfromPack(position, data, mue_frac_);
 
@@ -200,7 +200,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::ReadElement(
   // Setup summands
   for (const auto& summand : potsum_membrane_) summand->Setup(numgp, linedef);
 
-  current_reference_density_.resize(numgp, params_->RefMassFraction() * InitialRefDensity());
+  current_reference_growth_.resize(numgp, 1.0);
   mue_frac_.resize(numgp, 1.0);
 }
 
@@ -218,21 +218,14 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Update(
     dserror("Parameter 'total time' could not be read!");
   }
 
-  current_reference_density_[gp] = params_->RefMassFraction() * InitialRefDensity() *
-                                   DRT::Problem::Instance()
-                                       ->Funct(params_->damage_function_id_ - 1)
-                                       .Evaluate(0, gprefecoord.A(), totaltime);
+  current_reference_growth_[gp] = DRT::Problem::Instance()
+                                      ->Funct(params_->damage_function_id_ - 1)
+                                      .Evaluate(0, gprefecoord.A(), totaltime);
 
   MixtureConstituent_ElastHyperBase::Update(defgrd, params, gp, eleGID);
 
   // loop map of associated potential summands
   for (auto& summand : potsum_membrane_) summand->Update();
-}
-
-// Returns the reference mass fraction of the constituent
-double MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::CurrentRefDensity(int gp) const
-{
-  return current_reference_density_[gp];
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PreEvaluate(
@@ -256,6 +249,11 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PreEvaluate(
       params, gp, eleGID);
 }
 
+double MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::GetGrowthScalar(int gp) const
+{
+  return current_reference_growth_[gp];
+}
+
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::Evaluate(const LINALG::Matrix<3, 3>& F,
     const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, int gp, int eleGID)
@@ -275,9 +273,6 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateElasticPart(
   // Evaluate 3D elastic part
   MAT::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, Summands(), SummandProperties(), gp, eleGID);
-
-  S_stress.Scale(CurrentRefDensity(gp));
-  cmat.Scale(CurrentRefDensity(gp));
 
   // Evaluate Membrane
   static LINALG::Matrix<6, 1> Smembrane_stress(false);
@@ -339,9 +334,8 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMe
 
   // Compute membrane stress
   static LINALG::Matrix<3, 3> Smembrane;
-  Smembrane.Update(CurrentRefDensity(gp) * mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
-  Smembrane.Update(
-      -CurrentRefDensity(gp) * mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
+  Smembrane.Update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
+  Smembrane.Update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
 
   UTILS::VOIGT::Stresses::MatrixToVector(Smembrane, S_stress);
 
@@ -352,9 +346,9 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateStressCMatMe
   MAT::AddtoCmatHolzapfelProduct(
       dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
 
-  cmat.MultiplyNT(2.0 * CurrentRefDensity(gp) * mue * mue_frac_[gp] / detX,
-      iFinTAorthgrTiXTAorthgriFin_sym_stress, iFinTAorthgrTiXTAorthgriFin_sym_stress, 0.0);
-  cmat.Update(-CurrentRefDensity(gp) * mue * mue_frac_[gp] / detX, dAradgriXAradgr_symdC, 1.0);
+  cmat.MultiplyNT(2.0 * mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym_stress,
+      iFinTAorthgrTiXTAorthgriFin_sym_stress, 0.0);
+  cmat.Update(-mue * mue_frac_[gp] / detX, dAradgriXAradgr_symdC, 1.0);
 }
 
 void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::
