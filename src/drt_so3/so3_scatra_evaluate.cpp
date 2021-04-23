@@ -242,12 +242,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
     LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
     LINALG::Matrix<3, 1>* d_cauchyndir_dxi)
 {
-  const double concentration_gp = DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar);
+  auto scalars = DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar);
   double d_cauchyndir_ds_gp(0.0);
   // call base class
   so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd, nullptr,
       nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, nullptr,
-      nullptr, nullptr, &concentration_gp, &d_cauchyndir_ds_gp);
+      nullptr, nullptr, &scalars[0], &d_cauchyndir_ds_gp);
 
   if (d_cauchyndir_ds != nullptr)
   {

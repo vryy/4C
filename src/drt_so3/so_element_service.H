@@ -73,12 +73,11 @@ namespace DRT
      * @tparam distype        discretization type of element
      * @param xi              position to project to in local coordinates
      * @param nodal_quantity  nodal vector of the quantity to be projected
-     * @return quantity projected to position xi
+     * @return quantities projected to position xi
      */
     template <DRT::Element::DiscretizationType distype>
-    double ProjectNodalQuantityToXi(
+    std::vector<double> ProjectNodalQuantityToXi(
         const LINALG::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
-
   }  // namespace ELEMENTS
 }  // namespace DRT
 
