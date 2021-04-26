@@ -6,6 +6,7 @@
 
 */
 /*----------------------------------------------------------------------*/
+#include <memory>
 
 #include "mixture_elasthyper.H"
 #include "../drt_mat/material_service.H"

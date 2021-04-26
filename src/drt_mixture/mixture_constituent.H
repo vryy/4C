@@ -13,6 +13,7 @@
 #define BACI_MIXTURE_CONSTITUENT_H
 
 #include <unordered_map>
+#include <memory>
 
 #include "../drt_mat/matpar_parameter.H"
 #include "../linalg/linalg_fixedsizematrix.H"
