@@ -69,7 +69,7 @@ MAT 2 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 
 MAT 3 ELAST_CoupNeoHooke YOUNG 1.0e1 NUE 0.0
 MAT 4 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_MolarGrowthFac 1.0e-2 SCALAR1_RefConc 0.0
 MAT 5 MAT_MultiplicativeSplitDefgradElastHyper NUMMATEL 1 MATIDSEL 3 NUMFACINEL 1 INELDEFGRADFACIDS 6 DENS 1.0
-MAT 6 MAT_InelasticDefgradLinScalarIso SCALAR1 1 SCALAR1_MolarGrowthFac 0.0 SCALAR1_RefConc 0.0
+MAT 6 MAT_InelasticDefgradNoGrowth
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 SRC_FIELD structure SRC_MAT 5 TAR_FIELD scatra TAR_MAT 1
