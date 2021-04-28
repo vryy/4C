@@ -98,7 +98,7 @@ namespace DRT
        *\brief Destructor
        *
        */
-      virtual ~LocsysManager(){};
+      virtual ~LocsysManager() = default;
 
       /*!
        *\brief Print this Manager
@@ -141,7 +141,7 @@ namespace DRT
         if (k >= numlocsys_)
         {
           dserror("Invalid vector index");
-          return NULL;
+          return nullptr;
         }
         else
         {
