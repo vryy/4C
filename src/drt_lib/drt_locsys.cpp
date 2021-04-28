@@ -107,464 +107,149 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   // different types of locsys conditions are dominated by the rule "Point
   // above Line above Surface above Volume". When two locsys conditions of
   // the same type are defined for one node, ordering in the input file matters!
+  std::vector<DRT::Condition::ConditionType> geo_hierarchy;
+  geo_hierarchy.emplace_back(DRT::Condition::VolumeLocsys);
+  geo_hierarchy.emplace_back(DRT::Condition::SurfaceLocsys);
+  geo_hierarchy.emplace_back(DRT::Condition::LineLocsys);
+  geo_hierarchy.emplace_back(DRT::Condition::PointLocsys);
 
   //**********************************************************************
-  // read volume locsys conditions
+  // read locsys conditions in given hierarchical order
   //**************************+*******************************************
-  for (int i = 0; i < NumLocsys(); ++i)
+  for (auto geo_level : geo_hierarchy)
   {
-    DRT::Condition* currlocsys = locsysconds_[i];
-
-    if (currlocsys->Type() == DRT::Condition::VolumeLocsys)
+    for (int i = 0; i < NumLocsys(); ++i)
     {
-      typelocsys_[i] = DRT::Condition::VolumeLocsys;
+      DRT::Condition* currlocsys = locsysconds_[i];
 
-      const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
-      const auto* funct = currlocsys->Get<std::vector<int>>("funct");
-      const auto* useUpdatedNodePos = currlocsys->Get<std::vector<int>>("useupdatednodepos");
-      const std::vector<int>* nodes = currlocsys->Nodes();
+      // safety check
+      if (currlocsys->Type() != DRT::Condition::VolumeLocsys and
+          currlocsys->Type() != DRT::Condition::SurfaceLocsys and
+          currlocsys->Type() != DRT::Condition::LineLocsys and
+          currlocsys->Type() != DRT::Condition::PointLocsys)
+        dserror("ERROR: Unknown type of locsys condition!");
 
-      // Check, if we have time dependent locsys conditions (through functions)
-      if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0)) locsysfunct_ = true;
-
-      // Here we have the convention that 2D problems "live" in the global xy-plane.
-      if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
+      if (currlocsys->Type() == geo_level)
       {
-        dserror(
-            "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
-            "z-axis!");
-      }
+        typelocsys_[i] = currlocsys->Type();
 
-      // Check, if the updated node positions shall be used for evaluation of the functions 'funct'
-      Teuchos::RCP<const Epetra_Vector> dispnp;
-      if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
-      {
-        dispnp = Discret().GetState("dispnp");
-        if (dispnp == Teuchos::null)
+        const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
+        const auto* funct = currlocsys->Get<std::vector<int>>("funct");
+        const auto* useUpdatedNodePos = currlocsys->Get<std::vector<int>>("useupdatednodepos");
+
+        const auto* useConsistentNodeNormal =
+            (currlocsys->Type() == DRT::Condition::SurfaceLocsys or
+                currlocsys->Type() == DRT::Condition::LineLocsys)
+                ? currlocsys->Get<std::vector<int>>("useconsistentnodenormal")
+                : nullptr;
+
+        const std::vector<int>* nodes = currlocsys->Nodes();
+
+        if (currlocsys->Type() == DRT::Condition::SurfaceLocsys or
+            currlocsys->Type() == DRT::Condition::LineLocsys)
+        {
+          // Check, if we have time dependent locsys conditions (through functions)
+          if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0) or
+              (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
+            locsysfunct_ = true;
+        }
+        else if (currlocsys->Type() == DRT::Condition::VolumeLocsys or
+                 currlocsys->Type() == DRT::Condition::PointLocsys)
+        {
+          // Check, if we have time dependent locsys conditions (through functions)
+          if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0)) locsysfunct_ = true;
+        }
+
+        // Here we have the convention that 2D problems "live" in the global xy-plane.
+        if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
         {
           dserror(
-              "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
-              "calling the locsys setup.");
+              "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
+              "z-axis!");
         }
-      }
 
-      // Each component j of the pseudo rotation vector that rotates the global xyz system onto the
-      // local system assigned to each node consists of a constant, a time dependent and spatially
-      // variable part: currotangle_j(x,t) = rotangle_j * funct_j(t,x)
-      LINALG::Matrix<3, 1> currotangle;
-      currotangle.Clear();
-
-      for (int nodeGID : *nodes)
-      {
-        bool havenode = Discret().HaveGlobalNode(nodeGID);
-        if (!havenode) continue;
-
-        // Weights of rotations vector due to temporal and spatial function
-        for (int j = 0; j < 3; j++)
+        if ((currlocsys->Type() == DRT::Condition::SurfaceLocsys or
+                currlocsys->Type() == DRT::Condition::LineLocsys) and
+            (*useConsistentNodeNormal)[0] == 1)
+          CalcRotationVectorForNormalSystem(i, time);
+        else
         {
-          // factor given by spatial function
-          double functfac = 1.0;
-          if ((*funct)[j] > 0)
+          // Check, if the updated node positions shall be used for evaluation of the functions
+          // 'funct'
+          Teuchos::RCP<const Epetra_Vector> dispnp;
+          if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
           {
-            DRT::Node* node = Discret().gNode(nodeGID);
-
-            // Determine node position, which shall be used for evaluating the function, and
-            // evaluate it
-            if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
+            dispnp = Discret().GetState("dispnp");
+            if (dispnp == Teuchos::null)
             {
-              // Obtain current displacement for node
-              std::vector<int> lm;
-              Discret().Dof(node, lm);
-
-              std::vector<double> currDisp;
-              currDisp.resize(lm.size());
-
-              DRT::UTILS::ExtractMyValues(*dispnp, currDisp, lm);
-
-              // Calculate current position for node
-              std::vector<double> currPos(Dim());
-              const double* xp = node->X();
-
-              for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
-
-              // Evaluate function with current node position
-              functfac =
-                  (DRT::Problem::Instance()->Funct((*funct)[j] - 1)).Evaluate(j, &currPos[0], 0.0);
-            }
-            else
-            {
-              // Evaluate function with reference node position
-              functfac =
-                  (DRT::Problem::Instance()->Funct((*funct)[j] - 1)).Evaluate(j, node->X(), 0.0);
+              dserror(
+                  "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
+                  "calling the locsys setup.");
             }
           }
-          currotangle(j) = (*rotangle)[j] * functfac;
-        }
 
-        nodalrotvectors_[nodeGID] = currotangle;
+          // Each component j of the pseudo rotation vector that rotates the global xyz system onto
+          // the local system assigned to each node consists of a constant, a time dependent and
+          // spatially variable part: currotangle_j(x,t) = rotangle_j * funct_j(t,x)
+          LINALG::Matrix<3, 1> currotangle(true);
 
-        int indices = nodeGID;
-        double values = i;
-        locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
-      }
-    }
-    else if (currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
-             currlocsys->Type() == DRT::Condition::LineLocsys ||
-             currlocsys->Type() == DRT::Condition::PointLocsys)
-    {
-      // already done
-    }
-    else
-      dserror("ERROR: Unknown type of locsys condition!");
-  }  // end volume locsys
-  //**********************************************************************
-  // read surface locsys conditions
-  //**************************+*******************************************
-  for (int i = 0; i < NumLocsys(); ++i)
-  {
-    DRT::Condition* currlocsys = locsysconds_[i];
-
-    if (currlocsys->Type() == DRT::Condition::SurfaceLocsys)
-    {
-      typelocsys_[i] = DRT::Condition::SurfaceLocsys;
-
-      const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
-      const auto* funct = currlocsys->Get<std::vector<int>>("funct");
-      const auto* useUpdatedNodePos = currlocsys->Get<std::vector<int>>("useupdatednodepos");
-      const auto* useConsistentNodeNormal =
-          currlocsys->Get<std::vector<int>>("useconsistentnodenormal");
-      const std::vector<int>* nodes = currlocsys->Nodes();
-
-      // Check, if we have time dependent locsys conditions (through functions)
-      if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0) or
-          (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
-        locsysfunct_ = true;
-
-      // Here we have the convention that 2D problems "live" in the global xy-plane.
-      if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
-      {
-        dserror(
-            "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
-            "z-axis!");
-      }
-
-      if ((*useConsistentNodeNormal)[0] == 1)
-        CalcRotationVectorForNormalSystem(i, time);
-      else
-      {
-        // Check, if the updated node positions shall be used for evaluation of the functions
-        // 'funct'
-        Teuchos::RCP<const Epetra_Vector> dispnp;
-        if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
-        {
-          dispnp = Discret().GetState("dispnp");
-          if (dispnp == Teuchos::null)
+          for (int nodeGID : *nodes)
           {
-            dserror(
-                "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
-                "calling the locsys setup.");
-          }
-        }
+            bool havenode = Discret().HaveGlobalNode(nodeGID);
+            if (!havenode) continue;
 
-        // Each component j of the pseudo rotation vector that rotates the global xyz system onto
-        // the local system assigned to each node consists of a constant, a time dependent and
-        // spatially variable part: currotangle_j(x,t) = rotangle_j * funct_j(t,x)
-        LINALG::Matrix<3, 1> currotangle;
-        currotangle.Clear();
-
-        for (int nodeGID : *nodes)
-        {
-          bool havenode = Discret().HaveGlobalNode(nodeGID);
-          if (!havenode) continue;
-
-          // Weights of rotations vector due to temporal and spatial function
-          for (int j = 0; j < 3; j++)
-          {
-            // factor given by spatial function
-            double functfac = 1.0;
-            if ((*funct)[j] > 0)
+            // Weights of rotations vector due to temporal and spatial function
+            for (int j = 0; j < 3; j++)
             {
-              DRT::Node* node = Discret().gNode(nodeGID);
-
-              // Determine node position, which shall be used for evaluating the function, and
-              // evaluate it
-              if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
+              // factor given by spatial function
+              double functfac = 1.0;
+              if ((*funct)[j] > 0)
               {
-                // Obtain current displacement for node
-                std::vector<int> lm;
-                Discret().Dof(node, lm);
+                DRT::Node* node = Discret().gNode(nodeGID);
 
-                std::vector<double> currDisp;
-                currDisp.resize(lm.size());
+                // Determine node position, which shall be used for evaluating the function, and
+                // evaluate it
+                if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
+                {
+                  // Obtain current displacement for node
+                  std::vector<int> lm;
+                  Discret().Dof(node, lm);
 
-                DRT::UTILS::ExtractMyValues(*dispnp, currDisp, lm);
+                  std::vector<double> currDisp;
+                  currDisp.resize(lm.size());
 
-                // Calculate current position for node
-                std::vector<double> currPos(Dim());
-                const double* xp = node->X();
+                  DRT::UTILS::ExtractMyValues(*dispnp, currDisp, lm);
 
-                for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
+                  // Calculate current position for node
+                  std::vector<double> currPos(Dim());
+                  const double* xp = node->X();
 
-                // Evaluate function with current node position
-                functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
-                               .Evaluate(j, &currPos[0], 0.0);
+                  for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
+
+                  // Evaluate function with current node position
+                  functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
+                                 .Evaluate(j, &currPos[0], 0.0);
+                }
+                else
+                {
+                  // Evaluate function with reference node position
+                  functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
+                                 .Evaluate(j, node->X(), 0.0);
+                }
               }
-              else
-              {
-                // Evaluate function with reference node position
-                functfac =
-                    (DRT::Problem::Instance()->Funct((*funct)[j] - 1)).Evaluate(j, node->X(), 0.0);
-              }
+              currotangle(j) = (*rotangle)[j] * functfac;
             }
-            currotangle(j) = (*rotangle)[j] * functfac;
-          }
 
-          nodalrotvectors_[nodeGID] = currotangle;
+            nodalrotvectors_[nodeGID] = currotangle;
 
-          int indices = nodeGID;
-          double values = i;
-          locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
-        }
-      }
-    }
-    else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
-             currlocsys->Type() == DRT::Condition::LineLocsys ||
-             currlocsys->Type() == DRT::Condition::PointLocsys)
-    {
-      // already done
-    }
-    else
-      dserror("ERROR: Unknown type of locsys condition!");
-  }  // end surface locsys
-
-  //**********************************************************************
-  // read line locsys conditions
-  //**********************************************************************
-  for (int i = 0; i < NumLocsys(); ++i)
-  {
-    DRT::Condition* currlocsys = locsysconds_[i];
-
-    if (currlocsys->Type() == DRT::Condition::LineLocsys)
-    {
-      typelocsys_[i] = DRT::Condition::LineLocsys;
-
-      const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
-      const auto* funct = currlocsys->Get<std::vector<int>>("funct");
-      const auto* useUpdatedNodePos = currlocsys->Get<std::vector<int>>("useupdatednodepos");
-      const auto* useConsistentNodeNormal =
-          currlocsys->Get<std::vector<int>>("useconsistentnodenormal");
-      const std::vector<int>* nodes = currlocsys->Nodes();
-
-      // Check, if we have time dependent locsys conditions (through functions)
-      if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0) or
-          (((*useConsistentNodeNormal)[0] == 1) and ((*useUpdatedNodePos)[0] == 1)))
-        locsysfunct_ = true;
-
-      // Here we have the convention that 2D problems "live" in the global xy-plane.
-      if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
-      {
-        dserror(
-            "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
-            "z-axis!");
-      }
-
-      if ((*useConsistentNodeNormal)[0] == 1)
-        CalcRotationVectorForNormalSystem(i, time);
-      else
-      {
-        // Check, if the updated node positions shall be used for evaluation of the functions
-        // 'funct'
-        Teuchos::RCP<const Epetra_Vector> dispnp;
-        if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
-        {
-          dispnp = Discret().GetState("dispnp");
-          if (dispnp == Teuchos::null)
-          {
-            dserror(
-                "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
-                "calling the locsys setup.");
+            int indices = nodeGID;
+            double values = i;
+            locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
           }
         }
-
-        // Each component j of the pseudo rotation vector that rotates the global xyz system onto
-        // the local system assigned to each node consists of a constant, a time dependent and
-        // spatially variable part: currotangle_j(x,t) = rotangle_j * funct_j(t,x)
-        LINALG::Matrix<3, 1> currotangle;
-        currotangle.Clear();
-
-        for (int nodeGID : *nodes)
-        {
-          bool havenode = Discret().HaveGlobalNode(nodeGID);
-          if (!havenode) continue;
-
-          // Weights of rotations vector due to temporal and spatial function
-          for (int j = 0; j < 3; j++)
-          {
-            // factor given by spatial function
-            double functfac = 1.0;
-            if ((*funct)[j] > 0)
-            {
-              DRT::Node* node = Discret().gNode(nodeGID);
-
-              // Determine node position, which shall be used for evaluating the function, and
-              // evaluate it
-              if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
-              {
-                // Obtain current displacement for node
-                std::vector<int> lm;
-                Discret().Dof(node, lm);
-
-                std::vector<double> currDisp;
-                currDisp.resize(lm.size());
-
-                DRT::UTILS::ExtractMyValues(*dispnp, currDisp, lm);
-
-                // Calculate current position for node
-                std::vector<double> currPos(Dim());
-                const double* xp = node->X();
-
-                for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
-
-                // Evaluate function with current node position
-                functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
-                               .Evaluate(j, &currPos[0], 0.0);
-              }
-              else
-              {
-                // Evaluate function with reference node position
-                functfac =
-                    (DRT::Problem::Instance()->Funct((*funct)[j] - 1)).Evaluate(j, node->X(), 0.0);
-              }
-            }
-            currotangle(j) = (*rotangle)[j] * functfac;
-          }
-
-          nodalrotvectors_[nodeGID] = currotangle;
-
-          int indices = nodeGID;
-          double values = i;
-          locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
-        }
       }
     }
-    else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
-             currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
-             currlocsys->Type() == DRT::Condition::PointLocsys)
-    {
-      // already done
-    }
-    else
-      dserror("ERROR: Unknown type of locsys condition!");
-  }  // end line locsys
-
-  //**********************************************************************
-  // read point locsys conditions
-  //**********************************************************************
-  for (int i = 0; i < NumLocsys(); ++i)
-  {
-    DRT::Condition* currlocsys = locsysconds_[i];
-
-    if (currlocsys->Type() == DRT::Condition::PointLocsys)
-    {
-      typelocsys_[i] = DRT::Condition::PointLocsys;
-
-      const auto* rotangle = currlocsys->Get<std::vector<double>>("rotangle");
-      const auto* funct = currlocsys->Get<std::vector<int>>("funct");
-      const auto* useUpdatedNodePos = currlocsys->Get<std::vector<int>>("useupdatednodepos");
-      const std::vector<int>* nodes = currlocsys->Nodes();
-
-      // Check, if we have time dependent locsys conditions (through functions)
-      if (((*funct)[0] > 0 or (*funct)[1] > 0 or (*funct)[2] > 0)) locsysfunct_ = true;
-
-      // Here we have the convention that 2D problems "live" in the global xy-plane.
-      if (Dim() == 2 and ((*rotangle)[0] != 0 or (*rotangle)[1] != 0))
-      {
-        dserror(
-            "For 2D problems (xy-plane) the vector ROTANGLE has to be parallel to the global "
-            "z-axis!");
-      }
-
-      // Check, if the updated node positions shall be used for evaluation of the functions 'funct'
-      Teuchos::RCP<const Epetra_Vector> dispnp;
-      if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
-      {
-        dispnp = Discret().GetState("dispnp");
-        if (dispnp == Teuchos::null)
-        {
-          dserror(
-              "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
-              "calling the locsys setup.");
-        }
-      }
-
-      // Each component j of the pseudo rotation vector that rotates the global xyz system onto the
-      // local system assigned to each node consists of a constant, a time dependent and spatially
-      // variable part: currotangle_j(x,t) = rotangle_j * funct_j(t,x)
-      LINALG::Matrix<3, 1> currotangle(true);
-
-      for (int nodeGID : *nodes)
-      {
-        bool havenode = Discret().HaveGlobalNode(nodeGID);
-        if (!havenode) continue;
-
-        // Weights of rotations vector due to temporal and spatial function
-        for (int j = 0; j < 3; j++)
-        {
-          // factor given by spatial function
-          double functfac = 1.0;
-          if ((*funct)[j] > 0)
-          {
-            DRT::Node* node = Discret().gNode(nodeGID);
-
-            // Determine node position, which shall be used for evaluating the function, and
-            // evaluate it
-            if (((*useUpdatedNodePos)[0] == 1) && (time >= 0.0))
-            {
-              // Obtain current displacement for node
-              std::vector<int> lm;
-              Discret().Dof(node, lm);
-
-              std::vector<double> currDisp;
-              currDisp.resize(lm.size());
-
-              DRT::UTILS::ExtractMyValues(*dispnp, currDisp, lm);
-
-              // Calculate current position for node
-              std::vector<double> currPos(Dim());
-              const double* xp = node->X();
-
-              for (int dim = 0; dim < Dim(); ++dim) currPos[dim] = xp[dim] + currDisp[dim];
-
-              // Evaluate function with current node position
-              functfac =
-                  (DRT::Problem::Instance()->Funct((*funct)[j] - 1)).Evaluate(j, &currPos[0], 0.0);
-            }
-            else
-            {
-              // Evaluate function with reference node position
-              functfac =
-                  (DRT::Problem::Instance()->Funct((*funct)[j] - 1)).Evaluate(j, node->X(), 0.0);
-            }
-          }
-          currotangle(j) = (*rotangle)[j] * functfac;
-        }
-
-        nodalrotvectors_[nodeGID] = currotangle;
-
-        int indices = nodeGID;
-        double values = i;
-        locsystoggle_->ReplaceGlobalValues(1, &values, &indices);
-      }
-    }
-    else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
-             currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
-             currlocsys->Type() == DRT::Condition::LineLocsys)
-    {
-      // already done
-    }
-    else
-      dserror("ERROR: Unknown type of locsys condition!");
-  }  // end point locsys
+  }
 
   if (time < 0.0) Print();
 
