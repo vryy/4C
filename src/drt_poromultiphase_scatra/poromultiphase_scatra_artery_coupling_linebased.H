@@ -11,7 +11,7 @@
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_
 
-#include "poromultiphase_scatra_artery_coupling_base.H"
+#include "poromultiphase_scatra_artery_coupling_nonconforming.H"
 #include "../drt_inpar/inpar_bio.H"
 
 #include <Epetra_Time.h>
@@ -34,7 +34,7 @@ namespace POROMULTIPHASESCATRA
   class PoroMultiPhaseScatraArteryCouplingPairBase;
 
   //! Line based coupling between artery network and poromultiphasescatra algorithm
-  class PoroMultiPhaseScaTraArtCouplLineBased : public PoroMultiPhaseScaTraArtCouplBase
+  class PoroMultiPhaseScaTraArtCouplLineBased : public PoroMultiPhaseScaTraArtCouplNonConforming
   {
    public:
     /// create using a Epetra_Comm
@@ -46,20 +46,6 @@ namespace POROMULTIPHASESCATRA
     /// virtual destructor
     virtual ~PoroMultiPhaseScaTraArtCouplLineBased() {}
 
-    // check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art) override;
-
-    //! access artery (1D) dof row map
-    Teuchos::RCP<const Epetra_Map> ArteryDofRowMap() const override;
-
-    //! access full dof row map
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
-
-    //! Evaluate the 1D-3D coupling
-    void Evaluate(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs) override;
-
     //! set-up of global system of equations of coupled problem
     void SetupSystem(Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<LINALG::SparseMatrix> sysmat_cont,
@@ -67,32 +53,6 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const Epetra_Vector> rhs_art,
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const LINALG::MapExtractor> dbcmap_art) override;
-
-    /// setup global vector
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
-    void SetupVector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art) override;
-
-    /// extract single field vectors
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
-    void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
-        Teuchos::RCP<const Epetra_Vector>& vec_cont,
-        Teuchos::RCP<const Epetra_Vector>& vec_art) override;
-
-    //! set solution of fields
-    void SetSolutionVectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
-        Teuchos::RCP<const Epetra_Vector> phin_cont,
-        Teuchos::RCP<const Epetra_Vector> phinp_art) override;
-
-    //! set the element pairs that are close as found by search algorithm
-    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
-
-    /// init the strategy
-    void Init() override;
 
     /// setup the strategy
     void Setup() override;
@@ -104,9 +64,6 @@ namespace POROMULTIPHASESCATRA
     Teuchos::RCP<const Epetra_Vector> BloodVesselVolumeFraction() override;
 
    private:
-    //! create interaction pairs
-    void CreateCouplingPairs();
-
     //! pre-evaluate the pairs
     void PreEvaluateCouplingPairs();
 
@@ -128,15 +85,14 @@ namespace POROMULTIPHASESCATRA
             POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         std::map<int, std::vector<double>>& gid_to_seglength);
 
-    //! evaluate the pairs
-    void EvaluateCouplingPairs(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
-
     //! set the artery diameter in column based vector
     void FillArteryEleDiamCol();
 
     //! set the artery diameter in material to be able to use it on 1D discretization
-    void SetArteryDiamInMaterial();
+    void SetArteryDiamInMaterial() override;
+
+    //! reset the integrated diameter vector to zero
+    void ResetIntegratedDiamToZero() override;
 
     /**
      * Utility function for depth-first search for the connected components of the 1D artery
@@ -164,7 +120,7 @@ namespace POROMULTIPHASESCATRA
 
     //! evaluate additional linearization of (integrated) element diameter dependent terms
     //! (Hagen-Poiseuille)
-    void EvaluateAdditionalLinearizationofIntegratedDiam();
+    void EvaluateAdditionalLinearizationofIntegratedDiam() override;
 
     /*!
      * apply additional dirichlet boundary conditions of zero pressure or mass fraction on nodes
@@ -185,22 +141,11 @@ namespace POROMULTIPHASESCATRA
     void FEAssembleEleForceStiffIntoSystemVectorMatrix(const int& ele1gid, const int& ele2gid,
         const double& integrated_diam, std::vector<LINALG::SerialDenseVector> const& elevec,
         std::vector<std::vector<LINALG::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
-
-    //! FE-assemble into D, M and kappa (MP case)
-    void FEAssembleDMKappa(const int& ele1gid, const int& ele2gid,
-        const LINALG::SerialDenseMatrix& D_ele, const LINALG::SerialDenseMatrix& M_ele,
-        const LINALG::SerialDenseVector& Kappa_ele);
-
-    //! sum D and M into global force and stiffness matrix
-    void SumDMIntoGlobalForceStiff(
-        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
-
-    //! invert kappa
-    void InvertKappa();
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Epetra_Vector> rhs) override;
 
     //! get the segment lengths of element 'artelegid'
-    std::vector<double> GetEleSegmentLengths(const int artelegid);
+    std::vector<double> GetEleSegmentLengths(const int artelegid) override;
 
     //! check for duplicates
     bool IsDuplicateSegment(
@@ -215,88 +160,14 @@ namespace POROMULTIPHASESCATRA
             POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         const int& ele1gid, const double& etaA, const double& etaB, int& elepairID);
 
-    //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>
-    CreateNewArteryCouplingPair(std::vector<DRT::Element const*> const& ele_ptrs);
+    //! set flag if varying diameter has to be calculated
+    void SetVaryingDiamFlag() override;
 
     //! print output of mesh tying pairs
     void OutputSummary() const;
 
-    //! set flag if varying diameter has to be calculated
-    void SetVaryingDiamFlag();
-
-    //! fill the vectors
-    void FillFunctionAndScaleVectors();
-
-    //! set the right-hand side factor for time integration
-    void SetTimeFacRhs();
-
     //! print out the coupling method
-    void PrintOutCouplingMethod() const;
-
-    //! the parameters
-    const Teuchos::ParameterList& couplingparams_;
-
-    //! have the managers been set?
-    bool porofluidmanagersset_;
-
-    //! has Setup() been called
-    bool issetup_;
-
-    //! is it a pure fluid problem
-    bool porofluidprob_;
-
-    //! does it have a varying (by-function)-diameter
-    bool has_varying_diam_;
-
-    //! flag to determine if 'free-hanging' elements should be deleted
-    bool delete_free_hanging_eles_;
-
-    //! right hand side factor for artery time integration
-    double timefacrhs_art_;
-    //! right hand side factor for time integration of 2D/3D discretization
-    double timefacrhs_cont_;
-
-    //! small connected components whose size is smaller than this fraction of the overall network
-    //! size are additionally deleted (even if they have a Dirichlet boundary condition)
-    double delete_free_hanging_eles_threshold_;
-
-    //! result of brute force search
-    std::map<int, std::set<int>> nearbyelepairs_;
-
-    //! interacting pairs of artery and continuous-discretization elements
-    std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>
-        coupl_elepairs_;
-
-    //! phinp for continuous dis
-    Teuchos::RCP<const Epetra_Vector> phinp_cont_;
-
-    //! phin for continuous dis
-    Teuchos::RCP<const Epetra_Vector> phin_cont_;
-
-    //! phinp for artery dis
-    Teuchos::RCP<const Epetra_Vector> phinp_art_;
-
-    //! zeros for continuous dis
-    Teuchos::RCP<const Epetra_Vector> zeros_cont_;
-
-    //! zeros for artery dis
-    Teuchos::RCP<const Epetra_Vector> zeros_art_;
-
-    //! scale and function-vector
-    std::vector<std::vector<int>> scale_vec_;
-    std::vector<std::vector<int>> funct_vec_;
-
-    //! type of coupling method
-    INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod coupling_method_;
-
-    //! mortar coupling matrices
-    Teuchos::RCP<LINALG::SparseMatrix> D_;
-    Teuchos::RCP<LINALG::SparseMatrix> M_;
-    Teuchos::RCP<Epetra_FEVector> kappaInv_;
-
-    //! penalty parameter
-    double pp_;
+    void PrintOutCouplingMethod() const override;
 
     //! maximum number of segments per artery element
     int maxnumsegperartele_;
@@ -332,17 +203,7 @@ namespace POROMULTIPHASESCATRA
     //  of artery elements in column format, i.e. fully overlapping (only used for
     //  porofluid-problems)
     std::map<int, std::vector<double>> gid_to_seglength_;
-
-    //! timer for measurement of duration of brute force search
-    Epetra_Time timersearch_;
-
-    //! coupling matrix (FE)
-    Teuchos::RCP<LINALG::SparseMatrix> FEmat_;
-
-    //! coupling rhs-vector (FE)
-    Teuchos::RCP<Epetra_FEVector> FErhs_;
   };
-
 }  // namespace POROMULTIPHASESCATRA
 
 #endif /* SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H_ */

@@ -30,7 +30,7 @@ namespace POROMULTIPHASESCATRA
    public:
     // constructor
     PoroMultiPhaseScaTraArtCouplBase(Teuchos::RCP<DRT::Discretization> arterydis,
-        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
+        Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
         const std::string& condname, const std::string& artcoupleddofname,
         const std::string& contcoupleddofname);
 
