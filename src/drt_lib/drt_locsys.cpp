@@ -228,13 +228,13 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
                   // Evaluate function with current node position
                   functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
-                                 .Evaluate(j, &currPos[0], 0.0);
+                                 .Evaluate(j, &currPos[0], time);
                 }
                 else
                 {
                   // Evaluate function with reference node position
                   functfac = (DRT::Problem::Instance()->Funct((*funct)[j] - 1))
-                                 .Evaluate(j, node->X(), 0.0);
+                                 .Evaluate(j, node->X(), time);
                 }
               }
               currotangle(j) = (*rotangle)[j] * functfac;
