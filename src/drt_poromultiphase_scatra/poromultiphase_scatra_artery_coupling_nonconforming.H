@@ -15,11 +15,9 @@
 
 // forward declaration
 class Epetra_FEVector;
-class Epetra_IntVector;
 namespace DRT
 {
   class Element;
-  class PoromultiphaseScatraArteryCouplingExchangeManager;
 }  // namespace DRT
 namespace LINALG
 {

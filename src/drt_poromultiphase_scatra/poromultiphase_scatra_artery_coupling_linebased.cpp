@@ -9,20 +9,12 @@
  *----------------------------------------------------------------------*/
 
 #include "poromultiphase_scatra_artery_coupling_linebased.H"
-#include "../drt_lib/drt_utils_parallel.H"
-#include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_serialdensevector.H"
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
 
 #include "../drt_porofluidmultiphase/porofluidmultiphase_utils.H"
-#include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
-#include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
-#include "../linalg/linalg_multiply.H"
-#include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_densematrix_communication.H"
-#include "../linalg/linalg_utils_sparse_algebra_print.H"
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 #include "poromultiphase_scatra_artery_coupling_defines.H"
 #include "../drt_mat/cnst_1d_art.H"
@@ -186,7 +178,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::GetAdditionalDBCFor
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased::PreEvaluateCouplingPairs()
 {
   // pre-evaluate
-  for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->PreEvaluate();
+  for (unsigned i = 0; i < coupl_elepairs_.size(); i++)
+    coupl_elepairs_[i]->PreEvaluate(Teuchos::null);
 
   // delete the inactive and duplicate pairs
   std::vector<Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPairBase>>

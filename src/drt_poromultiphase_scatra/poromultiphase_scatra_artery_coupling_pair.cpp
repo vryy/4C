@@ -29,6 +29,8 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_element_integration_select.H"
 
+#include <Epetra_IntMultiVector.h>
+
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 05/18 |
  *----------------------------------------------------------------------*/
@@ -60,6 +62,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
       numscalart_(0),
       nds_porofluid_(-1),
       n_gp_(0),
+      n_gp_per_patch_(0),
       arteryelelengthref_(0.0),
       arteryelelength_(0.0),
       jacobi_(0.0),
@@ -429,12 +432,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::PreEvaluate()
+    distypeCont>::PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector)
 {
   if (!isinit_) dserror("MeshTying Pair has not yet been initialized");
 
   if (evaluate_on_lateral_surface_)
-    PreEvaluateLateralSurfaceCoupling();
+    PreEvaluateLateralSurfaceCoupling(gp_vector);
   else
     PreEvaluateCenterlineCoupling();
 
@@ -448,8 +451,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::PreEvaluateLateralSurfaceCoupling()
+    distypeCont>::PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_IntMultiVector> gp_vector)
 {
+  const int pid = DRT::Problem::Instance()->GetDis("artery")->Comm().MyPID();
+  const int mylid = element1_->LID();
+  if (element2_->Owner() != pid) return;
+
   // unit radial basis vectors
   double unit_rad_1[3];
   double unit_rad_2[3];
@@ -484,7 +491,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   // we use always 25 integration points per integration patch
   DRT::UTILS::IntegrationPoints2D gaussPointsperPatch =
       DRT::UTILS::IntegrationPoints2D(DRT::UTILS::GaussRule2D::intrule_quad_25point);
-  const int ngp = gaussPointsperPatch.nquad;
+  n_gp_per_patch_ = gaussPointsperPatch.nquad;
+  n_gp_ = n_gp_per_patch_ * numpatch_axi_ * numpatch_rad_;
+  // define Gauss points and n_gp-sized quantities
+  eta_.resize(n_gp_);
+  eta_s_.resize(n_gp_);
+  wgp_.resize(n_gp_);
+  xi_.resize(n_gp_);
+  for (int i_gp = 0; i_gp < n_gp_; i_gp++) xi_[i_gp].resize(numdim_);
 
   // loop over all axial patches
   for (int i_ax = 0; i_ax < numpatch_axi_; i_ax++)
@@ -493,8 +507,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     for (int i_rad = 0; i_rad < numpatch_rad_; i_rad++)
     {
       // loop over all GPs of this patch
-      for (int i_gp = 0; i_gp < ngp; i_gp++)
+      for (int i_gp = 0; i_gp < n_gp_per_patch_; i_gp++)
       {
+        const int gpid = i_ax * numpatch_rad_ * n_gp_per_patch_ + i_rad * n_gp_per_patch_ + i_gp;
         // axial Gauss point eta lies in [-1; 1]
         double eta = -1.0 - 1.0 / numpatch_axi_ + (i_ax + 1.0) * 2.0 / numpatch_axi_ +
                      gaussPointsperPatch.qxg[i_gp][0] * 1.0 / numpatch_axi_;
@@ -516,17 +531,27 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
         // project into 3D domain
         bool projection_valid = false;
         Projection<double>(r1, xi, projection_valid);
-        if (projection_valid)
+        eta_[gpid] = eta;
+        xi_[gpid] = xi;
+        if (projection_valid && ((*gp_vector)[gpid])[mylid] < 0.5)
         {
           isactive_ = true;
-          n_gp_++;
-          eta_.push_back(eta);
           // include jacobian
-          wgp_.push_back(gaussPointsperPatch.qwgt[i_gp] * patch_size / 4.0);
-          xi_.push_back(xi);
+          wgp_[gpid] = gaussPointsperPatch.qwgt[i_gp] * patch_size / 4.0;
+          gp_vector->SumIntoMyValue(mylid, gpid, 1);
         }
+        else
+          wgp_[gpid] = 0.0;
       }
     }
+  }
+
+  // free memory
+  if (not isactive_)
+  {
+    std::vector<double>().swap(eta_);
+    std::vector<double>().swap(wgp_);
+    std::vector<std::vector<double>>().swap(xi_);
   }
 }
 
@@ -604,6 +629,45 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
     invJ_[i_gp].MultiplyNT(N2_xi, ele2pos_);
     invJ_[i_gp].Invert();
   }
+}
+
+/*----------------------------------------------------------------------*
+ | pre-evaluate                                        kremheller 05/18 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
+void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
+    distypeCont>::DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector)
+{
+  const int mylid = element1_->LID();
+  n_gp_ = 0;
+  for (int igp = 0; igp < n_gp_per_patch_ * numpatch_axi_ * numpatch_rad_; igp++)
+    if (wgp_[igp] > 1e-12) n_gp_++;
+
+  std::vector<double> wgp(n_gp_);
+  std::vector<double> eta(n_gp_);
+  std::vector<std::vector<double>> xi(n_gp_);
+
+  int mygp = 0;
+  for (int igp = 0; igp < n_gp_per_patch_ * numpatch_axi_ * numpatch_rad_; igp++)
+  {
+    if (wgp_[igp] > 1e-12)
+    {
+      const double scale = 1.0 / ((*gp_vector)[igp])[mylid];
+      eta[mygp] = eta_[igp];
+      xi[mygp] = xi_[igp];
+      wgp[mygp] = wgp_[igp] * scale;
+      mygp++;
+    }
+  }
+  if (n_gp_ == 0)
+    isactive_ = false;
+  else
+    isactive_ = true;
+
+  // overwrite
+  wgp_ = wgp;
+  eta_ = eta;
+  xi_ = xi;
 }
 
 /*----------------------------------------------------------------------*

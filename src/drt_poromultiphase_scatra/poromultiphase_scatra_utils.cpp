@@ -13,6 +13,7 @@
 
 #include "poromultiphase_scatra_artery_coupling_nodebased.H"
 #include "poromultiphase_scatra_artery_coupling_linebased.H"
+#include "poromultiphase_scatra_artery_coupling_surfbased.H"
 
 #include "../drt_poromultiphase/poromultiphase_utils.H"
 #include "../drt_art_net/art_net_utils.H"
@@ -91,7 +92,8 @@ Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase>
 POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
     Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
     const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
-    const std::string& artcoupleddofname, const std::string& contcoupleddofname)
+    const std::string& artcoupleddofname, const std::string& contcoupleddofname,
+    const bool evaluate_on_lateral_surface)
 {
   // Creation of coupling strategy.
   Teuchos::RCP<POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase> strategy;
@@ -105,8 +107,12 @@ POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
     {
-      strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased(
-          arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
+      if (evaluate_on_lateral_surface)
+        strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased(
+            arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
+      else
+        strategy = Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplLineBased(
+            arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
       break;
     }
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::nodal:

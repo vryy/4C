@@ -14,20 +14,8 @@
 #include "poromultiphase_scatra_artery_coupling_nonconforming.H"
 #include "../drt_inpar/inpar_bio.H"
 
-#include <Epetra_Time.h>
-
 // forward declaration
-class Epetra_FEVector;
 class Epetra_IntVector;
-namespace DRT
-{
-  class Element;
-  class PoromultiphaseScatraArteryCouplingExchangeManager;
-}  // namespace DRT
-namespace LINALG
-{
-  class SerialDenseVector;
-}
 namespace POROMULTIPHASESCATRA
 {
   // forward declaration

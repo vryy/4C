@@ -65,10 +65,12 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
   }
 
+  const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
+      poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
   // initialize mesh tying object
   arttoporofluidcoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
       arterydis_, porofluidmultitimint->Discretization(), poroparams.sublist("ARTERY COUPLING"),
-      "ArtPorofluidCouplCon", "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO");
+      "ArtPorofluidCouplCon", "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 
   // Initialize rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*arttoporofluidcoupling_->FullMap(), true));

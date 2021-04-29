@@ -132,7 +132,6 @@ namespace POROMULTIPHASESCATRA
     //  configuration
     bool evaluate_in_ref_config_;
 
-   private:
     /// communication (mainly for screen output)
     const Epetra_Comm& comm_;
   };

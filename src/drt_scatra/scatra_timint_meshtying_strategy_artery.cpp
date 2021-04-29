@@ -77,10 +77,14 @@ void SCATRA::MeshtyingStrategyArtery::InitMeshtying()
     std::cout << "< ScaTra-Coupling with 1D Artery Network activated >" << std::endl;
   }
 
+  const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
+      DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+      "LATERAL_SURFACE_COUPLING");
+
   // init the mesh tying object, which does all the work
   arttoscatracoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
       artscatradis_, scatradis_, myscatraparams.sublist("ARTERY COUPLING"), "ArtScatraCouplCon",
-      "COUPLEDDOFS_ARTSCATRA", "COUPLEDDOFS_SCATRA");
+      "COUPLEDDOFS_ARTSCATRA", "COUPLEDDOFS_SCATRA", evaluate_on_lateral_surface);
 
   InitializeLinearSolver(myscatraparams);
 

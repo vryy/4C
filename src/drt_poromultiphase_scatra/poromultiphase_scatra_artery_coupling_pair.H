@@ -27,6 +27,7 @@
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration
+class Epetra_IntMultiVector;
 namespace DRT
 {
   class Element;
@@ -70,7 +71,11 @@ namespace POROMULTIPHASESCATRA
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void PreEvaluate() = 0;
+    virtual void PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) = 0;
+
+    //! things that need to be done in a separate loop before the actual evaluation loop
+    //! over all coupling pairs
+    virtual void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) = 0;
 
     //! evaluate this pair (return integral of diameter of the segment)
     virtual double Evaluate(LINALG::SerialDenseVector* forcevec1,
@@ -160,7 +165,11 @@ namespace POROMULTIPHASESCATRA
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void PreEvaluate() override;
+    void PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) override;
+
+    //! things that need to be done in a separate loop before the actual evaluation loop
+    //! over all coupling pairs
+    void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) override;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
@@ -231,7 +240,7 @@ namespace POROMULTIPHASESCATRA
         const double& timefacrhs_art, const double& timefacrhs_cont);
 
     //! pre-evaluate for lateral surface coupling
-    void PreEvaluateLateralSurfaceCoupling();
+    void PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_IntMultiVector> gp_vector);
 
     //! pre-evaluate for centerline coupling
     void PreEvaluateCenterlineCoupling();
@@ -521,6 +530,10 @@ namespace POROMULTIPHASESCATRA
 
     //! stores the number of Gauss points for that element
     int n_gp_;
+
+    //! stores the number of Gauss points for that element per patch (only required for
+    //! surface-based formulation)
+    int n_gp_per_patch_;
 
     //! stores the artery element length in reference configuration
     double arteryelelengthref_;
