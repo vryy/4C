@@ -95,12 +95,6 @@ namespace DRT
       void Setup(const double time);
 
       /*!
-       *\brief Destructor
-       *
-       */
-      virtual ~LocsysManager() = default;
-
-      /*!
        *\brief Print this Manager
        *
        */
@@ -243,7 +237,7 @@ namespace DRT
 
       //@}
 
-     protected:
+     private:
       // don't want = operator and cctor
       LocsysManager operator=(const LocsysManager& old);
       LocsysManager(const LocsysManager& old);

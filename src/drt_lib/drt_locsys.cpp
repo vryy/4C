@@ -29,7 +29,7 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::DiscretizationInterface& discret)
   // get problem dimension (2D or 3D) and store into dim_
   dim_ = DRT::Problem::Instance()->NDim();
 
-  if (Dim() != 2 && Dim() != 3) dserror("ERROR: Locsys problem must be 2D or 3D");
+  if (Dim() != 2 && Dim() != 3) dserror("Locsys problem must be 2D or 3D");
 
   // get node row layout of discretization
   const Epetra_Map* noderowmap = discret_.NodeRowMap();
@@ -127,7 +127,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           currlocsys->Type() != DRT::Condition::SurfaceLocsys and
           currlocsys->Type() != DRT::Condition::LineLocsys and
           currlocsys->Type() != DRT::Condition::PointLocsys)
-        dserror("ERROR: Unknown type of locsys condition!");
+        dserror("Unknown type of locsys condition!");
 
       if (currlocsys->Type() == geo_level)
       {
@@ -282,7 +282,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
   {
     int nodeGID = noderowmap->GID(i);
     DRT::Node* node = Discret().gNode(nodeGID);
-    if (!node) dserror("ERROR: Cannot find node with gid %", nodeGID);
+    if (!node) dserror("Cannot find node with gid %", nodeGID);
     std::vector<int> dofs = Discret().Dof(0, node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
@@ -464,7 +464,7 @@ void DRT::UTILS::LocsysManager::Print() const
       else if (TypeLocsys(i) == DRT::Condition::VolumeLocsys)
         IO::cout << " Volume  " << IO::endl;
       else
-        dserror("ERROR: Unknown type of locsys condition!");
+        dserror("Unknown type of locsys condition!");
     }
     IO::cout << "-------------------------------------------------------------\n\n";
   }
