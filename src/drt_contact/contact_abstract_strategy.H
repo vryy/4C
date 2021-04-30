@@ -1827,6 +1827,19 @@ namespace CONTACT
     }
 
    private:
+    /*!
+    \brief Check if this is the first time step of the simulation
+
+    As we don't have the time step counter available here, let's check for the size of some member
+    variables: a size of zero indicates the first time step.
+
+    \warning This checks relies on the proper (re-)initialization of some member variables. Behavior
+    could change, if these member variables are (re-)initialized differently.
+
+    \return Boolean flag to indicate the first time step (true) or not (false)
+    */
+    bool IsFirstTimeStep() const;
+
     //! @name Parallel redistribution and ghosting
     //! @{
 
