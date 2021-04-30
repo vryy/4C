@@ -1827,7 +1827,7 @@ namespace CONTACT
     }
 
    private:
-    //! @name Parallel distribution and ghosting
+    //! @name Parallel redistribution and ghosting
     //! @{
 
     /*!
@@ -1956,6 +1956,8 @@ namespace CONTACT
     bool RedistributeContactOld(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel);
 
+    //! @}
+
     /*! \brief Create the global Lagrange multiplier DoF row map
      *
      *  The global Lagrange multiplier DoF row map is created in a deterministic
@@ -2074,7 +2076,7 @@ namespace CONTACT
     //! Global slave row map of surface nodes
     Teuchos::RCP<Epetra_Map>& gsdofSurf_;
 
-    //! @name Parallel redistribution
+    //! @name Parallel redistribution and ghosting
     //!@{
 
     //! Parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
