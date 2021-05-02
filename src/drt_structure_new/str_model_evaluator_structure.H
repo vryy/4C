@@ -380,7 +380,8 @@ namespace STR
        *  \date 10/17
        *  \author grill */
       void WriteOutputRuntimeVtkStructure(
-          const Teuchos::RCP<Epetra_Vector>& displacement_state_vector, int timestep_number,
+          const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
+          const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
           double time) const;
 
       /**

@@ -23,6 +23,7 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
     : isinit_(false),
       issetup_(false),
       output_displacement_state_(false),
+      output_velocity_state_(false),
       output_element_owner_(false),
       output_element_gid_(false),
       output_node_gid_(false),
@@ -43,6 +44,8 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
   // initialize the parameter values
   output_displacement_state_ =
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "DISPLACEMENT");
+  output_velocity_state_ =
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "VELOCITY");
   output_element_owner_ =
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =

@@ -1256,6 +1256,8 @@ vtk_test(solid_runtime_gauss_point_quantity_output_gauss_point-vtk 1 xxx-structu
 baci_test(solid_runtime_stress_strain_output 2 "")
 vtk_test(solid_runtime_stress_strain_output-vtk-solid 1 xxx-structure.pvd ref/solid_runtime_stress_strain_output-vtk/structure.pvd 1e-08 1e-08 1.0)
 vtk_test(solid_runtime_stress_strain_output-vtk-beam 1 xxx-structure-beams.pvd ref/solid_runtime_stress_strain_output-vtk/structure-beams.pvd 1e-08 1e-08 1.0)
+baci_test(solid_runtime_velocity_output 2 "")
+vtk_test(solid_runtime_velocity_output-vtk-solid 1 xxx-structure.pvd ref/solid_runtime_velocity_output-vtk/structure.pvd 1e-08 0.0 1e-08 1.0)
 baci_test(solid_ele_vs_mat 2 "")
 baci_test(solid_nodal_fiber 2 "")
 baci_test(solid_nodal_fiber_eletypes 2 "")
