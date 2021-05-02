@@ -95,12 +95,6 @@ namespace DRT
       void Setup(const double time);
 
       /*!
-       *\brief Destructor
-       *
-       */
-      virtual ~LocsysManager(){};
-
-      /*!
        *\brief Print this Manager
        *
        */
@@ -141,7 +135,7 @@ namespace DRT
         if (k >= numlocsys_)
         {
           dserror("Invalid vector index");
-          return NULL;
+          return nullptr;
         }
         else
         {
@@ -243,7 +237,7 @@ namespace DRT
 
       //@}
 
-     protected:
+     private:
       // don't want = operator and cctor
       LocsysManager operator=(const LocsysManager& old);
       LocsysManager(const LocsysManager& old);
