@@ -2284,6 +2284,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // simple inelastic material law featuring no volume change
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_InelasticDefgradNoGrowth",
+        "no volume change, i.e. the inelastic deformation gradient is the identity tensor",
+        INPAR::MAT::mfi_no_growth));
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // simple isotropic, volumetric growth; growth is linearly dependent on scalar mapped to material
   // configuration, constant material density
   {

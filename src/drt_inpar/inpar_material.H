@@ -276,8 +276,18 @@ namespace INPAR
       mfi_lin_scalar_iso,  ///< volume change due to (isotropic) inelastic deformation gradient is a
                            ///< linear function of the scalar (in material configuration) that
                            ///< causes the volume change
-      mix_rule_simple,     ///< Simple rule for the mixture model
-      mix_rule_growthremodel,            ///< Homogenized constrained mixture
+      mfi_lin_temp_iso,    ///< volume change due to isotropic inelastic deformation gradient is a
+                           ///< linear function of the temperature
+      mfi_no_growth,  ///< material with no volume change, i.e. inelastic deformation gradient is an
+                      ///< identity tensor
+      mfi_poly_intercal_frac_aniso,  ///< volume change due to (anisotropic) inelastic deformation
+                                     ///< gradient is a polynomial function of the intercalation
+                                     ///< fraction that causes the volume change
+      mfi_poly_intercal_frac_iso,    ///< volume change due to (isotropic) inelastic deformation
+                                     ///< gradient is a polynomial function of the intercalation
+                                     ///< fraction that causes the volume change
+      mix_rule_simple,               ///< Simple rule for the mixture model
+      mix_rule_growthremodel,        ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder
       mix_prestress_strategy_iterative,  ///< Iterative prestress strategy for any geometry
       mix_prestress_strategy_constant,   ///< Constant, predefined prestretch
@@ -288,16 +298,8 @@ namespace INPAR
       mix_muscle_weickenmeier,           ///< Weickenmeier muscle material for Constituents
       mix_remodelfiber_expl,  ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with explicit solution of the growth and remodel equations
-      mix_remodelfiber_impl,  ///< Fiber that remodels with homogenized constrained mixture model
+      mix_remodelfiber_impl   ///< Fiber that remodels with homogenized constrained mixture model
                               ///< with implicit solution of the growth and remodel equations
-      mfi_poly_intercal_frac_aniso,  ///< volume change due to (anisotropic) inelastic deformation
-                                     ///< gradient is a polynomial function of the intercalation
-                                     ///< fraction that causes the volume change
-      mfi_poly_intercal_frac_iso,    ///< volume change due to (isotropic) inelastic deformation
-                                     ///< gradient is a polynomial function of the intercalation
-                                     ///< fraction that causes the volume change
-      mfi_lin_temp_iso  ///< volume change due to isotropic inelastic deformation gradient is a
-                        ///< linear function of the temperature
     };
 
     /*----------------------------------------------------------------------*

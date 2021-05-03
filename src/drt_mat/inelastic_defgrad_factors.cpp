@@ -20,6 +20,15 @@
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+MAT::PAR::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(
+    Teuchos::RCP<MAT::PAR::Material> matdata)
+    : Parameter(matdata)
+{
+  // do nothing here
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 MAT::PAR::InelasticDefgradScalar::InelasticDefgradScalar(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata), scalar1_(matdata->GetInt("SCALAR1"))
 {
@@ -135,6 +144,12 @@ MAT::PAR::InelasticDefgradLinTempIso::InelasticDefgradLinTempIso(
 {
   // safety checks
   if (reftemp_ < 0.0) dserror("Avoid negative reference temperatures");
+  if (tempgrowthfac_ == 0.0)
+  {
+    dserror(
+        "Do not use 'MAT_InelasticDefgradLinTempIso' with a growth factor of 0.0. Use "
+        "'MAT_InelasticDefgradNoGrowth' instead!");
+  }
 }
 
 /*--------------------------------------------------------------------*
@@ -176,17 +191,23 @@ Teuchos::RCP<MAT::InelasticDefgradFactors> MAT::InelasticDefgradFactors::Factory
   const INPAR::MAT::MaterialType currentMaterialType = curmat->Type();
   switch (currentMaterialType)
   {
+    case INPAR::MAT::mfi_no_growth:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::InelasticDefgradNoGrowth(curmat));
+
+      auto* params = dynamic_cast<MAT::PAR::InelasticDefgradNoGrowth*>(curmat->Parameter());
+
+      return Teuchos::rcp(new InelasticDefgradNoGrowth(params));
+    }
     case INPAR::MAT::mfi_lin_scalar_aniso:
     case INPAR::MAT::mfi_lin_scalar_iso:
     {
-      // safety check
-      const double scalar1MolarGrwothFac = curmat->GetDouble("SCALAR1_MolarGrowthFac");
-      if (scalar1MolarGrwothFac < 0.0)
-        dserror("Growth factor can not be negative, please check your input file!");
+      const double scalar1MolarGrowthFac = curmat->GetDouble("SCALAR1_MolarGrowthFac");
 
       // get pointer to linear growth object
       auto linearGrowth = Teuchos::rcp(new InelasticDefgradLinearShape(
-          scalar1MolarGrwothFac, curmat->GetDouble("SCALAR1_RefConc")));
+          scalar1MolarGrowthFac, curmat->GetDouble("SCALAR1_RefConc")));
 
       // construct and return pointer to anisotropic version
       if (currentMaterialType == INPAR::MAT::mfi_lin_scalar_aniso)
@@ -866,6 +887,14 @@ MAT::InelasticDefgradLinearShape::InelasticDefgradLinearShape(
     const double growthFac, const double referenceValue)
     : growthFac_(growthFac), referenceValue_(referenceValue)
 {
+  // safety checks
+  if (growthFac < 0.0) dserror("Growth factor can not be negative, please check your input file!");
+  if (growthFac == 0.0)
+  {
+    dserror(
+        "Do not use linear growth laws with a growth factor of 0.0. Use "
+        "'MAT_InelasticDefgradNoGrowth' instead!");
+  }
 }
 
 /*--------------------------------------------------------------------*
@@ -1019,3 +1048,54 @@ MAT::PAR::InelasticSource MAT::InelasticDefgradLinTempIso::GetInelasticSource()
 {
   return PAR::InelasticSource::temperature;
 }
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(const LINALG::Matrix<3, 3>* defgrad,
+    const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
+    const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd)
+{
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradNoGrowth::EvaluateInelasticDefGradDerivative(
+    double detjacobian, LINALG::Matrix<9, 1>& dFindx)
+{
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradNoGrowth::EvaluateInverseInelasticDefGrad(
+    const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
+{
+  iFinM = identity_;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradNoGrowth::EvaluateODStiffMat(const LINALG::Matrix<3, 3>* defgrad,
+    const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
+    LINALG::Matrix<6, 1>& dstressdx)
+{
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::PAR::InelasticSource MAT::InelasticDefgradNoGrowth::GetInelasticSource()
+{
+  return PAR::InelasticSource::none;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+MAT::InelasticDefgradNoGrowth::InelasticDefgradNoGrowth(MAT::PAR::Parameter* params)
+    : InelasticDefgradFactors(params), identity_(true)
+{
+  // add 1.0 to main diagonal
+  identity_(0, 0) = identity_(1, 1) = identity_(2, 2) = 1.0;
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::InelasticDefgradNoGrowth::PreEvaluate(Teuchos::ParameterList& params, int gp) {}
