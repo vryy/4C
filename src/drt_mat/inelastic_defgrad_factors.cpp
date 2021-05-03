@@ -888,9 +888,8 @@ MAT::InelasticDefgradLinearShape::InelasticDefgradLinearShape(
     : growthFac_(growthFac), referenceValue_(referenceValue)
 {
   // safety checks
-  if (growthFac < 0.0)
-    dserror("Growth factor can not be negative, please check your input file!");
-  else if (growthFac == 0.0)
+  if (growthFac < 0.0) dserror("Growth factor can not be negative, please check your input file!");
+  if (growthFac == 0.0)
   {
     dserror(
         "Do not use linear growth laws with a growth factor of 0.0. Use "
@@ -1056,7 +1055,6 @@ void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(const LINALG::Matrix<
     const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 1>& iCV,
     const LINALG::Matrix<6, 9>& dSdiFinj, LINALG::Matrix<6, 6>& cmatadd)
 {
-  // nothing to be done
 }
 
 /*--------------------------------------------------------------------*
@@ -1064,7 +1062,6 @@ void MAT::InelasticDefgradNoGrowth::EvaluateAdditionalCmat(const LINALG::Matrix<
 void MAT::InelasticDefgradNoGrowth::EvaluateInelasticDefGradDerivative(
     double detjacobian, LINALG::Matrix<9, 1>& dFindx)
 {
-  // nothing to be done
 }
 
 /*--------------------------------------------------------------------*
@@ -1072,7 +1069,7 @@ void MAT::InelasticDefgradNoGrowth::EvaluateInelasticDefGradDerivative(
 void MAT::InelasticDefgradNoGrowth::EvaluateInverseInelasticDefGrad(
     const LINALG::Matrix<3, 3>* defgrad, LINALG::Matrix<3, 3>& iFinM)
 {
-  iFinM.Update(1.0, identity_, 0.0);
+  iFinM = identity_;
 }
 
 /*--------------------------------------------------------------------*
@@ -1081,7 +1078,6 @@ void MAT::InelasticDefgradNoGrowth::EvaluateODStiffMat(const LINALG::Matrix<3, 3
     const LINALG::Matrix<3, 3>& iFinjM, const LINALG::Matrix<6, 9>& dSdiFinj,
     LINALG::Matrix<6, 1>& dstressdx)
 {
-  // nothing to be done
 }
 
 /*--------------------------------------------------------------------*
