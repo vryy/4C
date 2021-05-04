@@ -36,7 +36,7 @@
  *---------------------------------------------------------------------------------*/
 SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretization> manifolddis,
     Teuchos::RCP<DRT::Discretization> scatradis, DRT::Condition* condition_manifold,
-    DRT::Condition* condition_kinetics)
+    DRT::Condition* condition_kinetics, const int ndof_per_node)
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(Teuchos::rcp(new ADAPTER::Coupling())),
@@ -54,8 +54,8 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
   std::vector<int> inodegidvec_scatra;
   DRT::UTILS::AddOwnedNodeGIDVector(scatradis, *condition_kinetics->Nodes(), inodegidvec_scatra);
 
-  coupling_adapter_->SetupCoupling(
-      *scatradis, *manifolddis, inodegidvec_scatra, inodegidvec_manifold, 2, true, 1.0e-8);
+  coupling_adapter_->SetupCoupling(*scatradis, *manifolddis, inodegidvec_scatra,
+      inodegidvec_manifold, ndof_per_node, true, 1.0e-8);
   slave_converter_ = Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*coupling_adapter_));
 
   scatra_map_extractor_ = Teuchos::rcp(
@@ -93,6 +93,10 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       systemmatrix_manifold_(Teuchos::null),
       systemmatrix_scatra_(Teuchos::null)
 {
+  // safety check befor setup of coupling
+  if (ssi_mono.ScaTraField()->NumDofPerNode() != ssi_mono.ScaTraManifold()->NumDofPerNode())
+    dserror("Number of dofs per node of scatra field and scatra manifold field must be equal");
+
   std::vector<DRT::Condition*> conditions_manifold;
   scatra_manifold_->ScaTraField()->Discretization()->GetCondition(
       "SSISurfaceManifold", conditions_manifold);
@@ -111,7 +115,8 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       {
         scatra_manifold_couplings_.emplace_back(Teuchos::rcp(
             new SSI::ManifoldScaTraCoupling(scatra_manifold_->ScaTraField()->Discretization(),
-                scatra_->ScaTraField()->Discretization(), condition_manifold, condition_kinetics)));
+                scatra_->ScaTraField()->Discretization(), condition_manifold, condition_kinetics,
+                ssi_mono.ScaTraManifold()->NumDofPerNode())));
       }
     }
   }
