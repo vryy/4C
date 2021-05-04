@@ -86,7 +86,7 @@ void CONTACT::CoIntegratorNitscheSsi::GPTSForces(MORTAR::MortarElement& slave_el
       return;
   }
 
-  dsassert(dim == Dim(), "dimension inconsitency");
+  dsassert(dim == Dim(), "dimension inconsistency");
 
   // calculate normals and derivatives
   const LINALG::Matrix<dim, 1> normal(gp_normal, true);
@@ -158,6 +158,31 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
     double& cauchy_nt_wgt, GEN::pairedvector<int, double>& d_cauchy_nt_dd,
     GEN::pairedvector<int, double>& d_cauchy_nt_ds)
 {
+  Epetra_SerialDenseMatrix d_sigma_nt_ds;
+
+  SoEleCauchyStruct<dim>(mortar_ele, gp_coord, d_gp_coord_dd, gp_wgt, gp_normal, d_gp_normal_dd,
+      test_dir, d_test_dir_dd, nitsche_wgt, cauchy_nt_wgt, d_cauchy_nt_dd, &d_sigma_nt_ds);
+
+  if (!mortar_ele.MoData().ParentScalar().empty())
+  {
+    for (int i = 0; i < mortar_ele.ParentElement()->NumNode(); ++i)
+      d_cauchy_nt_ds[mortar_ele.MoData().ParentScalarDof().at(i)] +=
+          nitsche_wgt * d_sigma_nt_ds(i, 0);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <int dim>
+void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::MortarElement& mortar_ele,
+    double* gp_coord, const std::vector<GEN::pairedvector<int, double>>& d_gp_coord_dd,
+    const double gp_wgt, const LINALG::Matrix<dim, 1>& gp_normal,
+    const std::vector<GEN::pairedvector<int, double>>& d_gp_normal_dd,
+    const LINALG::Matrix<dim, 1>& test_dir,
+    const std::vector<GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
+    double& cauchy_nt_wgt, GEN::pairedvector<int, double>& d_cauchy_nt_dd,
+    Epetra_SerialDenseMatrix* d_sigma_nt_ds)
+{
   static LINALG::Matrix<dim, 1> parent_xi(true);
   static LINALG::Matrix<dim, dim> local_to_parent_trafo(true);
   CONTACT::UTILS::MapGPtoParent<dim>(
@@ -165,7 +190,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
 
   // cauchy stress tensor contracted with normal and test direction
   double sigma_nt(0.0);
-  Epetra_SerialDenseMatrix d_sigma_nt_dd, d_sigma_nt_ds;
+  Epetra_SerialDenseMatrix d_sigma_nt_dd;
   static LINALG::Matrix<dim, 1> d_sigma_nt_dn(true), d_sigma_nt_dt(true), d_sigma_nt_dxi(true);
 
   if (mortar_ele.MoData().ParentScalar().empty())
@@ -185,7 +210,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
             mortar_ele.ParentElement())
             ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
-                &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
+                d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
       }
       case DRT::Element::tet4:
@@ -194,7 +219,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
             mortar_ele.ParentElement())
             ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
-                &d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
+                d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
       }
       default:
@@ -229,13 +254,6 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
 
     for (const auto& dt_dd_i : d_test_dir_dd[i])
       d_cauchy_nt_dd[dt_dd_i.first] += nitsche_wgt * d_sigma_nt_dt(i) * dt_dd_i.second;
-  }
-
-  if (!mortar_ele.MoData().ParentScalar().empty())
-  {
-    for (int i = 0; i < mortar_ele.ParentElement()->NumNode(); ++i)
-      d_cauchy_nt_ds[mortar_ele.MoData().ParentScalarDof().at(i)] +=
-          nitsche_wgt * d_sigma_nt_ds(i, 0);
   }
 }
 
@@ -295,7 +313,7 @@ void CONTACT::CoIntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElemen
         ele.ParentElement()->Shape(), ele.FaceParentNumber(), i))] = shape_func(i);
 
   // calculate derivative of concentration w.r.t. displacements
-  int deriv_size = 0;
+  std::size_t deriv_size = 0;
   for (int i = 0; i < dim - 1; ++i) deriv_size += d_xi_dd.at(i).size();
   d_conc_dd.resize(deriv_size);
   d_conc_dd.clear();
@@ -395,30 +413,38 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
   const double time_fac = GetScaTraEleParameterTimInt()->TimeFac();
   const double time_fac_rhs = GetScaTraEleParameterTimInt()->TimeFacRhs();
 
-  const double val = fac * time_fac_rhs * jac * wgt * test_val;
+  const double val = fac * jac * wgt * test_val;
 
   for (int s = 0; s < ele.NumNode(); ++s)
-    *(ele.GetNitscheContainer().RhsS(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-        ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) += val * shape_func(s);
-
-  for (const auto& p : d_test_val_ds)
   {
-    double* row = ele.GetNitscheContainer().Kss(p.first);
+    *(ele.GetNitscheContainer().RhsS(DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+        ele.ParentElement()->Shape(), ele.FaceParentNumber(), s))) +=
+        time_fac_rhs * val * shape_func(s);
+  }
+
+  for (const auto& d_testval_ds : d_test_val_ds)
+  {
+    double* row = ele.GetNitscheContainer().Kss(d_testval_ds.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
-          ele.FaceParentNumber(), s)] -= fac * time_fac * jac * wgt * p.second * shape_func(s);
+    {
+      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
+          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] -=
+          time_fac * fac * jac * wgt * d_testval_ds.second * shape_func(s);
+    }
   }
 
   GEN::pairedvector<int, double> d_val_dd(d_jac_dd.size() + d_test_val_dd.size());
-  for (const auto& p : d_jac_dd) d_val_dd[p.first] += fac * time_fac * p.second * wgt * test_val;
-  for (const auto& p : d_test_val_dd) d_val_dd[p.first] += fac * time_fac * jac * wgt * p.second;
+  for (const auto& djac_dd : d_jac_dd)
+    d_val_dd[djac_dd.first] += fac * djac_dd.second * wgt * test_val;
+  for (const auto& d_testval_dd : d_test_val_dd)
+    d_val_dd[d_testval_dd.first] += fac * jac * wgt * d_testval_dd.second;
 
-  for (const auto& p : d_val_dd)
+  for (const auto& dval_dd : d_val_dd)
   {
-    double* row = ele.GetNitscheContainer().Ksd(p.first);
+    double* row = ele.GetNitscheContainer().Ksd(dval_dd.first);
     for (int s = 0; s < ele.NumNode(); ++s)
-      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
-          ele.ParentElement()->Shape(), ele.FaceParentNumber(), s)] -= p.second * shape_func(s);
+      row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
+          ele.FaceParentNumber(), s)] -= time_fac * dval_dd.second * shape_func(s);
   }
 
   for (int e = 0; e < dim - 1; ++e)
@@ -428,7 +454,7 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateScaTraTest(const double fac,
       double* row = ele.GetNitscheContainer().Ksd(d_xi_dd_e.first);
       for (int s = 0; s < ele.NumNode(); ++s)
         row[DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(ele.ParentElement()->Shape(),
-            ele.FaceParentNumber(), s)] -= val * shape_deriv(s, e) * d_xi_dd_e.second;
+            ele.FaceParentNumber(), s)] -= time_fac * val * shape_deriv(s, e) * d_xi_dd_e.second;
     }
   }
 }
