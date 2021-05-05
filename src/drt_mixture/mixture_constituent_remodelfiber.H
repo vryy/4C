@@ -343,6 +343,12 @@ namespace MIXTURE
      */
     void UpdateSigH(int gp, int eleGID);
 
+    void RegisterVtkOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool EvaluateVtkOutputData(
+        const std::string& name, Epetra_SerialDenseMatrix& data) const override;
+
    private:
     /// Strain energy summand of the fiber
     Teuchos::RCP<MAT::ELASTIC::Summand> summand_;
@@ -370,6 +376,9 @@ namespace MIXTURE
 
     /// Homeostatic stress of the fiber (also deposition stress)
     std::vector<double> sig_h_;
+
+    /// Current fiber Cauchy stress
+    std::vector<double> sig_;
 
     /// Anisotropy extension of the fiber direction
     Teuchos::RCP<MAT::FiberAnisotropyExtension<1>> fiberAnisotropyExtension_;

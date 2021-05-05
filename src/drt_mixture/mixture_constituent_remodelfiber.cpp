@@ -101,6 +101,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::PackConstituent(DRT::PackBuffer& 
   DRT::ParObject::AddtoPack(data, lambda_pre_);
 
   DRT::ParObject::AddtoPack(data, sig_h_);
+  DRT::ParObject::AddtoPack(data, sig_);
 
   summand_->PackSummand(data);
 
@@ -118,6 +119,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UnpackConstituent(
   DRT::ParObject::ExtractfromPack(position, data, lambda_pre_);
 
   DRT::ParObject::ExtractfromPack(position, data, sig_h_);
+  DRT::ParObject::ExtractfromPack(position, data, sig_);
 
   summand_->UnpackSummand(data, position);
 
@@ -145,6 +147,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::ReadElement(
   cur_lambdar_.resize(numgp, 1.0);
   lambda_pre_.resize(numgp, 0.0);
   sig_h_.resize(numgp, 0.0);
+  sig_.resize(numgp, 0.0);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::EvaluateElasticPart(const LINALG::Matrix<3, 3>& FM,
@@ -169,6 +172,11 @@ void MIXTURE::MixtureConstituent_RemodelFiber::EvaluateElasticPart(const LINALG:
 
   // Compute and add stresses and linearization
   AddStressCmat(FM, iFin, S_stress, cmat, params, gp, eleGID);
+
+  // Evaluate Cauchy fiber normal stress (for output only)
+  static LINALG::Matrix<3, 3> C(false);
+  C.MultiplyTN(FM, FM);
+  sig_[gp] = EvaluateFiberCauchyStress(C, iFin, gp, eleGID);
 }
 
 void MIXTURE::MixtureConstituent_RemodelFiber::Evaluate(const LINALG::Matrix<3, 3>& F,
@@ -303,10 +311,10 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UpdateGrowthAndRemodelingExpl(
   iFin.MultiplyNN(iFg, iFr_[gp]);
 
   // Evaluate Cauchy fiber normal stress
-  const double sig = EvaluateFiberCauchyStress(C, iFin, gp, eleGID);
+  sig_[gp] = EvaluateFiberCauchyStress(C, iFin, gp, eleGID);
 
   // Evaluate growth ode
-  double delta_sig = (sig - sig_h_[gp]);
+  double delta_sig = (sig_[gp] - sig_h_[gp]);
   const double dgrowthdt = EvaluateGrowthEvolutionEquationdt(delta_sig, gp, eleGID);
 
   // Evaluate remodel ode
@@ -467,6 +475,36 @@ void MIXTURE::MixtureConstituent_RemodelFiber::UpdateSigH(const int gp, const in
   iFextin.Update(lambda_pre_[gp], fiberAnisotropyExtension_->GetStructuralTensor(gp, 0));
 
   sig_h_[gp] = EvaluateFiberCauchyStress(Id, iFextin, gp, eleGID);
+}
+
+void MIXTURE::MixtureConstituent_RemodelFiber::RegisterVtkOutputDataNames(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  MixtureConstituent::RegisterVtkOutputDataNames(names_and_size);
+  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig_h"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig"] = 1;
+}
+
+bool MIXTURE::MixtureConstituent_RemodelFiber::EvaluateVtkOutputData(
+    const std::string& name, Epetra_SerialDenseMatrix& data) const
+{
+  if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
+  {
+    for (int gp = 0; gp < NumGP(); ++gp)
+    {
+      data(gp, 0) = sig_h_[gp];
+    }
+    return true;
+  }
+  else if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig")
+  {
+    for (int gp = 0; gp < NumGP(); ++gp)
+    {
+      data(gp, 0) = sig_[gp];
+    }
+    return true;
+  }
+  return MixtureConstituent::EvaluateVtkOutputData(name, data);
 }
 
 MIXTURE::OrthogonalAnisotropyExtension::OrthogonalAnisotropyExtension()
