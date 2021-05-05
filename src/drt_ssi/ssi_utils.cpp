@@ -507,8 +507,8 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
       condition_dof_vec.emplace_back(dis->Dof(0, curr_node, j));
   }
   // maps of conditioned dofs and other dofs
-  const auto condition_dof_map = Teuchos::rcp(
-      new const Epetra_Map(-1, condition_dof_vec.size(), &condition_dof_vec[0], 0, dis->Comm()));
+  const auto condition_dof_map = Teuchos::rcp(new const Epetra_Map(
+      -1, static_cast<int>(condition_dof_vec.size()), &condition_dof_vec[0], 0, dis->Comm()));
   const auto non_condition_dof_map = LINALG::SplitMap(*dis->DofRowMap(), *condition_dof_map);
 
   return Teuchos::rcp(
@@ -519,6 +519,9 @@ Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtrac
 /*----------------------------------------------------------------------*/
 SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
     : is_scatra_manifold_(ssi_mono_algorithm.IsScaTraManifold()),
+      scatra_matrixtype_(ssi_mono_algorithm.ScaTraField()->MatrixType()),
+      scatra_dofrowmap_(ssi_mono_algorithm.ScaTraField()->DofRowMap()),
+      structure_dofrowmap_(ssi_mono_algorithm.StructureField()->DofRowMap()),
       system_matrix_(Teuchos::null),
       scatra_matrix_(Teuchos::null),
       scatramanifold_structure_matrix_(Teuchos::null),
@@ -616,6 +619,44 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
       dserror("Invalid matrix type associated with scalar transport field!");
       break;
     }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::CompleteScaTraStructureMatrix()
+{
+  switch (scatra_matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+      ScaTraStructureMatrix()->Complete(*structure_dofrowmap_, *scatra_dofrowmap_);
+      break;
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+      ScaTraStructureMatrix()->Complete();
+      break;
+    default:
+      dserror("Not supported LINALG::MatrixType!");
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::CompleteStructureScaTraMatrix()
+{
+  switch (scatra_matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+      StructureScaTraMatrix()->Complete(*structure_dofrowmap_, *scatra_dofrowmap_);
+      break;
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+      StructureScaTraMatrix()->Complete();
+      break;
+    default:
+      dserror("Not supported LINALG::MatrixType!");
+      break;
   }
 }
 

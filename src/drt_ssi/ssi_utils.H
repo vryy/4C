@@ -32,6 +32,7 @@ namespace LINALG
   class MultiMapExtractor;
   class SparseMatrix;
   class SparseOperator;
+  enum class MatrixType;
 }  // namespace LINALG
 
 namespace SSI
@@ -93,6 +94,12 @@ namespace SSI
      public:
       //! constructor
       explicit SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+
+      //! call complete on the scalar transport - structure off-diagonal matrix
+      void CompleteScaTraStructureMatrix();
+
+      //! call complete on the structure - scalar transport off-diagonal matrix
+      void CompleteStructureScaTraMatrix();
 
       //! method that clears all ssi matrices
       void ClearMatrices();
@@ -162,6 +169,15 @@ namespace SSI
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
+
+      //! matrix type of scatra matrix
+      const LINALG::MatrixType scatra_matrixtype_;
+
+      //! the scalar transport dof row map
+      Teuchos::RCP<const Epetra_Map> scatra_dofrowmap_;
+
+      //! the structure dof row map
+      Teuchos::RCP<const Epetra_Map> structure_dofrowmap_;
 
       //! system matrix
       Teuchos::RCP<LINALG::SparseOperator> system_matrix_;

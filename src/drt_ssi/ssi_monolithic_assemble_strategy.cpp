@@ -77,6 +77,7 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraScatra(
   auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
   auto scatra_scatra_matrix_block =
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_scatra_matrix);
+  systemmatrix_block->UnComplete();
 
   // assemble blocks of scalar transport system matrix into global system matrix
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
@@ -191,6 +192,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
 
   auto& systemmatrix_block_scatra_struct =
       systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
+  systemmatrix_block_scatra_struct.UnComplete();
 
   systemmatrix_block_scatra_struct.Add(*scatra_structure_matrix_sparse, false, 1.0, 1.0);
 }
@@ -288,6 +290,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructureScatra(
 
   auto& systemmatrix_block_struct_scatra =
       systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0));
+  systemmatrix_block_struct_scatra.UnComplete();
   systemmatrix_block_struct_scatra.Add(*structure_scatra_matrix_sparse, false, 1.0, 1.0);
 }
 
