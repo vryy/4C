@@ -115,6 +115,10 @@ namespace SCATRA
     //! clear state on micro scale in multi-scale simulations
     void ClearState();
 
+    void PreCalcInitialTimeDerivative() override;
+
+    void PostCalcInitialTimeDerivative() override;
+
    protected:
     /// set time parameter for element evaluation
     void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;

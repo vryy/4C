@@ -31,6 +31,7 @@ INITFUNCNO                      1
 CONVFORM                        conservative
 FDCHECK                         global
 FDCHECKTOL                      3.e-4
+SKIPINITDER                     Yes
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         10
 TIMESTEP                        0.1

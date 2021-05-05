@@ -199,6 +199,14 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "write output of inflow of scatra manifold - scatra coupling into scatra manifold to csv "
       "file",
       &ssidynmanifold);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for SSI with elch */
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& ssidynelch = ssidyn.sublist(
+      "ELCH", false, "Monolithic Structure Scalar Interaction with Elch as SCATRATIMINTTYPE");
+  BoolParameter("INITPOTCALC", "No", "Automatically calculate initial field for electric potential",
+      &ssidynelch);
 }
 
 /*--------------------------------------------------------------------

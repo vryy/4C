@@ -43,10 +43,11 @@ namespace SCATRA
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-   protected:
-    //! calculate initial electric potential field
-    void CalcInitialPotentialField() override;
+    void PreCalcInitialPotentialField() override;
 
+    void PostCalcInitialPotentialField() override;
+
+   protected:
     //! write additional data required for restart
     void OutputRestart() const override;
 
@@ -88,10 +89,11 @@ namespace SCATRA
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-   protected:
-    //! calculate initial electric potential field
-    void CalcInitialPotentialField() override;
+    void PreCalcInitialPotentialField() override;
 
+    void PostCalcInitialPotentialField() override{};
+
+   protected:
     //! write additional data required for restart
     void OutputRestart() const override;
 
@@ -130,10 +132,11 @@ namespace SCATRA
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-   protected:
-    //! calculate initial electric potential field
-    void CalcInitialPotentialField() override;
+    void PreCalcInitialPotentialField() override;
 
+    void PostCalcInitialPotentialField() override;
+
+   protected:
     //! write additional data required for restart
     void OutputRestart() const override;
 
@@ -169,10 +172,11 @@ namespace SCATRA
     //! read restart data
     void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
-   protected:
-    //! calculate initial electric potential field
-    void CalcInitialPotentialField() override;
+    void PreCalcInitialPotentialField() override;
 
+    void PostCalcInitialPotentialField() override{};
+
+   protected:
     //! write additional data required for restart
     void OutputRestart() const override;
 

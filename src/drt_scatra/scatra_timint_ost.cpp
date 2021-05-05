@@ -387,6 +387,32 @@ void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
   SetElementTurbulenceParameters(false);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PreCalcInitialTimeDerivative()
+{
+  // standard general element parameter without stabilization
+  SetElementGeneralParameters(true);
+
+  // we also have to modify the time-parameter list (incremental solve)
+  // actually we do not need a time integration scheme for calculating the initial time derivatives,
+  // but the rhs of the standard element routine is used as starting point for this special system
+  // of equations. Therefore, the rhs vector has to be scaled correctly.
+  SetElementTimeParameter(true);
+
+  // deactivate turbulence settings
+  SetElementTurbulenceParameters(true);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PostCalcInitialTimeDerivative()
+{  // and finally undo our temporary settings
+  SetElementGeneralParameters(false);
+  SetElementTimeParameter(false);
+  SetElementTurbulenceParameters(false);
+}
+
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetState(Teuchos::RCP<Epetra_Vector> phin,

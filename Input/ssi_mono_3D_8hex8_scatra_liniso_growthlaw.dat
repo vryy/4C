@@ -37,6 +37,7 @@ VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CONVFORM                        conservative
+SKIPINITDER                     Yes
 ----------------------------------------------------------------ELCH CONTROL
 TEMPERATURE_FROM_FUNCT          2
 -------------------------------------------------------SSI CONTROL

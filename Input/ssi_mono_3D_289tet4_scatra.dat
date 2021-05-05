@@ -29,6 +29,7 @@ VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 CONVFORM                        conservative
+SKIPINITDER                     Yes
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         10
 TIMESTEP                        0.1

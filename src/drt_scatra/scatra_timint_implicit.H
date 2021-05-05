@@ -318,6 +318,19 @@ namespace SCATRA
     //! finite difference check for scalar transport system matrix
     virtual void FDCheck();
 
+    //! apply Neumann and Dirichlet BC to system
+    void ApplyBCToSystem();
+
+    void EvaluateInitialTimeDerivative(
+        Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
+
+    //! prepare time integrator specific things before calculation of initial time derivative
+    virtual void PreCalcInitialTimeDerivative(){};
+
+    //! clean up settings from PreCalcInitialTimeDerivative() after initial time derivative is
+    //! calculated
+    virtual void PostCalcInitialTimeDerivative(){};
+
     /*--- query and output ---------------------------------------------------*/
 
     //! return ALE flag

@@ -97,6 +97,10 @@ namespace SCATRA
       return timeparams;
     }
 
+    void PreCalcInitialTimeDerivative() override;
+
+    void PostCalcInitialTimeDerivative() override;
+
 
    protected:
     /// don't want = operator and cctor

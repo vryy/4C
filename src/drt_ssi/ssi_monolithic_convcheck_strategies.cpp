@@ -345,6 +345,82 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
   return exit;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
+    const SSI::SSIMono& ssi_mono, const int init_pot_iternum) const
+{
+  bool converged = false;
+
+  double scatra_pot_dofnorm = 0.0, scatra_pot_resnorm = 0.0, scatra_pot_incnorm = 0.0;
+
+  GetAndCheckL2NormPot(ssi_mono, scatra_pot_incnorm, scatra_pot_resnorm, scatra_pot_dofnorm);
+
+  if (init_pot_iternum == 1)
+  {
+    if (ssi_mono.Comm().MyPID() == 0)
+    {
+      // print header
+      std::cout << "Calculating initial field for electric potential" << std::endl;
+      std::cout << "+------------+-------------------+--------------+--------------+" << std::endl;
+      std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|" << std::endl;
+
+      // print only norm of residuals
+      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
+                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
+                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << scatra_pot_resnorm << "   |      --      |" << std::endl;
+    }
+    if (scatra_pot_resnorm < restol_)
+    {
+      if (ssi_mono.Comm().MyPID() == 0)
+      {
+        std::cout << "+------------+-------------------+--------------+--------------+"
+                  << std::endl;
+      }
+      converged = true;
+    }
+  }
+  else
+  {
+    if (ssi_mono.Comm().MyPID() == 0)
+    {
+      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
+                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
+                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << scatra_pot_resnorm << "   | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatra_pot_incnorm / scatra_pot_dofnorm << "   |"
+                << std::endl;
+    }
+
+    // convergence check
+    if ((scatra_pot_resnorm <= itertol_ and scatra_pot_incnorm / scatra_pot_dofnorm <= itertol_) or
+        scatra_pot_resnorm < restol_)
+    {
+      if (ssi_mono.Comm().MyPID() == 0)
+      {
+        std::cout << "+------------+-------------------+--------------+--------------+" << std::endl
+                  << std::endl;
+      }
+      converged = true;
+    }
+  }
+
+  // warn if maximum number of iterations is reached without convergence
+  if (init_pot_iternum == itermax_)
+  {
+    if (ssi_mono.Comm().MyPID() == 0)
+    {
+      std::cout << "+--------------------------------------------------------------+" << std::endl;
+      std::cout << "|            >>>>>> not converged!                             |" << std::endl;
+      std::cout << "+--------------------------------------------------------------+" << std::endl;
+    }
+    converged = true;
+  }
+
+  return converged;
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -365,6 +441,56 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraM
       ->ExtractVector(
           ssi_mono.ssi_vectors_->Residual(), ssi_mono.GetProblemPosition(Subproblem::manifold))
       ->Norm2(&resnorm);
+
+  CheckL2Norm(incnorm, resnorm, dofnorm);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraManifoldConc(
+    const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
+{
+  ssi_mono.ScaTraManifold()
+      ->Splitter()
+      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.ssi_vectors_->Increment(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->Norm2(&incnorm);
+
+  ssi_mono.ScaTraManifold()
+      ->Splitter()
+      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.ssi_vectors_->Residual(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->Norm2(&resnorm);
+
+  ssi_mono.ScaTraManifold()
+      ->Splitter()
+      ->ExtractOtherVector(ssi_mono.ScaTraManifold()->Phinp())
+      ->Norm2(&dofnorm);
+
+  CheckL2Norm(incnorm, resnorm, dofnorm);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraManifoldPot(
+    const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
+{
+  ssi_mono.ScaTraManifold()
+      ->Splitter()
+      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.ssi_vectors_->Increment(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->Norm2(&incnorm);
+
+  ssi_mono.ScaTraManifold()
+      ->Splitter()
+      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
+          ssi_mono.ssi_vectors_->Residual(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->Norm2(&resnorm);
+
+  ssi_mono.ScaTraManifold()
+      ->Splitter()
+      ->ExtractCondVector(ssi_mono.ScaTraManifold()->Phinp())
+      ->Norm2(&dofnorm);
 
   CheckL2Norm(incnorm, resnorm, dofnorm);
 }
@@ -482,4 +608,106 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphson(
   }
 
   return exit;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPotCalc(
+    const SSI::SSIMono& ssi_mono, const int init_pot_iternum) const
+{
+  bool converged = false;
+
+  double scatra_pot_dofnorm = 0.0, manifold_pot_dofnorm = 0.0, scatra_pot_resnorm = 0.0,
+         manifold_pot_resnorm = 0.0, scatra_pot_incnorm = 0.0, manifold_pot_incnorm = 0.0;
+
+  GetAndCheckL2NormScaTraManifoldPot(
+      ssi_mono, manifold_pot_incnorm, manifold_pot_resnorm, manifold_pot_dofnorm);
+  GetAndCheckL2NormPot(ssi_mono, scatra_pot_incnorm, scatra_pot_resnorm, scatra_pot_dofnorm);
+
+  if (init_pot_iternum == 1)
+  {
+    if (ssi_mono.Comm().MyPID() == 0)
+    {
+      // print header
+      std::cout << "Calculating initial field for electric potential" << std::endl;
+      std::cout
+          << "+------------+-------------------+--------------+--------------+--------------+--"
+             "------------+"
+          << std::endl;
+      std::cout << "+------------+-------------------+---         scatra        ---|---     scatra "
+                   "manifold   ---|"
+                << std::endl;
+      std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|-- pot-res "
+                   "---|-- pot-inc ---|"
+                << std::endl;
+
+      // print only norm of residuals
+      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
+                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
+                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << scatra_pot_resnorm << "   |      --      | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << manifold_pot_resnorm
+                << "   |      --      | " << std::endl;
+    }
+    if (scatra_pot_resnorm < restol_ and manifold_pot_resnorm < restol_)
+    {
+      if (ssi_mono.Comm().MyPID() == 0)
+      {
+        std::cout << "+------------+-------------------+--------------+--------------+-----------"
+                     "---+--------------+"
+                  << std::endl;
+      }
+      converged = true;
+    }
+  }
+  else
+  {
+    if (ssi_mono.Comm().MyPID() == 0)
+    {
+      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
+                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
+                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << scatra_pot_resnorm << "   | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatra_pot_incnorm / scatra_pot_dofnorm << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific << manifold_pot_resnorm
+                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << manifold_pot_incnorm / manifold_pot_dofnorm << "   | " << std::endl;
+    }
+
+    // convergence check
+    if ((scatra_pot_resnorm <= itertol_ and scatra_pot_incnorm / scatra_pot_dofnorm <= itertol_ and
+            manifold_pot_resnorm <= itertol_ and
+            manifold_pot_incnorm / manifold_pot_dofnorm <= itertol_) or
+        (scatra_pot_resnorm < restol_ and manifold_pot_resnorm < restol_))
+    {
+      if (ssi_mono.Comm().MyPID() == 0)
+      {
+        std::cout << "+------------+-------------------+--------------+--------------+-----------"
+                     "---+--------------+"
+                  << std::endl
+                  << std::endl;
+      }
+      converged = true;
+    }
+  }
+
+  // warn if maximum number of iterations is reached without convergence
+  if (init_pot_iternum == itermax_)
+  {
+    if (ssi_mono.Comm().MyPID() == 0)
+    {
+      std::cout << "+--------------------------------------------------------------------------"
+                   "------------------+"
+                << std::endl;
+      std::cout << "|            >>>>>> not converged!                                           "
+                   "                 |"
+                << std::endl;
+      std::cout << "+--------------------------------------------------------------------------"
+                   "------------------+"
+                << std::endl;
+    }
+    converged = true;
+  }
+
+  return converged;
 }

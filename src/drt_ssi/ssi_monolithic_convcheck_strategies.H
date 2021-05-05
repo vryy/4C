@@ -41,6 +41,9 @@ namespace SSI
      * */
     virtual bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const = 0;
 
+    virtual bool ExitNewtonRaphsonInitPotCalc(
+        const SSI::SSIMono& ssi_mono, int init_pot_iternum) const = 0;
+
    protected:
     //! get L2 norms from structure field and check if they are reasonable
     void GetAndCheckL2NormStructure(
@@ -79,6 +82,13 @@ namespace SSI
 
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
+    bool ExitNewtonRaphsonInitPotCalc(
+        const SSI::SSIMono& ssi_mono, int init_pot_iternum) const override
+    {
+      dserror("Caluclation of initial potential only for Elch");
+      return false;
+    }
+
    protected:
     //! get L2 norms from scatra field and check if they are reasonable
     void GetAndCheckL2NormScaTra(
@@ -103,6 +113,9 @@ namespace SSI
     ~ConvCheckStrategyElch() override = default;
 
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
+
+    bool ExitNewtonRaphsonInitPotCalc(
+        const SSI::SSIMono& ssi_mono, int init_pot_iternum) const override;
 
    protected:
     //! get L2 norms from concentration field and check if they are reasonable
@@ -132,9 +145,18 @@ namespace SSI
 
     bool ExitNewtonRaphson(const SSI::SSIMono& ssi_mono) const override;
 
+    bool ExitNewtonRaphsonInitPotCalc(
+        const SSI::SSIMono& ssi_mono, int init_pot_iternum) const override;
+
    protected:
     //! get L2 norms from scatra manifold and check if they are reasonable
     void GetAndCheckL2NormScaTraManifold(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+    void GetAndCheckL2NormScaTraManifoldConc(
+        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
+
+    void GetAndCheckL2NormScaTraManifoldPot(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
    private:
