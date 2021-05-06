@@ -322,7 +322,7 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 
 # --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
-/Input/*                           @baci/baci_developers
+/Input/**                          @baci/baci_developers
 
 /Input/ale*                        @baci/team_fluid
 
@@ -364,12 +364,12 @@ src/solver_nonlin_nox/             @baci/team_solvers
 
 /Input/prestress*                  @baci/team_structure
 
-/Input/ref/beam*                   @baci/team_structure
-/Input/ref/particle*               @baci/team_particle
-/Input/ref/pasi*                   @baci/team_particle
-/Input/ref/sohex8fbar*             @baci/team_structure
-/Input/ref/solid*                  @baci/team_structure
-/Input/ref/structure*              @baci/team_structure
+/Input/ref/beam*/**                @baci/team_structure
+/Input/ref/particle*/**            @baci/team_particle
+/Input/ref/pasi*/**                @baci/team_particle
+/Input/ref/sohex8fbar*/**          @baci/team_structure
+/Input/ref/solid*/**               @baci/team_structure
+/Input/ref/structure*/**           @baci/team_structure
 
 Input/rigidsphere*                 @baci/team_structure
 
