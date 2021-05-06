@@ -150,8 +150,6 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     ssi_vectors_->StructureResidual()->Update(1.0, *(StructureField()->RHS()), 1.0);
     ssi_matrices_->StructureMatrix()->Add(*StructureField()->SystemMatrix(), false, 1.0, 1.0);
   }
-  // call fill complete on ssi structure matrix
-  ssi_matrices_->StructureMatrix()->Complete();
 }
 
 /*--------------------------------------------------------------------------*
@@ -913,6 +911,10 @@ void SSI::SSIMono::NewtonLoop()
     // evaluate sub problems and get all matrices and right-hand-sides
     EvaluateSubproblems();
 
+    // add the fill complete calls
+    ssi_matrices_->ScaTraMatrix()->Complete();
+    ssi_matrices_->StructureMatrix()->Complete();
+
     // assemble global system of equations
     AssembleMatAndRHS();
 
@@ -1222,7 +1224,6 @@ void SSI::SSIMono::EvaluateScaTra()
   // copy the matrix to the corresponding ssi matrix and complete it such that additional
   // contributions like contact contributions can be added before assembly
   ssi_matrices_->ScaTraMatrix()->Add(*ScaTraField()->SystemMatrixOperator(), false, 1.0, 1.0);
-  ssi_matrices_->ScaTraMatrix()->Complete();
 
   // copy the residual to the corresponding ssi vector to enable application of contact
   // contributions before assembly
@@ -1312,6 +1313,11 @@ void SSI::SSIMono::CalcInitialPotentialField()
     // prepare full SSI system
     DistributeSolutionAllFields(true);
     EvaluateSubproblems();
+
+    // add the fill complete calls
+    ssi_matrices_->ScaTraMatrix()->Complete();
+    ssi_matrices_->StructureMatrix()->Complete();
+
     AssembleMatAndRHS();
     ApplyDBCToSystem();
 
@@ -1403,6 +1409,11 @@ void SSI::SSIMono::CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra
   // In a first step, we assemble the standard global system of equations (we need the residual)
   DistributeSolutionAllFields(true);
   EvaluateSubproblems();
+
+  // add the fill complete calls
+  ssi_matrices_->ScaTraMatrix()->Complete();
+  ssi_matrices_->StructureMatrix()->Complete();
+
   AssembleMatAndRHS();
   ApplyDBCToSystem();
 
