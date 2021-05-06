@@ -16,6 +16,8 @@
       <PDataArray type="Float64" Name="current_reference_density" format="ascii"/>
       <PDataArray type="Float64" Name="element_GL_strains_xyz" NumberOfComponents="6" format="ascii"/>
       <PDataArray type="Float64" Name="element_cauchy_stresses_xyz" NumberOfComponents="6" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_0_sig" format="ascii"/>
+      <PDataArray type="Float64" Name="mixture_constituent_0_sig_h" format="ascii"/>
       <PDataArray type="Float64" Name="mixture_constituent_1_elasthyper_prestretch" NumberOfComponents="9" format="ascii"/>
     </PCellData>
     <Piece Source="structure-000010-0.vtu"/>
