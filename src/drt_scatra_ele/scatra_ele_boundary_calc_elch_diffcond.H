@@ -24,18 +24,15 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class ScaTraEleBoundaryCalcElchDiffCond : public ScaTraEleBoundaryCalcElchElectrode<distype>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype> myelch;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype> myelectrode;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
+      using myelectrode = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>;
 
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcElchDiffCond<distype>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname,
           const ScaTraEleBoundaryCalcElchDiffCond* delete_me = NULL);
-
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchDiffCond() { return; };
 
       //! singleton destruction
       virtual void Done();
@@ -45,75 +42,36 @@ namespace DRT
       ScaTraEleBoundaryCalcElchDiffCond(
           const int numdofpernode, const int numscal, const std::string& disname);
 
-      //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,      //!< boundary element
-          Teuchos::ParameterList& params,            //!< parameter list
-          DRT::Discretization& discretization,       //!< discretization
-          SCATRA::BoundaryAction action,             //!< action
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-          ) override;
+      int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, SCATRA::BoundaryAction action,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
+          Epetra_SerialDenseVector& elevec2_epetra,
+          Epetra_SerialDenseVector& elevec3_epetra) override;
 
-      //! evaluate Neumann boundary condition
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
           DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
           const double scalar) override;
 
-      //! evaluate an electrode kinetics boundary condition
-      void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
-          Epetra_SerialDenseMatrix& emat,                         ///< element matrix
-          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
-          const std::vector<LINALG::Matrix<my::nen_, 1>>&
-              ephinp,  ///< nodal values of concentration and electric potential
-          const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist,  ///< nodal history vector
-          double timefac,                                         ///< time factor
-          Teuchos::RCP<const MAT::Material> material,             ///< material
-          Teuchos::RCP<DRT::Condition> cond,  ///< electrode kinetics boundary condition
-          const int nume,                     ///< number of transferred electrons
-          const std::vector<int> stoich,      ///< stoichiometry of the reaction
-          const int kinetics,                 ///< desired electrode kinetics model
-          const double pot0,                  ///< electrode potential on metal side
-          const double frt,                   ///< factor F/RT
-          const double
-              scalar  ///< scaling factor for element matrix and right-hand side contributions
-          ) override;
+      void EvaluateElchBoundaryKinetics(const DRT::Element* ele, Epetra_SerialDenseMatrix& emat,
+          Epetra_SerialDenseVector& erhs, const std::vector<LINALG::Matrix<my::nen_, 1>>& ephinp,
+          const std::vector<LINALG::Matrix<my::nen_, 1>>& ehist, double timefac,
+          Teuchos::RCP<const MAT::Material> material, Teuchos::RCP<DRT::Condition> cond,
+          const int nume, const std::vector<int> stoich, const int kinetics, const double pot0,
+          const double frt, const double scalar) override;
 
-      /*!
-       * \brief evaluate scatra-scatra interface coupling condition
-       *
-       * @param ele             current boundary element
-       * @param params          parameter list
-       * @param discretization  discretization
-       * @param la              location array
-       * @param eslavematrix    element matrix for slave side
-       * @param emastermatrix   element matrix for master side
-       * @param eslaveresidual  element residual for slave side
-       */
       void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
           Epetra_SerialDenseVector& eslaveresidual) override;
 
-      //! \brief linearization of coupling condition w.r.t. other dofs
-      //!
-      //! \param ele             current boundary element
-      //! \param params          parameter list
-      //! \param discretization  discretization
-      //! \param la              location array
-      //! \param eslavematrix    element matrix for slave side
       void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Epetra_SerialDenseMatrix& eslavematrix) override;
 
-      //! extract valence of species k from element material
-      double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
-          const int k                                                       //! species number
-          ) const override;
+      double GetValence(
+          const Teuchos::RCP<const MAT::Material>& material, const int k) const override;
 
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;

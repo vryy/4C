@@ -60,8 +60,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -76,7 +74,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalc
       // initialization of diffusion manager
       dmedc_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_)))
 {
-  return;
 }
 
 
@@ -108,16 +105,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateAction(
       // extract porosity from material and store in diffusion manager
       if (material->MaterialType() == INPAR::MAT::m_elchmat)
       {
-        const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+        const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
           Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
           if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+          {
             dmedc_->SetPhasePoro(
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
-
+          }
           else
             dserror("Invalid material!");
         }
@@ -160,7 +158,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
 
   if (mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+    const auto* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
     for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
     {
@@ -169,7 +167,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
 
       if (singlemat->MaterialType() == INPAR::MAT::m_elchphase)
       {
-        const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
+        const auto* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
         dmedc_->SetPhasePoro(actsinglemat->Epsilon(), iphase);
       }
@@ -198,7 +196,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
           for (int vi = 0; vi < my::nen_; ++vi)
             elevec1[vi * my::numdofpernode_ + my::numscal_] +=
                 valence_k * elevec1[vi * my::numdofpernode_ + k];
-          ;
         }  // loop over scalars
 
         break;
@@ -277,10 +274,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
       dserror("Unknown closing equation for electric potential!");
       break;
     }
-  }  // switch(myelch::elchparams_->EquPot())
-
-  return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoundaryKinetics
+  }
+}
 
 
 /*-------------------------------------------------------------------------------------*
