@@ -8,7 +8,9 @@
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc_elch_diffcond.H"
-#include "scatra_ele_calc_elch_diffcond.H"  // for diffusion manager
+
+#include "scatra_ele_calc_elch_diffcond.H"
+#include "scatra_ele_parameter_boundary.H"
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
@@ -291,15 +293,43 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
     Epetra_SerialDenseVector& eslaveresidual)
 {
-  // this function should never be called
-  dserror(
-      "Each scatra-scatra interface for electrochemistry problems with conforming interface "
-      "discretization "
-      "must have an electrode on the slave side and the electrolyte on the master side, not the "
-      "other way around!");
+  switch (my::scatraparamsboundary_->KineticModel())
+  {
+    case INPAR::S2I::kinetics_nointerfaceflux:
+      break;
+    default:
+    {
+      dserror(
+          "Evaluation of scatra-scatra interface kinetics for electrochemistry problems with "
+          "conforming interface discretization must have an electrode on the slave side and the "
+          "electrolyte on the master side.");
+      break;
+    }
+  }
+}
 
-  return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupling
+/*-------------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICouplingOD(
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix)
+{
+  switch (my::scatraparamsboundary_->KineticModel())
+  {
+    case INPAR::S2I::kinetics_nointerfaceflux:
+      break;
+    default:
+    {
+      dserror(
+          "Evaluation of scatra-scatra interface kinetics for electrochemistry problems with "
+          "conforming interface discretization must have an electrode on the slave side and the "
+          "electrolyte on the master side.");
+      break;
+    }
+  }
+}
 
 
 /*-------------------------------------------------------------------------------------*

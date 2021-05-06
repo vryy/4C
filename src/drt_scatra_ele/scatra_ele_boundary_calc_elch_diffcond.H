@@ -99,6 +99,17 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
           Epetra_SerialDenseVector& eslaveresidual) override;
 
+      //! \brief linearization of coupling condition w.r.t. other dofs
+      //!
+      //! \param ele             current boundary element
+      //! \param params          parameter list
+      //! \param discretization  discretization
+      //! \param la              location array
+      //! \param eslavematrix    element matrix for slave side
+      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix) override;
+
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
