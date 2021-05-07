@@ -173,6 +173,9 @@ namespace SSI
     //! scatra and scatra manifold fields
     void CalcInitialTimeDerivative();
 
+    //! call complete on the sub problem matrices
+    void CompleteSubproblemMatrices();
+
     //! distribute solution to all other fields
     //! \param restore_velocity   restore velocity when StructureField()->SetState() is called
     void DistributeSolutionAllFields(bool restore_velocity = false);

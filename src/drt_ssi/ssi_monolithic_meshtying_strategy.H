@@ -54,18 +54,22 @@ namespace SSI
     /*!
      * @brief apply mesh tying to scatra manifold structure matrix
      *
-     * @param[in,out] manifold_structure_matrix scalar transport on manifold structure matrix
+     * @param[in,out] manifold_structure_matrix  scalar transport on manifold structure matrix
+     * @param[in]     do_uncomplete              flag indicating if we need to uncomplete the matrix
+     *                                           before adding something
      */
     virtual void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) = 0;
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix, bool do_uncomplete) = 0;
 
     /*!
      * @brief apply mesh tying to scatra structure matrix
      *
      * @param[in,out] scatra_structure_matrix  scatra structure matrix
+     * @param[in]     do_uncomplete            flag indicating if we need to uncomplete the matrix
+     *                                         before adding something
      */
     virtual void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) = 0;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) = 0;
 
     /*!
      * @brief apply mesh tying to structure right hand side vector
@@ -174,10 +178,11 @@ namespace SSI
     explicit MeshtyingStrategySparse(const SSI::SSIMono& ssi_mono);
 
     void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) override;
 
     void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) override;
@@ -191,10 +196,12 @@ namespace SSI
     explicit MeshtyingStrategyBlock(const SSI::SSIMono& ssi_mono);
 
     void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override = 0;
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) override = 0;
 
     void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override = 0;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix,
+        bool do_uncomplete) override = 0;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix,
@@ -232,10 +239,11 @@ namespace SSI
     explicit MeshtyingStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
 
     void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) override;
 
     void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) override;
@@ -249,10 +257,11 @@ namespace SSI
     explicit MeshtyingStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
 
     void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) override;
 
     void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix) override;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) override;
 
     void ApplyMeshtyingToStructureScatra(
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) override;

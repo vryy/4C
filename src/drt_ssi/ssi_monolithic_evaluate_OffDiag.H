@@ -38,7 +38,6 @@ namespace SSI
    public:
     explicit ScatraStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
-        Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
@@ -78,9 +77,6 @@ namespace SSI
     //! map extractor associated with all degrees of freedom inside structure field
     const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
 
-    //! map extractor associated with all degrees of freedom inside scatra field
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
-
     //! map extractor associated with all degrees of freedom inside structural field
     const Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
@@ -111,10 +107,7 @@ namespace SSI
    public:
     explicit ScatraManifoldStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
-        Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const Epetra_Map> map_manifold,
-        Teuchos::RCP<const Epetra_Map> map_structure_manifold,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -128,12 +121,6 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock) override;
 
    private:
-    //! map of all scatra manifold dofs
-    const Teuchos::RCP<const Epetra_Map> map_manifold_;
-
-    //! map of all structure dofs with same nodes as scatra manifold
-    const Teuchos::RCP<const Epetra_Map> map_structure_manifold_;
-
     //! scatra manifold problem
     const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_;
   };
@@ -161,6 +148,10 @@ namespace SSI
 
     void EvaluateOffDiagBlockStructureScatraDomain(
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const override;
+
+   private:
+    //! map extractor associated with all degrees of freedom inside scatra field
+    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
   };
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H

@@ -443,6 +443,8 @@ void SSTI::SSTIMono::NewtonLoop()
 
     EvaluateSubproblems();
 
+    ssti_matrices_->CompleteScaTraStructureMatrices();
+
     AssembleMatAndRHS();
 
     if (convcheck_->Converged(*this)) break;

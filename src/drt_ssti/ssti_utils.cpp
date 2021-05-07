@@ -244,7 +244,10 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
     Teuchos::RCP<Epetra_Map> interface_map_scatra, Teuchos::RCP<Epetra_Map> interface_map_thermo,
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool isinterfacemeshtying)
-    : systemmatrix_(Teuchos::null),
+    : interface_map_scatra_(interface_map_scatra),
+      matrixtype_scatra_(matrixtype_scatra),
+      ssti_maps_mono_(ssti_maps_mono),
+      systemmatrix_(Teuchos::null),
       scatrastructuredomain_(Teuchos::null),
       scatrastructureinterface_(Teuchos::null),
       scatrathermodomain_(Teuchos::null),
@@ -351,6 +354,37 @@ void SSTI::SSTIMatrices::ClearMatrices()
   thermoscatrainterface_->Zero();
   thermostructuredomain_->Zero();
   thermostructureinterface_->Zero();
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
+{
+  switch (matrixtype_scatra_)
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      scatrastructuredomain_->Complete();
+      scatrastructureinterface_->Complete();
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      scatrastructuredomain_->Complete(
+          *ssti_maps_mono_->MapsStructure()->FullMap(), *ssti_maps_mono_->MapsScatra()->FullMap());
+      scatrastructureinterface_->Complete(
+          *ssti_maps_mono_->MapsStructure()->FullMap(), *interface_map_scatra_);
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
 }
 
 /*---------------------------------------------------------------------------------*

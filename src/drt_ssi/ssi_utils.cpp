@@ -521,7 +521,9 @@ SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
     : is_scatra_manifold_(ssi_mono_algorithm.IsScaTraManifold()),
       scatra_matrixtype_(ssi_mono_algorithm.ScaTraField()->MatrixType()),
       scatra_dofrowmap_(ssi_mono_algorithm.ScaTraField()->DofRowMap()),
+      scatramanifold_dofrowmap_(Teuchos::null),
       structure_dofrowmap_(ssi_mono_algorithm.StructureField()->DofRowMap()),
+      structure_on_scatramanifold_dofrowmap_(Teuchos::null),
       system_matrix_(Teuchos::null),
       scatra_matrix_(Teuchos::null),
       scatramanifold_structure_matrix_(Teuchos::null),
@@ -529,6 +531,14 @@ SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
       structure_scatra_matrix_(Teuchos::null),
       structure_matrix_(Teuchos::null)
 {
+  // fill maps related to scalar transport manifold if relevant
+  if (is_scatra_manifold_)
+  {
+    scatramanifold_dofrowmap_ = ssi_mono_algorithm.ScaTraManifold()->DofRowMap();
+    structure_on_scatramanifold_dofrowmap_ =
+        ssi_mono_algorithm.MapStructureOnScaTraManifold()->Map(0);
+  }
+
   InitializeSystemMatrix(ssi_mono_algorithm);
 
   InitializeMainDiagMatrices(ssi_mono_algorithm);
@@ -619,6 +629,25 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(const SSI::SSIMono& ssi_
       dserror("Invalid matrix type associated with scalar transport field!");
       break;
     }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldStructureMatrix()
+{
+  switch (scatra_matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+      ScaTraManifoldStructureMatrix()->Complete(*structure_dofrowmap_, *scatramanifold_dofrowmap_);
+      break;
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+      ScaTraManifoldStructureMatrix()->Complete();
+      break;
+    default:
+      dserror("Not supported LINALG::MatrixType!");
+      break;
   }
 }
 

@@ -151,20 +151,28 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     // check if matrices are filled because they have to be for the below methods
     if (!ssi_matrices_->StructureScaTraMatrix()->Filled())
       ssi_matrices_->CompleteStructureScaTraMatrix();
+    if (!ssi_matrices_->ScaTraStructureMatrix()->Filled())
+      ssi_matrices_->CompleteScaTraStructureMatrix();
 
     if (IsScaTraManifold())
     {
-      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          ssi_matrices_->ScaTraManifoldStructureMatrix());
+      if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
+        ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
 
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          manifoldscatraflux_->MatrixManifoldStructure());
+          ssi_matrices_->ScaTraManifoldStructureMatrix(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
+
+      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
+          manifoldscatraflux_->MatrixManifoldStructure(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
 
       strategy_meshtying_->ApplyMeshtyingToScatraStructure(
-          manifoldscatraflux_->MatrixScaTraStructure());
+          manifoldscatraflux_->MatrixScaTraStructure(), true);
     }
 
-    strategy_meshtying_->ApplyMeshtyingToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
+    strategy_meshtying_->ApplyMeshtyingToScatraStructure(
+        ssi_matrices_->ScaTraStructureMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
@@ -400,6 +408,22 @@ void SSI::SSIMono::BuildNullSpaces() const
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
 }  // SSI::SSIMono::BuildNullSpaces
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::CompleteSubproblemMatrices()
+{
+  ssi_matrices_->ScaTraMatrix()->Complete();
+  ssi_matrices_->CompleteScaTraStructureMatrix();
+  ssi_matrices_->CompleteStructureScaTraMatrix();
+  ssi_matrices_->StructureMatrix()->Complete();
+
+  if (IsScaTraManifold())
+  {
+    ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+    manifoldscatraflux_->CompleteMatrixManifoldStructure();
+    manifoldscatraflux_->CompleteMatrixScaTraStructure();
+  }
+}
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -814,13 +838,10 @@ void SSI::SSIMono::SetupSystem()
   {
     // initialize object, that performs evaluations of OD coupling
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
-        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
-        MapStructureOnScaTraManifold()->Map(0), InterfaceCouplingAdapterStructure(),
-        InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
-        MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
-        StructureField(), Meshtying3DomainIntersection()));
+        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
+        interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(),
+        ScaTraManifoldBaseAlgorithm(), StructureField(), Meshtying3DomainIntersection()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
     manifoldscatraflux_ = Teuchos::rcp(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this));
@@ -828,8 +849,7 @@ void SSI::SSIMono::SetupSystem()
   else
   {
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
         interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), StructureField(),
         Meshtying3DomainIntersection()));
@@ -935,11 +955,8 @@ void SSI::SSIMono::NewtonLoop()
     // evaluate sub problems and get all matrices and right-hand-sides
     EvaluateSubproblems();
 
-    // add the fill complete calls
-    ssi_matrices_->ScaTraMatrix()->Complete();
-    ssi_matrices_->CompleteScaTraStructureMatrix();
-    ssi_matrices_->CompleteStructureScaTraMatrix();
-    ssi_matrices_->StructureMatrix()->Complete();
+    // complete the sub problem matrices
+    CompleteSubproblemMatrices();
 
     // assemble global system of equations
     AssembleMatAndRHS();
@@ -1340,11 +1357,8 @@ void SSI::SSIMono::CalcInitialPotentialField()
     DistributeSolutionAllFields(true);
     EvaluateSubproblems();
 
-    // add the fill complete calls
-    ssi_matrices_->ScaTraMatrix()->Complete();
-    ssi_matrices_->CompleteScaTraStructureMatrix();
-    ssi_matrices_->CompleteStructureScaTraMatrix();
-    ssi_matrices_->StructureMatrix()->Complete();
+    // complete the sub problem matrices
+    CompleteSubproblemMatrices();
 
     AssembleMatAndRHS();
     ApplyDBCToSystem();
@@ -1438,11 +1452,8 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   DistributeSolutionAllFields(true);
   EvaluateSubproblems();
 
-  // add the fill complete calls
-  ssi_matrices_->ScaTraMatrix()->Complete();
-  ssi_matrices_->CompleteScaTraStructureMatrix();
-  ssi_matrices_->CompleteStructureScaTraMatrix();
-  ssi_matrices_->StructureMatrix()->Complete();
+  // complete the sub problem matrices
+  CompleteSubproblemMatrices();
 
   AssembleMatAndRHS();
   ApplyDBCToSystem();

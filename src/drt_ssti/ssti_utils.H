@@ -140,6 +140,9 @@ namespace SSTI
     //! method that clears all ssi matrices
     void ClearMatrices();
 
+    //! call complete on the scalar transport - structure off-diagonal matrices
+    void CompleteScaTraStructureMatrices();
+
     Teuchos::RCP<LINALG::SparseOperator> SystemMatrix() { return systemmatrix_; };
 
     //! return sub blocks of system matrix
@@ -169,6 +172,15 @@ namespace SSTI
 
     Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
         const Teuchos::RCP<const Epetra_Map> row_map);
+
+    //! scalar transport interface map
+    Teuchos::RCP<Epetra_Map> interface_map_scatra_;
+
+    //! scalar transport matrix type
+    const LINALG::MatrixType matrixtype_scatra_;
+
+    //! maps for monolithic treatment of scalar transport-structure-thermo-interaction
+    Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono_;
 
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix_;
     //! subblocks of system matrix
