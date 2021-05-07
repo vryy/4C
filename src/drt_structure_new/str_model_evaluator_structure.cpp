@@ -617,7 +617,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructureGaussPointData
 
   EvaluateInternal(eval_mat, eval_vec);
 
-  EvalData().GetGaussPointDataOutputManagerPtr()->DistributeQuantities();
+  EvalData().GetGaussPointDataOutputManagerPtr()->DistributeQuantities(Discret().Comm());
 }
 
 /*----------------------------------------------------------------------------*

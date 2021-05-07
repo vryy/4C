@@ -19,6 +19,11 @@
 // forward declarations
 class Epetra_MultiVector;
 
+namespace DRT
+{
+  class Exporter;
+}
+
 namespace STR
 {
   namespace MODELEVALUATOR
@@ -42,7 +47,7 @@ namespace STR
        * \brief Distribute and collect all quantities to and from all other procs to ensure that all
        * data is in this list.
        */
-      void DistributeQuantities();
+      void DistributeQuantities(const Epetra_Comm& comm);
 
       inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
       GetMutableNodalData()
@@ -103,18 +108,16 @@ namespace STR
       static constexpr int MPI_TAG = 545;
       static const char MPI_DELIMITER = '!';
 
-      void SendMyQuantitiesToProc(int to_proc) const;
+      void SendMyQuantitiesToProc(const DRT::Exporter&, int to_proc) const;
 
       std::unique_ptr<std::unordered_map<std::string, int>> ReceiveQuantitiesFromProc(
-          int from_proc) const;
+          const DRT::Exporter&, int from_proc) const;
 
-      void BroadcastMyQuantitites(const Epetra_Comm& comm);
+      void BroadcastMyQuantitites(const DRT::Exporter&);
 
-      void PackMyQuantityNames(std::vector<char>& names) const;
+      void PackMyQuantities(std::vector<char>& data) const;
 
-      void PackMyQuantitySizes(std::vector<int>& sizes) const;
-
-      void UnpackQuantities(std::vector<char>& names, std::vector<int>& sizes,
+      void UnpackQuantities(std::size_t pos, const std::vector<char>& data,
           std::unordered_map<std::string, int>& quantities) const;
 
       void PrepareNodalDataVectors(const Epetra_Map& nodal_col_map);

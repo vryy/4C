@@ -13,6 +13,7 @@
 /*!----------------------------------------------------------------------
  *----------------------------------------------------------------------*/
 
+#include <mpi.h>
 #include "vector"
 #include "drt_exporter.H"
 #include "drt_utils.H"
@@ -71,12 +72,25 @@ recvplan_(old.recvplan_)
  *----------------------------------------------------------------------*/
 DRT::Exporter::~Exporter() { return; }
 
+void DRT::Exporter::Broadcast(const int frompid, std::vector<char>& data, const int tag) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+
+  int length = static_cast<int>(data.size());
+  MPI_Bcast(&length, 1, MPI_INT, frompid, comm->Comm());
+  if (MyPID() != frompid)
+  {
+    data.resize(length);
+  }
+  MPI_Bcast((void*)&data[0], length, MPI_CHAR, frompid, comm->Comm());
+}
 
 /*----------------------------------------------------------------------*
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ISend(const int frompid, const int topid, const char* data, const int dsize,
-    const int tag, MPI_Request& request)
+    const int tag, MPI_Request& request) const
 {
   if (MyPID() != frompid) return;
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -89,7 +103,7 @@ void DRT::Exporter::ISend(const int frompid, const int topid, const char* data, 
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ISend(const int frompid, const int topid, const int* data, const int dsize,
-    const int tag, MPI_Request& request)
+    const int tag, MPI_Request& request) const
 {
   if (MyPID() != frompid) return;
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -102,7 +116,7 @@ void DRT::Exporter::ISend(const int frompid, const int topid, const int* data, c
  |  do a send of data (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ISend(const int frompid, const int topid, const double* data, const int dsize,
-    const int tag, MPI_Request& request)
+    const int tag, MPI_Request& request) const
 {
   if (MyPID() != frompid) return;
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -114,7 +128,8 @@ void DRT::Exporter::ISend(const int frompid, const int topid, const double* data
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length)
+void DRT::Exporter::ReceiveAny(
+    int& source, int& tag, std::vector<char>& recvbuff, int& length) const
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -135,14 +150,14 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<char>& recvbuf
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Receive(
-    const int source, const int tag, std::vector<char>& recvbuff, int& length)
+    const int source, const int tag, std::vector<char>& recvbuff, int& length) const
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
   MPI_Status status;
   // probe for any message to come
   MPI_Probe(source, tag, comm->Comm(), &status);
-  MPI_Get_count(&status, MPI_INT, &length);
+  MPI_Get_count(&status, MPI_CHAR, &length);
   if (length > (int)recvbuff.size()) recvbuff.resize(length);
   // receive the message
   MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
@@ -152,7 +167,7 @@ void DRT::Exporter::Receive(
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length)
+void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -173,7 +188,7 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Receive(
-    const int source, const int tag, std::vector<int>& recvbuff, int& length)
+    const int source, const int tag, std::vector<int>& recvbuff, int& length) const
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -190,7 +205,8 @@ void DRT::Exporter::Receive(
 /*----------------------------------------------------------------------*
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length)
+void DRT::Exporter::ReceiveAny(
+    int& source, int& tag, std::vector<double>& recvbuff, int& length) const
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -211,7 +227,7 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<double>& recvb
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Receive(
-    const int source, const int tag, std::vector<double>& recvbuff, int& length)
+    const int source, const int tag, std::vector<double>& recvbuff, int& length) const
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");

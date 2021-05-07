@@ -211,6 +211,19 @@ namespace DRT
     void Export(std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& data);
 
     /*!
+     * \brief Send data from one processor to all other processors (blocking)
+     *
+     * The method will send an array of chars from the root to any other procs.
+     *
+     * All processors have to call this method, although they are doing different things.
+     *
+     * \param frompid Id of the root processor that is the only sender
+     * \param data vector of the data (must only be filled by the sender)
+     * \param tag mpi tag
+     */
+    void Broadcast(int frompid, std::vector<char>& data, int tag) const;
+
+    /*!
     \brief Send data from one processor to another (nonblocking)
 
     The method will send an array of chars in a nonblocking way meaning that this method
@@ -236,7 +249,7 @@ namespace DRT
     \note This is an individual call
     */
     void ISend(const int frompid, const int topid, const char* data, const int dsize, const int tag,
-        MPI_Request& request);
+        MPI_Request& request) const;
 
     /*!
     \brief Send data from one processor to another (nonblocking)
@@ -264,7 +277,7 @@ namespace DRT
     \note This is an individual call
     */
     void ISend(const int frompid, const int topid, const int* data, const int dsize, const int tag,
-        MPI_Request& request);
+        MPI_Request& request) const;
 
     /*!
     \brief Send data from one processor to another (nonblocking)
@@ -292,7 +305,7 @@ namespace DRT
     \note This is an individual call
     */
     void ISend(const int frompid, const int topid, const double* data, const int dsize,
-        const int tag, MPI_Request& request);
+        const int tag, MPI_Request& request) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -318,8 +331,8 @@ namespace DRT
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length);
-    void Receive(const int source, const int tag, std::vector<char>& recvbuff, int& length);
+    void ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length) const;
+    void Receive(const int source, const int tag, std::vector<char>& recvbuff, int& length) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -345,8 +358,8 @@ namespace DRT
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length);
-    void Receive(const int source, const int tag, std::vector<int>& recvbuff, int& length);
+    void ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const;
+    void Receive(const int source, const int tag, std::vector<int>& recvbuff, int& length) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -372,8 +385,8 @@ namespace DRT
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length);
-    void Receive(const int source, const int tag, std::vector<double>& recvbuff, int& length);
+    void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length) const;
+    void Receive(const int source, const int tag, std::vector<double>& recvbuff, int& length) const;
 
     /*!
     \brief wait for nonblocking send to finish
@@ -387,7 +400,7 @@ namespace DRT
     \param request (in): mpi request handle
 
     */
-    void Wait(MPI_Request& request)
+    void Wait(MPI_Request& request) const
     {
       MPI_Status status;
       MPI_Wait(&request, &status);

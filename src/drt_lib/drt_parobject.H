@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <type_traits>
 #include <string>
@@ -108,7 +109,9 @@ namespace DRT
    string
    template<typename T, typename U>
    std::vector<T>  // especially useful to pack other packs into a pack, e.g. a class packing its
-   own base class std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
+   own base class
+   std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
+   std::unordered_map<T,U>
    packing its own base class std::pair<T,U> std::set<T> LINALG::Matrix<T,U>
    std::vector<LINALG::Matrix<T,U> >
    Epetra_SerialDenseMatrix
@@ -254,6 +257,34 @@ namespace DRT
       if (i != numentries) dserror("Something wrong with number of elements");
 
       return;
+    }
+
+    /*!
+     \brief Add stuff to the end of a char vector data
+
+     This method is templated for std::unordered_map<T,U>
+     \param data (in/out) : char string stuff shall be added to
+     \param stuff (in)    : std::unordered_map<T,U> that get's added to stuff
+
+     */
+    template <typename T, typename U>
+    static void AddtoPack(PackBuffer& data, const std::unordered_map<T, U>& stuff)
+    {
+      int numentries = (int)stuff.size();
+      AddtoPack(data, numentries);
+
+      // iterator
+      typename std::unordered_map<T, U>::const_iterator colcurr;
+
+      int i = 0;
+      for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
+      {
+        AddtoPack(data, colcurr->first);
+        AddtoPack(data, colcurr->second);
+        ++i;
+      }
+
+      if (i != numentries) dserror("Something wrong with number of elements");
     }
 
     /*!
@@ -599,6 +630,37 @@ namespace DRT
       }
 
       return;
+    }
+
+    /*!
+     \brief Extract stuff from a char vector data and increment position
+
+     This method is templated for stuff of type std::unordered_map<T,U>
+
+     \param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method \param data (in)         : char vector where stuff is extracted from \param
+     stuff (out)       : std::unordered_map<T,U> to extract from data
+
+     */
+    template <typename T, typename U>
+    static void ExtractfromPack(std::vector<char>::size_type& position,
+        const std::vector<char>& data, std::unordered_map<T, U>& stuff)
+    {
+      int numentries = 0;
+      ExtractfromPack(position, data, numentries);
+
+      stuff.clear();
+
+      for (int i = 0; i < numentries; i++)
+      {
+        T first;
+        U second;
+        ExtractfromPack(position, data, first);
+        ExtractfromPack(position, data, second);
+
+        // add to map
+        stuff.insert({first, second});
+      }
     }
 
     /*!
