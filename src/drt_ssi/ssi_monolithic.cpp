@@ -118,10 +118,40 @@ void SSI::SSIMono::ApplyDBCToSystem()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
+bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
+{
+  // check for first iteration in calculation of initial time derivative
+  if (IterationCount() == 0 and Step() == 0 and !DoCalculateInitialPotentialField()) return true;
+
+  if (IterationCount() == 1)
+  {
+    // check for first iteration in calculation of initial potential field
+    if (Step() == 0 and DoCalculateInitialPotentialField()) return true;
+
+    // check for first iteration in restart simulations
+    if (IsRestart())
+    {
+      auto* problem = DRT::Problem::Instance();
+      // restart based on time step
+      if (Step() == problem->Restart() + 1) return true;
+      // restart based on time
+      if (Time() == problem->RestartTime() + Dt()) return true;
+    }
+  }
+
+  return false;
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 {
   if (SSIInterfaceMeshtying())
   {
+    // check if matrices are filled because they have to be for the below methods
+    if (!ssi_matrices_->StructureScaTraMatrix()->Filled())
+      ssi_matrices_->CompleteStructureScaTraMatrix();
+
     if (IsScaTraManifold())
     {
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
@@ -139,7 +169,8 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
 
-    strategy_meshtying_->ApplyMeshtyingToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
+    strategy_meshtying_->ApplyMeshtyingToStructureScatra(
+        ssi_matrices_->StructureScaTraMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
     ssi_vectors_->StructureResidual()->Update(
         1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
@@ -505,18 +536,11 @@ void SSI::SSIMono::PrepareTimeLoop()
   ScaTraField()->Output();
   if (IsScaTraManifold()) ScaTraManifold()->Output();
 
-  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
-  const bool init_pot_calc =
-      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
-  const auto scatra_type =
-      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
-
   // calculate initial potential field if needed
-  if (init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch)
-    CalcInitialPotentialField();
+  if (DoCalculateInitialPotentialField()) CalcInitialPotentialField();
 
   // calculate initial time derivatives
-  CalcInitialTimeDerivative(scatra_type);
+  CalcInitialTimeDerivative();
 }
 
 /*--------------------------------------------------------------------------*
@@ -1318,6 +1342,8 @@ void SSI::SSIMono::CalcInitialPotentialField()
 
     // add the fill complete calls
     ssi_matrices_->ScaTraMatrix()->Complete();
+    ssi_matrices_->CompleteScaTraStructureMatrix();
+    ssi_matrices_->CompleteStructureScaTraMatrix();
     ssi_matrices_->StructureMatrix()->Complete();
 
     AssembleMatAndRHS();
@@ -1375,12 +1401,12 @@ void SSI::SSIMono::CalcInitialPotentialField()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra_type)
+void SSI::SSIMono::CalcInitialTimeDerivative()
 {
   // store initial velocity to restore them afterwards
   auto init_velocity = *StructureField()->Velnp();
 
-  const bool is_elch = scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+  const bool is_elch = IsElchScaTraTimIntType();
 
   // prepare specific time integrators
   ScaTraField()->PreCalcInitialTimeDerivative();

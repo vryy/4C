@@ -414,7 +414,7 @@ void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToScatraStructure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::ApplyMeshtyingToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix)
+    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->Zero();
   auto temp_struct_scatra_sparse_matrix =
@@ -427,17 +427,14 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToStructureScatra(
   temp_struct_scatra_sparse_matrix->Complete(
       *SSIMono().ScaTraField()->DofRowMap(), *SSIMono().StructureField()->DofRowMap());
 
-  // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
-  struct_scatra_sparse_matrix->UnComplete();
+  if (do_uncomplete) struct_scatra_sparse_matrix->UnComplete();
   struct_scatra_sparse_matrix->Add(*temp_struct_scatra_sparse_matrix, false, 1.0, 0.0);
-  struct_scatra_sparse_matrix->Complete(
-      *SSIMono().ScaTraField()->DofRowMap(), *SSIMono().StructureField()->DofRowMap());
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix)
+    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->Zero();
   auto temp_struct_scatra_sparse_matrix =
@@ -450,17 +447,14 @@ void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToStructureScatra(
   temp_struct_scatra_sparse_matrix->Complete(
       *SSIMono().ScaTraField()->DofRowMap(), *SSIMono().StructureField()->DofRowMap());
 
-  // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
-  struct_scatra_sparse_matrix->UnComplete();
+  if (do_uncomplete) struct_scatra_sparse_matrix->UnComplete();
   struct_scatra_sparse_matrix->Add(*temp_struct_scatra_sparse_matrix, false, 1.0, 0.0);
-  struct_scatra_sparse_matrix->Complete(
-      *SSIMono().ScaTraField()->DofRowMap(), *SSIMono().StructureField()->DofRowMap());
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix)
+    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->Zero();
   auto temp_struct_scatra_block_matrix =
@@ -476,10 +470,8 @@ void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToStructureScatra(
   }
   temp_struct_scatra_block_matrix->Complete();
 
-  // uncomplete matrix, add mesh tying entries stored in temp matrix to matrix and complete again
-  structure_scatra_block_matrix->UnComplete();
+  if (do_uncomplete) structure_scatra_block_matrix->UnComplete();
   structure_scatra_block_matrix->Add(*temp_struct_scatra_block_matrix, false, 1.0, 0.0);
-  structure_scatra_block_matrix->Complete();
 }
 
 /*----------------------------------------------------------------------*

@@ -324,29 +324,6 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
   const double timeintparam = structure_->TimIntParam();
   // scale with theta
   structurescatradomain->Scale(1.0 - timeintparam);
-
-  // finalize structure-scatra matrix block
-  switch (scatra_->ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
-    {
-      structurescatradomain->Complete();
-      break;
-    }
-
-    case LINALG::MatrixType::sparse:
-    {
-      structurescatradomain->Complete(*full_map_scatra_, *full_map_structure_);
-      break;
-    }
-
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
-  }
 }
 
 /*-----------------------------------------------------------------------------------*

@@ -171,7 +171,7 @@ namespace SSI
 
     //! calc initial time derivative of transported scalars for monolithic SSI problem including
     //! scatra and scatra manifold fields
-    void CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra_type);
+    void CalcInitialTimeDerivative();
 
     //! distribute solution to all other fields
     //! \param restore_velocity   restore velocity when StructureField()->SetState() is called
@@ -191,6 +191,15 @@ namespace SSI
 
     //! build and return vector of equilibration methods for each block of system matrix
     Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
+
+    /*!
+     * @note This is only necessary in the first iteration of the simulation, since only there the
+     * graph of the matrix changes
+     *
+     * @return flag indicating if we need to uncomplete the matrices before adding the mesh tying
+     * contributions.
+     */
+    bool IsUncompleteOfMatricesNecessaryForMeshTying() const;
 
     void Output() override;
 

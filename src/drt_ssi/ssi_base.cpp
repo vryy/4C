@@ -873,7 +873,31 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool SSI::SSIBase::IsRestart()
+bool SSI::SSIBase::DoCalculateInitialPotentialField() const
+{
+  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const bool init_pot_calc =
+      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+  const auto scatra_type =
+      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
+
+  return init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool SSI::SSIBase::IsElchScaTraTimIntType() const
+{
+  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const auto scatra_type =
+      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
+
+  return scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool SSI::SSIBase::IsRestart() const
 {
   // get the global problem
   const auto* problem = DRT::Problem::Instance();
