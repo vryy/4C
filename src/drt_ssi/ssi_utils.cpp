@@ -648,7 +648,7 @@ void SSI::UTILS::SSIMatrices::CompleteStructureScaTraMatrix()
   switch (scatra_matrixtype_)
   {
     case LINALG::MatrixType::sparse:
-      StructureScaTraMatrix()->Complete(*structure_dofrowmap_, *scatra_dofrowmap_);
+      StructureScaTraMatrix()->Complete(*scatra_dofrowmap_, *structure_dofrowmap_);
       break;
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:

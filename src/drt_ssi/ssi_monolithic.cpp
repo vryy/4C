@@ -92,17 +92,17 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::ApplyContactToSubProblems()
 {
+  // uncomplete matrices; we need to do this here since in contact simulations the dofs that
+  // interact with each other can change and thus the graph of the matrix can also change.
+  ssi_matrices_->ScaTraMatrix()->UnComplete();
+  ssi_matrices_->ScaTraStructureMatrix()->UnComplete();
+  ssi_matrices_->StructureScaTraMatrix()->UnComplete();
+
+  // add contributions
   strategy_contact_->ApplyContactToScatraResidual(ssi_vectors_->ScatraResidual());
-
   strategy_contact_->ApplyContactToScatraScatra(ssi_matrices_->ScaTraMatrix());
-
   strategy_contact_->ApplyContactToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
-
-  ssi_matrices_->CompleteScaTraStructureMatrix();
-
   strategy_contact_->ApplyContactToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
-
-  ssi_matrices_->CompleteStructureScaTraMatrix();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -913,6 +913,8 @@ void SSI::SSIMono::NewtonLoop()
 
     // add the fill complete calls
     ssi_matrices_->ScaTraMatrix()->Complete();
+    ssi_matrices_->CompleteScaTraStructureMatrix();
+    ssi_matrices_->CompleteStructureScaTraMatrix();
     ssi_matrices_->StructureMatrix()->Complete();
 
     // assemble global system of equations
@@ -1412,6 +1414,8 @@ void SSI::SSIMono::CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra
 
   // add the fill complete calls
   ssi_matrices_->ScaTraMatrix()->Complete();
+  ssi_matrices_->CompleteScaTraStructureMatrix();
+  ssi_matrices_->CompleteStructureScaTraMatrix();
   ssi_matrices_->StructureMatrix()->Complete();
 
   AssembleMatAndRHS();

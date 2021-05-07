@@ -73,9 +73,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
               *SSIMono().MapsScatra(), *SSIMono().MapsScatra());
   scatra_scatra_blockmatrix->Complete();
 
-  scatra_scatra_matrix_block->UnComplete();
   scatra_scatra_matrix_block->Add(*scatra_scatra_blockmatrix, false, 1.0, 1.0);
-  scatra_scatra_matrix_block->Complete();
 }
 
 /*-------------------------------------------------------------------------*
@@ -100,7 +98,6 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
 {
   auto scatra_structure_matrix_block =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
-  scatra_structure_matrix_block->UnComplete();
 
   // get scatra-structure block matrix and complete split matrix
   const auto& scatra_struct_blockmatrix =
@@ -137,7 +134,6 @@ void SSI::ContactStrategyBlock::ApplyContactToStructureScatra(
 {
   auto structure_scatra_matrix_block =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
-  structure_scatra_matrix_block->UnComplete();
 
   // get structure-scatra block matrix and complete split matrix
   const auto& struct_scatra_blockmatrix =
