@@ -207,6 +207,9 @@ namespace INPAR
       setStringToIntegralParameter<int>("ML_COARSEN", "UC", "",
           tuple<std::string>("UC", "METIS", "VBMETIS", "MIS"), tuple<int>(0, 1, 2, 3), &list);
 
+      BoolParameter("ML_REBALANCE", "Yes",
+          "Performe ML-internal rebalancing of coarse level operators.", &list);
+
       setStringToIntegralParameter<int>("ML_SMOOTHERFINE", "ILU", "",
           tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu", "GS",
               "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),

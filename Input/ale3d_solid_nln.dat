@@ -52,6 +52,7 @@ ML_COARSEN                      UC
 ML_AGG_SIZE                     27
 ML_PROLONG_SMO                  1.33
 ML_PROLONG_THRES                0.0
+ML_REBALANCE                    No
 ML_SMOOTHERFINE                 Chebychev
 ML_SMOOTHERMED                  Chebychev
 ML_SMOOTHERCOARSE               Umfpack
