@@ -423,9 +423,11 @@ namespace DRT
     /*!
      * \brief Send data from one processor to all other processors (blocking)
      *
-     * The method will send an array of chars from the root to any other procs.
+     * The method will send an array of chars from one sender (rank==frompid) to all other procs.
      *
-     * All processors have to call this method, although they are doing different things.
+     * All processors have to call this method (no matter whether the proc is sender or receiver).
+     * The sending proc (rank==frompid) has to provide the data vector. The size of the vector
+     * at the receivers (rank!=frompid) is automatically adjusted.
      *
      * \param frompid Id of the root processor that is the only sender
      * \param data vector of the data (must only be filled by the sender)
