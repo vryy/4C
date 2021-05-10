@@ -5,24 +5,15 @@
 
 \level 0
 
-
 */
 /*---------------------------------------------------------------------*/
 
-
-/*!----------------------------------------------------------------------
- *----------------------------------------------------------------------*/
-
-#include <mpi.h>
 #include "vector"
 #include "drt_exporter.H"
 #include "drt_utils.H"
 #include "drt_dserror.H"
 
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
 DRT::Exporter::Exporter(const Epetra_Comm& comm)
     : dummymap_(0, 0, comm),
       frommap_(dummymap_),
@@ -31,12 +22,8 @@ DRT::Exporter::Exporter(const Epetra_Comm& comm)
       myrank_(comm.MyPID()),
       numproc_(comm.NumProc())
 {
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
 DRT::Exporter::Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm)
     : dummymap_(0, 0, comm),
       frommap_(frommap),
@@ -46,31 +33,137 @@ DRT::Exporter::Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, cons
       numproc_(comm.NumProc())
 {
   ConstructExporter();
-  return;
 }
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Exporter::Exporter(const DRT::Exporter& old)
-    : dummymap_(old.dummymap_),
-      frommap_(old.frommap_),
-      tomap_(old.tomap_),
-      comm_(old.comm_),
-      myrank_(old.myrank_),
-      numproc_(old.numproc_),
-      sendplan_(old.sendplan_)
-#if 0
-recvplan_(old.recvplan_)
-#endif
+void DRT::Exporter::ISend(const int frompid, const int topid, const char* data, const int dsize,
+    const int tag, MPI_Request& request) const
 {
-  return;
+  if (MyPID() != frompid) return;
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Exporter::~Exporter() { return; }
+void DRT::Exporter::ISend(const int frompid, const int topid, const int* data, const int dsize,
+    const int tag, MPI_Request& request) const
+{
+  if (MyPID() != frompid) return;
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
+}
+
+void DRT::Exporter::ISend(const int frompid, const int topid, const double* data, const int dsize,
+    const int tag, MPI_Request& request) const
+{
+  if (MyPID() != frompid) return;
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
+}
+
+void DRT::Exporter::ReceiveAny(
+    int& source, int& tag, std::vector<char>& recvbuff, int& length) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
+  // get sender, tag and length
+  source = status.MPI_SOURCE;
+  tag = status.MPI_TAG;
+  MPI_Get_count(&status, MPI_CHAR, &length);
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
+}
+
+void DRT::Exporter::Receive(
+    const int source, const int tag, std::vector<char>& recvbuff, int& length) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(source, tag, comm->Comm(), &status);
+  MPI_Get_count(&status, MPI_CHAR, &length);
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
+}
+
+void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
+  // get sender, tag and length
+  source = status.MPI_SOURCE;
+  tag = status.MPI_TAG;
+  MPI_Get_count(&status, MPI_INT, &length);
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0], length, MPI_INT, source, tag, comm->Comm(), &status);
+}
+
+void DRT::Exporter::Receive(
+    const int source, const int tag, std::vector<int>& recvbuff, int& length) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(source, tag, comm->Comm(), &status);
+  MPI_Get_count(&status, MPI_INT, &length);
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0], length, MPI_INT, source, tag, comm->Comm(), &status);
+}
+
+void DRT::Exporter::ReceiveAny(
+    int& source, int& tag, std::vector<double>& recvbuff, int& length) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
+  // get sender, tag and length
+  source = status.MPI_SOURCE;
+  tag = status.MPI_TAG;
+  MPI_Get_count(&status, MPI_DOUBLE, &length);
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0], length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
+}
+
+void DRT::Exporter::Receive(
+    const int source, const int tag, std::vector<double>& recvbuff, int& length) const
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+  MPI_Status status;
+  // probe for any message to come
+  MPI_Probe(source, tag, comm->Comm(), &status);
+  MPI_Get_count(&status, MPI_DOUBLE, &length);
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+  // receive the message
+  MPI_Recv(&recvbuff[0], length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
+}
+
+void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
+{
+  const auto* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
+  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
+
+  int length = (int)sendbuff.size();
+  if (length > (int)recvbuff.size()) recvbuff.resize(length);
+
+  MPI_Allreduce(&(sendbuff[0]), &(recvbuff[0]), length, MPI_INT, mpi_op, comm->Comm());
+}
 
 void DRT::Exporter::Broadcast(const int frompid, std::vector<char>& data, const int tag) const
 {
@@ -86,179 +179,6 @@ void DRT::Exporter::Broadcast(const int frompid, std::vector<char>& data, const 
   MPI_Bcast((void*)&data[0], length, MPI_CHAR, frompid, comm->Comm());
 }
 
-/*----------------------------------------------------------------------*
- |  do a send of data (public)                               mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::ISend(const int frompid, const int topid, const char* data, const int dsize,
-    const int tag, MPI_Request& request) const
-{
-  if (MyPID() != frompid) return;
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Isend((void*)data, dsize, MPI_CHAR, topid, tag, comm->Comm(), &request);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  do a send of data (public)                               mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::ISend(const int frompid, const int topid, const int* data, const int dsize,
-    const int tag, MPI_Request& request) const
-{
-  if (MyPID() != frompid) return;
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Isend((void*)data, dsize, MPI_INT, topid, tag, comm->Comm(), &request);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  do a send of data (public)                               mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::ISend(const int frompid, const int topid, const double* data, const int dsize,
-    const int tag, MPI_Request& request) const
-{
-  if (MyPID() != frompid) return;
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Isend((void*)data, dsize, MPI_DOUBLE, topid, tag, comm->Comm(), &request);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  receive anything (public)                                mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(
-    int& source, int& tag, std::vector<char>& recvbuff, int& length) const
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Status status;
-  // probe for any message to come
-  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
-  // get sender, tag and length
-  source = status.MPI_SOURCE;
-  tag = status.MPI_TAG;
-  MPI_Get_count(&status, MPI_CHAR, &length);
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-  // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  receive specific (public)                                mwgee 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::Receive(
-    const int source, const int tag, std::vector<char>& recvbuff, int& length) const
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Status status;
-  // probe for any message to come
-  MPI_Probe(source, tag, comm->Comm(), &status);
-  MPI_Get_count(&status, MPI_CHAR, &length);
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-  // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_CHAR, source, tag, comm->Comm(), &status);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  receive anything (public)                                mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Status status;
-  // probe for any message to come
-  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
-  // get sender, tag and length
-  source = status.MPI_SOURCE;
-  tag = status.MPI_TAG;
-  MPI_Get_count(&status, MPI_INT, &length);
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-  // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_INT, source, tag, comm->Comm(), &status);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  receive specific (public)                                mwgee 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::Receive(
-    const int source, const int tag, std::vector<int>& recvbuff, int& length) const
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Status status;
-  // probe for any message to come
-  MPI_Probe(source, tag, comm->Comm(), &status);
-  MPI_Get_count(&status, MPI_INT, &length);
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-  // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_INT, source, tag, comm->Comm(), &status);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  receive anything (public)                                mwgee 11/06|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::ReceiveAny(
-    int& source, int& tag, std::vector<double>& recvbuff, int& length) const
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Status status;
-  // probe for any message to come
-  MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, comm->Comm(), &status);
-  // get sender, tag and length
-  source = status.MPI_SOURCE;
-  tag = status.MPI_TAG;
-  MPI_Get_count(&status, MPI_DOUBLE, &length);
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-  // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  receive specific (public)                                mwgee 03/07|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::Receive(
-    const int source, const int tag, std::vector<double>& recvbuff, int& length) const
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-  MPI_Status status;
-  // probe for any message to come
-  MPI_Probe(source, tag, comm->Comm(), &status);
-  MPI_Get_count(&status, MPI_DOUBLE, &length);
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-  // receive the message
-  MPI_Recv(&recvbuff[0], length, MPI_DOUBLE, source, tag, comm->Comm(), &status);
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  reduce all (public)                                       umay 10/07|
- *----------------------------------------------------------------------*/
-void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op)
-{
-  const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
-  if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
-
-  int length = (int)sendbuff.size();
-  if (length > (int)recvbuff.size()) recvbuff.resize(length);
-
-  MPI_Allreduce(&(sendbuff[0]), &(recvbuff[0]), length, MPI_INT, mpi_op, comm->Comm());
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  the actual exporter constructor (private)                mwgee 05/07|
- *----------------------------------------------------------------------*/
 void DRT::Exporter::ConstructExporter()
 {
   if (SourceMap().SameAs(TargetMap())) return;
@@ -322,6 +242,7 @@ void DRT::Exporter::ConstructExporter()
 
     // Loop what proc wants and what I have (SendPlan)
     if (proc != MyPID())
+    {
       for (int i = 0; i < recvsizes[1]; ++i)
       {
         const int gid = want[i];
@@ -331,6 +252,7 @@ void DRT::Exporter::ConstructExporter()
           SendPlan()[proc].insert(lid);
         }
       }
+    }
     Comm().Barrier();
   }  // for (int proc=0; proc<NumProc(); ++proc)
 
@@ -369,14 +291,8 @@ void DRT::Exporter::ConstructExporter()
     Comm().Barrier();
   }
 #endif
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                             mwgee 11/06|
- *----------------------------------------------------------------------*/
 void DRT::Exporter::GenericExport(ExporterHelper& helper)
 {
   if (SendPlan().size() == 0) return;
@@ -404,9 +320,8 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     // count
 
-    for (std::set<int>::iterator i = SendPlan()[tproc].begin(); i != SendPlan()[tproc].end(); ++i)
+    for (int lid : SendPlan()[tproc])
     {
-      const int lid = *i;
       const int gid = SourceMap().GID(lid);
       helper.PackObject(gid, sendblock);
     }
@@ -415,9 +330,8 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     sendblock.StartPacking();
 
-    for (std::set<int>::iterator i = SendPlan()[tproc].begin(); i != SendPlan()[tproc].end(); ++i)
+    for (int lid : SendPlan()[tproc])
     {
-      const int lid = *i;
       const int gid = SourceMap().GID(lid);
       if (helper.PackObject(gid, sendblock)) sendgid.push_back(gid);
     }
@@ -478,34 +392,20 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
   }  // for (int i=0; i<NumProc()-1; ++i)
 
   helper.PostExportCleanup(this);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                             mwgee 11/06|
- *----------------------------------------------------------------------*/
 void DRT::Exporter::Export(std::map<int, int>& data)
 {
   PODExporterHelper<int> helper(data);
   GenericExport(helper);
 }
 
-
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                             mwgee 11/06|
- *----------------------------------------------------------------------*/
 void DRT::Exporter::Export(std::map<int, double>& data)
 {
   PODExporterHelper<double> helper(data);
   GenericExport(helper);
 }
 
-
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                             u.kue 07/09|
- *----------------------------------------------------------------------*/
 void DRT::Exporter::Export(std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& data)
 {
   AnyObjectExporterHelper<Epetra_SerialDenseMatrix> helper(data);

@@ -108,12 +108,12 @@ namespace STR
       static constexpr int MPI_TAG = 545;
       static const char MPI_DELIMITER = '!';
 
-      void SendMyQuantitiesToProc(const DRT::Exporter&, int to_proc) const;
+      void SendMyQuantitiesToProc(const DRT::Exporter& exporter, int to_proc) const;
 
       std::unique_ptr<std::unordered_map<std::string, int>> ReceiveQuantitiesFromProc(
-          const DRT::Exporter&, int from_proc) const;
+          const DRT::Exporter& exporter, int from_proc) const;
 
-      void BroadcastMyQuantitites(const DRT::Exporter&);
+      void BroadcastMyQuantitites(const DRT::Exporter& exporter);
 
       void PackMyQuantities(std::vector<char>& data) const;
 

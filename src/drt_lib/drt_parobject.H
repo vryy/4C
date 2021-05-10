@@ -133,7 +133,7 @@ namespace DRT
      \brief Standard Constructor
 
      */
-    ParObject();
+    ParObject() = default;
 
     /*!
      \brief Copy Constructor
@@ -141,13 +141,13 @@ namespace DRT
      Makes a deep copy of a ParObject
 
      */
-    ParObject(const DRT::ParObject& old);
+    ParObject(const DRT::ParObject& old) = default;
 
     /*!
      \brief Destructor
 
      */
-    virtual ~ParObject();
+    virtual ~ParObject() = default;
 
     //! @name pure virtual Packing and Unpacking
 
@@ -226,7 +226,6 @@ namespace DRT
       int numele = stuff.size();
       AddtoPack(data, numele);
       AddtoPack(data, &stuff[0], numele * sizeof(T));
-      return;
     }
 
     /*!
@@ -255,8 +254,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -300,8 +297,6 @@ namespace DRT
     {
       AddtoPack(data, stuff.first);
       AddtoPack(data, stuff.second);
-
-      return;
     }
 
     /*!
@@ -327,8 +322,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -353,8 +346,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -379,8 +370,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -408,8 +397,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -481,7 +468,6 @@ namespace DRT
         // add all data in vector to pack
         AddtoPack(data, A, i * j * sizeof(double));
       }
-      return;
     }
 
     /*!
@@ -596,7 +582,6 @@ namespace DRT
       stuff.resize(dim);
       int size = dim * sizeof(T);
       ExtractfromPack(position, data, &stuff[0], size);
-      return;
     }
 
     /*!
@@ -628,8 +613,6 @@ namespace DRT
         // add to map
         stuff.insert(std::pair<T, U>(first, second));
       }
-
-      return;
     }
 
     /*!
@@ -680,8 +663,6 @@ namespace DRT
     {
       ExtractfromPack(position, data, stuff.first);
       ExtractfromPack(position, data, stuff.second);
-
-      return;
     }
 
     /*!
@@ -714,8 +695,6 @@ namespace DRT
         // add to map
         stuff.push_back(std::pair<T, U>(first, second));
       }
-
-      return;
     }
 
     /*!
@@ -749,8 +728,6 @@ namespace DRT
         // add to map
         stuff[first] = second;
       }
-
-      return;
     }
 
     /*!
@@ -782,8 +759,6 @@ namespace DRT
         // add to map
         stuff[i] = paired_vec;
       }
-
-      return;
     }
 
     /*!
@@ -814,8 +789,6 @@ namespace DRT
         // add to map
         stuff[i] = paired_mat;
       }
-
-      return;
     }
 
     /*!
@@ -845,8 +818,6 @@ namespace DRT
         // add to set
         stuff.insert(value);
       }
-
-      return;
     }
 
     /*!
@@ -940,8 +911,6 @@ namespace DRT
         // actual extraction of data
         ExtractfromPack(position, data, A, i * j * sizeof(double));
       }
-
-      return;
     }
 
     /*!
@@ -972,7 +941,6 @@ namespace DRT
     {
       memcpy(stuff, &data[position], stuffsize);
       position += stuffsize;
-      return;
     }
 
     //@}
