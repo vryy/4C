@@ -242,18 +242,11 @@ namespace DRT
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
 
-      // iterator
-      typename std::map<T, U>::const_iterator colcurr;
-
-      int i = 0;
-      for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
+      for (const auto& entry : stuff)
       {
-        AddtoPack(data, colcurr->first);
-        AddtoPack(data, colcurr->second);
-        ++i;
+        AddtoPack(data, entry.first);
+        AddtoPack(data, entry.second);
       }
-
-      if (i != numentries) dserror("Something wrong with number of elements");
     }
 
     /*!
@@ -273,15 +266,11 @@ namespace DRT
       // iterator
       typename std::unordered_map<T, U>::const_iterator colcurr;
 
-      int i = 0;
-      for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
+      for (const auto& entry : stuff)
       {
-        AddtoPack(data, colcurr->first);
-        AddtoPack(data, colcurr->second);
-        ++i;
+        AddtoPack(data, entry.first);
+        AddtoPack(data, entry.second);
       }
-
-      if (i != numentries) dserror("Something wrong with number of elements");
     }
 
     /*!
