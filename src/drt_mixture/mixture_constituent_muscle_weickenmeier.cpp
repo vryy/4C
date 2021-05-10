@@ -39,6 +39,8 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
       dotLambdaMMin_(matdata->GetDouble("DOTLAMBDAMIN")),
       ke_(matdata->GetDouble("KE")),
       kc_(matdata->GetDouble("KC")),
+      de_(matdata->GetDouble("DE")),
+      dc_(matdata->GetDouble("DC")),
       actTimesNum_(matdata->GetInt("ACTTIMESNUM")),
       actTimes_(*(matdata->Get<std::vector<double>>("ACTTIMES"))),
       actIntervalsNum_(matdata->GetInt("ACTINTERVALSNUM")),
@@ -76,8 +78,10 @@ MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_
   if (lambdaOpt_ <= 0.0) dserror("Material parameter LAMBDAOPT must be postive");
 
   // velocity dependent parameters
-  // realistically ke and kc are positive, but not necessarily restricted to positive values, so not
-  // checked yet
+  if (ke_ < 0.0) dserror("Material parameter KE should be postive or zero");
+  if (kc_ < 0.0) dserror("Material parameter KC should be postive or zero");
+  if (de_ < 0.0) dserror("Material parameter DE should be postive or zero");
+  if (dc_ < 0.0) dserror("Material parameter DC should be postive or zero");
 
   // prescribed activation in time intervals
   if (actTimesNum_ != int(actTimes_.size()))
@@ -100,6 +104,8 @@ MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weick
     : MixtureConstituent(params, id),
       params_(params),
       t_tot_(0),
+      timestep_(0),
+      lambdaMOld_(1.0),
       anisotropy_(),
       anisotropyExtension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
@@ -108,6 +114,12 @@ MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weick
 {
   // initialize total simulation time
   t_tot_ = 0.0;
+
+  // initialize timestep size
+  timestep_ = 0.0;
+
+  // initialize lambdaMOld_
+  lambdaMOld_ = 1.0;
 
   // register anisotropy extension to global anisotropy
   anisotropy_.RegisterAnisotropyExtension(anisotropyExtension_);
@@ -134,6 +146,10 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::PackConstituent(DRT::PackB
   DRT::ParObject::AddtoPack(data, matid);
 
   DRT::ParObject::AddtoPack(data, t_tot_);
+
+  DRT::ParObject::AddtoPack(data, timestep_);
+
+  DRT::ParObject::AddtoPack(data, lambdaMOld_);
 
   anisotropyExtension_.PackAnisotropy(data);
 }
@@ -167,6 +183,10 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::UnpackConstituent(
 
   DRT::ParObject::ExtractfromPack(position, data, t_tot_);
 
+  DRT::ParObject::ExtractfromPack(position, data, timestep_);
+
+  DRT::ParObject::ExtractfromPack(position, data, lambdaMOld_);
+
   anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
@@ -187,6 +207,25 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::ReadElement(
   anisotropy_.ReadAnisotropyFromElement(linedef);
 }
 
+void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Update(
+    const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID)
+{
+  // compute the current fibre stretch using the deformation gradient and the structural tensor
+  // right Cauchy Green tensor C= F^T F
+  LINALG::Matrix<3, 3> C(false);
+  C.MultiplyTN(1.0, F, F);
+
+  // structural tensor M, i.e. dyadic product of fibre directions
+  LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+
+  // product C^T*M
+  LINALG::Matrix<3, 3> transpCM(false);
+  transpCM.MultiplyTN(1.0, C, M);
+
+  // save the current fibre stretch in lambdaMOld_
+  lambdaMOld_ = sqrt(transpCM(0, 0) + transpCM(1, 1) + transpCM(2, 2));
+}
+
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Matrix<3, 3>& F,
     const LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat, const int gp, const int eleGID)
@@ -199,11 +238,13 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   ccmat.Clear();
 
   // save current simulation time
-  t_tot_ = params.get<double>("total time");
-
-  // time step size
-  // double dt = params.get<double>("delta time"); // TODO: needed for velocity dependent
-  // activation that is not implemented yet
+  t_tot_ = params.get<double>("total time", -1);
+  if (abs(t_tot_ + 1.0) < 1e-14)
+    dserror("No total time given for muscle Weickenmeier constituent!");
+  // save (time) step size
+  timestep_ = params.get<double>("delta time", -1);
+  if (abs(timestep_ + 1.0) < 1e-14)
+    dserror("No time step size given for muscle Weickenmeier constituent!");
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -355,6 +396,8 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   const double dotLambdaMMin = params_->dotLambdaMMin_;
   const double ke = params_->ke_;
   const double kc = params_->kc_;
+  const double de = params_->de_;
+  const double dc = params_->dc_;
 
   // const int actTimesNum = params_->actTimesNum_; //TODO: may be needed.
   const int actIntervalsNum = params_->actIntervalsNum_;
@@ -427,26 +470,29 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
     fxi = 0.0;
   }
 
-  // compute force-velocity dependency fv
+  // compute force-velocity dependency fv:
+  // modification of the original function given in Weickenmeier
   double fv = 1.0;
   double dFvdDotLambdaM = 1.0;  // derivative of fv w.r.t. dotLambdaM
-  double dotLambdaM = 0.0;      // TODO: include velocity dependency through BW Euler approximation
-                                // dotLambdaM = (lambdaM - lambdaM_old)/dt;
+
+  // BW Euler approximation of derivatives
+  // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
+  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep_;
+  // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
+  double dDotLambdaMdLambdaM = 1 / timestep_;
+
   double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;  // helper variable
-  double dDotLambdaMdLambdaM = 0.0;  // TODO: include velocity dependency through BW Euler
-                                     // approximation dDotLambdaMdLambdaM = 1/dt;
+
   if (dotLambdaM > 0)
   {
-    fv = (1 + ratioDotLambdaM) / (1 - ke * kc * ratioDotLambdaM);
+    fv = (1 + de) - de * (1 + ratioDotLambdaM) / (1 - ke * kc * ratioDotLambdaM);
     dFvdDotLambdaM =
-        dDotLambdaMdLambdaM *
-        ((1 + ke * kc) / (dotLambdaMMin * std::pow((1 - ke * kc * ratioDotLambdaM), 2)));
+        -de * ((1 + ke * kc) / (dotLambdaMMin * std::pow((1 - ke * kc * ratioDotLambdaM), 2)));
   }
   else
   {
-    fv = (1 - ratioDotLambdaM) / (1 + kc * ratioDotLambdaM);
-    dFvdDotLambdaM = -dDotLambdaMdLambdaM *
-                     ((1 + kc) / (dotLambdaMMin * std::pow((1 + kc * ratioDotLambdaM), 2)));
+    fv = (1 - dc) + dc * (1 - ratioDotLambdaM) / (1 + kc * ratioDotLambdaM);
+    dFvdDotLambdaM = -dc * ((1 + kc) / (dotLambdaMMin * std::pow((1 + kc * ratioDotLambdaM), 2)));
   }
 
   // compute active nominal stress Pa
