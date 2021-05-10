@@ -826,11 +826,19 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
     case INPAR::SOLVER::azprec_MLfluid:   // unsymmetric, unsmoothed restriction
     case INPAR::SOLVER::azprec_MLfluid2:  // full Pretrov-Galerkin unsymmetric smoothed
     {
-      // these are the hard-coded ML repartitioning settings
-      mllist.set("repartition: enable", 1);
-      mllist.set("repartition: partitioner", "ParMETIS");
-      mllist.set("repartition: max min ratio", 1.3);
-      mllist.set("repartition: min per proc", 3000);
+      // En-/Disable ML repartitioning. Note: ML requires parameter to be set as integer.
+      bool doRepart = DRT::INPUT::IntegralValue<bool>(inparams, "ML_REBALANCE");
+      if (doRepart)
+      {
+        mllist.set("repartition: enable", 1);
+
+        // these are the hard-coded ML repartitioning settings
+        mllist.set("repartition: partitioner", "ParMETIS");
+        mllist.set("repartition: max min ratio", 1.3);
+        mllist.set("repartition: min per proc", 3000);
+      }
+      else
+        mllist.set("repartition: enable", 0);
     }
     break;
     case INPAR::SOLVER::azprec_MueLuAMG_sym:     // MueLu operator (smoothed aggregation)
