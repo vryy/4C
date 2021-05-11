@@ -39,7 +39,6 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(Teuchos::RCP<DRT::Discretization> actdis,
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-  return;
 }
 
 
@@ -111,15 +110,7 @@ void SCATRA::TimIntGenAlpha::Setup()
           DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
     }
   }
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     vg 11/08 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntGenAlpha::~TimIntGenAlpha() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -132,7 +123,7 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
   eleparams.set<int>("action", SCATRA::set_time_parameter);
   eleparams.set<bool>("using generalized-alpha time integration", true);
   eleparams.set<bool>("using stationary formulation", false);
-  if (forcedincrementalsolver == false)
+  if (!forcedincrementalsolver)
     eleparams.set<bool>("incremental solver", incremental_);
   else
     eleparams.set<bool>("incremental solver", true);
@@ -145,8 +136,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameter(bool forcedincrementalsolve
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
 
@@ -171,8 +160,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler() const
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
 
@@ -182,7 +169,6 @@ void SCATRA::TimIntGenAlpha::SetElementTimeParameterBackwardEuler() const
 void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_ - (1 - alphaF_) * dta_);
-  return;
 }
 
 
@@ -200,8 +186,6 @@ void SCATRA::TimIntGenAlpha::SetOldPartOfRighthandside()
   // contains time derivatives of scalar, see below.)
   // hist_ = phin_ + dt*(1-(gamma/alpha_M))*phidtn_
   if (not incremental_) hist_->Update(1.0, *phin_, dta_ * (1.0 - genalphafac_), *phidtn_, 0.0);
-
-  return;
 }
 
 
@@ -215,7 +199,6 @@ void SCATRA::TimIntGenAlpha::ExplicitPredictor() const
 
   // constant predictor
   phinp_->Update(1.0, *phin_, 0.0);
-  return;
 }
 
 
@@ -234,8 +217,6 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
 
   // compute time derivative of phi at n+alpha_M
   phidtam_->Update(alphaM_, *phidtnp_, (1.0 - alphaM_), *phidtn_, 0.0);
-
-  return;
 }
 
 
@@ -246,7 +227,6 @@ void SCATRA::TimIntGenAlpha::ComputeIntermediateValues()
 void SCATRA::TimIntGenAlpha::AddNeumannToResidual()
 {
   residual_->Update(genalphafac_ * dta_, *neumann_loads_, 1.0);
-  return;
 }
 
 
@@ -270,8 +250,6 @@ void SCATRA::TimIntGenAlpha::AVM3Separation()
 
   // set fine-scale vector
   discret_->SetState("fsphinp", fsphiaf_);
-
-  return;
 }
 
 
@@ -295,8 +273,6 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
       dserror("Teuchos::RCP<FLD::DynSmagFilter> DynSmag_ = Teuchos::null");
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -309,8 +285,6 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCv()
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     Vrem_->ApplyFilterForDynamicComputationOfDt(phiaf_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
 
@@ -331,8 +305,6 @@ void SCATRA::TimIntGenAlpha::AddTimeIntegrationSpecificVectors(bool forcedincrem
     discret_->SetState("hist", hist_);
     discret_->SetState("phin", phin_);
   }
-
-  return;
 }
 
 
@@ -360,8 +332,6 @@ void SCATRA::TimIntGenAlpha::ComputeTimeDerivative()
   // our different Gen. Alpha formulations (linear_full <-> linear_incremental).
   // We don't want this to happen.
   // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
-
-  return;
 }
 
 
@@ -400,8 +370,6 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
 
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->TimeUpdateForcing();
-
-  return;
 }
 
 
@@ -417,8 +385,6 @@ void SCATRA::TimIntGenAlpha::OutputRestart() const
   output_->WriteVector("phidtnp", phidtnp_);
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
-
-  return;
 }
 
 
@@ -454,8 +420,6 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputC
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
-
-  return;
 }
 
 
