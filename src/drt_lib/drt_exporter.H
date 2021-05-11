@@ -64,16 +64,15 @@ namespace DRT
     Exporter(const Epetra_Map& frommap, const Epetra_Map& tomap, const Epetra_Comm& comm);
 
     /*!
-    \brief Copy Constructor
+    \brief Copy Constructor (default)
 
     */
-    Exporter(const DRT::Exporter& old);
+    Exporter(const DRT::Exporter& old) = default;
 
     /*!
-    \brief Destructor
-
+    \brief Destructor (default)
     */
-    virtual ~Exporter();
+    virtual ~Exporter() = default;
 
 
     //! @name Acess methods
@@ -95,7 +94,11 @@ namespace DRT
 
     //@}
 
-    //! @name Communication methods
+
+    /*!
+     * \name Communication methods according to send and receive plans
+     * @{
+     */
 
     /*!
     \brief Communicate a map of objects that implement ParObject
@@ -210,6 +213,12 @@ namespace DRT
     */
     void Export(std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& data);
 
+    /**@}*/
+    /*!
+     * \name Individual communication methods
+     * @{
+     */
+
     /*!
     \brief Send data from one processor to another (nonblocking)
 
@@ -236,7 +245,7 @@ namespace DRT
     \note This is an individual call
     */
     void ISend(const int frompid, const int topid, const char* data, const int dsize, const int tag,
-        MPI_Request& request);
+        MPI_Request& request) const;
 
     /*!
     \brief Send data from one processor to another (nonblocking)
@@ -264,7 +273,7 @@ namespace DRT
     \note This is an individual call
     */
     void ISend(const int frompid, const int topid, const int* data, const int dsize, const int tag,
-        MPI_Request& request);
+        MPI_Request& request) const;
 
     /*!
     \brief Send data from one processor to another (nonblocking)
@@ -292,7 +301,7 @@ namespace DRT
     \note This is an individual call
     */
     void ISend(const int frompid, const int topid, const double* data, const int dsize,
-        const int tag, MPI_Request& request);
+        const int tag, MPI_Request& request) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -318,8 +327,8 @@ namespace DRT
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length);
-    void Receive(const int source, const int tag, std::vector<char>& recvbuff, int& length);
+    void ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length) const;
+    void Receive(const int source, const int tag, std::vector<char>& recvbuff, int& length) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -345,8 +354,8 @@ namespace DRT
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length);
-    void Receive(const int source, const int tag, std::vector<int>& recvbuff, int& length);
+    void ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length) const;
+    void Receive(const int source, const int tag, std::vector<int>& recvbuff, int& length) const;
 
     /*!
     \brief Receive anything joker (blocking)
@@ -372,8 +381,10 @@ namespace DRT
     \param recvbuff (output): buffer containing received data
     \param length (output): length of message upon receive
     */
-    void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length);
-    void Receive(const int source, const int tag, std::vector<double>& recvbuff, int& length);
+    void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length) const;
+    void Receive(const int source, const int tag, std::vector<double>& recvbuff, int& length) const;
+
+    /**@}*/
 
     /*!
     \brief wait for nonblocking send to finish
@@ -387,13 +398,16 @@ namespace DRT
     \param request (in): mpi request handle
 
     */
-    void Wait(MPI_Request& request)
+    void Wait(MPI_Request& request) const
     {
       MPI_Status status;
       MPI_Wait(&request, &status);
-      return;
     }
 
+    /*!
+     * \name Collective communication methods
+     * @{
+     */
 
     /*!
     \brief performs an allreduce operation on all processors
@@ -404,6 +418,22 @@ namespace DRT
     \param mpi_op   (input): MPI operation
     */
     void Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op);
+
+
+    /*!
+     * \brief Send data from one processor to all other processors (blocking)
+     *
+     * The method will send an array of chars from one sender (rank==frompid) to all other procs.
+     *
+     * All processors have to call this method (no matter whether the proc is sender or receiver).
+     * The sending proc (rank==frompid) has to provide the data vector. The size of the vector
+     * at the receivers (rank!=frompid) is automatically adjusted.
+     *
+     * \param frompid Id of the root processor that is the only sender
+     * \param data vector of the data (must only be filled by the sender)
+     * \param tag mpi tag
+     */
+    void Broadcast(int frompid, std::vector<char>& data, int tag) const;
 
     //@}
 
@@ -471,7 +501,7 @@ namespace DRT
     {
      public:
       /// have a virtual destructor
-      virtual ~ExporterHelper() {}
+      virtual ~ExporterHelper() = default;
 
       /// validations performed before the communication
       virtual void PreExportTest(Exporter* exporter) = 0;
@@ -507,21 +537,21 @@ namespace DRT
       {
       }
 
-      virtual void PreExportTest(Exporter* exporter)
+      void PreExportTest(Exporter* exporter) override
       {
         // test whether type T implements ParObject
         typename std::map<int, Teuchos::RCP<T>>::iterator curr = parobjects_.begin();
         if (curr != parobjects_.end())
         {
           T* ptr = curr->second.get();
-          ParObject* tester = dynamic_cast<ParObject*>(ptr);
+          auto* tester = dynamic_cast<ParObject*>(ptr);
           if (!tester)
             dserror(
                 "typename T in template does not implement class ParObject (dynamic_cast failed)");
         }
       }
 
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock)
+      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = parobjects_.find(gid);
         if (curr != parobjects_.end())
@@ -532,8 +562,8 @@ namespace DRT
         return false;
       }
 
-      virtual void UnpackObject(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
+      void UnpackObject(
+          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         std::vector<char> data;
         ParObject::ExtractfromPack(index, recvblock, data);
@@ -547,7 +577,7 @@ namespace DRT
         parobjects_[gid] = refptr;
       }
 
-      virtual void PostExportCleanup(Exporter* exporter)
+      void PostExportCleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, Teuchos::RCP<T>> newmap;
@@ -579,9 +609,9 @@ namespace DRT
       {
       }
 
-      virtual void PreExportTest(Exporter* exporter) {}
+      void PreExportTest(Exporter* exporter) override {}
 
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock)
+      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, Teuchos::RCP<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -592,8 +622,8 @@ namespace DRT
         return false;
       }
 
-      virtual void UnpackObject(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
+      void UnpackObject(
+          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         Teuchos::RCP<T> obj = Teuchos::rcp(new T);
         ParObject::ExtractfromPack(index, recvblock, *obj);
@@ -602,7 +632,7 @@ namespace DRT
         objects_[gid] = obj;
       }
 
-      virtual void PostExportCleanup(Exporter* exporter)
+      void PostExportCleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, Teuchos::RCP<T>> newmap;
@@ -625,12 +655,12 @@ namespace DRT
      public:
       explicit PODExporterHelper(std::map<int, T>& objects) : objects_(objects) {}
 
-      virtual void PreExportTest(Exporter* exporter)
+      void PreExportTest(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock)
+      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, T>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -641,14 +671,14 @@ namespace DRT
         return false;
       }
 
-      virtual void UnpackObject(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
+      void UnpackObject(
+          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         memcpy(&objects_[gid], &recvblock[index], sizeof(T));
         index += sizeof(T);
       }
 
-      virtual void PostExportCleanup(Exporter* exporter)
+      void PostExportCleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, T> newmap;
@@ -672,12 +702,12 @@ namespace DRT
       {
       }
 
-      virtual void PreExportTest(Exporter* exporter)
+      void PreExportTest(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock)
+      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, std::vector<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -688,13 +718,13 @@ namespace DRT
         return false;
       }
 
-      virtual void UnpackObject(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
+      void UnpackObject(
+          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
-      virtual void PostExportCleanup(Exporter* exporter)
+      void PostExportCleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, std::vector<T>> newmap;
@@ -715,12 +745,12 @@ namespace DRT
      public:
       explicit PODSetExporterHelper(std::map<int, std::set<T>>& objects) : objects_(objects) {}
 
-      virtual void PreExportTest(Exporter* exporter)
+      void PreExportTest(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock)
+      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, std::set<T>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -731,13 +761,13 @@ namespace DRT
         return false;
       }
 
-      virtual void UnpackObject(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
+      void UnpackObject(
+          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
-      virtual void PostExportCleanup(Exporter* exporter)
+      void PostExportCleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, std::set<T>> newmap;
@@ -759,12 +789,12 @@ namespace DRT
      public:
       explicit PODMapExporterHelper(std::map<int, std::map<T, U>>& objects) : objects_(objects) {}
 
-      virtual void PreExportTest(Exporter* exporter)
+      void PreExportTest(Exporter* exporter) override
       {
         // Nothing to do. We do not check for T to be POD.
       }
 
-      virtual bool PackObject(int gid, DRT::PackBuffer& sendblock)
+      bool PackObject(int gid, DRT::PackBuffer& sendblock) override
       {
         typename std::map<int, std::map<T, U>>::const_iterator curr = objects_.find(gid);
         if (curr != objects_.end())
@@ -775,13 +805,13 @@ namespace DRT
         return false;
       }
 
-      virtual void UnpackObject(
-          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
+      void UnpackObject(
+          int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) override
       {
         ParObject::ExtractfromPack(index, recvblock, objects_[gid]);
       }
 
-      virtual void PostExportCleanup(Exporter* exporter)
+      void PostExportCleanup(Exporter* exporter) override
       {
         // loop map and kick out everything that's not in TargetMap()
         std::map<int, std::map<T, U>> newmap;
@@ -808,9 +838,6 @@ void DRT::Exporter::Export(std::map<int, Teuchos::RCP<T>>& parobjects)
   GenericExport(helper);
 }
 
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                             mwgee 11/06|
- *----------------------------------------------------------------------*/
 template <typename T>
 void DRT::Exporter::Export(std::map<int, std::vector<T>>& data)
 {
@@ -818,9 +845,6 @@ void DRT::Exporter::Export(std::map<int, std::vector<T>>& data)
   GenericExport(helper);
 }
 
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                                   07/11|
- *----------------------------------------------------------------------*/
 template <typename T>
 void DRT::Exporter::Export(std::map<int, std::set<T>>& data)
 {
@@ -828,9 +852,6 @@ void DRT::Exporter::Export(std::map<int, std::set<T>>& data)
   GenericExport(helper);
 }
 
-/*----------------------------------------------------------------------*
- |  communicate objects (public)                           nagler  07/12|
- *----------------------------------------------------------------------*/
 template <typename T, typename U>
 void DRT::Exporter::Export(std::map<int, std::map<T, U>>& data)
 {

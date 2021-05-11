@@ -616,6 +616,8 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkStructureGaussPointData
   Teuchos::RCP<LINALG::SparseOperator> eval_mat[2] = {Teuchos::null, Teuchos::null};
 
   EvaluateInternal(eval_mat, eval_vec);
+
+  EvalData().GetGaussPointDataOutputManagerPtr()->DistributeQuantities(Discret().Comm());
 }
 
 /*----------------------------------------------------------------------------*

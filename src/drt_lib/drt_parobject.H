@@ -14,6 +14,7 @@
 
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <set>
 #include <type_traits>
 #include <string>
@@ -108,7 +109,9 @@ namespace DRT
    string
    template<typename T, typename U>
    std::vector<T>  // especially useful to pack other packs into a pack, e.g. a class packing its
-   own base class std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
+   own base class
+   std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
+   std::unordered_map<T,U>
    packing its own base class std::pair<T,U> std::set<T> LINALG::Matrix<T,U>
    std::vector<LINALG::Matrix<T,U> >
    Epetra_SerialDenseMatrix
@@ -130,7 +133,7 @@ namespace DRT
      \brief Standard Constructor
 
      */
-    ParObject();
+    ParObject() = default;
 
     /*!
      \brief Copy Constructor
@@ -138,13 +141,13 @@ namespace DRT
      Makes a deep copy of a ParObject
 
      */
-    ParObject(const DRT::ParObject& old);
+    ParObject(const DRT::ParObject& old) = default;
 
     /*!
      \brief Destructor
 
      */
-    virtual ~ParObject();
+    virtual ~ParObject() = default;
 
     //! @name pure virtual Packing and Unpacking
 
@@ -223,7 +226,6 @@ namespace DRT
       int numele = stuff.size();
       AddtoPack(data, numele);
       AddtoPack(data, &stuff[0], numele * sizeof(T));
-      return;
     }
 
     /*!
@@ -240,20 +242,33 @@ namespace DRT
       int numentries = (int)stuff.size();
       AddtoPack(data, numentries);
 
-      // iterator
-      typename std::map<T, U>::const_iterator colcurr;
-
-      int i = 0;
-      for (colcurr = stuff.begin(); colcurr != stuff.end(); ++colcurr)
+      for (const auto& entry : stuff)
       {
-        AddtoPack(data, colcurr->first);
-        AddtoPack(data, colcurr->second);
-        ++i;
+        AddtoPack(data, entry.first);
+        AddtoPack(data, entry.second);
       }
+    }
 
-      if (i != numentries) dserror("Something wrong with number of elements");
+    /*!
+     \brief Add stuff to the end of a char vector data
 
-      return;
+     This method is templated for std::unordered_map<T,U>
+
+     \param data (in/out) : char string stuff shall be added to
+     \param stuff (in)    : std::unordered_map<T,U> that get's added to stuff
+
+     */
+    template <typename T, typename U>
+    static void AddtoPack(PackBuffer& data, const std::unordered_map<T, U>& stuff)
+    {
+      int numentries = (int)stuff.size();
+      AddtoPack(data, numentries);
+
+      for (const auto& entry : stuff)
+      {
+        AddtoPack(data, entry.first);
+        AddtoPack(data, entry.second);
+      }
     }
 
     /*!
@@ -269,8 +284,6 @@ namespace DRT
     {
       AddtoPack(data, stuff.first);
       AddtoPack(data, stuff.second);
-
-      return;
     }
 
     /*!
@@ -296,8 +309,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -322,8 +333,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -348,8 +357,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -377,8 +384,6 @@ namespace DRT
       }
 
       if (i != numentries) dserror("Something wrong with number of elements");
-
-      return;
     }
 
     /*!
@@ -450,7 +455,6 @@ namespace DRT
         // add all data in vector to pack
         AddtoPack(data, A, i * j * sizeof(double));
       }
-      return;
     }
 
     /*!
@@ -478,14 +482,15 @@ namespace DRT
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is a template for all basic types like int char double enum.
      To be precise, it will work for all objects where sizeof(kind) is well defined.
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by sizeof(kind) \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : basic data type (float int double char ...) to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by sizeof(kind)
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : basic data type (float int double char ...) to extract from data
 
      */
     template <typename T>
@@ -547,13 +552,14 @@ namespace DRT
 
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is templated for stuff of type std::vector<T>
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::vector<T> to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::vector<T> to extract from data
 
      */
     template <typename T>
@@ -565,17 +571,17 @@ namespace DRT
       stuff.resize(dim);
       int size = dim * sizeof(T);
       ExtractfromPack(position, data, &stuff[0], size);
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is templated for stuff of type std::map<T,U>
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::map<T,U> to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::map<T,U> to extract from data
 
      */
     template <typename T, typename U>
@@ -597,19 +603,48 @@ namespace DRT
         // add to map
         stuff.insert(std::pair<T, U>(first, second));
       }
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
+
+     This method is templated for stuff of type std::unordered_map<T,U>
+
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in) : char vector where stuff is extracted from
+     @param stuff (out) : std::unordered_map<T,U> to extract from data
+     */
+    template <typename T, typename U>
+    static void ExtractfromPack(std::vector<char>::size_type& position,
+        const std::vector<char>& data, std::unordered_map<T, U>& stuff)
+    {
+      int numentries = 0;
+      ExtractfromPack(position, data, numentries);
+
+      stuff.clear();
+
+      for (int i = 0; i < numentries; i++)
+      {
+        T first;
+        U second;
+        ExtractfromPack(position, data, first);
+        ExtractfromPack(position, data, second);
+
+        // add to map
+        stuff.insert({first, second});
+      }
+    }
+
+    /*!
+     @brief Extract stuff from a char vector data and increment position
 
      This method is templated for stuff of type std::pair<T,U>
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
      by this method
-     \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::pair<T,U> to extract from data
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::pair<T,U> to extract from data
 
      */
     template <typename T, typename U>
@@ -618,19 +653,17 @@ namespace DRT
     {
       ExtractfromPack(position, data, stuff.first);
       ExtractfromPack(position, data, stuff.second);
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is templated for stuff of type std::vector<std::pair<T,U>>
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
      by this method
-     \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::vector<std::pair<T,U>> to extract from data
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::vector<std::pair<T,U>> to extract from data
 
      */
     template <typename T, typename U>
@@ -652,19 +685,17 @@ namespace DRT
         // add to map
         stuff.push_back(std::pair<T, U>(first, second));
       }
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is a template for stuff of type pairedvector<Key,T0,Ts...>
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
      by this method
-     \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : pairedvector<Key,T0,Ts...> to extract from data
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : pairedvector<Key,T0,Ts...> to extract from data
 
      */
     template <typename Key, typename T0, typename... Ts>
@@ -687,8 +718,6 @@ namespace DRT
         // add to map
         stuff[first] = second;
       }
-
-      return;
     }
 
     /*!
@@ -696,9 +725,10 @@ namespace DRT
 
      This method is a template for stuff of type std::vector< pairedvector<Ts...> >
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::vector< pairedvector<Ts...> > to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::vector< pairedvector<Ts...> > to extract from data
 
      */
     template <typename... Ts>
@@ -720,19 +750,17 @@ namespace DRT
         // add to map
         stuff[i] = paired_vec;
       }
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is templated for stuff of type std::vector< pairedmatrix<Ts...> >
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::vector< pairedmatrix<Ts...> > to extract from data
-
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::vector< pairedmatrix<Ts...> > to extract from data
      */
     template <typename... Ts>
     static void ExtractfromPack(std::vector<char>::size_type& position,
@@ -752,19 +780,17 @@ namespace DRT
         // add to map
         stuff[i] = paired_mat;
       }
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is templated for stuff of type std::set<T>
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : std::set<T> to extract from data
-
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : std::set<T> to extract from data
      */
     template <typename T, typename U>
     static void ExtractfromPack(std::vector<char>::size_type& position,
@@ -783,18 +809,17 @@ namespace DRT
         // add to set
         stuff.insert(value);
       }
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is an overload of the above template for stuff of type Epetra_SerialDenseMatrix
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : Epetra_SerialDenseMatrix to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : Epetra_SerialDenseMatrix to extract from data
 
      */
     static void ExtractfromPack(std::vector<char>::size_type& position,
@@ -813,29 +838,31 @@ namespace DRT
     static void ExtractfromPack(std::vector<char>::size_type& position,
         const std::vector<char>& data, Epetra_SerialDenseVector& stuff);
 
+
     /*!
-     \brief Extract stuff from a char vector data and increment position
-
-     This method is an overload of the above template for stuff of type Matrix
-
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : Matrix to extract from data
-
-     */
-    /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is an overload of the above template for stuff of type LINALG::SerialDenseMatrix
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : LINALG::SerialDenseMatrix to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : LINALG::SerialDenseMatrix to extract from data
 
      */
     static void ExtractfromPack(std::vector<char>::size_type& position,
         const std::vector<char>& data, LINALG::SerialDenseMatrix& stuff);
 
+    /*!
+    @brief Extract stuff from a char vector data and increment position
+
+    This method is an overload of the above template for stuff of type Matrix
+
+    @param position (in/out) : place in data where to extract stuff. Position will be incremented
+    by this method
+    @param data (in)         : char vector where stuff is extracted from
+    @param stuff (out)       : Matrix to extract from data
+    */
     template <unsigned int i, unsigned int j>
     static void ExtractfromPack(std::vector<char>::size_type& position,
         const std::vector<char>& data, LINALG::Matrix<i, j>& stuff)
@@ -850,13 +877,14 @@ namespace DRT
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is an overload of the above template for stuff of type STL vector of matrices
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : STL vector of matrices to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : STL vector of matrices to extract from data
 
      */
     template <unsigned int i, unsigned int j>
@@ -878,31 +906,31 @@ namespace DRT
         // actual extraction of data
         ExtractfromPack(position, data, A, i * j * sizeof(double));
       }
-
-      return;
     }
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method is an overload of the above template for stuff of type string
 
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by this method \param data (in)         : char vector where stuff is extracted from \param
-     stuff (out)       : string to extract from data
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by this method
+     @param data (in)         : char vector where stuff is extracted from
+     @param stuff (out)       : string to extract from data
 
      */
     static void ExtractfromPack(
         std::vector<char>::size_type& position, const std::vector<char>& data, std::string& stuff);
 
     /*!
-     \brief Extract stuff from a char vector data and increment position
+     @brief Extract stuff from a char vector data and increment position
 
      This method extracts an array from data
-     \param position (in/out) : place in data where to extract stuff. Position will be incremented
-     by stuffsize \param data (in)         : char string where stuff is extracted from \param stuff
-     (out)       : array of total length stuffsize (in byte) \param stuffsize (in)    : length of
-     stuff in byte
+     @param position (in/out) : place in data where to extract stuff. Position will be incremented
+     by stuffsize
+     @param data (in)         : char string where stuff is extracted from
+     @param stuff (out)       : array of total length stuffsize (in byte)
+     @param stuffsize (in)    : length of stuff in byte
      */
     template <typename kind>
     static void ExtractfromPack(std::vector<char>::size_type& position,
@@ -910,7 +938,6 @@ namespace DRT
     {
       memcpy(stuff, &data[position], stuffsize);
       position += stuffsize;
-      return;
     }
 
     //@}

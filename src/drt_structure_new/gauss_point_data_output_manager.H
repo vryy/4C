@@ -8,6 +8,7 @@
 #ifndef GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 #define GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <Teuchos_RCP.hpp>
@@ -17,6 +18,11 @@
 
 // forward declarations
 class Epetra_MultiVector;
+
+namespace DRT
+{
+  class Exporter;
+}
 
 namespace STR
 {
@@ -36,6 +42,12 @@ namespace STR
       void PrepareData(const Epetra_Map& node_col_map, const Epetra_Map& element_row_map);
 
       void PostEvaluate();
+
+      /*!
+       * \brief Distribute and collect all quantities to and from all other procs to ensure that all
+       * data is in this list.
+       */
+      void DistributeQuantities(const Epetra_Comm& comm);
 
       inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
       GetMutableNodalData()
@@ -93,6 +105,21 @@ namespace STR
 
 
      private:
+      static constexpr int MPI_TAG = 545;
+      static const char MPI_DELIMITER = '!';
+
+      void SendMyQuantitiesToProc(const DRT::Exporter& exporter, int to_proc) const;
+
+      std::unique_ptr<std::unordered_map<std::string, int>> ReceiveQuantitiesFromProc(
+          const DRT::Exporter& exporter, int from_proc) const;
+
+      void BroadcastMyQuantitites(const DRT::Exporter& exporter);
+
+      void PackMyQuantities(std::vector<char>& data) const;
+
+      void UnpackQuantities(std::size_t pos, const std::vector<char>& data,
+          std::unordered_map<std::string, int>& quantities) const;
+
       void PrepareNodalDataVectors(const Epetra_Map& nodal_col_map);
 
       void PrepareElementCenterDataVectors(const Epetra_Map& nodal_col_map);
