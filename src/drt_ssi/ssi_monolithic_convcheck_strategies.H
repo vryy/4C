@@ -149,13 +149,11 @@ namespace SSI
         const SSI::SSIMono& ssi_mono, int init_pot_iternum) const override;
 
    protected:
-    //! get L2 norms from scatra manifold and check if they are reasonable
-    void GetAndCheckL2NormScaTraManifold(
-        const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
-
+    //! get L2 norms from concentration field and check if they are reasonable
     void GetAndCheckL2NormScaTraManifoldConc(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
+    //! get L2 norms from potential field and check if they are reasonable
     void GetAndCheckL2NormScaTraManifoldPot(
         const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const;
 
