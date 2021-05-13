@@ -25,6 +25,7 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       write_kinetic_energy_element_(false),
       write_triads_visualizationpoints_(false),
       write_material_crosssection_strains_gausspoints_(false),
+      write_material_crosssection_continuous_(false),
       write_material_crosssection_stresses_gausspoints_(false),
       write_spatial_crosssection_stresses_gausspoints_(false),
       write_filament_condition_(false),
@@ -64,6 +65,9 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
 
   write_material_crosssection_strains_gausspoints_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_GAUSSPOINT");
+
+  write_material_crosssection_continuous_ =
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "STRAINS_CONTINUOUS");
 
   write_material_crosssection_stresses_gausspoints_ = (bool)DRT::INPUT::IntegralValue<int>(
       IO_vtk_structure_beams_paramslist, "MATERIAL_FORCES_GAUSSPOINT");
