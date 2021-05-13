@@ -22,6 +22,7 @@
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include "../drt_beam3/beam3_base.H"
+#include "../drt_beam3/beam3r.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
@@ -930,6 +931,125 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
+void BeamDiscretizationRuntimeVtuWriter::
+    AppendGaussPointMaterialCrossSectionStrainResultantsContinuous()
+{
+  // storage for material strain measures at all GPs of current element
+  std::vector<double> axial_strain_GPs_current_element;
+  std::vector<double> shear_strain_2_GPs_current_element;
+  std::vector<double> shear_strain_3_GPs_current_element;
+
+  std::vector<double> twist_GPs_current_element;
+  std::vector<double> curvature_2_GPs_current_element;
+  std::vector<double> curvature_3_GPs_current_element;
+
+  // Set up local coefficient vectors.
+  std::vector<double> axial_strain_coefficients;
+  std::vector<double> shear_strain_2_coefficients;
+  std::vector<double> shear_strain_3_coefficients;
+  std::vector<double> twist_coefficients;
+  std::vector<double> curvature_2_coefficients;
+  std::vector<double> curvature_3_coefficients;
+
+  // determine number of row BEAM elements for each processor
+  // output is completely independent of the number of processors involved
+  unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
+  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+
+  // Set up global vectors
+  std::vector<double> axial_strain_vector;
+  std::vector<double> shear_strain_2_vector;
+  std::vector<double> shear_strain_3_vector;
+  std::vector<double> twist_vector;
+  std::vector<double> curvature_2_vector;
+  std::vector<double> curvature_3_vector;
+  axial_strain_vector.reserve(num_vtk_points);
+  shear_strain_2_vector.reserve(num_vtk_points);
+  shear_strain_3_vector.reserve(num_vtk_points);
+  twist_vector.reserve(num_vtk_points);
+  curvature_2_vector.reserve(num_vtk_points);
+  curvature_3_vector.reserve(num_vtk_points);
+
+  // loop over myrank's beam elements and compute strain resultants for each visualization point
+  for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
+  {
+    const DRT::Element* ele =
+        discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
+
+    // cast to SR beam element
+    const DRT::ELEMENTS::Beam3r* sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
+
+    // Todo safety check for now, may be removed when better tested
+    if (sr_beam == NULL) dserror("Continuous cross section output only implemented for SR beams.");
+
+    // get GP strain values from previous element evaluation call
+    axial_strain_GPs_current_element.clear();
+    shear_strain_2_GPs_current_element.clear();
+    shear_strain_3_GPs_current_element.clear();
+
+    twist_GPs_current_element.clear();
+    curvature_2_GPs_current_element.clear();
+    curvature_3_GPs_current_element.clear();
+
+    sr_beam->GetMaterialStrainResultantsAtAllGPs(axial_strain_GPs_current_element,
+        shear_strain_2_GPs_current_element, shear_strain_3_GPs_current_element,
+        twist_GPs_current_element, curvature_2_GPs_current_element,
+        curvature_3_GPs_current_element);
+
+    // Calculate the interpolated coefficients
+    DRT::UTILS::GaussRule1D force_int_rule =
+        sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_force);
+    CalcInterpolationPolynomialCoefficients(
+        force_int_rule, axial_strain_GPs_current_element, axial_strain_coefficients);
+    CalcInterpolationPolynomialCoefficients(
+        force_int_rule, shear_strain_2_GPs_current_element, shear_strain_2_coefficients);
+    CalcInterpolationPolynomialCoefficients(
+        force_int_rule, shear_strain_3_GPs_current_element, shear_strain_3_coefficients);
+
+    DRT::UTILS::GaussRule1D moment_int_rule =
+        sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_moment);
+    CalcInterpolationPolynomialCoefficients(
+        moment_int_rule, twist_GPs_current_element, twist_coefficients);
+    CalcInterpolationPolynomialCoefficients(
+        moment_int_rule, curvature_2_GPs_current_element, curvature_2_coefficients);
+    CalcInterpolationPolynomialCoefficients(
+        moment_int_rule, curvature_3_GPs_current_element, curvature_3_coefficients);
+
+    /* loop over the chosen visualization points (equidistant distribution in the element
+     * parameter space xi \in [-1,1] ) and determine its disp state */
+    double xi = 0.0;
+
+    for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
+    {
+      xi = -1.0 + ipoint * 2.0 / n_subsegments_;
+
+      // store the information in vectors that can be interpreted by vtu writer and update number
+      // of point data written
+      axial_strain_vector.push_back(EvaluatePolynomialCoefficients(axial_strain_coefficients, xi));
+      shear_strain_2_vector.push_back(
+          EvaluatePolynomialCoefficients(shear_strain_2_coefficients, xi));
+      shear_strain_3_vector.push_back(
+          EvaluatePolynomialCoefficients(shear_strain_3_coefficients, xi));
+      twist_vector.push_back(EvaluatePolynomialCoefficients(twist_coefficients, xi));
+      curvature_2_vector.push_back(EvaluatePolynomialCoefficients(curvature_2_coefficients, xi));
+      curvature_3_vector.push_back(EvaluatePolynomialCoefficients(curvature_3_coefficients, xi));
+    }
+  }
+
+  // finally append the solution vectors to the visualization data of the vtu writer object
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(axial_strain_vector, 1, "axial_strain");
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(
+      shear_strain_2_vector, 1, "shear_strain_2");
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(
+      shear_strain_3_vector, 1, "shear_strain_3");
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(twist_vector, 1, "twist");
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(curvature_2_vector, 1, "curvature_2");
+  runtime_vtuwriter_->AppendVisualizationPointDataVector(curvature_3_vector, 1, "curvature_3");
+}
+
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStressResultants()
 {
   // determine number of row BEAM elements for each processor
@@ -1600,4 +1720,69 @@ int BeamDiscretizationRuntimeVtuWriter::GetGlobalNumberOfGaussPointsPerBeam(
     dserror("The number of Gauss points must be zero or a positve integer!");
 
   return global_num_gp;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients(
+    const DRT::UTILS::GaussRule1D& gauss_rule, const std::vector<double>& gauss_point_values,
+    std::vector<double>& polynomial_coefficients) const
+{
+  // Get the coefficients for the interpolation functions at the Gauss points.
+  unsigned int n_gp = 3;
+  double lagrange_coefficients[3][3];
+  switch (gauss_rule)
+  {
+    case DRT::UTILS::intrule_line_3point:
+    {
+      lagrange_coefficients[0][0] = 0.0;
+      lagrange_coefficients[0][1] = -0.645497224367889;
+      lagrange_coefficients[0][2] = 0.8333333333333333;
+
+      lagrange_coefficients[1][0] = 1.0;
+      lagrange_coefficients[1][1] = 0.0;
+      lagrange_coefficients[1][2] = -1.6666666666666667;
+
+      lagrange_coefficients[2][0] = 0.0;
+      lagrange_coefficients[2][1] = 0.645497224367889;
+      lagrange_coefficients[2][2] = 0.8333333333333333;
+    }
+    break;
+    case DRT::UTILS::intrule_line_lobatto3point:
+    {
+      lagrange_coefficients[0][0] = 0.0;
+      lagrange_coefficients[0][1] = -0.5;
+      lagrange_coefficients[0][2] = 0.5;
+
+      lagrange_coefficients[1][0] = 1.0;
+      lagrange_coefficients[1][1] = 0.0;
+      lagrange_coefficients[1][2] = -1.0;
+
+      lagrange_coefficients[2][0] = 0.0;
+      lagrange_coefficients[2][1] = 0.5;
+      lagrange_coefficients[2][2] = 0.5;
+    }
+    break;
+    default:
+      dserror("Interpolation for Gauss rule not yet implemented.");
+      break;
+  }
+
+  // Calculate the coefficients of the polynomial to interpolate the Gauss points.
+  polynomial_coefficients.resize(n_gp);
+  std::fill(polynomial_coefficients.begin(), polynomial_coefficients.end(), 0.0);
+  for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
+    for (unsigned int p = 0; p < n_gp; p++)
+      polynomial_coefficients[p] += gauss_point_values[i_gp] * lagrange_coefficients[i_gp][p];
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+double BeamDiscretizationRuntimeVtuWriter::EvaluatePolynomialCoefficients(
+    const std::vector<double>& polynomial_coefficients, const double& xi) const
+{
+  double interpolated_value = 0.0;
+  for (unsigned int p = 0; p < polynomial_coefficients.size(); p++)
+    interpolated_value += polynomial_coefficients[p] * pow(xi, p);
+  return interpolated_value;
 }

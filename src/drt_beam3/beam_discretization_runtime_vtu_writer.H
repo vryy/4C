@@ -17,6 +17,8 @@
 
 #include <Teuchos_RCP.hpp>
 
+#include "../drt_fem_general/drt_utils_integration.H"
+
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
 namespace GEO
@@ -156,6 +158,11 @@ class BeamDiscretizationRuntimeVtuWriter
    *  \date 03/17 */
   void AppendGaussPointMaterialCrossSectionStrainResultants();
 
+  /**
+   * \brief Append interpolated GP values of the material cross-section strain resultants.
+   */
+  void AppendGaussPointMaterialCrossSectionStrainResultantsContinuous();
+
   /** \brief append material cross-section stress resultant values at Gauss points to output data
    *
    *  \author grill
@@ -227,6 +234,25 @@ class BeamDiscretizationRuntimeVtuWriter
    * strain output.
    **/
   int GetGlobalNumberOfGaussPointsPerBeam(unsigned int my_num_gp) const;
+
+  /**
+   * \brief Calculate the polynomial coefficients to interpolate the Gauss point values.
+   * @param gauss_rule (in) Type of Gauss rule
+   * @param gauss_point_values (in) Values at Gauss points
+   * @param coefficients (out) Polynomial coefficients of the interpolated the Gauss point values.
+   */
+  void CalcInterpolationPolynomialCoefficients(const DRT::UTILS::GaussRule1D& gauss_rule,
+      const std::vector<double>& gauss_point_values,
+      std::vector<double>& polynomial_coefficients) const;
+
+  /**
+   * \brief Evaluate polynomial defined by its polynomial coefficients.
+   * @param polynomial_coefficients (in)
+   * @param xi (in) Point where the polynomial is evalated.
+   * @return Interpolated value
+   */
+  double EvaluatePolynomialCoefficients(
+      const std::vector<double>& polynomial_coefficients, const double& xi) const;
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
