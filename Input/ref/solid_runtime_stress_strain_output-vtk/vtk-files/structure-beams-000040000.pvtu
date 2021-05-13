@@ -8,7 +8,13 @@
       <PDataArray type="Float64" NumberOfComponents="3"/>
     </PPoints>
     <PPointData>
+      <PDataArray type="Float64" Name="axial_strain" format="ascii"/>
+      <PDataArray type="Float64" Name="curvature_2" format="ascii"/>
+      <PDataArray type="Float64" Name="curvature_3" format="ascii"/>
       <PDataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii"/>
+      <PDataArray type="Float64" Name="shear_strain_2" format="ascii"/>
+      <PDataArray type="Float64" Name="shear_strain_3" format="ascii"/>
+      <PDataArray type="Float64" Name="twist" format="ascii"/>
     </PPointData>
     <PCellData>
       <PDataArray type="Float64" Name="axial_strain_GPs" NumberOfComponents="3" format="ascii"/>
