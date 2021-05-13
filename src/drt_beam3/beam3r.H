@@ -101,7 +101,7 @@ namespace DRT
     */
     class Beam3r : public Beam3Base
     {
-     private:
+     public:
       //! purposes of numerical integration
       enum IntegrationPurpose
       {
@@ -1049,9 +1049,11 @@ namespace DRT
       template <unsigned int nnode>
       void lumpmass(Epetra_SerialDenseMatrix* emass);
 
+     public:
       //! determine Gauss rule from required type of integration and parameter list
       DRT::UTILS::GaussRule1D MyGaussRule(const IntegrationPurpose intpurpose) const;
 
+     private:
       //! calculates the element length in reference configuration
       template <unsigned int nnode, unsigned int vpernode>
       void Calculate_reflength(
