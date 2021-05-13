@@ -429,28 +429,12 @@ void SCATRA::TimIntGenAlpha::ReadRestart(const int step, Teuchos::RCP<IO::InputC
  ------------------------------------------------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::CalcInitialTimeDerivative()
 {
-  // for calculation of initial time derivative, we have to switch off all stabilization and
-  // turbulence modeling terms
-  // standard general element parameter without stabilization
-  SetElementGeneralParameters(true);
-
-  // we also have to modify the time-parameter list (incremental solve)
-  // actually we do not need a time integration scheme for calculating the initial time derivatives,
-  // but the rhs of the standard element routine is used as starting point for this special system
-  // of equations. Therefore, the rhs vector has to be scaled correctly. Since the genalpha scheme
-  // cannot be adapted easily, the backward Euler scheme is used instead.
-  SetElementTimeParameterBackwardEuler();
-
-  // deactivate turbulence settings
-  SetElementTurbulenceParameters(true);
+  PreCalcInitialTimeDerivative();
 
   // call core algorithm
   ScaTraTimIntImpl::CalcInitialTimeDerivative();
 
-  // and finally undo our temporary settings
-  SetElementGeneralParameters();
-  SetElementTimeParameter();
-  SetElementTurbulenceParameters();
+  PostCalcInitialTimeDerivative();
 }
 
 /*--------------------------------------------------------------------------*

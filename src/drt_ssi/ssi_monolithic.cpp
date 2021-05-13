@@ -501,23 +501,30 @@ void SSI::SSIMono::ReadRestartfromTime(double restarttime)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
+void SSI::SSIMono::PrepareTimeLoop()
+{
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  ScaTraField()->Output();
+  if (IsScaTraManifold()) ScaTraManifold()->Output();
+
+  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const bool init_pot_calc =
+      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+  const auto scatra_type =
+      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
+
+  // calculate initial potential field if needed
+  if (init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch)
+    CalcInitialPotentialField();
+
+  // calculate initial time derivatives
+  CalcInitialTimeDerivative(scatra_type);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void SSI::SSIMono::PrepareTimeStep()
 {
-  // calculate initial potential field if needed
-  if (Step() == 0)
-  {
-    const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
-    const bool init_pot_calc =
-        DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
-    const auto scatra_type =
-        Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
-
-    if (init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch)
-      CalcInitialPotentialField();
-
-    CalcInitialTimeDerivative(scatra_type);
-  }
-
   // update time and time step
   IncrementTimeAndStep();
 
@@ -567,33 +574,17 @@ void SSI::SSIMono::Setup()
   }
   const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
 
-  const bool equilibration_scatra_initial = DRT::INPUT::IntegralValue<bool>(
-      ssi_params.sublist("MONOLITHIC"), "EQUILIBRATION_INIT_SCATRA");
   const bool calc_initial_pot_elch =
       DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
   const bool calc_initial_pot_ssi =
       DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
-  if (!equilibration_scatra_initial and
-      ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
   {
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
-  }
-  if (equilibration_scatra_initial and
-      ScaTraField()->EquilibrationMethod() == LINALG::EquilibrationMethod::none)
-  {
-    dserror(
-        "You selected to equilibrate equations of initial potential but did not specify any "
-        "equilibration method in ScaTra.");
-  }
-  if (equilibration_scatra_initial and !calc_initial_pot_elch)
-  {
-    dserror(
-        "You selected to equilibrate equations of initial potential but did not activate "
-        "INITPOTCALC in ELCH CONTROL");
   }
   if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
       (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
@@ -971,13 +962,7 @@ void SSI::SSIMono::NewtonLoop()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::Timeloop()
 {
-  // output initial scalar transport solution to screen and files
-  if (Step() == 0)
-  {
-    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
-    ScaTraField()->Output();
-    if (IsScaTraManifold()) ScaTraManifold()->Output();
-  }
+  if (Step() == 0) PrepareTimeLoop();
 
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())

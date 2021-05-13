@@ -194,6 +194,9 @@ namespace SSI
 
     void Output() override;
 
+    //! do everthing, that has to be done once before first time step
+    void PrepareTimeLoop();
+
     void PrepareTimeStep() override;
 
     //! prepare output for subproblems if needed
