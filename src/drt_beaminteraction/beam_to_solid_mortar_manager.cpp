@@ -63,8 +63,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   unsigned int n_lambda_node_temp = 0;
   unsigned int n_lambda_element_temp = 0;
-  MortarShapeFunctionsToLagrangeValues(
-      params->GetMortarShapeFunctionType(), n_lambda_node_temp, n_lambda_element_temp);
+  MortarShapeFunctionsToLagrangeValues(beam_to_solid_params_->GetMortarShapeFunctionType(),
+      n_lambda_node_temp, n_lambda_element_temp);
   n_lambda_node_ = n_lambda_node_temp;
   n_lambda_node_translational_ = n_lambda_node_temp;
   n_lambda_element_ = n_lambda_element_temp;
@@ -72,7 +72,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
 
   // Check if the coupling also consists of rotational coupling.
   auto beam_to_volume_params =
-      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(params);
+      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
+          beam_to_solid_params_);
   if (beam_to_volume_params != Teuchos::null)
   {
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
@@ -483,19 +484,16 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   if (stiff != Teuchos::null)
   {
-    // Get penalty parameter.
-    const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
-
     // Scale the linearizations of the constraint equations.
-    Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
-    Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
-        Teuchos::rcp(new LINALG::SparseMatrix(*global_kappa_inv));
-    kappa_inv_mat->Complete();
+    Teuchos::RCP<Epetra_Vector> global_penalty_kappa_inv = PenaltyInvertKappa();
+    Teuchos::RCP<LINALG::SparseMatrix> penalty_kappa_inv_mat =
+        Teuchos::rcp(new LINALG::SparseMatrix(*global_penalty_kappa_inv));
+    penalty_kappa_inv_mat->Complete();
 
     Teuchos::RCP<LINALG::SparseMatrix> global_GB_scaled =
-        LINALG::MLMultiply(*kappa_inv_mat, false, *global_GB_, false, false, false, true);
+        LINALG::MLMultiply(*penalty_kappa_inv_mat, false, *global_GB_, false, false, false, true);
     Teuchos::RCP<LINALG::SparseMatrix> global_GS_scaled =
-        LINALG::MLMultiply(*kappa_inv_mat, false, *global_GS_, false, false, false, true);
+        LINALG::MLMultiply(*penalty_kappa_inv_mat, false, *global_GS_, false, false, false, true);
 
     // Calculate the needed submatrices.
     Teuchos::RCP<LINALG::SparseMatrix> FB_times_GB =
@@ -508,10 +506,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
         LINALG::MLMultiply(*global_FS_, false, *global_GS_scaled, false, false, false, true);
 
     // Add contributions to the global stiffness matrix.
-    stiff->Add(*FB_times_GB, false, penalty_parameter, 1.0);
-    stiff->Add(*FB_times_GS, false, penalty_parameter, 1.0);
-    stiff->Add(*FS_times_GB, false, penalty_parameter, 1.0);
-    stiff->Add(*FS_times_GS, false, penalty_parameter, 1.0);
+    stiff->Add(*FB_times_GB, false, 1.0, 1.0);
+    stiff->Add(*FB_times_GS, false, 1.0, 1.0);
+    stiff->Add(*FS_times_GB, false, 1.0, 1.0);
+    stiff->Add(*FS_times_GS, false, 1.0, 1.0);
   }
 
   if (force != Teuchos::null)
@@ -560,22 +558,17 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::GetGlobal
   CheckSetup();
   CheckGlobalMaps();
 
-  // Get penalty parameter.
-  const double penalty_parameter = beam_to_solid_params_->GetPenaltyParameter();
-
   // Get the inverted kappa matrix.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv = InvertKappa();
-  Teuchos::RCP<LINALG::SparseMatrix> kappa_inv_mat =
-      Teuchos::rcp(new LINALG::SparseMatrix(*global_kappa_inv));
-  kappa_inv_mat->Complete();
+  Teuchos::RCP<Epetra_Vector> penalty_global_kappa_inv = PenaltyInvertKappa();
+  Teuchos::RCP<LINALG::SparseMatrix> penalty_kappa_inv_mat =
+      Teuchos::rcp(new LINALG::SparseMatrix(*penalty_global_kappa_inv));
+  penalty_kappa_inv_mat->Complete();
 
   // Multiply the inverted kappa matrix with the constraint equations and scale them with the
   // penalty parameter.
   Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-  int linalg_error = kappa_inv_mat->Multiply(false, *global_constraint_, *lambda);
+  int linalg_error = penalty_kappa_inv_mat->Multiply(false, *global_constraint_, *lambda);
   if (linalg_error != 0) dserror("Error in Multiply!");
-  linalg_error = lambda->Scale(penalty_parameter);
-  if (linalg_error != 0) dserror("Error in Scale!");
 
   return lambda;
 }
@@ -616,19 +609,43 @@ double BEAMINTERACTION::BeamToSolidMortarManager::GetEnergy() const
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::InvertKappa() const
+Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyInvertKappa() const
 {
   // Create the inverse vector.
   Teuchos::RCP<Epetra_Vector> global_kappa_inv =
       Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
 
+  // Get the penalty parameters.
+  double penalty_translation = beam_to_solid_params_->GetPenaltyParameter();
+  double penalty_rotation = 0.0;
+  auto beam_to_volume_params =
+      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
+          beam_to_solid_params_);
+  if (beam_to_volume_params != Teuchos::null)
+    penalty_rotation = beam_to_volume_params->GetRotationalCouplingPenaltyParameter();
+  else if (lambda_dof_rowmap_rotations_->NumGlobalElements() > 0)
+    dserror("Rotational penalty coupling only implemented for beam-to-volume case.");
+
   // Calculate the local inverse of kappa.
+  double penalty;
   double local_kappa_inv_value = 0.;
   for (int lid = 0; lid < lambda_dof_rowmap_->NumMyElements(); lid++)
   {
     if (global_active_lambda_->Values()[lid] > 0.1)
-      local_kappa_inv_value = 1. / global_kappa_->Values()[lid];
+    {
+      const int gid = lambda_dof_rowmap_->GID(lid);
+      if (lambda_dof_rowmap_translations_->LID(gid) != -1)
+        penalty = penalty_translation;
+      else if (lambda_dof_rowmap_rotations_->LID(gid) != -1)
+        penalty = penalty_rotation;
+      else
+        dserror("Could not find the GID %d in translation or rotation map", gid);
+
+      local_kappa_inv_value = penalty / global_kappa_->Values()[lid];
+    }
+
     else
+      // This LID is inactive.
       local_kappa_inv_value = 0.0;
 
     global_kappa_inv->ReplaceMyValue(lid, 0, local_kappa_inv_value);

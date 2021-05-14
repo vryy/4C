@@ -217,11 +217,11 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Invert the scaling vector \ref global_kappa_ vector with accounting for non active
-     * Lagrange multipliers.
+     * Lagrange multipliers and scale the matix with the penalty parameter.
      *
      * @return Inverted global_kappa_ vector.
      */
-    Teuchos::RCP<Epetra_Vector> InvertKappa() const;
+    Teuchos::RCP<Epetra_Vector> PenaltyInvertKappa() const;
 
    private:
     //! Flag if setup was called.
