@@ -37,8 +37,14 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
       is_local_maps_build_(false),
       is_global_maps_build_(false),
       start_value_lambda_gid_(start_value_lambda_gid),
+      n_lambda_node_translational_(0),
+      n_lambda_element_translational_(0),
+      n_lambda_node_rotational_(0),
+      n_lambda_element_rotational_(0),
       discret_(discret),
       beam_to_solid_params_(params),
+      lambda_dof_rowmap_translations_(Teuchos::null),
+      lambda_dof_rowmap_rotations_(Teuchos::null),
       lambda_dof_rowmap_(Teuchos::null),
       lambda_dof_colmap_(Teuchos::null),
       beam_dof_rowmap_(Teuchos::null),
@@ -60,7 +66,9 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   MortarShapeFunctionsToLagrangeValues(
       params->GetMortarShapeFunctionType(), n_lambda_node_temp, n_lambda_element_temp);
   n_lambda_node_ = n_lambda_node_temp;
+  n_lambda_node_translational_ = n_lambda_node_temp;
   n_lambda_element_ = n_lambda_element_temp;
+  n_lambda_element_translational_ = n_lambda_element_temp;
 
   // Check if the coupling also consists of rotational coupling.
   auto beam_to_volume_params =
@@ -73,7 +81,9 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
         beam_to_volume_params->GetMortarShapeFunctionRotationType(), n_lambda_node_temp,
         n_lambda_element_temp);
     n_lambda_node_ += n_lambda_node_temp;
+    n_lambda_node_rotational_ = n_lambda_node_temp;
     n_lambda_element_ += n_lambda_element_temp;
+    n_lambda_element_rotational_ = n_lambda_element_temp;
   }
 }
 
@@ -115,15 +125,41 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
   for (int pid = 0; pid < discret_->Comm().MyPID(); pid++)
     my_lambda_gid_start_value += lambda_dof_per_rank[pid];
 
-  // Fill in all GIDs of the lambda DOFs on this processor.
-  std::vector<int> my_lambda_gid(n_lambda_dof, 0);
-  for (int my_lid = 0; my_lid < (int)n_lambda_dof; my_lid++)
-    my_lambda_gid[my_lid] = my_lambda_gid_start_value + my_lid;
+  // Fill in all GIDs of the lambda DOFs on this processor (for translations and rotations).
+  std::vector<int> my_lambda_gid_translational;
+  my_lambda_gid_translational.reserve(
+      n_nodes * n_lambda_node_translational_ + n_element * n_lambda_element_translational_);
+  std::vector<int> my_lambda_gid_rotational;
+  my_lambda_gid_rotational.reserve(
+      n_nodes * n_lambda_node_rotational_ + n_element * n_lambda_element_rotational_);
+  for (unsigned int i_node = 0; i_node < n_nodes; i_node++)
+  {
+    for (unsigned int i_dof = 0; i_dof < n_lambda_node_translational_; i_dof++)
+      my_lambda_gid_translational.push_back(
+          my_lambda_gid_start_value + i_dof + i_node * n_lambda_node_);
+    for (unsigned int i_dof = 0; i_dof < n_lambda_node_rotational_; i_dof++)
+      my_lambda_gid_rotational.push_back(my_lambda_gid_start_value + i_dof +
+                                         i_node * n_lambda_node_ + n_lambda_node_translational_);
+  }
+  my_lambda_gid_start_value += n_nodes * n_lambda_node_;
+  for (unsigned int i_element = 0; i_element < n_element; i_element++)
+  {
+    for (unsigned int i_dof = 0; i_dof < n_lambda_element_translational_; i_dof++)
+      my_lambda_gid_translational.push_back(
+          my_lambda_gid_start_value + i_dof + i_element * n_lambda_element_);
+    for (unsigned int i_dof = 0; i_dof < n_lambda_element_rotational_; i_dof++)
+      my_lambda_gid_rotational.push_back(my_lambda_gid_start_value + i_dof +
+                                         i_element * n_lambda_element_ +
+                                         n_lambda_element_translational_);
+  }
 
   // Rowmap for the additional GIDs used by the mortar contact discretization.
-  lambda_dof_rowmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discret_->Comm()));
-
+  lambda_dof_rowmap_translations_ = Teuchos::rcp(new Epetra_Map(-1,
+      my_lambda_gid_translational.size(), my_lambda_gid_translational.data(), 0, discret_->Comm()));
+  lambda_dof_rowmap_rotations_ = Teuchos::rcp(new Epetra_Map(
+      -1, my_lambda_gid_rotational.size(), my_lambda_gid_rotational.data(), 0, discret_->Comm()));
+  lambda_dof_rowmap_ =
+      LINALG::MergeMap(lambda_dof_rowmap_translations_, lambda_dof_rowmap_rotations_, false);
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the

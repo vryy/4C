@@ -242,11 +242,29 @@ namespace BEAMINTERACTION
     //! Number of Lagrange multiplier DOFs on an element.
     unsigned int n_lambda_element_;
 
+    //! Number of Lagrange multiplier DOFs on a node for translational coupling.
+    unsigned int n_lambda_node_translational_;
+
+    //! Number of Lagrange multiplier DOFs on an element for translational coupling.
+    unsigned int n_lambda_element_translational_;
+
+    //! Number of Lagrange multiplier DOFs on a node for rotational coupling.
+    unsigned int n_lambda_node_rotational_;
+
+    //! Number of Lagrange multiplier DOFs on an element for rotational coupling.
+    unsigned int n_lambda_element_rotational_;
+
     //! Pointer to the discretization containing the solid and beam elements.
     Teuchos::RCP<const DRT::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
+
+    //! Row map of the additional Lagrange multiplier DOFs for translations.
+    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_translations_;
+
+    //! Row map of the additional Lagrange multiplier DOFs for rotations.
+    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_rotations_;
 
     //! Row map of the additional Lagrange multiplier DOFs.
     Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
