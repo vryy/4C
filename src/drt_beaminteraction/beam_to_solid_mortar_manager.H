@@ -164,20 +164,16 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
-     * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambda(
-        const Teuchos::RCP<const Epetra_Vector>& disp) const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambda() const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
      * the Lagrange GID. on the ranks where they are used.
-     * @param disp (in) Global displacement vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(
-        const Teuchos::RCP<const Epetra_Vector>& disp) const;
+    Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol() const;
 
     /**
      * \brief Return a const reference to the contact pairs in this mortar manager.
@@ -190,10 +186,9 @@ namespace BEAMINTERACTION
 
     /**
      * \brief Calculate the internal mortar penalty energy.
-     * @param disp (in) Current displacement state.
      * @return Global mortar energy.
      */
-    double GetEnergy(const Teuchos::RCP<const Epetra_Vector>& disp) const;
+    double GetEnergy() const;
 
    protected:
     /**

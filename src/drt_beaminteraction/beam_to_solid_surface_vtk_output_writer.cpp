@@ -278,8 +278,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
       // Get the global vector with the Lagrange Multiplier values and add it to the parameter list
       // that will be passed to the pairs.
       Teuchos::RCP<Epetra_Vector> lambda =
-          indirect_assembly_manager->GetMortarManager()->GetGlobalLambdaCol(
-              beam_contact->GState().GetDisNp());
+          indirect_assembly_manager->GetMortarManager()->GetGlobalLambdaCol();
       visualization_params.set<Teuchos::RCP<Epetra_Vector>>("lambda", lambda);
 
       // The pairs will need the mortar manager to extract their Lambda DOFs.
