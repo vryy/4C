@@ -977,10 +977,11 @@ void BeamDiscretizationRuntimeVtuWriter::
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to SR beam element
-    const DRT::ELEMENTS::Beam3r* sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
+    const auto sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (sr_beam == NULL) dserror("Continuous cross section output only implemented for SR beams.");
+    if (sr_beam == nullptr)
+      dserror("Continuous cross section output only implemented for SR beams.");
 
     // get GP strain values from previous element evaluation call
     axial_strain_GPs_current_element.clear();
@@ -1730,7 +1731,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
 {
   // Get the coefficients for the interpolation functions at the Gauss points.
   unsigned int n_gp = 3;
-  double lagrange_coefficients[3][3];
+  std::array<std::array<double, 3>, 3> lagrange_coefficients;
   switch (gauss_rule)
   {
     case DRT::UTILS::intrule_line_3point:
