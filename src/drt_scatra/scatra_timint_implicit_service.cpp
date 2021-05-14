@@ -2663,6 +2663,37 @@ void SCATRA::ScaTraTimIntImpl::PerformAitkenRelaxation(
     dserror("Invalid Aitken method!");
 }
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ApplyBCToSystem()
+{
+  ApplyDirichletBC(time_, phinp_, Teuchos::null);
+  ComputeIntermediateValues();
+  ApplyNeumannBC(neumann_loads_);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::EvaluateInitialTimeDerivative(
+    Teuchos::RCP<LINALG::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs)
+{
+  // create and fill parameter list for elements
+  Teuchos::ParameterList eleparams;
+  eleparams.set<int>("action", SCATRA::calc_initial_time_deriv);
+  eleparams.set<int>("ndsvel", nds_vel_);
+  eleparams.set<int>("ndsdisp", nds_disp_);
+  AddProblemSpecificParametersAndVectors(eleparams);
+
+  // add state vectors according to time integration scheme
+  discret_->ClearState();
+  AddTimeIntegrationSpecificVectors();
+  // modify global system of equations as explained above
+  discret_->Evaluate(eleparams, matrix, rhs);
+  discret_->ClearState();
+
+  // finalize assembly of global mass matrix
+  matrix->Complete();
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

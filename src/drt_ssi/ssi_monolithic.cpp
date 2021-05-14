@@ -36,6 +36,7 @@
 #include "../drt_lib/drt_locsys.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
+#include "../drt_scatra/scatra_timint_elch.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../drt_structure_new/str_model_evaluator_contact.H"
@@ -245,14 +246,6 @@ void SSI::SSIMono::EvaluateSubproblems()
   // clear all matrices and residuals from previous Newton iteration
   ssi_matrices_->ClearMatrices();
   ssi_vectors_->ClearResiduals();
-
-  // needed to communicate to NOX state
-  StructureField()->SetState(StructureField()->WriteAccessDispnp());
-
-  // distribute states to other fields
-  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
-  SetScatraSolution(ScaTraField()->Phinp());
-  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
 
   // evaluate temperature from function and set to structural discretization
   EvaluateAndSetTemperatureField();
@@ -508,6 +501,28 @@ void SSI::SSIMono::ReadRestartfromTime(double restarttime)
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
+void SSI::SSIMono::PrepareTimeLoop()
+{
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  ScaTraField()->Output();
+  if (IsScaTraManifold()) ScaTraManifold()->Output();
+
+  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
+  const bool init_pot_calc =
+      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
+  const auto scatra_type =
+      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
+
+  // calculate initial potential field if needed
+  if (init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch)
+    CalcInitialPotentialField();
+
+  // calculate initial time derivatives
+  CalcInitialTimeDerivative(scatra_type);
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void SSI::SSIMono::PrepareTimeStep()
 {
   // update time and time step
@@ -557,35 +572,20 @@ void SSI::SSIMono::Setup()
         "one transported scalar at the moment it is not reasonable to use them with more than one "
         "transported scalar. So you need to cope with it or change implementation! ;-)");
   }
+  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
 
-  const bool equilibration_scatra_initial = DRT::INPUT::IntegralValue<bool>(
-      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
-      "EQUILIBRATION_INIT_SCATRA");
-  const bool calc_initial_pot =
+  const bool calc_initial_pot_elch =
       DRT::INPUT::IntegralValue<bool>(DRT::Problem::Instance()->ELCHControlParams(), "INITPOTCALC");
+  const bool calc_initial_pot_ssi =
+      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
 
-  if (!equilibration_scatra_initial and
-      ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
+  if (ScaTraField()->EquilibrationMethod() != LINALG::EquilibrationMethod::none)
   {
     dserror(
         "You are within the monolithic solid scatra interaction framework but activated a pure "
         "scatra equilibration method. Delete this from 'SCALAR TRANSPORT DYNAMIC' section and set "
         "it in 'SSI CONTROL/MONOLITHIC' instead.");
   }
-  if (equilibration_scatra_initial and
-      ScaTraField()->EquilibrationMethod() == LINALG::EquilibrationMethod::none)
-  {
-    dserror(
-        "You selected to equilibrate equations of initial potential but did not specify any "
-        "equilibration method in ScaTra.");
-  }
-  if (equilibration_scatra_initial and !calc_initial_pot)
-  {
-    dserror(
-        "You selected to equilibrate equations of initial potential but did not activate "
-        "INITPOTCALC in ELCH CONTROL");
-  }
-
   if (equilibration_method_.global != LINALG::EquilibrationMethod::local and
       (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
@@ -595,6 +595,20 @@ void SSI::SSIMono::Setup()
       (equilibration_method_.structure != LINALG::EquilibrationMethod::none or
           equilibration_method_.scatra != LINALG::EquilibrationMethod::none))
     dserror("Block based equilibration only for block matrices");
+
+  if (!DRT::INPUT::IntegralValue<int>(
+          DRT::Problem::Instance()->ScalarTransportDynamicParams(), "SKIPINITDER"))
+  {
+    dserror(
+        "Initial derivatives are already calculated in monolithic SSI. Enable 'SKIPINITDER' in the "
+        "input file.");
+  }
+
+  if (calc_initial_pot_elch)
+    dserror("Initial potential is calculated by SSI. Disable in Elch section.");
+  if (calc_initial_pot_ssi and Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params,
+                                   "SCATRATIMINTTYPE") != INPAR::SSI::ScaTraTimIntType::elch)
+    dserror("Calculation of initial potential only in case of Elch");
 
   if (!ScaTraField()->IsIncremental())
     dserror("Must have incremental solution approach for monolithic scalar-structure interaction!");
@@ -704,7 +718,8 @@ void SSI::SSIMono::SetupSystem()
             maps_scatra_->Map(imap);
       }
 
-      // extract map underlying single main-diagonal matrix block associated with structural field
+      // extract map underlying single main-diagonal matrix block associated with structural
+      // field
       maps_systemmatrix[GetBlockPositions(Subproblem::structure)->at(0)] =
           StructureField()->DofRowMap();
 
@@ -742,8 +757,8 @@ void SSI::SSIMono::SetupSystem()
       if (!solver_->Params().isSublist("AMGnxn Parameters"))
         dserror("Global system matrix with block structure requires AMGnxn block preconditioner!");
 
-      // feed AMGnxn block preconditioner with null space information for each block of global block
-      // system matrix
+      // feed AMGnxn block preconditioner with null space information for each block of global
+      // block system matrix
       BuildNullSpaces();
 
       break;
@@ -892,6 +907,9 @@ void SSI::SSIMono::NewtonLoop()
     // store time before evaluating elements and assembling global system of equations
     double time = timer_->WallTime();
 
+    // set solution from last Newton step to all fields
+    DistributeSolutionAllFields();
+
     // evaluate sub problems and get all matrices and right-hand-sides
     EvaluateSubproblems();
 
@@ -944,13 +962,7 @@ void SSI::SSIMono::NewtonLoop()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::Timeloop()
 {
-  // output initial scalar transport solution to screen and files
-  if (Step() == 0)
-  {
-    SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
-    ScaTraField()->Output();
-    if (IsScaTraManifold()) ScaTraManifold()->Output();
-  }
+  if (Step() == 0) PrepareTimeLoop();
 
   // time loop
   while (NotFinished() and ScaTraField()->NotFinished())
@@ -1237,4 +1249,378 @@ void SSI::SSIMono::PrepareOutput()
   // prepare output of coupling sctra manifold - scatra
   if (IsScaTraManifold() and manifoldscatraflux_->DoOutput())
     manifoldscatraflux_->EvaluateScaTraManifoldInflow();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::DistributeSolutionAllFields(const bool restore_velocity)
+{
+  // needed to communicate to NOX state
+  if (restore_velocity)
+  {
+    auto vel_temp = *StructureField()->Velnp();
+    StructureField()->SetState(StructureField()->WriteAccessDispnp());
+    StructureField()->WriteAccessVelnp()->Update(1.0, vel_temp, 0.0);
+  }
+  else
+    StructureField()->SetState(StructureField()->WriteAccessDispnp());
+
+  // distribute states to other fields
+  SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
+  SetScatraSolution(ScaTraField()->Phinp());
+  if (IsScaTraManifold()) SetScatraManifoldSolution(ScaTraManifold()->Phinp());
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::CalcInitialPotentialField()
+{
+  const auto equpot = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(
+      DRT::Problem::Instance()->ELCHControlParams(), "EQUPOT");
+  if (equpot != INPAR::ELCH::equpot_divi and equpot != INPAR::ELCH::equpot_enc_pde and
+      equpot != INPAR::ELCH::equpot_enc_pde_elim)
+  {
+    dserror(
+        "Initial potential field cannot be computed for chosen closing equation for electric "
+        "potential!");
+  }
+
+  // store initial velocity to restore them afterwards
+  auto init_velocity = *StructureField()->Velnp();
+
+  // cast scatra time integrators to elch to call elch specific methods
+  auto scatra_elch = Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraField());
+  auto manifold_elch = IsScaTraManifold()
+                           ? Teuchos::rcp_dynamic_cast<SCATRA::ScaTraTimIntElch>(ScaTraManifold())
+                           : Teuchos::null;
+  if (scatra_elch == Teuchos::null or (IsScaTraManifold() and manifold_elch == Teuchos::null))
+    dserror("Cast to Elch time integrator faild. Scatra is not an Elch problem");
+
+  // prepare specific time integrators
+  scatra_elch->PreCalcInitialPotentialField();
+  if (IsScaTraManifold()) manifold_elch->PreCalcInitialPotentialField();
+
+  auto scatra_elch_splitter = ScaTraField()->Splitter();
+  auto manifold_elch_splitter = IsScaTraManifold() ? ScaTraManifold()->Splitter() : Teuchos::null;
+
+  // start Newton-Raphson iteration
+  int init_pot_iternum = 0;
+  while (true)
+  {
+    // update iteration counter
+    init_pot_iternum++;
+
+    // prepare full SSI system
+    DistributeSolutionAllFields(true);
+    EvaluateSubproblems();
+    AssembleMatAndRHS();
+    ApplyDBCToSystem();
+
+    // apply artificial Dirichlet boundary conditions to system of equations (on concentration
+    // dofs and on structure dofs)
+    Teuchos::RCP<Epetra_Map> pseudo_dbc_map;
+    if (IsScaTraManifold())
+    {
+      auto conc_map =
+          LINALG::MergeMap(scatra_elch_splitter->OtherMap(), manifold_elch_splitter->OtherMap());
+      pseudo_dbc_map = LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
+    }
+    else
+    {
+      pseudo_dbc_map =
+          LINALG::MergeMap(scatra_elch_splitter->OtherMap(), StructureField()->DofRowMap());
+    }
+
+    auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
+
+    auto rhs = ssi_vectors_->Residual();
+    ApplyDirichlettoSystem(
+        ssi_matrices_->SystemMatrix(), rhs, Teuchos::null, dbc_zeros, *pseudo_dbc_map);
+    ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
+
+    if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this, init_pot_iternum)) break;
+
+    // solve for potential increments
+    ssi_vectors_->ClearIncrement();
+    SolveLinearSystem();
+
+    // update potential dofs in scatra and manifold fields
+    ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
+        ssi_vectors_->Increment(), GetProblemPosition(Subproblem::scalar_transport)));
+    if (IsScaTraManifold())
+      ScaTraManifold()->UpdateIter(MapsSubProblems()->ExtractVector(
+          ssi_vectors_->Increment(), GetProblemPosition(Subproblem::manifold)));
+
+    // copy initial state vector
+    ScaTraField()->Phin()->Update(1.0, *ScaTraField()->Phinp(), 0.0);
+    if (IsScaTraManifold()) ScaTraManifold()->Phin()->Update(1.0, *ScaTraManifold()->Phinp(), 0.0);
+
+    // update state vectors for intermediate time steps (only for generalized alpha)
+    ScaTraField()->ComputeIntermediateValues();
+    if (IsScaTraManifold()) ScaTraManifold()->ComputeIntermediateValues();
+  }
+
+  scatra_elch->PostCalcInitialPotentialField();
+  if (IsScaTraManifold()) manifold_elch->PostCalcInitialPotentialField();
+
+  StructureField()->WriteAccessVelnp()->Update(1.0, init_velocity, 0.0);
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SSI::SSIMono::CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra_type)
+{
+  // store initial velocity to restore them afterwards
+  auto init_velocity = *StructureField()->Velnp();
+
+  const bool is_elch = scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+
+  // prepare specific time integrators
+  ScaTraField()->PreCalcInitialTimeDerivative();
+  if (IsScaTraManifold()) ScaTraManifold()->PreCalcInitialTimeDerivative();
+
+  auto scatra_elch_splitter = is_elch ? ScaTraField()->Splitter() : Teuchos::null;
+  auto manifold_elch_splitter =
+      (is_elch and IsScaTraManifold()) ? ScaTraManifold()->Splitter() : Teuchos::null;
+
+  // initial screen output
+  if (Comm().MyPID() == 0)
+  {
+    std::cout << "Calculating initial time derivative of state variables on discretization "
+              << ScaTraField()->Discretization()->Name();
+    if (IsScaTraManifold())
+      std::cout << " and discretization " << ScaTraManifold()->Discretization()->Name();
+    std::cout << std::endl;
+  }
+
+  // evaluate Dirichlet and Neumann boundary conditions
+  ScaTraField()->ApplyBCToSystem();
+  if (IsScaTraManifold()) ScaTraManifold()->ApplyBCToSystem();
+
+  // clear history values (this is the first step)
+  ScaTraField()->Hist()->PutScalar(0.0);
+  if (IsScaTraManifold()) ScaTraManifold()->Hist()->PutScalar(0.0);
+
+  // In a first step, we assemble the standard global system of equations (we need the residual)
+  DistributeSolutionAllFields(true);
+  EvaluateSubproblems();
+  AssembleMatAndRHS();
+  ApplyDBCToSystem();
+
+  // prepare mass matrices of sub problems and global system
+  auto massmatrix_scatra =
+      ScaTraField()->MatrixType() == LINALG::MatrixType::sparse
+          ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+                UTILS::SSIMatrices::SetupSparseMatrix(ScaTraField()->DofRowMap()))
+          : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(UTILS::SSIMatrices::SetupBlockMatrix(
+                Teuchos::rcpFromRef(ScaTraField()->BlockMaps()),
+                Teuchos::rcpFromRef(ScaTraField()->BlockMaps())));
+
+  auto massmatrix_manifold =
+      IsScaTraManifold()
+          ? (ScaTraManifold()->MatrixType() == LINALG::MatrixType::sparse
+                    ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+                          UTILS::SSIMatrices::SetupSparseMatrix(ScaTraManifold()->DofRowMap()))
+                    : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+                          UTILS::SSIMatrices::SetupBlockMatrix(
+                              Teuchos::rcpFromRef(ScaTraManifold()->BlockMaps()),
+                              Teuchos::rcpFromRef(ScaTraManifold()->BlockMaps()))))
+          : Teuchos::null;
+
+  auto massmatrix_system =
+      MatrixType() == LINALG::MatrixType::sparse
+          ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+                UTILS::SSIMatrices::SetupSparseMatrix(DofRowMap()))
+          : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
+                UTILS::SSIMatrices::SetupBlockMatrix(MapsSystemMatrix(), MapsSystemMatrix()));
+
+  // fill ones on main diag of structure block (not solved)
+  auto ones_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
+  ones_struct->PutScalar(1.0);
+  MatrixType() == LINALG::MatrixType::sparse
+      ? LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
+            *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system), *ones_struct)
+      : LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
+            LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system)
+                ->Matrix(GetBlockPositions(Subproblem::structure)->at(0),
+                    GetBlockPositions(Subproblem::structure)->at(0)),
+            *ones_struct);
+
+  // extract residuals of scatra and manifold from global residual
+  auto rhs_scatra = Teuchos::rcp(new Epetra_Vector(*ScaTraField()->DofRowMap(), true));
+  auto rhs_manifold = IsScaTraManifold()
+                          ? Teuchos::rcp(new Epetra_Vector(*ScaTraManifold()->DofRowMap(), true))
+                          : Teuchos::null;
+
+  rhs_scatra->Update(1.0,
+      *MapsSubProblems()->ExtractVector(
+          ssi_vectors_->Residual(), GetProblemPosition(Subproblem::scalar_transport)),
+      0.0);
+  if (IsScaTraManifold())
+  {
+    rhs_manifold->Update(1.0,
+        *MapsSubProblems()->ExtractVector(
+            ssi_vectors_->Residual(), GetProblemPosition(Subproblem::manifold)),
+        0.0);
+  }
+
+  // In a second step, we need to modify the assembled system of equations, since we want to solve
+  // M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
+  // In particular, we need to replace the global system matrix by a global mass matrix,
+  // and we need to remove all transient contributions associated with time discretization from the
+  // global residual vector.
+
+  // Evaluate mass matrix and modify residual
+  ScaTraField()->EvaluateInitialTimeDerivative(massmatrix_scatra, rhs_scatra);
+  if (IsScaTraManifold())
+    ScaTraManifold()->EvaluateInitialTimeDerivative(massmatrix_manifold, rhs_manifold);
+
+  // assemble global mass matrix from
+  switch (MatrixType())
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      switch (ScaTraField()->MatrixType())
+      {
+        case LINALG::MatrixType::block_condition:
+        case LINALG::MatrixType::block_condition_dof:
+        {
+          auto massmatrix_system_block =
+              LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
+
+          auto massmatrix_scatra_block =
+              LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_scatra);
+
+          auto positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
+
+          for (int i = 0; i < static_cast<int>(positions_scatra->size()); ++i)
+          {
+            const int position_scatra = positions_scatra->at(i);
+            massmatrix_system_block->Matrix(position_scatra, position_scatra)
+                .Add(massmatrix_scatra_block->Matrix(i, i), false, 1.0, 1.0);
+          }
+          if (IsScaTraManifold())
+          {
+            auto positions_manifold = GetBlockPositions(Subproblem::manifold);
+
+            auto massmatrix_manifold_block =
+                LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_manifold);
+
+            for (int i = 0; i < static_cast<int>(positions_manifold->size()); ++i)
+            {
+              const int position_manifold = positions_manifold->at(i);
+              massmatrix_system_block->Matrix(position_manifold, position_manifold)
+                  .Add(massmatrix_manifold_block->Matrix(i, i), false, 1.0, 1.0);
+            }
+          }
+
+          break;
+        }
+
+        case LINALG::MatrixType::sparse:
+        {
+          auto massmatrix_system_block =
+              LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
+
+          const int position_scatra = GetBlockPositions(Subproblem::scalar_transport)->at(0);
+
+          massmatrix_system_block->Matrix(position_scatra, position_scatra)
+              .Add(*LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0, 1.0);
+
+          if (IsScaTraManifold())
+          {
+            const int position_manifold = GetBlockPositions(Subproblem::manifold)->at(0);
+
+            massmatrix_system_block->Matrix(position_manifold, position_manifold)
+                .Add(*LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0,
+                    1.0);
+          }
+          break;
+        }
+
+        default:
+        {
+          dserror("Invalid matrix type associated with scalar transport field!");
+          break;
+        }
+      }
+      massmatrix_system->Complete();
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      auto massmatrix_system_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system);
+      massmatrix_system_sparse->Add(
+          *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0, 1.0);
+
+      if (IsScaTraManifold())
+        massmatrix_system_sparse->Add(
+            *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0, 1.0);
+
+      massmatrix_system->Complete(*DofRowMap(), *DofRowMap());
+      break;
+    }
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      break;
+    }
+  }
+
+  // reconstruct global residual from partial residuals
+  auto rhs_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
+  MapsSubProblems()->InsertVector(
+      rhs_scatra, GetProblemPosition(Subproblem::scalar_transport), rhs_system);
+  if (IsScaTraManifold())
+    MapsSubProblems()->InsertVector(
+        rhs_manifold, GetProblemPosition(Subproblem::manifold), rhs_system);
+
+  // apply artificial Dirichlet boundary conditions to system of equations to non-transported
+  // scalars and structure
+  Teuchos::RCP<Epetra_Map> pseudo_dbc_map;
+  if (IsScaTraManifold() and is_elch)
+  {
+    auto conc_map =
+        LINALG::MergeMap(scatra_elch_splitter->CondMap(), manifold_elch_splitter->CondMap());
+    pseudo_dbc_map = LINALG::MergeMap(conc_map, StructureField()->DofRowMap());
+  }
+  else if (is_elch)
+  {
+    pseudo_dbc_map =
+        LINALG::MergeMap(scatra_elch_splitter->CondMap(), StructureField()->DofRowMap());
+  }
+  else
+    pseudo_dbc_map = Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap()));
+
+  auto dbc_zeros = Teuchos::rcp(new Epetra_Vector(*pseudo_dbc_map, true));
+
+  // temporal derivative of transported scalars
+  auto phidtnp_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
+  LINALG::ApplyDirichlettoSystem(
+      massmatrix_system, phidtnp_system, rhs_system, dbc_zeros, *(pseudo_dbc_map));
+
+  // solve global system of equations for initial time derivative of state variables
+  solver_->Solve(massmatrix_system->EpetraOperator(), phidtnp_system, rhs_system, true, true);
+
+  // copy solution to sub problmes
+  auto phidtnp_scatra = MapsSubProblems()->ExtractVector(
+      phidtnp_system, GetProblemPosition(Subproblem::scalar_transport));
+  ScaTraField()->Phidtnp()->Update(1.0, *phidtnp_scatra, 0.0);
+  ScaTraField()->Phidtn()->Update(1.0, *phidtnp_scatra, 0.0);
+
+  if (IsScaTraManifold())
+  {
+    auto phidtnp_manifold =
+        MapsSubProblems()->ExtractVector(phidtnp_system, GetProblemPosition(Subproblem::manifold));
+    ScaTraManifold()->Phidtnp()->Update(1.0, *phidtnp_manifold, 0.0);
+    ScaTraManifold()->Phidtn()->Update(1.0, *phidtnp_manifold, 0.0);
+  }
+
+  // reset solver
+  solver_->Reset();
+
+  ScaTraField()->PostCalcInitialTimeDerivative();
+  if (IsScaTraManifold()) ScaTraManifold()->PostCalcInitialTimeDerivative();
+
+  StructureField()->WriteAccessVelnp()->Update(1.0, init_velocity, 0.0);
 }

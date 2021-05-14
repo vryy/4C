@@ -366,6 +366,18 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
  *--------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
 {
+  PreCalcInitialTimeDerivative();
+
+  // call core algorithm
+  ScaTraTimIntImpl::CalcInitialTimeDerivative();
+
+  PostCalcInitialTimeDerivative();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PreCalcInitialTimeDerivative()
+{
   // standard general element parameter without stabilization
   SetElementGeneralParameters(true);
 
@@ -377,11 +389,12 @@ void SCATRA::TimIntOneStepTheta::CalcInitialTimeDerivative()
 
   // deactivate turbulence settings
   SetElementTurbulenceParameters(true);
+}
 
-  // call core algorithm
-  ScaTraTimIntImpl::CalcInitialTimeDerivative();
-
-  // and finally undo our temporary settings
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::TimIntOneStepTheta::PostCalcInitialTimeDerivative()
+{  // and finally undo our temporary settings
   SetElementGeneralParameters(false);
   SetElementTimeParameter(false);
   SetElementTurbulenceParameters(false);

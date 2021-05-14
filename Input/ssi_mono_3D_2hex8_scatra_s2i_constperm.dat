@@ -30,6 +30,7 @@ SOLVERTYPE                      nonlinear
 VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    field_by_condition
 CONVFORM                        conservative
+SKIPINITDER                     Yes
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
 -------------------------------------------------------SSI CONTROL

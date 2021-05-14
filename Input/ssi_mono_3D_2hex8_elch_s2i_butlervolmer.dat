@@ -36,13 +36,13 @@ INITIALFIELD                    field_by_condition
 CONVFORM                        conservative
 FDCHECK                         global
 FDCHECKTOL                      9.e-4
+SKIPINITDER                     Yes
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ------------------------------------------------------ELCH CONTROL
-INITPOTCALC                     yes
 DIFFCOND_FORMULATION            Yes
 EQUPOT                          divi
 COUPLE_BOUNDARY_FLUXES          No
@@ -56,6 +56,9 @@ SCATRATIMINTTYPE                Elch
 --------------------------------------------SSI CONTROL/MONOLITHIC
 LINEAR_SOLVER                   1
 MATRIXTYPE                      sparse
+ABSTOLRES                       0.0
+----------------------------------------------SSI CONTROL/ELCH
+INITPOTCALC                     yes
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS

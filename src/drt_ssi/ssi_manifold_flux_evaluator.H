@@ -47,7 +47,7 @@ namespace SSI
    public:
     ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretization> manifolddis,
         Teuchos::RCP<DRT::Discretization> scatradis, DRT::Condition* condition_manifold,
-        DRT::Condition* condition_kinetics);
+        DRT::Condition* condition_kinetics, int ndof_per_node);
 
     //! Kinetics condition on scatra dis
     DRT::Condition* ConditionKinetics() const { return condition_kinetics_; }

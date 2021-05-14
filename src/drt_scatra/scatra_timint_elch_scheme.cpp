@@ -52,9 +52,8 @@ void SCATRA::ScaTraTimIntElchOST::Setup()
 }
 
 /*--------------------------------------------------------------------------*
- | calculate initial electric potential field                    fang 09/15 |
  *--------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchOST::CalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchOST::PreCalcInitialPotentialField()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
@@ -76,11 +75,12 @@ void SCATRA::ScaTraTimIntElchOST::CalcInitialPotentialField()
 
   // deactivate turbulence settings
   SetElementTurbulenceParameters(true);
+}
 
-  // call core algorithm
-  ScaTraTimIntElch::CalcInitialPotentialField();
-
-  // and finally undo our temporary settings
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchOST::PostCalcInitialPotentialField()
+{  // and finally undo our temporary settings
   SetElementGeneralParameters(false);
   SetElementTimeParameter(false);
   SetElementTurbulenceParameters(false);
@@ -367,16 +367,12 @@ void SCATRA::ScaTraTimIntElchBDF2::Setup()
 
 
 /*-----------------------------------------------------------------------------------*
- | calculate initial electric potential field                             fang 09/15 |
  *-----------------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchBDF2::CalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchBDF2::PreCalcInitialPotentialField()
 {
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
   ApplyNeumannBC(neumann_loads_);
-
-  // call core algorithm
-  ScaTraTimIntElch::CalcInitialPotentialField();
 }
 
 
@@ -643,9 +639,8 @@ void SCATRA::ScaTraTimIntElchGenAlpha::Setup()
 
 
 /*---------------------------------------------------------------------------*
- | calculate initial electric potential field                     fang 09/15 |
  ----------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchGenAlpha::CalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchGenAlpha::PreCalcInitialPotentialField()
 {
   // evaluate Dirichlet boundary conditions at time t = 0
   // the values should match your initial field at the boundary!
@@ -669,10 +664,12 @@ void SCATRA::ScaTraTimIntElchGenAlpha::CalcInitialPotentialField()
 
   // deactivate turbulence settings
   SetElementTurbulenceParameters(true);
+}
 
-  // call core algorithm
-  ScaTraTimIntElch::CalcInitialPotentialField();
-
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntElchGenAlpha::PostCalcInitialPotentialField()
+{
   // and finally undo our temporary settings
   SetElementGeneralParameters();
   SetElementTimeParameter();
@@ -908,16 +905,12 @@ void SCATRA::ScaTraTimIntElchStationary::Setup()
 
 
 /*---------------------------------------------------------------------------*
- | calculate initial electric potential field                     fang 09/15 |
  *---------------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntElchStationary::CalcInitialPotentialField()
+void SCATRA::ScaTraTimIntElchStationary::PreCalcInitialPotentialField()
 {
   ApplyDirichletBC(time_, phin_, Teuchos::null);
   ApplyDirichletBC(time_, phinp_, Teuchos::null);
   ApplyNeumannBC(neumann_loads_);
-
-  // call core algorithm
-  ScaTraTimIntElch::CalcInitialPotentialField();
 }
 
 

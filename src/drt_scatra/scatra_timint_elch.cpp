@@ -1859,6 +1859,8 @@ void SCATRA::ScaTraTimIntElch::CreateMeshtyingStrategy()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
 {
+  PreCalcInitialPotentialField();
+
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + calc initial potential field");
 
@@ -2059,6 +2061,8 @@ void SCATRA::ScaTraTimIntElch::CalcInitialPotentialField()
   // reset global system matrix and its graph, since we solved a very special problem with a
   // special sparsity pattern
   sysmat_->Reset();
+
+  PostCalcInitialPotentialField();
 }
 
 /*----------------------------------------------------------------------*

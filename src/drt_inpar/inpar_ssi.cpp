@@ -164,10 +164,6 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           LINALG::EquilibrationMethod::symmetry),
       &ssidynmono);
 
-  BoolParameter("EQUILIBRATION_INIT_SCATRA", "no",
-      "use equilibration method of ScaTra to equilibrate initial calculation of potential",
-      &ssidynmono);
-
   BoolParameter("SMOOTH_OUTPUT_INTERFACE_STRESS", "no",
       "average stress at master and slave side to smooth out errors from discretization and "
       "non-zero residuals for output of stress.",
@@ -199,6 +195,14 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "write output of inflow of scatra manifold - scatra coupling into scatra manifold to csv "
       "file",
       &ssidynmanifold);
+
+  /*----------------------------------------------------------------------*/
+  /* parameters for SSI with elch */
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& ssidynelch = ssidyn.sublist(
+      "ELCH", false, "Monolithic Structure Scalar Interaction with Elch as SCATRATIMINTTYPE");
+  BoolParameter("INITPOTCALC", "No", "Automatically calculate initial field for electric potential",
+      &ssidynelch);
 }
 
 /*--------------------------------------------------------------------

@@ -185,6 +185,13 @@ namespace SCATRA
       return splitter_macro_;
     };
 
+    //! prepare time integrator specific things before calculation of initial potential field
+    virtual void PreCalcInitialPotentialField() = 0;
+
+    //! clean up settings from PreCalcInitialPotentialField() after initial potential field is
+    //! calculated
+    virtual void PostCalcInitialPotentialField() = 0;
+
    protected:
     /*========================================================================*/
     //! @name set element parameters
@@ -252,7 +259,6 @@ namespace SCATRA
     /*--- calculate and update -----------------------------------------------*/
 
     //! calculate initial electric potential field
-    //! this function is never called directly, but only via overloading
     virtual void CalcInitialPotentialField();
 
     //! \brief computes different conductivity expressions for electrolyte solutions (ELCH)

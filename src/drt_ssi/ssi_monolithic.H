@@ -19,6 +19,14 @@ namespace CONTACT
   class CoNitscheStrategySsi;
 }
 
+namespace INPAR
+{
+  namespace SSI
+  {
+    enum class ScaTraTimIntType;
+  }
+}  // namespace INPAR
+
 namespace LINALG
 {
   class Solver;
@@ -157,6 +165,18 @@ namespace SSI
     //! build null spaces associated with blocks of global system matrix
     void BuildNullSpaces() const;
 
+    //! calc initial potential field for monolithic SSI problem including scatra and scatra manifold
+    //! fields
+    void CalcInitialPotentialField();
+
+    //! calc initial time derivative of transported scalars for monolithic SSI problem including
+    //! scatra and scatra manifold fields
+    void CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra_type);
+
+    //! distribute solution to all other fields
+    //! \param restore_velocity   restore velocity when StructureField()->SetState() is called
+    void DistributeSolutionAllFields(bool restore_velocity = false);
+
     //! evaluate all off-diagonal matrix contributions
     void EvaluateOffDiagContributions();
 
@@ -173,6 +193,9 @@ namespace SSI
     Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> GetBlockEquilibration();
 
     void Output() override;
+
+    //! do everthing, that has to be done once before first time step
+    void PrepareTimeLoop();
 
     void PrepareTimeStep() override;
 
