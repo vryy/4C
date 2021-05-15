@@ -62,6 +62,11 @@ namespace INPAR
         setStringToIntegralParameter<int>("ELEMENT_GID", "No", "write baci internal element GIDs",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
 
+        // write element ghosting information
+        setStringToIntegralParameter<int>("ELEMENT_GHOSTING", "No",
+            "write which processors ghost the elements", yesnotuple, yesnovalue,
+            &sublist_IO_VTK_structure);
+
         // whether to write node GIDs
         setStringToIntegralParameter<int>("NODE_GID", "No", "write baci internal node GIDs",
             yesnotuple, yesnovalue, &sublist_IO_VTK_structure);

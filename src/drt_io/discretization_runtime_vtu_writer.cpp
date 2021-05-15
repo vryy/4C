@@ -447,6 +447,14 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultn
   runtime_vtuwriter_->AppendVisualizationCellDataVector(gid_of_row_elements, 1, resultname);
 }
 
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
+{
+  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_, false);
+}
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string& resultname)

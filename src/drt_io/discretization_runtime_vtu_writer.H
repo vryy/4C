@@ -112,6 +112,11 @@ class DiscretizationRuntimeVtuWriter
   void AppendElementGID(const std::string& resultname);
 
   /**
+   * \brief Write ghosting information to the elements.
+   */
+  void AppendElementGhostingInformation();
+
+  /**
    * \brief Write the BACI internal node GIDs for each element.
    *
    * @param resultname (in) Name of the field in the VTK file.
