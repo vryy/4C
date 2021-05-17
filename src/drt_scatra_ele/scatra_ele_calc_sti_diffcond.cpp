@@ -441,7 +441,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
       1. / (diffmanagerdiffcond_->GetValence(0) *
                DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday());
   const double& kappa = diffmanagerdiffcond_->GetCond();
-  const double& kappaderiv = diffmanagerdiffcond_->GetDerivCond(0);
+  const double& kappaderiv = diffmanagerdiffcond_->GetConcDerivCond(0);
   const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
   const double& t = diffmanagerdiffcond_->GetTransNum(0);
   const double& temperature = my::scatravarmanager_->Phinp(0);
@@ -526,7 +526,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. concentration dofs (in case
       // conductivity is a function of the concentration)
-      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) * diffmanagerdiffcond_->GetDerivCond(0) *
+      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) * diffmanagerdiffcond_->GetConcDerivCond(0) *
                           gradpot2 * my::funct_(ui);
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. electric potential dofs
@@ -573,7 +573,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
 
       // intermediate terms
       const double term1 = 2. * diffcoeff / concentration *
-                           diffmanagerdiffcond_->GetDerivIsoDiffCoef(0, 0) * a2 * my::funct_(ui);
+                           diffmanagerdiffcond_->GetConcDerivIsoDiffCoef(0, 0) * a2 *
+                           my::funct_(ui);
       const double term2 = -pow(diffcoeff, 2) / pow(concentration, 2) * a2 * my::funct_(ui);
       const double term3 = 2. * pow(diffcoeff, 2) / concentration * a.Dot(gradtemp) * soret /
                            temperature * my::funct_(ui);
@@ -603,7 +604,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerdiffcond_->GetIsotropicDiff(0);
-  const double& diffcoeffderiv = diffmanagerdiffcond_->GetDerivIsoDiffCoef(0, 0);
+  const double& diffcoeffderiv = diffmanagerdiffcond_->GetConcDerivIsoDiffCoef(0, 0);
   const LINALG::Matrix<my::nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
   const double& temperature = my::scatravarmanager_->Phinp(0);

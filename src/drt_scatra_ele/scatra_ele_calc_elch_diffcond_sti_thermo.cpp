@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     const double& concentration = VarManager()->Phinp(0);
     const LINALG::Matrix<my::nsd_, 1>& gradtemp = VarManager()->GradTemp();
     const double& kappa = mydiffcond::DiffManager()->GetCond();
-    const double& kappaderiv = mydiffcond::DiffManager()->GetDerivCond(0);
+    const double& kappaderiv = mydiffcond::DiffManager()->GetConcDerivCond(0);
     const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
     const double invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
     const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
     mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
         mydiffcond::DiffManager()->GetIsotropicDiff(0),
-        mydiffcond::DiffManager()->GetDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
+        mydiffcond::DiffManager()->GetConcDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
         VarManager()->GradTemp(), my::funct_, my::derxy_);
     mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
         mydiffcond::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
@@ -316,6 +316,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
           mydiffcond::DiffManager()->GetIsotropicDiff(0), VarManager()->Temp(),
           VarManager()->GradTemp(), my::funct_, my::derxy_);
     }
+
+    // calculating the off diagonal for the temperature derivative of concentration and electric
+    // potential
+    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, VarManager()->InvF(),
+        VarManager()->GradPhi(0), VarManager()->GradPot(),
+        myelectrode::DiffManager()->GetTempDerivIsoDiffCoef(0, 0),
+        myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.0);
   }
 }
 

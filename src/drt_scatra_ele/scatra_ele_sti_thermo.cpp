@@ -193,6 +193,33 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat,
+    const int numdofpernode, const double& timefacfac, const double invF,
+    const LINALG::Matrix<my::nsd_, 1>& gradconc, const LINALG::Matrix<my::nsd_, 1>& gradpot,
+    const double& tempderivisodiffcoef, const double& tempderivcond,
+    const LINALG::Matrix<nen_, 1>& funct, const LINALG::Matrix<nsd_, nen_>& derxy,
+    const double scalar)
+{
+  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  {
+    const int rowconc = vi * 2;
+    const int rowpot = rowconc + 1;
+
+    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    {
+      double laplawfrhs(0.0);
+      GetLaplacianWeakFormRHS(laplawfrhs, vi, gradconc, derxy);
+      emat(rowconc, ui) += timefacfac * tempderivisodiffcoef * laplawfrhs * funct(ui);
+
+      GetLaplacianWeakFormRHS(laplawfrhs, vi, gradpot, derxy);
+      emat(rowpot, ui) += timefacfac * invF * tempderivcond * laplawfrhs * funct(ui) * scalar;
+    }
+  }
+}
+
 
 // template classes
 // 1D elements

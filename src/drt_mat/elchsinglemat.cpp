@@ -22,19 +22,38 @@ MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
           matdata->GetInt("DIFF_COEF_TEMP_SCALE_FUNCT")),
       number_diffusion_coefficent_params_(matdata->GetInt("DIFF_PARA_NUM")),
       diffusion_coefficent_params_(*matdata->Get<std::vector<double>>("DIFF_PARA")),
+      number_diffusion_temp_scale_funct_params_(
+          matdata->GetInt("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
+      diffusion_temp_scale_funct_params_(
+          *matdata->Get<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA")),
       conductivity_concentration_dependence_funct_num_(matdata->GetInt("COND_CONC_DEP_FUNCT")),
       conductivity_temperature_scaling_funct_num_(matdata->GetInt("COND_TEMP_SCALE_FUNCT")),
       number_conductivity_params_(matdata->GetInt("COND_PARA_NUM")),
-      conductivity_params_(*matdata->Get<std::vector<double>>("COND_PARA"))
+      conductivity_params_(*matdata->Get<std::vector<double>>("COND_PARA")),
+      number_conductivity_temp_scale_funct_params_(
+          matdata->GetInt("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
+      conductivity_temp_scale_funct_params_(
+          *matdata->Get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
+      R_(DRT::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))
 {
   // safety checks
   if (number_diffusion_coefficent_params_ != static_cast<int>(diffusion_coefficent_params_.size()))
     dserror("Mismatch in number of parameters for diffusion coefficient!");
   if (number_conductivity_params_ != static_cast<int>(conductivity_params_.size()))
     dserror("Mismatch in number of parameters for conductivity!");
+  if (number_diffusion_temp_scale_funct_params_ !=
+      static_cast<int>(diffusion_temp_scale_funct_params_.size()))
+    dserror("Mismatch in number of parameters for temp scale function for diffusion coefficient!");
+  if (number_conductivity_temp_scale_funct_params_ !=
+      static_cast<int>(conductivity_temp_scale_funct_params_.size()))
+    dserror("Mismatch in number of parameters for temp scale function for conductivity!");
   CheckProvidedParams(
       diffusion_coefficient_concentration_dependence_funct_num_, diffusion_coefficent_params_);
   CheckProvidedParams(conductivity_concentration_dependence_funct_num_, conductivity_params_);
+  CheckProvidedParams(
+      diffusion_coefficient_temperature_scaling_funct_num_, diffusion_temp_scale_funct_params_);
+  CheckProvidedParams(
+      conductivity_temperature_scaling_funct_num_, conductivity_temp_scale_funct_params_);
 }
 
 
@@ -157,6 +176,28 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 3;
         break;
       }
+      case -14:
+      {
+        // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
+        // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T: temperature, D0: max
+        // diffusion coefficient D0 is provided by DIFF PARA and R is a constant which is already
+        // defined
+        functionname =
+            "'Arrhenius Ansatz for temperature dependent diffusion coefficient in solids'";
+        nfunctparams = 1;
+        break;
+      }
+      case -15:
+      {
+        // Temperature dependent factor for electric conductivity (sigma)
+        // electric conductivity is the inverse electric resistivity (rho)
+        // for "small" temperature differences the temperature dependence of the specific electric
+        // resistance follows rho = rho_0 * (1 + alpha(T - T_0))
+        functionname =
+            "'Linear approximation of specific electrical resistance/electric conductivity'";
+        nfunctparams = 2;
+        break;
+      }
       default:
       {
         dserror("Curve number %i is not implemented", functnr);
@@ -180,11 +221,12 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
 double MAT::ElchSingleMat::ComputeDiffusionCoefficient(
     const double concentration, const double temperature) const
 {
+  // D(c)
   double diffusionCoefficient = ComputeDiffusionCoefficientConcentrationDependent(concentration);
 
-  // do the temperature dependent scaling
+  // D(c)*D(T)
   diffusionCoefficient *= ComputeTemperatureDependentScaleFactor(
-      temperature, DiffusionCoefficientTemperatureScalingFunctNum());
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum(), TempScaleFunctionParamsDiff());
 
   return diffusionCoefficient;
 }
@@ -222,14 +264,19 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(
-    const double temperature, const int functionNumber) const
+double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(const double temperature,
+    const int functionNumber, const std::vector<double>& functionParams) const
 {
   double temperatureDependentScaleFactor(1.0);
 
   if (functionNumber == 0)
   {
     // do nothing
+  }
+  else if (functionNumber < 0)
+  {
+    temperatureDependentScaleFactor =
+        EvalPreDefinedFunctValue(functionNumber, temperature, functionParams);
   }
   else if (functionNumber > 0)
   {
@@ -281,9 +328,60 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
 
   // do the temperature dependent scaling
   diffusion_coeff_conc_deriv *= ComputeTemperatureDependentScaleFactor(
-      temperature, DiffusionCoefficientTemperatureScalingFunctNum());
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum(), TempScaleFunctionParamsDiff());
 
   return diffusion_coeff_conc_deriv;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+double MAT::ElchSingleMat::ComputeTemperatureDerivativeOfDiffusionCoefficient(
+    const double concentration, const double temperature) const
+{
+  // Computation D(c)
+  double diffusion_coeff_temp_deriv =
+      ComputeDiffusionCoefficientConcentrationDependent(concentration);
+
+  // Computation D(c)*D'(T)
+  diffusion_coeff_temp_deriv *= ComputeTemperatureDependentScaleFactorDeriv(
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum(), TempScaleFunctionParamsDiff());
+
+  return diffusion_coeff_temp_deriv;
+}
+
+/*---------------------------------------------------------------------*
+
+ *---------------------------------------------------------------------*/
+double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactorDeriv(const double temperature,
+    const int functionNumber, const std::vector<double>& functionParams) const
+{
+  double temperatureDependentScaleFactorDeriv(0.0);
+
+  if (functionNumber == 0)
+  {
+    // do nothing
+  }
+  else if (functionNumber < 0)
+  {
+    temperatureDependentScaleFactorDeriv =
+        EvalFirstDerivPreDefinedFunctValue(functionNumber, temperature, functionParams);
+  }
+  else if (functionNumber > 0)
+  {
+    temperatureDependentScaleFactorDeriv = DRT::Problem::Instance()
+                                               ->Funct(functionNumber - 1)
+                                               .EvaluateTimeDerivative(temperature, 1)[1];
+  }
+  else
+  {
+    dserror(
+        "You have to set a reasonable function number for the temperature dependence.\n This can "
+        "be either 0 if no temperature dependence is desired or the number of the function in "
+        "which you defined the temperature dependence.");
+  }
+
+  return temperatureDependentScaleFactorDeriv;
 }
 
 /*----------------------------------------------------------------------*
@@ -294,8 +392,8 @@ double MAT::ElchSingleMat::ComputeConductivity(
   double conductivity = ComputeConductivityConcentrationDependent(concentration);
 
   // do the temperature dependent scaling
-  conductivity *=
-      ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
+  conductivity *= ComputeTemperatureDependentScaleFactor(
+      temperature, ConductivityTemperatureScalingFunctNum(), TempScaleFunctionParamsCond());
 
   return conductivity;
 }
@@ -361,12 +459,28 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   }
 
   // do the temperature dependent scaling
-  conductivity_conc_deriv *=
-      ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
+  conductivity_conc_deriv *= ComputeTemperatureDependentScaleFactor(
+      temperature, ConductivityTemperatureScalingFunctNum(), TempScaleFunctionParamsCond());
 
   return conductivity_conc_deriv;
 }
 
+
+/*-----------------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------------*/
+double MAT::ElchSingleMat::ComputeTemperatureDerivativeOfConductivity(
+    const double concentration, const double temperature) const
+{
+  // Cond(c)
+  double conductivity_temp_deriv = ComputeConductivityConcentrationDependent(concentration);
+
+  // Cond(c)*Cond'(T)
+  // derivative of temp dependent scaling factor
+  conductivity_temp_deriv *= ComputeTemperatureDependentScaleFactorDeriv(
+      temperature, ConductivityTemperatureScalingFunctNum(), TempScaleFunctionParamsCond());
+
+  return conductivity_temp_deriv;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -496,6 +610,29 @@ double MAT::ElchSingleMat::EvalPreDefinedFunctValue(
                  (0.5 * functparams[0] * std::pow(concentration, 0.5)) /
                      (std::pow((1 + functparams[1] * std::pow(concentration, 0.5)), 2)) +
                  functparams[2] * concentration;
+      break;
+    }
+    case -14:
+    {
+      // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
+      // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T:temperature, D0: max
+      // diffusion coefficient D0 is provided by DIFF PARA
+      // functval = exp(-a0/(R * T)
+      // CAUTION: out in this case concentration stands for the temperature,
+      const double R = static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->R_;
+      functval = std::exp(-functparams[0] / (R * concentration));
+      break;
+    }
+    case -15:
+    {
+      // Temperature dependent factor for electric conductivity (sigma)
+      // electric conductivity is the inverse electric resistivity (rho)
+      // for "small" temperature differences the temperature dependence of the specific electric
+      // resistance follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =
+      // 1/rho_0(c) * 1/(1 + alpha*(T - T_0))
+      // functval = 1/(1 + a0*(T - a1))
+      // CAUTION:in this case concentration represents the temperature
+      functval = 1.0 / (1.0 + functparams[0] * (concentration - functparams[1]));
       break;
     }
     default:
@@ -657,6 +794,29 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunctValue(
                            (0.5 * functparams[0] * functparams[1]) /
                                (std::pow((1 + functparams[1] * std::pow(concentration, 0.5)), 3)) +
                            functparams[2];
+      break;
+    }
+    case -14:
+    {
+      // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
+      // exp(-Q/(R*T)) Q: activation energy, R: universal gasconstant, T:temperature, D0: max
+      // diffusioncoefficient D0 is provided by DIFF PARA
+      // CAUTION: in this case concentration stands for the temperature,
+      const double R = static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->R_;
+      firstderivfunctval = std::exp(-functparams[0] / (R * concentration)) * functparams[0] / R *
+                           1.0 / std::pow(concentration, 2.0);
+      break;
+    }
+    case -15:
+    {
+      // Temperature dependent faktor for electric conductivity (sigma)
+      // electric conductivity is the inverse  electric resistivity (rho)
+      // for "small" temperature differences the temperature dependence of the specific electric
+      // resistivity follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =
+      // 1/rho_0(c) * 1/(1 + alpha*(T - T_0))
+      // CAUTION:in this case concentration represents the temperature
+      double base = 1.0 + functparams[0] * (concentration - functparams[1]);
+      firstderivfunctval = -functparams[0] * std::pow(base, -2.0);
       break;
     }
     default:

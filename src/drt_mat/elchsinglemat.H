@@ -35,10 +35,17 @@ namespace MAT
       //! parameters for diffusion coefficient
       const std::vector<double> diffusion_coefficent_params_;
 
+      //! number of parameters for scaling function describing temperatur dependence of diffusion
+      //! coefficient
+      const int number_diffusion_temp_scale_funct_params_;
+
+      //! parameters for scaling function describing temperatur dependence of diffusion coefficient
+      const std::vector<double> diffusion_temp_scale_funct_params_;
+
       //! function number to describe concentration dependence of conductivity
       const int conductivity_concentration_dependence_funct_num_;
 
-      //! function number defining the temperature scaling of the conductivity
+      //! function number defining the temperature scaling of conductivity
       const int conductivity_temperature_scaling_funct_num_;
 
       //! number of parameters for conductivity
@@ -46,6 +53,16 @@ namespace MAT
 
       //! parameters for conductivity
       const std::vector<double> conductivity_params_;
+
+      //! number of parameters for scaling function describing temperatur dependence of conductivity
+      const int number_conductivity_temp_scale_funct_params_;
+
+      //! parameters for scaling function describing temperatur dependence conductivity
+      const std::vector<double> conductivity_temp_scale_funct_params_;
+
+      //! universal gas constant for evaluation of diffusion coefficient by means of
+      //! Arrhenius-ansatz
+      const double R_;
       //@}
 
      protected:
@@ -104,11 +121,12 @@ namespace MAT
     //! compute concentration dependent diffusion coefficient according to function number
     double ComputeDiffusionCoefficientConcentrationDependent(double concentration) const;
 
-    //! compute temperature dependent scale factor based on provided function
-    double ComputeTemperatureDependentScaleFactor(double temperature, int functionNumber) const;
-
     //! compute first derivative of diffusion coefficient w.r.t. concentration
     double ComputeConcentrationDerivativeOfDiffusionCoefficient(
+        double concentration, double temperature) const;
+
+    //! compute first derivative of diffusion coefficient w.r.t. temperature
+    double ComputeTemperatureDerivativeOfDiffusionCoefficient(
         double concentration, double temperature) const;
 
     //! compute conductivity accounting for concentration and temperature dependence
@@ -121,7 +139,19 @@ namespace MAT
     double ComputeConcentrationDerivativeOfConductivity(
         double concentration, double temperature) const;
 
+    //! compute first derivative of conductivity w.r.t. temperature
+    double ComputeTemperatureDerivativeOfConductivity(
+        const double concentration, const double temperature) const;
+
    protected:
+    //! compute temperature dependent scale factor
+    double ComputeTemperatureDependentScaleFactor(
+        double temperature, int functionNumber, const std::vector<double>& functionParams) const;
+
+    //! compute derivative of temperature dependent scale factor w.r.t. temperature
+    double ComputeTemperatureDependentScaleFactorDeriv(const double temperature,
+        const int functionNumber, const std::vector<double>& functionParams) const;
+
     //! return function number describing concentration dependence of the diffusion coefficient
     int DiffusionCoefficientConcentrationDependenceFunctNum() const
     {
@@ -156,10 +186,23 @@ namespace MAT
       return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffusion_coefficent_params_;
     };
 
+    //! return parameters for temperature scaling function for diffusion coefficient
+    const std::vector<double>& TempScaleFunctionParamsDiff() const
+    {
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->diffusion_temp_scale_funct_params_;
+    };
+
     //! return parameters for conductivity
     const std::vector<double>& ConductivityParams() const
     {
       return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->conductivity_params_;
+    };
+
+    //! return parameters for temperature scaling function for conductivity
+    const std::vector<double>& TempScaleFunctionParamsCond() const
+    {
+      return static_cast<MAT::PAR::ElchSingleMat*>(Parameter())
+          ->conductivity_temp_scale_funct_params_;
     };
 
     //! evaluate value of predefined function

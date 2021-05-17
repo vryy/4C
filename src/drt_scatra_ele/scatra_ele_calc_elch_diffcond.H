@@ -484,7 +484,7 @@ namespace DRT
           // conductivity
           cond += ffrt * valence_[ispec] * valence_[ispec] * diff_[ispec] * conint[ispec];
           // derivation of conductivity wrt concentrations
-          derivcond_[ispec] = ffrt * valence_[ispec] * valence_[ispec] * diff_[ispec];
+          concderivcond_[ispec] = ffrt * valence_[ispec] * valence_[ispec] * diff_[ispec];
         }
 
         cond_ = cond;

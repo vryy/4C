@@ -29,6 +29,8 @@ namespace DRT
       virtual void Done() = 0;
 
      protected:
+      typedef ScaTraEleCalc<distype> my;
+
       //! number of element nodes
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -86,6 +88,26 @@ namespace DRT
           const LINALG::Matrix<nsd_, 1>& gradtemp,  //!< gradient of temperature
           const LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
       );
+
+      //! provide element matrix with linearization of diffusion coefficient with respect to
+      //! discrete temperature
+      //!
+      //! \param emat           element matrix
+      //! \param numdofpernode  number of dof per node
+      //! \param timefacfac     time integration factor times domain integration factor
+      //! \param invF  1/F      with F being the faraday constant
+      //! \param gradconc       spatial derivative of concentration
+      //! \param gradpot        spatial derivative of electric potential
+      //! \param tempderivisodiffcoef  derivative of isotropic diffusion coefficient wrt temperature
+      //! \param tempderivcond         derivative of electric conductivity wrt temperature
+      //! \param funct     shape functions
+      //! \param derxy     spatial derivatives of shape functions
+      //! \param scalar    scaling factor for element matrix contributions
+      void CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat, const int numdofpernode,
+          const double& timefacfac, const double invF, const LINALG::Matrix<my::nsd_, 1>& gradconc,
+          const LINALG::Matrix<my::nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
+          const double& tempderivcond, const LINALG::Matrix<nen_, 1>& funct,
+          const LINALG::Matrix<nsd_, nen_>& derxy, const double scalar);
 
       //! evaluate Soret material
       void MatSoret(const Teuchos::RCP<const MAT::Material> material  //!< Soret material
