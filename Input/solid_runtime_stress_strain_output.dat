@@ -22,6 +22,8 @@ USE_ABSOLUTE_POSITIONS                yes
 TRIAD_VISUALIZATIONPOINT              no
 STRAINS_GAUSSPOINT                    yes
 STRAINS_CONTINUOUS                    yes
+MATERIAL_FORCES_GAUSSPOINT          yes
+MATERIAL_FORCES_CONTINUOUS          yes
 -----------------------BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes

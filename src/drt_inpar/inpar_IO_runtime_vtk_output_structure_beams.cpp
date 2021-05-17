@@ -89,6 +89,12 @@ namespace INPAR
             "write material cross-section stresses at the Gauss points", yesnotuple, yesnovalue,
             &sublist_IO_VTK_beams);
 
+        // write material cross-section stresses at the visualization points:
+        // axial and shear forces, torque and bending moments
+        setStringToIntegralParameter<int>("MATERIAL_FORCES_CONTINUOUS", "No",
+            "write material cross-section stresses at the visualization points", yesnotuple,
+            yesnovalue, &sublist_IO_VTK_beams);
+
         // write spatial cross-section stresses at the Gauss points:
         // axial and shear forces, torque and bending moments
         setStringToIntegralParameter<int>("SPATIAL_FORCES_GAUSSPOINT", "No",

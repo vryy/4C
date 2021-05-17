@@ -37,6 +37,18 @@
         </DataArray>
         <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii">
         </DataArray>
+        <DataArray type="Float64" Name="material_axial_force" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_2" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_2" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_torque" format="ascii">
+        </DataArray>
         <DataArray type="Float64" Name="shear_strain_2" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="shear_strain_3" format="ascii">
@@ -54,6 +66,18 @@
         <DataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="element_owner" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_axial_force_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_2_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_3_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_2_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_3_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_torque_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>

@@ -169,11 +169,21 @@ class BeamDiscretizationRuntimeVtuWriter
    *  \date 03/17 */
   void AppendGaussPointMaterialCrossSectionStressResultants();
 
+  /**
+   * \brief Append interpolated GP values of the material cross-section stress resultants.
+   */
+  void AppendGaussPointMaterialCrossSectionStressResultantsContinuous();
+
   /** \brief append spatial cross-section stress resultant values at Gauss points to output data
    *
    *  \author grill
    *  \date 03/17 */
   void AppendGaussPointSpatialCrossSectionStressResultants();
+
+  /**
+   * \brief Append interpolated GP values of the spatial cross-section strain resultants.
+   */
+  void AppendGaussPointSpatialCrossSectionStressResultantsContinuous();
 
   /** \brief append element Orientation parameter with respect to x,y,z axis
    *
@@ -253,6 +263,26 @@ class BeamDiscretizationRuntimeVtuWriter
    */
   double EvaluatePolynomialCoefficients(
       const std::vector<double>& polynomial_coefficients, const double& xi) const;
+
+ private:
+  /**
+   * \brief Type of fields for stress / strain output.
+   */
+  enum class StressStrainField
+  {
+    material_strain,
+    material_stress,
+    spatial_stress
+  };
+
+  /**
+   * \brief Interpolate Gauss point values for stress / strain resultants along the beam, for each
+   * visualization point along the beam centerline.
+   * @param stress_strain_field (in) Type of stress / strain to append.
+   * @param field_names (in) name of the 6 created fields
+   */
+  void AppendContinuousStressStrainResultants(
+      const StressStrainField stress_strain_field, const std::vector<std::string>& field_names);
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
