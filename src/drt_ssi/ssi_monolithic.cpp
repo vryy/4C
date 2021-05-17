@@ -1303,12 +1303,11 @@ void SSI::SSIMono::CalcInitialPotentialField()
   auto scatra_elch_splitter = ScaTraField()->Splitter();
   auto manifold_elch_splitter = IsScaTraManifold() ? ScaTraManifold()->Splitter() : Teuchos::null;
 
-  // start Newton-Raphson iteration
-  int init_pot_iternum = 0;
+  ResetIterationCount();
+
   while (true)
   {
-    // update iteration counter
-    init_pot_iternum++;
+    IncrementIterationCount();
 
     // prepare full SSI system
     DistributeSolutionAllFields(true);
@@ -1338,7 +1337,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
         ssi_matrices_->SystemMatrix(), rhs, Teuchos::null, dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
-    if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this, init_pot_iternum)) break;
+    if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this)) break;
 
     // solve for potential increments
     ssi_vectors_->ClearIncrement();

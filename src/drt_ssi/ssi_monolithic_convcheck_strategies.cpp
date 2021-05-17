@@ -348,7 +348,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphson(const SSI::SSIMono& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
-    const SSI::SSIMono& ssi_mono, const int init_pot_iternum) const
+    const SSI::SSIMono& ssi_mono) const
 {
   bool converged = false;
 
@@ -356,7 +356,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
 
   GetAndCheckL2NormPot(ssi_mono, scatra_pot_incnorm, scatra_pot_resnorm, scatra_pot_dofnorm);
 
-  if (init_pot_iternum == 1)
+  if (ssi_mono.IterationCount() == 1)
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
@@ -366,10 +366,10 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
       std::cout << "|- step/max -|- tol      [norm] -|-- pot-res ---|-- pot-inc ---|" << std::endl;
 
       // print only norm of residuals
-      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatra_pot_resnorm << "   |      --      |" << std::endl;
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatra_pot_resnorm << "   |      --      |" << std::endl;
     }
     if (scatra_pot_resnorm < restol_)
     {
@@ -385,12 +385,12 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
-      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatra_pot_resnorm << "   | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatra_pot_incnorm / scatra_pot_dofnorm << "   |"
-                << std::endl;
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatra_pot_resnorm << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific
+                << scatra_pot_incnorm / scatra_pot_dofnorm << "   |" << std::endl;
     }
 
     // convergence check
@@ -407,7 +407,7 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(
   }
 
   // warn if maximum number of iterations is reached without convergence
-  if (init_pot_iternum == itermax_)
+  if (ssi_mono.IterationCount() == itermax_)
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
@@ -618,7 +618,7 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphson(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPotCalc(
-    const SSI::SSIMono& ssi_mono, const int init_pot_iternum) const
+    const SSI::SSIMono& ssi_mono) const
 {
   bool converged = false;
 
@@ -629,7 +629,7 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
       ssi_mono, manifold_pot_incnorm, manifold_pot_resnorm, manifold_pot_dofnorm);
   GetAndCheckL2NormPot(ssi_mono, scatra_pot_incnorm, scatra_pot_resnorm, scatra_pot_dofnorm);
 
-  if (init_pot_iternum == 1)
+  if (ssi_mono.IterationCount() == 1)
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
@@ -647,10 +647,10 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
                 << std::endl;
 
       // print only norm of residuals
-      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatra_pot_resnorm << "   |      --      | " << std::setw(10)
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatra_pot_resnorm << "   |      --      | " << std::setw(10)
                 << std::setprecision(3) << std::scientific << manifold_pot_resnorm
                 << "   |      --      | " << std::endl;
     }
@@ -669,13 +669,14 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
-      std::cout << "|  " << std::setw(3) << init_pot_iternum << "/" << std::setw(3) << itermax_
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific << itertol_
-                << "[L_2 ]  | " << std::setw(10) << std::setprecision(3) << std::scientific
-                << scatra_pot_resnorm << "   | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << scatra_pot_incnorm / scatra_pot_dofnorm << "   | "
-                << std::setw(10) << std::setprecision(3) << std::scientific << manifold_pot_resnorm
-                << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+      std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
+                << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
+                << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
+                << std::scientific << scatra_pot_resnorm << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific
+                << scatra_pot_incnorm / scatra_pot_dofnorm << "   | " << std::setw(10)
+                << std::setprecision(3) << std::scientific << manifold_pot_resnorm << "   | "
+                << std::setw(10) << std::setprecision(3) << std::scientific
                 << manifold_pot_incnorm / manifold_pot_dofnorm << "   | " << std::endl;
     }
 
@@ -697,7 +698,7 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
   }
 
   // warn if maximum number of iterations is reached without convergence
-  if (init_pot_iternum == itermax_)
+  if (ssi_mono.IterationCount() == itermax_)
   {
     if (ssi_mono.Comm().MyPID() == 0)
     {
