@@ -243,7 +243,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
     const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
     Teuchos::RCP<Epetra_Map> interface_map_scatra, Teuchos::RCP<Epetra_Map> interface_map_thermo,
     Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool isinterfacemeshtying)
+    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool interfacemeshtying)
     : interface_map_scatra_(interface_map_scatra),
       matrixtype_scatra_(matrixtype_scatra),
       ssti_maps_mono_(ssti_maps_mono),
@@ -257,7 +257,8 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
       thermoscatradomain_(Teuchos::null),
       thermoscatrainterface_(Teuchos::null),
       thermostructuredomain_(Teuchos::null),
-      thermostructureinterface_(Teuchos::null)
+      thermostructureinterface_(Teuchos::null),
+      interfacemeshtying_(interfacemeshtying)
 {
   // perform initializations associated with global system matrix
   switch (matrixtype_global)
@@ -300,7 +301,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
       thermoscatradomain_ =
           SetupBlockMatrix(ssti_maps_mono->MapsThermo(), ssti_maps_mono->MapsScatra());
 
-      if (isinterfacemeshtying)
+      if (interfacemeshtying_)
       {
         scatrastructureinterface_ =
             SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->MapsStructure());
@@ -322,7 +323,7 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
       scatrathermodomain_ = SetupSparseMatrix(ssti_maps_mono->MapsScatra()->FullMap());
       thermoscatradomain_ = SetupSparseMatrix(ssti_maps_mono->MapsThermo()->FullMap());
 
-      if (isinterfacemeshtying)
+      if (interfacemeshtying_)
       {
         scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
         thermostructureinterface_ = SetupSparseMatrix(interface_map_thermo);
@@ -345,15 +346,19 @@ void SSTI::SSTIMatrices::ClearMatrices()
 {
   systemmatrix_->Zero();
   scatrastructuredomain_->Zero();
-  scatrastructureinterface_->Zero();
   scatrathermodomain_->Zero();
-  scatrathermointerface_->Zero();
   structurescatradomain_->Zero();
   structurethermodomain_->Zero();
   thermoscatradomain_->Zero();
-  thermoscatrainterface_->Zero();
   thermostructuredomain_->Zero();
-  thermostructureinterface_->Zero();
+
+  if (interfacemeshtying_)
+  {
+    scatrastructureinterface_->Zero();
+    scatrathermointerface_->Zero();
+    thermoscatrainterface_->Zero();
+    thermostructureinterface_->Zero();
+  }
 }
 
 /*---------------------------------------------------------------------------------*
