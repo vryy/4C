@@ -503,3 +503,52 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
   // remove state vectors from scalar transport discretization
   scatra_->ScaTraField()->Discretization()->ClearState();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+    Teuchos::RCP<const Epetra_Map> full_map_scatra,
+    Teuchos::RCP<const Epetra_Map> full_map_structure,
+    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
+    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure, bool meshtying_3_domain_intersection)
+    : ScatraStructureOffDiagCoupling(block_map_structure, full_map_scatra, full_map_structure,
+          icoup_structure, icoup_structure_3_domain_intersection, interface_map_scatra,
+          meshtying_strategy_s2i, scatra, structure, meshtying_3_domain_intersection)
+{
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatraDomain(
+    Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const
+{
+  ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(structurescatradomain);
+
+  // finalize structure-scatra matrix block
+  switch (scatra_->ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      structurescatradomain->Complete();
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      structurescatradomain->Complete(*full_map_scatra_, *full_map_structure_);
+      break;
+    }
+
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
