@@ -1715,7 +1715,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to SR beam element
-    const auto sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
+    const auto* sr_beam = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (sr_beam == nullptr)
