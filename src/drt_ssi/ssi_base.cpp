@@ -878,10 +878,8 @@ bool SSI::SSIBase::DoCalculateInitialPotentialField() const
   const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
   const bool init_pot_calc =
       DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
-  const auto scatra_type =
-      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
 
-  return init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+  return init_pot_calc and IsElchScaTraTimIntType();
 }
 
 /*----------------------------------------------------------------------*/
