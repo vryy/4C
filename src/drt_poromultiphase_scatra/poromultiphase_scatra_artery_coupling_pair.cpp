@@ -533,7 +533,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
         Projection<double>(r1, xi, projection_valid);
         eta_[gpid] = eta;
         xi_[gpid] = xi;
-        if (projection_valid && ((*gp_vector)[gpid])[mylid] < 0.5)
+        // projection is valid and GP is so far unclaimed by other pair
+        if (projection_valid && ((*gp_vector)[gpid])[mylid] < 1)
         {
           isactive_ = true;
           // include jacobian
