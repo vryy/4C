@@ -61,7 +61,7 @@ namespace POROMULTIPHASESCATRA
     CreateAndInitArteryCouplingStrategy(Teuchos::RCP<DRT::Discretization> arterydis,
         Teuchos::RCP<DRT::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
         const std::string& condname, const std::string& artcoupleddofname,
-        const std::string& contcoupleddofname);
+        const std::string& contcoupleddofname, const bool evaluate_on_lateral_surface);
 
     /**
      * Determine norm of vector

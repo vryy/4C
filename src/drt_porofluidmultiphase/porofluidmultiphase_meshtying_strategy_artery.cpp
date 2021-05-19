@@ -65,10 +65,12 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
     std::cout << "<    Coupling with 1D Artery Network activated     >" << std::endl;
   }
 
+  const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
+      poroparams.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
   // initialize mesh tying object
   arttoporofluidcoupling_ = POROMULTIPHASESCATRA::UTILS::CreateAndInitArteryCouplingStrategy(
       arterydis_, porofluidmultitimint->Discretization(), poroparams.sublist("ARTERY COUPLING"),
-      "ArtPorofluidCouplCon", "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO");
+      "ArtPorofluidCouplCon", "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 
   // Initialize rhs vector
   rhs_ = Teuchos::rcp(new Epetra_Vector(*arttoporofluidcoupling_->FullMap(), true));
@@ -181,17 +183,6 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINA
     Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
     Teuchos::RCP<Epetra_Vector> residual)
 {
-  bool matlab = false;
-  if (matlab)
-  {
-    // sparse_matrix
-    std::string filename = "../o/mymatrix.dat";
-    std::string filename_vc = "../o/myvec.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, *(comb_systemmatrix_));
-    LINALG::PrintVectorInMatlabFormat(filename_vc, *rhs_, true);
-    dserror("exit");
-  }
-
   comb_systemmatrix_->Complete();
 
   comb_increment_->PutScalar(0.0);

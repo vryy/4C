@@ -11,6 +11,7 @@
 #include "porofluidmultiphase_timint_ost.H"
 
 #include "../drt_mat/material.H"
+#include "../drt_mat/cnst_1d_art.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -153,7 +154,8 @@ Teuchos::RCP<ADAPTER::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::CreateAlg
  | perform extended ghosting for artery dis                kremheller 03/19 |
  *--------------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
-    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis)
+    Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
+    const bool evaluate_on_lateral_surface)
 {
   // user output
   if (contdis->Comm().MyPID() == 0)
@@ -187,8 +189,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
   }
 
   // search with the fully overlapping discretization
-  std::map<int, std::set<int>> nearbyelepairs =
-      OctTreeSearch(contdis, artdis, artsearchdis, &elecolset, &nodecolset);
+  std::map<int, std::set<int>> nearbyelepairs = OctTreeSearch(
+      contdis, artdis, artsearchdis, evaluate_on_lateral_surface, &elecolset, &nodecolset);
 
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
@@ -243,8 +245,8 @@ POROFLUIDMULTIPHASE::UTILS::CreateFullyOverlappingArteryDiscretization(
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
-    Teuchos::RCP<DRT::Discretization> artsearchdis, std::set<int>* elecolset,
-    std::set<int>* nodecolset)
+    Teuchos::RCP<DRT::Discretization> artsearchdis, const bool evaluate_on_lateral_surface,
+    std::set<int>* elecolset, std::set<int>* nodecolset)
 {
   // this map will be filled
   std::map<int, std::set<int>> nearbyelepairs;
@@ -292,7 +294,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
     DRT::Element* artele = artsearchdis->gElement(artelegid);
 
     // axis-aligned bounding box of artery
-    const LINALG::Matrix<3, 2> aabb_artery = GetAABB(artele, positions_artery);
+    const LINALG::Matrix<3, 2> aabb_artery =
+        GetAABB(artele, positions_artery, evaluate_on_lateral_surface);
 
     // get elements nearby
     std::set<int> closeeles;
@@ -336,14 +339,30 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::OctTreeSearch(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(
-    DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& positions)
+LINALG::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::GetAABB(DRT::Element* ele,
+    std::map<int, LINALG::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
 {
   const LINALG::SerialDenseMatrix xyze_element(GEO::getCurrentNodalPositions(ele, positions));
   GEO::EleGeoType eleGeoType(GEO::HIGHERORDER);
   GEO::checkRoughGeoType(ele, xyze_element, eleGeoType);
 
-  return GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
+  LINALG::Matrix<3, 2> aabb_artery = GEO::computeFastXAABB(ele->Shape(), xyze_element, eleGeoType);
+
+  // add radius to axis aligned bounding box of artery element (in all coordinate directions) in
+  // case of evaluation on lateral surface
+  if (evaluate_on_lateral_surface)
+  {
+    Teuchos::RCP<MAT::Cnst_1d_art> arterymat =
+        Teuchos::rcp_static_cast<MAT::Cnst_1d_art>(ele->Material());
+    if (arterymat == Teuchos::null) dserror("Cast to artery material failed!");
+    const double radius = arterymat->Diam() / 2.0;
+    for (int idim = 0; idim < 3; idim++)
+    {
+      aabb_artery(idim, 0) = aabb_artery(idim, 0) - radius;
+      aabb_artery(idim, 1) = aabb_artery(idim, 1) + radius;
+    }
+  }
+  return aabb_artery;
 }
 
 /*----------------------------------------------------------------------*

@@ -76,19 +76,23 @@ namespace POROFLUIDMULTIPHASE
      * \brief extend ghosting for artery discretization
      * @param[in] contdis  discretization of 2D/3D domain
      * @param[in] artdis   discretization of 1D domain
+     * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
      * @return             set of nearby element pairs as seen from the artery discretization, each
      *                     artery element with a vector of close 3D elements
      */
     std::map<int, std::set<int>> ExtendedGhostingArteryDiscretization(
-        Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis);
+        Teuchos::RCP<DRT::Discretization> contdis, Teuchos::RCP<DRT::Discretization> artdis,
+        const bool evaluate_on_lateral_surface);
 
     /**
      * \brief get axis-aligned bounding box of element
      * @param[in] ele        compute AABB for this element
      * @param[in] positions  nodal positions of discretization
+     * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
      * @return               AABB of element as 3x2 LINALG::Matrix
      */
-    LINALG::Matrix<3, 2> GetAABB(DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& positions);
+    LINALG::Matrix<3, 2> GetAABB(DRT::Element* ele, std::map<int, LINALG::Matrix<3, 1>>& positions,
+        const bool evaluate_on_lateral_surface);
 
     /// maximum distance between two nodes of an element
     double GetMaxNodalDistance(DRT::Element* ele, Teuchos::RCP<DRT::Discretization> dis);
@@ -99,6 +103,7 @@ namespace POROFLUIDMULTIPHASE
      * @param[in] artdis        discretization of 1D domain
      * @param[in] artsearchdis  fully overlapping discretization of 1D domain on which search is
      * performed
+     * @param[in] evaluate_on_lateral_surface   is coupling evaluated on lateral surface?
      * @param[out] elecolset    additional elements that need to be ghosted are filled into this set
      * @param[out] nodecolset   additional nodes that need to be ghosted are filled into this set
      * @return                  set of nearby element pairs as seen from the artery discretization,
@@ -106,7 +111,8 @@ namespace POROFLUIDMULTIPHASE
      */
     std::map<int, std::set<int>> OctTreeSearch(Teuchos::RCP<DRT::Discretization> contdis,
         Teuchos::RCP<DRT::Discretization> artdis, Teuchos::RCP<DRT::Discretization> artsearchdis,
-        std::set<int>* elecolset, std::set<int>* nodecolset);
+        const bool evaluate_on_lateral_surface, std::set<int>* elecolset,
+        std::set<int>* nodecolset);
 
     /*!
      * \brief get nodal positions of discretization as std::map

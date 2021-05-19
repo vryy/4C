@@ -1977,21 +1977,6 @@ void POROFLUIDMULTIPHASE::TimIntImpl::CalcInitialTimeDerivative()
 
   // finalize assembly of system matrix
   sysmat_->Complete();
-  bool matlab = false;
-  if (matlab)
-  {
-    std::cout << residual_->MyLength() << std::endl;
-    Teuchos::RCP<const LINALG::SparseMatrix> sparse_matrix =
-        Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(sysmat_, true);
-    std::cout << sparse_matrix->ColMap().NumMyElements() << std::endl;
-    std::cout << sparse_matrix->RowMap().NumMyElements() << std::endl;
-
-    // sparse_matrix
-    std::string filename = "../o/mymatrix.dat";
-    LINALG::PrintMatrixInMatlabFormat(
-        filename, *sparse_matrix->EpetraMatrix());  // *sysmat_->EpetraOperator());
-    dserror("exit");
-  }
 
   // solve global system of equations for initial time derivative of state variables
   solver_->Solve(sysmat_->EpetraOperator(), phidtnp_, residual_, true, true);

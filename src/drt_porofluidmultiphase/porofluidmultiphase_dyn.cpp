@@ -77,14 +77,17 @@ void porofluidmultiphase_dyn(int restart)
     INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod arterycoupl =
         DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
             porodyn.sublist("ARTERY COUPLING"), "ARTERY_COUPLING_METHOD");
+    // lateral surface coupling active?
+    const bool evaluate_on_lateral_surface = DRT::INPUT::IntegralValue<int>(
+        porodyn.sublist("ARTERY COUPLING"), "LATERAL_SURFACE_COUPLING");
     switch (arterycoupl)
     {
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::gpts:
       case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
       {
         actdis->FillComplete();
-        nearbyelepairs =
-            POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(actdis, arterydis);
+        nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryDiscretization(
+            actdis, arterydis, evaluate_on_lateral_surface);
         break;
       }
       default:

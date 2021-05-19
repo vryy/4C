@@ -444,15 +444,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::SetupSystemMatrix(
   // done. make sure all blocks are filled.
   mat.Complete();
 
-  // Debug: matlab output of system matrix
-  bool matlab = false;
-  if (matlab)
-  {
-    std::string filename = "../o/mymatrix.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, mat);
-    dserror("exit");
-  }
-
 }  // SetupSystemMatrix
 
 /*----------------------------------------------------------------------*
@@ -1404,15 +1395,6 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::SetupSystemMa
   mat.Assign(2, 1, LINALG::View, ArteryPorofluidSysmat()->Matrix(1, 0));
   // porofluid-artery part
   mat.Assign(1, 2, LINALG::View, ArteryPorofluidSysmat()->Matrix(0, 1));
-
-  // Debug: matlab output of system matrix
-  bool matlab = false;
-  if (matlab)
-  {
-    std::string filename = "../o/mymatrix.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, mat);
-    dserror("exit");
-  }
 
   return;
 }

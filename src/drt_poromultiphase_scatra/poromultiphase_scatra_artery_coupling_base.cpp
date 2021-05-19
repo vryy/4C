@@ -11,6 +11,8 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_ParameterListExceptions.hpp>
 
@@ -19,13 +21,14 @@
  *----------------------------------------------------------------------*/
 POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
     Teuchos::RCP<DRT::Discretization> arterydis, Teuchos::RCP<DRT::Discretization> contdis,
-    const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
+    const Teuchos::ParameterList& couplingparams, const std::string& condname,
     const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : arterydis_(arterydis),
       contdis_(contdis),
       myrank_(arterydis->Comm().MyPID()),
-      evaluate_in_ref_config_(
-          DRT::INPUT::IntegralValue<int>(meshtyingparams, "EVALUATE_IN_REF_CONFIG")),
+      evaluate_in_ref_config_(DRT::INPUT::IntegralValue<int>(
+          DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
+          "EVALUATE_IN_REF_CONFIG")),
       comm_(arterydis->Comm())
 {
   // safety check
@@ -37,7 +40,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
   int word1;
   int dummy = 0;
   std::istringstream coupled_art_dof_stream(
-      Teuchos::getNumericStringParameter(meshtyingparams, artcoupleddofname));
+      Teuchos::getNumericStringParameter(couplingparams, artcoupleddofname));
   while (coupled_art_dof_stream >> word1)
   {
     // check ascending order
@@ -51,7 +54,7 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
   // 2) 2D, 3D continuous field discretization
   dummy = 0;
   std::istringstream coupled_poro_dof_stream(
-      Teuchos::getNumericStringParameter(meshtyingparams, contcoupleddofname));
+      Teuchos::getNumericStringParameter(couplingparams, contcoupleddofname));
   while (coupled_poro_dof_stream >> word1)
   {
     // check ascending order

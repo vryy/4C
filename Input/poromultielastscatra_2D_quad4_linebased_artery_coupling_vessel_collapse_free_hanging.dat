@@ -95,7 +95,6 @@ CONVTOL                         1e-08
 ABSTOLRES                       -1
 -----------------------------------SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING
 ARTERY_COUPLING_METHOD          MP
-EVALUATE_IN_REF_CONFIG          yes
 SCALEREAC_ART                   -1
 REACFUNCT_ART                   12
 SCALEREAC_CONT                  1 0

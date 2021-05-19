@@ -27,6 +27,7 @@
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration
+class Epetra_IntMultiVector;
 namespace DRT
 {
   class Element;
@@ -60,7 +61,8 @@ namespace POROMULTIPHASESCATRA
 
     //! Init
     virtual void Init(std::vector<DRT::Element const*> elements,
-        const Teuchos::ParameterList& meshtyingparams, const std::vector<int>& coupleddofs_cont,
+        const Teuchos::ParameterList& couplingparams,
+        const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec) = 0;
 
@@ -69,7 +71,11 @@ namespace POROMULTIPHASESCATRA
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void PreEvaluate() = 0;
+    virtual void PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) = 0;
+
+    //! things that need to be done in a separate loop before the actual evaluation loop
+    //! over all coupling pairs
+    virtual void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) = 0;
 
     //! evaluate this pair (return integral of diameter of the segment)
     virtual double Evaluate(LINALG::SerialDenseVector* forcevec1,
@@ -123,6 +129,9 @@ namespace POROMULTIPHASESCATRA
     //! get the volume of the 2D/3D element
     virtual double CalculateVol2D3D() const = 0;
 
+    //! get number of Gauss points
+    virtual int NumGP() const = 0;
+
     //! type of coupling pair
     enum CouplingType
     {
@@ -146,7 +155,8 @@ namespace POROMULTIPHASESCATRA
 
     //! Init
     void Init(std::vector<DRT::Element const*> elements,
-        const Teuchos::ParameterList& meshtyingparams, const std::vector<int>& coupleddofs_cont,
+        const Teuchos::ParameterList& couplingparams,
+        const Teuchos::ParameterList& fluidcouplingparams, const std::vector<int>& coupleddofs_cont,
         const std::vector<int>& coupleddofs_art, const std::vector<std::vector<int>>& scale_vec,
         const std::vector<std::vector<int>>& funct_vec) override;
 
@@ -155,7 +165,11 @@ namespace POROMULTIPHASESCATRA
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void PreEvaluate() override;
+    void PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) override;
+
+    //! things that need to be done in a separate loop before the actual evaluation loop
+    //! over all coupling pairs
+    void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) override;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
@@ -195,6 +209,9 @@ namespace POROMULTIPHASESCATRA
     //! element 2 (= cont) GID
     int Ele2GID() const override;
 
+    //! number of GP
+    int NumGP() const override { return n_gp_; };
+
     //! apply mesh movement on artery element
     double ApplyMeshMovement(
         const bool firstcall, Teuchos::RCP<DRT::Discretization> contdis) override;
@@ -222,6 +239,12 @@ namespace POROMULTIPHASESCATRA
     void SetTimeFacRhs(const double& arterydensity, Teuchos::RCP<MAT::MatList> contscatramat,
         const double& timefacrhs_art, const double& timefacrhs_cont);
 
+    //! pre-evaluate for lateral surface coupling
+    void PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_IntMultiVector> gp_vector);
+
+    //! pre-evaluate for centerline coupling
+    void PreEvaluateCenterlineCoupling();
+
     //! extract velocity of solid phase
     void ExtractSolidVel(Teuchos::RCP<DRT::Discretization> contdis);
 
@@ -247,7 +270,7 @@ namespace POROMULTIPHASESCATRA
 
     //! project a Gauss point on 1D element into 2D/3D element
     template <typename T>
-    void Projection(const T& eta, std::vector<T>& xi, bool& projection_valid);
+    void Projection(LINALG::Matrix<numdim_, 1, T>& r1, std::vector<T>& xi, bool& projection_valid);
 
     //! Check for duplicate projections
     bool ProjectionNotYetFound(const std::vector<double>& intersections, const double& eta);
@@ -447,6 +470,9 @@ namespace POROMULTIPHASESCATRA
     //! evaluated in reference configuration
     bool evaluate_in_ref_config_;
 
+    //! evaluate 1D-3D coupling on lateral surface?
+    bool evaluate_on_lateral_surface_;
+
     //! first element of interacting pair (artery element)
     const DRT::Element* element1_;
 
@@ -504,6 +530,10 @@ namespace POROMULTIPHASESCATRA
 
     //! stores the number of Gauss points for that element
     int n_gp_;
+
+    //! stores the number of Gauss points for that element per patch (only required for
+    //! surface-based formulation)
+    int n_gp_per_patch_;
 
     //! stores the artery element length in reference configuration
     double arteryelelengthref_;
@@ -622,6 +652,11 @@ namespace POROMULTIPHASESCATRA
 
     //! segment id
     int segmentid_;
+
+    //! number of integration patches in axial direction (for surface-based coupling)
+    int numpatch_axi_;
+    //! number of integration patches in radial direction (for surface-based coupling)
+    int numpatch_rad_;
 
     //! right hand side factor for artery time integration scaled with inverse density
     double timefacrhs_art_dens_;
