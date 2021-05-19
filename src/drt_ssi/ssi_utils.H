@@ -95,6 +95,9 @@ namespace SSI
       //! constructor
       explicit SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm);
 
+      //! call complete on the scalar transport manifold - structure off-diagonal matrix
+      void CompleteScaTraManifoldStructureMatrix();
+
       //! call complete on the scalar transport - structure off-diagonal matrix
       void CompleteScaTraStructureMatrix();
 
@@ -176,8 +179,14 @@ namespace SSI
       //! the scalar transport dof row map
       Teuchos::RCP<const Epetra_Map> scatra_dofrowmap_;
 
+      //! the scalar transport manifold dof row map
+      Teuchos::RCP<const Epetra_Map> scatramanifold_dofrowmap_;
+
       //! the structure dof row map
       Teuchos::RCP<const Epetra_Map> structure_dofrowmap_;
+
+      //! the structure dofs on scalar transport manifold dof row map
+      Teuchos::RCP<const Epetra_Map> structure_on_scatramanifold_dofrowmap_;
 
       //! system matrix
       Teuchos::RCP<LINALG::SparseOperator> system_matrix_;

@@ -396,9 +396,9 @@ void SSTI::SSTIMono::SetupSystem()
   strategy_assemble_ = SSTI::BuildAssembleStrategy(
       Teuchos::rcp(this, false), matrixtype_, ScaTraField()->MatrixType());
 
-  // initialize evaluation objects for coupling betwee subproblems
+  // initialize evaluation objects for coupling between subproblems
   scatrastructureoffdiagcoupling_ =
-      Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(ssti_maps_mono_->MapsStructure(),
+      Teuchos::rcp(new SSI::ScatraStructureOffDiagCouplingSSTI(ssti_maps_mono_->MapsStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
           StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
@@ -442,6 +442,8 @@ void SSTI::SSTIMono::NewtonLoop()
     PrepareNewtonStep();
 
     EvaluateSubproblems();
+
+    ssti_matrices_->CompleteScaTraStructureMatrices();
 
     AssembleMatAndRHS();
 

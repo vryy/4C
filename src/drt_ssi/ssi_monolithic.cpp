@@ -92,17 +92,17 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
  *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::ApplyContactToSubProblems()
 {
+  // uncomplete matrices; we need to do this here since in contact simulations the dofs that
+  // interact with each other can change and thus the graph of the matrix can also change.
+  ssi_matrices_->ScaTraMatrix()->UnComplete();
+  ssi_matrices_->ScaTraStructureMatrix()->UnComplete();
+  ssi_matrices_->StructureScaTraMatrix()->UnComplete();
+
+  // add contributions
   strategy_contact_->ApplyContactToScatraResidual(ssi_vectors_->ScatraResidual());
-
   strategy_contact_->ApplyContactToScatraScatra(ssi_matrices_->ScaTraMatrix());
-
   strategy_contact_->ApplyContactToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
-
-  ssi_matrices_->CompleteScaTraStructureMatrix();
-
   strategy_contact_->ApplyContactToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
-
-  ssi_matrices_->CompleteStructureScaTraMatrix();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -118,28 +118,67 @@ void SSI::SSIMono::ApplyDBCToSystem()
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
+bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
+{
+  // check for first iteration in calculation of initial time derivative
+  if (IterationCount() == 0 and Step() == 0 and !DoCalculateInitialPotentialField()) return true;
+
+  if (IterationCount() == 1)
+  {
+    // check for first iteration in calculation of initial potential field
+    if (Step() == 0 and DoCalculateInitialPotentialField()) return true;
+
+    // check for first iteration in restart simulations
+    if (IsRestart())
+    {
+      auto* problem = DRT::Problem::Instance();
+      // restart based on time step
+      if (Step() == problem->Restart() + 1) return true;
+      // restart based on time
+      if (Time() == problem->RestartTime() + Dt()) return true;
+    }
+  }
+
+  return false;
+}
+
+/*-------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------*/
 void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 {
   if (SSIInterfaceMeshtying())
   {
+    // check if matrices are filled because they have to be for the below methods
+    if (!ssi_matrices_->StructureScaTraMatrix()->Filled())
+      ssi_matrices_->CompleteStructureScaTraMatrix();
+    if (!ssi_matrices_->ScaTraStructureMatrix()->Filled())
+      ssi_matrices_->CompleteScaTraStructureMatrix();
+
     if (IsScaTraManifold())
     {
-      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          ssi_matrices_->ScaTraManifoldStructureMatrix());
+      if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
+        ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
 
       strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          manifoldscatraflux_->MatrixManifoldStructure());
+          ssi_matrices_->ScaTraManifoldStructureMatrix(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
+
+      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
+          manifoldscatraflux_->MatrixManifoldStructure(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
 
       strategy_meshtying_->ApplyMeshtyingToScatraStructure(
-          manifoldscatraflux_->MatrixScaTraStructure());
+          manifoldscatraflux_->MatrixScaTraStructure(), true);
     }
 
-    strategy_meshtying_->ApplyMeshtyingToScatraStructure(ssi_matrices_->ScaTraStructureMatrix());
+    strategy_meshtying_->ApplyMeshtyingToScatraStructure(
+        ssi_matrices_->ScaTraStructureMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
     strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
         *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
 
-    strategy_meshtying_->ApplyMeshtyingToStructureScatra(ssi_matrices_->StructureScaTraMatrix());
+    strategy_meshtying_->ApplyMeshtyingToStructureScatra(
+        ssi_matrices_->StructureScaTraMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
     ssi_vectors_->StructureResidual()->Update(
         1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
@@ -150,8 +189,6 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     ssi_vectors_->StructureResidual()->Update(1.0, *(StructureField()->RHS()), 1.0);
     ssi_matrices_->StructureMatrix()->Add(*StructureField()->SystemMatrix(), false, 1.0, 1.0);
   }
-  // call fill complete on ssi structure matrix
-  ssi_matrices_->StructureMatrix()->Complete();
 }
 
 /*--------------------------------------------------------------------------*
@@ -371,6 +408,22 @@ void SSI::SSIMono::BuildNullSpaces() const
   StructureField()->Discretization()->ComputeNullSpaceIfNecessary(blocksmootherparams);
 }  // SSI::SSIMono::BuildNullSpaces
 
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
+void SSI::SSIMono::CompleteSubproblemMatrices()
+{
+  ssi_matrices_->ScaTraMatrix()->Complete();
+  ssi_matrices_->CompleteScaTraStructureMatrix();
+  ssi_matrices_->CompleteStructureScaTraMatrix();
+  ssi_matrices_->StructureMatrix()->Complete();
+
+  if (IsScaTraManifold())
+  {
+    ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+    manifoldscatraflux_->CompleteMatrixManifoldStructure();
+    manifoldscatraflux_->CompleteMatrixScaTraStructure();
+  }
+}
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
@@ -507,18 +560,11 @@ void SSI::SSIMono::PrepareTimeLoop()
   ScaTraField()->Output();
   if (IsScaTraManifold()) ScaTraManifold()->Output();
 
-  const auto ssi_params = DRT::Problem::Instance()->SSIControlParams();
-  const bool init_pot_calc =
-      DRT::INPUT::IntegralValue<bool>(ssi_params.sublist("ELCH"), "INITPOTCALC");
-  const auto scatra_type =
-      Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(ssi_params, "SCATRATIMINTTYPE");
-
   // calculate initial potential field if needed
-  if (init_pot_calc and scatra_type == INPAR::SSI::ScaTraTimIntType::elch)
-    CalcInitialPotentialField();
+  if (DoCalculateInitialPotentialField()) CalcInitialPotentialField();
 
   // calculate initial time derivatives
-  CalcInitialTimeDerivative(scatra_type);
+  CalcInitialTimeDerivative();
 }
 
 /*--------------------------------------------------------------------------*
@@ -792,13 +838,10 @@ void SSI::SSIMono::SetupSystem()
   {
     // initialize object, that performs evaluations of OD coupling
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
-        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::manifold)),
-        MapStructureOnScaTraManifold()->Map(0), InterfaceCouplingAdapterStructure(),
-        InterfaceCouplingAdapterStructure3DomainIntersection(), interface_map_scatra,
-        MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), ScaTraManifoldBaseAlgorithm(),
-        StructureField(), Meshtying3DomainIntersection()));
+        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
+        interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(),
+        ScaTraManifoldBaseAlgorithm(), StructureField(), Meshtying3DomainIntersection()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
     manifoldscatraflux_ = Teuchos::rcp(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this));
@@ -806,8 +849,7 @@ void SSI::SSIMono::SetupSystem()
   else
   {
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-        MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
         InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
         interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), StructureField(),
         Meshtying3DomainIntersection()));
@@ -912,6 +954,9 @@ void SSI::SSIMono::NewtonLoop()
 
     // evaluate sub problems and get all matrices and right-hand-sides
     EvaluateSubproblems();
+
+    // complete the sub problem matrices
+    CompleteSubproblemMatrices();
 
     // assemble global system of equations
     AssembleMatAndRHS();
@@ -1222,7 +1267,6 @@ void SSI::SSIMono::EvaluateScaTra()
   // copy the matrix to the corresponding ssi matrix and complete it such that additional
   // contributions like contact contributions can be added before assembly
   ssi_matrices_->ScaTraMatrix()->Add(*ScaTraField()->SystemMatrixOperator(), false, 1.0, 1.0);
-  ssi_matrices_->ScaTraMatrix()->Complete();
 
   // copy the residual to the corresponding ssi vector to enable application of contact
   // contributions before assembly
@@ -1303,16 +1347,19 @@ void SSI::SSIMono::CalcInitialPotentialField()
   auto scatra_elch_splitter = ScaTraField()->Splitter();
   auto manifold_elch_splitter = IsScaTraManifold() ? ScaTraManifold()->Splitter() : Teuchos::null;
 
-  // start Newton-Raphson iteration
-  int init_pot_iternum = 0;
+  ResetIterationCount();
+
   while (true)
   {
-    // update iteration counter
-    init_pot_iternum++;
+    IncrementIterationCount();
 
     // prepare full SSI system
     DistributeSolutionAllFields(true);
     EvaluateSubproblems();
+
+    // complete the sub problem matrices
+    CompleteSubproblemMatrices();
+
     AssembleMatAndRHS();
     ApplyDBCToSystem();
 
@@ -1338,7 +1385,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
         ssi_matrices_->SystemMatrix(), rhs, Teuchos::null, dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
-    if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this, init_pot_iternum)) break;
+    if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this)) break;
 
     // solve for potential increments
     ssi_vectors_->ClearIncrement();
@@ -1368,12 +1415,12 @@ void SSI::SSIMono::CalcInitialPotentialField()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void SSI::SSIMono::CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra_type)
+void SSI::SSIMono::CalcInitialTimeDerivative()
 {
   // store initial velocity to restore them afterwards
   auto init_velocity = *StructureField()->Velnp();
 
-  const bool is_elch = scatra_type == INPAR::SSI::ScaTraTimIntType::elch;
+  const bool is_elch = IsElchScaTraTimIntType();
 
   // prepare specific time integrators
   ScaTraField()->PreCalcInitialTimeDerivative();
@@ -1404,6 +1451,10 @@ void SSI::SSIMono::CalcInitialTimeDerivative(INPAR::SSI::ScaTraTimIntType scatra
   // In a first step, we assemble the standard global system of equations (we need the residual)
   DistributeSolutionAllFields(true);
   EvaluateSubproblems();
+
+  // complete the sub problem matrices
+  CompleteSubproblemMatrices();
+
   AssembleMatAndRHS();
   ApplyDBCToSystem();
 

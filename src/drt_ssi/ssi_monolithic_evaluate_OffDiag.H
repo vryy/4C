@@ -38,7 +38,6 @@ namespace SSI
    public:
     explicit ScatraStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
-        Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
@@ -47,8 +46,6 @@ namespace SSI
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
         bool meshtying_3_domain_intersection);
-
-    virtual ~ScatraStructureOffDiagCoupling() = default;
 
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateOffDiagBlockScatraStructureDomain(
@@ -65,7 +62,7 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> scatrastructureinterface);
 
     //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
-    void EvaluateOffDiagBlockStructureScatraDomain(
+    virtual void EvaluateOffDiagBlockStructureScatraDomain(
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const;
 
    protected:
@@ -79,9 +76,6 @@ namespace SSI
 
     //! map extractor associated with all degrees of freedom inside structure field
     const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
-
-    //! map extractor associated with all degrees of freedom inside scatra field
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     const Teuchos::RCP<const Epetra_Map> full_map_structure_;
@@ -113,10 +107,7 @@ namespace SSI
    public:
     explicit ScatraManifoldStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
-        Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const Epetra_Map> map_manifold,
-        Teuchos::RCP<const Epetra_Map> map_structure_manifold,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
         Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
         Teuchos::RCP<const Epetra_Map> interface_map_scatra,
@@ -126,20 +117,41 @@ namespace SSI
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
         bool meshtying_3_domain_intersection);
 
-    ~ScatraManifoldStructureOffDiagCoupling() override = default;
-
     void EvaluateOffDiagBlockScatraManifoldStructureDomain(
         Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock) override;
 
    private:
-    //! map of all scatra manifold dofs
-    const Teuchos::RCP<const Epetra_Map> map_manifold_;
-
-    //! map of all structure dofs with same nodes as scatra manifold
-    const Teuchos::RCP<const Epetra_Map> map_structure_manifold_;
-
     //! scatra manifold problem
     const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_;
+  };
+
+  /*!
+   * fixme: This class is only introduced since the ssti framework is not yet restructured as the
+   * ssi framework in the sense that e.g. the mesh tying contributions are still added within the
+   * assembly. Once this is changed the structure can be adapted according to the ssi framework and
+   * this class is redundant.
+   */
+  class ScatraStructureOffDiagCouplingSSTI : public ScatraStructureOffDiagCoupling
+  {
+   public:
+    ScatraStructureOffDiagCouplingSSTI(
+        Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
+        Teuchos::RCP<const Epetra_Map> full_map_scatra,
+        Teuchos::RCP<const Epetra_Map> full_map_structure,
+        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
+        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
+        Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+        Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
+        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
+        bool meshtying_3_domain_intersection);
+
+    void EvaluateOffDiagBlockStructureScatraDomain(
+        Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const override;
+
+   private:
+    //! map extractor associated with all degrees of freedom inside scatra field
+    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
   };
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H

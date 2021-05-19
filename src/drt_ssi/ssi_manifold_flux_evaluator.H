@@ -113,6 +113,12 @@ namespace SSI
    public:
     explicit ScaTraManifoldScaTraFluxEvaluator(const SSI::SSIMono& ssi_mono);
 
+    //! call complete on coupling matrices
+    //@{
+    void CompleteMatrixScaTraStructure();
+    void CompleteMatrixManifoldStructure();
+    //@}
+
     //! write inflow fluxes to csv file
     bool DoOutput() const { return do_output_; }
 

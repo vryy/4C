@@ -148,7 +148,7 @@ namespace SSI
      *
      * @return  flag indicating if simulation is restarted
      */
-    bool IsRestart();
+    bool IsRestart() const;
 
     /*! \brief Setup discretizations and dofsets
 
@@ -270,6 +270,12 @@ namespace SSI
     {
       return meshtying_strategy_s2i_;
     }
+
+    //! returns whether calculation of the initial potential field is performed
+    bool DoCalculateInitialPotentialField() const;
+
+    //! returns if the scalar transport time integration is of type electrochemistry
+    bool IsElchScaTraTimIntType() const;
 
     //! solve additional scatra field on manifolds
     bool IsScaTraManifold() const { return is_scatra_manifold_; }

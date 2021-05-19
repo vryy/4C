@@ -205,6 +205,56 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixManifoldStructure()
+{
+  switch (scatra_->ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      matrix_manifold_structure_->Complete();
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      matrix_manifold_structure_->Complete(*full_map_structure_, *full_map_manifold_);
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixScaTraStructure()
+{
+  switch (scatra_->ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      matrix_scatra_structure_->Complete();
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      matrix_scatra_structure_->Complete(*full_map_structure_, *full_map_scatra_);
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
 {
   // clear matrices and rhs from last evaluation
