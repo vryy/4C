@@ -265,12 +265,12 @@ namespace DRT
        * @brief Evaluate Cauchy stress at given point in parameter space and calculate
        * linearizations
        *
-       * @param[in] xi          position in parameter space xi
-       * @param[in] disp        vector of displacements
-       * @param[in] scalar      vector of scalars
-       * @param[in] n           vector (\f[\bold{n}\f])
-       * @param[in] dir         direction vector (\f[\bold{v}\f]), can be either normal or
-       *                        tangential vector
+       * @param[in] xi                   position in parameter space xi
+       * @param[in] disp_nodal_values    vector containing nodal values of displacements
+       * @param[in] scalar_nodal_values  vector containing nodal values of scalars
+       * @param[in] n                    vector (\f[\bold{n}\f])
+       * @param[in] dir                  direction vector (\f[\bold{v}\f]), can be either normal or
+       *                                 tangential vector
        * @param[out] cauchy_n_dir  cauchy stress tensor contracted using the vectors n and dir
        *                           (\f[ \bold{\sigma} \cdot \bold{n} \cdot \bold{v} \f])
        * @param[out] d_cauchyndir_dd  derivative of cauchy_n_dir w.r.t. displacements
@@ -292,8 +292,9 @@ namespace DRT
        * @note At the moment this method is only used for the nitsche contact formulation
        */
       void GetCauchyNDirAndDerivativesAtXi(const LINALG::Matrix<3, 1>& xi,
-          const std::vector<double>& disp, const std::vector<double>& scalar,
-          const LINALG::Matrix<3, 1>& n, const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
+          const std::vector<double>& disp_nodal_values,
+          const std::vector<double>& scalar_nodal_values, const LINALG::Matrix<3, 1>& n,
+          const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
           Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
           LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           LINALG::Matrix<3, 1>* d_cauchyndir_dxi);
