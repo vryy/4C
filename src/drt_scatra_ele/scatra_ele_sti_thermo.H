@@ -29,7 +29,7 @@ namespace DRT
       virtual void Done() = 0;
 
      protected:
-      typedef ScaTraEleCalc<distype> my;
+      using my = ScaTraEleCalc<distype>;
 
       //! number of element nodes
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -40,9 +40,6 @@ namespace DRT
       //! protected constructor for singletons
       ScaTraEleSTIThermo(const int& numscal  //!< number of transported scalars
       );
-
-      //! destructor
-      virtual ~ScaTraEleSTIThermo() { return; };
 
       //! extract quantities for element evaluation
       virtual void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
@@ -125,8 +122,6 @@ namespace DRT
 
         // compute gradient of test function times gradient of shape function
         for (int idim = 0; idim < nsd_; ++idim) result += derxy(idim, vi) * derxy(idim, ui);
-
-        return;
       };
 
       //! compute gradient of test function times given gradient
@@ -141,8 +136,6 @@ namespace DRT
 
         // compute gradient of test function times given gradient
         for (int idim = 0; idim < nsd_; ++idim) result += derxy(idim, vi) * gradient(idim);
-
-        return;
       };
 
       //! local nodal values of temperature
@@ -164,20 +157,13 @@ namespace DRT
             ScaTraEleDiffManager(numscal),
 
             // initialize internal member variable
-            soret_(0.)
-      {
-        return;
-      };
-
-      //! destructor
-      virtual ~ScaTraEleDiffManagerSTIThermo() { return; };
+            soret_(0.){};
 
       //! set Soret coefficient
       void SetSoret(const double& soret  //!< Soret coefficient
       )
       {
         soret_ = soret;
-        return;
       };
 
       //! get Soret coefficient
@@ -194,10 +180,7 @@ namespace DRT
     {
      public:
       //! constructor
-      ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true) { return; };
-
-      //! destructor
-      virtual ~ScaTraEleInternalVariableManagerSTIThermo() { return; };
+      ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true){};
 
       //! set internal variables for element evaluation
       void SetInternalVariablesSTIThermo(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
@@ -207,10 +190,8 @@ namespace DRT
       )
       {
         // set local values of thermo variables at time t_(n+1) or t_(n+alpha_F)
-        temp_ = funct.Dot(etempnp);          // temperature
-        gradtemp_.Multiply(derxy, etempnp);  // gradient of temperature
-
-        return;
+        temp_ = funct.Dot(etempnp);  // temperature
+        gradtemp_.Multiply(derxy, etempnp);
       };
 
       //! return temperature

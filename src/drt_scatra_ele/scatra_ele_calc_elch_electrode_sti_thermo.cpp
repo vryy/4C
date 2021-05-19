@@ -55,8 +55,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -65,19 +63,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::Done()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ExtractElementAndNodeValues(
-    DRT::Element* ele,                    //!< current element
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
-)
+    DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la)
 {
   // call base class routine to extract scatra-related quantities
   myelch::ExtractElementAndNodeValues(ele, params, discretization, la);
 
   // call base class routine to extract thermo-related quantitites
   mythermo::ExtractElementAndNodeValues(ele, params, discretization, la);
-
-  return;
 }
 
 
@@ -86,13 +79,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ExtractElement
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialParams(
-    const DRT::Element* ele,      //!< current element
-    std::vector<double>& densn,   //!< density at t_(n)
-    std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-    std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-    double& visc,                 //!< fluid viscosity
-    const int iquad               //!< ID of current integration point
-)
+    const DRT::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
+    std::vector<double>& densam, double& visc, const int iquad)
 {
   // Set GP values to MatElectrode
   myelectrode::Utils()->MatElectrode(
@@ -111,22 +99,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::GetMaterialPar
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain integration factor
-    const double timefacfac,         //!< domain integration factor times time integration factor
-    const double rhsfac,      //!< domain integration factor times time integration factor for
-                              //!< right-hand side vector
-    const double taufac,      //!< domain integration factor times stabilization parameter
-    const double timetaufac,  //!< domain integration factor times stabilization parameter times
-                              //!< time integration factor
-    const double rhstaufac,  //!< domain integration factor times stabilization parameter times time
-                             //!< integration factor for right-hand side vector
-    LINALG::Matrix<my::nen_, 1>&
-        tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
-    double& rhsint  //!< body force value
-)
+    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
+    const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
+    const double rhstaufac, LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
 {
   // call base class routine for isothermal problems
   myelectrode::CalcMatAndRhs(
@@ -143,8 +118,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
         myelectrode::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
         VarManager()->GradTemp(), my::derxy_);
   }
-
-  return;
 }
 
 
@@ -152,18 +125,12 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::CalcMatAndRhs(
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionOD(
-    DRT::Element* ele,                         //!< current element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    const SCATRA::Action& action,              //!< action parameter
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-)
+int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionOD(DRT::Element* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    const SCATRA::Action& action, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
+    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
+    Epetra_SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -195,9 +162,7 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::EvaluateActionO
  *------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatraThermo(
-    DRT::Element* ele,              //!< current element
-    Epetra_SerialDenseMatrix& emat  //!< element matrix
-)
+    DRT::Element* ele, Epetra_SerialDenseMatrix& emat)
 {
   // integration points and weights
   DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
@@ -237,7 +202,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SysmatODScatra
           VarManager()->GradTemp(), my::funct_, my::derxy_);
     }
   }
-  return;
 }
 
 
@@ -250,8 +214,6 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::SetInternalVar
   // set internal variables for element evaluation
   VarManager()->SetInternalVariables(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
       mythermo::etempnp_, my::econvelnp_, my::ehist_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -274,8 +236,6 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<distype>::ScaTraEleCalcElchEl
   my::scatravarmanager_ =
       Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<my::nsd_, my::nen_>(
           my::numscal_, myelch::elchparams_));
-
-  return;
 }
 
 

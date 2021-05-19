@@ -32,8 +32,6 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ExtractElementAndNodeValues(
 
   // extract local nodal temperature values from global state vector
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
-
-  return;
 }
 
 
@@ -64,16 +62,16 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoret(
     GetLaplacianWeakFormRHS(laplawfrhs_gradtemp, vi, gradtemp, derxy);
 
     for (int ui = 0; ui < nen_; ++ui)
+    {
       // linearizations of Soret effect term in concentration residuals w.r.t. concentration dofs
       emat(rowconc, ui * 2) += timefacfac * funct(ui) * laplawfrhs_gradtemp / temp *
                                diffmanagerstithermo_->GetSoret() *
                                (diffcoeff + conc * diffcoeffderiv);
+    }
 
     // linearizations of Soret effect term in concentration residuals w.r.t. electric potential dofs
     // are zero Soret effect term does not appear in electric potential residuals
   }
-
-  return;
 }
 
 
@@ -116,8 +114,6 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatSoretOD(
       // Soret effect term does not appear in electric potential residuals
     }
   }
-
-  return;
 }
 
 
@@ -149,8 +145,6 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcRHSSoret(
 
     // Soret effect term does not appear in electric potential residuals
   }
-
-  return;
 }
 
 
@@ -167,8 +161,6 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::MatSoret(
       Teuchos::rcp_static_cast<const MAT::Soret>(material);
   diffmanagerstithermo_->SetIsotropicDiff(matsoret->Conductivity(), 0);
   diffmanagerstithermo_->SetSoret(matsoret->SoretCoefficient());
-
-  return;
 }
 
 
@@ -186,11 +178,11 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
 {
   // safety check
   if (numscal != 1)
+  {
     dserror(
         "Thermodynamic scalar transport only works for exactly one transported scalar at the "
         "moment!");
-
-  return;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -203,12 +195,12 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_Seri
     const LINALG::Matrix<nen_, 1>& funct, const LINALG::Matrix<nsd_, nen_>& derxy,
     const double scalar)
 {
-  for (unsigned vi = 0; vi < my::nen_; ++vi)
+  for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
     const int rowconc = vi * 2;
     const int rowpot = rowconc + 1;
 
-    for (unsigned ui = 0; ui < my::nen_; ++ui)
+    for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
     {
       double laplawfrhs(0.0);
       GetLaplacianWeakFormRHS(laplawfrhs, vi, gradconc, derxy);

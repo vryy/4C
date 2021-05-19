@@ -45,7 +45,6 @@ namespace DRT
       using myelch = ScaTraEleCalcElch<distype>;
       using myelectrode = ScaTraEleCalcElchElectrode<distype>;
       using mythermo = ScaTraEleSTIThermo<distype>;
-      using mythermoelectrode = ScaTraEleCalcSTIElectrode<distype>;
 
       //! private constructor for singletons
       ScaTraEleCalcElchElectrodeSTIThermo(
