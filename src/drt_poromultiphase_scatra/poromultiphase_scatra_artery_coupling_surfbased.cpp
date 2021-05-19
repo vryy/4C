@@ -75,7 +75,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
   // coupling pair is scaled by the inverse of the multiplicity
 
   int duplicates = 0;
-  if (comm_.NumProc() > 1)
+  if (Comm().NumProc() > 1)
   {
     int mygpvec[numgp_per_artele];
     int sumgpvec[numgp_per_artele];
@@ -95,7 +95,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
         for (int igp = 0; igp < numgp_per_artele; igp++) mygpvec[igp] = ((*gp_vector)[igp])[mylid];
 
       // communicate to all via summation
-      comm_.SumAll(mygpvec, sumgpvec, numgp_per_artele);
+      Comm().SumAll(mygpvec, sumgpvec, numgp_per_artele);
 
       // this is ok for now, either the GID does not exist or the entire element protrudes.
       // Inform user and continue

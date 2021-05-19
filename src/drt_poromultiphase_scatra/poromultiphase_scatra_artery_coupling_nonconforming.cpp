@@ -46,8 +46,6 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       delete_free_hanging_eles_(DRT::INPUT::IntegralValue<int>(
           DRT::Problem::Instance()->PoroFluidMultiPhaseDynamicParams().sublist("ARTERY COUPLING"),
           "DELETE_FREE_HANGING_ELES")),
-      timefacrhs_art_(0.0),
-      timefacrhs_cont_(0.0),
       delete_free_hanging_eles_threshold_(DRT::Problem::Instance()
                                               ->PoroFluidMultiPhaseDynamicParams()
                                               .sublist("ARTERY COUPLING")
@@ -55,6 +53,8 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
       coupling_method_(
           DRT::INPUT::IntegralValue<INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod>(
               couplingparams, "ARTERY_COUPLING_METHOD")),
+      timefacrhs_art_(0.0),
+      timefacrhs_cont_(0.0),
       pp_(couplingparams_.get<double>("PENALTY"))
 {
 }
