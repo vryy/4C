@@ -23,7 +23,7 @@
 #include "../drt_mat/cnst_1d_art.H"
 #include "../headers/FAD_utils.H"
 #include "../drt_porofluidmultiphase_ele/porofluidmultiphase_ele_parameter.H"
-#include "../drt_particle_interaction/particle_interaction_utils.H"
+#include "../drt_geometry/coordinate_system_utils.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -458,11 +458,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
   if (element2_->Owner() != pid) return;
 
   // unit radial basis vectors
-  double unit_rad_1[3];
-  double unit_rad_2[3];
-  // unit tangential vector
-  double tang_unit[3] = {lambda0_(0), lambda0_(1), lambda0_(2)};
-  PARTICLEINTERACTION::UTILS::unitsurfacetangents(tang_unit, unit_rad_1, unit_rad_2);
+  LINALG::Matrix<3, 1> unit_rad_1;
+  LINALG::Matrix<3, 1> unit_rad_2;
+  // unit tangential basis
+  LINALG::Matrix<3, 1> tang;
+  if (numdim_ != 3) dserror("surface-based formulation makes only sense in 3D");
+  for (int idim = 0; idim < 3; idim++) tang(idim) = lambda0_(idim);
+
+  GEO::BuildOrthonormalBasisFromUnitVector(tang, unit_rad_1, unit_rad_2);
 
   // get radius
   const int artelematerial = coupltype_ == type_scatra ? 1 : 0;
@@ -525,8 +528,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
 
         // get point on lateral blood vessel surface
         for (int idim = 0; idim < 3; idim++)
-          r1(idim) = r1(idim) + unit_rad_1[idim] * radius * cos(theta) +
-                     unit_rad_2[idim] * radius * sin(theta);
+          r1(idim) = r1(idim) + unit_rad_1(idim) * radius * cos(theta) +
+                     unit_rad_2(idim) * radius * sin(theta);
 
         // project into 3D domain
         bool projection_valid = false;
