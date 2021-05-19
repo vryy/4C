@@ -487,154 +487,174 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elecenterlineinfo)
 {
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
-  std::vector<EXODUS::elem_def> strus;
-  std::vector<EXODUS::elem_def> fluids;
-  std::vector<EXODUS::elem_def> ales;
-  std::vector<EXODUS::elem_def> lubrication;
-  std::vector<EXODUS::elem_def> transport;
-  std::vector<EXODUS::elem_def> transport2;
-  std::vector<EXODUS::elem_def> thermo;
-  std::vector<EXODUS::elem_def> cell;
-  std::vector<EXODUS::elem_def> cellscatra;
-  std::vector<EXODUS::elem_def> elemag;
-  std::vector<EXODUS::elem_def> artery;
-  std::vector<EXODUS::elem_def>::const_iterator i_et;
+  std::vector<EXODUS::elem_def> structure_elements;
+  std::vector<EXODUS::elem_def> fluid_elements;
+  std::vector<EXODUS::elem_def> ale_elements;
+  std::vector<EXODUS::elem_def> lubrication_elements;
+  std::vector<EXODUS::elem_def> transport_elements;
+  std::vector<EXODUS::elem_def> transport2_elements;
+  std::vector<EXODUS::elem_def> thermo_elements;
+  std::vector<EXODUS::elem_def> cell_elements;
+  std::vector<EXODUS::elem_def> cellscatra_elements;
+  std::vector<EXODUS::elem_def> elemag_elements;
+  std::vector<EXODUS::elem_def> artery_elements;
 
-  for (i_et = eledefs.begin(); i_et != eledefs.end(); ++i_et)
+  for (const auto& element_definition : eledefs)
   {
-    EXODUS::elem_def acte = *i_et;
-    if (acte.sec == "STRUCTURE")
-      strus.push_back(acte);
-    else if (acte.sec == "FLUID")
-      fluids.push_back(acte);
-    else if (acte.sec == "ALE")
-      ales.push_back(acte);
-    else if (acte.sec == "LUBRICATION")
-      lubrication.push_back(acte);
-    else if (acte.sec == "TRANSPORT")
-      transport.push_back(acte);
-    else if (acte.sec == "TRANSPORT2")
-      transport2.push_back(acte);
-    else if (acte.sec == "THERMO")
-      thermo.push_back(acte);
-    else if (acte.sec == "CELL")
-      cell.push_back(acte);
-    else if (acte.sec == "CELLSCATRA")
-      cellscatra.push_back(acte);
-    else if (acte.sec == "ELECTROMAGNETIC")
-      elemag.push_back(acte);
-    else if (acte.sec == "ARTERY")
-      artery.push_back(acte);
-    else if (acte.sec == "")
+    if (element_definition.sec == "STRUCTURE")
+      structure_elements.push_back(element_definition);
+    else if (element_definition.sec == "FLUID")
+      fluid_elements.push_back(element_definition);
+    else if (element_definition.sec == "ALE")
+      ale_elements.push_back(element_definition);
+    else if (element_definition.sec == "LUBRICATION")
+      lubrication_elements.push_back(element_definition);
+    else if (element_definition.sec == "TRANSPORT")
+      transport_elements.push_back(element_definition);
+    else if (element_definition.sec == "TRANSPORT2")
+      transport2_elements.push_back(element_definition);
+    else if (element_definition.sec == "THERMO")
+      thermo_elements.push_back(element_definition);
+    else if (element_definition.sec == "CELL")
+      cell_elements.push_back(element_definition);
+    else if (element_definition.sec == "CELLSCATRA")
+      cellscatra_elements.push_back(element_definition);
+    else if (element_definition.sec == "ELECTROMAGNETIC")
+      elemag_elements.push_back(element_definition);
+    else if (element_definition.sec == "ARTERY")
+      artery_elements.push_back(element_definition);
+    else if (element_definition.sec == "")
       ;
     else
     {
-      std::cout << "Unknown ELEMENT sectionname in eb" << acte.id << ": '" << acte.sec << "'!"
-                << std::endl;
+      std::cout << "Unknown ELEMENT sectionname in eb" << element_definition.id << ": '"
+                << element_definition.sec << "'!" << std::endl;
       dserror("Unknown ELEMENT sectionname");
     }
   }
 
-  int startele =
-      1;  // BACI-Dat eles start with 1, this int is adapted for more than one element section
+  // BACI-Dat eles start with 1, this int is adapted for more than one element section
+  int startele = 1;
 
   // print structure elements
-  dat << "------------------------------------------------STRUCTURE ELEMENTS" << std::endl;
-  for (i_et = strus.begin(); i_et != strus.end(); ++i_et)
+  if (!structure_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "------------------------------------------------STRUCTURE ELEMENTS" << std::endl;
+    for (const auto& struct_ele : structure_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(struct_ele.id);
+      EXODUS::DatEles(eb, struct_ele, startele, dat, elecenterlineinfo, struct_ele.id);
+    }
   }
 
   // print fluid elements
-  dat << "----------------------------------------------------FLUID ELEMENTS" << std::endl;
-  for (i_et = fluids.begin(); i_et != fluids.end(); ++i_et)
+  if (!fluid_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "----------------------------------------------------FLUID ELEMENTS" << std::endl;
+    for (const auto& fluid_ele : fluid_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(fluid_ele.id);
+      EXODUS::DatEles(eb, fluid_ele, startele, dat, elecenterlineinfo, fluid_ele.id);
+    }
   }
 
   // print ale elements
-  dat << "------------------------------------------------------ALE ELEMENTS" << std::endl;
-  for (i_et = ales.begin(); i_et != ales.end(); ++i_et)
+  if (!ale_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "------------------------------------------------------ALE ELEMENTS" << std::endl;
+    for (const auto& ale_ele : ale_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(ale_ele.id);
+      EXODUS::DatEles(eb, ale_ele, startele, dat, elecenterlineinfo, ale_ele.id);
+    }
   }
 
   // print Lubrication elements
-  dat << "------------------------------------------------LUBRICATION ELEMENTS" << std::endl;
-  for (i_et = lubrication.begin(); i_et != lubrication.end(); ++i_et)
+  if (!lubrication_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "----------------------------------------------LUBRICATION ELEMENTS" << std::endl;
+    for (const auto& lubrication_ele : lubrication_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(lubrication_ele.id);
+      EXODUS::DatEles(eb, lubrication_ele, startele, dat, elecenterlineinfo, lubrication_ele.id);
+    }
   }
 
   // print transport elements
-  dat << "------------------------------------------------TRANSPORT ELEMENTS" << std::endl;
-  for (i_et = transport.begin(); i_et != transport.end(); ++i_et)
+  if (!transport_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "------------------------------------------------TRANSPORT ELEMENTS" << std::endl;
+    for (const auto& transp_ele : transport_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(transp_ele.id);
+      EXODUS::DatEles(eb, transp_ele, startele, dat, elecenterlineinfo, transp_ele.id);
+    }
   }
 
   // print transport2 elements
-  dat << "------------------------------------------------TRANSPORT2 ELEMENTS" << std::endl;
-  for (i_et = transport2.begin(); i_et != transport2.end(); ++i_et)
+  if (!transport2_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "-----------------------------------------------TRANSPORT2 ELEMENTS" << std::endl;
+    for (const auto& transp2_ele : transport2_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(transp2_ele.id);
+      EXODUS::DatEles(eb, transp2_ele, startele, dat, elecenterlineinfo, transp2_ele.id);
+    }
   }
 
   // print thermo elements
-  dat << "---------------------------------------------------THERMO ELEMENTS" << std::endl;
-  for (i_et = thermo.begin(); i_et != thermo.end(); ++i_et)
+  if (!thermo_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "---------------------------------------------------THERMO ELEMENTS" << std::endl;
+    for (const auto& thermo_ele : thermo_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(thermo_ele.id);
+      EXODUS::DatEles(eb, thermo_ele, startele, dat, elecenterlineinfo, thermo_ele.id);
+    }
   }
 
   // print cell elements
-  dat << "---------------------------------------------------CELL ELEMENTS" << std::endl;
-  for (i_et = cell.begin(); i_et != cell.end(); ++i_et)
+  if (!cell_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "-----------------------------------------------------CELL ELEMENTS" << std::endl;
+    for (const auto& cell_ele : cell_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(cell_ele.id);
+      EXODUS::DatEles(eb, cell_ele, startele, dat, elecenterlineinfo, cell_ele.id);
+    }
   }
 
   // print cellscatra elements
-  dat << "---------------------------------------------------CELLSCATRA ELEMENTS" << std::endl;
-  for (i_et = cellscatra.begin(); i_et != cellscatra.end(); ++i_et)
+  if (!cellscatra_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "-----------------------------------------------CELLSCATRA ELEMENTS" << std::endl;
+    for (const auto& cellscatra_ele : cellscatra_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(cellscatra_ele.id);
+      EXODUS::DatEles(eb, cellscatra_ele, startele, dat, elecenterlineinfo, cellscatra_ele.id);
+    }
   }
 
   // print electromagnetic elements
-  dat << "---------------------------------------------------ELECTROMAGNETIC ELEMENTS" << std::endl;
-  for (i_et = elemag.begin(); i_et != elemag.end(); ++i_et)
+  if (!elemag_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "------------------------------------------ELECTROMAGNETIC ELEMENTS" << std::endl;
+    for (const auto& elemag_ele : elemag_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(elemag_ele.id);
+      EXODUS::DatEles(eb, elemag_ele, startele, dat, elecenterlineinfo, elemag_ele.id);
+    }
   }
 
   // print artery elements
-  dat << "-------------------------------------------------------ARTERY ELEMENTS" << std::endl;
-  for (i_et = artery.begin(); i_et != artery.end(); ++i_et)
+  if (!artery_elements.empty())
   {
-    EXODUS::elem_def acte = *i_et;
-    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
-    EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
+    dat << "---------------------------------------------------ARTERY ELEMENTS" << std::endl;
+    for (const auto& artery_ele : artery_elements)
+    {
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(artery_ele.id);
+      EXODUS::DatEles(eb, artery_ele, startele, dat, elecenterlineinfo, artery_ele.id);
+    }
   }
 }
 
