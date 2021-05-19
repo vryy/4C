@@ -183,17 +183,6 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::LinearSolve(Teuchos::RCP<LINA
     Teuchos::RCP<LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
     Teuchos::RCP<Epetra_Vector> residual)
 {
-  bool matlab = false;
-  if (matlab)
-  {
-    // sparse_matrix
-    std::string filename = "../o/mymatrix.dat";
-    std::string filename_vc = "../o/myvec.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, *(comb_systemmatrix_));
-    LINALG::PrintVectorInMatlabFormat(filename_vc, *rhs_, true);
-    dserror("exit");
-  }
-
   comb_systemmatrix_->Complete();
 
   comb_increment_->PutScalar(0.0);

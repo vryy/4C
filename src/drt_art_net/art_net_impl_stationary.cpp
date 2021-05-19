@@ -225,19 +225,6 @@ void ART::ArtNetImplStationary::PrepareLinearSolve()
 {
   // apply map: rhs = pressurenp_
   LINALG::ApplyDirichlettoSystem(sysmat_, pressureincnp_, rhs_, zeros_, *(dbcmaps_->CondMap()));
-
-  bool matlab = false;
-  if (matlab)
-  {
-    Teuchos::RCP<const LINALG::SparseMatrix> sparse_matrix =
-        Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(sysmat_, true);
-
-    // sparse_matrix
-    std::string filename = "../o/mymatrix.dat";
-    LINALG::PrintMatrixInMatlabFormat(
-        filename, *sparse_matrix->EpetraMatrix());  // *sysmat_->EpetraOperator());
-    dserror("exit");
-  }
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

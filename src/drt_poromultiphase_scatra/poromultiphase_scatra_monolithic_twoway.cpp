@@ -542,15 +542,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWay::SetupSystemMatr
 
   // complete block matrix
   systemmatrix_->Complete();
-
-  // Debug: matlab output of system matrix
-  bool matlab = false;
-  if (matlab)
-  {
-    std::string filename = "../o/mymatrix.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, *systemmatrix_);
-    dserror("exit");
-  }
 }
 
 /*----------------------------------------------------------------------*
@@ -1589,15 +1580,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::S
   }
 
   systemmatrix_->Complete();
-
-  // Debug: matlab output of system matrix
-  bool matlab = false;
-  if (matlab)
-  {
-    std::string filename = "../o/mymatrix.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, *systemmatrix_);
-    dserror("exit");
-  }
 
   return;
 }

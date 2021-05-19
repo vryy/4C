@@ -75,9 +75,9 @@ namespace POROMULTIPHASESCATRA
         Teuchos::RCP<const Epetra_Vector> vec_art) override;
 
     /// extract single field vectors
-    /// (o)    vec:      combined vector containing both artery and continuous field quantities
-    /// (i)    vec_cont: vector containing quantities from continuous field
-    /// (i)    vec_art:  vector containing quantities from artery field
+    /// (o)    globalvec: combined vector containing both artery and continuous field quantities
+    /// (i)    vec_cont:  vector containing quantities from continuous field
+    /// (i)    vec_art:   vector containing quantities from artery field
     void ExtractSingleFieldVectors(Teuchos::RCP<const Epetra_Vector> globalvec,
         Teuchos::RCP<const Epetra_Vector>& vec_cont,
         Teuchos::RCP<const Epetra_Vector>& vec_art) override;

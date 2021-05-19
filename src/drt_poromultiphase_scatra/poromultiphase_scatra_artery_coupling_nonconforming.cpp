@@ -187,17 +187,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SetupSyste
   // this is important! Monolithic algorithms use this matrix
   sysmat_cont->Assign(LINALG::View, sysmat->Matrix(0, 0));
 
-  bool matlab = false;
-  if (matlab)
-  {
-    // sparse_matrix
-    std::string filename = "../o/mymatrix.dat";
-    std::string filename_vc = "../o/myvec.dat";
-    LINALG::PrintBlockMatrixInMatlabFormat(filename, *(sysmat));
-    LINALG::PrintVectorInMatlabFormat(filename_vc, *rhs, true);
-    dserror("exit");
-  }
-
   return;
 }
 
@@ -458,17 +447,6 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::SumDMIntoGlobalForceStiff(
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
 {
-  bool matlab = false;
-  if (matlab)
-  {
-    // sparse_matrix
-    std::string filename_D = "../o/D.dat";
-    std::string filename_M = "../o/M.dat";
-    LINALG::PrintMatrixInMatlabFormat(filename_D, *(D_->EpetraMatrix()));
-    LINALG::PrintMatrixInMatlabFormat(filename_M, *(M_->EpetraMatrix()));
-    dserror("exit");
-  }
-
   // invert
   InvertKappa();
 
