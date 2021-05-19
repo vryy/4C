@@ -34,6 +34,33 @@ namespace CONTACT
         DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
 
    private:
+    //! data bundle of current element
+    struct ElementDataBundle;
+
+    /*!
+     * @brief Checks which element (master- or slave-side) is the electrode-side and bundle the data
+     *
+     * @param[in] slave_ele           slave side mortar element
+     * @param[in] slave_shape         slave side shape function evaluated at current Gauss point
+     * @param[in] slave_shape_deriv   slave side shape function derivative at current Gauss point
+     * @param[in] d_slave_xi_dd       directional derivative of slave side Gauss point coordinates
+     * @param[in] master_ele          master side mortar element
+     * @param[in] master_shape        master side shape function evaluated at current Gauss point
+     * @param[in] master_shape_deriv  master side shape function derivative at current Gauss point
+     * @param[in] d_master_xi_dd      directional derivative of master side Gauss point coordinates
+     * @param[out] slave_is_electrode  flag indicating if slave-side is electrode-side
+     * @param[out] electrode_data      data bundle of the electrode-side element
+     * @param[out] electrolyte_data    data bundle of the electrolyte-side element
+     */
+    void AssignElectrodeAndElectrolyteQuantities(MORTAR::MortarElement& slave_ele,
+        const LINALG::SerialDenseVector& slave_shape,
+        const LINALG::SerialDenseMatrix& slave_shape_deriv,
+        const std::vector<GEN::pairedvector<int, double>>& d_slave_xi_dd,
+        MORTAR::MortarElement& master_ele, const LINALG::SerialDenseVector& master_shape,
+        const LINALG::SerialDenseMatrix& master_shape_deriv,
+        const std::vector<GEN::pairedvector<int, double>>& d_master_xi_dd, bool& slave_is_electrode,
+        ElementDataBundle& electrode_data, ElementDataBundle& electrolyte_data);
+
     /*!
      * @brief evaluate gauss point to segment forces and linearization at this gp
      *
@@ -75,21 +102,16 @@ namespace CONTACT
      * @tparam dim     dimension of the problem
      * @param[in] fac  pre-factor to correct sign dependent on integration of master or slave side
      *                 terms
-     * @param[in] ele  mortar contact element or integration cell mortar element
-     * @param[in] shape_func     shape function evaluated at current Gauss point
-     * @param[in] shape_deriv    shape function derivative at current Gauss point
-     * @param[in] d_xi_dds       directional derivative of Gauss point coordinates
-     * @param[in] jac            Jacobian determinant of integration cell
-     * @param[in] d_jac_dd       directional derivative of cell Jacobian
-     * @param[in] wgt            Gauss point weight
-     * @param[in] test_val       quantity to be integrated
-     * @param[in] d_test_val_dd  directional derivative of quantity to be integrated
-     * @param[in] d_test_val_ds  derivative of quantity to be integrated w.r.t. scalar s
+     * @param[in] ele_data_bundle  data bundle of current element
+     * @param[in] jac              Jacobian determinant of integration cell
+     * @param[in] d_jac_dd         directional derivative of cell Jacobian
+     * @param[in] wgt              Gauss point weight
+     * @param[in] test_val         quantity to be integrated
+     * @param[in] d_test_val_dd    directional derivative of quantity to be integrated
+     * @param[in] d_test_val_ds    derivative of quantity to be integrated w.r.t. scalar s
      */
     template <int dim>
-    void IntegrateElchTest(double fac, MORTAR::MortarElement& ele,
-        const LINALG::SerialDenseVector& shape_func, const LINALG::SerialDenseMatrix& shape_deriv,
-        const std::vector<GEN::pairedvector<int, double>>& d_xi_dds, double jac,
+    void IntegrateElchTest(double fac, ElementDataBundle& ele_data_bundle, double jac,
         const GEN::pairedvector<int, double>& d_jac_dd, double wgt, double test_val,
         const GEN::pairedvector<int, double>& d_test_val_dd,
         const GEN::pairedvector<int, double>& d_test_val_ds);
@@ -162,23 +184,18 @@ namespace CONTACT
     /*!
      * @brief setup the electrochemistry Gauss point quantities
      *
-     * @tparam dim             dimension of the problem
-     * @param[in] ele          mortar contact element or integration cell mortar element
-     * @param[in] shape_func   shape function evaluated at current Gauss point
-     * @param[in] shape_deriv  shape function derivative evaluated at current Gauss point
-     * @param[in] d_xi_dd      directional derivative of Gauss point coordinates
-     * @param[out] gp_conc     concentration at current Gauss point
-     * @param[out] gp_pot      electric potential at current Gauss point
-     * @param[out] d_conc_dc   derivative of Gauss point concentration w.r.t. concentration
-     * @param[out] d_conc_dd   derivative of Gauss point concentration w.r.t. displacement
-     * @param[out] d_pot_dpot  derivative of Gauss point electric potential w.r.t. electric
-     *                         potential
-     * @param[out] d_pot_dd    derivative of Gauss point electric potential w.r.t. displacement
+     * @tparam dim                 dimension of the problem
+     * @param[in] ele_data_bundle  data bundle of current element
+     * @param[out] gp_conc         concentration at current Gauss point
+     * @param[out] gp_pot          electric potential at current Gauss point
+     * @param[out] d_conc_dc       derivative of Gauss point concentration w.r.t. concentration
+     * @param[out] d_conc_dd       derivative of Gauss point concentration w.r.t. displacement
+     * @param[out] d_pot_dpot      derivative of Gauss point electric potential w.r.t. electric
+     *                             potential
+     * @param[out] d_pot_dd        derivative of Gauss point electric potential w.r.t. displacement
      */
     template <int dim>
-    void SetupGpElchProperties(MORTAR::MortarElement& ele,
-        const LINALG::SerialDenseVector& shape_func, const LINALG::SerialDenseMatrix& shape_deriv,
-        const std::vector<GEN::pairedvector<int, double>>& d_xi_dd, double& gp_conc, double& gp_pot,
+    void SetupGpElchProperties(ElementDataBundle& ele_data_bundle, double& gp_conc, double& gp_pot,
         GEN::pairedvector<int, double>& d_conc_dc, GEN::pairedvector<int, double>& d_conc_dd,
         GEN::pairedvector<int, double>& d_pot_dpot, GEN::pairedvector<int, double>& d_pot_dd);
 
