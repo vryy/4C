@@ -630,11 +630,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedRealVector(
         m, "DIFF_PARA", "parameters for diffusion coefficient", "DIFF_PARA_NUM", 0.0, true);
     AddNamedInt(m, "DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
-        "number of parameters for scaling function describing temperatur dependence of diffusion "
+        "number of parameters for scaling function describing temperature dependence of diffusion "
         "coefficient",
         0, true);
     AddNamedRealVector(m, "DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
-        "parameters for function describing temperatur dependence of diffusion coefficient",
+        "parameters for function describing temperature dependence of diffusion coefficient",
         "DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0.0, true);
     AddNamedInt(m, "TRANS_PARA_NUM", "number of parameters for transference number", 0, true);
     AddNamedRealVector(
@@ -731,11 +731,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedRealVector(matelectrode, "DIFF_PARA", "parameters for diffusion coefficient",
         "DIFF_PARA_NUM", 0.0, true);
     AddNamedInt(matelectrode, "DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM",
-        "number of parameters for scaling function describing temperatur dependence of diffusion "
+        "number of parameters for scaling function describing temperature dependence of diffusion "
         "coefficient",
         0, true);
     AddNamedRealVector(matelectrode, "DIFF_COEF_TEMP_SCALE_FUNCT_PARA",
-        "parameters for function describing temperatur dependence of diffusion coefficient",
+        "parameters for function describing temperature dependence of diffusion coefficient",
         "DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0.0, true);
     AddNamedInt(
         matelectrode, "COND_PARA_NUM", "number of parameters for electronic conductivity", 0, true);

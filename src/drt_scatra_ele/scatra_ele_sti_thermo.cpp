@@ -189,11 +189,11 @@ DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat,
-    const int numdofpernode, const double& timefacfac, const double invF,
+    const int& numdofpernode, const double& timefacfac, const double& invF,
     const LINALG::Matrix<my::nsd_, 1>& gradconc, const LINALG::Matrix<my::nsd_, 1>& gradpot,
     const double& tempderivisodiffcoef, const double& tempderivcond,
     const LINALG::Matrix<nen_, 1>& funct, const LINALG::Matrix<nsd_, nen_>& derxy,
-    const double scalar)
+    const double& scalefac)
 {
   for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
   {
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::ScaTraEleSTIThermo<distype>::CalcMatDiffThermoOD(Epetra_Seri
       emat(rowconc, ui) += timefacfac * tempderivisodiffcoef * laplawfrhs * funct(ui);
 
       GetLaplacianWeakFormRHS(laplawfrhs, vi, gradpot, derxy);
-      emat(rowpot, ui) += timefacfac * invF * tempderivcond * laplawfrhs * funct(ui) * scalar;
+      emat(rowpot, ui) += timefacfac * invF * tempderivcond * laplawfrhs * funct(ui) * scalefac;
     }
   }
 }

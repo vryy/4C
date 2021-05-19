@@ -99,12 +99,12 @@ namespace DRT
       //! \param tempderivcond         derivative of electric conductivity wrt temperature
       //! \param funct     shape functions
       //! \param derxy     spatial derivatives of shape functions
-      //! \param scalar    scaling factor for element matrix contributions
-      void CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat, const int numdofpernode,
-          const double& timefacfac, const double invF, const LINALG::Matrix<my::nsd_, 1>& gradconc,
+      //! \param scalefac  scaling factor for pot. contributions
+      void CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat, const int& numdofpernode,
+          const double& timefacfac, const double& invF, const LINALG::Matrix<my::nsd_, 1>& gradconc,
           const LINALG::Matrix<my::nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
           const double& tempderivcond, const LINALG::Matrix<nen_, 1>& funct,
-          const LINALG::Matrix<nsd_, nen_>& derxy, const double scalar);
+          const LINALG::Matrix<nsd_, nen_>& derxy, const double& scalefac);
 
       //! evaluate Soret material
       void MatSoret(const Teuchos::RCP<const MAT::Material> material  //!< Soret material

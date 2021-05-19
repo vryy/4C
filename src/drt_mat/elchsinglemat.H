@@ -35,11 +35,11 @@ namespace MAT
       //! parameters for diffusion coefficient
       const std::vector<double> diffusion_coefficent_params_;
 
-      //! number of parameters for scaling function describing temperatur dependence of diffusion
+      //! number of parameters for scaling function describing temperature dependence of diffusion
       //! coefficient
       const int number_diffusion_temp_scale_funct_params_;
 
-      //! parameters for scaling function describing temperatur dependence of diffusion coefficient
+      //! parameters for scaling function describing temperature dependence of diffusion coefficient
       const std::vector<double> diffusion_temp_scale_funct_params_;
 
       //! function number to describe concentration dependence of conductivity
@@ -54,10 +54,11 @@ namespace MAT
       //! parameters for conductivity
       const std::vector<double> conductivity_params_;
 
-      //! number of parameters for scaling function describing temperatur dependence of conductivity
+      //! number of parameters for scaling function describing temperature dependence of
+      //! conductivity
       const int number_conductivity_temp_scale_funct_params_;
 
-      //! parameters for scaling function describing temperatur dependence conductivity
+      //! parameters for scaling function describing temperature dependence conductivity
       const std::vector<double> conductivity_temp_scale_funct_params_;
 
       //! universal gas constant for evaluation of diffusion coefficient by means of
@@ -206,13 +207,19 @@ namespace MAT
           ->conductivity_temp_scale_funct_params_;
     };
 
-    //! evaluate value of predefined function
-    double EvalPreDefinedFunctValue(
-        int functnr, double concentration, const std::vector<double>& functparams) const;
+    //! evaluate value as predefined function of any scalar (e.g. concentration, temperature)
+    //!
+    //! \param functnr      negative function number to be evaluated
+    //! \param scalar       scalar value to insert into function
+    //! \param functparams  constants that define the functions
+    //! \return             function evaluated at value of scalar
+    double EvalPreDefinedFunct(
+        int functnr, double scalar, const std::vector<double>& functparams) const;
 
-    //! evaluate first derivative of predefined function
-    double EvalFirstDerivPreDefinedFunctValue(
-        int functnr, double concentration, const std::vector<double>& functparams) const;
+    //! evaluate first derivative of predefined function of any scalar (e.g. concentration,
+    //! temperature)
+    double EvalFirstDerivPreDefinedFunct(
+        int functnr, double scalar, const std::vector<double>& functparams) const;
   };
 }  // namespace MAT
 #endif

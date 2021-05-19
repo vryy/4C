@@ -284,7 +284,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
         const int rowpot(vi * 2 + 1);
 
         // gradient of test function times gradient of concentration
-        double laplawfrhs_conc(0.);
+        double laplawfrhs_conc = 0.0;
         my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
 
         for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
@@ -294,7 +294,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
           my::GetLaplacianWeakForm(laplawf, vi, ui);
 
           // gradient of test function times derivative of current density w.r.t. temperature
-          const double di_dT = 2 * kappa * (1 - t) * invfval * R / concentration * laplawfrhs_conc;
+          const double di_dT =
+              2.0 * kappa * (1.0 - t) * invfval * R / concentration * laplawfrhs_conc;
 
           // formal, symbolic derivative of current density w.r.t. temperature gradient
           const double di_dgradT = kappa * invfval * R * log(concentration);
@@ -305,8 +306,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
 
           // linearizations of contributions for electric potential residuals w.r.t. thermo dofs
           emat(rowpot, ui) -= timefacfac * (laplawf * kappa * invffval * R * log(concentration) +
-                                               my::funct_(ui) * kappa * (1 - t) * invffval * R /
-                                                   concentration * 2 * laplawfrhs_conc);
+                                               my::funct_(ui) * kappa * (1.0 - t) * invffval * R /
+                                                   concentration * 2.0 * laplawfrhs_conc);
         }
       }
 

@@ -371,7 +371,7 @@ void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
     case LINALG::MatrixType::block_condition_dof:
     {
       scatrastructuredomain_->Complete();
-      scatrastructureinterface_->Complete();
+      if (interfacemeshtying_) scatrastructureinterface_->Complete();
       break;
     }
 
@@ -379,8 +379,11 @@ void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
     {
       scatrastructuredomain_->Complete(
           *ssti_maps_mono_->MapsStructure()->FullMap(), *ssti_maps_mono_->MapsScatra()->FullMap());
-      scatrastructureinterface_->Complete(
-          *ssti_maps_mono_->MapsStructure()->FullMap(), *interface_map_scatra_);
+      if (interfacemeshtying_)
+      {
+        scatrastructureinterface_->Complete(
+            *ssti_maps_mono_->MapsStructure()->FullMap(), *interface_map_scatra_);
+      }
       break;
     }
 
