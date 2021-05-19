@@ -235,19 +235,20 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList
  *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
-    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp,
-    const std::vector<double>& scalar, const LINALG::Matrix<3, 1>& n,
+    const LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp_nodal_values,
+    const std::vector<double>& scalar_nodal_values, const LINALG::Matrix<3, 1>& n,
     const LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
     Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
     LINALG::Matrix<3, 1>* d_cauchyndir_dn, LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
     LINALG::Matrix<3, 1>* d_cauchyndir_dxi)
 {
-  auto scalars = DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar);
+  auto scalar_values_at_xi =
+      DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar_nodal_values);
   double d_cauchyndir_ds_gp(0.0);
   // call base class
-  so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd, nullptr,
-      nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, nullptr,
-      nullptr, nullptr, &scalars[0], &d_cauchyndir_ds_gp);
+  so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
+      d_cauchyndir_dd, nullptr, nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir,
+      d_cauchyndir_dxi, nullptr, nullptr, nullptr, &scalar_values_at_xi[0], &d_cauchyndir_ds_gp);
 
   if (d_cauchyndir_ds != nullptr)
   {
