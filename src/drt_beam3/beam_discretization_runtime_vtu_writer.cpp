@@ -934,8 +934,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 void BeamDiscretizationRuntimeVtuWriter::
     AppendGaussPointMaterialCrossSectionStrainResultantsContinuous()
 {
-  AppendContinuousStressStrainResultants(StressStrainField::material_strain,
-      {"axial_strain", "shear_strain_2", "shear_strain_3", "twist", "curvature_2", "curvature_3"});
+  AppendContinuousStressStrainResultants(StressStrainField::material_strain);
 }
 
 
@@ -1121,9 +1120,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 void BeamDiscretizationRuntimeVtuWriter::
     AppendGaussPointMaterialCrossSectionStressResultantsContinuous()
 {
-  AppendContinuousStressStrainResultants(StressStrainField::material_stress,
-      {"material_axial_force", "material_shear_force_2", "material_shear_force_3",
-          "material_torque", "material_bending_moment_2", "material_bending_moment_3"});
+  AppendContinuousStressStrainResultants(StressStrainField::material_stress);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1630,7 +1627,7 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
     std::vector<double>& polynomial_coefficients) const
 {
   // Get the coefficients for the interpolation functions at the Gauss points.
-  unsigned int n_gp = 3;
+  std::size_t n_gp = 3;
   std::array<std::array<double, 3>, 3> lagrange_coefficients;
   switch (gauss_rule)
   {
@@ -1672,8 +1669,8 @@ void BeamDiscretizationRuntimeVtuWriter::CalcInterpolationPolynomialCoefficients
   // Calculate the coefficients of the polynomial to interpolate the Gauss points.
   polynomial_coefficients.resize(n_gp);
   std::fill(polynomial_coefficients.begin(), polynomial_coefficients.end(), 0.0);
-  for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
-    for (unsigned int p = 0; p < n_gp; p++)
+  for (std::size_t i_gp = 0; i_gp < n_gp; i_gp++)
+    for (std::size_t p = 0; p < n_gp; p++)
       polynomial_coefficients[p] += gauss_point_values[i_gp] * lagrange_coefficients[i_gp][p];
 }
 
@@ -1683,7 +1680,7 @@ double BeamDiscretizationRuntimeVtuWriter::EvaluatePolynomialCoefficients(
     const std::vector<double>& polynomial_coefficients, const double& xi) const
 {
   double interpolated_value = 0.0;
-  for (unsigned int p = 0; p < polynomial_coefficients.size(); p++)
+  for (std::size_t p = 0; p < polynomial_coefficients.size(); p++)
     interpolated_value += polynomial_coefficients[p] * pow(xi, p);
   return interpolated_value;
 }
@@ -1691,7 +1688,7 @@ double BeamDiscretizationRuntimeVtuWriter::EvaluatePolynomialCoefficients(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
-    const StressStrainField stress_strain_field, const std::vector<std::string>& field_names)
+    const StressStrainField stress_strain_field)
 {
   // storage for stress / strain measures at all GPs of current element
   std::vector<std::vector<double>> stress_strain_GPs_current_element(6);
@@ -1701,15 +1698,15 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
 
   // determine number of row BEAM elements for each processor
   // output is completely independent of the number of processors involved
-  unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
-  unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
+  std::size_t num_beam_row_elements = local_row_indices_beam_elements_.size();
+  std::size_t num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
 
   // Set up global vectors
   std::vector<std::vector<double>> stress_strain_vector(6);
-  for (unsigned int i = 0; i < 6; i++) stress_strain_vector[i].reserve(num_vtk_points);
+  for (std::size_t i = 0; i < 6; i++) stress_strain_vector[i].reserve(num_vtk_points);
 
   // loop over myrank's beam elements and compute strain resultants for each visualization point
-  for (unsigned int ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
+  for (std::size_t ibeamele = 0; ibeamele < num_beam_row_elements; ++ibeamele)
   {
     const DRT::Element* ele =
         discretization_->lRowElement(local_row_indices_beam_elements_[ibeamele]);
@@ -1722,7 +1719,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
       dserror("Continuous cross section output only implemented for SR beams.");
 
     // get GP stress / strain values from previous element evaluation call
-    for (unsigned int i = 0; i < 6; i++) stress_strain_GPs_current_element[i].clear();
+    for (std::size_t i = 0; i < 6; i++) stress_strain_GPs_current_element[i].clear();
     {
       switch (stress_strain_field)
       {
@@ -1738,24 +1735,20 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
               stress_strain_GPs_current_element[3], stress_strain_GPs_current_element[4],
               stress_strain_GPs_current_element[5]);
           break;
-        case StressStrainField::spatial_stress:
-          sr_beam->GetSpatialStressResultantsAtAllGPs(stress_strain_GPs_current_element[0],
-              stress_strain_GPs_current_element[1], stress_strain_GPs_current_element[2],
-              stress_strain_GPs_current_element[3], stress_strain_GPs_current_element[4],
-              stress_strain_GPs_current_element[5]);
-          break;
+        default:
+          dserror("Type of stress strain field not yet implemented.");
       }
     }
 
     // Calculate the interpolated coefficients
     DRT::UTILS::GaussRule1D force_int_rule =
         sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_force);
-    for (unsigned int i = 0; i < 3; i++)
+    for (std::size_t i = 0; i < 3; i++)
       CalcInterpolationPolynomialCoefficients(
           force_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
     DRT::UTILS::GaussRule1D moment_int_rule =
         sr_beam->MyGaussRule(DRT::ELEMENTS::Beam3r::res_elastic_moment);
-    for (unsigned int i = 3; i < 6; i++)
+    for (std::size_t i = 3; i < 6; i++)
       CalcInterpolationPolynomialCoefficients(
           moment_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
 
@@ -1763,20 +1756,35 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
     // parameter space xi \in [-1,1] ) and determine its disp state
     double xi = 0.0;
 
-    for (unsigned int ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
+    for (std::size_t ipoint = 0; ipoint < n_subsegments_ + 1; ++ipoint)
     {
       xi = -1.0 + ipoint * 2.0 / n_subsegments_;
 
       // store the information in vectors that can be interpreted by vtu writer and update number
       // of point data written
-      for (unsigned int i = 0; i < 6; i++)
+      for (std::size_t i = 0; i < 6; i++)
         stress_strain_vector[i].push_back(
             EvaluatePolynomialCoefficients(stress_strain_coefficients[i], xi));
     }
   }
 
+  std::vector<std::string> field_names;
+  switch (stress_strain_field)
+  {
+    case StressStrainField::material_strain:
+      field_names = {"axial_strain", "shear_strain_2", "shear_strain_3", "twist", "curvature_2",
+          "curvature_3"};
+      break;
+    case StressStrainField::material_stress:
+      field_names = {"material_axial_force", "material_shear_force_2", "material_shear_force_3",
+          "material_torque", "material_bending_moment_2", "material_bending_moment_3"};
+      break;
+    default:
+      dserror("Type of stress strain field not yet implemented.");
+  }
+
   // finally append the solution vectors to the visualization data of the vtu writer object
-  for (unsigned int i = 0; i < 6; i++)
+  for (std::size_t i = 0; i < 6; i++)
     runtime_vtuwriter_->AppendVisualizationPointDataVector(
         stress_strain_vector[i], 1, field_names[i]);
 }

@@ -266,23 +266,20 @@ class BeamDiscretizationRuntimeVtuWriter
 
  private:
   /**
-   * \brief Type of fields for stress / strain output.
+   * \brief Type of fields for continuous stress / strain output.
    */
   enum class StressStrainField
   {
     material_strain,
     material_stress,
-    spatial_stress
   };
 
   /**
    * \brief Interpolate Gauss point values for stress / strain resultants along the beam, for each
    * visualization point along the beam centerline.
    * @param stress_strain_field (in) Type of stress / strain to append.
-   * @param field_names (in) name of the 6 created fields
    */
-  void AppendContinuousStressStrainResultants(
-      const StressStrainField stress_strain_field, const std::vector<std::string>& field_names);
+  void AppendContinuousStressStrainResultants(const StressStrainField stress_strain_field);
 
  private:
   //! discretization containing beam elements of which geometry and result data shall be visualized
