@@ -73,21 +73,21 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
   {
     switch (functnr)
     {
-      case -1:
+      case MAT::ElchSingleMat::CONSTANT_FUNCTION:
       {
         // constant value: functval=functparams[0];
-        functionname = "'constant value'";
+        functionname = "'constant function'";
         nfunctparams = 1;
         break;
       }
-      case -2:
+      case MAT::ElchSingleMat::LINEAR_FUNCTION:
       {
         // linear function: functval=functparams[0]+functparams[1]*concentration;
         functionname = "'linear function'";
         nfunctparams = 2;
         break;
       }
-      case -3:
+      case MAT::ElchSingleMat::QUADRATIC_FUNCTION:
       {
         // quadratic function:
         // functval=functparams[0]+functparams[1]*concentration+functparams[2]*concentration*concentration;
@@ -95,56 +95,56 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 3;
         break;
       }
-      case -4:
+      case MAT::ElchSingleMat::POWER_FUNCTION:
       {
         // power function: functval=functparams[0]*pow(concentration,functparams[1]);
         functionname = "'power function'";
         nfunctparams = 2;
         break;
       }
-      case -5:
+      case MAT::ElchSingleMat::CONDUCT:
       {
         // function 1 for conductivity;
         functionname = "'function 1 for conductivity'";
         nfunctparams = 4;
         break;
       }
-      case -6:
+      case MAT::ElchSingleMat::MOD_CUBIC_FUNCTION:
       {
         // a0*c + a1*c^1.5 + a2*c^3
         functionname = "'a0*c + a1*c^1.5 + a2*c^3'";
         nfunctparams = 3;
         break;
       }
-      case -7:
+      case MAT::ElchSingleMat::CUBIC_FUNCTION:
       {
         // a0 + a1*c + a2*c^2 + a3*c^3
         functionname = "'a0 + a1*c + a2*c^2 + a3*c^3'";
         nfunctparams = 4;
         break;
       }
-      case -8:
+      case MAT::ElchSingleMat::NYMAN:
       {
         // thermodynamic factor Nyman 2008
         functionname = "'function thermodynamic factor (Nyman 2008)'";
         nfunctparams = 7;
         break;
       }
-      case -9:
+      case MAT::ElchSingleMat::DEBYE_HUECKEL:
       {
         // linear thermodynamic factor including Debye-Hückel theory
         functionname = "'function linear thermodynamic factor (including Debye Hueckel theory)'";
         nfunctparams = 2;
         break;
       }
-      case -10:
+      case MAT::ElchSingleMat::KOHLRAUSCH_SQUAREROOT:
       {
         // function 1 for conductivity
         functionname = "'function 1 for conductivity: own definition'";
         nfunctparams = 6;
         break;
       }
-      case -11:
+      case MAT::ElchSingleMat::GOLDIN:
       {
         // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann,
         // Kee (2012) kappa = a0*c*exp(a1*c^a2)
@@ -154,7 +154,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 3;
         break;
       }
-      case -12:
+      case MAT::ElchSingleMat::STEWART_NEWMAN:
       {
         // diffusion coefficient based on a function defined in
         // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion
@@ -164,7 +164,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 2;
         break;
       }
-      case -13:
+      case MAT::ElchSingleMat::TDF:
       {
         // TDF based on a function defined in
         // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
@@ -176,7 +176,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 3;
         break;
       }
-      case -14:
+      case MAT::ElchSingleMat::ARRHENIUS:
       {
         // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
         // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T: temperature, D0: max
@@ -187,7 +187,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 1;
         break;
       }
-      case -15:
+      case MAT::ElchSingleMat::INVERSE_LINEAR:
       {
         // Temperature dependent factor for electric conductivity (sigma)
         // electric conductivity is the inverse electric resistivity (rho)
@@ -493,27 +493,27 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
   switch (functnr)
   {
     // a0
-    case -1:
+    case CONSTANT_FUNCTION:
       functval = functparams[0];
       break;
 
     // a0 + a1*c
-    case -2:
+    case LINEAR_FUNCTION:
       functval = functparams[0] + functparams[1] * scalar;
       break;
 
     // a0 + a1*c + a2*c^2
-    case -3:
+    case QUADRATIC_FUNCTION:
       functval = functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
       break;
 
     // a0*c^a1
-    case -4:
+    case POWER_FUNCTION:
       functval = functparams[0] * std::pow(scalar, functparams[1]);
       break;
 
     // conductivity
-    case -5:
+    case CONDUCT:
     {
       const double nenner = (1.0 + functparams[2] * scalar * scalar -
                              functparams[3] * scalar * scalar * scalar * scalar);
@@ -524,19 +524,19 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
     }
 
     // a0*c + a1*c^1.5 + a2*c^3
-    case -6:
+    case MOD_CUBIC_FUNCTION:
       functval = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
                  functparams[2] * scalar * scalar * scalar;
       break;
 
     // a0 + a1*c + a2*c^2 + a3*c^3
-    case -7:
+    case CUBIC_FUNCTION:
       functval = functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar +
                  functparams[3] * scalar * scalar * scalar;
       break;
 
     // thermodynamic factor Nyman 2008
-    case -8:
+    case NYMAN:
     {
       const double num =
           functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
@@ -549,12 +549,12 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
 
     // linear thermodynamic factor including Debye-Hückel theory
     // 1 + a1*0.5*c^0.5 + a2*c
-    case -9:
+    case DEBYE_HUECKEL:
       functval = 1.0 + functparams[0] * 0.5 * std::pow(scalar, 0.5) + functparams[1] * scalar;
       break;
 
     // conductivity: own definition which also fulfills the Kohlrausches Square root law
-    case -10:
+    case KOHLRAUSCH_SQUAREROOT:
     {
       const double num = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
                          functparams[2] * scalar * scalar +
@@ -569,7 +569,7 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
 
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) kappa = a0*c*exp(a1*c^a2)
-    case -11:
+    case GOLDIN:
     {
       // safety check
       if (scalar < 1.e-12) dserror("scalar value %lf is zero or negative!", scalar);
@@ -589,12 +589,12 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
     // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in
     // LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16 diff
     // = a0*exp(-a1*c^a2)
-    case -12:
+    case STEWART_NEWMAN:
     {
       functval = functparams[0] * std::exp(functparams[1] * scalar);
       break;
     }
-    case -13:
+    case TDF:
     {
       // TDF based on a function defined in
       // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
@@ -606,7 +606,7 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
                  functparams[2] * scalar;
       break;
     }
-    case -14:
+    case ARRHENIUS:
     {
       // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
       // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T:temperature, D0: max
@@ -616,7 +616,7 @@ double MAT::ElchSingleMat::EvalPreDefinedFunct(
       functval = std::exp(-functparams[0] / (R * scalar));
       break;
     }
-    case -15:
+    case INVERSE_LINEAR:
     {
       // Temperature dependent factor for electric conductivity (sigma)
       // electric conductivity is the inverse electric resistivity (rho)
@@ -648,27 +648,27 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
   switch (functnr)
   {
     // d/dc: a0
-    case -1:
+    case CONSTANT_FUNCTION:
       firstderivfunctval = 0.0;
       break;
 
     // d/dc: a0 + a1*c
-    case -2:
+    case LINEAR_FUNCTION:
       firstderivfunctval = functparams[1];
       break;
 
     // d/dc: a0 + a1*c + a2*c^2
-    case -3:
+    case QUADRATIC_FUNCTION:
       firstderivfunctval = functparams[1] + 2 * functparams[2] * scalar;
       break;
 
     // d/dc: a0 + c^a1
-    case -4:
+    case POWER_FUNCTION:
       firstderivfunctval = functparams[0] * functparams[1] * std::pow(scalar, functparams[1] - 1.0);
       break;
 
     // d/dc: conductivity
-    case -5:
+    case CONDUCT:
     {
       const double nenner = (1.0 + functparams[2] * scalar * scalar -
                              functparams[3] * scalar * scalar * scalar * scalar);
@@ -683,19 +683,19 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
     }
 
     // d/dc: a0*c + a1*c^1.5 + a2*c^3
-    case -6:
+    case MOD_CUBIC_FUNCTION:
       firstderivfunctval = functparams[0] + 1.5 * functparams[1] * std::pow(scalar, 0.5) +
                            3 * functparams[2] * scalar * scalar;
       break;
 
     // d/dc: a0 + a1*c + a2*c^2 + a3*c^3
-    case -7:
+    case CUBIC_FUNCTION:
       firstderivfunctval =
           functparams[1] + 2 * functparams[2] * scalar + 3 * functparams[3] * scalar * scalar;
       break;
 
     // d/dc: thermodynamic factor Nyman 2008
-    case -8:
+    case NYMAN:
     {
       const double num =
           functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
@@ -712,12 +712,12 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
 
     // linear thermodynamic factor including Debye-Hückel theory
     // d/dc: 1 + a1*0.5*c^0.5 + a2*c
-    case -9:
+    case DEBYE_HUECKEL:
       firstderivfunctval = functparams[0] * 0.5 * 0.5 * std::pow(scalar, -0.5) + functparams[1];
       break;
 
     // d/dc: conductivity: own definition which also fulfills the Kohlrausches Square root law
-    case -10:
+    case KOHLRAUSCH_SQUAREROOT:
     {
       const double num = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
                          functparams[2] * scalar * scalar +
@@ -736,7 +736,7 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
 
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) d/dc: kappa = a0*c*exp(a1*c^a2)
-    case -11:
+    case GOLDIN:
     {
       // safety check
       if (scalar < 1.0e-12) dserror("scalar value %lf is zero or negative!", scalar);
@@ -761,12 +761,12 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
     // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in
     // LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16 diff
     // = a0*exp(-a1*c^a2) deriv (diff) = a0*a1*exp(a1*c^a2)
-    case -12:
+    case STEWART_NEWMAN:
     {
       firstderivfunctval = functparams[0] * functparams[1] * std::exp(functparams[1] * scalar);
       break;
     }
-    case -13:
+    case TDF:
     {
       // TDF based on a function defined in
       // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
@@ -779,7 +779,7 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
                            functparams[2];
       break;
     }
-    case -14:
+    case ARRHENIUS:
     {
       // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
       // exp(-Q/(R*T)) Q: activation energy, R: universal gasconstant, T:temperature, D0: max
@@ -789,7 +789,7 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
                            std::pow(scalar, 2.0);
       break;
     }
-    case -15:
+    case INVERSE_LINEAR:
     {
       // Temperature dependent faktor for electric conductivity (sigma)
       // electric conductivity is the inverse  electric resistivity (rho)
