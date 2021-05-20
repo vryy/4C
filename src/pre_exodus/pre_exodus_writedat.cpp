@@ -536,126 +536,61 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   // BACI-Dat eles start with 1, this int is adapted for more than one element section
   int startele = 1;
 
-  // print structure elements
-  if (!structure_elements.empty())
-  {
-    dat << "------------------------------------------------STRUCTURE ELEMENTS" << std::endl;
-    for (const auto& struct_ele : structure_elements)
+  const auto printElementSection = [&](const std::vector<elem_def>& ele_vector,
+                                       const std::string& section_name) {
+    const unsigned padding_length = 66;
+    // we need at least 2 dashes at the beginning to be recognizable to the dat file reader
+    const unsigned min_num_preceding_dashes = 2;
+
+    if (section_name.length() > padding_length - min_num_preceding_dashes)
+      dserror("The section name you chose exceeds padding length");
+
+    std::string padded_section_name(section_name);
+    padded_section_name.insert(
+        padded_section_name.begin(), padding_length - padded_section_name.length(), '-');
+
+    dat << padded_section_name << std::endl;
+
+    for (const auto& ele : ele_vector)
     {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(struct_ele.id);
-      EXODUS::DatEles(eb, struct_ele, startele, dat, elecenterlineinfo, struct_ele.id);
+      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(ele.id);
+      EXODUS::DatEles(eb, ele, startele, dat, elecenterlineinfo, ele.id);
     }
-  }
+  };
+
+  // print structure elements
+  if (!structure_elements.empty()) printElementSection(structure_elements, "STRUCTURE ELEMENTS");
 
   // print fluid elements
-  if (!fluid_elements.empty())
-  {
-    dat << "----------------------------------------------------FLUID ELEMENTS" << std::endl;
-    for (const auto& fluid_ele : fluid_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(fluid_ele.id);
-      EXODUS::DatEles(eb, fluid_ele, startele, dat, elecenterlineinfo, fluid_ele.id);
-    }
-  }
+  if (!fluid_elements.empty()) printElementSection(fluid_elements, "FLUID ELEMENTS");
 
   // print ale elements
-  if (!ale_elements.empty())
-  {
-    dat << "------------------------------------------------------ALE ELEMENTS" << std::endl;
-    for (const auto& ale_ele : ale_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(ale_ele.id);
-      EXODUS::DatEles(eb, ale_ele, startele, dat, elecenterlineinfo, ale_ele.id);
-    }
-  }
+  if (!ale_elements.empty()) printElementSection(ale_elements, "ALE ELEMENTS");
 
   // print Lubrication elements
   if (!lubrication_elements.empty())
-  {
-    dat << "----------------------------------------------LUBRICATION ELEMENTS" << std::endl;
-    for (const auto& lubrication_ele : lubrication_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(lubrication_ele.id);
-      EXODUS::DatEles(eb, lubrication_ele, startele, dat, elecenterlineinfo, lubrication_ele.id);
-    }
-  }
+    printElementSection(lubrication_elements, "LUBRICATION ELEMENTS");
 
   // print transport elements
-  if (!transport_elements.empty())
-  {
-    dat << "------------------------------------------------TRANSPORT ELEMENTS" << std::endl;
-    for (const auto& transp_ele : transport_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(transp_ele.id);
-      EXODUS::DatEles(eb, transp_ele, startele, dat, elecenterlineinfo, transp_ele.id);
-    }
-  }
+  if (!transport_elements.empty()) printElementSection(transport_elements, "TRANSPORT ELEMENTS");
 
   // print transport2 elements
-  if (!transport2_elements.empty())
-  {
-    dat << "-----------------------------------------------TRANSPORT2 ELEMENTS" << std::endl;
-    for (const auto& transp2_ele : transport2_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(transp2_ele.id);
-      EXODUS::DatEles(eb, transp2_ele, startele, dat, elecenterlineinfo, transp2_ele.id);
-    }
-  }
+  if (!transport2_elements.empty()) printElementSection(transport2_elements, "TRANSPORT2 ELEMENTS");
 
   // print thermo elements
-  if (!thermo_elements.empty())
-  {
-    dat << "---------------------------------------------------THERMO ELEMENTS" << std::endl;
-    for (const auto& thermo_ele : thermo_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(thermo_ele.id);
-      EXODUS::DatEles(eb, thermo_ele, startele, dat, elecenterlineinfo, thermo_ele.id);
-    }
-  }
+  if (!thermo_elements.empty()) printElementSection(thermo_elements, "THERMO ELEMENTS");
 
   // print cell elements
-  if (!cell_elements.empty())
-  {
-    dat << "-----------------------------------------------------CELL ELEMENTS" << std::endl;
-    for (const auto& cell_ele : cell_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(cell_ele.id);
-      EXODUS::DatEles(eb, cell_ele, startele, dat, elecenterlineinfo, cell_ele.id);
-    }
-  }
+  if (!cell_elements.empty()) printElementSection(cell_elements, "CELL ELEMENTS");
 
   // print cellscatra elements
-  if (!cellscatra_elements.empty())
-  {
-    dat << "-----------------------------------------------CELLSCATRA ELEMENTS" << std::endl;
-    for (const auto& cellscatra_ele : cellscatra_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(cellscatra_ele.id);
-      EXODUS::DatEles(eb, cellscatra_ele, startele, dat, elecenterlineinfo, cellscatra_ele.id);
-    }
-  }
+  if (!cellscatra_elements.empty()) printElementSection(cellscatra_elements, "CELLSCATRA ELEMENTS");
 
   // print electromagnetic elements
-  if (!elemag_elements.empty())
-  {
-    dat << "------------------------------------------ELECTROMAGNETIC ELEMENTS" << std::endl;
-    for (const auto& elemag_ele : elemag_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(elemag_ele.id);
-      EXODUS::DatEles(eb, elemag_ele, startele, dat, elecenterlineinfo, elemag_ele.id);
-    }
-  }
+  if (!elemag_elements.empty()) printElementSection(elemag_elements, "ELECTROMAGNETIC ELEMENTS");
 
   // print artery elements
-  if (!artery_elements.empty())
-  {
-    dat << "---------------------------------------------------ARTERY ELEMENTS" << std::endl;
-    for (const auto& artery_ele : artery_elements)
-    {
-      Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(artery_ele.id);
-      EXODUS::DatEles(eb, artery_ele, startele, dat, elecenterlineinfo, artery_ele.id);
-    }
-  }
+  if (!artery_elements.empty()) printElementSection(artery_elements, "ARTERY ELEMENTS");
 }
 
 
