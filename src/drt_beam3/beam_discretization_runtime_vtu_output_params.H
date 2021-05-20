@@ -87,11 +87,25 @@ namespace DRT
         return write_material_crosssection_strains_gausspoints_;
       };
 
+      /// whether to write material cross-section strains at the visualization points
+      bool IsWriteMaterialStrainsContinuous() const
+      {
+        CheckInitSetup();
+        return write_material_crosssection_strains_continuous_;
+      };
+
       /// whether to write material cross-section stresses at the Gauss points
       bool IsWriteMaterialStressesGaussPoints() const
       {
         CheckInitSetup();
         return write_material_crosssection_stresses_gausspoints_;
+      };
+
+      /// whether to write material cross-section stresses at the visualization points
+      bool IsWriteMaterialStressContinuous() const
+      {
+        CheckInitSetup();
+        return write_material_crosssection_strains_continuous_;
       };
 
       /// whether to write material cross-section stresses at the Gauss points
@@ -185,8 +199,14 @@ namespace DRT
       /// whether to write material cross-section strains at the Gauss points
       bool write_material_crosssection_strains_gausspoints_;
 
+      /// whether to write material cross-section strains at the visualization points
+      bool write_material_crosssection_strains_continuous_;
+
       /// whether to write material cross-section stresses at the Gauss points
       bool write_material_crosssection_stresses_gausspoints_;
+
+      /// whether to write material cross-section stresses at the visualization points
+      bool write_material_crosssection_stresses_continuous_;
 
       /// whether to write spatial cross-section stresses at the Gauss points
       bool write_spatial_crosssection_stresses_gausspoints_;

@@ -1070,9 +1070,17 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
   if (beam_vtu_output_params.IsWriteMaterialStrainsGaussPoints())
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrainResultants();
 
+  // append material cross-section strain resultants if desired
+  if (beam_vtu_output_params.IsWriteMaterialStrainsContinuous())
+    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStrainResultantsContinuous();
+
   // append material cross-section stress resultants if desired
   if (beam_vtu_output_params.IsWriteMaterialStressesGaussPoints())
     beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStressResultants();
+
+  // append material cross-section stress resultants if desired
+  if (beam_vtu_output_params.IsWriteMaterialStressContinuous())
+    beam_vtu_writer_ptr_->AppendGaussPointMaterialCrossSectionStressResultantsContinuous();
 
   // append filament id and type if desired
   if (beam_vtu_output_params.IsWriteElementFilamentCondition())

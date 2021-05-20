@@ -6,7 +6,7 @@
   <UnstructuredGrid>
     <FieldData>
       <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
-1
+1.000000000000000e+00 
       </DataArray>
     </FieldData>
 
@@ -29,25 +29,61 @@
       </Cells>
 
   <PointData>
+        <DataArray type="Float64" Name="axial_strain" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="curvature_2" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="curvature_3" format="ascii">
+        </DataArray>
         <DataArray type="Float64" Name="displacement" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_axial_force" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_2" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_bending_moment_3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_2" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_torque" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_2" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="twist" format="ascii">
         </DataArray>
   </PointData>
   <CellData>
-        <DataArray type="Float64" Name="axial_strain_GPs" format="ascii">
+        <DataArray type="Float64" Name="axial_strain_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="cross_section_radius" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="curvature_2_GPs" format="ascii">
+        <DataArray type="Float64" Name="curvature_2_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="curvature_3_GPs" format="ascii">
+        <DataArray type="Float64" Name="curvature_3_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
         <DataArray type="Float64" Name="element_owner" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="shear_strain_2_GPs" format="ascii">
+        <DataArray type="Float64" Name="material_axial_force_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="shear_strain_3_GPs" format="ascii">
+        <DataArray type="Float64" Name="material_bending_moment_2_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
-        <DataArray type="Float64" Name="twist_GPs" format="ascii">
+        <DataArray type="Float64" Name="material_bending_moment_3_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_2_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_shear_force_3_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="material_torque_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_2_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="shear_strain_3_GPs" NumberOfComponents="3" format="ascii">
+        </DataArray>
+        <DataArray type="Float64" Name="twist_GPs" NumberOfComponents="3" format="ascii">
         </DataArray>
       </CellData>
 
