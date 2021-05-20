@@ -27,7 +27,7 @@
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration
-class Epetra_IntMultiVector;
+class Epetra_MultiVector;
 namespace DRT
 {
   class Element;
@@ -71,11 +71,11 @@ namespace POROMULTIPHASESCATRA
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) = 0;
+    virtual void PreEvaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) = 0;
+    virtual void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
 
     //! evaluate this pair (return integral of diameter of the segment)
     virtual double Evaluate(LINALG::SerialDenseVector* forcevec1,
@@ -165,11 +165,11 @@ namespace POROMULTIPHASESCATRA
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) override;
+    void PreEvaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector) override;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector) override;
+    void DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_MultiVector> gp_vector) override;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
@@ -240,7 +240,7 @@ namespace POROMULTIPHASESCATRA
         const double& timefacrhs_art, const double& timefacrhs_cont);
 
     //! pre-evaluate for lateral surface coupling
-    void PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_IntMultiVector> gp_vector);
+    void PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_MultiVector> gp_vector);
 
     //! pre-evaluate for centerline coupling
     void PreEvaluateCenterlineCoupling();

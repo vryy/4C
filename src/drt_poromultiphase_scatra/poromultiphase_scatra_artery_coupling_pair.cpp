@@ -29,7 +29,7 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_element_integration_select.H"
 
-#include <Epetra_IntMultiVector.h>
+#include <Epetra_MultiVector.h>
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 05/18 |
@@ -432,7 +432,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::PreEvaluate(Teuchos::RCP<Epetra_IntMultiVector> gp_vector)
+    distypeCont>::PreEvaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
   if (!isinit_) dserror("MeshTying Pair has not yet been initialized");
 
@@ -451,7 +451,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_IntMultiVector> gp_vector)
+    distypeCont>::PreEvaluateLateralSurfaceCoupling(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
   const int pid = DRT::Problem::Instance()->GetDis("artery")->Comm().MyPID();
   const int mylid = element1_->LID();
@@ -537,12 +537,12 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
         eta_[gpid] = eta;
         xi_[gpid] = xi;
         // projection is valid and GP is so far unclaimed by other pair
-        if (projection_valid && ((*gp_vector)[gpid])[mylid] < 1)
+        if (projection_valid && ((*gp_vector)[gpid])[mylid] < 0.5)
         {
           isactive_ = true;
           // include jacobian
           wgp_[gpid] = gaussPointsperPatch.qwgt[i_gp] * patch_size / 4.0;
-          gp_vector->SumIntoMyValue(mylid, gpid, 1);
+          gp_vector->SumIntoMyValue(mylid, gpid, 1.0);
         }
         else
           wgp_[gpid] = 0.0;
@@ -640,7 +640,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt,
-    distypeCont>::DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_IntMultiVector> gp_vector)
+    distypeCont>::DeleteUnnecessaryGPs(Teuchos::RCP<Epetra_MultiVector> gp_vector)
 {
   const int mylid = element1_->LID();
   n_gp_ = 0;
