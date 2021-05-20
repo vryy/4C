@@ -76,8 +76,6 @@ void EXODUS::WriteDatIntro(
   dat << "//NODES       " << mymesh.GetNumNodes() << std::endl;
   // parameter for the number of spatial dimensions
   dat << "DIM           " << mymesh.GetBACIDim() << std::endl;
-
-  return;
 }
 
 
@@ -105,12 +103,12 @@ void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
   // delete very first line with comment "//"
   if (headstring.find("//") == 0)
     headstring.erase(
-        headstring.find("//"), headstring.find("\n") + 1);  //-headstd::string.find("//"));
+        headstring.find("//"), headstring.find('\n') + 1);  //-headstd::string.find("//"));
 
   size_t comment = headstring.find("\n//");
   while (comment != std::string::npos)
   {
-    headstring.erase(comment + 1, headstring.find("\n", comment + 1) - comment);
+    headstring.erase(comment + 1, headstring.find('\n', comment + 1) - comment);
     comment = headstring.find("\n//", comment);
   }
 
@@ -119,61 +117,63 @@ void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
 
   // now put everything to the input file
   dat << headstring << std::endl;
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::RemoveDatSection(const std::string secname, std::string& headstring)
+void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstring)
 {
   const size_t secpos = headstring.find(secname);
   if (secpos != std::string::npos)
   {
     // where does this section line actually start?
-    const size_t endoflastline = headstring.substr(0, secpos).rfind("\n");
+    const size_t endoflastline = headstring.substr(0, secpos).rfind('\n');
     // want to keep the newline character of line before
     const size_t sectionbegin = endoflastline + 1;
     // now we remove the whole section
     const size_t sectionend = headstring.find("---", secpos);
     headstring.erase(sectionbegin, sectionend - sectionbegin);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::WriteDatDesign(const std::vector<EXODUS::cond_def>& condefs, std::ostream& dat)
 {
-  std::vector<EXODUS::cond_def>::const_iterator it;
   int ndp = 0;
   int ndl = 0;
   int nds = 0;
   int ndv = 0;
 
-  for (it = condefs.begin(); it != condefs.end(); ++it)
+  for (const auto& condition_definition : condefs)
   {
-    EXODUS::cond_def acte = *it;
-    if (acte.gtype == DRT::Condition::Volume)
-      ndv++;
-    else if (acte.gtype == DRT::Condition::Surface)
-      nds++;
-    else if (acte.gtype == DRT::Condition::Line)
-      ndl++;
-    else if (acte.gtype == DRT::Condition::Point)
-      ndp++;
-    else if (acte.gtype == DRT::Condition::NoGeom)
-      ;
-    else
-      dserror("Cannot identify Condition GeometryType");
+    switch (condition_definition.gtype)
+    {
+      case DRT::Condition::Volume:
+        ++ndv;
+        break;
+      case DRT::Condition::Surface:
+        ++nds;
+        break;
+      case DRT::Condition::Line:
+        ++ndl;
+        break;
+      case DRT::Condition::Point:
+        ++ndp;
+        break;
+      case DRT::Condition::NoGeom:
+        // do nothing
+        break;
+      default:
+        dserror("Cannot identify Condition GeometryType");
+        break;
+    }
   }
   dat << "------------------------------------------------DESIGN DESCRIPTION" << std::endl;
   dat << "NDPOINT " << ndp << std::endl;
   dat << "NDLINE  " << ndl << std::endl;
   dat << "NDSURF  " << nds << std::endl;
   dat << "NDVOL   " << ndv << std::endl;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -188,14 +188,14 @@ void EXODUS::WriteDatConditions(
   std::map<std::string, std::vector<int>> count_cond;
   std::map<std::string, std::vector<int>>::const_iterator count;
   std::vector<int>::const_iterator i_c;
-  for (unsigned int i_cond = 0; i_cond < condefs.size(); ++i_cond)
+  for (int i_cond = 0; i_cond < static_cast<int>(condefs.size()); ++i_cond)
     (count_cond[condefs.at(i_cond).sec]).push_back(i_cond);
 
   // loop all valid conditions that BACI knows
-  for (unsigned int i = 0; i < (*condlist).size(); ++i)
+  for (auto& condition : *condlist)
   {
     size_t linelength = 66;
-    std::string sectionname = (*condlist)[i]->SectionName();
+    std::string sectionname = condition->SectionName();
 
     // ignore conditions occurring zero times
     count = count_cond.find(sectionname);
@@ -204,9 +204,8 @@ void EXODUS::WriteDatConditions(
     // only write conditions provided by user
     std::string dash(linelength - sectionname.size(), '-');
     dat << dash << sectionname << std::endl;
-    DRT::Condition::GeometryType gtype = (*condlist)[i]->GeometryType();
     std::string geo;
-    switch (gtype)
+    switch (condition->GeometryType())
     {
       case DRT::Condition::Point:
         geo = "DPOINT ";
@@ -258,17 +257,13 @@ void EXODUS::WriteDatConditions(
         dat << "// " << pname << std::endl;
 
       // write the condition
-      if (actcon.desc != "")
-      {
-        dat << "E " << actcon.e_id << " - " << actcon.desc << std::endl;
-      }
-      else if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me == EXODUS::bcns))
+      if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me == EXODUS::bcns))
       {
         // special case for locsys conditions: calculate normal
-        std::vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id, mymesh);
+        std::vector<double> normal_tangent = EXODUS::CalcNormalSurfLocsys(actcon.id, mymesh);
         dat << "E " << actcon.e_id << " - ";
-        for (unsigned int i = 0; i < normtang.size(); ++i)
-          dat << std::setprecision(10) << std::fixed << normtang[i] << " ";
+        for (double normtang : normal_tangent)
+          dat << std::setprecision(10) << std::fixed << normtang << " ";
         dat << std::endl;
       }
       else
@@ -285,8 +280,6 @@ void EXODUS::WriteDatConditions(
 
     dserror("There are invalid condition names in your bc file (see list above)");
   }
-
-  return;
 }
 
 
@@ -301,7 +294,7 @@ std::vector<double> EXODUS::CalcNormalSurfLocsys(const int ns_id, const EXODUS::
   std::set<int>::iterator it;
 
   // compute normal
-  std::set<int>::iterator surfit = nodes_from_nodeset.begin();
+  auto surfit = nodes_from_nodeset.begin();
   int origin = *surfit;  // get first set node
   ++surfit;
   int head1 = *surfit;  // get second set node
@@ -361,76 +354,71 @@ void EXODUS::WriteDatDesignTopology(
   std::map<int, EXODUS::cond_def> dsurfs;
   std::map<int, EXODUS::cond_def> dvols;
 
-  std::map<int, EXODUS::cond_def>::const_iterator it;
-  std::vector<EXODUS::cond_def>::const_iterator i;
-  for (i = condefs.begin(); i != condefs.end(); ++i)
+  for (const auto& conditiondefinition : condefs)
   {
-    EXODUS::cond_def acte = *i;
-    if (acte.gtype == DRT::Condition::Point)
-      dpoints.insert(std::pair<int, EXODUS::cond_def>(acte.e_id, acte));
-    else if (acte.gtype == DRT::Condition::Line)
-      dlines.insert(std::pair<int, EXODUS::cond_def>(acte.e_id, acte));
-    else if (acte.gtype == DRT::Condition::Surface)
-      dsurfs.insert(std::pair<int, EXODUS::cond_def>(acte.e_id, acte));
-    else if (acte.gtype == DRT::Condition::Volume)
-      dvols.insert(std::pair<int, EXODUS::cond_def>(acte.e_id, acte));
-    else if (acte.gtype == DRT::Condition::NoGeom)
-      ;
-    else
-      dserror("Cannot identify Condition GeometryType");
+    switch (conditiondefinition.gtype)
+    {
+      case DRT::Condition::Point:
+        dpoints.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
+        break;
+      case DRT::Condition::Line:
+        dlines.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
+        break;
+      case DRT::Condition::Surface:
+        dsurfs.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
+        break;
+      case DRT::Condition::Volume:
+        dvols.insert(std::make_pair(conditiondefinition.e_id, conditiondefinition));
+        break;
+      case DRT::Condition::NoGeom:
+        // do nothing
+        break;
+      default:
+        dserror("Cannot identify Condition GeometryType");
+        break;
+    }
   }
 
   dat << "-----------------------------------------------DNODE-NODE TOPOLOGY" << std::endl;
-  for (it = dpoints.begin(); it != dpoints.end(); ++it)
+  for (const auto& dpoint : dpoints)
   {
-    EXODUS::cond_def acte = it->second;
-    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte, mymesh);
-    std::set<int>::const_iterator i;
-    for (i = nodes.begin(); i != nodes.end(); ++i)
+    const auto nodes = EXODUS::GetNsFromBCEntity(dpoint.second, mymesh);
+    for (auto node : nodes)
     {
-      dat << "NODE    " << *i << " "
-          << "DNODE " << acte.e_id << std::endl;
-      // dat << EXODUS::CondGeomTypeToString(acte) << " " << acte.e_id << std::endl;
+      dat << "NODE    " << node << " "
+          << "DNODE " << dpoint.second.e_id << std::endl;
     }
   }
   dat << "-----------------------------------------------DLINE-NODE TOPOLOGY" << std::endl;
-  for (it = dlines.begin(); it != dlines.end(); ++it)
+  for (const auto& dline : dlines)
   {
-    EXODUS::cond_def acte = it->second;
-    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte, mymesh);
-    std::set<int>::const_iterator i;
-    for (i = nodes.begin(); i != nodes.end(); ++i)
+    const auto nodes = EXODUS::GetNsFromBCEntity(dline.second, mymesh);
+    for (auto node : nodes)
     {
-      dat << "NODE    " << *i << " "
-          << "DLINE " << acte.e_id << std::endl;
+      dat << "NODE    " << node << " "
+          << "DLINE " << dline.second.e_id << std::endl;
     }
   }
   dat << "-----------------------------------------------DSURF-NODE TOPOLOGY" << std::endl;
-  for (it = dsurfs.begin(); it != dsurfs.end(); ++it)
+  for (const auto& dsurf : dsurfs)
   {
-    EXODUS::cond_def acte = it->second;
-    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte, mymesh);
-    std::set<int>::const_iterator i;
-    for (i = nodes.begin(); i != nodes.end(); ++i)
+    const auto nodes = EXODUS::GetNsFromBCEntity(dsurf.second, mymesh);
+    for (auto node : nodes)
     {
-      dat << "NODE    " << *i << " "
-          << "DSURFACE " << acte.e_id << std::endl;
+      dat << "NODE    " << node << " "
+          << "DSURFACE " << dsurf.second.e_id << std::endl;
     }
   }
   dat << "------------------------------------------------DVOL-NODE TOPOLOGY" << std::endl;
-  for (it = dvols.begin(); it != dvols.end(); ++it)
+  for (const auto& dvol : dvols)
   {
-    EXODUS::cond_def acte = it->second;
-    const std::set<int> nodes = EXODUS::GetNsFromBCEntity(acte, mymesh);
-    std::set<int>::const_iterator i;
-    for (i = nodes.begin(); i != nodes.end(); ++i)
+    const auto nodes = EXODUS::GetNsFromBCEntity(dvol.second, mymesh);
+    for (auto node : nodes)
     {
-      dat << "NODE    " << *i << " "
-          << "DVOL " << acte.e_id << std::endl;
+      dat << "NODE    " << node << " "
+          << "DVOL " << dvol.second.e_id << std::endl;
     }
   }
-
-  return;
 }
 
 
@@ -448,12 +436,10 @@ const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const E
     std::set<int> allnodes;
     Teuchos::RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
     Teuchos::RCP<const std::map<int, std::vector<int>>> eles = eb->GetEleConn();
-    std::map<int, std::vector<int>>::const_iterator i_ele;
-    for (i_ele = eles->begin(); i_ele != eles->end(); ++i_ele)
+    for (const auto& ele : *eles)
     {
-      const std::vector<int> nodes = i_ele->second;
-      std::vector<int>::const_iterator i;
-      for (i = nodes.begin(); i != nodes.end(); ++i) allnodes.insert(*i);
+      const std::vector<int> nodes = ele.second;
+      for (auto node : nodes) allnodes.insert(node);
     }
     return allnodes;
   }
@@ -462,12 +448,10 @@ const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const E
     std::set<int> allnodes;
     EXODUS::SideSet ss = m.GetSideSet(e.id);
     const std::map<int, std::vector<int>> eles = ss.GetSideSet();
-    std::map<int, std::vector<int>>::const_iterator i_ele;
-    for (i_ele = eles.begin(); i_ele != eles.end(); ++i_ele)
+    for (const auto& ele : eles)
     {
-      const std::vector<int> nodes = i_ele->second;
-      std::vector<int>::const_iterator i;
-      for (i = nodes.begin(); i != nodes.end(); ++i) allnodes.insert(*i);
+      const std::vector<int> nodes = ele.second;
+      for (auto node : nodes) allnodes.insert(node);
     }
     return allnodes;
   }
@@ -485,16 +469,14 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat)
   dat << "-------------------------------------------------------NODE COORDS" << std::endl;
   dat.precision(16);
   Teuchos::RCP<std::map<int, std::vector<double>>> nodes = mymesh.GetNodes();
-  std::map<int, std::vector<double>>::const_iterator i_node;
-  for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
+
+  for (const auto& node : *nodes)
   {
-    std::vector<double> coords = i_node->second;
-    dat << "NODE " << std::setw(9) << i_node->first << " COORD";
-    for (unsigned int i = 0; i < coords.size(); ++i)
-      dat << " " << std::setw(23) << std::scientific << coords[i];
+    std::vector<double> coords = node.second;
+    dat << "NODE " << std::setw(9) << node.first << " COORD";
+    for (double coord : coords) dat << " " << std::setw(23) << std::scientific << coord;
     dat << std::endl;
   }
-  return;
 }
 
 
@@ -521,29 +503,29 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
   for (i_et = eledefs.begin(); i_et != eledefs.end(); ++i_et)
   {
     EXODUS::elem_def acte = *i_et;
-    if (acte.sec.compare("STRUCTURE") == 0)
+    if (acte.sec == "STRUCTURE")
       strus.push_back(acte);
-    else if (acte.sec.compare("FLUID") == 0)
+    else if (acte.sec == "FLUID")
       fluids.push_back(acte);
-    else if (acte.sec.compare("ALE") == 0)
+    else if (acte.sec == "ALE")
       ales.push_back(acte);
-    else if (acte.sec.compare("LUBRICATION") == 0)
+    else if (acte.sec == "LUBRICATION")
       lubrication.push_back(acte);
-    else if (acte.sec.compare("TRANSPORT") == 0)
+    else if (acte.sec == "TRANSPORT")
       transport.push_back(acte);
-    else if (acte.sec.compare("TRANSPORT2") == 0)
+    else if (acte.sec == "TRANSPORT2")
       transport2.push_back(acte);
-    else if (acte.sec.compare("THERMO") == 0)
+    else if (acte.sec == "THERMO")
       thermo.push_back(acte);
-    else if (acte.sec.compare("CELL") == 0)
+    else if (acte.sec == "CELL")
       cell.push_back(acte);
-    else if (acte.sec.compare("CELLSCATRA") == 0)
+    else if (acte.sec == "CELLSCATRA")
       cellscatra.push_back(acte);
-    else if (acte.sec.compare("ELECTROMAGNETIC") == 0)
+    else if (acte.sec == "ELECTROMAGNETIC")
       elemag.push_back(acte);
-    else if (acte.sec.compare("ARTERY") == 0)
+    else if (acte.sec == "ARTERY")
       artery.push_back(acte);
-    else if (acte.sec.compare("") == 0)
+    else if (acte.sec == "")
       ;
     else
     {
@@ -654,8 +636,6 @@ void EXODUS::WriteDatEles(const std::vector<elem_def>& eledefs, const EXODUS::Me
     Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb, acte, startele, dat, elecenterlineinfo, acte.id);
   }
-
-  return;
 }
 
 
@@ -665,18 +645,17 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     int& startele, std::ostream& datfile,
     const std::map<int, std::map<int, std::vector<std::vector<double>>>>& elescli, const int eb_id)
 {
-  Teuchos::RCP<const std::map<int, std::vector<int>>> eles = eb->GetEleConn();
-  std::map<int, std::vector<int>>::const_iterator i_ele;
-  for (i_ele = eles->begin(); i_ele != eles->end(); ++i_ele)
+  auto eles = eb->GetEleConn();
+  for (const auto& ele : *eles)
   {
     std::stringstream dat;  // first build up the std::string for actual element line
-    const std::vector<int> nodes = i_ele->second;
+    const std::vector<int> nodes = ele.second;
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLIDH8"
     dat << " " << DistypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
-    for (i_n = nodes.begin(); i_n != nodes.end(); ++i_n) dat << *i_n << " ";
+    for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"
     if (elescli.size() != 0)
     {
@@ -685,7 +664,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
       {
         // write local cosy from centerline to each element
         std::vector<std::vector<double>> ecli =
-            (elescli.find(eb_id)->second).find(i_ele->first)->second;
+            (elescli.find(eb_id)->second).find(ele.first)->second;
         dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1]
             << " " << ecli[0][2];
         dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
@@ -697,5 +676,4 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     startele++;
     datfile << dat.str();  // only one access to the outfile (saves system time)
   }
-  return;
 }

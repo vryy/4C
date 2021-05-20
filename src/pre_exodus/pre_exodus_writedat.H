@@ -29,7 +29,7 @@ namespace EXODUS
   void WriteDatHead(const std::string& headfile, std::ostream& dat);
 
   //! remove a specific input file section
-  void RemoveDatSection(const std::string secname, std::string& headstring);
+  void RemoveDatSection(const std::string& secname, std::string& headstring);
 
   //! design description
   void WriteDatDesign(const std::vector<EXODUS::cond_def>& condefs, std::ostream& dat);
@@ -68,19 +68,14 @@ namespace EXODUS
     {
       case DRT::Condition::Volume:
         return "DVOL  ";
-        break;
       case DRT::Condition::Surface:
         return "DSURF ";
-        break;
       case DRT::Condition::Line:
         return "DLINE ";
-        break;
       case DRT::Condition::Point:
         return "DPOINT";
-        break;
       case DRT::Condition::NoGeom:
         return "";
-        break;
       default:
         dserror("Unknown Condition GeometryType");
     }
