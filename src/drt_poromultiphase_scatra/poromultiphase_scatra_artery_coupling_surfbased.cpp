@@ -14,7 +14,7 @@
 
 #include "poromultiphase_scatra_artery_coupling_pair.H"
 
-#include <Epetra_IntMultiVector.h>
+#include <Epetra_MultiVector.h>
 
 /*----------------------------------------------------------------------*
  | constructor                                         kremheller 05/18 |
@@ -57,8 +57,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
   const int numgp_desired = numgp_per_artele * numartele;
 
   // this vector keeps track of evaluation of GPs
-  Teuchos::RCP<Epetra_IntMultiVector> gp_vector =
-      Teuchos::rcp(new Epetra_IntMultiVector(*arterydis_->ElementColMap(), numgp_per_artele));
+  Teuchos::RCP<Epetra_MultiVector> gp_vector =
+      Teuchos::rcp(new Epetra_MultiVector(*arterydis_->ElementColMap(), numgp_per_artele));
 
   // pre-evaluate
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->PreEvaluate(gp_vector);
@@ -92,7 +92,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
       if (mylid < 0) std::fill(mygpvec, mygpvec + numgp_per_artele, 0);
       // else get the GP vector
       else
-        for (int igp = 0; igp < numgp_per_artele; igp++) mygpvec[igp] = ((*gp_vector)[igp])[mylid];
+        for (int igp = 0; igp < numgp_per_artele; igp++)
+          mygpvec[igp] = static_cast<int>(((*gp_vector)[igp])[mylid]);
 
       // communicate to all via summation
       Comm().SumAll(mygpvec, sumgpvec, numgp_per_artele);
@@ -121,7 +122,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplSurfBased::PreEvaluateCou
       {
         for (int igp = 0; igp < numgp_per_artele; igp++)
         {
-          int err = gp_vector->ReplaceMyValue(mylid, igp, sumgpvec[igp]);
+          int err = gp_vector->ReplaceMyValue(mylid, igp, static_cast<double>(sumgpvec[igp]));
           if (err != 0) dserror("ReplaceMyValue failed with error code %d!", err);
         }
       }

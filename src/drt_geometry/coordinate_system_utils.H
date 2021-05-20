@@ -24,7 +24,7 @@ namespace GEO
   void BuildOrthonormalBasisFromUnitVector(const LINALG::Matrix<3, 1>& unitvec,
       LINALG::Matrix<3, 1>& basisvec_1, LINALG::Matrix<3, 1>& basisvec_2)
   {
-    if (fabs(unitvec.Norm2() - 1.0) > 1.0e-14) dserror("given vector not normalized!");
+    if (std::abs(unitvec.Norm2() - 1.0) > 1.0e-14) dserror("given vector not normalized!");
 
     if ((std::abs(unitvec(0)) <= std::abs(unitvec(1))) and
         (std::abs(unitvec(0)) <= std::abs(unitvec(2))))
