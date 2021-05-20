@@ -29,6 +29,8 @@ namespace DRT
       virtual void Done() = 0;
 
      protected:
+      using my = ScaTraEleCalc<distype>;
+
       //! number of element nodes
       static const int nen_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
@@ -38,9 +40,6 @@ namespace DRT
       //! protected constructor for singletons
       ScaTraEleSTIThermo(const int& numscal  //!< number of transported scalars
       );
-
-      //! destructor
-      virtual ~ScaTraEleSTIThermo() { return; };
 
       //! extract quantities for element evaluation
       virtual void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
@@ -87,6 +86,26 @@ namespace DRT
           const LINALG::Matrix<nsd_, nen_>& derxy   //!< spatial derivatives of shape functions
       );
 
+      //! provide element matrix with linearization of diffusion coefficient with respect to
+      //! discrete temperature
+      //!
+      //! \param emat           element matrix
+      //! \param numdofpernode  number of dof per node
+      //! \param timefacfac     time integration factor times domain integration factor
+      //! \param invF  1/F      with F being the faraday constant
+      //! \param gradconc       spatial derivative of concentration
+      //! \param gradpot        spatial derivative of electric potential
+      //! \param tempderivisodiffcoef  derivative of isotropic diffusion coefficient wrt temperature
+      //! \param tempderivcond         derivative of electric conductivity wrt temperature
+      //! \param funct     shape functions
+      //! \param derxy     spatial derivatives of shape functions
+      //! \param scalefac  scaling factor for pot. contributions
+      void CalcMatDiffThermoOD(Epetra_SerialDenseMatrix& emat, const int& numdofpernode,
+          const double& timefacfac, const double& invF, const LINALG::Matrix<my::nsd_, 1>& gradconc,
+          const LINALG::Matrix<my::nsd_, 1>& gradpot, const double& tempderivisodiffcoef,
+          const double& tempderivcond, const LINALG::Matrix<nen_, 1>& funct,
+          const LINALG::Matrix<nsd_, nen_>& derxy, const double& scalefac);
+
       //! evaluate Soret material
       void MatSoret(const Teuchos::RCP<const MAT::Material> material  //!< Soret material
       );
@@ -103,8 +122,6 @@ namespace DRT
 
         // compute gradient of test function times gradient of shape function
         for (int idim = 0; idim < nsd_; ++idim) result += derxy(idim, vi) * derxy(idim, ui);
-
-        return;
       };
 
       //! compute gradient of test function times given gradient
@@ -119,8 +136,6 @@ namespace DRT
 
         // compute gradient of test function times given gradient
         for (int idim = 0; idim < nsd_; ++idim) result += derxy(idim, vi) * gradient(idim);
-
-        return;
       };
 
       //! local nodal values of temperature
@@ -142,20 +157,13 @@ namespace DRT
             ScaTraEleDiffManager(numscal),
 
             // initialize internal member variable
-            soret_(0.)
-      {
-        return;
-      };
-
-      //! destructor
-      virtual ~ScaTraEleDiffManagerSTIThermo() { return; };
+            soret_(0.){};
 
       //! set Soret coefficient
       void SetSoret(const double& soret  //!< Soret coefficient
       )
       {
         soret_ = soret;
-        return;
       };
 
       //! get Soret coefficient
@@ -172,10 +180,7 @@ namespace DRT
     {
      public:
       //! constructor
-      ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true) { return; };
-
-      //! destructor
-      virtual ~ScaTraEleInternalVariableManagerSTIThermo() { return; };
+      ScaTraEleInternalVariableManagerSTIThermo() : temp_(0.), gradtemp_(true){};
 
       //! set internal variables for element evaluation
       void SetInternalVariablesSTIThermo(const LINALG::Matrix<NEN, 1>& funct,  //!< shape functions
@@ -185,10 +190,8 @@ namespace DRT
       )
       {
         // set local values of thermo variables at time t_(n+1) or t_(n+alpha_F)
-        temp_ = funct.Dot(etempnp);          // temperature
-        gradtemp_.Multiply(derxy, etempnp);  // gradient of temperature
-
-        return;
+        temp_ = funct.Dot(etempnp);  // temperature
+        gradtemp_.Multiply(derxy, etempnp);
       };
 
       //! return temperature

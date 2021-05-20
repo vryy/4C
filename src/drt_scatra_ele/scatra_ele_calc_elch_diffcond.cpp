@@ -432,7 +432,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondOhm(
         //
         emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + iscal) +=
             timefacfac * DiffManager()->GetPhasePoroTort(0) * DiffManager()->GetTransNum(k) *
-            invfval * DiffManager()->GetDerivCond(iscal) * my::funct_(ui) * laplawfrhs_gradpot;
+            invfval * DiffManager()->GetConcDerivCond(iscal) * my::funct_(ui) * laplawfrhs_gradpot;
 
         // linearization of the transference number in the conduction term depending on the
         // potential
@@ -504,7 +504,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCondConc
           timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffcval *
           DiffManager()->GetTransNum(k) * DiffManager()->GetThermFac() *
           (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv[k] *
-          laplawfrhs_gradc * DiffManager()->GetDerivCond(k) * my::funct_(ui);
+          laplawfrhs_gradc * DiffManager()->GetConcDerivCond(k) * my::funct_(ui);
 
       // Linearization wrt transference number 1
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
@@ -665,7 +665,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatPotEquDi
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
             timefacfac * DiffManager()->GetPhasePoroTort(0) * rtffc * DiffManager()->GetThermFac() *
             (newman_const_a + (newman_const_b * DiffManager()->GetTransNum(k))) * conintinv *
-            laplawfrhs_gradphi * DiffManager()->GetDerivCond(k) * my::funct_(ui);
+            laplawfrhs_gradphi * DiffManager()->GetConcDerivCond(k) * my::funct_(ui);
 
         // Linearization wrt transference number
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + k) +=
@@ -792,7 +792,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquOh
         {
           emat(fvi, ui * my::numdofpernode_ + k) +=
               timefacfac * invf * DiffManager()->GetPhasePoroTort(0) * my::funct_(vi) *
-              DiffManager()->GetDerivCond(k) * my::funct_(ui) * gradpot(idim);
+              DiffManager()->GetConcDerivCond(k) * my::funct_(ui) * gradpot(idim);
         }
       }
     }
@@ -861,7 +861,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcMatCurEquCo
               }
               emat(vi * my::numdofpernode_ + (my::numscal_ + 1) + idim,
                   ui * my::numdofpernode_ + k) += timefacfac * DiffManager()->GetPhasePoroTort(0) *
-                                                  DiffManager()->GetDerivCond(k) * rtf * term_vi;
+                                                  DiffManager()->GetConcDerivCond(k) * rtf *
+                                                  term_vi;
 
               // linearization wrt transference number
               for (int iscal = 0; iscal < my::numscal_; ++iscal)

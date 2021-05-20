@@ -416,6 +416,57 @@ void SSTI::AssembleStrategyBase::AssembleXXXStructureMeshtying(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoDomain(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain)
+{
+  auto systemmatrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix);
+  auto scatrathermodomain_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatrathermodomain);
+
+  // assemble blocks of scalar transport-thermo matrix into global system matrix
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  {
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionThermo()->size()); ++jblock)
+    {
+      auto scatrathermodomain_subblock = scatrathermodomain_block->Matrix(iblock, jblock);
+      auto systemmatrix_subblock = systemmatrix_block->Matrix(
+          BlockPositionScaTra()->at(iblock), BlockPositionThermo()->at(jblock));
+
+      systemmatrix_subblock.Add(scatrathermodomain_subblock, false, 1.0, 1.0);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoDomain(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain)
+{
+  auto systemmatrix_subblock =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(systemmatrix)
+          ->Matrix(BlockPositionScaTra()->at(0), BlockPositionThermo()->at(0));
+  auto scatrathermodomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatrathermodomain);
+
+  systemmatrix_subblock.Add(*scatrathermodomain_sparse, false, 1.0, 1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSTI::AssembleStrategySparse::AssembleScatraThermoDomain(
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain)
+{
+  auto systemmatrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(systemmatrix);
+  auto scatrathermodomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatrathermodomain);
+
+  // add scalar transport-thermo matrix into global system matrix
+  systemmatrix_sparse->Add(*scatrathermodomain_sparse, false, 1.0, 1.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
     Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
     Teuchos::RCP<const LINALG::SparseOperator> scatrathermointerface)

@@ -22,19 +22,38 @@ MAT::PAR::ElchSingleMat::ElchSingleMat(Teuchos::RCP<MAT::PAR::Material> matdata)
           matdata->GetInt("DIFF_COEF_TEMP_SCALE_FUNCT")),
       number_diffusion_coefficent_params_(matdata->GetInt("DIFF_PARA_NUM")),
       diffusion_coefficent_params_(*matdata->Get<std::vector<double>>("DIFF_PARA")),
+      number_diffusion_temp_scale_funct_params_(
+          matdata->GetInt("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM")),
+      diffusion_temp_scale_funct_params_(
+          *matdata->Get<std::vector<double>>("DIFF_COEF_TEMP_SCALE_FUNCT_PARA")),
       conductivity_concentration_dependence_funct_num_(matdata->GetInt("COND_CONC_DEP_FUNCT")),
       conductivity_temperature_scaling_funct_num_(matdata->GetInt("COND_TEMP_SCALE_FUNCT")),
       number_conductivity_params_(matdata->GetInt("COND_PARA_NUM")),
-      conductivity_params_(*matdata->Get<std::vector<double>>("COND_PARA"))
+      conductivity_params_(*matdata->Get<std::vector<double>>("COND_PARA")),
+      number_conductivity_temp_scale_funct_params_(
+          matdata->GetInt("COND_TEMP_SCALE_FUNCT_PARA_NUM")),
+      conductivity_temp_scale_funct_params_(
+          *matdata->Get<std::vector<double>>("COND_TEMP_SCALE_FUNCT_PARA")),
+      R_(DRT::Problem::Instance()->ELCHControlParams().get<double>("GAS_CONSTANT"))
 {
   // safety checks
   if (number_diffusion_coefficent_params_ != static_cast<int>(diffusion_coefficent_params_.size()))
     dserror("Mismatch in number of parameters for diffusion coefficient!");
   if (number_conductivity_params_ != static_cast<int>(conductivity_params_.size()))
     dserror("Mismatch in number of parameters for conductivity!");
+  if (number_diffusion_temp_scale_funct_params_ !=
+      static_cast<int>(diffusion_temp_scale_funct_params_.size()))
+    dserror("Mismatch in number of parameters for temp scale function for diffusion coefficient!");
+  if (number_conductivity_temp_scale_funct_params_ !=
+      static_cast<int>(conductivity_temp_scale_funct_params_.size()))
+    dserror("Mismatch in number of parameters for temp scale function for conductivity!");
   CheckProvidedParams(
       diffusion_coefficient_concentration_dependence_funct_num_, diffusion_coefficent_params_);
   CheckProvidedParams(conductivity_concentration_dependence_funct_num_, conductivity_params_);
+  CheckProvidedParams(
+      diffusion_coefficient_temperature_scaling_funct_num_, diffusion_temp_scale_funct_params_);
+  CheckProvidedParams(
+      conductivity_temperature_scaling_funct_num_, conductivity_temp_scale_funct_params_);
 }
 
 
@@ -54,21 +73,21 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
   {
     switch (functnr)
     {
-      case -1:
+      case MAT::ElchSingleMat::CONSTANT_FUNCTION:
       {
         // constant value: functval=functparams[0];
-        functionname = "'constant value'";
+        functionname = "'constant function'";
         nfunctparams = 1;
         break;
       }
-      case -2:
+      case MAT::ElchSingleMat::LINEAR_FUNCTION:
       {
         // linear function: functval=functparams[0]+functparams[1]*concentration;
         functionname = "'linear function'";
         nfunctparams = 2;
         break;
       }
-      case -3:
+      case MAT::ElchSingleMat::QUADRATIC_FUNCTION:
       {
         // quadratic function:
         // functval=functparams[0]+functparams[1]*concentration+functparams[2]*concentration*concentration;
@@ -76,56 +95,56 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 3;
         break;
       }
-      case -4:
+      case MAT::ElchSingleMat::POWER_FUNCTION:
       {
         // power function: functval=functparams[0]*pow(concentration,functparams[1]);
         functionname = "'power function'";
         nfunctparams = 2;
         break;
       }
-      case -5:
+      case MAT::ElchSingleMat::CONDUCT:
       {
         // function 1 for conductivity;
         functionname = "'function 1 for conductivity'";
         nfunctparams = 4;
         break;
       }
-      case -6:
+      case MAT::ElchSingleMat::MOD_CUBIC_FUNCTION:
       {
         // a0*c + a1*c^1.5 + a2*c^3
         functionname = "'a0*c + a1*c^1.5 + a2*c^3'";
         nfunctparams = 3;
         break;
       }
-      case -7:
+      case MAT::ElchSingleMat::CUBIC_FUNCTION:
       {
         // a0 + a1*c + a2*c^2 + a3*c^3
         functionname = "'a0 + a1*c + a2*c^2 + a3*c^3'";
         nfunctparams = 4;
         break;
       }
-      case -8:
+      case MAT::ElchSingleMat::NYMAN:
       {
         // thermodynamic factor Nyman 2008
         functionname = "'function thermodynamic factor (Nyman 2008)'";
         nfunctparams = 7;
         break;
       }
-      case -9:
+      case MAT::ElchSingleMat::DEBYE_HUECKEL:
       {
         // linear thermodynamic factor including Debye-Hückel theory
         functionname = "'function linear thermodynamic factor (including Debye Hueckel theory)'";
         nfunctparams = 2;
         break;
       }
-      case -10:
+      case MAT::ElchSingleMat::KOHLRAUSCH_SQUAREROOT:
       {
         // function 1 for conductivity
         functionname = "'function 1 for conductivity: own definition'";
         nfunctparams = 6;
         break;
       }
-      case -11:
+      case MAT::ElchSingleMat::GOLDIN:
       {
         // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann,
         // Kee (2012) kappa = a0*c*exp(a1*c^a2)
@@ -135,7 +154,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 3;
         break;
       }
-      case -12:
+      case MAT::ElchSingleMat::STEWART_NEWMAN:
       {
         // diffusion coefficient based on a function defined in
         // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion
@@ -145,7 +164,7 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
         nfunctparams = 2;
         break;
       }
-      case -13:
+      case MAT::ElchSingleMat::TDF:
       {
         // TDF based on a function defined in
         // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
@@ -155,6 +174,28 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
             "'TDF as as a function of concentration according to Landesfeind, Ehrl, Graf, Wall, "
             "Gasteiger (2015)'";
         nfunctparams = 3;
+        break;
+      }
+      case MAT::ElchSingleMat::ARRHENIUS:
+      {
+        // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
+        // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T: temperature, D0: max
+        // diffusion coefficient D0 is provided by DIFF PARA and R is a constant which is already
+        // defined
+        functionname =
+            "'Arrhenius Ansatz for temperature dependent diffusion coefficient in solids'";
+        nfunctparams = 1;
+        break;
+      }
+      case MAT::ElchSingleMat::INVERSE_LINEAR:
+      {
+        // Temperature dependent factor for electric conductivity (sigma)
+        // electric conductivity is the inverse electric resistivity (rho)
+        // for "small" temperature differences the temperature dependence of the specific electric
+        // resistance follows rho = rho_0 * (1 + alpha(T - T_0))
+        functionname =
+            "'Linear approximation of specific electrical resistance/electric conductivity'";
+        nfunctparams = 2;
         break;
       }
       default:
@@ -180,11 +221,12 @@ void MAT::PAR::ElchSingleMat::CheckProvidedParams(
 double MAT::ElchSingleMat::ComputeDiffusionCoefficient(
     const double concentration, const double temperature) const
 {
+  // D(c)
   double diffusionCoefficient = ComputeDiffusionCoefficientConcentrationDependent(concentration);
 
-  // do the temperature dependent scaling
+  // D(c)*D(T)
   diffusionCoefficient *= ComputeTemperatureDependentScaleFactor(
-      temperature, DiffusionCoefficientTemperatureScalingFunctNum());
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum(), TempScaleFunctionParamsDiff());
 
   return diffusionCoefficient;
 }
@@ -200,8 +242,8 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
   {
     diffusionCoefficient =
-        EvalPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
-            concentration, DiffusionCoefficientParams());
+        EvalPreDefinedFunct(DiffusionCoefficientConcentrationDependenceFunctNum(), concentration,
+            DiffusionCoefficientParams());
   }
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
   {
@@ -222,14 +264,19 @@ double MAT::ElchSingleMat::ComputeDiffusionCoefficientConcentrationDependent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(
-    const double temperature, const int functionNumber) const
+double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(const double temperature,
+    const int functionNumber, const std::vector<double>& functionParams) const
 {
   double temperatureDependentScaleFactor(1.0);
 
   if (functionNumber == 0)
   {
     // do nothing
+  }
+  else if (functionNumber < 0)
+  {
+    temperatureDependentScaleFactor =
+        EvalPreDefinedFunct(functionNumber, temperature, functionParams);
   }
   else if (functionNumber > 0)
   {
@@ -240,8 +287,9 @@ double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactor(
   {
     dserror(
         "You have to set a reasonable function number for the temperature dependence.\n This can "
-        "be either 0 if no temperature dependence is desired or the number of the function in "
-        "which you defined the temperature dependence.");
+        "be either 0 if no temperature dependence is desired, the number of the function in which "
+        "you defined the temperature dependence, or a negative number representing a predefined "
+        "function");
   }
 
   return temperatureDependentScaleFactor;
@@ -260,7 +308,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
   if (DiffusionCoefficientConcentrationDependenceFunctNum() < 0)
   {
     diffusion_coeff_conc_deriv =
-        EvalFirstDerivPreDefinedFunctValue(DiffusionCoefficientConcentrationDependenceFunctNum(),
+        EvalFirstDerivPreDefinedFunct(DiffusionCoefficientConcentrationDependenceFunctNum(),
             concentration, DiffusionCoefficientParams());
   }
   else if (DiffusionCoefficientConcentrationDependenceFunctNum() == 0)
@@ -281,9 +329,60 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfDiffusionCoefficient(
 
   // do the temperature dependent scaling
   diffusion_coeff_conc_deriv *= ComputeTemperatureDependentScaleFactor(
-      temperature, DiffusionCoefficientTemperatureScalingFunctNum());
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum(), TempScaleFunctionParamsDiff());
 
   return diffusion_coeff_conc_deriv;
+}
+
+
+/*-----------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------*/
+double MAT::ElchSingleMat::ComputeTemperatureDerivativeOfDiffusionCoefficient(
+    const double concentration, const double temperature) const
+{
+  // Computation D(c)
+  double diffusion_coeff_temp_deriv =
+      ComputeDiffusionCoefficientConcentrationDependent(concentration);
+
+  // Computation D(c)*D'(T)
+  diffusion_coeff_temp_deriv *= ComputeTemperatureDependentScaleFactorDeriv(
+      temperature, DiffusionCoefficientTemperatureScalingFunctNum(), TempScaleFunctionParamsDiff());
+
+  return diffusion_coeff_temp_deriv;
+}
+
+/*---------------------------------------------------------------------*
+
+ *---------------------------------------------------------------------*/
+double MAT::ElchSingleMat::ComputeTemperatureDependentScaleFactorDeriv(const double temperature,
+    const int functionNumber, const std::vector<double>& functionParams) const
+{
+  double temperatureDependentScaleFactorDeriv(0.0);
+
+  if (functionNumber == 0)
+  {
+    // do nothing
+  }
+  else if (functionNumber < 0)
+  {
+    temperatureDependentScaleFactorDeriv =
+        EvalFirstDerivPreDefinedFunct(functionNumber, temperature, functionParams);
+  }
+  else if (functionNumber > 0)
+  {
+    temperatureDependentScaleFactorDeriv = DRT::Problem::Instance()
+                                               ->Funct(functionNumber - 1)
+                                               .EvaluateTimeDerivative(temperature, 1)[1];
+  }
+  else
+  {
+    dserror(
+        "You have to set a reasonable function number for the temperature dependence.\n This can "
+        "be either 0 if no temperature dependence is desired or the number of the function in "
+        "which you defined the temperature dependence.");
+  }
+
+  return temperatureDependentScaleFactorDeriv;
 }
 
 /*----------------------------------------------------------------------*
@@ -294,8 +393,8 @@ double MAT::ElchSingleMat::ComputeConductivity(
   double conductivity = ComputeConductivityConcentrationDependent(concentration);
 
   // do the temperature dependent scaling
-  conductivity *=
-      ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
+  conductivity *= ComputeTemperatureDependentScaleFactor(
+      temperature, ConductivityTemperatureScalingFunctNum(), TempScaleFunctionParamsCond());
 
   return conductivity;
 }
@@ -310,7 +409,7 @@ double MAT::ElchSingleMat::ComputeConductivityConcentrationDependent(
   // evaluate pre implemented concentration dependent conductivity
   if (ConductivityConcentrationDependenceFunctNum() < 0)
   {
-    conductivity = EvalPreDefinedFunctValue(
+    conductivity = EvalPreDefinedFunct(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
   }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
@@ -342,7 +441,7 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   // conductivity
   if (ConductivityConcentrationDependenceFunctNum() < 0)
   {
-    conductivity_conc_deriv = EvalFirstDerivPreDefinedFunctValue(
+    conductivity_conc_deriv = EvalFirstDerivPreDefinedFunct(
         ConductivityConcentrationDependenceFunctNum(), concentration, ConductivityParams());
   }
   else if (ConductivityConcentrationDependenceFunctNum() == 0)
@@ -361,97 +460,107 @@ double MAT::ElchSingleMat::ComputeConcentrationDerivativeOfConductivity(
   }
 
   // do the temperature dependent scaling
-  conductivity_conc_deriv *=
-      ComputeTemperatureDependentScaleFactor(temperature, ConductivityTemperatureScalingFunctNum());
+  conductivity_conc_deriv *= ComputeTemperatureDependentScaleFactor(
+      temperature, ConductivityTemperatureScalingFunctNum(), TempScaleFunctionParamsCond());
 
   return conductivity_conc_deriv;
 }
 
 
+/*-----------------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------------*/
+double MAT::ElchSingleMat::ComputeTemperatureDerivativeOfConductivity(
+    const double concentration, const double temperature) const
+{
+  // Cond(c)
+  double conductivity_temp_deriv = ComputeConductivityConcentrationDependent(concentration);
+
+  // Cond(c)*Cond'(T)
+  // derivative of temp dependent scaling factor
+  conductivity_temp_deriv *= ComputeTemperatureDependentScaleFactorDeriv(
+      temperature, ConductivityTemperatureScalingFunctNum(), TempScaleFunctionParamsCond());
+
+  return conductivity_temp_deriv;
+}
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::EvalPreDefinedFunctValue(
-    const int functnr, const double concentration, const std::vector<double>& functparams) const
+double MAT::ElchSingleMat::EvalPreDefinedFunct(
+    const int functnr, const double scalar, const std::vector<double>& functparams) const
 {
   double functval(0.0);
 
   switch (functnr)
   {
     // a0
-    case -1:
+    case CONSTANT_FUNCTION:
       functval = functparams[0];
       break;
 
     // a0 + a1*c
-    case -2:
-      functval = functparams[0] + functparams[1] * concentration;
+    case LINEAR_FUNCTION:
+      functval = functparams[0] + functparams[1] * scalar;
       break;
 
     // a0 + a1*c + a2*c^2
-    case -3:
-      functval = functparams[0] + functparams[1] * concentration +
-                 functparams[2] * concentration * concentration;
+    case QUADRATIC_FUNCTION:
+      functval = functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
       break;
 
     // a0*c^a1
-    case -4:
-      functval = functparams[0] * std::pow(concentration, functparams[1]);
+    case POWER_FUNCTION:
+      functval = functparams[0] * std::pow(scalar, functparams[1]);
       break;
 
     // conductivity
-    case -5:
+    case CONDUCT:
     {
-      const double nenner =
-          (1.0 + functparams[2] * concentration * concentration -
-              functparams[3] * concentration * concentration * concentration * concentration);
+      const double nenner = (1.0 + functparams[2] * scalar * scalar -
+                             functparams[3] * scalar * scalar * scalar * scalar);
       // functparams[0]*(functparams[1]*concentration/nenner) + 0.01 -> constant level 0.01 deleted
       // since it does not have a physical meaning (28.04.2014)
-      functval = functparams[0] * (functparams[1] * concentration / nenner);
+      functval = functparams[0] * (functparams[1] * scalar / nenner);
       break;
     }
 
     // a0*c + a1*c^1.5 + a2*c^3
-    case -6:
-      functval = functparams[0] * concentration + functparams[1] * std::pow(concentration, 1.5) +
-                 functparams[2] * concentration * concentration * concentration;
+    case MOD_CUBIC_FUNCTION:
+      functval = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
+                 functparams[2] * scalar * scalar * scalar;
       break;
 
     // a0 + a1*c + a2*c^2 + a3*c^3
-    case -7:
-      functval = functparams[0] + functparams[1] * concentration +
-                 functparams[2] * concentration * concentration +
-                 functparams[3] * concentration * concentration * concentration;
+    case CUBIC_FUNCTION:
+      functval = functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar +
+                 functparams[3] * scalar * scalar * scalar;
       break;
 
     // thermodynamic factor Nyman 2008
-    case -8:
+    case NYMAN:
     {
-      const double num = functparams[0] + functparams[1] * concentration +
-                         functparams[2] * concentration * concentration;
-      const double denom = functparams[3] + functparams[4] * concentration +
-                           functparams[5] * concentration * concentration +
-                           functparams[6] * concentration * concentration * concentration;
+      const double num =
+          functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
+      const double denom = functparams[3] + functparams[4] * scalar +
+                           functparams[5] * scalar * scalar +
+                           functparams[6] * scalar * scalar * scalar;
       functval = num / denom;
       break;
     }
 
     // linear thermodynamic factor including Debye-Hückel theory
     // 1 + a1*0.5*c^0.5 + a2*c
-    case -9:
-      functval = 1.0 + functparams[0] * 0.5 * std::pow(concentration, 0.5) +
-                 functparams[1] * concentration;
+    case DEBYE_HUECKEL:
+      functval = 1.0 + functparams[0] * 0.5 * std::pow(scalar, 0.5) + functparams[1] * scalar;
       break;
 
     // conductivity: own definition which also fulfills the Kohlrausches Square root law
-    case -10:
+    case KOHLRAUSCH_SQUAREROOT:
     {
-      const double num = functparams[0] * concentration +
-                         functparams[1] * std::pow(concentration, 1.5) +
-                         functparams[2] * concentration * concentration +
-                         functparams[3] * concentration * concentration * concentration;
-      const double denom =
-          (1.0 + functparams[4] * concentration * concentration +
-              functparams[5] * concentration * concentration * concentration * concentration);
+      const double num = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
+                         functparams[2] * scalar * scalar +
+                         functparams[3] * scalar * scalar * scalar;
+      const double denom = (1.0 + functparams[4] * scalar * scalar +
+                            functparams[5] * scalar * scalar * scalar * scalar);
       // functparams[0]*(functparams[1]*concentration/nenner) + 0.01 -> constant level 0.01 deleted
       // since it does not have a physical meaning (28.04.2014)
       functval = num / denom;
@@ -460,20 +569,19 @@ double MAT::ElchSingleMat::EvalPreDefinedFunctValue(
 
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) kappa = a0*c*exp(a1*c^a2)
-    case -11:
+    case GOLDIN:
     {
       // safety check
-      if (concentration < 1.e-12)
-        dserror("Concentration value %lf is zero or negative!", concentration);
+      if (scalar < 1.e-12) dserror("scalar value %lf is zero or negative!", scalar);
 
-      const double exponent = functparams[1] * std::pow(concentration, functparams[2]);
+      const double exponent = functparams[1] * std::pow(scalar, functparams[2]);
 
       // safety check
       if (exponent > 20.)
         dserror("Overflow detected during conductivity evaluation! Exponent is too large: %lf",
             exponent);
 
-      functval = functparams[0] * concentration * std::exp(exponent);
+      functval = functparams[0] * scalar * std::exp(exponent);
 
       break;
     }
@@ -481,21 +589,42 @@ double MAT::ElchSingleMat::EvalPreDefinedFunctValue(
     // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in
     // LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16 diff
     // = a0*exp(-a1*c^a2)
-    case -12:
+    case STEWART_NEWMAN:
     {
-      functval = functparams[0] * std::exp(functparams[1] * concentration);
+      functval = functparams[0] * std::exp(functparams[1] * scalar);
       break;
     }
-    case -13:
+    case TDF:
     {
       // TDF based on a function defined in
       // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
       // determination of activity coefficients in aprotic binary electrolytes TDF = 1.0 - 0.5 a1
       // sqrt(c)/(1+a2*sqrt(c)) + a2*c
       functval = 1.0 -
-                 (0.5 * functparams[0] * std::pow(concentration, 0.5)) /
-                     (std::pow((1 + functparams[1] * std::pow(concentration, 0.5)), 2)) +
-                 functparams[2] * concentration;
+                 (0.5 * functparams[0] * std::pow(scalar, 0.5)) /
+                     (std::pow((1 + functparams[1] * std::pow(scalar, 0.5)), 2)) +
+                 functparams[2] * scalar;
+      break;
+    }
+    case ARRHENIUS:
+    {
+      // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
+      // exp(-Q/(R*T)) Q: activation energy, R: universal gas constant, T:temperature, D0: max
+      // diffusion coefficient D0 is provided by DIFF PARA
+      // functval = exp(-a0/(R * T)
+      const double R = static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->R_;
+      functval = std::exp(-functparams[0] / (R * scalar));
+      break;
+    }
+    case INVERSE_LINEAR:
+    {
+      // Temperature dependent factor for electric conductivity (sigma)
+      // electric conductivity is the inverse electric resistivity (rho)
+      // for "small" temperature differences the temperature dependence of the specific electric
+      // resistance follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =
+      // 1/rho_0(c) * 1/(1 + alpha*(T - T_0))
+      // functval = 1/(1 + a0*(T - a1))
+      functval = 1.0 / (1.0 + functparams[0] * (scalar - functparams[1]));
       break;
     }
     default:
@@ -511,115 +640,108 @@ double MAT::ElchSingleMat::EvalPreDefinedFunctValue(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunctValue(
-    const int functnr, const double concentration, const std::vector<double>& functparams) const
+double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunct(
+    const int functnr, const double scalar, const std::vector<double>& functparams) const
 {
   double firstderivfunctval(0.0);
 
   switch (functnr)
   {
     // d/dc: a0
-    case -1:
+    case CONSTANT_FUNCTION:
       firstderivfunctval = 0.0;
       break;
 
     // d/dc: a0 + a1*c
-    case -2:
+    case LINEAR_FUNCTION:
       firstderivfunctval = functparams[1];
       break;
 
     // d/dc: a0 + a1*c + a2*c^2
-    case -3:
-      firstderivfunctval = functparams[1] + 2 * functparams[2] * concentration;
+    case QUADRATIC_FUNCTION:
+      firstderivfunctval = functparams[1] + 2 * functparams[2] * scalar;
       break;
 
     // d/dc: a0 + c^a1
-    case -4:
-      firstderivfunctval =
-          functparams[0] * functparams[1] * std::pow(concentration, functparams[1] - 1.0);
+    case POWER_FUNCTION:
+      firstderivfunctval = functparams[0] * functparams[1] * std::pow(scalar, functparams[1] - 1.0);
       break;
 
     // d/dc: conductivity
-    case -5:
+    case CONDUCT:
     {
-      const double nenner =
-          (1.0 + functparams[2] * concentration * concentration -
-              functparams[3] * concentration * concentration * concentration * concentration);
+      const double nenner = (1.0 + functparams[2] * scalar * scalar -
+                             functparams[3] * scalar * scalar * scalar * scalar);
       const double nennernenner = nenner * nenner;
       firstderivfunctval =
-          functparams[0] * ((functparams[1] * nenner - functparams[1] * concentration *
-                                                           (2 * functparams[2] * concentration -
-                                                               4 * functparams[3] * concentration *
-                                                                   concentration * concentration)) /
-                               nennernenner);
+          functparams[0] *
+          ((functparams[1] * nenner -
+               functparams[1] * scalar *
+                   (2 * functparams[2] * scalar - 4 * functparams[3] * scalar * scalar * scalar)) /
+              nennernenner);
       break;
     }
 
     // d/dc: a0*c + a1*c^1.5 + a2*c^3
-    case -6:
-      firstderivfunctval = functparams[0] + 1.5 * functparams[1] * std::pow(concentration, 0.5) +
-                           3 * functparams[2] * concentration * concentration;
+    case MOD_CUBIC_FUNCTION:
+      firstderivfunctval = functparams[0] + 1.5 * functparams[1] * std::pow(scalar, 0.5) +
+                           3 * functparams[2] * scalar * scalar;
       break;
 
     // d/dc: a0 + a1*c + a2*c^2 + a3*c^3
-    case -7:
-      firstderivfunctval = functparams[1] + 2 * functparams[2] * concentration +
-                           3 * functparams[3] * concentration * concentration;
+    case CUBIC_FUNCTION:
+      firstderivfunctval =
+          functparams[1] + 2 * functparams[2] * scalar + 3 * functparams[3] * scalar * scalar;
       break;
 
     // d/dc: thermodynamic factor Nyman 2008
-    case -8:
+    case NYMAN:
     {
-      const double num = functparams[0] + functparams[1] * concentration +
-                         functparams[2] * concentration * concentration;
-      const double denom = functparams[3] + functparams[4] * concentration +
-                           functparams[5] * concentration * concentration +
-                           functparams[6] * concentration * concentration * concentration;
+      const double num =
+          functparams[0] + functparams[1] * scalar + functparams[2] * scalar * scalar;
+      const double denom = functparams[3] + functparams[4] * scalar +
+                           functparams[5] * scalar * scalar +
+                           functparams[6] * scalar * scalar * scalar;
       const double denomdenom = denom * denom;
-      const double derivnum = functparams[1] + 2 * functparams[2] * concentration;
-      const double derivdenom = functparams[4] + 2 * functparams[5] * concentration +
-                                3 * functparams[6] * concentration * concentration;
+      const double derivnum = functparams[1] + 2 * functparams[2] * scalar;
+      const double derivdenom =
+          functparams[4] + 2 * functparams[5] * scalar + 3 * functparams[6] * scalar * scalar;
       firstderivfunctval = (derivnum * denom - num * derivdenom) / denomdenom;
       break;
     }
 
     // linear thermodynamic factor including Debye-Hückel theory
     // d/dc: 1 + a1*0.5*c^0.5 + a2*c
-    case -9:
-      firstderivfunctval =
-          functparams[0] * 0.5 * 0.5 * std::pow(concentration, -0.5) + functparams[1];
+    case DEBYE_HUECKEL:
+      firstderivfunctval = functparams[0] * 0.5 * 0.5 * std::pow(scalar, -0.5) + functparams[1];
       break;
 
     // d/dc: conductivity: own definition which also fulfills the Kohlrausches Square root law
-    case -10:
+    case KOHLRAUSCH_SQUAREROOT:
     {
-      const double num = functparams[0] * concentration +
-                         functparams[1] * std::pow(concentration, 1.5) +
-                         functparams[2] * concentration * concentration +
-                         functparams[3] * concentration * concentration * concentration;
-      const double denom =
-          (1.0 + functparams[4] * concentration * concentration +
-              functparams[5] * concentration * concentration * concentration * concentration);
+      const double num = functparams[0] * scalar + functparams[1] * std::pow(scalar, 1.5) +
+                         functparams[2] * scalar * scalar +
+                         functparams[3] * scalar * scalar * scalar;
+      const double denom = (1.0 + functparams[4] * scalar * scalar +
+                            functparams[5] * scalar * scalar * scalar * scalar);
       const double denomdenom = denom * denom;
-      const double derivnum = functparams[0] + 1.5 * functparams[1] * std::pow(concentration, 0.5) +
-                              2.0 * functparams[2] * concentration +
-                              3.0 * functparams[3] * concentration * concentration;
+      const double derivnum = functparams[0] + 1.5 * functparams[1] * std::pow(scalar, 0.5) +
+                              2.0 * functparams[2] * scalar +
+                              3.0 * functparams[3] * scalar * scalar;
       const double derivdenom =
-          2.0 * functparams[4] * concentration +
-          4.0 * functparams[5] * concentration * concentration * concentration;
+          2.0 * functparams[4] * scalar + 4.0 * functparams[5] * scalar * scalar * scalar;
       firstderivfunctval = ((derivnum * denom - num * derivdenom) / denomdenom);
       break;
     }
 
     // conductivity as a function of concentration according to Goldin, Colclasure, Wiedemann, Kee
     // (2012) d/dc: kappa = a0*c*exp(a1*c^a2)
-    case -11:
+    case GOLDIN:
     {
       // safety check
-      if (concentration < 1.0e-12)
-        dserror("Concentration value %lf is zero or negative!", concentration);
+      if (scalar < 1.0e-12) dserror("scalar value %lf is zero or negative!", scalar);
 
-      const double exponent = functparams[1] * std::pow(concentration, functparams[2]);
+      const double exponent = functparams[1] * std::pow(scalar, functparams[2]);
 
       // safety check
       if (std::abs(exponent) > 20.0)
@@ -630,9 +752,8 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunctValue(
             exponent);
       }
 
-      firstderivfunctval =
-          functparams[0] * std::exp(exponent) *
-          (1 + functparams[1] * functparams[2] * std::pow(concentration, functparams[2]));
+      firstderivfunctval = functparams[0] * std::exp(exponent) *
+                           (1 + functparams[1] * functparams[2] * std::pow(scalar, functparams[2]));
 
       break;
     }
@@ -640,23 +761,43 @@ double MAT::ElchSingleMat::EvalFirstDerivPreDefinedFunctValue(
     // Stewart, S. G. & Newman, J. The Use of UV/vis Absorption to Measure Diffusion Coefficients in
     // LiPF6 Electrolytic Solutions Journal of The Electrochemical Society, 2008, 155, F13-F16 diff
     // = a0*exp(-a1*c^a2) deriv (diff) = a0*a1*exp(a1*c^a2)
-    case -12:
+    case STEWART_NEWMAN:
     {
-      firstderivfunctval =
-          functparams[0] * functparams[1] * std::exp(functparams[1] * concentration);
+      firstderivfunctval = functparams[0] * functparams[1] * std::exp(functparams[1] * scalar);
       break;
     }
-    case -13:
+    case TDF:
     {
       // TDF based on a function defined in
       // J. Landesfeind, A. Ehrl, M. Graf, W.A. Wall, H.A. Gasteiger: Direct electrochemical
       // determination of activity coefficients in aprotic binary electrolytes TDF = 1.0 - 0.5 a1
       // sqrt(c)/(1+a2*sqrt(c)) + a2*c
-      firstderivfunctval = -(0.25 * functparams[0] * std::pow(concentration, -0.5)) /
-                               (std::pow((1 + functparams[1] * std::pow(concentration, 0.5)), 2)) +
+      firstderivfunctval = -(0.25 * functparams[0] * std::pow(scalar, -0.5)) /
+                               (std::pow((1 + functparams[1] * std::pow(scalar, 0.5)), 2)) +
                            (0.5 * functparams[0] * functparams[1]) /
-                               (std::pow((1 + functparams[1] * std::pow(concentration, 0.5)), 3)) +
+                               (std::pow((1 + functparams[1] * std::pow(scalar, 0.5)), 3)) +
                            functparams[2];
+      break;
+    }
+    case ARRHENIUS:
+    {
+      // Arrhenius Ansatz for temperature dependent diffusion coefficient in solids D0 *
+      // exp(-Q/(R*T)) Q: activation energy, R: universal gasconstant, T:temperature, D0: max
+      // diffusioncoefficient D0 is provided by DIFF PARA
+      const double R = static_cast<MAT::PAR::ElchSingleMat*>(Parameter())->R_;
+      firstderivfunctval = std::exp(-functparams[0] / (R * scalar)) * functparams[0] / R * 1.0 /
+                           std::pow(scalar, 2.0);
+      break;
+    }
+    case INVERSE_LINEAR:
+    {
+      // Temperature dependent faktor for electric conductivity (sigma)
+      // electric conductivity is the inverse  electric resistivity (rho)
+      // for "small" temperature differences the temperature dependence of the specific electric
+      // resistivity follows rho = rho_0 * (1 + alpha(T - T_0)) sigma(c,T) = sigma(c) * sigma(T) =
+      // 1/rho_0(c) * 1/(1 + alpha*(T - T_0))
+      double base = 1.0 + functparams[0] * (scalar - functparams[1]);
+      firstderivfunctval = -functparams[0] * std::pow(base, -2.0);
       break;
     }
     default:

@@ -135,7 +135,7 @@ namespace SSTI
         Teuchos::RCP<Epetra_Map> interface_map_scatra,
         Teuchos::RCP<Epetra_Map> interface_map_thermo,
         Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
-        Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool isinterfacemeshtying);
+        Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool interfacemeshtying);
 
     //! method that clears all ssi matrices
     void ClearMatrices();
@@ -196,6 +196,9 @@ namespace SSTI
     Teuchos::RCP<LINALG::SparseOperator> thermostructuredomain_;
     Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface_;
     //@}
+
+    //! bool indicating if we have at least one ssi interface meshtying condition
+    const bool interfacemeshtying_;
   };
 
   /*---------------------------------------------------------------------------------*

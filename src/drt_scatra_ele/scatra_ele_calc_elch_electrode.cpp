@@ -211,7 +211,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradphi, gradphi, vi);
 
       emat(vi * my::numdofpernode_ + k, ui * my::numdofpernode_ + k) +=
-          scalar * timefacfac * DiffManager()->GetDerivIsoDiffCoef(k, k) * laplawfrhs_gradphi *
+          scalar * timefacfac * DiffManager()->GetConcDerivIsoDiffCoef(k, k) * laplawfrhs_gradphi *
           my::funct_(ui);
     }
   }
@@ -248,7 +248,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
         // (grad w, 1/F kappa D(grad pot))
         //
         emat(vi * my::numdofpernode_ + my::numscal_, ui * my::numdofpernode_ + iscal) +=
-            scalar * timefacfac * invf * DiffManager()->GetDerivCond(iscal) * my::funct_(ui) *
+            scalar * timefacfac * invf * DiffManager()->GetConcDerivCond(iscal) * my::funct_(ui) *
             laplawfrhs_gradpot;
       }
     }

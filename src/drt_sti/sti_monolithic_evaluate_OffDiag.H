@@ -58,7 +58,7 @@ namespace STI
 
     //! evaluation of domain contributions to scatra-thermo OD block
     void EvaluateOffDiagBlockScatraThermoDomain(
-        Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblock);
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock);
 
     //! evaluation of interface contributions to scatra-thermo OD block
     virtual void EvaluateOffDiagBlockScatraThermoInterface(

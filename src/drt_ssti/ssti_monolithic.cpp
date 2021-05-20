@@ -98,6 +98,8 @@ void SSTI::SSTIMono::AssembleMatAndRHS()
       ssti_matrices_->SystemMatrix(), ssti_matrices_->StructureThermoDomain());
   strategy_assemble_->AssembleThermoScatra(ssti_matrices_->SystemMatrix(),
       ssti_matrices_->ThermoScaTraDomain(), ssti_matrices_->ThermoScaTraInterface());
+  strategy_assemble_->AssembleScatraThermoDomain(
+      ssti_matrices_->SystemMatrix(), ssti_matrices_->ScaTraThermoDomain());
 
   // assemble interface contributions from coupling into system matrix
   if (InterfaceMeshtying())
@@ -600,6 +602,8 @@ void SSTI::SSTIMono::EvaluateSubproblems()
       ssti_matrices_->StructureThermoDomain());
   scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraDomain(
       ssti_matrices_->ThermoScaTraDomain());
+  scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoDomain(
+      ssti_matrices_->ScaTraThermoDomain());
 
   // evaluate interface contributions from coupling
   if (InterfaceMeshtying())

@@ -396,8 +396,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatJouleOD(
       my::GetLaplacianWeakFormRHS(laplawfrhs_gradpot, gradpot, ui);
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. concentration dofs
-      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) * diffmanagerstielectrode_->GetDerivCond(0) *
-                          gradpot2 * my::funct_(ui);
+      emat(vi, ui * 2) -= timefacfac * my::funct_(vi) *
+                          diffmanagerstielectrode_->GetConcDerivCond(0) * gradpot2 * my::funct_(ui);
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. electric potential dofs
       emat(vi, ui * 2 + 1) -= timefacfac * my::funct_(vi) * 2. *
@@ -420,7 +420,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatMixingOD(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
-  const double& diffcoeffderiv = diffmanagerstielectrode_->GetDerivIsoDiffCoef(0, 0);
+  const double& diffcoeffderiv = diffmanagerstielectrode_->GetConcDerivIsoDiffCoef(0, 0);
   const LINALG::Matrix<my::nsd_, 1>& gradconc = VarManager()->GradConc();
   const LINALG::Matrix<my::nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);
   const double& soret = DiffManager()->GetSoret();
@@ -487,7 +487,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::CalcMatSoretOD(
   // extract variables and parameters
   const double& concentration = VarManager()->Conc();
   const double& diffcoeff = diffmanagerstielectrode_->GetIsotropicDiff(0);
-  const double& diffcoeffderiv = diffmanagerstielectrode_->GetDerivIsoDiffCoef(0, 0);
+  const double& diffcoeffderiv = diffmanagerstielectrode_->GetConcDerivIsoDiffCoef(0, 0);
   const double& F = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const LINALG::Matrix<my::nsd_, 1>& gradconc = VarManager()->GradConc();
   const LINALG::Matrix<my::nsd_, 1>& gradtemp = my::scatravarmanager_->GradPhi(0);

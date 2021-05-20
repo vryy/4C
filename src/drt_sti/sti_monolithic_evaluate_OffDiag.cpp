@@ -52,7 +52,7 @@ STI::ScatraThermoOffDiagCoupling::ScatraThermoOffDiagCoupling(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
-    Teuchos::RCP<LINALG::SparseOperator>& scatrathermoblock)
+    Teuchos::RCP<LINALG::SparseOperator> scatrathermoblock)
 {
   // initialize scatra-thermo matrix block
   scatrathermoblock->Zero();
@@ -65,6 +65,9 @@ void STI::ScatraThermoOffDiagCoupling::EvaluateOffDiagBlockScatraThermoDomain(
 
   // number of dofset associated with velocity-related dofs on scatra discretization
   eleparams.set<int>("ndsvel", 1);
+
+  // in case of deforming mesh: set displacement
+  if (IsAle()) eleparams.set<int>("ndsdisp", 1);
 
   // remove state vectors from scatra discretization
   ScaTraField()->Discretization()->ClearState();

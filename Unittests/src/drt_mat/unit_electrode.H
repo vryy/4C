@@ -34,15 +34,27 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
     // initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material());
 
+    // create dummy elch parameter list and add dummy value for gas constant
+    auto parameter_list = Teuchos::rcp(new Teuchos::ParameterList());
+    auto elch_params = parameter_list->sublist("ELCH CONTROL", false);
+    elch_params.set<double>("GAS_CONSTANT", -1.0);
+
+    // set the parameter list in the global problem
+    DRT::Problem::Instance()->setParameterList(parameter_list);
+
     // add dummy parameters to container
     container->Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
     container->Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
     container->Add("DIFF_PARA_NUM", 0);
     container->Add("DIFF_PARA", std::vector<double>(0, 0.));
+    container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+    container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.));
     container->Add("COND_CONC_DEP_FUNCT", 0);
     container->Add("COND_TEMP_SCALE_FUNCT", 0);
     container->Add("COND_PARA_NUM", 0);
     container->Add("COND_PARA", std::vector<double>(0, 0.));
+    container->Add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
+    container->Add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.));
 
     // obtain half-cell open-circuit equilibrium potential from cubic spline interpolation of *.csv
     // data points

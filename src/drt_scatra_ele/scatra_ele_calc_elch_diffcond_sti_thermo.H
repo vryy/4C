@@ -41,6 +41,7 @@ namespace DRT
       //! abbreviations
       using my = ScaTraEleCalc<distype>;
       using myelch = ScaTraEleCalcElch<distype>;
+      using myelectrode = ScaTraEleCalcElchElectrode<distype>;
       using mydiffcond = ScaTraEleCalcElchDiffCond<distype>;
       using mythermo = ScaTraEleSTIThermo<distype>;
 

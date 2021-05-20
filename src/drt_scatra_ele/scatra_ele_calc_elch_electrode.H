@@ -169,6 +169,12 @@ namespace DRT
           const double fac                                           //!< integration factor
       );
 
+      //! get utility class supporting element evaluation for electrodes
+      DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils()
+      {
+        return static_cast<DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(myelch::utils_);
+      };
+
       /*========================================================================*/
       //! @name additional service routines
       /*========================================================================*/
@@ -235,12 +241,6 @@ namespace DRT
             my::scatravarmanager_);
       };
 
-      //! get utility class supporting element evaluation for electrodes
-      DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* Utils()
-      {
-        return static_cast<DRT::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(myelch::utils_);
-      };
-
       //! parameters related to elch field on manifold (incl. coupling kinetics)
       const ScaTraEleParameterElchManifold* elchmanifoldparams_;
     };
@@ -256,9 +256,11 @@ namespace DRT
      public:
       ScaTraEleDiffManagerElchElectrode(int numscal)
           : ScaTraEleDiffManagerElch(numscal),
-            derivdiff_(numscal, std::vector<double>(numscal, 0.0)),
+            concderivdiff_(numscal, std::vector<double>(numscal, 0.0)),
+            tempderivdiff_(numscal, std::vector<double>(numscal, 0.0)),
             cond_(0.0),
-            derivcond_(numscal, 0.0)
+            concderivcond_(numscal, 0.0),
+            tempderivcond_(numscal, 0.0)
       {
       }
 
@@ -270,25 +272,52 @@ namespace DRT
       /*========================================================================*/
 
       //! Set derivative of diffusion coefficients with respect to concentrations
-      void SetDerivIsoDiffCoef(const double derivdiff, const int k, const int iscal)
+      void SetConcDerivIsoDiffCoef(const double concderivdiff, const int k, const int iscal)
       {
-        (derivdiff_[k])[iscal] = derivdiff;
+        (concderivdiff_[k])[iscal] = concderivdiff;
+      };
+
+      //! Set derivative of diffusion coefficient with respect to concentrations
+      void SetTempDerivIsoDiffCoef(const double tempderivdiff, const int k, const int iscal)
+      {
+        (tempderivdiff_[k])[iscal] = tempderivdiff;
       };
 
       //! Access routine for derivative of diffusion coefficients with respect to concentrations
-      double GetDerivIsoDiffCoef(const int k, const int iscal) { return (derivdiff_[k])[iscal]; };
+      double GetConcDerivIsoDiffCoef(const int k, const int iscal)
+      {
+        return (concderivdiff_[k])[iscal];
+      };
 
-      //! Set conductivity of the electrolyte solution
+      //! Access routine for derivative of diffusion coefficients with respect to concentrations
+      double GetTempDerivIsoDiffCoef(const int k, const int iscal)
+      {
+        return (tempderivdiff_[k])[iscal];
+      };
+
+      //! Set conductivity of the electrolyte solution and electrode
       void SetCond(const double cond) { cond_ = cond; };
 
-      //! Access routine for conductivity of the electrolyte solution
+      //! Access routine for conductivity of the electrolyte solution and electrode
       double GetCond() { return cond_; };
 
       //! Set derivative of the conductivity with respect to concentrations
-      void SetDerivCond(const double derivcond, const int k) { derivcond_[k] = derivcond; };
+      void SetConcDerivCond(const double concderivcond, const int k)
+      {
+        concderivcond_[k] = concderivcond;
+      };
 
       //! Access routine for derivative of the conductivity with respect to concentrations
-      double GetDerivCond(const int k) { return derivcond_[k]; };
+      double GetConcDerivCond(const int k) { return concderivcond_[k]; };
+
+      //! Set derivative of the conductivity with respect to temperature
+      void SetTempDerivCond(const double tempderivcond, const int k)
+      {
+        tempderivcond_[k] = tempderivcond;
+      };
+
+      //! Access routine for derivative of the conductivity with respect to temperature
+      double GetTempDerivCond(const int k) { return tempderivcond_[k]; };
 
       /*========================================================================*/
       //! @name output
@@ -305,7 +334,9 @@ namespace DRT
           for (int iscal = 0; iscal < numscal; ++iscal)
           {
             std::cout << "derivative of diffusion coefficient (" << k << "," << iscal
-                      << "):  " << (derivdiff_[k])[iscal] << std::endl;
+                      << "):  " << (concderivdiff_[k])[iscal] << std::endl;
+            std::cout << "derivative of diffusion coefficient w.r.t. temperature (" << k << ","
+                      << iscal << "):  " << (tempderivdiff_[k])[iscal] << std::endl;
           }
         }
         std::cout << std::endl;
@@ -313,7 +344,12 @@ namespace DRT
         std::cout << "conductivity:   " << cond_ << std::endl;
 
         for (int k = 0; k < numscal; ++k)
-          std::cout << "derivative of conductivity  " << k << ":   " << derivcond_[k] << std::endl;
+        {
+          std::cout << "derivative of conductivity " << k
+                    << " w.r.t. concentration:   " << concderivcond_[k] << std::endl;
+          std::cout << "derivative of conductivity " << k
+                    << " w.r.t. temperature:   " << tempderivcond_[k] << std::endl;
+        }
         std::cout << std::endl;
       };
 
@@ -323,15 +359,20 @@ namespace DRT
       /*========================================================================*/
 
       //! derivative of diffusion coefficients with respect to concentrations
-      std::vector<std::vector<double>> derivdiff_;
+      std::vector<std::vector<double>> concderivdiff_;
+
+      //! derivative of diffusion coefficients with respect to temperature
+      std::vector<std::vector<double>> tempderivdiff_;
 
       //! conductivity of the electrolyte solution
       double cond_;
 
       //! derivative of the conductivity with respect to concentrations
-      std::vector<double> derivcond_;
-    };
+      std::vector<double> concderivcond_;
 
+      //! derivative of the conductivity with respect to temperature
+      std::vector<double> tempderivcond_;
+    };
 
     //! ScaTraEleInternalVariableManagerElchElectrode implementation
     /*!

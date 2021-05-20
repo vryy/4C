@@ -13,6 +13,7 @@ within thermodynamic electrodes
 
 #include "scatra_ele_sti_thermo.H"
 #include "scatra_ele_calc_elch_electrode.H"
+#include "scatra_ele_calc_sti_electrode.H"
 
 #include "../drt_mat/material.H"
 
@@ -174,6 +175,9 @@ namespace DRT
 
         vmelch::frt_ = faraday / (gasconstant * vmthermo::Temp());
       }
+
+      //! get GP temperature
+      double Temp() { return vmthermo::Temp(); }
     };  // class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
   }     // namespace ELEMENTS
 }  // namespace DRT

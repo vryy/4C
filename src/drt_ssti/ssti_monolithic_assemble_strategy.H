@@ -69,6 +69,10 @@ namespace SSTI
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructuredomain,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructureinterface) = 0;
 
+    //! assemble ScaTra-Thermo-Block (domain contributions) into system matrix
+    virtual void AssembleScatraThermoDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain) = 0;
+
     virtual void AssembleScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrathermointerface) = 0;
 
@@ -200,6 +204,9 @@ namespace SSTI
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructuredomain,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructureinterface) override = 0;
 
+    void AssembleScatraThermoDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain) override = 0;
+
     void AssembleScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrathermointerface) override = 0;
 
@@ -260,6 +267,9 @@ namespace SSTI
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructuredomain,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructureinterface) override;
 
+    void AssembleScatraThermoDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain) override;
+
     void AssembleScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrathermointerface) override;
 
@@ -304,6 +314,9 @@ namespace SSTI
     void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructuredomain,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructureinterface) override;
+
+    void AssembleScatraThermoDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain) override;
 
     void AssembleScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrathermointerface) override;
@@ -351,6 +364,9 @@ namespace SSTI
     void AssembleScatraStructure(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructuredomain,
         Teuchos::RCP<const LINALG::SparseOperator> scatrastructureinterface) override;
+
+    void AssembleScatraThermoDomain(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
+        Teuchos::RCP<LINALG::SparseOperator> scatrathermodomain) override;
 
     void AssembleScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatrathermointerface) override;

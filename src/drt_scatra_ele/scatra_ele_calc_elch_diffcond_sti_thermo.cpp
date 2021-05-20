@@ -132,7 +132,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     const double& concentration = VarManager()->Phinp(0);
     const LINALG::Matrix<my::nsd_, 1>& gradtemp = VarManager()->GradTemp();
     const double& kappa = mydiffcond::DiffManager()->GetCond();
-    const double& kappaderiv = mydiffcond::DiffManager()->GetDerivCond(0);
+    const double& kappaderiv = mydiffcond::DiffManager()->GetConcDerivCond(0);
     const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
     const double invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
     const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
@@ -181,7 +181,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
     // matrix and vector contributions arising from additional, thermodynamic term for Soret effect
     mythermo::CalcMatSoret(emat, timefacfac, VarManager()->Phinp(0),
         mydiffcond::DiffManager()->GetIsotropicDiff(0),
-        mydiffcond::DiffManager()->GetDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
+        mydiffcond::DiffManager()->GetConcDerivIsoDiffCoef(0, 0), VarManager()->Temp(),
         VarManager()->GradTemp(), my::funct_, my::derxy_);
     mythermo::CalcRHSSoret(erhs, VarManager()->Phinp(0),
         mydiffcond::DiffManager()->GetIsotropicDiff(0), rhsfac, VarManager()->Temp(),
@@ -263,56 +263,67 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraT
     std::vector<double> dummyvec(my::numscal_, 0.);
     GetMaterialParams(ele, dummyvec, dummyvec, dummyvec, dummy, iquad);
 
-    // extract variables and parameters
-    const double& concentration = VarManager()->Phinp(0);
-    const LINALG::Matrix<my::nsd_, 1>& gradconc = VarManager()->GradPhi(0);
-    const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
-    const double& invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
-    const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
-    const double& kappa = mydiffcond::DiffManager()->GetCond();
-    const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
-    const double& t = mydiffcond::DiffManager()->GetTransNum(0);
-
-    // matrix contributions arising from additional, thermodynamic term in expression for current
-    // density
-    for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
+    if (materialtype_ == INPAR::MAT::m_soret)
     {
-      // recurring indices
-      const int rowconc(vi * 2);
-      const int rowpot(vi * 2 + 1);
+      // extract variables and parameters
+      const double& concentration = VarManager()->Phinp(0);
+      const LINALG::Matrix<my::nsd_, 1>& gradconc = VarManager()->GradPhi(0);
+      const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+      const double& invffval = mydiffcond::DiffManager()->InvFVal(0) / faraday;
+      const double& invfval = mydiffcond::DiffManager()->InvFVal(0);
+      const double& kappa = mydiffcond::DiffManager()->GetCond();
+      const double& R = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
+      const double& t = mydiffcond::DiffManager()->GetTransNum(0);
 
-      // gradient of test function times gradient of concentration
-      double laplawfrhs_conc(0.);
-      my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
-
-      for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+      // matrix contributions arising from additional, thermodynamic term in expression for current
+      // density
+      for (int vi = 0; vi < static_cast<int>(my::nen_); ++vi)
       {
-        // gradient of test function times gradient of shape function
-        double laplawf(0.);
-        my::GetLaplacianWeakForm(laplawf, vi, ui);
+        // recurring indices
+        const int rowconc(vi * 2);
+        const int rowpot(vi * 2 + 1);
 
-        // gradient of test function times derivative of current density w.r.t. temperature
-        const double di_dT = 2 * kappa * (1 - t) * invfval * R / concentration * laplawfrhs_conc;
+        // gradient of test function times gradient of concentration
+        double laplawfrhs_conc = 0.0;
+        my::GetLaplacianWeakFormRHS(laplawfrhs_conc, gradconc, vi);
 
-        // formal, symbolic derivative of current density w.r.t. temperature gradient
-        const double di_dgradT = kappa * invfval * R * log(concentration);
+        for (int ui = 0; ui < static_cast<int>(my::nen_); ++ui)
+        {
+          // gradient of test function times gradient of shape function
+          double laplawf(0.);
+          my::GetLaplacianWeakForm(laplawf, vi, ui);
 
-        // linearizations of contributions for concentration residuals w.r.t. thermo dofs
-        emat(rowconc, ui) -=
-            timefacfac * (t * invfval * di_dT * my::funct_(ui) + t * invfval * di_dgradT * laplawf);
+          // gradient of test function times derivative of current density w.r.t. temperature
+          const double di_dT =
+              2.0 * kappa * (1.0 - t) * invfval * R / concentration * laplawfrhs_conc;
 
-        // linearizations of contributions for electric potential residuals w.r.t. thermo dofs
-        emat(rowpot, ui) -= timefacfac * (laplawf * kappa * invffval * R * log(concentration) +
-                                             my::funct_(ui) * kappa * (1 - t) * invffval * R /
-                                                 concentration * 2 * laplawfrhs_conc);
+          // formal, symbolic derivative of current density w.r.t. temperature gradient
+          const double di_dgradT = kappa * invfval * R * log(concentration);
+
+          // linearizations of contributions for concentration residuals w.r.t. thermo dofs
+          emat(rowconc, ui) -= timefacfac * (t * invfval * di_dT * my::funct_(ui) +
+                                                t * invfval * di_dgradT * laplawf);
+
+          // linearizations of contributions for electric potential residuals w.r.t. thermo dofs
+          emat(rowpot, ui) -= timefacfac * (laplawf * kappa * invffval * R * log(concentration) +
+                                               my::funct_(ui) * kappa * (1.0 - t) * invffval * R /
+                                                   concentration * 2.0 * laplawfrhs_conc);
+        }
       }
+
+      // provide element matrix with linearizations of Soret term in discrete scatra residuals
+      // w.r.t. thermo dofs
+      mythermo::CalcMatSoretOD(emat, timefacfac, VarManager()->Phinp(0),
+          mydiffcond::DiffManager()->GetIsotropicDiff(0), VarManager()->Temp(),
+          VarManager()->GradTemp(), my::funct_, my::derxy_);
     }
 
-    // provide element matrix with linearizations of Soret term in discrete scatra residuals w.r.t.
-    // thermo dofs
-    mythermo::CalcMatSoretOD(emat, timefacfac, VarManager()->Phinp(0),
-        mydiffcond::DiffManager()->GetIsotropicDiff(0), VarManager()->Temp(),
-        VarManager()->GradTemp(), my::funct_, my::derxy_);
+    // calculating the off diagonal for the temperature derivative of concentration and electric
+    // potential
+    mythermo::CalcMatDiffThermoOD(emat, my::numdofpernode_, timefacfac, VarManager()->InvF(),
+        VarManager()->GradPhi(0), VarManager()->GradPot(),
+        myelectrode::DiffManager()->GetTempDerivIsoDiffCoef(0, 0),
+        myelectrode::DiffManager()->GetTempDerivCond(0), my::funct_, my::derxy_, 1.0);
   }
 }
 
