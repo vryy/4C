@@ -8,7 +8,9 @@
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc_elch_diffcond.H"
-#include "scatra_ele_calc_elch_diffcond.H"  // for diffusion manager
+
+#include "scatra_ele_calc_elch_diffcond.H"
+#include "scatra_ele_parameter_boundary.H"
 
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
@@ -58,8 +60,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
 
@@ -74,7 +74,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::ScaTraEleBoundaryCalc
       // initialization of diffusion manager
       dmedc_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_)))
 {
-  return;
 }
 
 
@@ -106,16 +105,17 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateAction(
       // extract porosity from material and store in diffusion manager
       if (material->MaterialType() == INPAR::MAT::m_elchmat)
       {
-        const MAT::ElchMat* elchmat = static_cast<const MAT::ElchMat*>(material.get());
+        const auto* elchmat = static_cast<const MAT::ElchMat*>(material.get());
 
         for (int iphase = 0; iphase < elchmat->NumPhase(); ++iphase)
         {
           Teuchos::RCP<const MAT::Material> phase = elchmat->PhaseById(elchmat->PhaseID(iphase));
 
           if (phase->MaterialType() == INPAR::MAT::m_elchphase)
+          {
             dmedc_->SetPhasePoro(
                 (static_cast<const MAT::ElchPhase*>(phase.get()))->Epsilon(), iphase);
-
+          }
           else
             dserror("Invalid material!");
         }
@@ -158,7 +158,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
 
   if (mat->MaterialType() == INPAR::MAT::m_elchmat)
   {
-    const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+    const auto* actmat = static_cast<const MAT::ElchMat*>(mat.get());
 
     for (int iphase = 0; iphase < actmat->NumPhase(); ++iphase)
     {
@@ -167,7 +167,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
 
       if (singlemat->MaterialType() == INPAR::MAT::m_elchphase)
       {
-        const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
+        const auto* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
 
         dmedc_->SetPhasePoro(actsinglemat->Epsilon(), iphase);
       }
@@ -196,7 +196,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateNeumann(
           for (int vi = 0; vi < my::nen_; ++vi)
             elevec1[vi * my::numdofpernode_ + my::numscal_] +=
                 valence_k * elevec1[vi * my::numdofpernode_ + k];
-          ;
         }  // loop over scalars
 
         break;
@@ -275,10 +274,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoun
       dserror("Unknown closing equation for electric potential!");
       break;
     }
-  }  // switch(myelch::elchparams_->EquPot())
-
-  return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateElchBoundaryKinetics
+  }
+}
 
 
 /*-------------------------------------------------------------------------------------*
@@ -291,15 +288,43 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupl
     Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
     Epetra_SerialDenseVector& eslaveresidual)
 {
-  // this function should never be called
-  dserror(
-      "Each scatra-scatra interface for electrochemistry problems with conforming interface "
-      "discretization "
-      "must have an electrode on the slave side and the electrolyte on the master side, not the "
-      "other way around!");
+  switch (my::scatraparamsboundary_->KineticModel())
+  {
+    case INPAR::S2I::kinetics_nointerfaceflux:
+      break;
+    default:
+    {
+      dserror(
+          "Evaluation of scatra-scatra interface kinetics for electrochemistry problems with "
+          "conforming interface discretization must have an electrode on the slave side and the "
+          "electrolyte on the master side.");
+      break;
+    }
+  }
+}
 
-  return;
-}  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICoupling
+/*-------------------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype>::EvaluateS2ICouplingOD(
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix)
+{
+  switch (my::scatraparamsboundary_->KineticModel())
+  {
+    case INPAR::S2I::kinetics_nointerfaceflux:
+      break;
+    default:
+    {
+      dserror(
+          "Evaluation of scatra-scatra interface kinetics for electrochemistry problems with "
+          "conforming interface discretization must have an electrode on the slave side and the "
+          "electrolyte on the master side.");
+      break;
+    }
+  }
+}
 
 
 /*-------------------------------------------------------------------------------------*
