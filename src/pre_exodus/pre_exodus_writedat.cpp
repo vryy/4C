@@ -257,7 +257,8 @@ void EXODUS::WriteDatConditions(
         dat << "// " << pname << std::endl;
 
       // write the condition
-      if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me == EXODUS::bcns))
+      if (actcon.desc == "" and actcon.sec == "DESIGN SURF LOCSYS CONDITIONS" and
+          actcon.me == EXODUS::bcns)
       {
         // special case for locsys conditions: calculate normal
         std::vector<double> normal_tangent = EXODUS::CalcNormalSurfLocsys(actcon.id, mymesh);
