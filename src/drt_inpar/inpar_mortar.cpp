@@ -138,6 +138,11 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       "redistribution",
       &parallelRedist);
 
+  DoubleParameter("MAX_BALANCE_SLAVE_ELES", 0.5,
+      "Max-to-min ratio of mortar slave elements per processor to triggger parallel "
+      "redistribution",
+      &parallelRedist);
+
   IntParameter("MIN_ELEPROC", 0,
       "Minimum no. of elements per processor for parallel redistribution", &parallelRedist);
 

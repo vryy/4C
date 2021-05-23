@@ -242,6 +242,8 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
   bool perform_rebalancing = false;
   const double max_time_unbalance =
       Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_EVAL_TIME");
+  const double max_ele_unbalance =
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_SLAVE_ELES");
 
   double time_average = 0.0;
   double elements_average = 0.0;
@@ -286,9 +288,9 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
          * by more than (MAX_BALANCE_EVAL_TIME - 1.0)*100%)
          *
          * Moreover, we redistribute if in the majority of iteration steps of the last time step
-         * there has been an unbalance in element distribution, i.e. if elements_average >= 0.5)
+         * there has been an unbalance in element distribution.
          */
-        if (time_average >= max_time_unbalance || elements_average >= 0.5)
+        if (time_average >= max_time_unbalance || elements_average >= max_ele_unbalance)
           perform_rebalancing = true;
       }
 
