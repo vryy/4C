@@ -702,7 +702,7 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
 
   if (Teuchos::getIntegralValue<INPAR::MORTAR::ParallelRedist>(mortarParallelRedistParams,
           "PARALLEL_REDIST") == INPAR::MORTAR::ParallelRedist::redist_dynamic &&
-      mortarParallelRedistParams.get<double>("MAX_BALANCE") < 1.0)
+      mortarParallelRedistParams.get<double>("MAX_BALANCE_EVAL_TIME") < 1.0)
     dserror(
         "Maximum allowed value of load balance for dynamic parallel redistribution must be "
         ">= 1.0");

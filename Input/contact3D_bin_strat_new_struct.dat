@@ -70,7 +70,7 @@ SEARCH_ALGORITHM                BinaryTree
 SEARCH_PARAM                    0.3
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 dynamic
-MAX_BALANCE                     1.0
+MAX_BALANCE_EVAL_TIME           1.0
 GHOSTING_STRATEGY               binning
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver

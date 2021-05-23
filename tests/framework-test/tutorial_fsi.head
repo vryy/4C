@@ -22,7 +22,7 @@ MAXITER                         4
 //
 TOLRES                          1.0e-4
 //
-TOLDISP                         1.0e-4 
+TOLDISP                         1.0e-4
 //
 ----------------------------------------------------------DESIGN DESCRIPTION
 //
@@ -673,7 +673,7 @@ PARALLEL_REDIST                 Static
 GHOSTING_STRATEGY               redundant_master
 //
 // Maximum value of load balance measure before parallel redistribution
-MAX_BALANCE                     2
+MAX_BALANCE_EVAL_TIME           2
 //
 // Minimum no. of elements per processor for parallel redistribution
 MIN_ELEPROC                     0

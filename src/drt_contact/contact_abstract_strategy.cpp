@@ -241,7 +241,7 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
 
   bool perform_rebalancing = false;
   const double max_time_unbalance =
-      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_EVAL_TIME");
 
   double time_average = 0.0;
   double elements_average = 0.0;
@@ -281,9 +281,9 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
         /* Decide on redistribution
          *
          * We allow a maximum value of the balance measure in the system as defined in the input
-         * parameter MAX_BALANCE, i.e. the maximum local processor workload and the minimum local
-         * processor workload for mortar evaluation of all interfaces may not differ by more than
-         * (MAX_BALANCE - 1.0)*100%)
+         * parameter MAX_BALANCE_EVAL_TIME, i.e. the maximum local processor workload and the
+         * minimum local processor workload for mortar evaluation of all interfaces may not differ
+         * by more than (MAX_BALANCE_EVAL_TIME - 1.0)*100%)
          *
          * Moreover, we redistribute if in the majority of iteration steps of the last time step
          * there has been an unbalance in element distribution, i.e. if elements_average >= 0.5)
