@@ -7,17 +7,89 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "../drt_lib/drt_utils.H"
+#include "scatra_utils.H"
+
+#include "../drt_inpar/inpar_s2i.H"
+
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_element.H"
+#include "../drt_lib/drt_utils.H"
 
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/position_array.H"
 
-#include "scatra_utils.H"
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
+    const std::string& condition_to_be_tested, Teuchos::RCP<DRT::Discretization> discretization)
+{
+  std::vector<DRT::Condition*> conditionsToBeTested;
+  discretization->GetCondition(condition_to_be_tested, conditionsToBeTested);
+  std::vector<DRT::Condition*> s2ikinetics_conditions;
+  discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
+  // loop over all conditions to be tested and check for a consistent initialization of the s2i
+  // conditions
+  for (const auto& conditionToBeTested : conditionsToBeTested)
+  {
+    if (conditionToBeTested->GType() != DRT::Condition::Surface) continue;
+    bool isslave(true);
+    const int s2ikinetics_id = conditionToBeTested->GetInt("S2IKineticsID");
+
+    // check the interface side
+    switch (conditionToBeTested->GetInt("interface side"))
+    {
+      case INPAR::S2I::side_slave:
+      {
+        isslave = true;
+        break;
+      }
+      case INPAR::S2I::side_master:
+      {
+        isslave = false;
+        break;
+      }
+      default:
+      {
+        dserror("interface side of %s has to be either 'Slave' or 'Master'",
+            condition_to_be_tested.c_str());
+        break;
+      }
+    }
+
+    // loop over all s2i conditions to find the one that is matching the current ssi condition
+    for (const auto& s2ikinetics_cond : s2ikinetics_conditions)
+    {
+      const int s2ikinetics_cond_id = s2ikinetics_cond->GetInt("ConditionID");
+      // only do further checks if Ids match
+      if (s2ikinetics_id != s2ikinetics_cond_id) continue;
+
+      // check the interface side
+      switch (s2ikinetics_cond->GetInt("interface side"))
+      {
+        case INPAR::S2I::side_slave:
+        {
+          if (isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
+
+          break;
+        }
+        case INPAR::S2I::side_master:
+        {
+          if (!isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2ikinetics_cond, true);
+
+          break;
+        }
+        default:
+        {
+          dserror("interface side of 'S2IKinetics' condition has to be either 'Slave' or 'Master'");
+          break;
+        }
+      }
+    }
+  }
+}
 
 /*----------------------------------------------------------------------*
  | Calculate the Mean-average of gradient of a scalar       winter 04/17|

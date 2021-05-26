@@ -173,7 +173,7 @@ E 1 - ScaTra 1
 E 2 - ScaTra 2
 // cathode
 E 3 - ScaTra 3
--------------------------------DESIGN S2I COUPLING SURF CONDITIONS
+-------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  4
 // an_el_an_side
 E 2 - 0 Slave KineticModel Butler-VolmerReduced_ThermoResistance numscal 1 stoichiometries -1 e- 1 k_r 1.0e-3 alpha_a 0.5 alpha_c 0.5 thermoperm 1.0e-4 molar_heat_capacity 0.0
@@ -186,13 +186,13 @@ E 5 - 1 Slave KineticModel Butler-VolmerReduced_ThermoResistance numscal 1 stoic
 --------------------DESIGN SSTI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  4
 // an_el_an_side
-E 2 - 0 Slave S2ICouplingID 0
+E 2 - 0 Slave S2IKineticsID 0
 // an_el_el_side
-E 3 - 0 Master S2ICouplingID 0
+E 3 - 0 Master S2IKineticsID 0
 // cath_el_el_side
-E 4 - 1 Master S2ICouplingID 1
+E 4 - 1 Master S2IKineticsID 1
 // cath_el_cath_side
-E 5 - 1 Slave S2ICouplingID 1
+E 5 - 1 Slave S2IKineticsID 1
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

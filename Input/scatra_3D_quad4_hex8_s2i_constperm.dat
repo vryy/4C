@@ -70,7 +70,13 @@ NDVOL   0
 DLINE  1
 // curve
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 3 3
--------------------------------DESIGN S2I COUPLING LINE CONDITIONS
+------------------------------DESIGN S2I MESHTYING LINE CONDITIONS
+DLINE  2
+// coupling_surface
+E 1 - 1 Slave S2IKineticsID 1
+// coupling_block
+E 2 - 1 Master S2IKineticsID 1
+-------------------------------DESIGN S2I KINETICS LINE CONDITIONS
 DLINE  2
 // coupling_surface
 E 1 - 1 Slave KineticModel ConstantPermeability numscal 2 permeabilities 1.0 0.1

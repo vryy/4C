@@ -159,66 +159,6 @@ void SSI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(
-    const std::vector<DRT::Condition*>& conditionsToBeTested,
-    Teuchos::RCP<DRT::Discretization>& structdis)
-{
-  std::vector<DRT::Condition*> s2iconditions;
-  structdis->GetCondition("S2ICoupling", s2iconditions);
-
-  // loop over all conditions to be tested and check for a consistent initialization of the s2i
-  // conditions
-  for (const auto& conditionToBeTested : conditionsToBeTested)
-  {
-    if (conditionToBeTested->GType() != DRT::Condition::Surface) continue;
-    bool isslave(true);
-    const int s2icouplingid = conditionToBeTested->GetInt("S2ICouplingID");
-    const auto* side = conditionToBeTested->Get<std::string>("Side");
-    // check interface side
-    if (*side == "Slave")
-      isslave = true;
-    else if (*side == "Master")
-      isslave = false;
-    else
-    {
-      dserror(
-          "Interface side of tested condition not recognized, has to be either 'Slave' or "
-          "'Master'");
-    }
-
-    // loop over all s2i conditions to find the one that is matching the current ssi condition
-    for (const auto& s2icondition : s2iconditions)
-    {
-      const int s2iconditionid = s2icondition->GetInt("ConditionID");
-      // only do further checks if Ids match
-      if (s2icouplingid != s2iconditionid) continue;
-
-      // check the interface side
-      switch (s2icondition->GetInt("interface side"))
-      {
-        case INPAR::S2I::side_slave:
-        {
-          if (isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition, true);
-
-          break;
-        }
-        case INPAR::S2I::side_master:
-        {
-          if (!isslave) DRT::UTILS::HaveSameNodes(conditionToBeTested, s2icondition, true);
-
-          break;
-        }
-        default:
-        {
-          dserror("interface side of 'S2iCondition' has to be either 'Slave' or 'Master'");
-          break;
-        }
-      }
-    }
-  }
-}
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>>
 SSI::UTILS::BuildSlaveMasterPairing(const std::vector<DRT::Condition*>& conditions)
 {
@@ -229,12 +169,17 @@ SSI::UTILS::BuildSlaveMasterPairing(const std::vector<DRT::Condition*>& conditio
   {
     const auto pair =
         std::pair<const int, DRT::Condition* const>(condition->GetInt("ConditionID"), condition);
-    if (*condition->Get<std::string>("Side") == "Slave")
-      slave_conditions.insert(pair);
-    else if (*condition->Get<std::string>("Side") == "Master")
-      master_conditions.insert(pair);
-    else
-      dserror("Coupling side must either be slave or master");
+    switch (condition->GetInt("interface side"))
+    {
+      case INPAR::S2I::side_slave:
+        slave_conditions.insert(pair);
+        break;
+      case INPAR::S2I::side_master:
+        master_conditions.insert(pair);
+        break;
+      default:
+        dserror("Coupling side must either be slave or master");
+    }
   }
 
   // safety check
@@ -800,8 +745,8 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     Teuchos::RCP<DRT::Discretization>& structdis)
 {
   // get conditions to check against
-  std::vector<DRT::Condition*> s2iconditions;
-  structdis->GetCondition("S2ICoupling", s2iconditions);
+  std::vector<DRT::Condition*> s2ikinetics_conditions;
+  structdis->GetCondition("S2IKinetics", s2ikinetics_conditions);
   std::vector<DRT::Condition*> contactconditions;
   structdis->GetCondition("Contact", contactconditions);
 
@@ -811,10 +756,10 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     std::vector<DRT::Condition*> InterfaceS2IConditions;
     std::vector<DRT::Condition*> InterfaceContactConditions;
 
-    const int s2iconditionID = conditionToBeTested->GetInt("S2ICouplingID");
+    const int S2IKineticsID = conditionToBeTested->GetInt("S2IKineticsID");
     const int contactconditionID = conditionToBeTested->GetInt("ContactConditionID");
 
-    if (s2iconditionID != contactconditionID)
+    if (S2IKineticsID != contactconditionID)
     {
       dserror(
           "For the 'SSIInterfaceContact' condition we have to demand, that the 'S2ICouplingID' and "
@@ -823,11 +768,11 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     }
 
     // loop over all scatra-scatra interface conditions and add them to the vector, if IDs match
-    for (auto* s2icondition : s2iconditions)
+    for (auto* s2ikinetics_cond : s2ikinetics_conditions)
     {
-      if (s2icondition->GetInt("ConditionID") != s2iconditionID) continue;
+      if (s2ikinetics_cond->GetInt("ConditionID") != S2IKineticsID) continue;
 
-      InterfaceS2IConditions.push_back(s2icondition);
+      InterfaceS2IConditions.push_back(s2ikinetics_cond);
     }
 
     // loop over all contact conditions and add them to the vector, if IDs match
@@ -871,7 +816,7 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
             "'Contact' conditions with ID: %i;\n"
             "The last two conditions are NOT defined on the same node-sets which is not "
             "reasonable. Check your Input-File!",
-            conditionToBeTested->GetInt("ConditionID"), s2iconditionID, contactconditionID);
+            conditionToBeTested->GetInt("ConditionID"), S2IKineticsID, contactconditionID);
       }
     }
   }

@@ -194,7 +194,7 @@ E 3 - ScaTra 3
 E 4 - ScaTra 5
 // cathode_cc 
 E 5 - ScaTra 4
--------------------------------DESIGN S2I COUPLING SURF CONDITIONS
+-------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  10
 // cc-side_(sl)_of_an-cc_interface
 E 2 - 0 Slave KineticModel ConstantInterfaceResistance resistance 8.0e-3
@@ -229,25 +229,25 @@ E 12 - ID 1
 --------------------DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS
 DSURF  10
 // cc-side_(sl)_of_an-cc_interface
-E 2 - 0 Slave S2ICouplingID 0
+E 2 - 0 Slave S2IKineticsID 0
 // an-side_(ma)_of_an-cc_interface
-E 3 - 0 Master S2ICouplingID 0
+E 3 - 0 Master S2IKineticsID 0
 // an-side_(sl)_of_an-el_interface
-E 4 - 1 Slave S2ICouplingID 1
+E 4 - 1 Slave S2IKineticsID 1
 // el-side_(ma)_of_an-el_interface
-E 5 - 1 Master S2ICouplingID 1
+E 5 - 1 Master S2IKineticsID 1
 // el-side_(ma)_of_cat-el_interface
-E 6 - 2 Master S2ICouplingID 2
+E 6 - 2 Master S2IKineticsID 2
 // cat-side_(sl)_of_cat-el_interfac
-E 7 - 2 Slave S2ICouplingID 2
+E 7 - 2 Slave S2IKineticsID 2
 // cat-side_(ma)_of_cat-cc_interfac
-E 8 - 3 Master S2ICouplingID 3
+E 8 - 3 Master S2IKineticsID 3
 // cc-side_(sl)_of_cat-comp_cat-cc_
-E 9 - 3 Slave S2ICouplingID 3
+E 9 - 3 Slave S2IKineticsID 3
 // sol-el-side_(ma)_of_comp_cat-cc_
-E 10 - 4 Master S2ICouplingID 4
+E 10 - 4 Master S2IKineticsID 4
 // cc-side_(sl)_of_sol-el-comp_cat-
-E 11 - 4 Slave S2ICouplingID 4
+E 11 - 4 Slave S2IKineticsID 4
 --------------DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS
 DLINE  4
 // line_triple_point_cc_side

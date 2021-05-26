@@ -438,8 +438,10 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure-Thermo interaction interface meshtying condition including 3 domains: ";
   else if (Type() == CellFocalAdhesion)
     os << "Scalar transport boundary condition depending on structural surface stress";
-  else if (Type() == S2ICoupling)
-    os << "Scatra-scatra interface coupling: ";
+  else if (Type() == S2IKinetics)
+    os << "Scatra-scatra interface kinetics: ";
+  else if (Type() == S2IMeshtying)
+    os << "Scatra-scatra interface mesh tying: ";
   else if (Type() == SilverMueller)
     os << "Silver-Mueller boundary for electromagnetics";
   else if (Type() == ElementTag)

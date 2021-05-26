@@ -98,7 +98,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
   // set parameters to internal members depending on condition type
   switch (conditiontype_)
   {
-    case DRT::Condition::ConditionType::S2ICoupling:
+    case DRT::Condition::ConditionType::S2IKinetics:
     {
       // set parameters to internal members depending on kinetic model
       switch (kineticmodel_)

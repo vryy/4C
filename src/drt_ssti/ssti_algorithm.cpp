@@ -16,7 +16,6 @@
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/ad_str_structure_new.H"
 
-#include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_inpar/inpar_ssti.H"
@@ -26,15 +25,12 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "../drt_scatra/scatra_utils.H"
 
 #include "../drt_ssi/ssi_utils.H"
 
-#include "../drt_sti/sti_clonestrategy.H"
-
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
-
-#include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -179,10 +175,8 @@ void SSTI::SSTIAlgorithm::Setup()
   {
     // check for consistent parameterization of these conditions
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-    // get ssi to be tested
-    std::vector<DRT::Condition*> ssticonditions;
-    structdis->GetCondition("SSTIInterfaceMeshtying", ssticonditions);
-    SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssticonditions, structdis);
+    SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
+        "SSTIInterfaceMeshtying", structdis);
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(

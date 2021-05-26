@@ -50,11 +50,6 @@ namespace SSI
         const std::vector<DRT::Condition*>& conditionsToBeTested,
         Teuchos::RCP<DRT::Discretization>& structdis);
 
-    //! check, if nodes of input conditions equal s2i conditions
-    void CheckConsistencyWithS2IMeshtyingCondition(
-        const std::vector<DRT::Condition*>& conditionsToBeTested,
-        Teuchos::RCP<DRT::Discretization>& structdis);
-
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
     int CheckTimeStepping(double dt1, double dt2);

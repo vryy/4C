@@ -62,7 +62,11 @@ NDVOL   2
 DVOL   2
 E 1 - ScaTra 1
 E 2 - ScaTra 2
--------------------------------DESIGN S2I COUPLING SURF CONDITIONS
+------------------------------DESIGN S2I MESHTYING SURF CONDITIONS
+DSURF  2
+E 1 - 0 Master S2IKineticsID 0
+E 2 - 0 Slave S2IKineticsID 0
+-------------------------------DESIGN S2I KINETICS SURF CONDITIONS
 DSURF  2
 E 1 - 0 Master
 E 2 - 0 Slave KineticModel ConstantPermeability numscal 1 permeabilities 0.1

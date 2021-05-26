@@ -386,7 +386,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
 
   // evaluate scatra-scatra interface coupling
   std::vector<DRT::Condition*> conditions;
-  scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+  scatra_->ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
   for (const auto& condition : conditions)
   {
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
@@ -395,7 +395,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
       meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*condition);
       // evaluate the condition now
       scatra_->ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrastructures2i, "S2ICoupling", condition->GetInt("ConditionID"));
+          condparams, strategyscatrastructures2i, "S2IKinetics", condition->GetInt("ConditionID"));
     }
   }
 

@@ -297,12 +297,14 @@ const Epetra_Map& SCATRA::MeshtyingStrategyS2I::DofRowMap() const
  *-----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 {
-  // time measurement: evaluate condition 'S2ICoupling'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2ICoupling'");
+  // time measurement: evaluate condition 'S2IMeshtying'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2IMeshtying'");
 
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> conditions;
-  scatratimint_->Discretization()->GetCondition("S2ICoupling", conditions);
+  std::vector<DRT::Condition*> s2imeshtying_conditions;
+  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  std::vector<DRT::Condition*> s2ikinetics_conditions;
+  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
   switch (couplingtype_)
   {
@@ -325,24 +327,36 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       islavematrix_->Zero();
       if (not slaveonly_) imastermatrix_->Zero();
       islaveresidual_->PutScalar(0.);
-      for (auto& condition : conditions)
+      for (auto& meshtying_cond : s2imeshtying_conditions)
       {
-        if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
+        for (auto& kinetics_cond : s2ikinetics_conditions)
         {
-          // collect condition specific data and store to scatra boundary parameter class
-          SetConditionSpecificScaTraParameters(*condition);
+          // only evaluate the kinetic condition if it matches the S2IKineticsID of current mesh
+          // tying condition
+          if (meshtying_cond->GetInt("S2IKineticsID") != kinetics_cond->GetInt("ConditionID"))
+            continue;
+          // only evaluate the kinetic condition if the side matches that of the current mesh tying
+          // condition
+          const int kinetics_cond_interface_side = kinetics_cond->GetInt("interface side");
+          if (meshtying_cond->GetInt("interface side") != kinetics_cond_interface_side) continue;
 
-          if (not slaveonly_)
+          if (kinetics_cond_interface_side == INPAR::S2I::side_slave)
           {
-            scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
-                imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICoupling",
-                condition->GetInt("ConditionID"));
-          }
-          else
-          {
-            scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
-                Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICoupling",
-                condition->GetInt("ConditionID"));
+            // collect condition specific data and store to scatra boundary parameter class
+            SetConditionSpecificScaTraParameters(*kinetics_cond);
+
+            if (not slaveonly_)
+            {
+              scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+                  imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
+                  kinetics_cond->GetInt("ConditionID"));
+            }
+            else
+            {
+              scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+                  Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
+                  kinetics_cond->GetInt("ConditionID"));
+            }
           }
         }
       }
@@ -876,10 +890,11 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
 
   // extract boundary conditions for scatra-scatra interface layer growth
-  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+  std::vector<DRT::Condition*> s2icoupling_growth_conditions;
+  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", s2icoupling_growth_conditions);
 
   // evaluate scatra-scatra interface layer growth
-  if (conditions.size())
+  if (s2icoupling_growth_conditions.size())
   {
     switch (couplingtype_)
     {
@@ -901,7 +916,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         islaveresidual_->PutScalar(0.);
 
         // collect condition specific data and store to scatra boundary parameter class
-        SetConditionSpecificScaTraParameters(*conditions[0]);
+        SetConditionSpecificScaTraParameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
         scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
@@ -1053,7 +1068,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICoupling", condid);
+                    condparams, strategy, "S2IKinetics", condid);
 
                 // finalize auxiliary matrix block
                 islavematrix->Complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1175,7 +1190,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICoupling", condid);
+                    condparams, strategy, "S2IKinetics", condid);
 
                 // finalize auxiliary matrix block
                 blockslavematrix->Complete();
@@ -1783,54 +1798,72 @@ void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
 
 
 /*----------------------------------------------------------------------*
- | perform setup of scatra-scatra interface coupling         fang 10/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> conditions(0, nullptr);
-  scatratimint_->Discretization()->GetCondition("S2ICoupling", conditions);
+  std::vector<DRT::Condition*> s2imeshtying_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  std::vector<DRT::Condition*> s2ikinetics_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
   slaveconditions_.clear();
   std::map<const int, DRT::Condition* const> masterconditions;
-  for (auto* condition : conditions)
+  for (auto* s2imeshtying_cond : s2imeshtying_conditions)
   {
-    const int condid = condition->GetInt("ConditionID");
-    if (condid < 0) dserror("Invalid condition ID %i for S2ICoupling Condition!", condid);
-
-    switch (condition->GetInt("interface side"))
+    for (auto* s2ikinetics_cond : s2ikinetics_conditions)
     {
-      case INPAR::S2I::side_slave:
-      {
-        if (slaveconditions_.find(condid) == slaveconditions_.end())
-          slaveconditions_.insert(std::pair<const int, DRT::Condition* const>(condid, condition));
-        else
-        {
-          dserror(
-              "Cannot have multiple slave-side scatra-scatra interface coupling conditions with "
-              "the same ID %i!",
-              condid);
-        }
-        break;
-      }
+      const int s2ikinetics_cond_id = s2ikinetics_cond->GetInt("ConditionID");
+      const int s2ikinetics_cond_interface_side = s2ikinetics_cond->GetInt("interface side");
 
-      case INPAR::S2I::side_master:
-      {
-        if (masterconditions.find(condid) == masterconditions.end())
-          masterconditions.insert(std::pair<const int, DRT::Condition* const>(condid, condition));
-        else
-        {
-          dserror(
-              "Cannot have multiple master-side scatra-scatra interface coupling conditions with "
-              "the same ID %i!",
-              condid);
-        }
-        break;
-      }
+      if (s2ikinetics_cond_id < 0)
+        dserror("Invalid condition ID %i for S2IKinetics Condition!", s2ikinetics_cond_id);
 
-      default:
+      // only continue if ID's match
+      if (s2imeshtying_cond->GetInt("S2IKineticsID") != s2ikinetics_cond_id) continue;
+      // only continue if sides match
+      if (s2imeshtying_cond->GetInt("interface side") != s2ikinetics_cond_interface_side) continue;
+
+      switch (s2ikinetics_cond_interface_side)
       {
-        dserror("Invalid scatra-scatra interface coupling condition!");
-        break;
+        case INPAR::S2I::side_slave:
+        {
+          if (slaveconditions_.find(s2ikinetics_cond_id) == slaveconditions_.end())
+          {
+            slaveconditions_.insert(
+                std::pair<const int, DRT::Condition* const>(s2ikinetics_cond_id, s2ikinetics_cond));
+          }
+          else
+          {
+            dserror(
+                "Cannot have multiple slave-side scatra-scatra interface kinetics conditions with "
+                "the same ID %i!",
+                s2ikinetics_cond_id);
+          }
+          break;
+        }
+
+        case INPAR::S2I::side_master:
+        {
+          if (masterconditions.find(s2ikinetics_cond_id) == masterconditions.end())
+          {
+            masterconditions.insert(
+                std::pair<const int, DRT::Condition* const>(s2ikinetics_cond_id, s2ikinetics_cond));
+          }
+          else
+          {
+            dserror(
+                "Cannot have multiple master-side scatra-scatra interface kinetics conditions with "
+                "the same ID %i!",
+                s2ikinetics_cond_id);
+          }
+          break;
+        }
+
+        default:
+        {
+          dserror("Invalid scatra-scatra interface kinetics condition!");
+          break;
+        }
       }
     }
   }
@@ -1845,8 +1878,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // overwrite IDs of master-side scatra-scatra interface coupling conditions with the value -1
       // to prevent them from being evaluated when calling EvaluateCondition on the discretization
       // TODO: this is somewhat unclean, because changing the conditions, makes calling
-      // SetupMeshtying() twice
-      //       invalid (which should not be necessary, but conceptually possible)
+      // SetupMeshtying() twice invalid (which should not be necessary, but conceptually possible)
       for (auto& mastercondition : masterconditions) mastercondition.second->Add("ConditionID", -1);
 
       if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
@@ -2649,7 +2681,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         }
 
         // loop over all boundary conditions for scatra-scatra interface coupling
-        for (auto& icond : conditions)
+        for (auto& icond : s2ikinetics_conditions)
         {
           // check whether current boundary condition is associated with boundary condition for
           // scatra-scatra interface layer growth
@@ -2803,7 +2835,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
   // set the condition type specific parameters
   switch (conditiontype)
   {
-    case DRT::Condition::ConditionType::S2ICoupling:
+    case DRT::Condition::ConditionType::S2IKinetics:
     {
       // set the kinetic model specific parameters
       switch (kineticmodel)

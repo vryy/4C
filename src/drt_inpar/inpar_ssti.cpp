@@ -10,6 +10,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_ssti.H"
+#include "inpar_s2i.H"
 #include "inpar_scatra.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "../linalg/linalg_equilibrate.H"
@@ -146,13 +147,14 @@ void INPAR::SSTI::SetValidConditions(
   std::vector<Teuchos::RCP<ConditionComponent>> sstiinterfacemeshtyingcomponents;
   sstiinterfacemeshtyingcomponents.emplace_back(
       Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(
-      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
+  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent(
+      "interface side", "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+      Teuchos::tuple<int>(
+          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
+      Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+      Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
 
   // insert input file line components into condition definitions
   for (const auto& sstiinterfacemeshtyingcomponent : sstiinterfacemeshtyingcomponents)
@@ -172,9 +174,10 @@ void INPAR::SSTI::SetValidConditions(
 
   std::vector<Teuchos::RCP<ConditionComponent>> sstitriplepointmeshtying;
   sstitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  sstitriplepointmeshtying.emplace_back(Teuchos::rcp(
-      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
+  sstitriplepointmeshtying.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
+      "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+      Teuchos::tuple<int>(
+          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
 
   for (auto& conditioncomponent : sstitriplepointmeshtying)
     sstiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);

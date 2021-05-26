@@ -11,6 +11,7 @@
 
 #include "drt_validparameters.H"
 #include "inpar_ssi.H"
+#include "inpar_s2i.H"
 #include "inpar_scatra.H"
 #include "../drt_lib/drt_conditiondefinition.H"
 #include "../linalg/linalg_equilibrate.H"
@@ -322,12 +323,13 @@ void INPAR::SSI::SetValidConditions(
   // reference is necessary.
   std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacemeshtying;
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(
-      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
+  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
+      "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+      Teuchos::tuple<int>(
+          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   ssiinterfacemeshtying.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
-  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+      Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
+  ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
 
   // insert input file line components into condition definitions
   for (auto& conditioncomponent : ssiinterfacemeshtying)
@@ -347,9 +349,10 @@ void INPAR::SSI::SetValidConditions(
 
   std::vector<Teuchos::RCP<ConditionComponent>> ssitriplepointmeshtying;
   ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(
-      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
+  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
+      "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
+      Teuchos::tuple<int>(
+          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
 
   for (auto& conditioncomponent : ssitriplepointmeshtying)
     ssiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
@@ -483,8 +486,8 @@ void INPAR::SSI::SetValidConditions(
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacecontact;
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  ssiinterfacecontact.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("S2ICouplingID")));
-  ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("S2ICouplingID")));
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("S2IKineticsID")));
+  ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
   ssiinterfacecontact.emplace_back(
       Teuchos::rcp(new SeparatorConditionComponent("ContactConditionID")));
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ContactConditionID")));

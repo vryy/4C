@@ -340,8 +340,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   condparams.set<int>("action", SCATRA::bd_calc_s2icoupling_od);
 
-  // number of dofset associated with displacement-related dofs on scalar transport
-  // discretization
+  // number of dofset associated with displacement-related dofs on scalar transport discretization
   condparams.set<int>("ndsdisp", 1);
 
   condparams.set<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::disp));
@@ -360,14 +359,14 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   // evaluate interface coupling
   std::vector<DRT::Condition*> conditions;
-  thermo_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+  thermo_->ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
   for (auto const& condition : conditions)
   {
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       meshtying_strategy_thermo_->SetConditionSpecificScaTraParameters(*condition);
       thermo_->ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrastructures2i, "S2ICoupling", condition->GetInt("ConditionID"));
+          condparams, strategyscatrastructures2i, "S2IKinetics", condition->GetInt("ConditionID"));
     }
   }
 

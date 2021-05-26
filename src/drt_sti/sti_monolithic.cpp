@@ -86,8 +86,8 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   itertol_ = fieldparameters_->sublist("NONLINEAR").get<double>("CONVTOL");
 
 
-  // extract coupling adapters for scatra-scatra interface coupling
-  if (ScaTraField()->S2ICoupling() and
+  // extract coupling adapters for scatra-scatra interface mesh tying
+  if (ScaTraField()->S2IMeshtying() and
       strategyscatra_->CouplingType() == INPAR::S2I::coupling_matching_nodes)
   {
     icoupscatra_ = strategyscatra_->CouplingAdapter();
@@ -130,7 +130,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface(Teuchos::null);
   Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerfaceslave(Teuchos::null);
 
-  if (ScaTraField()->S2ICoupling())
+  if (ScaTraField()->S2IMeshtying())
   {
     // merge slave and master side full maps for interface matrix for thermo and scatra
     interface_map_scatra = LINALG::MultiMapExtractor::MergeMaps(
@@ -155,7 +155,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
     {
       blockmaps_ = maps_;
 
-      if (ScaTraField()->S2ICoupling())
+      if (ScaTraField()->S2IMeshtying())
       {
         blockmapscatrainterface = Teuchos::rcp(new LINALG::MultiMapExtractor(*interface_map_scatra,
             std::vector<Teuchos::RCP<const Epetra_Map>>(1, interface_map_scatra)));
@@ -186,7 +186,7 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
 
       // safety check
       blockmapthermo_->CheckForValidMapExtractor();
-      if (ScaTraField()->S2ICoupling())
+      if (ScaTraField()->S2IMeshtying())
       {
         // build block map for scatra interface by merging slave and master side for each block
         std::vector<Teuchos::RCP<const Epetra_Map>> partial_blockmapscatrainterface(
@@ -758,7 +758,7 @@ void STI::Monolithic::AssembleMatAndRHS()
   scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoDomain(scatrathermoblockdomain_);
 
   // evaluate scatra-thermo-OD coupling. Contributions from interface
-  if (ScaTraField()->S2ICoupling())
+  if (ScaTraField()->S2IMeshtying())
     scatrathermooffdiagcoupling_->EvaluateOffDiagBlockScatraThermoInterface(
         scatrathermoblockinterface_);
 
@@ -766,7 +766,7 @@ void STI::Monolithic::AssembleMatAndRHS()
   scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraDomain(thermoscatrablockdomain_);
 
   // evaluate thermo-scatra-OD coupling. Contributions from interface
-  if (ScaTraField()->S2ICoupling())
+  if (ScaTraField()->S2IMeshtying())
     scatrathermooffdiagcoupling_->EvaluateOffDiagBlockThermoScatraInterface(
         thermoscatrablockinterface_);
 
@@ -1608,7 +1608,7 @@ void STI::Monolithic::ApplyDirichletOffDiag(
 
   // zero out slave-side rows of thermo-scatra matrix block after having added them to the
   // corresponding master-side rows to finalize condensation of slave-side thermo dofs
-  if (ThermoField()->S2ICoupling())
+  if (ThermoField()->S2IMeshtying())
   {
     switch (strategythermo_->CouplingType())
     {

@@ -78,14 +78,16 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
   if (thermo_->ScaTraField()->NumScal() != 1)
     dserror("Thermo field must involve exactly one transported scalar!");
 
-  // perform initializations associated with scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling())
+  // perform initializations associated with scatra-scatra interface mesh tying
+  if (scatra_->ScaTraField()->S2IMeshtying())
   {
     // safety check
-    if (!thermo_->ScaTraField()->S2ICoupling())
+    if (!thermo_->ScaTraField()->S2IMeshtying())
+    {
       dserror(
-          "Can't evaluate scatra-scatra interface coupling in scatra field, but not in thermo "
+          "Can't evaluate scatra-scatra interface mesh tying in scatra field, but not in thermo "
           "field!");
+    }
 
     // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time
     // integrators
@@ -114,9 +116,9 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
         if (strategythermo_->CouplingType() != INPAR::S2I::coupling_mortar_condensed_bubnov)
           dserror("Invalid type of scatra-scatra interface coupling for thermo field!");
 
-        // extract scatra-scatra interface coupling conditions
+        // extract scatra-scatra interface mesh tying conditions
         std::vector<DRT::Condition*> conditions;
-        scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+        scatra_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
         for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
@@ -172,8 +174,8 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
       "INITIALFIELD", stiparameters_->get<std::string>("THERMO_INITIALFIELD"));
   fieldparameters_->set<int>("INITFUNCNO", stiparameters_->get<int>("THERMO_INITFUNCNO"));
 
-  // perform additional manipulations associated with scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling())
+  // perform additional manipulations associated with scatra-scatra interface mesh tying
+  if (scatra_->ScaTraField()->S2IMeshtying())
   {
     // set flag for matrix type associated with thermo field
     fieldparameters_->set<std::string>("MATRIXTYPE", "sparse");
@@ -311,8 +313,8 @@ void STI::Algorithm::TransferScatraToThermo(
   // pass scatra degrees of freedom to thermo discretization
   thermo_->ScaTraField()->Discretization()->SetState(2, "scatra", scatra);
 
-  // transfer state vector for evaluation of scatra-scatra interface coupling
-  if (thermo_->ScaTraField()->S2ICoupling())
+  // transfer state vector for evaluation of scatra-scatra interface mesh tying
+  if (thermo_->ScaTraField()->S2IMeshtying())
   {
     switch (strategythermo_->CouplingType())
     {
@@ -332,9 +334,9 @@ void STI::Algorithm::TransferScatraToThermo(
 
       case INPAR::S2I::coupling_mortar_condensed_bubnov:
       {
-        // extract scatra-scatra interface coupling conditions
+        // extract scatra-scatra interface mesh tying conditions
         std::vector<DRT::Condition*> conditions;
-        thermo_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+        thermo_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
         for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
@@ -380,13 +382,13 @@ void STI::Algorithm::TransferThermoToScatra(
   // pass thermo degrees of freedom to scatra discretization
   scatra_->ScaTraField()->Discretization()->SetState(2, "thermo", thermo);
 
-  // transfer state vector for evaluation of scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling() and
+  // transfer state vector for evaluation of scatra-scatra interface mesh tying
+  if (scatra_->ScaTraField()->S2IMeshtying() and
       strategyscatra_->CouplingType() == INPAR::S2I::coupling_mortar_standard)
   {
-    // extract scatra-scatra interface coupling conditions
+    // extract scatra-scatra interface mesh tying conditions
     std::vector<DRT::Condition*> conditions;
-    scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+    scatra_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
 
     // loop over all conditions
     for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)

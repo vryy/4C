@@ -314,9 +314,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
       Teuchos::null,  // no additional matrices of vectors
       Teuchos::null, Teuchos::null, Teuchos::null);
 
-  // evaluate scatra-scatra interface coupling
+  // evaluate scatra-scatra interface kinetics
   std::vector<DRT::Condition*> conditions;
-  ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+  ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
   for (const auto& condition : conditions)
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
     {
@@ -324,7 +324,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
       MeshtyingStrategyScaTra()->SetConditionSpecificScaTraParameters(*condition);
       // evaluate the condition
       ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrathermos2i, "S2ICoupling", condition->GetInt("ConditionID"));
+          condparams, strategyscatrathermos2i, "S2IKinetics", condition->GetInt("ConditionID"));
     }
 
   // finalize slave matrix
@@ -489,9 +489,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
       Teuchos::null,  // no additional matrices of vectors
       Teuchos::null, Teuchos::null);
 
-  // evaluate scatra-scatra interface coupling
+  // evaluate scatra-scatra interface kinetics
   std::vector<DRT::Condition*> conditions;
-  ThermoField()->Discretization()->GetCondition("S2ICoupling", conditions);
+  ThermoField()->Discretization()->GetCondition("S2IKinetics", conditions);
   for (const auto& condition : conditions)
     if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
     {
@@ -499,7 +499,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
       MeshtyingStrategyThermo()->SetConditionSpecificScaTraParameters(*condition);
       // evaluate the condition
       ThermoField()->Discretization()->EvaluateCondition(
-          condparams, strategythermoscatras2i, "S2ICoupling", condition->GetInt("ConditionID"));
+          condparams, strategythermoscatras2i, "S2IKinetics", condition->GetInt("ConditionID"));
     }
 
   switch (ScaTraField()->MatrixType())
@@ -646,9 +646,9 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockScatraT
       INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
       INPAR::S2I::side_undefined, Teuchos::null, INPAR::S2I::side_undefined, 0, 1);
 
-  // extract scatra-scatra interface coupling conditions
+  // extract scatra-scatra interface kinetics conditions
   std::vector<DRT::Condition*> conditions;
-  ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+  ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
 
   // loop over all conditions
   for (const auto& condition : conditions)
@@ -789,9 +789,9 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::EvaluateOffDiagBlockThermoS
       INPAR::S2I::side_undefined, INPAR::S2I::side_undefined, Teuchos::null,
       INPAR::S2I::side_undefined, Teuchos::null, INPAR::S2I::side_undefined, 0, 1);
 
-  // extract scatra-scatra interface coupling conditions
+  // extract scatra-scatra interface kinetics conditions
   std::vector<DRT::Condition*> conditions;
-  ThermoField()->Discretization()->GetCondition("S2ICoupling", conditions);
+  ThermoField()->Discretization()->GetCondition("S2IKinetics", conditions);
 
   // loop over all conditions
   for (const auto& condition : conditions)

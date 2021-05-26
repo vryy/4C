@@ -198,19 +198,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   // extract condition type
   const DRT::Condition::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
-  if (s2iconditiontype != DRT::Condition::S2ICoupling and
+  if (s2iconditiontype != DRT::Condition::S2IKinetics and
       s2iconditiontype != DRT::Condition::S2ICouplingGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  if ((s2iconditiontype == DRT::Condition::S2ICoupling and
+  if ((s2iconditiontype == DRT::Condition::S2IKinetics and
           kineticmodel != INPAR::S2I::kinetics_butlervolmer) or
       (s2iconditiontype == DRT::Condition::S2ICouplingGrowth and
           kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer))
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1.0 / faraday;
@@ -253,7 +255,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // equilibrium electric potential difference and its derivative w.r.t. concentration at
     // electrode surface
-    const double epd = s2iconditiontype == DRT::Condition::S2ICoupling
+    const double epd = s2iconditiontype == DRT::Condition::S2IKinetics
                            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
                            : 0.0;
     const double epdderiv =
@@ -261,7 +263,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
-    if (s2iconditiontype == DRT::Condition::S2ICoupling and not std::isinf(epd))
+    if (s2iconditiontype == DRT::Condition::S2IKinetics and not std::isinf(epd))
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
@@ -420,19 +422,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   // extract condition type
   const DRT::Condition::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
-  if (s2iconditiontype != DRT::Condition::S2ICoupling and
+  if (s2iconditiontype != DRT::Condition::S2IKinetics and
       s2iconditiontype != DRT::Condition::S2ICouplingGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  if ((s2iconditiontype == DRT::Condition::S2ICoupling and
+  if ((s2iconditiontype == DRT::Condition::S2IKinetics and
           kineticmodel != INPAR::S2I::kinetics_butlervolmer) or
       (s2iconditiontype == DRT::Condition::S2ICouplingGrowth and
           kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer))
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1.0 / faraday;
@@ -474,13 +478,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     const double eslaveresistanceint = eslavegrowthint * resistivity;
 
     // equilibrium electric potential difference at electrode surface
-    const double epd = s2iconditiontype == DRT::Condition::S2ICoupling
+    const double epd = s2iconditiontype == DRT::Condition::S2IKinetics
                            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
                            : 0.0;
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
-    if (s2iconditiontype == DRT::Condition::S2ICoupling and not std::isinf(epd))
+    if (s2iconditiontype == DRT::Condition::S2IKinetics and not std::isinf(epd))
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
