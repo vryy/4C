@@ -58,7 +58,8 @@ LM_SHAPEFCN                     Dual
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Dynamic
 MIN_ELEPROC                     0
-MAX_BALANCE                     1.5
+MAX_BALANCE_EVAL_TIME           1.5
+MAX_BALANCE_SLAVE_ELES          1.0
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

@@ -4525,7 +4525,10 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(
   double taverage = 0.0;
   double eaverage = 0;
   bool doredist = false;
-  const double max_balance = Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+  const double max_balance =
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_EVAL_TIME");
+  const double max_ele_unbalance =
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_SLAVE_ELES");
 
   //**********************************************************************
   // (1) static redistribution: ONLY at time t=0 or after restart
@@ -4587,16 +4590,17 @@ bool WEAR::WearLagrangeStrategy::RedistributeContact(
       unbalanceEvaluationTime_.resize(0);
       unbalanceNumSlaveElements_.resize(0);
 
-      // decide on redistribution
-      // -> (we allow a maximum value of the balance measure in the
-      // system as defined in the input parameter MAX_BALANCE, i.e.
-      // the maximum local processor workload and the minimum local
-      // processor workload for mortar evaluation of all interfaces
-      // may not differ by more than (MAX_BALANCE - 1.0)*100%)
-      // -> (moreover, we redistribute if in the majority of iteration
-      // steps of the last time step there has been an unbalance in
-      // element distribution, i.e. if eaverage >= 0.5)
-      if (taverage >= max_balance || eaverage >= 0.5) doredist = true;
+      /* Decide on redistribution
+       *
+       * We allow a maximum value of the balance measure in the system as defined in the input
+       * parameter MAX_BALANCE_EVAL_TIME, i.e. the maximum local processor workload and the
+       * minimum local processor workload for mortar evaluation of all interfaces may not differ
+       * by more than (MAX_BALANCE_EVAL_TIME - 1.0)*100%)
+       *
+       * Moreover, we redistribute if in the majority of iteration steps of the last time step
+       * there has been an unbalance in element distribution.
+       */
+      if (taverage >= max_balance || eaverage >= max_ele_unbalance) doredist = true;
     }
   }
 
