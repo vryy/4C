@@ -14,6 +14,14 @@ electrochemistry
 
 namespace CONTACT
 {
+  /*!
+   * @brief This class performs Gauss integration and the assembly to element matrices and vectors
+   * that are relevant to the Nitsche contact formulation for scatra-structure interaction problems
+   * using the electrochemistry formulation of the scatra field.
+   *
+   * @note Relevant methods are already templated w.r.t. the problem dimension. Currently only
+   * 'dim=3' is used and tested but it should be quite easy to extend this if necessary.
+   */
   class CoIntegratorNitscheSsiElch : public CoIntegratorNitscheSsi
   {
    public:
