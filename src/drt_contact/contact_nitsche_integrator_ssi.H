@@ -23,6 +23,13 @@ namespace DRT
 
 namespace CONTACT
 {
+  /*!
+   * @brief This class performs Gauss integration and the assembly to element matrices and vectors
+   * that are relevant to the Nitsche contact formulation for scatra-structure interaction problems.
+   *
+   * @note Relevant methods are already templated w.r.t. the problem dimension. Currently only
+   * 'dim=3' is used and tested but it should be quite easy to extend this if necessary.
+   */
   class CoIntegratorNitscheSsi : public CoIntegratorNitsche
   {
    public:
@@ -42,7 +49,7 @@ namespace CONTACT
     CoIntegratorNitscheSsi(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
         const Epetra_Comm& comm);
 
-   private:
+   protected:
     //! access method to scatra time integration factors
     const DRT::ELEMENTS::ScaTraEleParameterTimInt* GetScaTraEleParameterTimInt() const
     {
@@ -55,6 +62,40 @@ namespace CONTACT
       return scatraparamsboundary_;
     }
 
+    /*!
+     * @brief  Evaluate cauchy stress component and its derivatives
+     *
+     * @tparam dim  dimension of the problem
+     * @param[in] mortar_ele     mortar element
+     * @param[in] gp_coord       Gauss point coordinates
+     * @param[in] d_gp_coord_dd  directional derivative of Gauss point coordinates
+     * @param[in] gp_wgt         Gauss point weight
+     * @param[in] gp_normal      Gauss point normal
+     * @param[in] d_gp_normal_dd directional derivative of Gauss point normal
+     * @param[in] test_dir       direction of evaluation (e.g. normal or tangential direction)
+     * @param[in] d_test_dir_dd  directional derivative of direction of evaluation
+     * @param[in] nitsche_wgt    Nitsche weight
+     * @param[out] cauchy_nt_wgt   Cauchy stress tensor contracted with normal vector n and
+     *                             direction vector t multiplied by nitsche_wgt \f[ nitsche_wgt
+     *                             \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot \boldsymbol{t} \f]
+     * @param[out] d_cauchy_nt_dd  directional derivative of cauchy_nt \f[ \frac{ \mathrm{d}
+     *                             \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
+     *                             \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}} \f]
+     * @param[out] d_sigma_nt_ds  derivative of cauchy_nt w.r.t. scalar s \f[ \frac{ \mathrm{d}
+     *                             \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
+     *                             \boldsymbol{t}}{\mathrm{d} s} \f]
+     */
+    template <int dim>
+    void SoEleCauchyStruct(MORTAR::MortarElement& mortar_ele, double* gp_coord,
+        const std::vector<GEN::pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
+        const LINALG::Matrix<dim, 1>& gp_normal,
+        const std::vector<GEN::pairedvector<int, double>>& d_gp_normal_dd,
+        const LINALG::Matrix<dim, 1>& test_dir,
+        const std::vector<GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
+        double& cauchy_nt_wgt, GEN::pairedvector<int, double>& d_cauchy_nt_dd,
+        Epetra_SerialDenseMatrix* d_sigma_nt_ds);
+
+   private:
     void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         LINALG::SerialDenseVector& sval, LINALG::SerialDenseVector& lmval,
         LINALG::SerialDenseVector& mval, LINALG::SerialDenseMatrix& sderiv,
@@ -144,39 +185,6 @@ namespace CONTACT
         const std::vector<GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
         double& cauchy_nt_wgt, GEN::pairedvector<int, double>& d_cauchy_nt_dd,
         GEN::pairedvector<int, double>& d_cauchy_nt_ds);
-
-    /*!
-     * @brief  Evaluate cauchy stress component and its derivatives
-     *
-     * @tparam dim  dimension of the problem
-     * @param[in] mortar_ele     mortar element
-     * @param[in] gp_coord       Gauss point coordinates
-     * @param[in] d_gp_coord_dd  directional derivative of Gauss point coordinates
-     * @param[in] gp_wgt         Gauss point weight
-     * @param[in] gp_normal      Gauss point normal
-     * @param[in] d_gp_normal_dd directional derivative of Gauss point normal
-     * @param[in] test_dir       direction of evaluation (e.g. normal or tangential direction)
-     * @param[in] d_test_dir_dd  directional derivative of direction of evaluation
-     * @param[in] nitsche_wgt    Nitsche weight
-     * @param[out] cauchy_nt_wgt   Cauchy stress tensor contracted with normal vector n and
-     *                             direction vector t multiplied by nitsche_wgt \f[ nitsche_wgt
-     *                             \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot \boldsymbol{t} \f]
-     * @param[out] d_cauchy_nt_dd  directional derivative of cauchy_nt \f[ \frac{ \mathrm{d}
-     *                             \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
-     *                             \boldsymbol{t}}{\mathrm{d} \boldsymbol{d}} \f]
-     * @param[out] d_sigma_nt_ds  derivative of cauchy_nt w.r.t. scalar s \f[ \frac{ \mathrm{d}
-     *                             \boldsymbol{\sigma} \cdot \boldsymbol{n} \cdot
-     *                             \boldsymbol{t}}{\mathrm{d} s} \f]
-     */
-    template <int dim>
-    void SoEleCauchyStruct(MORTAR::MortarElement& mortar_ele, double* gp_coord,
-        const std::vector<GEN::pairedvector<int, double>>& d_gp_coord_dd, double gp_wgt,
-        const LINALG::Matrix<dim, 1>& gp_normal,
-        const std::vector<GEN::pairedvector<int, double>>& d_gp_normal_dd,
-        const LINALG::Matrix<dim, 1>& test_dir,
-        const std::vector<GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
-        double& cauchy_nt_wgt, GEN::pairedvector<int, double>& d_cauchy_nt_dd,
-        Epetra_SerialDenseMatrix* d_sigma_nt_ds);
 
     /*!
      * @brief  integrate the structure residual and linearizations

@@ -155,6 +155,7 @@ namespace INPAR
       fsi,            ///< coupled FSI problem with contact
       fpi,            ///< coupled FPI problem with contact
       ssi,            ///< coupled SSI problem with contact
+      ssi_elch,       ///< coupled SSI elch problem with contact
       other           ///< other problemtypes
     };
 

@@ -514,9 +514,9 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(const double fac, MORTAR::Morta
 {
   if (abs(fac) < 1.e-16) return;
 
-  for (int d = 0; d < Dim(); ++d)
+  for (int d = 0; d < dim; ++d)
   {
-    double val = fac * jac * wgt * test_val * test_dir(d);
+    const double val = fac * jac * wgt * test_val * test_dir(d);
 
     for (int s = 0; s < ele.NumNode(); ++s)
     {
@@ -546,7 +546,7 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(const double fac, MORTAR::Morta
       }
     }
 
-    for (int e = 0; e < Dim() - 1; ++e)
+    for (int e = 0; e < dim - 1; ++e)
     {
       for (const auto& p : dxi[e])
       {

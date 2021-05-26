@@ -16,6 +16,7 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/inpar_wear.H"
 #include "../drt_inpar/inpar_s2i.H"
+#include "../drt_inpar/inpar_ssi.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
@@ -39,6 +40,7 @@
 #include "contact_wear_interface.H"
 #include "contact_tsi_interface.H"
 #include "contact_nitsche_strategy_ssi.H"
+#include "contact_nitsche_strategy_ssi_elch.H"
 #include "contact_nitsche_strategy_tsi.H"
 #include "contact_tsi_lagrange_strategy.H"
 #include "contact_lagrange_strategy.H"
@@ -611,7 +613,16 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
   }
   else if (problemtype == prb_ssi)
   {
-    params.set<int>("PROBTYPE", INPAR::CONTACT::ssi);
+    if (Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(
+            DRT::Problem::Instance()->SSIControlParams(), "SCATRATIMINTTYPE") ==
+        INPAR::SSI::ScaTraTimIntType::elch)
+    {
+      params.set<int>("PROBTYPE", INPAR::CONTACT::ssi_elch);
+    }
+    else
+    {
+      params.set<int>("PROBTYPE", INPAR::CONTACT::ssi);
+    }
   }
   else if (problemtype == prb_struct_ale)
   {
@@ -1752,6 +1763,12 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
     {
       data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
       strategy_ptr = Teuchos::rcp(new CoNitscheStrategySsi(
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
+    }
+    else if (params.get<int>("PROBTYPE") == INPAR::CONTACT::ssi_elch)
+    {
+      data_ptr = Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      strategy_ptr = Teuchos::rcp(new CoNitscheStrategySsiElch(
           data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
     }
     else
