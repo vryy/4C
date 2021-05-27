@@ -85,8 +85,11 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_ptcstiff;
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
+    else if (action == "postprocess_stress")
+      // Beams do not postprocess stress, as their output is handled via the beam runtime writer.
+      return 0;
     else
-      dserror("Unknown type of action for Beam3eb");
+      dserror("Unknown type of action '%s' for Beam3eb", action.c_str());
   }
 
   std::string test = params.get<std::string>("action", "calc_none");
