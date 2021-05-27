@@ -86,8 +86,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     else if (action == "calc_struct_energy")
       act = ELEMENTS::struct_calc_energy;
     else if (action == "postprocess_stress")
-      // Beams do not postprocess stress, as their output is handled via the beam runtime writer.
-      return 0;
+      act = ELEMENTS::struct_postprocess_stress;
     else
       dserror("Unknown type of action '%s' for Beam3eb", action.c_str());
   }
@@ -243,6 +242,12 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
     }
 
     case ELEMENTS::struct_calc_predict:
+    {
+      // do nothing here
+      break;
+    }
+
+    case ELEMENTS::struct_postprocess_stress:
     {
       // do nothing here
       break;
