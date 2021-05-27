@@ -92,10 +92,10 @@ namespace DRT
         read so that we can read them in parallel. This is done using the
         NodeReader and the ElementReader.
        */
-      std::ifstream::pos_type ExcludedSectionPosition(std::string section) const;
+      std::ifstream::pos_type ExcludedSectionPosition(const std::string& section) const;
 
       /// get number of lines of excluded section
-      unsigned int ExcludedSectionLength(std::string section) const;
+      unsigned int ExcludedSectionLength(const std::string& section) const;
 
       /// return my communicator
       Teuchos::RCP<Epetra_Comm> Comm() const { return comm_; }
@@ -107,7 +107,7 @@ namespace DRT
       bool ReadGidSection(std::string name, Teuchos::ParameterList& list);
 
       /// return the content of a section
-      std::vector<const char*> Section(std::string name);
+      std::vector<const char*> Section(const std::string& name);
 
       /// read a node-design topology section
       void ReadDesign(const std::string& name, std::vector<std::vector<int>>& dobj_fenode);
@@ -121,7 +121,7 @@ namespace DRT
 
       */
       void ReadKnots(
-          const int dim, const std::string name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots);
+          const int dim, const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots);
 
       /// dump input file contents to error file
       void DumpInput();
@@ -134,7 +134,7 @@ namespace DRT
       Teuchos::ParameterList& FindSublist(std::string name, Teuchos::ParameterList& list);
 
       /// parse the value and add the key,value pair to the list
-      void AddEntry(std::string key, std::string value, Teuchos::ParameterList& list);
+      void AddEntry(const std::string& key, const std::string& value, Teuchos::ParameterList& list);
 
       /// actual read dat file, store and broadcast general sections
       void ReadDat();
