@@ -21,13 +21,11 @@
 #include "drt_dofset_independent.H"
 #include "drt_materialdefinition.H"
 #include "drt_function.H"
-#include "drt_singletondestruction.H"
 #include "drt_globalproblem.H"
 #include "drt_inputreader.H"
 #include "drt_elementreader.H"
 #include "drt_nodereader.H"
 #include "drt_particlereader.H"
-#include "drt_utils_parallel.H"
 #include "drt_utils_createdis.H"
 #include "drt_discret.H"
 #include "drt_discret_faces.H"
@@ -37,29 +35,22 @@
 #include "drt_linedefinition.H"
 #include "../drt_contact_constitutivelaw/constitutivelaw_definition.H"
 #include "../drt_contact_constitutivelaw/contact_constitutivelaw_bundle.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_bundle.H"
 #include "../drt_inpar/drt_validconditions.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_inpar/drt_validmaterials.H"
-#include "../drt_inpar/inpar.H"
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/elchphase.H"
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/newman_multiscale.H"
 #include "../drt_mat/scatra_mat_multiscale.H"
 #include "../drt_lib/drt_utils_rebalancing.H"
-#include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/drt_validcontactconstitutivelaw.H"
 #include "../drt_inpar/inpar_problemtype.H"
 #include "../drt_io/io.H"
-#include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
-#include "../drt_inpar/inpar_invanalysis.H"
 
 /*----------------------------------------------------------------------*/
-// the instances
 /*----------------------------------------------------------------------*/
 std::vector<DRT::Problem*> DRT::Problem::instances_;
 
@@ -82,20 +73,16 @@ DRT::Problem* DRT::Problem::Instance(int num)
 void DRT::Problem::Done()
 {
   // destroy singleton objects when the problem object is still alive
-  for (std::vector<Problem*>::iterator i = instances_.begin(); i != instances_.end(); ++i)
+  for (auto* instance : instances_)
   {
-    Problem* p = *i;
-
     // skip null pointers arising from non-consecutive numbering of problem instances
-    if (!p) continue;
+    if (!instance) continue;
 
-    for (std::vector<DRT::SingletonDestruction*>::iterator j = p->sds_.begin(); j != p->sds_.end();
-         ++j)
+    for (auto* singleton_destruction : instance->sds_)
     {
-      DRT::SingletonDestruction* sd = *j;
-      sd->Done();
+      singleton_destruction->Done();
     }
-    p->sds_.clear();
+    instance->sds_.clear();
   }
 
   // This is called at the very end of a baci run.
@@ -104,10 +91,10 @@ void DRT::Problem::Done()
   // discretizations as well and everything inside those.
   //
   // There is a whole lot going on here...
-  for (std::vector<Problem*>::iterator i = instances_.begin(); i != instances_.end(); ++i)
+  for (auto& instance : instances_)
   {
-    delete *i;
-    *i = 0;
+    delete instance;
+    instance = nullptr;
   }
   instances_.clear();
 
@@ -124,11 +111,6 @@ DRT::Problem::Problem()
   materials_ = Teuchos::rcp(new MAT::PAR::Bundle());
   contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
 }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::Problem::~Problem() {}
 
 
 /*----------------------------------------------------------------------*/
@@ -175,7 +157,7 @@ int DRT::Problem::NDim() const
 double DRT::Problem::Walltime()
 {
   struct timeval tp;
-  gettimeofday(&tp, NULL);
+  gettimeofday(&tp, nullptr);
   return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
 }
 
@@ -406,7 +388,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 
     for (auto& filenameParameter : listOfFileNameParameters)
     {
-      std::string* xml_filename = sublist.getPtr<std::string>(filenameParameter);
+      auto* xml_filename = sublist.getPtr<std::string>(filenameParameter);
       if (xml_filename != nullptr and *xml_filename != "none")
       {
         // make path relative to input file path if it is not an absolute path
@@ -433,7 +415,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   {
     // adapt path of XML file if necessary
     Teuchos::ParameterList& sublist = list->sublist("STRUCT NOX").sublist("Status Test");
-    std::string* statustest_xmlfile = sublist.getPtr<std::string>("XML File");
+    auto* statustest_xmlfile = sublist.getPtr<std::string>("XML File");
     // make path relative to input file path if it is not an absolute path
     if (((*statustest_xmlfile)[0] != '/') and ((*statustest_xmlfile) != "none"))
     {
@@ -501,7 +483,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   {
     int rs = type.get<int>("RANDSEED");
     if (rs < 0)
-      rs = (int)time(NULL) + 42 * DRT::Problem::Instance(0)->GetNPGroup()->GlobalComm()->MyPID();
+      rs = (int)time(nullptr) + 42 * DRT::Problem::Instance(0)->GetNPGroup()->GlobalComm()->MyPID();
 
     srand((unsigned int)rs);  // Set random seed for stdlibrary. This is deprecated, as it does not
                               // produce random numbers on some platforms!
@@ -537,10 +519,8 @@ void DRT::Problem::NPGroup(int groupId, int ngroup, std::map<int, int> lpidgpid,
     Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm, NestedParallelismType npType)
 {
   if (npgroup_ != Teuchos::null) dserror("NPGroup was already set.");
-  npgroup_ =
-      Teuchos::rcp(new COMM_UTILS::NestedParGroup(groupId, ngroup, lpidgpid, lcomm, gcomm, npType));
-
-  return;
+  npgroup_ = Teuchos::rcp(
+      new COMM_UTILS::NestedParGroup(groupId, ngroup, std::move(lpidgpid), lcomm, gcomm, npType));
 }
 
 /*----------------------------------------------------------------------*/
@@ -549,8 +529,6 @@ void DRT::Problem::NPGroup(COMM_UTILS::NestedParGroup& npgroup)
 {
   if (npgroup_ != Teuchos::null) dserror("NPGroup was already set.");
   npgroup_ = Teuchos::rcp(new COMM_UTILS::NestedParGroup(npgroup));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -572,21 +550,21 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
 
   // test for each material definition (input file --MATERIALS section)
   // and store in #matmap_
-  for (unsigned m = 0; m < matlist.size(); ++m)
+  for (auto& mat : matlist)
   {
     // read material from DAT file of type #matlist[m]
-    matlist[m]->Read(*this, reader, materials_);
+    mat->Read(*this, reader, materials_);
   }
 
   // check if every material was identified
-  const std::string name = "--MATERIALS";
-  std::vector<const char*> section = reader.Section(name);
+  const std::string material_section = "--MATERIALS";
+  std::vector<const char*> section = reader.Section(material_section);
   int nummat = 0;
   if (section.size() > 0)
   {
-    for (std::vector<const char*>::iterator i = section.begin(); i != section.end(); ++i)
+    for (auto& section_i : section)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(section_i));
 
       std::string mat;
       std::string number;
@@ -599,7 +577,7 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
       int matid = -1;
       {
         char* ptr;
-        matid = strtol(number.c_str(), &ptr, 10);
+        matid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
         if (ptr == number.c_str())
           dserror("failed to read material object number '%s'", number.c_str());
       }
@@ -615,8 +593,6 @@ void DRT::Problem::ReadMaterials(DRT::INPUT::DatFileReader& reader)
 
   // make fast access parameters
   materials_->MakeParameters();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -630,21 +606,21 @@ void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader
 
   // test for each contact constitutive law definition (input file --CONTACT CONSTITUTIVE LAWS
   // section) and store it
-  for (unsigned m = 0; m < coconstlawlist.size(); ++m)
+  for (auto& m : coconstlawlist)
   {
     // read contact constitutive law from DAT file of type
-    coconstlawlist[m]->Read(*this, reader, contactconstitutivelaws_);
+    m->Read(*this, reader, contactconstitutivelaws_);
   }
 
   // check if every contact constitutive law was identified
-  const std::string name = "--CONTACT CONSTITUTIVE LAWS";
-  std::vector<const char*> section = reader.Section(name);
+  const std::string contact_const_laws = "--CONTACT CONSTITUTIVE LAWS";
+  std::vector<const char*> section = reader.Section(contact_const_laws);
   int numlaws = 0;
   if (section.size() > 0)
   {
-    for (std::vector<const char*>::iterator i = section.begin(); i != section.end(); ++i)
+    for (auto& section_i : section)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(section_i));
 
       std::string coconstlaw;
       std::string number;
@@ -657,7 +633,7 @@ void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader
       int coconstlawid = -1;
       {
         char* ptr;
-        coconstlawid = strtol(number.c_str(), &ptr, 10);
+        coconstlawid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
         if (ptr == number.c_str())
           dserror("failed to read contact constitutive law object number '%s'", number.c_str());
       }
@@ -674,8 +650,6 @@ void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader
 
   // make fast access parameters
   contactconstitutivelaws_->MakeParameters();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -685,18 +659,18 @@ void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
   Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
 
   // perform the actual reading and extract the input parameters
-  std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> input = lines->Read(reader);
-  for (size_t i = 0; i < input.size(); i++)
+  std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> input_line_vec = lines->Read(reader);
+  for (auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
     std::string src_field;
-    (input[i])->ExtractString("SRC_FIELD", src_field);
+    input_line->ExtractString("SRC_FIELD", src_field);
     int src_matid(-1);
-    (input[i])->ExtractInt("SRC_MAT", src_matid);
+    input_line->ExtractInt("SRC_MAT", src_matid);
     std::string tar_field;
-    (input[i])->ExtractString("TAR_FIELD", tar_field);
+    input_line->ExtractString("TAR_FIELD", tar_field);
     int tar_matid(-1);
-    (input[i])->ExtractInt("TAR_MAT", tar_matid);
+    input_line->ExtractInt("TAR_MAT", tar_matid);
 
     // create the key pair
     std::pair<std::string, std::string> fields(src_field, tar_field);
@@ -705,7 +679,6 @@ void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
     std::pair<int, int> matmap(src_matid, tar_matid);
     clonefieldmatmap_[fields].insert(matmap);
   }
-  return;
 }
 
 
@@ -717,7 +690,6 @@ void DRT::Problem::ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader)
   functionmanager_.ReadInput(reader);
   //-------------------------------------- input of result descriptions
   resulttest_.ReadInput(reader);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -774,12 +746,12 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   // - add the conditions to the appropriate discretizations
   //
   // Note that this will reset (un-FillComplete) the discretizations.
-  for (unsigned c = 0; c < condlist.size(); ++c)
+  for (auto& condition : condlist)
   {
     std::multimap<int, Teuchos::RCP<DRT::Condition>> cond;
 
     // read conditions from dat file
-    condlist[c]->Read(*this, reader, cond);
+    condition->Read(*this, reader, cond);
 
     // add nodes to conditions
     std::multimap<int, Teuchos::RCP<DRT::Condition>>::const_iterator curr;
@@ -789,34 +761,42 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
       {
         case Condition::Point:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dnode_fenode.size())
+          {
             dserror(
                 "DPoint %d not in range [0:%d[\n"
                 "DPoint condition on non existent DPoint?",
                 curr->first, dnode_fenode.size());
+          }
           curr->second->Add("Node Ids", dnode_fenode[curr->first]);
           break;
         case Condition::Line:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dline_fenode.size())
+          {
             dserror(
                 "DLine %d not in range [0:%d[\n"
                 "DLine condition on non existent DLine?",
                 curr->first, dline_fenode.size());
+          }
           curr->second->Add("Node Ids", dline_fenode[curr->first]);
           break;
         case Condition::Surface:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dsurf_fenode.size())
+          {
             dserror(
                 "DSurface %d not in range [0:%d[\n"
                 "DSurface condition on non existent DSurface?",
                 curr->first, dsurf_fenode.size());
+          }
           curr->second->Add("Node Ids", dsurf_fenode[curr->first]);
           break;
         case Condition::Volume:
           if (curr->first < 0 or static_cast<unsigned>(curr->first) >= dvol_fenode.size())
+          {
             dserror(
                 "DVolume %d not in range [0:%d[\n"
                 "DVolume condition on non existent DVolume?",
                 curr->first, dvol_fenode.size());
+          }
           curr->second->Add("Node Ids", dvol_fenode[curr->first]);
           break;
         default:
@@ -834,13 +814,12 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 
         const std::vector<int>* nodes = curr->second->Nodes();
         if (nodes->size() == 0)
-          dserror("%s condition %d has no nodal cloud", condlist[c]->Description().c_str(),
+          dserror("%s condition %d has no nodal cloud", condition->Description().c_str(),
               curr->second->Id());
 
         int foundit = 0;
-        for (unsigned i = 0; i < nodes->size(); ++i)
+        for (int node : *nodes)
         {
-          const int node = (*nodes)[i];
           foundit = actdis->HaveGlobalNode(node);
           if (foundit) break;
         }
@@ -849,7 +828,7 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
         if (found)
         {
           // Insert a copy since we might insert the same condition in many discretizations.
-          actdis->SetCondition(condlist[c]->Name(), Teuchos::rcp(new Condition(*curr->second)));
+          actdis->SetCondition(condition->Name(), Teuchos::rcp(new Condition(*curr->second)));
         }
       }
     }
@@ -874,8 +853,6 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   {
     std::cout << time.ElapsedTime() << " secs\n";
   }
-
-  return;
 }
 
 
@@ -902,10 +879,9 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
     {
       // cast discretisation to nurbs variant to be able
       // to add the knotvector
-      DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
+      auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
 
-      if (nurbsdis == NULL)
+      if (nurbsdis == nullptr)
         dserror("Discretization %s is not a NurbsDiscretization! Panic.", actdis->Name().c_str());
 
       // define an empty knot vector object
@@ -939,8 +915,6 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
       nurbsdis->SetKnotVector(disknots);
     }
   }  // loop fields
-
-  return;
 }
 
 
@@ -956,28 +930,28 @@ void DRT::Problem::ReadParticles(DRT::INPUT::DatFileReader& reader)
 
   // do the actual reading of particles
   particlereader.Read(particles_);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::OpenControlFile(
-    const Epetra_Comm& comm, std::string inputfile, std::string prefix, std::string restartkenner)
+void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile,
+    std::string prefix, const std::string& restartkenner)
 {
   if (Restart()) inputcontrol_ = Teuchos::rcp(new IO::InputControl(restartkenner, comm));
 
   outputcontrol_ =
       Teuchos::rcp(new IO::OutputControl(comm, ProblemName(), SpatialApproximationType(), inputfile,
-          restartkenner, prefix, NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
+          restartkenner, std::move(prefix), NDim(), Restart(), IOParams().get<int>("FILESTEPS"),
           DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN"), true));
 
   if (!DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN") && comm.MyPID() == 0)
+  {
     IO::cout << "==================================================\n"
              << "=== WARNING: No binary output will be written. ===\n"
              << "==================================================\n"
              << IO::endl;
+  }
 }
 
 
@@ -987,12 +961,13 @@ void DRT::Problem::OpenErrorFile(
     const Epetra_Comm& comm, std::string prefix, const bool enforceopening)
 {
   bool openfile = enforceopening;
-  if (enforceopening == false)
+  if (!enforceopening)
   {
     // what's given in the input file?
     openfile = DRT::INPUT::IntegralValue<int>(IOParams(), "OUTPUT_BIN");
   }
-  errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix, Restart(), openfile));
+  errorfilecontrol_ =
+      Teuchos::rcp(new IO::ErrorFileControl(comm, std::move(prefix), Restart(), openfile));
 }
 
 
@@ -1210,7 +1185,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       structdis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(structdis)));
       AddDis("structure", structdis);
       nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       if (DRT::INPUT::IntegralValue<int>(XFluidDynamicParams().sublist("GENERAL"), "XFLUIDFLUID"))
       {
@@ -1237,7 +1213,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
         AddDis("fluid", fluiddis);
 
         nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-            DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
+            DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
+            nullptr);
 
         //      nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis,
         //      reader, "--FLUID ELEMENTS")));
@@ -1272,7 +1249,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
 
       nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       // nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
@@ -1344,7 +1322,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("fluid", fluiddis);
 
       nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       break;
     }
@@ -1511,9 +1490,11 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("thermo", thermdis);
 
       nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
+          nullptr);
       nodereader.AddAdvancedReader(thermdis, reader, "THERMO",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(ThermalDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(ThermalDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       break;
     }
@@ -1567,7 +1548,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("structure", structdis);
 
       nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       break;
     }
@@ -1582,7 +1564,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       AddDis("structure", structdis);
 
       nodereader.AddAdvancedReader(structdis, reader, "STRUCTURE",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(StructuralDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       // This is moved to XCONTACT::ALGORITHM::Base::Setup()
       //    scatradis = Teuchos::rcp(new DRT::Discretization("scatra",reader.Comm()));
@@ -1660,7 +1643,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
+          nullptr);
       // nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader,
       // "--FLUID ELEMENTS")));
       nodereader.AddElementReader(
@@ -1971,7 +1955,8 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       nodereader.AddElementReader(
           Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
       nodereader.AddAdvancedReader(fluiddis, reader, "FLUID",
-          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"), 0);
+          DRT::INPUT::IntegralValue<INPAR::GeometryType>(FluidDynamicParams(), "GEOMETRY"),
+          nullptr);
 
       break;
     }
@@ -2256,7 +2241,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       case prb_np_support:
       {
         // read microscale fields from second, third, ... inputfile for supporting processors
-        ReadMicrofields_NPsupport();
+        ReadMicrofieldsNPsupport();
         break;
       }
       case prb_tutorial:
@@ -2367,10 +2352,10 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   int color = -1;
   if (foundmicromat == 1)
   {
-    for (int t = 0; t < (int)foundmyranks.size(); t++)
+    for (int foundmyrank : foundmyranks)
     {
-      if (foundmyranks[t] != -1) ++color;
-      if (foundmyranks[t] == foundmicromatmyrank) break;
+      if (foundmyrank != -1) ++color;
+      if (foundmyrank == foundmicromatmyrank) break;
     }
   }
   else
@@ -2393,21 +2378,17 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
     // find out how many micro problems have to be solved on this macro proc
     int microcount = 0;
-    for (std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator i =
-             materials_->Map()->begin();
-         i != materials_->Map()->end(); ++i)
+    for (const auto& material_map : *materials_->Map())
     {
-      int matid = i->first;
+      int matid = material_map.first;
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end()) microcount++;
     }
     // and broadcast it to the corresponding group of procs
     subgroupcomm->Broadcast(&microcount, 1, 0);
 
-    for (std::map<int, Teuchos::RCP<MAT::PAR::Material>>::const_iterator i =
-             materials_->Map()->begin();
-         i != materials_->Map()->end(); ++i)
+    for (const auto& material_map : *materials_->Map())
     {
-      int matid = i->first;
+      int matid = material_map.first;
 
       if (my_multimat_IDs.find(matid) != my_multimat_IDs.end())
       {
@@ -2417,13 +2398,13 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         int microdisnum(-1);
         std::string micro_dis_name = "";
         std::string micro_inputfile_name("");
-        DRT::Problem* micro_problem(NULL);
+        DRT::Problem* micro_problem(nullptr);
 
         // structure case
         if (macro_dis_name == "structure")
         {
           // access multi-scale structure material
-          MAT::MicroMaterial* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
+          auto* micromat = static_cast<MAT::MicroMaterial*>(mat.get());
 
           // extract and broadcast number of micro-scale discretization
           microdisnum = micromat->MicroDisNum();
@@ -2443,7 +2424,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         else
         {
           // access multi-scale scalar transport material
-          MAT::ScatraMultiScale* micromat = NULL;
+          MAT::ScatraMultiScale* micromat = nullptr;
           if (id_scatra != -1)
             micromat = dynamic_cast<MAT::ScatraMatMultiScale*>(mat.get());
           else if (id_elch != -1)
@@ -2479,7 +2460,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         }
 
         // broadcast micro input file name
-        int length = micro_inputfile_name.length();
+        int length = static_cast<int>(micro_inputfile_name.length());
         subgroupcomm->Broadcast(&length, 1, 0);
         subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
@@ -2516,8 +2497,10 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         DRT::INPUT::NodeReader micronodereader(micro_reader, "--NODE COORDS");
 
         if (micro_dis_name == "structure")
+        {
           micronodereader.AddElementReader(Teuchos::rcp(
               new DRT::INPUT::ElementReader(dis_micro, micro_reader, "--STRUCTURE ELEMENTS")));
+        }
         else
           micronodereader.AddElementReader(Teuchos::rcp(
               new DRT::INPUT::ElementReader(dis_micro, micro_reader, "--TRANSPORT ELEMENTS")));
@@ -2543,14 +2526,12 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     }
     materials_->ResetReadFromProblem();
   }
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadMicrofields_NPsupport()
+void DRT::Problem::ReadMicrofieldsNPsupport()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
   Teuchos::RCP<Epetra_Comm> lcomm = problem->GetNPGroup()->LocalComm();
@@ -2656,8 +2637,6 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     // (i.e. macro problem), cf. MAT::Material::Factory!
     materials_->ResetReadFromProblem();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2694,13 +2673,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::Problem::getValidParameters() co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::AddDis(const std::string name, Teuchos::RCP<Discretization> dis)
+void DRT::Problem::AddDis(const std::string& name, Teuchos::RCP<Discretization> dis)
 {
   // safety checks
   if (dis == Teuchos::null) dserror("Received Teuchos::null.");
   if (dis->Name().empty()) dserror("Discretization has empty name string.");
 
-  if (discretizationmap_.insert(std::make_pair(name, dis)).second == false)
+  if (!discretizationmap_.insert(std::make_pair(name, dis)).second)
   {
     // if the same key already exists we have to inform the user since
     // the insert statement did not work in this case
@@ -2721,10 +2700,9 @@ void DRT::Problem::AddDis(const std::string name, Teuchos::RCP<Discretization> d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string name) const
+Teuchos::RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string& name) const
 {
-  std::map<std::string, Teuchos::RCP<Discretization>>::const_iterator iter =
-      discretizationmap_.find(name);
+  auto iter = discretizationmap_.find(name);
 
   if (iter != discretizationmap_.end())
   {
@@ -2758,16 +2736,10 @@ std::vector<std::string> DRT::Problem::GetDisNames() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::Problem::DoesExistDis(const std::string name) const
+bool DRT::Problem::DoesExistDis(const std::string& name) const
 {
-  std::map<std::string, Teuchos::RCP<Discretization>>::const_iterator iter =
-      discretizationmap_.find(name);
-  if (iter != discretizationmap_.end())
-  {
-    return true;
-  }
-
-  return false;
+  auto iter = discretizationmap_.find(name);
+  return iter != discretizationmap_.end();
 }
 
 /*----------------------------------------------------------------------*/

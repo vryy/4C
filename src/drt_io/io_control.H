@@ -28,12 +28,12 @@ namespace IO
   {
    public:
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
-        ShapeFunctionType type_of_spatial_approx, std::string inputfile, std::string filename,
-        int ndim, int restart, int filesteps, int create_controlfile);
+        ShapeFunctionType type_of_spatial_approx, std::string inputfile,
+        const std::string& filename, int ndim, int restart, int filesteps, int create_controlfile);
 
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
         ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        std::string restartfilename, std::string outputfilename, int ndim, int restart,
+        const std::string& restartfilename, std::string outputfilename, int ndim, int restart,
         int filesteps, int create_controlfile, bool adaptname = true);
 
     /// \brief copy constructor
@@ -41,7 +41,7 @@ namespace IO
      *  \param[in] new_prefix Add the prefix to restart and file names (optional)
      *
      *  \author hiermeier \date 08/17 */
-    OutputControl(const OutputControl& ocontrol, const char* new_prefix = NULL);
+    OutputControl(const OutputControl& ocontrol, const char* new_prefix = nullptr);
 
     /// output prefix we write to
     /*!
@@ -113,8 +113,8 @@ namespace IO
   class InputControl
   {
    public:
-    InputControl(std::string filename, const bool serial = false);
-    InputControl(std::string filename, const Epetra_Comm& comm);
+    InputControl(const std::string& filename, const bool serial = false);
+    InputControl(const std::string& filename, const Epetra_Comm& comm);
     ~InputControl();
 
     MAP* ControlFile() { return &table_; }
@@ -143,7 +143,7 @@ namespace IO
    public:
     /// constructor
     ErrorFileControl(const Epetra_Comm& comm,  ///< communicator
-        const std::string filename,            ///< output file name prefix
+        std::string filename,                  ///< output file name prefix
         int restart,                           ///< restart step
         int create_errorfiles                  // do we need to create errorfiles
     );
