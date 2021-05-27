@@ -49,6 +49,13 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
+    DatFileReader::DatFileReader(std::string filename)
+        : filename_(std::move(filename)), comm_(Teuchos::null), numrows_(0), outflag_(0)
+    {
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
     DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
         : filename_(filename), comm_(comm), outflag_(outflag)
     {

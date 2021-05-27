@@ -73,6 +73,10 @@ namespace DRT
       /// empty constructor, which avoids directly opening a file for reading
       DatFileReader();
 
+      //! constructs a dat file reader object and stores the file name handed in. The file specified
+      //! by filename is not directly read
+      explicit DatFileReader(std::string filename);
+
       /// construct a reader for a given file
       DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag = 0);
 
