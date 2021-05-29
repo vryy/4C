@@ -468,7 +468,6 @@ SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
       scatra_dofrowmap_(ssi_mono_algorithm.ScaTraField()->DofRowMap()),
       scatramanifold_dofrowmap_(Teuchos::null),
       structure_dofrowmap_(ssi_mono_algorithm.StructureField()->DofRowMap()),
-      structure_on_scatramanifold_dofrowmap_(Teuchos::null),
       system_matrix_(Teuchos::null),
       scatra_matrix_(Teuchos::null),
       scatramanifold_structure_matrix_(Teuchos::null),
@@ -480,8 +479,6 @@ SSI::UTILS::SSIMatrices::SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm)
   if (is_scatra_manifold_)
   {
     scatramanifold_dofrowmap_ = ssi_mono_algorithm.ScaTraManifold()->DofRowMap();
-    structure_on_scatramanifold_dofrowmap_ =
-        ssi_mono_algorithm.MapStructureOnScaTraManifold()->Map(0);
   }
 
   InitializeSystemMatrix(ssi_mono_algorithm);

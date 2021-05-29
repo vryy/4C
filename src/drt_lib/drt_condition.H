@@ -346,12 +346,6 @@ namespace DRT
     Condition(const DRT::Condition& old);
 
     /*!
-    \brief Destructor
-
-    */
-    virtual ~Condition();
-
-    /*!
     \brief Return unique ParObject id
 
     every class implementing ParObject needs a unique id defined at the

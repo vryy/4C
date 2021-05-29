@@ -32,20 +32,12 @@
 #include "../linalg/linalg_utils_densematrix_communication.H"
 
 /*--------------------------------------------------------------------------------*
- | constructor                                                         fang 09/17 |
  *--------------------------------------------------------------------------------*/
-STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList& stidyn,  //! parameter list for scatra-thermo interaction
-    const Teuchos::ParameterList&
-        scatradyn,  //! scalar transport parameter list for scatra and thermo fields
-    const Teuchos::ParameterList&
-        solverparams,  //! solver parameter list for scatra-thermo interaction
-    const Teuchos::ParameterList& solverparams_scatra,  //! solver parameter list for scatra field
-    const Teuchos::ParameterList& solverparams_thermo   //! solver parameter list for thermo field
-    )
-    :  // instantiate base class
-      Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
-
+STI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
+    const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams,
+    const Teuchos::ParameterList& solverparams_scatra,
+    const Teuchos::ParameterList& solverparams_thermo)
+    : Algorithm(comm, stidyn, scatradyn, solverparams_scatra, solverparams_thermo),
       restol_(fieldparameters_->sublist("NONLINEAR").get<double>("ABSTOLRES")),
       maps_(Teuchos::null),
       condensationthermo_(DRT::INPUT::IntegralValue<bool>(stidyn, "THERMO_CONDENSATION")),
@@ -62,12 +54,9 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
       residual_(Teuchos::null),
       dtele_(0.),
       dtsolve_(0.),
-
-      // initialize algebraic solver for global system of equations
       solver_(Teuchos::rcp(
           new LINALG::Solver(solverparams, comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
       invrowsums_(Teuchos::null),
-
       icoupscatra_(Teuchos::null),
       icoupthermo_(Teuchos::null),
       islavetomasterrowtransformscatraod_(Teuchos::null),
@@ -322,9 +311,8 @@ STI::Monolithic::Monolithic(const Epetra_Comm& comm,  //! communicator
   equilibration_ = LINALG::BuildEquilibration(matrixtype_, equilibration_method, maps_->FullMap());
 }
 
-/*---------------------------------------------------------------------------------------------*
- | finite difference check for global system matrix (for debugging only)            fang 07/15 |
- *---------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Monolithic::FDCheck()
 {
   // initial screen output
@@ -523,17 +511,11 @@ void STI::Monolithic::FDCheck()
   AssembleMatAndRHS();
 }
 
-
-/*---------------------------------------------------------------------------------------------------------------------------------------------------------------*
- | output matrix to *.csv file for debugging purposes, with global row and column IDs of matrix
- components in ascending order across all processors   fang 01/17 |
- *---------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Monolithic::OutputMatrixToFile(
-    const Teuchos::RCP<const LINALG::SparseOperator>
-        sparseoperator,     //!< sparse or block sparse matrix to be output
-    const int precision,    //!< output precision
-    const double tolerance  //!< output omission tolerance
-)
+    const Teuchos::RCP<const LINALG::SparseOperator> sparseoperator, const int precision,
+    const double tolerance)
 {
   // safety check
   if (!sparseoperator->Filled()) dserror("Sparse operator must be filled for output!");
@@ -568,7 +550,8 @@ void STI::Monolithic::OutputMatrixToFile(
   if (comm.MyPID()) rowgids.clear();
 
   // create full row map on processor with ID 0
-  const Epetra_Map fullrowmap(-1, rowgids.size(), rowgids.size() ? &rowgids[0] : nullptr, 0, comm);
+  const Epetra_Map fullrowmap(
+      -1, static_cast<int>(rowgids.size()), rowgids.size() ? &rowgids[0] : nullptr, 0, comm);
 
   // import matrix to processor with ID 0
   Epetra_CrsMatrix crsmatrix(Copy, fullrowmap, 0);
@@ -646,15 +629,10 @@ void STI::Monolithic::OutputMatrixToFile(
   dserror("Matrix was output to *.csv file!");
 }
 
-
-/*------------------------------------------------------------------------------------------------------------------------------------------------*
- | output vector to *.csv file for debugging purposes, with global IDs of vector components in
- ascending order across all processors   fang 01/17 |
- *------------------------------------------------------------------------------------------------------------------------------------------------*/
-void STI::Monolithic::OutputVectorToFile(const Epetra_MultiVector& vector,  //!< vector to be output
-    const int precision,                                                    //!< output precision
-    const double tolerance  //!< output omission tolerance
-)
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
+void STI::Monolithic::OutputVectorToFile(
+    const Epetra_MultiVector& vector, const int precision, const double tolerance)
 {
   // extract communicator
   const Epetra_Comm& comm = vector.Comm();
@@ -679,7 +657,8 @@ void STI::Monolithic::OutputVectorToFile(const Epetra_MultiVector& vector,  //!<
   if (comm.MyPID()) gids.clear();
 
   // create full vector map on processor with ID 0
-  const Epetra_Map fullmap(-1, gids.size(), gids.size() ? &gids[0] : nullptr, 0, comm);
+  const Epetra_Map fullmap(
+      -1, static_cast<int>(gids.size()), gids.size() ? &gids[0] : nullptr, 0, comm);
 
   // export vector to processor with ID 0
   Epetra_MultiVector fullvector(fullmap, vector.NumVectors(), true);
@@ -736,10 +715,8 @@ void STI::Monolithic::OutputVectorToFile(const Epetra_MultiVector& vector,  //!<
   dserror("Vector was output to *.csv file!");
 }
 
-
-/*----------------------------------------------------------------------*
- | assemble global system of equations                       fang 07/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Monolithic::AssembleMatAndRHS()
 {
   // pass thermo degrees of freedom to scatra discretization
@@ -1217,12 +1194,9 @@ void STI::Monolithic::BuildNullSpaces() const
         *ThermoField()->Discretization()->DofRowMap(), *maps_->Map(1), blocksmootherparams);
 }  // STI::Monolithic::BuildBlockNullSpaces
 
-/*------------------------------------------------------------------------------------------------*
- | compute null space information associated with global system matrix if applicable   fang 06/17 |
- *------------------------------------------------------------------------------------------------*/
-void STI::Monolithic::ComputeNullSpaceIfNecessary(
-    Teuchos::ParameterList& solverparams  //! solver parameter list for scatra-thermo interaction
-    ) const
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
+void STI::Monolithic::ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solverparams) const
 {
   // compute vector-based null space information for ML preconditioner
   if (solverparams.isSublist("ML Parameters"))
@@ -1289,20 +1263,15 @@ void STI::Monolithic::ComputeNullSpaceIfNecessary(
   }
 }  // STI::Monolithic::ComputeNullSpaceIfNecessary
 
-
-/*----------------------------------------------------------------------*
- | global map of degrees of freedom                          fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 const Teuchos::RCP<const Epetra_Map>& STI::Monolithic::DofRowMap() const
 {
   return maps_->FullMap();
-}  // STI::Monolithic::DofRowMap()
+}
 
-
-
-/*-----------------------------------------------------------------------*
- | check termination criterion for Newton-Raphson iteration   fang 04/15 |
- *-----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 bool STI::Monolithic::ExitNewtonRaphson()
 {
   // initialize exit flag
@@ -1478,10 +1447,8 @@ bool STI::Monolithic::ExitNewtonRaphson()
   return exit;
 }  // STI::Monolithic::ExitNewtonRaphson()
 
-
-/*----------------------------------------------------------------------*
- | prepare time step                                         fang 09/17 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Monolithic::PrepareTimeStep()
 {
   // call base class routine
@@ -1489,12 +1456,10 @@ void STI::Monolithic::PrepareTimeStep()
 
   // print time step information to screen
   ScaTraField()->PrintTimeStepInfo();
-}  // STI::Monolithic::PrepareTimeStep()
+}
 
-
-/*----------------------------------------------------------------------*
- | evaluate time step using Newton-Raphson iteration         fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Monolithic::Solve()
 {
   // initialize counter for Newton-Raphson iterations

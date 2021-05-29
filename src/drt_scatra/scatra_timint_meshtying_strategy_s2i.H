@@ -1037,34 +1037,34 @@ namespace SCATRA
    public:
     //! constructor
     MortarCellAssemblyStrategy(
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,  //!< system matrix 1
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,  //!< system matrix 1
         const INPAR::S2I::InterfaceSides
             matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
         const INPAR::S2I::InterfaceSides
             matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,  //!< system matrix 2
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,  //!< system matrix 2
         const INPAR::S2I::InterfaceSides
             matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
         const INPAR::S2I::InterfaceSides
             matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,  //!< system matrix 3
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix3,  //!< system matrix 3
         const INPAR::S2I::InterfaceSides
             matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
         const INPAR::S2I::InterfaceSides
             matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-        const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,  //!< system matrix 4
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix4,  //!< system matrix 4
         const INPAR::S2I::InterfaceSides
             matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
         const INPAR::S2I::InterfaceSides
             matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,  //!< system vector 1
+        Teuchos::RCP<Epetra_MultiVector> systemvector1,  //!< system vector 1
         const INPAR::S2I::InterfaceSides
             vector1_side,  //!< interface side associated with system vector 1
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,  //!< system vector 2
+        Teuchos::RCP<Epetra_MultiVector> systemvector2,  //!< system vector 2
         const INPAR::S2I::InterfaceSides
-            vector2_side,             //!< interface side associated with system vector 2
-        const unsigned nds_rows = 0,  //!< number of dofset associated with matrix rows
-        const unsigned nds_cols = 0   //!< number of dofset associated with matrix columns
+            vector2_side,        //!< interface side associated with system vector 2
+        const int nds_rows = 0,  //!< number of dofset associated with matrix rows
+        const int nds_cols = 0   //!< number of dofset associated with matrix columns
     );
 
     /*!
@@ -1261,10 +1261,10 @@ namespace SCATRA
     const INPAR::S2I::InterfaceSides vector2_side_;
 
     //! number of dofset associated with matrix rows
-    const unsigned nds_rows_;
+    const int nds_rows_;
 
     //! number of dofset associated with matrix columns
-    const unsigned nds_cols_;
+    const int nds_cols_;
   };  // class MortarCellAssembleStrategy
 }  // namespace SCATRA
 #endif  // #ifndef SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H

@@ -180,9 +180,6 @@ namespace SSI
       //! the structure dof row map
       Teuchos::RCP<const Epetra_Map> structure_dofrowmap_;
 
-      //! the structure dofs on scalar transport manifold dof row map
-      Teuchos::RCP<const Epetra_Map> structure_on_scatramanifold_dofrowmap_;
-
       //! system matrix
       Teuchos::RCP<LINALG::SparseOperator> system_matrix_;
       //! sub blocks of system matrix

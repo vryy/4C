@@ -92,7 +92,6 @@ void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
 }
 
 /*----------------------------------------------------------------------*
- | Calculate the Mean-average of gradient of a scalar       winter 04/17|
  *----------------------------------------------------------------------*/
 template <const int dim>
 Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMeanAverage(
@@ -156,13 +155,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
   // PART II: reconstruct nodes
   // remark: row nodes adjacent to intersected elements must be reconstructed by this processor
   //-------------------------------------------------------------------------------------------
-
-  typedef std::map<int, const DRT::Node*> Map_NodesToReconstruct;
-  typedef Map_NodesToReconstruct::iterator Reconstruct_iterator;
-
   // loop over all nodes inserted into map 'nodesToReconstruct'
-  for (Reconstruct_iterator it_node = nodesToReconstruct.begin();
-       it_node != nodesToReconstruct.end(); it_node++)
+  for (auto& it_node : nodesToReconstruct)
   {
     static LINALG::Matrix<nsd, 1>
         node_gradphi_smoothed;  // set whole 3D vector also for 2D examples
@@ -170,7 +164,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
 
     // get local processor id of current node and pointer to current node
     // int lid_node = it_node->first;
-    const DRT::Node* ptToNode = it_node->second;
+    const DRT::Node* ptToNode = it_node.second;
     const int nodegid = ptToNode->Id();
 
     // vector of elements located around this node
@@ -206,8 +200,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
       {
         pbcnode = true;
         // coupled node is the slave node; there can be more than one per master node
-        for (unsigned int i = 0; i < pbciter->second.size(); i++)
-          coupnodegid.insert(pbciter->second[i]);
+        for (int i : pbciter->second) coupnodegid.insert(i);
       }
       else
       {
@@ -234,11 +227,10 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     // add elements located around the coupled pbc node
     if (pbcnode)
     {
-      for (std::set<int>::const_iterator icnode = coupnodegid.begin(); icnode != coupnodegid.end();
-           ++icnode)
+      for (int icoupnode : coupnodegid)
       {
         // get coupled pbc node (master or slave)
-        const DRT::Node* ptToCoupNode = discret->gNode(*icnode);
+        const DRT::Node* ptToCoupNode = discret->gNode(icoupnode);
         // get adjacent elements of this node
         const DRT::Element* const* pbcelements = ptToCoupNode->Elements();
         // add elements to list
@@ -254,11 +246,15 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     // FOR OTHER TYPES OF ELEMENT THAN HEX -> One needs to change DoMeanValueAveraging - code as
     // well.
     if (DISTYPE == DRT::Element::hex8)
+    {
       node_gradphi_smoothed = DoMeanValueAveragingOfElementGradientNode<nsd, DRT::Element::hex8>(
           discret, elements, phinp_col, nodegid, scatra_dofid);
+    }
     else if (DISTYPE == DRT::Element::hex27)
+    {
       node_gradphi_smoothed = DoMeanValueAveragingOfElementGradientNode<nsd, DRT::Element::hex27>(
           discret, elements, phinp_col, nodegid, scatra_dofid);
+    }
     else
       dserror("Element type not supported yet!");
 
@@ -267,7 +263,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::SCATRAUTILS::ComputeGradientAtNodesMean
     // row map
     //----------------------------------------------------------------------------------------------------
 
-    const std::vector<int> lm = discret->Dof(scatra_dofid, (it_node->second));
+    const std::vector<int> lm = discret->Dof(scatra_dofid, (it_node.second));
     if (lm.size() != 1) dserror("assume a unique level-set dof in ScaTra DoFset");
 
     int GID = lm[0];  // Global ID of DoF Map
@@ -305,13 +301,12 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
     Teuchos::RCP<DRT::Discretization> discret, std::vector<const DRT::Element*> elements,
     Teuchos::RCP<Epetra_Vector> phinp_node, const int nodegid, const int scatra_dofid)
 {
-  const size_t nsd = dim;
   // number of nodes of this element for interpolation
-  const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
   LINALG::Matrix<dim, 1> node_gradphi_smoothed(true);
 
   // number of elements located around this node
-  const int numberOfElements = elements.size();
+  const int numberOfElements = static_cast<int>(elements.size());
   {
     //--------------------------------------------------------------------------
     // average (mean value) reconstruction for boundary nodes and as alternative
@@ -334,7 +329,7 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
       // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
       std::vector<int> nodeID_adj(numnode);
       std::vector<int> nodeDOFID_adj(numnode);
-      for (size_t inode = 0; inode < numnode; inode++)
+      for (int inode = 0; inode < numnode; inode++)
       {
         nodeID_adj[inode] = ptToNodeIds_adj[inode];
 
@@ -356,22 +351,22 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
       // compute gradient of phi at this node
       //-------------------------------------
       // get derivatives of shape functions evaluated at node in XYZ-coordinates
-      static LINALG::Matrix<nsd, numnode> deriv3Dele_xyz;
+      static LINALG::Matrix<dim, numnode> deriv3Dele_xyz;
       // get derivatives of shape functions evaluates at node in Xi-coordinates
-      static LINALG::Matrix<nsd, numnode> deriv3Dele;
+      static LINALG::Matrix<dim, numnode> deriv3Dele;
 
       // TODO: Implement for other elements than HEX
       // get Xi-coordinates of current node in current adjacent element
-      static LINALG::Matrix<nsd, 1> node_Xicoordinates;
+      static LINALG::Matrix<dim, 1> node_Xicoordinates;
       node_Xicoordinates.Clear();
-      for (size_t icomp = 0; icomp < nsd; ++icomp)
+      for (int icomp = 0; icomp < dim; ++icomp)
       {
         node_Xicoordinates(icomp) =
             DRT::UTILS::eleNodeNumbering_hex27_nodes_reference[ID_param_space][icomp];
       }
 
       // get derivatives of shape functions at node
-      switch (nsd)
+      switch (dim)
       {
         case 3:
         {
@@ -396,15 +391,15 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
 
       // reconstruct XYZ-gradient
       // get node coordinates of this element
-      static LINALG::Matrix<nsd, numnode> xyze_adj;
+      static LINALG::Matrix<dim, numnode> xyze_adj;
       GEO::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
 
       // get Jacobi-Matrix for transformation
-      static LINALG::Matrix<nsd, nsd> xjm_ele_XiToXYZ;
+      static LINALG::Matrix<dim, dim> xjm_ele_XiToXYZ;
       xjm_ele_XiToXYZ.MultiplyNT(deriv3Dele, xyze_adj);
 
       // inverse of jacobian
-      static LINALG::Matrix<nsd, nsd> xji_ele_XiToXYZ;
+      static LINALG::Matrix<dim, dim> xji_ele_XiToXYZ;
       xji_ele_XiToXYZ.Invert(xjm_ele_XiToXYZ);
 
       // set XYZ-derivates of shapefunctions
@@ -413,7 +408,7 @@ LINALG::Matrix<dim, 1> SCATRA::SCATRAUTILS::DoMeanValueAveragingOfElementGradien
       //----------------------------------------------------
       // compute gradient of phi at node for current element
       //----------------------------------------------------
-      static LINALG::Matrix<nsd, 1> nodal_grad_tmp;
+      static LINALG::Matrix<dim, 1> nodal_grad_tmp;
       nodal_grad_tmp.Clear();
 
       // get xyz-gradient

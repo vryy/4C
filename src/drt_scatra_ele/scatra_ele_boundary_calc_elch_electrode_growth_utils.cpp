@@ -101,8 +101,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
   di_dc_master = -dF_dc_master * dF_di_inverse;
   di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
   di_dpot_master = -dF_dpot_master * dF_di_inverse;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
