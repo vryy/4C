@@ -22,8 +22,10 @@
 #include "drt_materialdefinition.H"
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
+#include "drt_utils_cond_and_mat_definition.H"
 
 #include "../drt_mat/material.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -229,7 +231,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
     Teuchos::RCP<MAT::PAR::Material> material)
 {
   // initialize integer parameter value to be read
-  int integer = defaultvalue_;
+  int nnumber = defaultvalue_;
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -238,39 +240,23 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
   // material line of input file
   if ((size_t)position != condline->str().size())
   {
-    // extract integer parameter value from stringstream "condline" as string
-    std::string sinteger;
-    *condline >> sinteger;
+    // extract integer vector component as string
+    std::string snumber;
+    *condline >> snumber;
 
-    // try to convert to integer
-    char* check;
+    nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
+        snumber, nnumber, Name(), def->Name(), 1, optional_);
 
-    // check if it actually is an integer
-    double double_val = strtod(sinteger.c_str(), &check);
-    double int_val;
-    if (modf(double_val, &int_val) == 0.0)
-      integer = int_val;
-    else
-      dserror("Value of parameter '%s' for material '%s' expected INT but got DOUBLE!",
-          Name().c_str(), def->Name().c_str());
-
-    // return error in case the conversion was not successful
-    if (sinteger == check)
-      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-          Name().c_str(), def->Name().c_str());
-
-    integer = strtol(sinteger.c_str(), &check, 10);
-
-    // remove double parameter value from stringstream "condline"
+    // remove parameter value from stringstream "condline"
     condline->str(
-        condline->str().erase((size_t)condline->tellg() - sinteger.size(), sinteger.size()));
+        condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
     // reset current position in stringstream "condline"
     condline->seekg(position);
   }
 
-  // add double parameter value to material parameter list
-  material->Add(Name(), integer);
+  // add int parameter value to material parameter list
+  material->Add(Name(), nnumber);
 
   return condline;
 }
@@ -338,7 +324,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   if (length_ == -1) dserror("Trouble to get length of integer vector material component.");
 
   // initialize integer parameter vector to be read
-  std::vector<int> integers(length_, defaultvalue_);
+  std::vector<int> nnumbers(length_, defaultvalue_);
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -351,41 +337,28 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
     for (int i = 0; i < length_; ++i)
     {
       // extract integer vector component as string
-      std::string sinteger;
-      *condline >> sinteger;
+      std::string snumber;
+      *condline >> snumber;
 
-      // try to convert to double
-      char* check;
-      int integer = 0;
+      int nnumber = 0;
 
-      // check if it actually is an integer
-      double double_val = strtod(sinteger.c_str(), &check);
-      double int_val;
-      if (modf(double_val, &int_val) == 0.0)
-        integer = int_val;
-      else
-        dserror("Value of parameter '%s' for material '%s' expected INT but got DOUBLE!",
-            Name().c_str(), def->Name().c_str());
+      nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
+          snumber, nnumber, Name(), def->Name(), length_, optional_);
 
-      // return error in case the conversion was not successful
-      if (sinteger == check)
-        dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-            Name().c_str(), def->Name().c_str());
-
-      // remove double parameter value from stringstream "condline"
+      // remove parameter value from stringstream "condline"
       condline->str(
-          condline->str().erase((size_t)condline->tellg() - sinteger.size(), sinteger.size()));
+          condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
       // reset current position in stringstream "condline"
       condline->seekg(position);
 
-      // insert double vector component into double parameter vector
-      integers[i] = integer;
+      // insert int vector component into int parameter vector
+      nnumbers[i] = nnumber;
     }
   }
 
-  // add double parameter vector to material parameter list
-  material->Add(Name(), integers);
+  // add int parameter vector to material parameter list
+  material->Add(Name(), nnumbers);
 
   return condline;
 }
@@ -429,7 +402,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
     Teuchos::RCP<MAT::PAR::Material> material)
 {
   // initialize double parameter value to be read
-  double number = defaultvalue_;
+  double nnumber = defaultvalue_;
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -438,20 +411,14 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
   // material line of input file
   if ((size_t)position != condline->str().size())
   {
-    // extract double parameter value from stringstream "condline" as string
+    // read string from stream (need to handle doubles and "none" arguments)
     std::string snumber;
     *condline >> snumber;
 
-    // try to convert to double
-    char* check;
-    number = strtod(snumber.c_str(), &check);
+    nnumber = DRT::UTILS::convertAndValidateStringToNumber<double>(
+        snumber, nnumber, Name(), def->Name(), 1, optional_);
 
-    // return error in case the conversion was not successful
-    if (snumber == check)
-      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-          Name().c_str(), def->Name().c_str());
-
-    // remove double parameter value from stringstream "condline"
+    // remove parameter value from stringstream "condline"
     condline->str(
         condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
@@ -460,7 +427,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
   }
 
   // add double parameter value to material parameter list
-  material->Add(Name(), number);
+  material->Add(Name(), nnumber);
 
   return condline;
 }
@@ -526,7 +493,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
     dserror("Trouble to get length of real vector material component.");
 
   // initialize double parameter vector to be read
-  std::vector<double> numbers(length_, defaultvalue_);
+  std::vector<double> nnumbers(length_, defaultvalue_);
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -542,18 +509,12 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
       std::string snumber;
       *condline >> snumber;
 
-      // try to convert to double
-      char* check;
-      double number = strtod(snumber.c_str(), &check);
+      double nnumber;
 
-      // return error in case the conversion was not successful
-      if (snumber == check)
-        dserror(
-            "Values in parameter vector '%s' for material '%s' not properly specified in input "
-            "file!",
-            Name().c_str(), def->Name().c_str());
+      nnumber = DRT::UTILS::convertAndValidateStringToNumber<double>(
+          snumber, nnumber, Name(), def->Name(), length_, optional_);
 
-      // remove double parameter value from stringstream "condline"
+      // remove parameter value from stringstream "condline"
       condline->str(
           condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
@@ -561,12 +522,12 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
       condline->seekg(position);
 
       // insert double vector component into double parameter vector
-      numbers[i] = number;
+      nnumbers[i] = nnumber;
     }
   }
 
   // add double parameter vector to material parameter list
-  material->Add(Name(), numbers);
+  material->Add(Name(), nnumbers);
 
   return condline;
 }

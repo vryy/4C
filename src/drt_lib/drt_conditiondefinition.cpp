@@ -17,7 +17,8 @@
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
-
+#include "drt_utils_cond_and_mat_definition.H"
+#include "drt_utils_cond_and_mat_definition.cpp"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -232,27 +233,34 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
     DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<DRT::Condition> condition)
 {
-  std::string number;
-  (*condline) >> number;
+  // read string from stream (need to handle ints and "none" arguments)
+  std::string snumber;
+  (*condline) >> snumber;
 
-  int n;
-  if ((noneallowed_ and number == "none") or (optional_ and number == ""))
+  int nnumber;
+
+  // in case 'none' is allowed as an input value
+  if ((noneallowed_ and snumber == "none"))
   {
-    n = -1;
+    nnumber = -1;
   }
+  // in case the parameter is optional and no value is given
+  else if (optional_ and snumber == "")
+  {
+    condline = PushBack("", condline);
+  }
+  // all other cases
   else
   {
-    char* ptr;
-    n = strtol(number.c_str(), &ptr, 10);
-    if (ptr == number.c_str())
-      dserror("failed to read number '%s' while reading variable '%s' in '%s'", number.c_str(),
-          Name().c_str(), def->SectionName().c_str());
+    nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
+        snumber, nnumber, Name(), def->SectionName(), 1, optional_);
   }
   if (fortranstyle_)
   {
-    if (not noneallowed_ or n != -1) n -= 1;
+    if (not noneallowed_ or nnumber != -1) nnumber -= 1;
   }
-  condition->Add(Name(), n);
+
+  condition->Add(Name(), nnumber);
   return condline;
 }
 
@@ -319,50 +327,47 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
     DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<DRT::Condition> condition)
 {
-  // Added this as fortranstyle input was not initialized correctly if optional_ was true.
+  // in order to initialize fortran style input correctly if optional_ is true
   int initialize_value = 0;
   if (fortranstyle_) initialize_value = -1;
 
-  std::vector<int> numbers(length_, initialize_value);
+  std::vector<int> nnumbers(length_, initialize_value);
 
   for (int i = 0; i < length_; ++i)
   {
-    std::string number;
-    (*condline) >> number;
+    // read string from stream (need to handle ints and "none" arguments)
+    std::string snumber;
+    (*condline) >> snumber;
 
-    int n;
-    if (noneallowed_ and number == "none")
+    int nnumber;
+
+    // in case 'none' is allowed as an input value
+    if (noneallowed_ and snumber == "none")
     {
-      n = -1;
+      nnumber = -1;
     }
+    // in case the parameter is optional and no value is given
+    else if (optional_ and i == 0 and snumber == "")
+    {
+      condline = PushBack("", condline);
+      break;
+    }
+    // all other cases
     else
     {
-      char* ptr;
-      n = strtol(number.c_str(), &ptr, 10);
-      if (ptr == number.c_str())
-      {
-        if (optional_ and i == 0)
-        {
-          // failed to read the numbers, fall back to default values
-          condline =
-              PushBack("", condline);  // This line has been changed to incorporate optional flag!!
-          break;
-        }
-        dserror(
-            "Expected %i input parameters for variable '%s' in '%s'\n"
-            "or \n"
-            "Failed to read number '%s' while reading variable '%s' in '%s'",
-            length_, Name().c_str(), def->SectionName().c_str(), number.c_str(), Name().c_str(),
-            def->SectionName().c_str());
-      }
+      nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
+          snumber, nnumber, Name(), def->SectionName(), length_, optional_);
     }
+
     if (fortranstyle_)
     {
-      if (not noneallowed_ or n != -1) n -= 1;
+      if (not noneallowed_ or nnumber != -1) nnumber -= 1;
     }
-    numbers[i] = n;
+
+    nnumbers[i] = nnumber;
   }
-  condition->Add(Name(), numbers);
+
+  condition->Add(Name(), nnumbers);
   return condline;
 }
 
@@ -402,9 +407,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(
     DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<DRT::Condition> condition)
 {
-  double number = 0;
-  (*condline) >> number;
-  condition->Add(Name(), number);
+  double ndouble;
+  (*condline) >> ndouble;
+  condition->Add(Name(), ndouble);
   return condline;
 }
 
@@ -442,37 +447,35 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
     DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<DRT::Condition> condition)
 {
-  std::vector<double> numbers(length_, 0.0);
+  std::vector<double> nnumbers(length_, 0.0);
 
   for (int i = 0; i < length_; ++i)
   {
-    std::string number;
-    (*condline) >> number;
+    // read string from stream (need to handle doubles and "none" arguments)
+    std::string snumber;
+    (*condline) >> snumber;
 
-    char* ptr;
-    double n = 0.0;
-    n = strtod(number.c_str(), &ptr);
-    if (ptr == number.c_str())
+    double nnumber;
+
+    // in case the parameter is optional and no value is
+    // given
+    if (optional_ and i == 0 and snumber == "")
     {
-      if (optional_ and i == 0)
-      {
-        // failed to read the numbers, fall back to default values
-        condline =
-            PushBack("", condline);  // This line has been changed to incorporate optional flag!!
-        // condline = PushBack(number,condline); //Old implementation -> Not working!!!
-        break;
-      }
-      dserror(
-          "Expected %i input parameters for variable '%s' in '%s'\n"
-          "or \n"
-          "Failed to read number '%s' while reading variable '%s' in '%s'",
-          length_, Name().c_str(), def->SectionName().c_str(), number.c_str(), Name().c_str(),
-          def->SectionName().c_str());
+      condline = PushBack("", condline);
+      break;
+    }
+    // all other cases
+    else
+    {
+      // use false for noneallowed_ as not specified for real components
+      nnumber = DRT::UTILS::convertAndValidateStringToNumber<double>(
+          snumber, nnumber, Name(), def->SectionName(), length_, optional_);
     }
 
-    numbers[i] = n;
+    nnumbers[i] = nnumber;
   }
-  condition->Add(Name(), numbers);
+
+  condition->Add(Name(), nnumbers);
   return condline;
 }
 
@@ -924,8 +927,17 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
         char* ptr;
         dobjid = strtol(number.c_str(), &ptr, 10);
         if (ptr == number.c_str())
-          dserror("failed to read design object number '%s' in '%s'", number.c_str(),
+          dserror("Failed to read design object number '%s' in '%s'", number.c_str(),
               sectionname_.c_str());
+        if (ptr[0])  // check for remaining characters that were not read
+        {
+          dserror(
+              "Failed to read design object number '%s' in '%s'. Unable to read %s, so the "
+              "specified number format is probably not supported. The design object number has to "
+              "be an integer.",
+              number.c_str(), sectionname_.c_str(), ptr, number.c_str());
+        }
+
         dobjid -= 1;
       }
 

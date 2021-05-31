@@ -13,7 +13,7 @@
 #include "drt_linedefinition.H"
 #include "drt_dserror.H"
 #include <iterator>
-
+#include "drt_utils_linedefinition.H"
 
 namespace DRT
 {
@@ -352,6 +352,10 @@ template <class type>
 bool DRT::INPUT::NamedComponent<type>::Read(std::istream& stream)
 {
   stream >> value_;
+
+  DRT::UTILS::checkStreamForUnparsedCharacters(
+      stream, name_, DRT::UTILS::stringFromDataType<type>());
+
   return !(stream.fail());
 }
 
@@ -406,6 +410,9 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
   for (unsigned i = 0; i < values_.size(); ++i)
   {
     stream >> values_[i];
+
+    DRT::UTILS::checkStreamForUnparsedCharacters(
+        stream, name_, DRT::UTILS::stringFromDataType<type>());
   }
 
   return !(stream.fail());
@@ -449,6 +456,9 @@ bool DRT::INPUT::NamedVectorComponent<std::pair<T1, T2>>::Read(std::istream& str
     stream >> values_[i].first;
     // here we require whitespaces between name and values
     stream >> values_[i].second;
+
+    DRT::UTILS::checkStreamForUnparsedCharacters(
+        stream, name_, DRT::UTILS::stringFromDataType<T2>());
   }
 
   return !(stream.fail());
@@ -834,6 +844,18 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream, const std::string* s
     if (not i->second->Read(*this, name, stream)) return false;
     readtailcomponents_.insert(name);
   }
+
+  // check if any other unused strings except from comments and whitespaces are given
+  std::string superfluousstring;
+  stream >> superfluousstring;  // stream strips whitespaces
+
+  // return false if there are any other unused strings except from comments
+  if (!superfluousstring.empty() & (superfluousstring.rfind("//", 0) != 0))
+  // rfind: if "//" found at start returns npos=0, which is fine
+  {
+    return false;
+  }
+
   return true;
 }
 
@@ -1031,11 +1053,13 @@ std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> DRT::INPUT::Lines::Read(
   std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> lines;
 
   std::vector<const char*> section = reader.Section(name.str());
+  // these are the lines of the section stored in [0],[1],...
   if (section.size() > 0)
   {
     for (std::vector<const char*>::iterator i = section.begin(); i != section.end(); ++i)
     {
       Teuchos::RCP<DRT::INPUT::LineDefinition> line = Read(*i);
+      // line now is one entry of section
       if (line == Teuchos::null)
       {
         dserror("read failed in section '%s': line '%s'", name.str().c_str(), *i);
