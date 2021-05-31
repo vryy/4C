@@ -173,8 +173,6 @@ namespace DRT
 
     //@}
 
-    ~Problem();
-
     /// @name Input
 
     /// read global parameters
@@ -187,7 +185,7 @@ namespace DRT
     void ReadMicroFields(DRT::INPUT::DatFileReader& reader);
 
     /// set up supporting processors for micro-scale discretizations
-    void ReadMicrofields_NPsupport();
+    void ReadMicrofieldsNPsupport();
 
     /// input of contact constitutive laws
     void ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader);
@@ -264,8 +262,8 @@ namespace DRT
     @param[in] prefix
     @param[in] restartkenner
     */
-    void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix,
-        std::string restartkenner);
+    void OpenControlFile(const Epetra_Comm& comm, const std::string& inputfile, std::string prefix,
+        const std::string& restartkenner);
 
     /// error files
     void OpenErrorFile(
@@ -288,11 +286,11 @@ namespace DRT
     /// @name Parameters read from file
 
     /// Set parameters from a parameter list and return with default values.
-    virtual void setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& paramList);
+    void setParameterList(Teuchos::RCP<Teuchos::ParameterList> const& paramList) override;
 
     /// Return a const parameter list of all of the valid parameters that
     /// this->setParameterList(...) will accept.
-    Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const;
+    Teuchos::RCP<const Teuchos::ParameterList> getValidParameters() const override;
 
     /// @name Nested parallelism group
 
@@ -554,8 +552,6 @@ namespace DRT
     }
 
     const Teuchos::ParameterList& SolverParams(int solverNr) const;
-    const Teuchos::ParameterList& RandomFieldParams(int randomfieldNr) const;
-    const Teuchos::ParameterList& RandomVariableParams(int randomvariableNr) const;
 
     const Teuchos::ParameterList& UMFPACKSolverParams();
 
@@ -564,7 +560,7 @@ namespace DRT
     /// @name Discretizations
 
     /// get access to a particular discretization
-    Teuchos::RCP<DRT::Discretization> GetDis(const std::string name) const;
+    Teuchos::RCP<DRT::Discretization> GetDis(const std::string& name) const;
 
     /// tell number of known fields
     unsigned NumFields() const { return discretizationmap_.size(); }
@@ -573,10 +569,10 @@ namespace DRT
     std::vector<std::string> GetDisNames() const;
 
     /// check whether a certain discretization exists or not
-    bool DoesExistDis(const std::string name) const;
+    bool DoesExistDis(const std::string& name) const;
 
     /// add a discretization to the global problem
-    void AddDis(const std::string name, Teuchos::RCP<Discretization> dis);
+    void AddDis(const std::string& name, Teuchos::RCP<Discretization> dis);
 
 
     //@}

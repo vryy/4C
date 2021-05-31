@@ -8,23 +8,16 @@
 
 #include "io_control.H"
 #include "io_pstream.H"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <strings.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <time.h>
-#include <pwd.h>
+#include <ctime>
 #include <Epetra_MpiComm.h>
-#include <vector>
 #include <iostream>
-#include <sstream>
+#include <pwd.h>
+#include <revision.H>
+#include <utility>
+#include <unistd.h>
+#include <vector>
 
 #include "../drt_inpar/inpar_problemtype.H"
-
-#include "../drt_lib/drt_dserror.H"
-
-#include <revision.H>
 
 extern "C"
 {
@@ -36,10 +29,10 @@ extern "C"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    ShapeFunctionType spatial_approx, std::string inputfile, std::string outputname, int ndim,
-    int restart, int filesteps, int create_controlfile)
-    : problemtype_(problemtype),
-      inputfile_(inputfile),
+    ShapeFunctionType spatial_approx, std::string inputfile, const std::string& outputname,
+    int ndim, int restart, int filesteps, int create_controlfile)
+    : problemtype_(std::move(problemtype)),
+      inputfile_(std::move(inputfile)),
       ndim_(ndim),
       filename_(outputname),
       restartname_(outputname),
@@ -77,7 +70,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 
     if (comm.NumProc() > 1)
     {
-      int length = filename_.length();
+      int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
       int err = comm.Broadcast(&length, 1, 0);
       if (err) dserror("communication error");
@@ -99,13 +92,13 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtype,
-    ShapeFunctionType spatial_approx, std::string inputfile, std::string restartname,
+    ShapeFunctionType spatial_approx, std::string inputfile, const std::string& restartname,
     std::string outputname, int ndim, int restart, int filesteps, int create_controlfile,
     bool adaptname)
-    : problemtype_(problemtype),
-      inputfile_(inputfile),
+    : problemtype_(std::move(problemtype)),
+      inputfile_(std::move(inputfile)),
       ndim_(ndim),
-      filename_(outputname),
+      filename_(std::move(outputname)),
       restartname_(restartname),
       filesteps_(filesteps),
       create_controlfile_(create_controlfile),
@@ -113,7 +106,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 {
   if (restart)
   {
-    if (myrank_ == 0 && adaptname == true)
+    if (myrank_ == 0 && adaptname)
     {
       // check whether filename_ includes a dash and in case separate the number at the end
       int number = 0;
@@ -156,7 +149,7 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm, std::string problemtyp
 
     if (comm.NumProc() > 1)
     {
-      int length = filename_.length();
+      int length = static_cast<int>(filename_.length());
       std::vector<int> name(filename_.begin(), filename_.end());
       int err = comm.Broadcast(&length, 1, 0);
       if (err) dserror("communication error");
@@ -286,15 +279,15 @@ void IO::OutputControl::WriteHeader(
       dserror("Could not open control file '%s' for writing", control_file_name.c_str());
 
     time_t time_value;
-    time_value = time(NULL);
+    time_value = time(nullptr);
 
-    char hostname[256];
+    std::array<char, 256> hostname;
     struct passwd* user_entry;
     user_entry = getpwuid(getuid());
-    gethostname(hostname, 256);
+    gethostname(hostname.data(), 256);
 
     controlfile_ << "# baci output control file\n"
-                 << "# created by " << user_entry->pw_name << " on " << hostname << " at "
+                 << "# created by " << user_entry->pw_name << " on " << hostname.data() << " at "
                  << ctime(&time_value) << "# using code version (git SHA1) " << BaciGitHash
                  << " \n\n"
                  << "input_file = \"" << inputfile_ << "\"\n"
@@ -343,7 +336,7 @@ std::string IO::OutputControl::FileNameOnlyPrefix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-IO::InputControl::InputControl(std::string filename, const bool serial) : filename_(filename)
+IO::InputControl::InputControl(const std::string& filename, const bool serial) : filename_(filename)
 {
   std::stringstream name;
   name << filename << ".control";
@@ -356,18 +349,21 @@ IO::InputControl::InputControl(std::string filename, const bool serial) : filena
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-IO::InputControl::InputControl(std::string filename, const Epetra_Comm& comm) : filename_(filename)
+IO::InputControl::InputControl(const std::string& filename, const Epetra_Comm& comm)
+    : filename_(filename)
 {
   std::stringstream name;
   name << filename << ".control";
 
-  // works for parallel, as well as serial applications because we only
-  // have an Epetra_MpiComm
-  const Epetra_MpiComm* epetrampicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
-  if (!epetrampicomm) dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
-  const MPI_Comm lcomm = epetrampicomm->GetMpiComm();
-
-  parse_control_file(&table_, name.str().c_str(), lcomm);
+  // works for parallel, as well as serial applications because we only have an Epetra_MpiComm
+  const auto* epetrampicomm = dynamic_cast<const Epetra_MpiComm*>(&comm);
+  if (!epetrampicomm)
+    dserror("ERROR: casting Epetra_Comm -> Epetra_MpiComm failed");
+  else
+  {
+    const MPI_Comm lcomm = epetrampicomm->GetMpiComm();
+    parse_control_file(&table_, name.str().c_str(), lcomm);
+  }
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -376,8 +372,8 @@ IO::InputControl::~InputControl() { destroy_map(&table_); }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::ErrorFileControl::ErrorFileControl(
-    const Epetra_Comm& comm, const std::string outputname, int restart, int create_errorfiles)
-    : filename_(outputname), errfile_(NULL)
+    const Epetra_Comm& comm, std::string outputname, int restart, int create_errorfiles)
+    : filename_(std::move(outputname)), errfile_(nullptr)
 {
   // create error file name
   {
@@ -429,7 +425,7 @@ IO::ErrorFileControl::ErrorFileControl(
   if (create_errorfiles)
   {
     errfile_ = fopen(errname_.c_str(), "w");
-    if (errfile_ == NULL) dserror("Opening of output file %s failed\n", errname_.c_str());
+    if (errfile_ == nullptr) dserror("Opening of output file %s failed\n", errname_.c_str());
   }
 
   // inform user
@@ -440,7 +436,7 @@ IO::ErrorFileControl::ErrorFileControl(
 /*----------------------------------------------------------------------*/
 IO::ErrorFileControl::~ErrorFileControl()
 {
-  if (errfile_ != NULL) fclose(errfile_);
+  if (errfile_ != nullptr) fclose(errfile_);
 }
 
 /*----------------------------------------------------------------------*/
