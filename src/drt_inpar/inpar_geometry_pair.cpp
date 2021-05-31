@@ -19,7 +19,7 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
   // Add the input parameters for line to 3D coupling.
 
   // Segmentation strategy.
-  Teuchos::setStringToIntegralParameter<LineTo3DStrategy>("GEOMETRY_PAIR_STRATEGY", "none",
+  Teuchos::setStringToIntegralParameter<LineTo3DStrategy>("GEOMETRY_PAIR_STRATEGY", "segmentation",
       "Type of employed segmentation strategy",
       Teuchos::tuple<std::string>(
           "none", "segmentation", "gauss_point_projection", "gauss_point_projection_cross_section"),
