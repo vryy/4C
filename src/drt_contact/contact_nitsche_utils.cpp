@@ -89,6 +89,10 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleRHS(
       if (mele->MoData().ParentScalarDof().size())
         AssembleRHS<1>(mele, ssi_data_.rhs_s_, mele->MoData().ParentScalarDof(), fc);
       break;
+    case DRT::UTILS::VecBlockType::elch:
+      if (mele->MoData().ParentScalarDof().size())
+        AssembleRHS<2>(mele, ssi_elch_data_.rhs_e_, mele->MoData().ParentScalarDof(), fc);
+      break;
     default:
       dserror("unknown row");
   }
@@ -141,6 +145,18 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
     case DRT::UTILS::MatBlockType::scatra_scatra:
       if (mele->MoData().ParentScalarDof().size())
         AssembleMatrix<1>(mele, ssi_data_.k_ss_, mele->MoData().ParentScalarDof(), kc);
+      break;
+    case DRT::UTILS::MatBlockType::displ_elch:
+      AssembleMatrix<DRT::UTILS::DisTypeToDim<parent_distype>::dim>(
+          mele, ssi_elch_data_.k_de_, mele->MoData().ParentDof(), kc);
+      break;
+    case DRT::UTILS::MatBlockType::elch_displ:
+      if (mele->MoData().ParentScalarDof().size())
+        AssembleMatrix<2>(mele, ssi_elch_data_.k_ed_, mele->MoData().ParentScalarDof(), kc);
+      break;
+    case DRT::UTILS::MatBlockType::elch_elch:
+      if (mele->MoData().ParentScalarDof().size())
+        AssembleMatrix<2>(mele, ssi_elch_data_.k_ee_, mele->MoData().ParentScalarDof(), kc);
       break;
     default:
       dserror("unknown matrix block");

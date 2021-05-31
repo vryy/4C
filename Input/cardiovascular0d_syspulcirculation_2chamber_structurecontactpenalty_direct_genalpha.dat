@@ -28,7 +28,7 @@ SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.1
 LM_SHAPEFCN                     std//dual
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
-MAX_BALANCE                     2
+MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 PARALLEL_REDIST                 Dynamic
 GHOSTING_STRATEGY               redundant_master

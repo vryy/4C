@@ -86,7 +86,7 @@ OUTPUT_INTERFACES               Yes
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 EXPLOIT_PROXIMITY               Yes
 IMBALANCE_TOL                   1.03
-MAX_BALANCE                     1.0
+MAX_BALANCE_EVAL_TIME           1.0
 MIN_ELEPROC                     0
 PARALLEL_REDIST                 None
 GHOSTING_STRATEGY               binning

@@ -59,7 +59,7 @@ INTTYPE                         Elements
 NUMGP_PER_DIM                   3
 ----------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 Dynamic
-MAX_BALANCE                     2
+MAX_BALANCE_EVAL_TIME           2
 MIN_ELEPROC                     0
 GHOSTING_STRATEGY               redundant_master
 ---------------------------------------------------CONTACT DYNAMIC

@@ -25,11 +25,11 @@
 #include <boost/lexical_cast.hpp>
 
 #include <Epetra_Time.h>
-#include <iterator>
 #include <sstream>
+#include <utility>
 
 #ifdef TRAP_FE
-#include <fenv.h>
+#include <cfenv>
 #endif /* TRAP_FE */
 
 #ifdef TOL_N
@@ -49,8 +49,15 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
+    DatFileReader::DatFileReader(std::string filename)
+        : filename_(std::move(filename)), comm_(Teuchos::null), numrows_(0), outflag_(0)
+    {
+    }
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
     DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
-        : filename_(filename), comm_(comm), outflag_(outflag)
+        : filename_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
     {
       ReadDat();
     }
@@ -68,13 +75,11 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    std::ifstream::pos_type DatFileReader::ExcludedSectionPosition(std::string section) const
+    std::ifstream::pos_type DatFileReader::ExcludedSectionPosition(const std::string& section) const
     {
-      std::map<std::string, std::pair<std::ifstream::pos_type, unsigned int>>::const_iterator i =
-          excludepositions_.find(section);
+      auto i = excludepositions_.find(section);
       if (i == excludepositions_.end())
       {
-        // dserror("unknown section '%s'",section.c_str());
         return -1;
       }
       return i->second.first;
@@ -83,13 +88,11 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    unsigned int DatFileReader::ExcludedSectionLength(std::string section) const
+    unsigned int DatFileReader::ExcludedSectionLength(const std::string& section) const
     {
-      std::map<std::string, std::pair<std::ifstream::pos_type, unsigned int>>::const_iterator i =
-          excludepositions_.find(section);
+      auto i = excludepositions_.find(section);
       if (i == excludepositions_.end())
       {
-        // dserror("unknown section '%s'",section.c_str());
         return 0;
       }
       return i->second.second;
@@ -161,7 +164,7 @@ namespace DRT
         std::string key;
         std::string value;
 
-        std::string::size_type loc = line.find(" ");
+        std::string::size_type loc = line.find(' ');
         if (loc == std::string::npos)
         {
           // dserror("line '%s' with just one word in GiD parameter section", line.c_str());
@@ -186,7 +189,7 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    std::vector<const char*> DatFileReader::Section(std::string name)
+    std::vector<const char*> DatFileReader::Section(const std::string& name)
     {
       // The section name is desired from outside. Thus, we consider it as valid
       knownsections_[name] = true;
@@ -221,10 +224,10 @@ namespace DRT
       std::string sectionname = name + "-NODE TOPOLOGY";
       std::string marker = std::string("--") + sectionname;
 
-      std::map<std::string, unsigned int>::const_iterator i = positions_.find(marker);
-      if (i != positions_.end())
+      auto position = positions_.find(marker);
+      if (position != positions_.end())
       {
-        for (size_t pos = i->second + 1; pos < lines_.size(); ++pos)
+        for (size_t pos = position->second + 1; pos < lines_.size(); ++pos)
         {
           const char* l = lines_[pos];
           if (l[0] == '-' and l[1] == '-')
@@ -237,7 +240,7 @@ namespace DRT
           std::string nname;
           std::string dname;
           std::string disname;
-          int dir[] = {0, 0, 0};
+          std::array<int, 3> dir = {0, 0, 0};
 
           std::istringstream stream(l);
           stream >> nname;
@@ -343,14 +346,20 @@ namespace DRT
                       t >> key;
 
                       if (key == "LOWER_BOUND")
+                      {
                         t >> box_specifications[0] >> box_specifications[1] >>
                             box_specifications[2];
+                      }
                       else if (key == "UPPER_BOUND")
+                      {
                         t >> box_specifications[3] >> box_specifications[4] >>
                             box_specifications[5];
+                      }
                       else if (key == "ROTATION")
+                      {
                         t >> box_specifications[6] >> box_specifications[7] >>
                             box_specifications[8];
+                      }
                     }
                   }
                 }
@@ -359,12 +368,13 @@ namespace DRT
                       disname.c_str());
               }
               // All other processors get this info broadcasted
-              comm_->Broadcast(&box_specifications[0], box_specifications.size(), 0);
+              comm_->Broadcast(
+                  &box_specifications[0], static_cast<int>(box_specifications.size()), 0);
               cached_box_specifications_[disname] = box_specifications;
             }
 
             // determine the active discretizations bounding box
-            double bbox[6];
+            std::array<double, 6> bbox;
             for (size_t i = 0; i < sizeof(bbox) / sizeof(bbox[0]); ++i)
               bbox[i] = box_specifications[i];
 
@@ -396,7 +406,7 @@ namespace DRT
             {
               const Node* node = actdis->lRowNode(lid);
               const double* coord = node->X();
-              double coords[3];
+              std::array<double, 3> coords;
               coords[0] = coord[0];
               coords[1] = coord[1];
               coords[2] = coord[2];
@@ -406,12 +416,12 @@ namespace DRT
               {
                 if (box_specifications[rotaxis + rotoffset] != 0.0)
                 {
-                  double coordm[3];
+                  std::array<double, 3> coordm;
                   coordm[0] = (box_specifications[0] + box_specifications[3]) / 2.;
                   coordm[1] = (box_specifications[1] + box_specifications[4]) / 2.;
                   coordm[2] = (box_specifications[2] + box_specifications[5]) / 2.;
                   // add rotation around mitpoint here.
-                  double dx[3];
+                  std::array<double, 3> dx;
                   dx[0] = coords[0] - coordm[0];
                   dx[1] = coords[1] - coordm[1];
                   dx[2] = coords[2] - coordm[2];
@@ -445,17 +455,17 @@ namespace DRT
                 marker.c_str(), l, dname.substr(0, name.length()).c_str(), name.c_str());
         }
         // copy all design object entries
-        for (std::map<int, std::set<int>>::iterator i = topology.begin(); i != topology.end(); ++i)
+        for (auto& topo : topology)
         {
-          if (i->first >= static_cast<int>(dobj_fenode.size()))
+          if (topo.first >= static_cast<int>(dobj_fenode.size()))
           {
-            dserror("Illegal design object number %d in section '%s'", i->first + 1,
+            dserror("Illegal design object number %d in section '%s'", topo.first + 1,
                 sectionname.c_str());
           }
 
           // we copy from a std::set, thus the gids are sorted
-          dobj_fenode[i->first].reserve(i->second.size());
-          dobj_fenode[i->first].assign(i->second.begin(), i->second.end());
+          dobj_fenode[topo.first].reserve(topo.second.size());
+          dobj_fenode[topo.first].assign(topo.second.begin(), topo.second.end());
         }
       }
 
@@ -468,7 +478,7 @@ namespace DRT
     /// read a knotvector section (for isogeometric analysis)
     //----------------------------------------------------------------------
     void DatFileReader::ReadKnots(
-        const int dim, const std::string name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots)
+        const int dim, const std::string& name, Teuchos::RCP<DRT::NURBS::Knotvector>& disknots)
     {
       // io to shell
       const int myrank = comm_->MyPID();
@@ -545,11 +555,8 @@ namespace DRT
           if ((tmp[0] == '-' && tmp[1] == '-'))
           {
             // check whether it is the knotvectorsection
-            std::string::size_type loc = std::string::npos;
-
-            // only the knotvector section of this discretisation
-            // type is of interest
-            loc = tmp.rfind(field);
+            // only the knotvector section of this discretisation type is of interest
+            std::string::size_type loc = tmp.rfind(field);
 
             if (loc == std::string::npos)
             {
@@ -676,11 +683,9 @@ namespace DRT
           if ((tmp[0] == '-' && tmp[1] == '-'))
           {
             // check whether it is the knotvectorsection
-            std::string::size_type loc = std::string::npos;
-
             // only the knotvector section of this discretisation
             // type is of interest
-            loc = tmp.rfind(field);
+            std::string::size_type loc = tmp.rfind(field);
 
             if (loc == std::string::npos)
             {
@@ -719,9 +724,7 @@ namespace DRT
           if (knotvectorsection)
           {
             // check for a new patch
-            std::string::size_type loc = std::string::npos;
-
-            loc = tmp.rfind("BEGIN");
+            std::string::size_type loc = tmp.rfind("BEGIN");
             if (loc != std::string::npos)
             {
               file >> tmp;
@@ -754,8 +757,8 @@ namespace DRT
               std::string str_npatch;
               file >> str_npatch;
 
-              char* endptr = NULL;
-              npatch = strtol(str_npatch.c_str(), &endptr, 10);
+              char* endptr = nullptr;
+              npatch = static_cast<int>(strtol(str_npatch.c_str(), &endptr, 10));
               npatch--;
 
               continue;
@@ -777,8 +780,8 @@ namespace DRT
                 dserror("too many knotvectors (we only need dim)\n");
               }
 
-              char* endptr = NULL;
-              n_x_m_x_l[actdim] = strtol(str_numknots.c_str(), &endptr, 10);
+              char* endptr = nullptr;
+              n_x_m_x_l[actdim] = static_cast<int>(strtol(str_numknots.c_str(), &endptr, 10));
 
               continue;
             }
@@ -791,8 +794,8 @@ namespace DRT
               std::string str_degree;
               file >> str_degree;
 
-              char* endptr = NULL;
-              degree[actdim] = strtol(str_degree.c_str(), &endptr, 10);
+              char* endptr = nullptr;
+              degree[actdim] = static_cast<int>(strtol(str_degree.c_str(), &endptr, 10));
 
               continue;
             }
@@ -841,7 +844,7 @@ namespace DRT
             // other keyword was found
             if (read)
             {
-              char* endptr = NULL;
+              char* endptr = nullptr;
 
               double dv = strtod(tmp.c_str(), &endptr);
 
@@ -869,7 +872,6 @@ namespace DRT
           fflush(stdout);
         }
       }
-      return;
     }
 
 
@@ -893,7 +895,8 @@ namespace DRT
 
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
-    void DatFileReader::AddEntry(std::string key, std::string value, Teuchos::ParameterList& list)
+    void DatFileReader::AddEntry(
+        const std::string& key, const std::string& value, Teuchos::ParameterList& list)
     {
       // safety check: Is there a duplicate of the same parameter?
       if (list.isParameter(key))
@@ -959,29 +962,29 @@ namespace DRT
     {
       std::vector<std::string> exclude;
 
-      exclude.push_back("--NODE COORDS");
-      exclude.push_back("--STRUCTURE ELEMENTS");
-      exclude.push_back("--STRUCTURE DOMAIN");
-      exclude.push_back("--FLUID ELEMENTS");
-      exclude.push_back("--FLUID DOMAIN");
-      exclude.push_back("--ALE ELEMENTS");
-      exclude.push_back("--ALE DOMAIN");
-      exclude.push_back("--ARTERY ELEMENTS");
-      exclude.push_back("--REDUCED D AIRWAYS ELEMENTS");
-      exclude.push_back("--LUBRICATION ELEMENTS");
-      exclude.push_back("--LUBRICATION DOMAIN");
-      exclude.push_back("--TRANSPORT ELEMENTS");
-      exclude.push_back("--TRANSPORT2 ELEMENTS");
-      exclude.push_back("--TRANSPORT DOMAIN");
-      exclude.push_back("--THERMO ELEMENTS");
-      exclude.push_back("--THERMO DOMAIN");
-      exclude.push_back("--ELECTROMAGNETIC ELEMENTS");
-      exclude.push_back("--PERIODIC BOUNDINGBOX ELEMENTS");
-      exclude.push_back("--CELL ELEMENTS");
-      exclude.push_back("--CELL DOMAIN");
-      exclude.push_back("--CELLSCATRA ELEMENTS");
-      exclude.push_back("--CELLSCATRA DOMAIN");
-      exclude.push_back("--PARTICLES");
+      exclude.emplace_back("--NODE COORDS");
+      exclude.emplace_back("--STRUCTURE ELEMENTS");
+      exclude.emplace_back("--STRUCTURE DOMAIN");
+      exclude.emplace_back("--FLUID ELEMENTS");
+      exclude.emplace_back("--FLUID DOMAIN");
+      exclude.emplace_back("--ALE ELEMENTS");
+      exclude.emplace_back("--ALE DOMAIN");
+      exclude.emplace_back("--ARTERY ELEMENTS");
+      exclude.emplace_back("--REDUCED D AIRWAYS ELEMENTS");
+      exclude.emplace_back("--LUBRICATION ELEMENTS");
+      exclude.emplace_back("--LUBRICATION DOMAIN");
+      exclude.emplace_back("--TRANSPORT ELEMENTS");
+      exclude.emplace_back("--TRANSPORT2 ELEMENTS");
+      exclude.emplace_back("--TRANSPORT DOMAIN");
+      exclude.emplace_back("--THERMO ELEMENTS");
+      exclude.emplace_back("--THERMO DOMAIN");
+      exclude.emplace_back("--ELECTROMAGNETIC ELEMENTS");
+      exclude.emplace_back("--PERIODIC BOUNDINGBOX ELEMENTS");
+      exclude.emplace_back("--CELL ELEMENTS");
+      exclude.emplace_back("--CELL DOMAIN");
+      exclude.emplace_back("--CELLSCATRA ELEMENTS");
+      exclude.emplace_back("--CELLSCATRA DOMAIN");
+      exclude.emplace_back("--PARTICLES");
 
       Teuchos::RCP<Epetra_Comm> comm = comm_;
 
@@ -1000,7 +1003,7 @@ namespace DRT
         std::list<std::string> content;
         bool ignoreline = false;
         std::string line;
-        unsigned int* linecount = NULL;
+        unsigned int* linecount = nullptr;
 
         // loop all input lines
         while (getline(file, line))
@@ -1019,7 +1022,7 @@ namespace DRT
             if (line.find("--") == 0)
             {
               ignoreline = false;
-              linecount = NULL;
+              linecount = nullptr;
             }
             else
             {
@@ -1034,14 +1037,13 @@ namespace DRT
             // remember all section positions
             if (line.find("--") == 0)
             {
-              for (std::vector<int>::size_type i = 0; i < exclude.size(); ++i)
+              for (auto& i : exclude)
               {
-                if (line.find(exclude[i]) != std::string::npos)
+                if (line.find(i) != std::string::npos)
                 {
-                  if (excludepositions_.find(exclude[i]) != excludepositions_.end())
-                    dserror("section '%s' defined more than once", exclude[i].c_str());
-                  std::pair<std::ifstream::pos_type, unsigned int>& p =
-                      excludepositions_[exclude[i]];
+                  if (excludepositions_.find(i) != excludepositions_.end())
+                    dserror("section '%s' defined more than once", i.c_str());
+                  std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[i];
                   p.first = file.tellg();
                   p.second = 0;
                   linecount = &p.second;
@@ -1056,7 +1058,7 @@ namespace DRT
           if (!ignoreline && line.length() > 0)
           {
             content.push_back(line);
-            arraysize += line.length() + 1;
+            arraysize += static_cast<int>(line.length()) + 1;
           }
         }
 
@@ -1081,13 +1083,15 @@ namespace DRT
           lines_.push_back(&(inputfile_.back()) + 1);
         }
         // add the slot for the temporary line...
-        lines_.back() = 0;
+        lines_.back() = nullptr;
 
         if (inputfile_.size() != static_cast<size_t>(arraysize))
+        {
           dserror(
               "internal error in file read: inputfile has %d chars, but was predicted to be %d "
               "chars long",
               inputfile_.size(), arraysize);
+        }
       }
 
       // Now lets do all the parallel setup. Afterwards all processors
@@ -1110,7 +1114,7 @@ namespace DRT
         // There are no char based functions available! Do it by hand!
         // comm->Broadcast(&inputfile_[0],arraysize,0);
 
-        const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm);
+        const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm);
 
         MPI_Bcast(&inputfile_[0], arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 
@@ -1132,19 +1136,17 @@ namespace DRT
         }
 
         // distribute excluded section positions
-        for (std::vector<int>::size_type i = 0; i < exclude.size(); ++i)
+        for (auto& i : exclude)
         {
           if (comm->MyPID() == 0)
           {
-            std::map<std::string, std::pair<std::ifstream::pos_type, unsigned int>>::iterator ep =
-                excludepositions_.find(exclude[i]);
+            auto ep = excludepositions_.find(i);
             if (ep == excludepositions_.end())
             {
-              excludepositions_[exclude[i]] =
-                  std::pair<std::ifstream::pos_type, unsigned int>(-1, 0);
+              excludepositions_[i] = std::pair<std::ifstream::pos_type, unsigned int>(-1, 0);
             }
           }
-          std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[exclude[i]];
+          std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[i];
           // comm->Broadcast(&p.second,1,0);
           MPI_Bcast(&p.second, 1, MPI_INT, 0, mpicomm.GetMpiComm());
         }
@@ -1208,7 +1210,7 @@ namespace DRT
       if (errcontrol == Teuchos::null) dserror("ErrorFileControl not allocated");
       FILE* out_err = DRT::Problem::Instance()->ErrorFile()->Handle();
 
-      if (out_err != NULL)
+      if (out_err != nullptr)
       {
         if (comm_ == Teuchos::null) dserror("No communicator available");
         if (comm_->MyPID() == 0)
@@ -1245,14 +1247,14 @@ namespace DRT
       // is there at least one unknown section?
       for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
       {
-        if (iter->second == false)
+        if (!iter->second)
         {
           printout = true;
           break;
         }
       }
       // now it's time to create noise on the screen
-      if ((printout == true) and (Comm()->MyPID() == 0))
+      if (printout and (Comm()->MyPID() == 0))
       {
         IO::cout << "\nERROR!"
                  << "\n--------"
@@ -1260,7 +1262,7 @@ namespace DRT
                  << IO::endl;
         for (iter = knownsections_.begin(); iter != knownsections_.end(); iter++)
         {
-          if (iter->second == false) IO::cout << iter->first << IO::endl;
+          if (!iter->second) IO::cout << iter->first << IO::endl;
         }
         IO::cout << IO::endl;
       }

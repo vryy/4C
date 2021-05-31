@@ -4144,6 +4144,7 @@ void MORTAR::MortarInterface::CreateVolumeGhosting()
   switch (prb)
   {
     case INPAR::CONTACT::ssi:
+    case INPAR::CONTACT::ssi_elch:
     {
       std::vector<std::string> tar_dis;
       tar_dis.emplace_back("structure");

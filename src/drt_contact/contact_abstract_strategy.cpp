@@ -241,7 +241,9 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
 
   bool perform_rebalancing = false;
   const double max_time_unbalance =
-      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE");
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_EVAL_TIME");
+  const double max_ele_unbalance =
+      Params().sublist("PARALLEL REDISTRIBUTION").get<double>("MAX_BALANCE_SLAVE_ELES");
 
   double time_average = 0.0;
   double elements_average = 0.0;
@@ -281,14 +283,14 @@ bool CONTACT::CoAbstractStrategy::IsRebalancingNecessary(const bool first_time_s
         /* Decide on redistribution
          *
          * We allow a maximum value of the balance measure in the system as defined in the input
-         * parameter MAX_BALANCE, i.e. the maximum local processor workload and the minimum local
-         * processor workload for mortar evaluation of all interfaces may not differ by more than
-         * (MAX_BALANCE - 1.0)*100%)
+         * parameter MAX_BALANCE_EVAL_TIME, i.e. the maximum local processor workload and the
+         * minimum local processor workload for mortar evaluation of all interfaces may not differ
+         * by more than (MAX_BALANCE_EVAL_TIME - 1.0)*100%)
          *
          * Moreover, we redistribute if in the majority of iteration steps of the last time step
-         * there has been an unbalance in element distribution, i.e. if elements_average >= 0.5)
+         * there has been an unbalance in element distribution.
          */
-        if (time_average >= max_time_unbalance || elements_average >= 0.5)
+        if (time_average >= max_time_unbalance || elements_average >= max_ele_unbalance)
           perform_rebalancing = true;
       }
 
@@ -413,10 +415,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeWithSafeGhosting(
       Teuchos::getIntegralValue<INPAR::MORTAR::ExtendGhosting>(
           Params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY");
 
-  bool first_time_step = false;
-  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
-    first_time_step = true;
-
+  bool first_time_step = IsFirstTimeStep();
   const bool perform_rebalancing = IsRebalancingNecessary(first_time_step);
   const bool enforce_ghosting_update =
       IsUpdateOfGhostingNecessary(ghosting_strategy, first_time_step);
@@ -459,9 +458,7 @@ bool CONTACT::CoAbstractStrategy::RedistributeContactOld(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // decide whether redistribution should be applied or not
-  bool first_time_step = false;
-  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
-    first_time_step = true;
+  bool first_time_step = IsFirstTimeStep();
   const bool doredist = IsRebalancingNecessary(first_time_step);
 
   // get out of here if simulation is still in balance
@@ -3462,4 +3459,15 @@ void CONTACT::CoAbstractStrategy::PostprocessQuantitiesPerInterface(
   }
 
   for (auto& interface : Interfaces()) interface->PostprocessQuantities(*outputParams);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool CONTACT::CoAbstractStrategy::IsFirstTimeStep() const
+{
+  bool first_time_step = false;
+  if (unbalanceEvaluationTime_.size() == 0 && unbalanceNumSlaveElements_.size() == 0)
+    first_time_step = true;
+
+  return first_time_step;
 }

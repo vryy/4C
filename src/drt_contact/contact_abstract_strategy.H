@@ -1827,7 +1827,20 @@ namespace CONTACT
     }
 
    private:
-    //! @name Parallel distribution and ghosting
+    /*!
+    \brief Check if this is the first time step of the simulation
+
+    As we don't have the time step counter available here, let's check for the size of some member
+    variables: a size of zero indicates the first time step.
+
+    \warning This checks relies on the proper (re-)initialization of some member variables. Behavior
+    could change, if these member variables are (re-)initialized differently.
+
+    \return Boolean flag to indicate the first time step (true) or not (false)
+    */
+    bool IsFirstTimeStep() const;
+
+    //! @name Parallel redistribution and ghosting
     //! @{
 
     /*!
@@ -1956,6 +1969,8 @@ namespace CONTACT
     bool RedistributeContactOld(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel);
 
+    //! @}
+
     /*! \brief Create the global Lagrange multiplier DoF row map
      *
      *  The global Lagrange multiplier DoF row map is created in a deterministic
@@ -2074,7 +2089,7 @@ namespace CONTACT
     //! Global slave row map of surface nodes
     Teuchos::RCP<Epetra_Map>& gsdofSurf_;
 
-    //! @name Parallel redistribution
+    //! @name Parallel redistribution and ghosting
     //!@{
 
     //! Parallel unbalance factors (evaluation time) for current time step \f$t_{n+1}\f$
