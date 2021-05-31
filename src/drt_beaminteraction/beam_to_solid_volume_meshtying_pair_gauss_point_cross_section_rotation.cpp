@@ -76,7 +76,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
     q_beam(i_beam) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(
         n_dof_pair_, i_beam, FADUTILS::CastToDouble(this->ele1pos_(i_beam)));
 
-  // Check that the beam element is a SR beam.
+  // Check that the beam element is a Simo--Reissner beam.
   auto beam_ele = dynamic_cast<const DRT::ELEMENTS::Beam3r*>(this->Element1());
   if (beam_ele == nullptr)
     dserror("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
@@ -92,8 +92,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
         beam::n_dof_ + i_rot, beam_displacement_vector_full_double[rot_dof_indices[i_rot]]);
 
   {
-    // Other rotations have to be 0.
-    unsigned int other_rot_dof_indices[] = {4, 5, 13, 14, 19, 20};
+    // Check that the out of plane rotations are 0.
+
+    // Local indices of out of plane rotational DOFs.
+    const unsigned int other_rot_dof_indices[] = {4, 5, 13, 14, 19, 20};
     const double tol = 1e-10;
     double other_values = 0.0;
     for (unsigned int i_dim = 1; i_dim < 6; i_dim++)
@@ -106,19 +108,19 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
   }
 
   // Set the FAD variables for the solid DOFs.
-  LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid(true);
+  LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_2nd> q_solid;
   for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
     q_solid(i_solid) = FADUTILS::HigherOrderFadValue<scalar_type_rot_2nd>::apply(n_dof_pair_,
         n_dof_rot_ + beam::n_dof_ + i_solid, FADUTILS::CastToDouble(this->ele2pos_(i_solid)));
 
   // Initialize local matrices.
-  LINALG::Matrix<n_dof_pair_, 1, double> local_force(true);
-  LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> local_stiff(true);
+  LINALG::Matrix<n_dof_pair_, 1, double> local_force;
+  LINALG::Matrix<n_dof_pair_, n_dof_pair_, double> local_stiff;
 
   // Initialize variables for position and force vectors.
   LINALG::Matrix<3, 1, double> dr_beam_ref;
   LINALG::Matrix<3, 1, scalar_type_rot_2nd> dr_beam;
-  LINALG::Matrix<3, 3, scalar_type_rot_2nd> beam_triad(true);
+  LINALG::Matrix<3, 3, scalar_type_rot_2nd> beam_triad;
   LINALG::Matrix<1, 1, scalar_type_rot_2nd> phi_beam;
   LINALG::Matrix<3, 1, scalar_type_rot_2nd> r_beam;
   LINALG::Matrix<3, 1, scalar_type_rot_2nd> r_solid;
@@ -126,8 +128,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
   scalar_type_rot_2nd penalty_potential = 0.0;
 
   // Initialize scalar variables.
-  double beam_jacobian;
-  double penalty_parameter =
+  double beam_jacobian = 0.0;
+  const double penalty_parameter =
       this->Params()->BeamToSolidVolumeMeshtyingParams()->GetPenaltyParameter();
 
   // Calculate the meshtying forces.
@@ -187,7 +189,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
   this->Element1()->LocationVector(*discret, lm_beam, lmowner, lmstride);
   this->Element2()->LocationVector(*discret, lm_solid, lmowner, lmstride);
 
-  int pos_dof_indices[] = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
+  // Locla indices of the positional DOFs in the Simo--Reissner beam element.
+  const int pos_dof_indices[] = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
   LINALG::Matrix<n_dof_pair_, 1, int> gid_pair;
   for (unsigned int i = 0; i < beam::n_dof_; i++) gid_pair(i) = lm_beam[pos_dof_indices[i]];
   for (unsigned int i = 0; i < n_dof_rot_; i++)
@@ -235,8 +238,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotati
         "The cross section projection only works with cross section projection in the geometry "
         "pairs.");
 
-  // Explicitly create the cylinder pair here, as this contact pair only works with this kind of
-  // geometry pair.
+  // Explicitly create the cylinder pair here, as this beam-to-solid mesh tying pair only works with
+  // this kind of geometry pair.
   this->geometry_pair_ = Teuchos::rcp(
       new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
           solid>(line_to_3d_evaluation_data));

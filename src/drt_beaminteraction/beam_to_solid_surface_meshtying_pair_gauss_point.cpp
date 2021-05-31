@@ -60,20 +60,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   LINALG::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> force_pair(true);
 
   // Initialize scalar variables.
-  double segment_jacobian, beam_segmentation_factor;
+  double segment_jacobian = 0.0;
+  double beam_segmentation_factor = 0.0;
   double penalty_parameter =
       this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetPenaltyParameter();
 
   // Calculate the mesh tying forces.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  const unsigned int n_segments = this->line_to_3D_segments_.size();
+  for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
     // Factor to account for a segment length not from -1 to 1.
     beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
-    for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+    for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =

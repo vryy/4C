@@ -100,7 +100,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   std::vector<int> lm_beam, gid_solid, lmowner, lmstride;
   this->Element1()->LocationVector(discret, lm_beam, lmowner, lmstride);
   this->Element2()->LocationVector(discret, gid_solid, lmowner, lmstride);
-  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  // Local indices of rotational DOFs for the Simo--Reissner beam element.
+  const int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
 
@@ -189,18 +190,20 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
 
   // Initialize scalar variables.
-  double segment_jacobian, beam_segmentation_factor;
+  double segment_jacobian = 0.0;
+  double beam_segmentation_factor = 0.0;
 
   // Calculate the meshtying forces.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  const unsigned int n_segments = this->line_to_3D_segments_.size();
+  for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
     // Factor to account for a segment length not from -1 to 1.
     beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
-    for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+    for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
@@ -477,7 +480,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   // Calculate the meshtying forces.
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  const unsigned int n_segments = this->line_to_3D_segments_.size();
+  for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
     // Factor to account for a segment length not from -1 to 1.
     beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();

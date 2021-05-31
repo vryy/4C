@@ -402,28 +402,29 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3D(
 
   // Basis vectors and the triad of the solid.
   LINALG::Matrix<3, 1, scalar_type> construction_vector;
-  LINALG::Matrix<3, 1, scalar_type> t[3];
+  LINALG::Matrix<3, 1, scalar_type> triad_basis_vectors[3];
   LINALG::Matrix<3, 3, scalar_type> solid_triad;
 
   // Set the first basis vector.
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-    t[0](i_dim) = deformed_basis(i_dim, local_basis_vector_construction_order[0]);
+    triad_basis_vectors[0](i_dim) = deformed_basis(i_dim, local_basis_vector_construction_order[0]);
 
   // Construct the second basis vector.
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     construction_vector(i_dim) = deformed_basis(i_dim, local_basis_vector_construction_order[1]);
-  t[1].CrossProduct(construction_vector, t[0]);
+  triad_basis_vectors[1].CrossProduct(construction_vector, triad_basis_vectors[0]);
 
   // Construct the third basis vector.
-  t[2].CrossProduct(t[0], t[1]);
+  triad_basis_vectors[2].CrossProduct(triad_basis_vectors[0], triad_basis_vectors[1]);
 
   // Norm all vectors and add them to the solid triad.
   scalar_type norm;
   for (unsigned int i_basis = 0; i_basis < 3; i_basis++)
   {
-    t[i_basis].Scale(1.0 / FADUTILS::Norm(t[i_basis]));
+    triad_basis_vectors[i_basis].Scale(1.0 / FADUTILS::Norm(triad_basis_vectors[i_basis]));
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-      solid_triad(i_dim, constructed_basis_vector_to_triad_order[i_basis]) = t[i_basis](i_dim);
+      solid_triad(i_dim, constructed_basis_vector_to_triad_order[i_basis]) =
+          triad_basis_vectors[i_basis](i_dim);
   }
 
   // Convert the triad into a rotation vector.
@@ -479,14 +480,14 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
     {
       scalar_type v[16];
       v[15] = U_times_U(0, 0) - U_times_U(1, 1);
-      v[5] = 4e0 * pow(U_times_U(0, 1), 2.0) + (v[15] * v[15]);
-      v[12] = 1e0 / FADUTILS::sqrt(v[5]);
+      v[5] = 4.0 * std::pow(U_times_U(0, 1), 2.0) + (v[15] * v[15]);
+      v[12] = 1.0 / FADUTILS::sqrt(v[5]);
       v[6] = FADUTILS::sqrt(v[5]);
       v[7] = 0.3535533905932738e0 * v[12];
       v[8] = FADUTILS::sqrt<scalar_type>(U_times_U(0, 0) + U_times_U(1, 1) - v[6]);
       v[9] = -U_times_U(0, 0) + U_times_U(1, 1) + v[6];
       v[10] = v[15] + v[6];
-      v[11] = FADUTILS::sqrt<scalar_type>(2e0 * U_times_U(0, 0) + v[9]);
+      v[11] = FADUTILS::sqrt<scalar_type>(2.0 * U_times_U(0, 0) + v[9]);
       v[13] = -0.7071067811865476e0 * U_times_U(0, 1) * v[12] * (-v[11] + v[8]);
       U(0, 0) = v[7] * (v[10] * v[11] + v[8] * v[9]);
       U(0, 1) = v[13];

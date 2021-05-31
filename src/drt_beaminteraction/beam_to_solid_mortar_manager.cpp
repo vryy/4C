@@ -616,7 +616,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
       Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
 
   // Get the penalty parameters.
-  double penalty_translation = beam_to_solid_params_->GetPenaltyParameter();
+  const double penalty_translation = beam_to_solid_params_->GetPenaltyParameter();
   double penalty_rotation = 0.0;
   auto beam_to_volume_params =
       Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
@@ -627,7 +627,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
     dserror("Rotational penalty coupling only implemented for beam-to-volume case.");
 
   // Calculate the local inverse of kappa.
-  double penalty;
+  double penalty = 0.0;
   double local_kappa_inv_value = 0.;
   for (int lid = 0; lid < lambda_dof_rowmap_->NumMyElements(); lid++)
   {

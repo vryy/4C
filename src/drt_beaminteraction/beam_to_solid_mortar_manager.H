@@ -216,8 +216,10 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Invert the scaling vector \ref global_kappa_ vector with accounting for non active
-     * Lagrange multipliers and scale the matix with the penalty parameter.
+     * \brief Invert the scaling vector \ref global_kappa_ vector.
+     *
+     * The invertion is performed with accounting for non active Lagrange multipliers. Furthermore,
+     * the inverted matrix is scaled with the the corresponding penalty parameter.
      *
      * @return Inverted global_kappa_ vector.
      */

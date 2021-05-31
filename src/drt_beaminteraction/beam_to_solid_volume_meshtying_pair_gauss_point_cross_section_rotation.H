@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
 
-    //! Number of rotational DOF for the SR beams;
+    //! Number of rotational DOF for the Simo--Reissner beams;
     static const unsigned int n_dof_rot_ = 3;
     static const unsigned int n_dof_pair_ = n_dof_rot_ + beam::n_dof_ + solid::n_dof_;
 
