@@ -12,7 +12,6 @@
 #include <Epetra_Time.h>
 
 #include "../drt_adapter/adapter_coupling.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 #include "../drt_io/io_control.H"
 
@@ -25,18 +24,12 @@
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*--------------------------------------------------------------------------------*
- | constructor                                                         fang 04/15 |
  *--------------------------------------------------------------------------------*/
-STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
-    const Teuchos::ParameterList& stidyn,           //! parameter list for scatra-thermo interaction
-    const Teuchos::ParameterList&
-        scatradyn,  //! scalar transport parameter list for scatra and thermo fields
-    const Teuchos::ParameterList& solverparams_scatra,  //! solver parameter list for scatra field
-    const Teuchos::ParameterList& solverparams_thermo   //! solver parameter list for thermo field
-    )
+STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList& stidyn,
+    const Teuchos::ParameterList& scatradyn, const Teuchos::ParameterList& solverparams_scatra,
+    const Teuchos::ParameterList& solverparams_thermo)
     :  // instantiate base class
       AlgorithmBase(comm, scatradyn),
-
       scatra_(Teuchos::null),
       thermo_(Teuchos::null),
       strategyscatra_(Teuchos::null),
@@ -46,8 +39,6 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
       itermax_(0),
       itertol_(0.),
       stiparameters_(Teuchos::rcp(new Teuchos::ParameterList(stidyn))),
-
-      // initialize timer for Newton-Raphson iteration
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
   // check input parameters for scatra and thermo fields
@@ -78,14 +69,16 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
   if (thermo_->ScaTraField()->NumScal() != 1)
     dserror("Thermo field must involve exactly one transported scalar!");
 
-  // perform initializations associated with scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling())
+  // perform initializations associated with scatra-scatra interface mesh tying
+  if (scatra_->ScaTraField()->S2IMeshtying())
   {
     // safety check
-    if (!thermo_->ScaTraField()->S2ICoupling())
+    if (!thermo_->ScaTraField()->S2IMeshtying())
+    {
       dserror(
-          "Can't evaluate scatra-scatra interface coupling in scatra field, but not in thermo "
+          "Can't evaluate scatra-scatra interface mesh tying in scatra field, but not in thermo "
           "field!");
+    }
 
     // extract meshtying strategies for scatra-scatra interface coupling from scatra and thermo time
     // integrators
@@ -101,9 +94,11 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
       {
         // safety check
         if (strategythermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
+        {
           dserror(
               "Must have matching nodes at scatra-scatra coupling interfaces in both the scatra "
               "and the thermo fields!");
+        }
 
         break;
       }
@@ -114,17 +109,18 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
         if (strategythermo_->CouplingType() != INPAR::S2I::coupling_mortar_condensed_bubnov)
           dserror("Invalid type of scatra-scatra interface coupling for thermo field!");
 
-        // extract scatra-scatra interface coupling conditions
+        // extract scatra-scatra interface mesh tying conditions
         std::vector<DRT::Condition*> conditions;
-        scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+        scatra_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
-        for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
+        for (auto& condition : conditions)
+        {
           // consider conditions for slave side only
-          if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+          if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
           {
             // extract ID of current condition
-            const int condid = conditions[icondition]->GetInt("ConditionID");
+            const int condid = condition->GetInt("ConditionID");
             if (condid < 0) dserror("Invalid condition ID!");
 
             // extract mortar discretizations associated with current condition
@@ -135,6 +131,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
             scatradis.AddDofSet(thermodis.GetDofSetProxy());
             thermodis.AddDofSet(scatradis.GetDofSetProxy());
           }
+        }
 
         break;
       }
@@ -146,34 +143,34 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm,  //! communicator
       }
     }
   }
-
-  return;
 }  // STI::Algorithm::Algorithm
 
-
-/*----------------------------------------------------------------------*
- | modify field parameters for thermo field                  fang 06/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Algorithm::ModifyFieldParametersForThermoField()
 {
   // extract parameters for initial temperature field from parameter list for scatra-thermo
   // interaction and overwrite corresponding parameters in parameter list for thermo field
   if (!fieldparameters_->isParameter("INITIALFIELD") or
       !fieldparameters_->isParameter("INITFUNCNO"))
+  {
     dserror(
         "Initial field parameters not properly set in input file section SCALAR TRANSPORT "
         "DYNAMIC!");
+  }
   if (!stiparameters_->isParameter("THERMO_INITIALFIELD") or
       !stiparameters_->isParameter("THERMO_INITFUNCNO"))
+  {
     dserror(
         "Initial field parameters not properly set in input file section SCALAR TRANSPORT "
         "DYNAMIC!");
+  }
   fieldparameters_->set<std::string>(
       "INITIALFIELD", stiparameters_->get<std::string>("THERMO_INITIALFIELD"));
   fieldparameters_->set<int>("INITFUNCNO", stiparameters_->get<int>("THERMO_INITFUNCNO"));
 
-  // perform additional manipulations associated with scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling())
+  // perform additional manipulations associated with scatra-scatra interface mesh tying
+  if (scatra_->ScaTraField()->S2IMeshtying())
   {
     // set flag for matrix type associated with thermo field
     fieldparameters_->set<std::string>("MATRIXTYPE", "sparse");
@@ -185,8 +182,10 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
     // adapt type of meshtying method for thermo field
     if (fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") ==
         "StandardMortar")
+    {
       fieldparameters_->sublist("S2I COUPLING")
           .set<std::string>("COUPLINGTYPE", "CondensedMortar_Bubnov");
+    }
     else if (fieldparameters_->sublist("S2I COUPLING").get<std::string>("COUPLINGTYPE") !=
              "MatchingNodes")
       dserror("Invalid type of scatra-scatra interface coupling!");
@@ -194,14 +193,10 @@ void STI::Algorithm::ModifyFieldParametersForThermoField()
     // make sure that interface side underlying Lagrange multiplier definition is slave side
     fieldparameters_->sublist("S2I COUPLING").set<std::string>("LMSIDE", "slave");
   }
-
-  return;
 }  // STI::Algorithm::ModifyFieldParametersForThermoField()
 
-
-/*----------------------------------------------------------------------*
- | output solution to screen and files                       fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Algorithm::Output()
 {
   // output scatra field
@@ -209,14 +204,10 @@ void STI::Algorithm::Output()
 
   // output thermo field
   thermo_->ScaTraField()->Output();
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*
- | prepare time step                                         fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Algorithm::PrepareTimeStep()
 {
   // update time and time step
@@ -239,14 +230,10 @@ void STI::Algorithm::PrepareTimeStep()
 
   // prepare time step for thermo field
   thermo_->ScaTraField()->PrepareTimeStep();
-
-  return;
 }  // STI::Algorithm::PrepareTimeStep()
 
-
-/*----------------------------------------------------------------------*
- | read restart data                                         fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Algorithm::ReadRestart(int step  //! time step for restart
 )
 {
@@ -256,14 +243,10 @@ void STI::Algorithm::ReadRestart(int step  //! time step for restart
 
   // set time and time step
   SetTimeStep(scatra_->ScaTraField()->Time(), step);
-
-  return;
 }  // STI::Algorithm::ReadRestart
 
-
-/*----------------------------------------------------------------------*
- | time loop                                                 fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Algorithm::TimeLoop()
 {
   // output initial solution to screen and files
@@ -288,7 +271,8 @@ void STI::Algorithm::TimeLoop()
 
     // output performance statistics associated with nonlinear solver into *.csv file if applicable
     if (DRT::INPUT::IntegralValue<int>(*fieldparameters_, "OUTPUTNONLINSOLVERSTATS"))
-      scatra_->ScaTraField()->OutputNonlinSolverStats(iter_, dtnonlinsolve, Step(), Comm());
+      scatra_->ScaTraField()->OutputNonlinSolverStats(
+          static_cast<int>(iter_), dtnonlinsolve, Step(), Comm());
 
     // update scatra and thermo fields
     Update();
@@ -296,23 +280,17 @@ void STI::Algorithm::TimeLoop()
     // output solution to screen and files
     Output();
   }  // while(NotFinished())
-
-  return;
 }  // STI::Algorithm::TimeLoop()
 
-
-/*-------------------------------------------------------------------------------------*
- | pass scatra degrees of freedom to thermo discretization                  fang 09/17 |
- *-------------------------------------------------------------------------------------*/
-void STI::Algorithm::TransferScatraToThermo(
-    const Teuchos::RCP<const Epetra_Vector> scatra  //!< scatra state vector
-    ) const
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
+void STI::Algorithm::TransferScatraToThermo(const Teuchos::RCP<const Epetra_Vector> scatra) const
 {
   // pass scatra degrees of freedom to thermo discretization
   thermo_->ScaTraField()->Discretization()->SetState(2, "scatra", scatra);
 
-  // transfer state vector for evaluation of scatra-scatra interface coupling
-  if (thermo_->ScaTraField()->S2ICoupling())
+  // transfer state vector for evaluation of scatra-scatra interface mesh tying
+  if (thermo_->ScaTraField()->S2IMeshtying())
   {
     switch (strategythermo_->CouplingType())
     {
@@ -332,17 +310,18 @@ void STI::Algorithm::TransferScatraToThermo(
 
       case INPAR::S2I::coupling_mortar_condensed_bubnov:
       {
-        // extract scatra-scatra interface coupling conditions
+        // extract scatra-scatra interface mesh tying conditions
         std::vector<DRT::Condition*> conditions;
-        thermo_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+        thermo_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
 
         // loop over all conditions
-        for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
+        for (auto& condition : conditions)
+        {
           // consider conditions for slave side only
-          if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+          if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
           {
             // extract ID of current condition
-            const int condid = conditions[icondition]->GetInt("ConditionID");
+            const int condid = condition->GetInt("ConditionID");
             if (condid < 0) dserror("Invalid condition ID!");
 
             // extract mortar discretization associated with current condition
@@ -354,6 +333,7 @@ void STI::Algorithm::TransferScatraToThermo(
             LINALG::Export(*scatra, *iscatra);
             thermodis.SetState(1, "scatra", iscatra);
           }
+        }
 
         break;
       }
@@ -365,36 +345,31 @@ void STI::Algorithm::TransferScatraToThermo(
       }
     }
   }
-
-  return;
 }  // STI::Algorithm::TransferScatraToThermo()
 
-
-/*-------------------------------------------------------------------------------------*
- | pass thermo degrees of freedom to scatra discretization                  fang 09/17 |
- *-------------------------------------------------------------------------------------*/
-void STI::Algorithm::TransferThermoToScatra(
-    const Teuchos::RCP<const Epetra_Vector> thermo  //!< thermo state vector
-    ) const
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
+void STI::Algorithm::TransferThermoToScatra(const Teuchos::RCP<const Epetra_Vector> thermo) const
 {
   // pass thermo degrees of freedom to scatra discretization
   scatra_->ScaTraField()->Discretization()->SetState(2, "thermo", thermo);
 
-  // transfer state vector for evaluation of scatra-scatra interface coupling
-  if (scatra_->ScaTraField()->S2ICoupling() and
+  // transfer state vector for evaluation of scatra-scatra interface mesh tying
+  if (scatra_->ScaTraField()->S2IMeshtying() and
       strategyscatra_->CouplingType() == INPAR::S2I::coupling_mortar_standard)
   {
-    // extract scatra-scatra interface coupling conditions
+    // extract scatra-scatra interface mesh tying conditions
     std::vector<DRT::Condition*> conditions;
-    scatra_->ScaTraField()->Discretization()->GetCondition("S2ICoupling", conditions);
+    scatra_->ScaTraField()->Discretization()->GetCondition("S2IMeshtying", conditions);
 
     // loop over all conditions
-    for (unsigned icondition = 0; icondition < conditions.size(); ++icondition)
+    for (auto& condition : conditions)
+    {
       // consider conditions for slave side only
-      if (conditions[icondition]->GetInt("interface side") == INPAR::S2I::side_slave)
+      if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
       {
         // extract ID of current condition
-        const int condid = conditions[icondition]->GetInt("ConditionID");
+        const int condid = condition->GetInt("ConditionID");
         if (condid < 0) dserror("Invalid condition ID!");
 
         // extract mortar discretization associated with current condition
@@ -406,15 +381,12 @@ void STI::Algorithm::TransferThermoToScatra(
         LINALG::Export(*thermo, *ithermo);
         scatradis.SetState(1, "thermo", ithermo);
       }
+    }
   }
-
-  return;
 }  // STI::Algorithm::TransferThermoToScatra()
 
-
-/*-------------------------------------------------------------------------*
- | update scatra and thermo fields after time step evaluation   fang 04/15 |
- *-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::Algorithm::Update()
 {
   // update scatra field
@@ -428,6 +400,4 @@ void STI::Algorithm::Update()
 
   // compare thermo field to analytical solution if applicable
   thermo_->ScaTraField()->EvaluateErrorComparedToAnalyticalSol();
-
-  return;
 }  // STI::Algorithm::Update()

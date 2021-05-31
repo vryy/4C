@@ -35,6 +35,7 @@
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
+#include "../drt_scatra/scatra_utils.H"
 
 #include "../drt_scatra_ele/scatra_ele.H"
 
@@ -200,10 +201,6 @@ void SSI::SSIBase::Setup()
   {
     // check for consistent parameterization of these conditions
     Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-    // get ssi to be tested
-    std::vector<DRT::Condition*> ssiconditions;
-    structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
-    SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssiconditions, structdis);
 
     // set up scatra-scatra interface coupling adapter for structure field
     icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis,
@@ -649,12 +646,12 @@ void SSI::SSIBase::SetMeshDisp(Teuchos::RCP<const Epetra_Vector> disp)
 /*----------------------------------------------------------------------*/
 void SSI::SSIBase::CheckSSIFlags() const
 {
-  if (ScaTraField()->S2ICoupling())
+  if (ScaTraField()->S2IKinetics())
   {
     if (!(SSIInterfaceContact() or SSIInterfaceMeshtying()))
     {
       dserror(
-          "You defined an 'S2ICoupling' condition in the input-file. However, neither an "
+          "You defined an 'S2IKinetics' condition in the input-file. However, neither an "
           "'SSIInterfaceContact' condition nor an 'SSIInterfaceMeshtying' condition defined. This "
           "is not reasonable!");
     }
@@ -935,12 +932,8 @@ void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname
   auto structdis = DRT::Problem::Instance()->GetDis(struct_disname);
 
   if (SSIInterfaceMeshtying())
-  {
-    // get ssi condition to be tested
-    std::vector<DRT::Condition*> ssiconditions;
-    structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
-    SSI::UTILS::CheckConsistencyWithS2IMeshtyingCondition(ssiconditions, structdis);
-  }
+    SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
+        "SSIInterfaceMeshtying", structdis);
 
   // check scatra-structure-interaction contact condition
   if (SSIInterfaceContact())

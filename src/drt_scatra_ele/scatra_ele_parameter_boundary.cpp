@@ -9,10 +9,8 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "scatra_ele_parameter_boundary.H"
-#include "../drt_inpar/inpar_s2i.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                                civaner 08/19 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance(
     const std::string& disname, const ScaTraEleParameterBoundary* delete_me)
@@ -32,14 +30,15 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoun
   // destruct instance
   else
   {
-    for (std::map<std::string, ScaTraEleParameterBoundary*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
         return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
@@ -47,9 +46,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary* DRT::ELEMENTS::ScaTraEleParameterBoun
   return instances[disname];
 }
 
-
 /*----------------------------------------------------------------------*
- | singleton destruction                                  civaner 08/19 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::Done()
 {
@@ -57,9 +54,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::Done()
   Instance("", this);
 }
 
-
 /*----------------------------------------------------------------------*
- | protected constructor for singletons                   civaner 08/19 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std::string& disname)
     : alphaa_(0.0),
@@ -83,11 +78,9 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       stoichiometries_(nullptr),
       thermoperm_(-1.0)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | set parameters                                         civaner 08/19 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::ParameterList& parameters)
 {
@@ -98,7 +91,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
   // set parameters to internal members depending on condition type
   switch (conditiontype_)
   {
-    case DRT::Condition::ConditionType::S2ICoupling:
+    case DRT::Condition::ConditionType::S2IKinetics:
     {
       // set parameters to internal members depending on kinetic model
       switch (kineticmodel_)
@@ -324,11 +317,16 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetStoichiometries(
   stoichiometries_ = parameters.get<std::vector<int>*>("stoichiometries");
 
   if (stoichiometries_ == nullptr)
+  {
     dserror(
         "Cannot get vector of stoichiometric coefficients for scatra-scatra interface coupling!");
-  if (stoichiometries_->size() != 1)
-    dserror("Number of stoichiometric coefficients does not match number of scalars!");
-  if ((*stoichiometries_)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+  }
+  else
+  {
+    if (stoichiometries_->size() != 1)
+      dserror("Number of stoichiometric coefficients does not match number of scalars!");
+    if ((*stoichiometries_)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+  }
 }
 
 /*----------------------------------------------------------------------*

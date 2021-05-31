@@ -2171,8 +2171,8 @@ void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
   if (Discret().GetCondition("SSIInterfaceContact") != nullptr)
   {
     // get the scatra-scatra interface coupling condition
-    std::vector<DRT::Condition*> s2iconditions;
-    Discret().GetCondition("S2ICoupling", s2iconditions);
+    std::vector<DRT::Condition*> s2ikinetics_conditions;
+    Discret().GetCondition("S2IKinetics", s2ikinetics_conditions);
 
     // create a sublist which is filled and added to the contact interface parameters
     auto& s2icouplingparameters = contactinterfaceparameters.sublist("ContactS2ICoupling");
@@ -2180,17 +2180,17 @@ void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
     // loop over all s2i conditions and get the one with the same condition id (that they have to
     // match is assured within the setup of the SSI framework) at the slave-side, as only this
     // stores all the information
-    for (const auto& s2icondition : s2iconditions)
+    for (const auto& s2ikinetics_cond : s2ikinetics_conditions)
     {
       // only add to parameters if condition ID's match
-      if (s2icondition->GetInt("ConditionID") == conditiongroupid)
+      if (s2ikinetics_cond->GetInt("ConditionID") == conditiongroupid)
       {
         // only the slave-side stores the parameters
-        if (s2icondition->GetInt("interface side") == INPAR::S2I::side_slave)
+        if (s2ikinetics_cond->GetInt("interface side") == INPAR::S2I::side_slave)
         {
           // fill the parameters from the s2i condition
-          SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToParameterList(
-              *s2icondition, s2icouplingparameters);
+          SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToParameterList(
+              *s2ikinetics_cond, s2icouplingparameters);
 
           // add the sublist to the contact interface parameter list
           contactinterfaceparameters.setParameters(s2icouplingparameters);

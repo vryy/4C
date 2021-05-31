@@ -46,9 +46,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
 
       // compute linearizations of Butler-Volmer current density via implicit differentiation, where
       // F = i0*expterm - i = 0
-      // also true for this DRT::Condition::S2ICoupling, as regfac is equal to 1 in this case
+      // also true for this DRT::Condition::S2IKinetics, as regfac is equal to 1 in this case
       dF_dc_slave =
-          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2ICoupling
+          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2IKinetics
               ? kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
                         pow(eslavephiint, alphac - 1.0) *
                         (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
@@ -73,9 +73,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
 
       // compute linearizations of Butler-Volmer current density via implicit differentiation, where
       // F = i0*expterm - i = 0
-      // also true for this DRT::Condition::S2ICoupling, as regfac is equal to 1 in this case
+      // also true for this DRT::Condition::S2IKinetics, as regfac is equal to 1 in this case
       dF_dc_slave =
-          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2ICoupling
+          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2IKinetics
               ? kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
                         pow(eslavephiint, alphac - 1.0) *
                         (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
@@ -101,8 +101,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
   di_dc_master = -dF_dc_master * dF_di_inverse;
   di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
   di_dpot_master = -dF_dpot_master * dF_di_inverse;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -448,8 +448,11 @@ namespace SCATRA
       return strategy_;
     };
 
-    //! return flag for scatra-scatra interface coupling
-    const bool& S2ICoupling() const { return s2icoupling_; };
+    //! return flag indicating availability of scatra-scatra interface kinetics condition(s)
+    bool S2IKinetics() const { return s2ikinetics_; };
+
+    //! return flag for scatra-scatra interface mesh tying
+    bool S2IMeshtying() const { return s2imeshtying_; };
 
     //! return relative errors of scalar fields in L2 and H1 norms
     const Teuchos::RCP<std::vector<double>>& RelErrors() const { return relerrors_; };
@@ -901,9 +904,6 @@ namespace SCATRA
     //! is output needed for the current time step?
     bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
-    //! return whether a scatra-scatra interface mesh tying condition is defined
-    bool IsS2IMeshtying() const;
-
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
 
@@ -1066,8 +1066,11 @@ namespace SCATRA
     //! LOMA-specific parameter: turbulence model
     INPAR::FLUID::TurbModelAction turbmodel_;
 
-    //! flag for scatra-scatra interface coupling
-    const bool s2icoupling_;
+    //! flag indicating availability of scatra-scatra interface kinetics condition(s)
+    bool s2ikinetics_;
+
+    //! flag for scatra-scatra interface mesh tying
+    bool s2imeshtying_;
 
     //! flag for artery-scatra interface coupling
     const bool arterycoupling_;

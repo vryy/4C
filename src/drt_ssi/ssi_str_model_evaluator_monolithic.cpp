@@ -97,7 +97,7 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
 
     // extract scatra-scatra interface coupling conditions
     std::vector<DRT::Condition*> conditions;
-    Discret().GetCondition("S2ICoupling", conditions);
+    Discret().GetCondition("S2IKinetics", conditions);
 
     // loop over all scatra-scatra interface coupling conditions
     for (auto& condition : conditions)

@@ -16,15 +16,11 @@ growth, e.g., lithium plating
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include "../drt_inpar/inpar_s2i.H"
-
 #include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
 
 #include "../drt_mat/electrode.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>*
@@ -43,36 +39,30 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Instance(const
 
   else
   {
-    for (typename std::map<std::string,
-             ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
         return nullptr;
       }
+    }
   }
 
   return instances[disname];
 }
 
-
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::Done()
 {
   // delete singleton
   Instance(0, 0, "", this);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
@@ -81,14 +71,10 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     : myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname),
       egrowth_(true)
 {
-  return;
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------------------*
- | evaluate minimum and maximum interfacial overpotential associated with scatra-scatra interface
- layer growth   fang 02/18 |
- *--------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateMinMaxOverpotential(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
@@ -112,9 +98,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   if (kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double kr = my::scatraparamsboundary_->ChargeTransferConstant();
@@ -155,21 +143,17 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateM
     const double eta = eslavepotint - emasterpotint - i * eslaveresistanceint;
 
     // check for minimality and update result if applicable
-    double& etagrowthmin = params.get<double>("etagrowthmin");
+    auto& etagrowthmin = params.get<double>("etagrowthmin");
     if (eta < etagrowthmin) etagrowthmin = eta;
 
     // check for maximality and update result if applicable
-    double& etagrowthmax = params.get<double>("etagrowthmax");
+    auto& etagrowthmax = params.get<double>("etagrowthmax");
     if (eta > etagrowthmax) etagrowthmax = eta;
   }
-
-  return;
 }
 
-
-/*-------------------------------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling condition (electrochemistry)         fang 01/17 |
- *-------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICoupling(
     const DRT::FaceElement* ele, Teuchos::ParameterList& params,
@@ -198,19 +182,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
   // extract condition type
   const DRT::Condition::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
-  if (s2iconditiontype != DRT::Condition::S2ICoupling and
+  if (s2iconditiontype != DRT::Condition::S2IKinetics and
       s2iconditiontype != DRT::Condition::S2ICouplingGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  if ((s2iconditiontype == DRT::Condition::S2ICoupling and
+  if ((s2iconditiontype == DRT::Condition::S2IKinetics and
           kineticmodel != INPAR::S2I::kinetics_butlervolmer) or
       (s2iconditiontype == DRT::Condition::S2ICouplingGrowth and
           kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer))
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1.0 / faraday;
@@ -253,7 +239,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // equilibrium electric potential difference and its derivative w.r.t. concentration at
     // electrode surface
-    const double epd = s2iconditiontype == DRT::Condition::S2ICoupling
+    const double epd = s2iconditiontype == DRT::Condition::S2IKinetics
                            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
                            : 0.0;
     const double epdderiv =
@@ -261,7 +247,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
-    if (s2iconditiontype == DRT::Condition::S2ICoupling and not std::isinf(epd))
+    if (s2iconditiontype == DRT::Condition::S2IKinetics and not std::isinf(epd))
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
@@ -338,13 +324,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS
 
     eslaveresidual[row_pot] += numelectrons * eslaveresidual[row_conc];
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICoupling
 
-
 /*----------------------------------------------------------------------*
- | evaluate action                                           fang 01/17 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAction(
@@ -394,11 +376,8 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateAc
   return 0;
 }
 
-
-/*-------------------------------------------------------------------------------------------------------------------------------*
- | evaluate global scatra-growth matrix block for scatra-scatra interface coupling involving
- interface layer growth   fang 01/17 |
- *-------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     distype>::EvaluateS2ICouplingScatraGrowth(const DRT::FaceElement* ele,
@@ -420,19 +399,21 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   // extract condition type
   const DRT::Condition::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
-  if (s2iconditiontype != DRT::Condition::S2ICoupling and
+  if (s2iconditiontype != DRT::Condition::S2IKinetics and
       s2iconditiontype != DRT::Condition::S2ICouplingGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
-  if ((s2iconditiontype == DRT::Condition::S2ICoupling and
+  if ((s2iconditiontype == DRT::Condition::S2IKinetics and
           kineticmodel != INPAR::S2I::kinetics_butlervolmer) or
       (s2iconditiontype == DRT::Condition::S2ICouplingGrowth and
           kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer))
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double faraday = myelch::elchparams_->Faraday();
   const double invF = 1.0 / faraday;
@@ -474,13 +455,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     const double eslaveresistanceint = eslavegrowthint * resistivity;
 
     // equilibrium electric potential difference at electrode surface
-    const double epd = s2iconditiontype == DRT::Condition::S2ICoupling
+    const double epd = s2iconditiontype == DRT::Condition::S2IKinetics
                            ? matelectrode->ComputeOpenCircuitPotential(eslavephiint, faraday, frt)
                            : 0.0;
 
     // compute exchange current density
     double i0 = kr * faraday * pow(emasterphiint, alphaa);
-    if (s2iconditiontype == DRT::Condition::S2ICoupling and not std::isinf(epd))
+    if (s2iconditiontype == DRT::Condition::S2IKinetics and not std::isinf(epd))
       i0 *= pow(cmax - eslavephiint, alphaa) * pow(eslavephiint, alphac);
 
     // compute Butler-Volmer current density via Newton-Raphson iteration
@@ -530,15 +511,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     for (int icol = 0; icol < my::nen_; ++icol)
       eslavematrix(row_pot, icol) += numelectrons * eslavematrix(row_conc, icol);
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::EvaluateS2ICouplingScatraGrowth
 
-
-/*-------------------------------------------------------------------------------------------------------------------------------*
- | evaluate global growth-scatra matrix block for scatra-scatra interface coupling involving
- interface layer growth   fang 01/17 |
- *-------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     distype>::EvaluateS2ICouplingGrowthScatra(const DRT::FaceElement* ele,
@@ -564,9 +540,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   if (kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
@@ -652,15 +630,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
       }
     }  // if(std::abs(i) > 1.e-16)
   }    // loop over integration points
-
-  return;
 }
 
-
-/*-------------------------------------------------------------------------------------------------------------------------------*
- | evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
- interface layer growth   fang 01/17 |
- *-------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
     distype>::EvaluateS2ICouplingGrowthGrowth(const DRT::FaceElement* ele,
@@ -688,9 +661,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
   // access input parameters associated with condition
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   if (kineticmodel != INPAR::S2I::growth_kinetics_butlervolmer)
+  {
     dserror(
         "Received illegal kinetic model for scatra-scatra interface coupling involving interface "
         "layer growth!");
+  }
   const double faraday = myelch::elchparams_->Faraday();
   const double alphaa = my::scatraparamsboundary_->AlphaA();
   const double alphac = my::scatraparamsboundary_->AlphaC();
@@ -778,14 +753,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<
       }
     }  // if(std::abs(i) > 1.e-16)
   }    // loop over integration points
-
-  return;
 }
 
-
-/*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
- *-----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNodeValues(
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
@@ -795,8 +766,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype>::ExtractNo
 
   // extract nodal growth variables associated with boundary element
   my::ExtractNodeValues(egrowth_, discretization, la, "growth", 2);
-
-  return;
 }
 
 // template classes

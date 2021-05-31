@@ -224,7 +224,8 @@ namespace DRT
       VolumetricFlowBorderNodes,
       ThermoConvections,
       TransportThermoConvections,
-      S2ICoupling,
+      S2IKinetics,
+      S2IMeshtying,
       S2ICouplingGrowth,
       ElectrodeSOC,
       CCCVCycling,
@@ -343,12 +344,6 @@ namespace DRT
 
     */
     Condition(const DRT::Condition& old);
-
-    /*!
-    \brief Destructor
-
-    */
-    virtual ~Condition();
 
     /*!
     \brief Return unique ParObject id

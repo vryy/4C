@@ -108,7 +108,13 @@ DSURF  2
 E 1 - ScaTra 1
 //
 E 2 - ScaTra 2
--------------------------------DESIGN S2I COUPLING LINE CONDITIONS
+------------------------------DESIGN S2I MESHTYING LINE CONDITIONS
+DLINE  4
+E 1 - 1 Slave S2IKineticsID 1
+E 2 - 0 Slave S2IKineticsID 0
+E 3 - 1 Master S2IKineticsID 1
+E 4 - 0 Master S2IKineticsID 0
+-------------------------------DESIGN S2I KINETICS LINE CONDITIONS
 DLINE  4
 E 1 - 1 Slave KineticModel ConstantPermeability numscal 3 permeabilities 1.0 0.0 0.01
 E 2 - 0 Slave KineticModel ConstantPermeability numscal 3 permeabilities 0.01 0.0 1.0

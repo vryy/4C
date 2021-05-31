@@ -52,7 +52,6 @@
 #include "../linalg/linalg_equilibrate.H"
 
 /*----------------------------------------------------------------------*
- | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
     SCATRA::ScaTraTimIntImpl* scatratimint, const Teuchos::ParameterList& parameters)
@@ -119,7 +118,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       growthscatrablock_(Teuchos::null),
       growthgrowthblock_(Teuchos::null),
       equilibration_(Teuchos::null),
-      slaveconditions_(),
+      kinetics_conditions_meshtying_slaveside_(),
       slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           parameters.sublist("S2I COUPLING"), "MESHTYING_3_DOMAIN_INTERSECTION"))
@@ -284,7 +283,6 @@ void SCATRA::MeshtyingStrategyS2I::CondenseMatAndRHS(
 
 
 /*-----------------------------------------------------------------------*
- | return global map of degrees of freedom                    fang 02/18 |
  *-----------------------------------------------------------------------*/
 const Epetra_Map& SCATRA::MeshtyingStrategyS2I::DofRowMap() const
 {
@@ -293,16 +291,17 @@ const Epetra_Map& SCATRA::MeshtyingStrategyS2I::DofRowMap() const
 
 
 /*-----------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling conditions       fang 10/14 |
  *-----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 {
-  // time measurement: evaluate condition 'S2ICoupling'
-  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2ICoupling'");
+  // time measurement: evaluate condition 'S2IMeshtying'
+  TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2IMeshtying'");
 
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> conditions;
-  scatratimint_->Discretization()->GetCondition("S2ICoupling", conditions);
+  std::vector<DRT::Condition*> s2imeshtying_conditions;
+  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  std::vector<DRT::Condition*> s2ikinetics_conditions;
+  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
   switch (couplingtype_)
   {
@@ -325,25 +324,22 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       islavematrix_->Zero();
       if (not slaveonly_) imastermatrix_->Zero();
       islaveresidual_->PutScalar(0.);
-      for (auto& condition : conditions)
+      for (auto kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
-        if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
-        {
-          // collect condition specific data and store to scatra boundary parameter class
-          SetConditionSpecificScaTraParameters(*condition);
+        // collect condition specific data and store to scatra boundary parameter class
+        SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
 
-          if (not slaveonly_)
-          {
-            scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
-                imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICoupling",
-                condition->GetInt("ConditionID"));
-          }
-          else
-          {
-            scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
-                Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICoupling",
-                condition->GetInt("ConditionID"));
-          }
+        if (not slaveonly_)
+        {
+          scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+              imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
+              kinetics_slave_cond.second->GetInt("ConditionID"));
+        }
+        else
+        {
+          scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+              Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
+              kinetics_slave_cond.second->GetInt("ConditionID"));
         }
       }
       scatratimint_->Discretization()->ClearState();
@@ -601,10 +597,11 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       }
 
       // loop over all scatra-scatra coupling interfaces
-      for (auto& slavecondition : slaveconditions_)
+      for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
         // extract mortar interface discretization
-        DRT::Discretization& idiscret = icoupmortar_[slavecondition.first]->Interface()->Discret();
+        DRT::Discretization& idiscret =
+            icoupmortar_[kinetics_slave_cond.first]->Interface()->Discret();
 
         // export global state vector to mortar interface
         Teuchos::RCP<Epetra_Vector> iphinp =
@@ -616,10 +613,10 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         Teuchos::ParameterList params;
 
         // add current condition to parameter list
-        params.set<DRT::Condition*>("condition", slavecondition.second);
+        params.set<DRT::Condition*>("condition", kinetics_slave_cond.second);
 
         // collect condition specific data and store to scatra boundary parameter class
-        SetConditionSpecificScaTraParameters(*(slavecondition.second));
+        SetConditionSpecificScaTraParameters(*(kinetics_slave_cond.second));
 
         if (couplingtype_ != INPAR::S2I::coupling_nts_standard)
         {
@@ -641,9 +638,9 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           params.set<int>("action", INPAR::S2I::evaluate_condition_nts);
 
           // evaluate note-to-segment coupling at current interface
-          EvaluateNTS(*islavenodestomasterelements_[slavecondition.first],
-              *islavenodeslumpedareas_[slavecondition.first],
-              *islavenodesimpltypes_[slavecondition.first], idiscret, params, islavematrix_,
+          EvaluateNTS(*islavenodestomasterelements_[kinetics_slave_cond.first],
+              *islavenodeslumpedareas_[kinetics_slave_cond.first],
+              *islavenodesimpltypes_[kinetics_slave_cond.first], idiscret, params, islavematrix_,
               INPAR::S2I::side_slave, INPAR::S2I::side_slave, islavematrix_, INPAR::S2I::side_slave,
               INPAR::S2I::side_master, imastermatrix_, INPAR::S2I::side_master,
               INPAR::S2I::side_slave, imastermatrix_, INPAR::S2I::side_master,
@@ -876,20 +873,21 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
 
   // extract boundary conditions for scatra-scatra interface layer growth
-  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+  std::vector<DRT::Condition*> s2icoupling_growth_conditions;
+  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", s2icoupling_growth_conditions);
 
   // evaluate scatra-scatra interface layer growth
-  if (conditions.size())
+  if (s2icoupling_growth_conditions.size())
   {
     switch (couplingtype_)
     {
       case INPAR::S2I::coupling_matching_nodes:
       {
         // create parameter list for elements
-        Teuchos::ParameterList condparams;
+        Teuchos::ParameterList conditionparams;
 
         // action for elements
-        condparams.set<int>("action", SCATRA::bd_calc_s2icoupling);
+        conditionparams.set<int>("action", SCATRA::bd_calc_s2icoupling);
 
         // set global state vectors according to time-integration scheme
         scatratimint_->Discretization()->ClearState();
@@ -901,9 +899,9 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         islaveresidual_->PutScalar(0.);
 
         // collect condition specific data and store to scatra boundary parameter class
-        SetConditionSpecificScaTraParameters(*conditions[0]);
+        SetConditionSpecificScaTraParameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
-        scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+        scatratimint_->Discretization()->EvaluateCondition(conditionparams, islavematrix_,
             imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
         scatratimint_->Discretization()->ClearState();
 
@@ -1053,7 +1051,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICoupling", condid);
+                    condparams, strategy, "S2IKinetics", condid);
 
                 // finalize auxiliary matrix block
                 islavematrix->Complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1175,7 +1173,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
                 // coupling
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICoupling", condid);
+                    condparams, strategy, "S2IKinetics", condid);
 
                 // finalize auxiliary matrix block
                 blockslavematrix->Complete();
@@ -1615,21 +1613,12 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMortarElements(const Epetra_Map& iele
   }
 }
 
-
-/*------------------------------------------------------------------------------------------------------------*
- | provide instance of mortar cell evaluation class of particular slave-side discretization type
- fang 01/16 |
- *------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
 SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
-    const INPAR::SCATRA::ImplType&
-        impltype,  //!< physical implementation type of mortar integration cell
-    const MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    const MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
-        lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const std::string& disname  //!< name of interface discretization
-)
+    const INPAR::SCATRA::ImplType& impltype, const MORTAR::MortarElement& slaveelement,
+    const MORTAR::MortarElement& masterelement, const INPAR::S2I::CouplingType& couplingtype,
+    const INPAR::S2I::InterfaceSides& lmside, const std::string& disname)
 {
   // extract number of slave-side degrees of freedom per node
   const int numdofpernode_slave = slaveelement.NumDofPerNode(*slaveelement.Nodes()[0]);
@@ -1660,22 +1649,13 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
   return nullptr;
 }
 
-
-/*-----------------------------------------------------------------------------------------------------------------------------*
- | provide instance of mortar cell evaluation class of particular slave-side and master-side
- discretization types   fang 01/16 |
- *-----------------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS>
 SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
-    const INPAR::SCATRA::ImplType&
-        impltype,  //!< physical implementation type of mortar integration cell
-    const MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
-        lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
-    const std::string& disname       //!< name of interface discretization
-)
+    const INPAR::SCATRA::ImplType& impltype, const MORTAR::MortarElement& masterelement,
+    const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+    const int& numdofpernode_slave, const std::string& disname)
 {
   // extract number of master-side degrees of freedom per node
   const int numdofpernode_master = masterelement.NumDofPerNode(*masterelement.Nodes()[0]);
@@ -1706,21 +1686,13 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
   return nullptr;
 }
 
-
 /*--------------------------------------------------------------------------------------*
- | provide specific instance of mortar cell evaluation class                 fang 01/16 |
  *--------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
-    const INPAR::SCATRA::ImplType&
-        impltype,  //!< physical implementation type of mortar integration cell
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
-        lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
-    const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
-    const std::string& disname        //!< name of interface discretization
-)
+    const INPAR::SCATRA::ImplType& impltype, const INPAR::S2I::CouplingType& couplingtype,
+    const INPAR::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
+    const int& numdofpernode_master, const std::string& disname)
 {
   // return instance of evaluation class for mortar integration cell depending on physical
   // implementation type
@@ -1764,9 +1736,7 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
   return nullptr;
 }
 
-
 /*------------------------------------------------------------------------*
- | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
 {
@@ -1783,54 +1753,73 @@ void SCATRA::MeshtyingStrategyS2I::InitConvCheckStrategy()
 
 
 /*----------------------------------------------------------------------*
- | perform setup of scatra-scatra interface coupling         fang 10/14 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 {
   // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> conditions(0, nullptr);
-  scatratimint_->Discretization()->GetCondition("S2ICoupling", conditions);
-  slaveconditions_.clear();
+  std::vector<DRT::Condition*> s2imeshtying_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
+  std::vector<DRT::Condition*> s2ikinetics_conditions(0, nullptr);
+  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  kinetics_conditions_meshtying_slaveside_.clear();
   std::map<const int, DRT::Condition* const> masterconditions;
-  for (auto* condition : conditions)
+  for (auto* s2imeshtying_cond : s2imeshtying_conditions)
   {
-    const int condid = condition->GetInt("ConditionID");
-    if (condid < 0) dserror("Invalid condition ID %i for S2ICoupling Condition!", condid);
-
-    switch (condition->GetInt("interface side"))
+    for (auto* s2ikinetics_cond : s2ikinetics_conditions)
     {
-      case INPAR::S2I::side_slave:
-      {
-        if (slaveconditions_.find(condid) == slaveconditions_.end())
-          slaveconditions_.insert(std::pair<const int, DRT::Condition* const>(condid, condition));
-        else
-        {
-          dserror(
-              "Cannot have multiple slave-side scatra-scatra interface coupling conditions with "
-              "the same ID %i!",
-              condid);
-        }
-        break;
-      }
+      const int s2ikinetics_cond_id = s2ikinetics_cond->GetInt("ConditionID");
+      const int s2ikinetics_cond_interface_side = s2ikinetics_cond->GetInt("interface side");
 
-      case INPAR::S2I::side_master:
-      {
-        if (masterconditions.find(condid) == masterconditions.end())
-          masterconditions.insert(std::pair<const int, DRT::Condition* const>(condid, condition));
-        else
-        {
-          dserror(
-              "Cannot have multiple master-side scatra-scatra interface coupling conditions with "
-              "the same ID %i!",
-              condid);
-        }
-        break;
-      }
+      if (s2ikinetics_cond_id < 0)
+        dserror("Invalid condition ID %i for S2IKinetics Condition!", s2ikinetics_cond_id);
 
-      default:
+      // only continue if ID's match
+      if (s2imeshtying_cond->GetInt("S2IKineticsID") != s2ikinetics_cond_id) continue;
+      // only continue if sides match
+      if (s2imeshtying_cond->GetInt("interface side") != s2ikinetics_cond_interface_side) continue;
+
+      switch (s2ikinetics_cond_interface_side)
       {
-        dserror("Invalid scatra-scatra interface coupling condition!");
-        break;
+        case INPAR::S2I::side_slave:
+        {
+          if (kinetics_conditions_meshtying_slaveside_.find(s2ikinetics_cond_id) ==
+              kinetics_conditions_meshtying_slaveside_.end())
+          {
+            kinetics_conditions_meshtying_slaveside_.insert(
+                std::pair<const int, DRT::Condition* const>(s2ikinetics_cond_id, s2ikinetics_cond));
+          }
+          else
+          {
+            dserror(
+                "Cannot have multiple slave-side scatra-scatra interface kinetics conditions with "
+                "the same ID %i!",
+                s2ikinetics_cond_id);
+          }
+          break;
+        }
+
+        case INPAR::S2I::side_master:
+        {
+          if (masterconditions.find(s2ikinetics_cond_id) == masterconditions.end())
+          {
+            masterconditions.insert(
+                std::pair<const int, DRT::Condition* const>(s2ikinetics_cond_id, s2ikinetics_cond));
+          }
+          else
+          {
+            dserror(
+                "Cannot have multiple master-side scatra-scatra interface kinetics conditions with "
+                "the same ID %i!",
+                s2ikinetics_cond_id);
+          }
+          break;
+        }
+
+        default:
+        {
+          dserror("Invalid scatra-scatra interface kinetics condition!");
+          break;
+        }
       }
     }
   }
@@ -1845,8 +1834,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // overwrite IDs of master-side scatra-scatra interface coupling conditions with the value -1
       // to prevent them from being evaluated when calling EvaluateCondition on the discretization
       // TODO: this is somewhat unclean, because changing the conditions, makes calling
-      // SetupMeshtying() twice
-      //       invalid (which should not be necessary, but conceptually possible)
+      // SetupMeshtying() twice invalid (which should not be necessary, but conceptually possible)
       for (auto& mastercondition : masterconditions) mastercondition.second->Add("ConditionID", -1);
 
       if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
@@ -1861,10 +1849,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         std::vector<int> islavenodegidvec;
         std::vector<int> imasternodegidvec;
 
-        for (auto& slavecondition : slaveconditions_)
+        for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
         {
-          DRT::UTILS::AddOwnedNodeGIDVector(
-              scatratimint_->Discretization(), *slavecondition.second->Nodes(), islavenodegidvec);
+          DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+              *kinetics_slave_cond.second->Nodes(), islavenodegidvec);
         }
         for (auto& mastercondition : masterconditions)
         {
@@ -1891,17 +1879,17 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         // loop over slave conditions and build vector of nodes for slave and master condition with
         // same ID
-        for (auto& slavecondition : slaveconditions_)
+        for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
         {
           std::vector<int> islavenodegidvec;
           std::vector<int> imasternodegidvec;
 
-          DRT::UTILS::AddOwnedNodeGIDVector(
-              scatratimint_->Discretization(), *slavecondition.second->Nodes(), islavenodegidvec);
+          DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+              *kinetics_slave_cond.second->Nodes(), islavenodegidvec);
 
           DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
 
-          auto mastercondition = masterconditions.find(slavecondition.first);
+          auto mastercondition = masterconditions.find(kinetics_slave_cond.first);
           if (mastercondition != masterconditions.end())
           {
             DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
@@ -1911,7 +1899,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
 
           // remove nodes from slave side line condition to avoid non-unique slave-master relation
-          if (slavecondition.second->GetInt("kinetic model") ==
+          if (kinetics_slave_cond.second->GetInt("kinetic model") ==
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             has_no_flux_kinetics = true;
@@ -2011,10 +1999,10 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       }
 
       // loop over all slave-side scatra-scatra interface coupling conditions
-      for (auto& islavecondition : slaveconditions_)
+      for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
         // extract condition ID
-        const int condid = islavecondition.first;
+        const int condid = kinetics_slave_cond.first;
 
         // initialize maps for row nodes associated with current condition
         std::map<int, DRT::Node*> masternodes;
@@ -2031,7 +2019,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         // extract current slave-side and associated master-side scatra-scatra interface coupling
         // conditions
         std::vector<DRT::Condition*> mastercondition(1, masterconditions[condid]);
-        std::vector<DRT::Condition*> slavecondition(1, islavecondition.second);
+        std::vector<DRT::Condition*> slavecondition(1, kinetics_slave_cond.second);
 
         // fill maps
         DRT::UTILS::FindConditionObjects(*scatratimint_->Discretization(), masternodes,
@@ -2063,7 +2051,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
             // add material
             idiscret.gElement(elegid)->SetMaterial(Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
-                islavecondition.second->Geometry()[elegid])
+                kinetics_slave_cond.second->Geometry()[elegid])
                                                        ->ParentElement()
                                                        ->Material()
                                                        ->Parameter()
@@ -2077,7 +2065,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           {
             impltypes_row[iele] = dynamic_cast<const DRT::ELEMENTS::Transport*>(
                 Teuchos::rcp_dynamic_cast<const DRT::FaceElement>(
-                    islavecondition.second->Geometry()[interface.SlaveRowElements()->GID(iele)])
+                    kinetics_slave_cond.second->Geometry()[interface.SlaveRowElements()->GID(iele)])
                     ->ParentElement())
                                       ->ImplType();
           }
@@ -2168,22 +2156,22 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               dserror("Couldn't extract slave-side mortar node from mortar discretization!");
 
             // find associated master-side elements
-            std::vector<MORTAR::MortarElement*> masterelements(0, nullptr);
-            interface.FindMEles(*slavenode, masterelements);
+            std::vector<MORTAR::MortarElement*> master_mortar_elements(0, nullptr);
+            interface.FindMEles(*slavenode, master_mortar_elements);
 
             // loop over all master-side elements
-            for (auto* masterelement : masterelements)
+            for (auto* master_mortar_ele : master_mortar_elements)
             {
               // extract master-side element
               // project slave-side node onto master-side element
-              double coordinates_master[2] = {};
+              std::array<double, 2> coordinates_master;
               double dummy(0.);
-              MORTAR::MortarProjector::Impl(*masterelement)
-                  ->ProjectGaussPointAuxn3D(slavenode->X(), slavenode->MoData().n(), *masterelement,
-                      coordinates_master, dummy);
+              MORTAR::MortarProjector::Impl(*master_mortar_ele)
+                  ->ProjectGaussPointAuxn3D(slavenode->X(), slavenode->MoData().n(),
+                      *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
-              if (masterelement->Shape() == DRT::Element::quad4)
+              if (master_mortar_ele->Shape() == DRT::Element::quad4)
               {
                 if (coordinates_master[0] < -1. - ntsprojtol_ or
                     coordinates_master[1] < -1. - ntsprojtol_ or
@@ -2193,7 +2181,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   continue;
               }
 
-              else if (masterelement->Shape() == DRT::Element::tri3)
+              else if (master_mortar_ele->Shape() == DRT::Element::tri3)
               {
                 if (coordinates_master[0] < -ntsprojtol_ or coordinates_master[1] < -ntsprojtol_ or
                     coordinates_master[0] + coordinates_master[1] > 1. + 2 * ntsprojtol_)
@@ -2205,7 +2193,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                 dserror("Invalid discretization type of master-side element!");
 
               // projected node lies inside master-side element
-              (*islavenodestomasterelements)[inode] = masterelement->Id();
+              (*islavenodestomasterelements)[inode] = master_mortar_ele->Id();
               break;
             }
 
@@ -2217,7 +2205,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             // element
             (*islavenodesimpltypes)[inode] = dynamic_cast<DRT::ELEMENTS::Transport*>(
                 Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
-                    islavecondition.second->Geometry()[slavenode->Elements()[0]->Id()])
+                    kinetics_slave_cond.second->Geometry()[slavenode->Elements()[0]->Id()])
                     ->ParentElement())
                                                  ->ImplType();
           }
@@ -2235,7 +2223,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
             // determine physical implementation type of current slave-side element
             islaveelementsimpltypes[ielement] = dynamic_cast<DRT::ELEMENTS::Transport*>(
                 Teuchos::rcp_dynamic_cast<DRT::FaceElement>(
-                    islavecondition.second->Geometry()[elecolmap_slave.GID(ielement)])
+                    kinetics_slave_cond.second->Geometry()[elecolmap_slave.GID(ielement)])
                     ->ParentElement())
                                                     ->ImplType();
           }
@@ -2342,20 +2330,20 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           }
 
           // loop over all scatra-scatra coupling interfaces
-          for (auto& slavecondition : slaveconditions_)
+          for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
           {
             // create parameter list for mortar integration cells
             Teuchos::ParameterList params;
 
             // add current condition to parameter list
-            params.set<DRT::Condition*>("condition", slavecondition.second);
+            params.set<DRT::Condition*>("condition", kinetics_slave_cond.second);
 
             // set action
             params.set<int>("action", INPAR::S2I::evaluate_mortar_matrices);
 
             // evaluate mortar integration cells at current interface
-            EvaluateMortarCells(icoupmortar_[slavecondition.first]->Interface()->Discret(), params,
-                D_,
+            EvaluateMortarCells(icoupmortar_[kinetics_slave_cond.first]->Interface()->Discret(),
+                params, D_,
                 lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave
                                                   : INPAR::S2I::side_master,
                 lmside_ == INPAR::S2I::side_slave ? INPAR::S2I::side_slave
@@ -2649,7 +2637,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         }
 
         // loop over all boundary conditions for scatra-scatra interface coupling
-        for (auto& icond : conditions)
+        for (auto& icond : s2ikinetics_conditions)
         {
           // check whether current boundary condition is associated with boundary condition for
           // scatra-scatra interface layer growth
@@ -2720,10 +2708,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               : Teuchos::rcp(new const Epetra_Map(*scatratimint_->Discretization()->DofRowMap()))));
 }  // SCATRA::MeshtyingStrategyS2I::SetupMeshtying
 
-
-
 /*----------------------------------------------------------------------*
- | compute time derivatives of discrete state variables      fang 01/17 |
  *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ComputeTimeDerivative() const
 {
@@ -2740,10 +2725,8 @@ void SCATRA::MeshtyingStrategyS2I::ComputeTimeDerivative() const
   }
 }
 
-
-/*------------------------------------------------------------------------------------------*
- | update solution after convergence of the nonlinear Newton-Raphson iteration   fang 01/17 |
- *------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::Update() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
@@ -2755,10 +2738,8 @@ void SCATRA::MeshtyingStrategyS2I::Update() const
   }
 }
 
-
-/*-------------------------------------------------------------------------------------*
- | set general parameters for element evaluation                            fang 01/17 |
- *-------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::SetElementGeneralParameters(
     Teuchos::ParameterList& parameters) const
 {
@@ -2779,7 +2760,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
   Teuchos::ParameterList conditionparams;
 
   // fill the parameter list
-  WriteS2IConditionSpecificScaTraParametersToParameterList(s2icondition, conditionparams);
+  WriteS2IKineticsSpecificScaTraParametersToParameterList(s2icondition, conditionparams);
 
   // call standard loop over elements
   scatratimint_->Discretization()->Evaluate(
@@ -2788,12 +2769,12 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToParameterList(
-    DRT::Condition& s2icondition, Teuchos::ParameterList& s2icouplingparameters)
+void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToParameterList(
+    DRT::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters)
 {
   // get kinetic model and condition type
-  const int kineticmodel = s2icondition.GetInt("kinetic model");
-  const DRT::Condition::ConditionType conditiontype = s2icondition.Type();
+  const int kineticmodel = s2ikinetics_cond.GetInt("kinetic model");
+  const DRT::Condition::ConditionType conditiontype = s2ikinetics_cond.Type();
 
   // set action, kinetic model, condition type and numscal
   s2icouplingparameters.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
@@ -2803,22 +2784,22 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
   // set the condition type specific parameters
   switch (conditiontype)
   {
-    case DRT::Condition::ConditionType::S2ICoupling:
+    case DRT::Condition::ConditionType::S2IKinetics:
     {
       // set the kinetic model specific parameters
       switch (kineticmodel)
       {
         case INPAR::S2I::kinetics_constperm:
         {
-          s2icouplingparameters.set<int>("numscal", s2icondition.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<double>*>(
-              "permeabilities", s2icondition.GetMutable<std::vector<double>>("permeabilities"));
+              "permeabilities", s2ikinetics_cond.GetMutable<std::vector<double>>("permeabilities"));
           break;
         }
 
         case INPAR::S2I::kinetics_constantinterfaceresistance:
         {
-          s2icouplingparameters.set<double>("resistance", s2icondition.GetDouble("resistance"));
+          s2icouplingparameters.set<double>("resistance", s2ikinetics_cond.GetDouble("resistance"));
           break;
         }
 
@@ -2835,32 +2816,34 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
-          s2icouplingparameters.set<int>("numscal", s2icondition.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
-          s2icouplingparameters.set<int>("numelectrons", s2icondition.GetInt("e-"));
-          s2icouplingparameters.set<double>("k_r", s2icondition.GetDouble("k_r"));
-          s2icouplingparameters.set<double>("alpha_a", s2icondition.GetDouble("alpha_a"));
-          s2icouplingparameters.set<double>("alpha_c", s2icondition.GetDouble("alpha_c"));
+              "stoichiometries", s2ikinetics_cond.GetMutable<std::vector<int>>("stoichiometries"));
+          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
+          s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
+          s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
+          s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerpeltier)
-            s2icouplingparameters.set<double>("peltier", s2icondition.GetDouble("peltier"));
+            s2icouplingparameters.set<double>("peltier", s2ikinetics_cond.GetDouble("peltier"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerresistance or
               kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance)
           {
-            s2icouplingparameters.set<double>("resistance", s2icondition.GetDouble("resistance"));
             s2icouplingparameters.set<double>(
-                "CONVTOL_IMPLBUTLERVOLMER", s2icondition.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
+                "resistance", s2ikinetics_cond.GetDouble("resistance"));
+            s2icouplingparameters.set<double>(
+                "CONVTOL_IMPLBUTLERVOLMER", s2ikinetics_cond.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
             s2icouplingparameters.set<int>(
-                "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
+                "ITEMAX_IMPLBUTLERVOLMER", s2ikinetics_cond.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
           }
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
-            s2icouplingparameters.set<double>("thermoperm", s2icondition.GetDouble("thermoperm"));
             s2icouplingparameters.set<double>(
-                "molar_heat_capacity", s2icondition.GetDouble("molar_heat_capacity"));
+                "thermoperm", s2ikinetics_cond.GetDouble("thermoperm"));
+            s2icouplingparameters.set<double>(
+                "molar_heat_capacity", s2ikinetics_cond.GetDouble("molar_heat_capacity"));
           }
           break;
         }
@@ -2881,19 +2864,20 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
       {
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
-          s2icouplingparameters.set<int>("numscal", s2icondition.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
-          s2icouplingparameters.set<int>("numelectrons", s2icondition.GetInt("e-"));
-          s2icouplingparameters.set<double>("k_r", s2icondition.GetDouble("k_r"));
-          s2icouplingparameters.set<double>("alpha_a", s2icondition.GetDouble("alpha_a"));
-          s2icouplingparameters.set<double>("alpha_c", s2icondition.GetDouble("alpha_c"));
-          s2icouplingparameters.set<double>("density", s2icondition.GetDouble("density"));
-          s2icouplingparameters.set<double>("molar mass", s2icondition.GetDouble("molar mass"));
+              "stoichiometries", s2ikinetics_cond.GetMutable<std::vector<int>>("stoichiometries"));
+          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
+          s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
+          s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
+          s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
+          s2icouplingparameters.set<double>("density", s2ikinetics_cond.GetDouble("density"));
+          s2icouplingparameters.set<double>("molar mass", s2ikinetics_cond.GetDouble("molar mass"));
           s2icouplingparameters.set<double>(
-              "regpar", s2icondition.GetDouble("regularization parameter"));
-          s2icouplingparameters.set<int>("regtype", s2icondition.GetInt("regularization type"));
-          s2icouplingparameters.set<double>("conductivity", s2icondition.GetDouble("conductivity"));
+              "regpar", s2ikinetics_cond.GetDouble("regularization parameter"));
+          s2icouplingparameters.set<int>("regtype", s2ikinetics_cond.GetInt("regularization type"));
+          s2icouplingparameters.set<double>(
+              "conductivity", s2ikinetics_cond.GetDouble("conductivity"));
           break;
         }
 
@@ -2914,10 +2898,8 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
   }
 }
 
-/*----------------------------------------------------------------------------------------------------------------------------------------------*
- | compute history vector, i.e., the history part of the right-hand side vector with all
- contributions from the previous time step   fang 01/17 |
- *----------------------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
@@ -2932,10 +2914,8 @@ void SCATRA::MeshtyingStrategyS2I::SetOldPartOfRHS() const
   }
 }
 
-
-/*-----------------------------------------------------------------------*
- | output restart information                                 fang 01/17 |
- *-----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::OutputRestart() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
@@ -2955,9 +2935,8 @@ void SCATRA::MeshtyingStrategyS2I::OutputRestart() const
   }
 }
 
-
-/*-----------------------------------------------------------------------*
- *-----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ReadRestart(
     const int step, Teuchos::RCP<IO::InputControl> input) const
 {
@@ -2989,19 +2968,15 @@ void SCATRA::MeshtyingStrategyS2I::ReadRestart(
   }
 }
 
-
-/*---------------------------------------------------------------------------------------------*
- | return mortar interface discretization associated with particular condition ID   fang 01/17 |
- *---------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 DRT::Discretization& SCATRA::MeshtyingStrategyS2I::MortarDiscretization(const int& condid) const
 {
   return icoupmortar_.at(condid)->Interface()->Discret();
 }
 
-
-/*-----------------------------------------------------------------------*
- | output solution for post-processing                        fang 01/17 |
- *-----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::Output() const
 {
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer
@@ -3064,11 +3039,8 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
   }
 }
 
-
-/*---------------------------------------------------------------------------------------------------*
- | explicit predictor step to obtain better starting value for Newton-Raphson iteration   fang 01/17
- |
- *---------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
 {
   // only relevant for monolithic evaluation of scatra-scatra interface layer growth
@@ -3077,10 +3049,8 @@ void SCATRA::MeshtyingStrategyS2I::ExplicitPredictor() const
     growthnp_->Update(scatratimint_->Dt(), *growthdtn_, 1.);
 }
 
-
-/*----------------------------------------------------------------------------*
- | extract selected rows from a sparse matrix                      fang 02/17 |
- *----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
     const LINALG::SparseMatrix& matrix,  //!< source matrix
     LINALG::SparseMatrix& rows,          //!< destination matrix
@@ -3113,10 +3083,8 @@ void SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
   }
 }
 
-
-/*---------------------------------------------------------------------------*
- | provide global state vectors for element evaluation            fang 01/17 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
 {
   // only relevant for scatra-scatra interface coupling with pairwise coinciding interface nodes
@@ -3144,10 +3112,8 @@ void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
   }
 }
 
-
-/*---------------------------------------------------------------------------*
- | compute time step size                                         fang 02/18 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::ComputeTimeStepSize(double& dt)
 {
   // not implemented for standard scalar transport
@@ -3159,10 +3125,8 @@ void SCATRA::MeshtyingStrategyS2I::ComputeTimeStepSize(double& dt)
   }
 }
 
-
-/*-------------------------------------------------------------------------------*
- | perform initialization of scatra-scatra interface coupling         fang 10/14 |
- *-------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 {
   // instantiate strategy for Newton-Raphson convergence check
@@ -3280,10 +3244,8 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
   }
 }
 
-
-/*----------------------------------------------------------------------------------*
- | build map extractors associated with blocks of global system matrix   fang 07/15 |
- *----------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::BuildBlockMapExtractors()
 {
   if (matrixtype_ == LINALG::MatrixType::block_condition or
@@ -3587,10 +3549,8 @@ void SCATRA::MeshtyingStrategyS2I::Solve(const Teuchos::RCP<LINALG::Solver>& sol
   }
 }  // SCATRA::MeshtyingStrategyS2I::Solve
 
-
-/*-------------------------------------------------------------------------*
- | return linear solver for global system of linear equations   fang 01/18 |
- *-------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 const LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
 {
   const LINALG::Solver* solver(nullptr);
@@ -3610,8 +3570,8 @@ const LINALG::Solver& SCATRA::MeshtyingStrategyS2I::Solver() const
   return *solver;
 }  // SCATRA::MeshtyingStrategyS2I::Solver()
 
-/*-------------------------------------------------------------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MeshtyingStrategyS2I::FDCheck(
     const LINALG::BlockSparseMatrixBase& extendedsystemmatrix,
     const Teuchos::RCP<Epetra_Vector>& extendedresidual) const
@@ -3808,16 +3768,11 @@ void SCATRA::MeshtyingStrategyS2I::FDCheck(
   scatratimint_->AssembleMatAndRHS();
 }
 
-/*--------------------------------------------------------------------------------------*
- | protected constructor for singletons                                      fang 01/16 |
- *--------------------------------------------------------------------------------------*/
-SCATRA::MortarCellInterface::MortarCellInterface(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
-        lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
-    const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
-    )
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SCATRA::MortarCellInterface::MortarCellInterface(const INPAR::S2I::CouplingType& couplingtype,
+    const INPAR::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
+    const int& numdofpernode_master)
     : lmside_(lmside),
       couplingtype_(couplingtype),
       numdofpernode_slave_(numdofpernode_slave),
@@ -3825,20 +3780,13 @@ SCATRA::MortarCellInterface::MortarCellInterface(
 {
 }
 
-
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 01/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, distypeM>::Instance(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
-        lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,   //!< number of slave-side degrees of freedom per node
-    const int& numdofpernode_master,  //!< number of master-side degrees of freedom per node
-    const std::string& disname,       //!< name of mortar discretization
-    const MortarCellCalc* delete_me   //!< pointer to instance to be deleted
-)
+    const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+    const int& numdofpernode_slave, const int& numdofpernode_master, const std::string& disname,
+    const MortarCellCalc* delete_me)
 {
   // static map assigning mortar discretization names to class instances
   static std::map<std::string, MortarCellCalc<distypeS, distypeM>*> instances;
@@ -3880,9 +3828,7 @@ SCATRA::MortarCellCalc<distypeS, distypeM>* SCATRA::MortarCellCalc<distypeS, dis
   return instances[disname];
 }
 
-
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 01/16 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::Done()
@@ -3891,27 +3837,16 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Done()
   Instance(INPAR::S2I::coupling_undefined, INPAR::S2I::side_undefined, 0, 0, "", this);
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------------*
- | evaluate single mortar integration cell of particular slave-side and master-side discretization
- types   fang 01/16 |
- *--------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
-    Epetra_SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
-    Epetra_SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
-    Epetra_SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
-    Epetra_SerialDenseVector& cellvector1,   //!< cell vector 1
-    Epetra_SerialDenseVector& cellvector2    //!< cell vector 2
-)
+void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(const DRT::Discretization& idiscret,
+    MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    Epetra_SerialDenseMatrix& cellmatrix1, Epetra_SerialDenseMatrix& cellmatrix2,
+    Epetra_SerialDenseMatrix& cellmatrix3, Epetra_SerialDenseMatrix& cellmatrix4,
+    Epetra_SerialDenseVector& cellvector1, Epetra_SerialDenseVector& cellvector2)
 {
   // extract and evaluate action
   switch (DRT::INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
@@ -3942,27 +3877,17 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::Evaluate(
   }
 }
 
-
-/*---------------------------------------------------------------------------*
- | evaluate single slave-side node for node-to-segment coupling   fang 08/16 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(
-    const DRT::Discretization& idiscret,  //!< interface discretization
-    const MORTAR::MortarNode& slavenode,  //!< slave-side node
-    const double& lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix& ntsmatrix1,    //!< node-to-segment matrix 1
-    Epetra_SerialDenseMatrix& ntsmatrix2,    //!< node-to-segment matrix 2
-    Epetra_SerialDenseMatrix& ntsmatrix3,    //!< node-to-segment matrix 3
-    Epetra_SerialDenseMatrix& ntsmatrix4,    //!< node-to-segment matrix 4
-    Epetra_SerialDenseVector& ntsvector1,    //!< node-to-segment vector 1
-    Epetra_SerialDenseVector& ntsvector2     //!< node-to-segment vector 2
-)
+void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(const DRT::Discretization& idiscret,
+    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
+    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master,
+    const Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& ntsmatrix1,
+    Epetra_SerialDenseMatrix& ntsmatrix2, Epetra_SerialDenseMatrix& ntsmatrix3,
+    Epetra_SerialDenseMatrix& ntsmatrix4, Epetra_SerialDenseVector& ntsvector1,
+    Epetra_SerialDenseVector& ntsvector2)
 {
   // extract and evaluate action
   switch (DRT::INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
@@ -3993,23 +3918,15 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNTS(
   }
 }
 
-
-/*---------------------------------------------------------------------------*
- | evaluate single mortar element                                 fang 08/16 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
-    const DRT::Discretization& idiscret,   //!< interface discretization
-    MORTAR::MortarElement& element,        //!< mortar element
-    DRT::Element::LocationArray& la,       //!< location array
-    const Teuchos::ParameterList& params,  //!< parameter list
-    Epetra_SerialDenseMatrix& elematrix1,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elematrix2,  //!< element matrix 2
-    Epetra_SerialDenseMatrix& elematrix3,  //!< element matrix 3
-    Epetra_SerialDenseMatrix& elematrix4,  //!< element matrix 4
-    Epetra_SerialDenseVector& elevector1,  //!< element vector 1
-    Epetra_SerialDenseVector& elevector2   //!< element vector 2
-)
+    const DRT::Discretization& idiscret, MORTAR::MortarElement& element,
+    DRT::Element::LocationArray& la, const Teuchos::ParameterList& params,
+    Epetra_SerialDenseMatrix& elematrix1, Epetra_SerialDenseMatrix& elematrix2,
+    Epetra_SerialDenseMatrix& elematrix3, Epetra_SerialDenseMatrix& elematrix4,
+    Epetra_SerialDenseVector& elevector1, Epetra_SerialDenseVector& elevector2)
 {
   // extract and evaluate action
   switch (DRT::INPUT::get<INPAR::S2I::EvaluationActions>(params, "action"))
@@ -4030,18 +3947,12 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarElement(
   }
 }
 
-
-/*--------------------------------------------------------------------------------------*
- | protected constructor for singletons                                      fang 01/16 |
- *--------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
-    const INPAR::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
-    const INPAR::S2I::InterfaceSides&
-        lmside,  //!< flag for interface side underlying Lagrange multiplier definition
-    const int& numdofpernode_slave,  //!< number of slave-side degrees of freedom per node
-    const int& numdofpernode_master  //!< number of master-side degrees of freedom per node
-    )
+    const INPAR::S2I::CouplingType& couplingtype, const INPAR::S2I::InterfaceSides& lmside,
+    const int& numdofpernode_slave, const int& numdofpernode_master)
     : MortarCellInterface(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
       scatraparamsboundary_(DRT::ELEMENTS::ScaTraEleParameterBoundary::Instance("scatra")),
       ephinp_slave_(numdofpernode_slave, LINALG::Matrix<nen_slave_, 1>(true)),
@@ -4062,16 +3973,12 @@ SCATRA::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
   }
 }
 
-
-/*------------------------------------------------------------------------------------*
- | extract nodal state variables associated with mortar integration cell   fang 01/17 |
- *------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
-    const DRT::Discretization& idiscret,    //!< interface discretization
-    DRT::Element::LocationArray& la_slave,  //!< slave-side location array
-    DRT::Element::LocationArray& la_master  //!< master-side location array
-)
+    const DRT::Discretization& idiscret, DRT::Element::LocationArray& la_slave,
+    DRT::Element::LocationArray& la_master)
 {
   // extract nodal state variables associated with mortar integration cell
   ExtractNodeValues(ephinp_slave_, ephinp_master_, idiscret, la_slave, la_master);
@@ -4117,43 +4024,37 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::ExtractNodeValues(
       *state, estate_master, la_master[nds].lm_);
 }
 
-
-/*--------------------------------------------------------------------------------------------------------------------------*
- | evaluate slave-side and master-side shape functions and domain integration factor at cell
- integration point   fang 01/16 |
- *--------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
-    MORTAR::MortarElement& slaveelement,                           //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,                          //!< master-side mortar element
-    MORTAR::IntCell& cell,                                         //!< mortar integration cell
-    const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
-    const int iquad                                                //!< ID of integration point
-)
+    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    MORTAR::IntCell& cell, const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,
+    const int iquad)
 {
   // reference coordinates of integration point
-  double coordinates_ref[nsd_slave_] = {};
+  std::array<double, nsd_slave_> coordinates_ref;
   for (int idim = 0; idim < nsd_slave_; ++idim)
     coordinates_ref[idim] = intpoints.IP().qxg[iquad][idim];
 
   // global coordinates of integration point
-  double coordinates_global[nsd_slave_ + 1] = {};
-  cell.LocalToGlobal(coordinates_ref, coordinates_global, 0);
+  std::array<double, nsd_slave_ + 1> coordinates_global;
+  cell.LocalToGlobal(coordinates_ref.data(), coordinates_global.data(), 0);
 
   // project integration point onto slave and master elements
-  double coordinates_slave[nsd_slave_] = {};
-  double coordinates_master[nsd_master_] = {};
+  std::array<double, nsd_slave_> coordinates_slave;
+  std::array<double, nsd_master_> coordinates_master;
   double dummy(0.);
   MORTAR::MortarProjector::Impl(slaveelement)
       ->ProjectGaussPointAuxn3D(
-          coordinates_global, cell.Auxn(), slaveelement, coordinates_slave, dummy);
+          coordinates_global.data(), cell.Auxn(), slaveelement, coordinates_slave.data(), dummy);
   MORTAR::MortarProjector::Impl(masterelement)
       ->ProjectGaussPointAuxn3D(
-          coordinates_global, cell.Auxn(), masterelement, coordinates_master, dummy);
+          coordinates_global.data(), cell.Auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
-  VOLMORTAR::UTILS::shape_function<distypeS>(funct_slave_, coordinates_slave);
-  VOLMORTAR::UTILS::shape_function<distypeM>(funct_master_, coordinates_master);
+  VOLMORTAR::UTILS::shape_function<distypeS>(funct_slave_, coordinates_slave.data());
+  VOLMORTAR::UTILS::shape_function<distypeM>(funct_master_, coordinates_master.data());
   switch (couplingtype_)
   {
     case INPAR::S2I::coupling_mortar_standard:
@@ -4175,13 +4076,13 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
       if (lmside_ == INPAR::S2I::side_slave)
       {
         VOLMORTAR::UTILS::dual_shape_function<distypeS>(
-            shape_lm_slave_, coordinates_slave, slaveelement);
+            shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = funct_slave_;
       }
       else
       {
         VOLMORTAR::UTILS::dual_shape_function<distypeM>(
-            shape_lm_master_, coordinates_master, masterelement);
+            shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = funct_master_;
       }
 
@@ -4196,13 +4097,13 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
       if (lmside_ == INPAR::S2I::side_slave)
       {
         VOLMORTAR::UTILS::dual_shape_function<distypeS>(
-            shape_lm_slave_, coordinates_slave, slaveelement);
+            shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = shape_lm_slave_;
       }
       else
       {
         VOLMORTAR::UTILS::dual_shape_function<distypeM>(
-            shape_lm_master_, coordinates_master, masterelement);
+            shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = shape_lm_master_;
       }
 
@@ -4226,17 +4127,12 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
   return jacobian * weight;
 }
 
-
-/*-------------------------------------------------------------------------------------------------------------*
- | evaluate slave-side shape functions and domain integration factor at element integration point
- fang 08/16 |
- *-------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIntPoint(
-    MORTAR::MortarElement& element,                                //!< mortar element
-    const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,  //!< quadrature rule
-    const int iquad                                                //!< ID of integration point
-)
+    MORTAR::MortarElement& element, const DRT::UTILS::IntPointsAndWeights<nsd_slave_>& intpoints,
+    const int iquad)
 {
   // extract global coordinates of element nodes
   LINALG::Matrix<nsd_slave_ + 1, nen_slave_> coordinates_nodes;
@@ -4264,16 +4160,12 @@ double SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAndDomIntFacAtIn
   return sqrt(metrictensor.Determinant()) * intpoints.IP().qwgt[iquad];
 }
 
-
-/*------------------------------------------------------------------------------------------*
- | evaluate shape functions at position of slave-side node                       fang 08/16 |
- *------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
-    const MORTAR::MortarNode& slavenode,  //!< slave-side node
-    MORTAR::MortarElement& slaveelement,  //!< slave-side element
-    MORTAR::MortarElement& masterelement  //!< master-side element
-)
+    const MORTAR::MortarNode& slavenode, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement)
 {
   // safety check
   if (couplingtype_ != INPAR::S2I::coupling_nts_standard)
@@ -4299,29 +4191,22 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
   funct_slave_(index) = 1.;
 
   // project slave-side node onto master-side element
-  double coordinates_master[2] = {};
+  std::array<double, 2> coordinates_master;
   double dummy(0.);
   MORTAR::MortarProjector::Impl(masterelement)
       ->ProjectGaussPointAuxn3D(
-          slavenode.X(), slavenode.MoData().n(), masterelement, coordinates_master, dummy);
+          slavenode.X(), slavenode.MoData().n(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
-  VOLMORTAR::UTILS::shape_function<distypeM>(funct_master_, coordinates_master);
+  VOLMORTAR::UTILS::shape_function<distypeM>(funct_master_, coordinates_master.data());
 }
 
-
-/*---------------------------------------------------------------------------*
- | evaluate mortar matrices                                       fang 01/16 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(
-    MORTAR::IntCell& cell,                 //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-    Epetra_SerialDenseMatrix& D,           //!< mortar matrix D
-    Epetra_SerialDenseMatrix& M,           //!< mortar matrix M
-    Epetra_SerialDenseMatrix& E            //!< mortar matrix E
-)
+void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(MORTAR::IntCell& cell,
+    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    Epetra_SerialDenseMatrix& D, Epetra_SerialDenseMatrix& M, Epetra_SerialDenseMatrix& E)
 {
   // safety check
   if (numdofpernode_slave_ != numdofpernode_master_)
@@ -4431,30 +4316,15 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateMortarMatrices(
   }
 }
 
-
-/*---------------------------------------------------------------------------*
- | evaluate and assemble interface linearizations and residuals   fang 01/16 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix&
-        k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseMatrix&
-        k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-    Epetra_SerialDenseVector& r_m   //!< master-side residual vector
-)
+    const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
   // extract nodal state variables associated with slave and master elements
   ExtractNodeValues(idiscret, la_slave, la_master);
@@ -4494,33 +4364,16 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateCondition(
   }
 }
 
-
-/*--------------------------------------------------------------------------------------------------------*
- | evaluate and assemble interface linearizations and residuals for node-to-segment coupling   fang
- 08/16 |
- *--------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
-    DRT::Condition& condition,            //!< scatra-scatra interface coupling condition
-    const MORTAR::MortarNode& slavenode,  //!< slave-side node
-    const double& lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-    MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-    const std::vector<LINALG::Matrix<nen_slave_, 1>>&
-        ephinp_slave,  //!< state variables at slave-side nodes
-    const std::vector<LINALG::Matrix<nen_master_, 1>>&
-        ephinp_master,  //!< state variables at master-side nodes
-    Epetra_SerialDenseMatrix&
-        k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseMatrix&
-        k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-    Epetra_SerialDenseVector& r_m   //!< master-side residual vector
-)
+void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
+    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
+    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    const std::vector<LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
+    const std::vector<LINALG::Matrix<nen_master_, 1>>& ephinp_master,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
   // safety check
   if (numdofpernode_slave_ != 1 or numdofpernode_master_ != 1)
@@ -4549,17 +4402,11 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateConditionNTS(
       k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
-
-/*-------------------------------------------------------------------------------------------------------------*
- | evaluate and assemble lumped interface area fractions associated with slave-side element nodes
- fang 08/16 |
- *-------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
-    MORTAR::MortarElement& slaveelement,  //!< slave-side mortar element
-    Epetra_SerialDenseVector&
-        areafractions  //!< lumped interface area fractions associated with slave-side element nodes
-)
+    MORTAR::MortarElement& slaveelement, Epetra_SerialDenseVector& areafractions)
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_slave_> intpoints(
@@ -4578,40 +4425,24 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvaluateNodalAreaFractions(
   }  // loop over integration points
 }
 
-
-/*---------------------------------------------------------------------------*
- | constructor                                                    fang 05/16 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 SCATRA::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix1,  //!< system matrix 1
-    const INPAR::S2I::InterfaceSides
-        matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
-    const INPAR::S2I::InterfaceSides
-        matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix2,  //!< system matrix 2
-    const INPAR::S2I::InterfaceSides
-        matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
-    const INPAR::S2I::InterfaceSides
-        matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix3,  //!< system matrix 3
-    const INPAR::S2I::InterfaceSides
-        matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
-    const INPAR::S2I::InterfaceSides
-        matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-    const Teuchos::RCP<LINALG::SparseOperator>& systemmatrix4,  //!< system matrix 4
-    const INPAR::S2I::InterfaceSides
-        matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
-    const INPAR::S2I::InterfaceSides
-        matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector1,  //!< system vector 1
-    const INPAR::S2I::InterfaceSides
-        vector1_side,  //!< interface side associated with system vector 1
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector2,  //!< system vector 2
-    const INPAR::S2I::InterfaceSides
-        vector2_side,         //!< interface side associated with system vector 2
-    const unsigned nds_rows,  //!< number of dofset associated with matrix rows
-    const unsigned nds_cols   //!< number of dofset associated with matrix columns
-    )
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+    const INPAR::S2I::InterfaceSides matrix1_side_rows,
+    const INPAR::S2I::InterfaceSides matrix1_side_cols,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
+    const INPAR::S2I::InterfaceSides matrix2_side_rows,
+    const INPAR::S2I::InterfaceSides matrix2_side_cols,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix3,
+    const INPAR::S2I::InterfaceSides matrix3_side_rows,
+    const INPAR::S2I::InterfaceSides matrix3_side_cols,
+    Teuchos::RCP<LINALG::SparseOperator> systemmatrix4,
+    const INPAR::S2I::InterfaceSides matrix4_side_rows,
+    const INPAR::S2I::InterfaceSides matrix4_side_cols,
+    Teuchos::RCP<Epetra_MultiVector> systemvector1, const INPAR::S2I::InterfaceSides vector1_side,
+    Teuchos::RCP<Epetra_MultiVector> systemvector2, const INPAR::S2I::InterfaceSides vector2_side,
+    const int nds_rows, const int nds_cols)
     : matrix1_side_rows_(matrix1_side_rows),
       matrix1_side_cols_(matrix1_side_cols),
       matrix2_side_rows_(matrix2_side_rows),
@@ -4620,12 +4451,12 @@ SCATRA::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
       matrix3_side_cols_(matrix3_side_cols),
       matrix4_side_rows_(matrix4_side_rows),
       matrix4_side_cols_(matrix4_side_cols),
-      systemmatrix1_(systemmatrix1),
-      systemmatrix2_(systemmatrix2),
-      systemmatrix3_(systemmatrix3),
-      systemmatrix4_(systemmatrix4),
-      systemvector1_(systemvector1),
-      systemvector2_(systemvector2),
+      systemmatrix1_(std::move(systemmatrix1)),
+      systemmatrix2_(std::move(systemmatrix2)),
+      systemmatrix3_(std::move(systemmatrix3)),
+      systemmatrix4_(std::move(systemmatrix4)),
+      systemvector1_(std::move(systemvector1)),
+      systemvector2_(std::move(systemvector2)),
       vector1_side_(vector1_side),
       vector2_side_(vector2_side),
       nds_rows_(nds_rows),
@@ -4737,8 +4568,8 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
       if (assembler_pid_master == systemvector->Comm().MyPID())
       {
         if (Teuchos::rcp_dynamic_cast<Epetra_FEVector>(systemvector)
-                ->SumIntoGlobalValues(
-                    la_master[nds_rows_].lm_.size(), &la_master[nds_rows_].lm_[0], cellvector.A()))
+                ->SumIntoGlobalValues(static_cast<int>(la_master[nds_rows_].lm_.size()),
+                    &la_master[nds_rows_].lm_[0], cellvector.A()))
           dserror("Assembly into master-side system vector not successful!");
       }
 
@@ -4753,14 +4584,10 @@ void SCATRA::MortarCellAssemblyStrategy::AssembleCellVector(
   }
 }
 
-
-/*---------------------------------------------------------------------------*
- | initialize cell matrices and vectors                           fang 05/16 |
- *---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SCATRA::MortarCellAssemblyStrategy::InitCellMatricesAndVectors(
-    DRT::Element::LocationArray& la_slave,  //!< slave-side location array
-    DRT::Element::LocationArray& la_master  //!< master-side location array
-)
+    DRT::Element::LocationArray& la_slave, DRT::Element::LocationArray& la_master)
 {
   // initialize system matrix 1
   if (AssembleMatrix1())

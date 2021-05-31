@@ -56,8 +56,11 @@ std::map<std::string, std::string> SSI::ScatraStructureCloneStrategy::Conditions
       std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
   // initial field conditions
   conditions_to_copy.insert(std::pair<std::string, std::string>("Initfield", "Initfield"));
-  // scatra-scatra interface coupling conditions
-  conditions_to_copy.insert(std::pair<std::string, std::string>("S2ICoupling", "S2ICoupling"));
+  // copy s2i mesh tying condition from its ssi equivalent
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("SSIInterfaceMeshtying", "S2IMeshtying"));
+  // scatra-scatra interface kinetics conditions
+  conditions_to_copy.insert(std::pair<std::string, std::string>("S2IKinetics", "S2IKinetics"));
   // copy partitioning of the scatra field
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("ScatraPartitioning", "ScatraPartitioning"));

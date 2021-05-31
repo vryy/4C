@@ -50,11 +50,6 @@ namespace SSI
         const std::vector<DRT::Condition*>& conditionsToBeTested,
         Teuchos::RCP<DRT::Discretization>& structdis);
 
-    //! check, if nodes of input conditions equal s2i conditions
-    void CheckConsistencyWithS2IMeshtyingCondition(
-        const std::vector<DRT::Condition*>& conditionsToBeTested,
-        Teuchos::RCP<DRT::Discretization>& structdis);
-
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
     int CheckTimeStepping(double dt1, double dt2);
@@ -184,9 +179,6 @@ namespace SSI
 
       //! the structure dof row map
       Teuchos::RCP<const Epetra_Map> structure_dofrowmap_;
-
-      //! the structure dofs on scalar transport manifold dof row map
-      Teuchos::RCP<const Epetra_Map> structure_on_scatramanifold_dofrowmap_;
 
       //! system matrix
       Teuchos::RCP<LINALG::SparseOperator> system_matrix_;

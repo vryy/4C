@@ -15,12 +15,9 @@
 
 #include "../drt_scatra_ele/scatra_ele.H"
 
-/*----------------------------------------------------------------------*
- | check material of cloned element                          fang 04/15 |
- *----------------------------------------------------------------------*/
-void STI::ScatraThermoCloneStrategy::CheckMaterialType(
-    const int matid  //! material of cloned element
-)
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
+void STI::ScatraThermoCloneStrategy::CheckMaterialType(const int matid)
 {
   // check whether material with specified ID is compatible with cloned element or not
   switch (DRT::Problem::Instance()->Materials()->ById(matid)->Type())
@@ -37,15 +34,10 @@ void STI::ScatraThermoCloneStrategy::CheckMaterialType(
       break;
     }
   }
-
-  return;
 }
 
-
-/*--------------------------------------------------------------------------*
- | return map with original names of conditions to be cloned as key values, |
- | and final names of cloned conditions as mapped values         fang 04/15 |
- *--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToCopy()
 {
   // initialize map
@@ -53,7 +45,8 @@ std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToC
 
   // insert thermo conditions
   conditions.insert(std::pair<std::string, std::string>("PointThermoCoupling", "PointCoupling"));
-  conditions.insert(std::pair<std::string, std::string>("S2ICoupling", "S2ICoupling"));
+  conditions.insert(std::pair<std::string, std::string>("S2IKinetics", "S2IKinetics"));
+  conditions.insert(std::pair<std::string, std::string>("S2IMeshtying", "S2IMeshtying"));
   conditions.insert(std::pair<std::string, std::string>("ScaTraFluxCalc", "ScaTraFluxCalc"));
   conditions.insert(std::pair<std::string, std::string>("ThermoDirichlet", "Dirichlet"));
   conditions.insert(std::pair<std::string, std::string>("ThermoPointNeumann", "PointNeumann"));
@@ -69,43 +62,31 @@ std::map<std::string, std::string> STI::ScatraThermoCloneStrategy::ConditionsToC
   return conditions;
 }  // STI::ScatraThermoCloneStrategy::ConditionsToCopy()
 
-
-/*----------------------------------------------------------------------------------------------------------*
- | decide whether element should be cloned or not, and if so, determine type of cloned element fang
- 04/15 |
- *----------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 bool STI::ScatraThermoCloneStrategy::DetermineEleType(
-    DRT::Element* actele,              //! current element on source discretization
-    const bool ismyele,                //! ownership flag
-    std::vector<std::string>& eletype  //! vector storing types of cloned elements
-)
+    DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // set type of cloned element to transport type
-  eletype.push_back("TRANSP");
+  eletype.emplace_back("TRANSP");
 
   // element should always be cloned
   return true;
 }  // STI::ScatraThermoCloneStrategy::DetermineEleType
 
-
-/*----------------------------------------------------------------------*
- | provide cloned element with element specific data         fang 04/15 |
- *----------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------*/
 void STI::ScatraThermoCloneStrategy::SetElementData(
-    Teuchos::RCP<DRT::Element> newele,  //! current cloned element on target discretization
-    DRT::Element* oldele,               //! current element on source discretization
-    const int matid,                    //! material of cloned element
-    const bool isnurbs                  //! nurbs flag
-)
+    Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool isnurbs)
 {
   // cast pointers to current element on source discretization and to current cloned element on
   // target discretization
-  DRT::ELEMENTS::Transport* oldele_transport = dynamic_cast<DRT::ELEMENTS::Transport*>(oldele);
+  auto* oldele_transport = dynamic_cast<DRT::ELEMENTS::Transport*>(oldele);
   Teuchos::RCP<DRT::ELEMENTS::Transport> newele_transport =
       Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Transport>(newele);
 
   // safety check
-  if (oldele_transport == NULL or newele_transport == Teuchos::null)
+  if (oldele_transport == nullptr or newele_transport == Teuchos::null)
     dserror(
         "Expected transport element, but received element of type '%s'!", typeid(*newele).name());
 
@@ -137,6 +118,4 @@ void STI::ScatraThermoCloneStrategy::SetElementData(
       break;
     }
   }
-
-  return;
 }

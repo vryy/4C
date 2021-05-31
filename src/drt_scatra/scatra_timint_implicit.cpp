@@ -26,6 +26,7 @@
 #include "scatra_timint_meshtying_strategy_s2i.H"
 #include "scatra_timint_meshtying_strategy_std.H"
 #include "scatra_timint_meshtying_strategy_artery.H"
+#include "scatra_utils.H"
 #include "turbulence_hit_initial_scalar_field.H"
 #include "turbulence_hit_scalar_forcing.H"
 
@@ -81,7 +82,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
       incremental_(true),
       fssgd_(DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params, "FSSUGRDIFF")),
       turbmodel_(INPAR::FLUID::no_model),
-      s2icoupling_(actdis->GetCondition("S2ICoupling") != nullptr),
+      s2ikinetics_(actdis->GetCondition("S2IKinetics") != nullptr),
+      s2imeshtying_(actdis->GetCondition("S2IMeshtying") != nullptr),
       arterycoupling_(DRT::INPUT::IntegralValue<int>(
                           problem_->PoroMultiPhaseScatraDynamicParams(), "ARTERY_COUPLING") &&
                       actdis->Name() == "scatra"),
@@ -270,19 +272,21 @@ void SCATRA::ScaTraTimIntImpl::Init()
   // initialize meshtying strategy (including standard strategy without meshtying)
   // -----------------------------------------------------------------------------
   // safety checks
-  if (msht_ != INPAR::FLUID::no_meshtying and s2icoupling_)
+  if (msht_ != INPAR::FLUID::no_meshtying and s2imeshtying_)
   {
     dserror(
-        "Fluid-fluid meshtying in combination with scatra-scatra interface coupling is not "
+        "Fluid-fluid meshtying in combination with scatra-scatra interface mesh tying is not "
         "implemented yet!");
   }
-  if (s2icoupling_ and !incremental_)
+  if (s2imeshtying_ and !incremental_)
   {
     dserror(
-        "Scatra-scatra interface coupling only working for incremental solve so far!\n"
+        "Scatra-scatra interface mesh tying only working for incremental solve so far!\n"
         "Set the parameter SOLVERTYPE in SCALAR TRANSPORT DYNAMIC section to 'nonlinear' or "
         "'linear_incremental'!");
   }
+  if (s2imeshtying_)
+    SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition("S2IMeshtying", Discretization());
 
   // create strategy
   CreateMeshtyingStrategy();
@@ -2329,7 +2333,7 @@ void SCATRA::ScaTraTimIntImpl::CreateMeshtyingStrategy()
   {
     strategy_ = Teuchos::rcp(new MeshtyingStrategyFluid(this));
   }
-  else if (IsS2IMeshtying())  // scatra-scatra interface coupling
+  else if (S2IMeshtying())  // scatra-scatra interface mesh tying
   {
     strategy_ = Teuchos::rcp(new MeshtyingStrategyS2I(this, *params_));
   }
@@ -3377,58 +3381,6 @@ void SCATRA::ScaTraTimIntImpl::CheckIsSetup() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::ScaTraTimIntImpl::IsS2IMeshtying() const
-{
-  auto* problem = DRT::Problem::Instance();
-  bool IsS2IMeshtying(false);
-  // decide depending on the problem type
-  switch (problem->GetProblemType())
-  {
-    case prb_elch:
-    case prb_scatra:
-    case prb_sti:
-    {
-      if (s2icoupling_) IsS2IMeshtying = true;
-      break;
-    }
-    case prb_ssi:
-    {
-      // get structure discretization
-      auto structdis = problem->GetDis("structure");
-
-      // get ssi meshtying conditions
-      std::vector<DRT::Condition*> ssiconditions;
-      structdis->GetCondition("SSIInterfaceMeshtying", ssiconditions);
-
-      // do mesh tying if there is at least one mesh tying condition
-      if (!ssiconditions.empty() and Discretization()->Name() == "scatra") IsS2IMeshtying = true;
-      break;
-    }
-    case prb_ssti:
-    {
-      // get structure discretization
-      auto structdis = problem->GetDis("structure");
-
-      // get ssi meshtying conditions
-      std::vector<DRT::Condition*> ssticonditions;
-      structdis->GetCondition("SSTIInterfaceMeshtying", ssticonditions);
-
-      // do mesh tying if there is at least one mesh tying condition
-      if (!ssticonditions.empty()) IsS2IMeshtying = true;
-      break;
-    }
-    default:
-    {
-      // do nothing
-      break;
-    }
-  }
-
-  return IsS2IMeshtying;
-}
-
-/*-----------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::SetupMatrixBlockMaps()
 {
   if (matrixtype_ == LINALG::MatrixType::block_condition or
@@ -3525,7 +3477,7 @@ void SCATRA::ScaTraTimIntImpl::PostSetupMatrixBlockMaps()
 
   // in case of an extended solver for scatra-scatra interface meshtying including interface growth
   // we need to equip it with the null space information generated above
-  if (IsS2IMeshtying()) strategy_->EquipExtendedSolverWithNullSpaceInfo();
+  if (S2IMeshtying()) strategy_->EquipExtendedSolverWithNullSpaceInfo();
 }
 
 /*-----------------------------------------------------------------------------*

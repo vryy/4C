@@ -18,14 +18,13 @@ DRT::ConditionObjectType DRT::ConditionObjectType::instance_;
 
 DRT::ParObject* DRT::ConditionObjectType::Create(const std::vector<char>& data)
 {
-  DRT::Condition* object = new DRT::Condition();
+  auto* object = new DRT::Condition();
   object->Unpack(data);
   return object;
 }
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Condition::Condition(
     const int id, const ConditionType type, const bool buildgeometry, const GeometryType gtype)
@@ -37,11 +36,9 @@ DRT::Condition::Condition(
       geometry_(Teuchos::null),
       comm_(Teuchos::null)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Condition::Condition()
     : Container(),
@@ -52,11 +49,9 @@ DRT::Condition::Condition()
       geometry_(Teuchos::null),
       comm_(Teuchos::null)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
 DRT::Condition::Condition(const DRT::Condition& old)
     : Container(old),
@@ -67,17 +62,9 @@ DRT::Condition::Condition(const DRT::Condition& old)
       geometry_(Teuchos::null),  // since it wasn't even initialized before change to Teuchos::RCP
       comm_(old.comm_)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 11/06|
- *----------------------------------------------------------------------*/
-DRT::Condition::~Condition() { return; }
-
-
-/*----------------------------------------------------------------------*
- |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond)
 {
@@ -87,7 +74,6 @@ std::ostream& operator<<(std::ostream& os, const DRT::Condition& cond)
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Condition::Print(std::ostream& os) const
 {
@@ -438,8 +424,10 @@ void DRT::Condition::Print(std::ostream& os) const
     os << "Scalar-Structure-Thermo interaction interface meshtying condition including 3 domains: ";
   else if (Type() == CellFocalAdhesion)
     os << "Scalar transport boundary condition depending on structural surface stress";
-  else if (Type() == S2ICoupling)
-    os << "Scatra-scatra interface coupling: ";
+  else if (Type() == S2IKinetics)
+    os << "Scatra-scatra interface kinetics: ";
+  else if (Type() == S2IMeshtying)
+    os << "Scatra-scatra interface mesh tying: ";
   else if (Type() == SilverMueller)
     os << "Silver-Mueller boundary for electromagnetics";
   else if (Type() == ElementTag)
@@ -458,12 +446,9 @@ void DRT::Condition::Print(std::ostream& os) const
     for (curr = geometry_->begin(); curr != geometry_->end(); ++curr)
       os << "      " << *(curr->second) << std::endl;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Condition::Pack(DRT::PackBuffer& data) const
 {
@@ -483,14 +468,10 @@ void DRT::Condition::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type_);
   // gtype_
   AddtoPack(data, gtype_);
-
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Condition::Unpack(const std::vector<char>& data)
 {
@@ -514,15 +495,10 @@ void DRT::Condition::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |                                                             (public) |
- |  Adjust Ids of elements in order to obtain unique Ids within one     |
- |  condition type                                                      |
- |                                                             lw 12/07 |
  *----------------------------------------------------------------------*/
 void DRT::Condition::AdjustId(const int shift)
 {
@@ -536,6 +512,4 @@ void DRT::Condition::AdjustId(const int shift)
   }
 
   swap(*geometry_, geometry);
-
-  return;
 }

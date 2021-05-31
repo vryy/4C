@@ -18,6 +18,10 @@ namespace SCATRA
 {
   namespace SCATRAUTILS
   {
+    //! check, if nodes of input conditions equal s2i kinetics condition
+    void CheckConsistencyWithS2IKineticsCondition(const std::string& condition_to_be_tested,
+        Teuchos::RCP<DRT::Discretization> discretization);
+
     //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
     template <const int dim>
     Teuchos::RCP<Epetra_MultiVector> ComputeGradientAtNodesMeanAverage(

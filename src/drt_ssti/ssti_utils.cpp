@@ -658,6 +658,8 @@ std::map<std::string, std::string> SSTI::SSTIScatraStructureCloneStrategy::Condi
       std::pair<std::string, std::string>("ThermoInitfield", "ThermoInitfield"));
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "SSTIMeshtying3DomainIntersection", "Meshtying3DomainIntersection"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("SSTIInterfaceMeshtying", "S2IMeshtying"));
 
   return conditions_to_copy;
 }
@@ -719,6 +721,8 @@ std::map<std::string, std::string> SSTI::SSTIScatraThermoCloneStrategy::Conditio
 
   conditions_to_copy.insert(std::pair<std::string, std::string>(
       "Meshtying3DomainIntersection", "Meshtying3DomainIntersection"));
+  conditions_to_copy.insert(
+      std::pair<std::string, std::string>("SSTIInterfaceMeshtying", "S2IMeshtying"));
   conditions_to_copy.insert(
       std::pair<std::string, std::string>("TotalAndMeanScalar", "TotalAndMeanScalar"));
 
