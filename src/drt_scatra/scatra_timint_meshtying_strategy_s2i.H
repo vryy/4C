@@ -661,8 +661,8 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
         const INPAR::S2I::InterfaceSides vector2_side) const;
 
-    //! slave-side scatra-scatra interface coupling conditions
-    std::map<const int, DRT::Condition* const> slaveconditions_;
+    //! slave-side scatra-scatra interface kinetics conditions applied to a mesh tying interface
+    std::map<const int, DRT::Condition* const> kinetics_conditions_meshtying_slaveside_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;
