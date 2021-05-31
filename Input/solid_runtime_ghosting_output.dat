@@ -1807,5 +1807,4 @@ NODE 1025 COORD 10 0.5 -0.5
 638 SOLIDH8 HEX8 991 993 998 996 1016 1018 1023 1021  MAT 1 KINEM nonlinear EAS none
 639 SOLIDH8 HEX8 993 994 999 998 1018 1019 1024 1023  MAT 1 KINEM nonlinear EAS none
 640 SOLIDH8 HEX8 994 995 1000 999 1019 1020 1025 1024  MAT 1 KINEM nonlinear EAS none
-------------------------------------------------------------------FLUID ELEMENTS
 -----------------------------------------------------------------------------END
