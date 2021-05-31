@@ -2189,7 +2189,7 @@ void CONTACT::STRATEGY::Factory::SetParametersForContactCondition(
         if (s2ikinetics_cond->GetInt("interface side") == INPAR::S2I::side_slave)
         {
           // fill the parameters from the s2i condition
-          SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToParameterList(
+          SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToParameterList(
               *s2ikinetics_cond, s2icouplingparameters);
 
           // add the sublist to the contact interface parameter list

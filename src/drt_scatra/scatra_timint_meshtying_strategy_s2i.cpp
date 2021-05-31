@@ -2773,7 +2773,7 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
   Teuchos::ParameterList conditionparams;
 
   // fill the parameter list
-  WriteS2IConditionSpecificScaTraParametersToParameterList(s2icondition, conditionparams);
+  WriteS2IKineticsSpecificScaTraParametersToParameterList(s2icondition, conditionparams);
 
   // call standard loop over elements
   scatratimint_->Discretization()->Evaluate(
@@ -2782,12 +2782,12 @@ void SCATRA::MeshtyingStrategyS2I::SetConditionSpecificScaTraParameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToParameterList(
-    DRT::Condition& s2icondition, Teuchos::ParameterList& s2icouplingparameters)
+void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToParameterList(
+    DRT::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters)
 {
   // get kinetic model and condition type
-  const int kineticmodel = s2icondition.GetInt("kinetic model");
-  const DRT::Condition::ConditionType conditiontype = s2icondition.Type();
+  const int kineticmodel = s2ikinetics_cond.GetInt("kinetic model");
+  const DRT::Condition::ConditionType conditiontype = s2ikinetics_cond.Type();
 
   // set action, kinetic model, condition type and numscal
   s2icouplingparameters.set<int>("action", SCATRA::set_scatra_ele_boundary_parameter);
@@ -2804,15 +2804,15 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
       {
         case INPAR::S2I::kinetics_constperm:
         {
-          s2icouplingparameters.set<int>("numscal", s2icondition.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<double>*>(
-              "permeabilities", s2icondition.GetMutable<std::vector<double>>("permeabilities"));
+              "permeabilities", s2ikinetics_cond.GetMutable<std::vector<double>>("permeabilities"));
           break;
         }
 
         case INPAR::S2I::kinetics_constantinterfaceresistance:
         {
-          s2icouplingparameters.set<double>("resistance", s2icondition.GetDouble("resistance"));
+          s2icouplingparameters.set<double>("resistance", s2ikinetics_cond.GetDouble("resistance"));
           break;
         }
 
@@ -2829,32 +2829,34 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedresistance:
         {
-          s2icouplingparameters.set<int>("numscal", s2icondition.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
-          s2icouplingparameters.set<int>("numelectrons", s2icondition.GetInt("e-"));
-          s2icouplingparameters.set<double>("k_r", s2icondition.GetDouble("k_r"));
-          s2icouplingparameters.set<double>("alpha_a", s2icondition.GetDouble("alpha_a"));
-          s2icouplingparameters.set<double>("alpha_c", s2icondition.GetDouble("alpha_c"));
+              "stoichiometries", s2ikinetics_cond.GetMutable<std::vector<int>>("stoichiometries"));
+          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
+          s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
+          s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
+          s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerpeltier)
-            s2icouplingparameters.set<double>("peltier", s2icondition.GetDouble("peltier"));
+            s2icouplingparameters.set<double>("peltier", s2ikinetics_cond.GetDouble("peltier"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerresistance or
               kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance)
           {
-            s2icouplingparameters.set<double>("resistance", s2icondition.GetDouble("resistance"));
             s2icouplingparameters.set<double>(
-                "CONVTOL_IMPLBUTLERVOLMER", s2icondition.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
+                "resistance", s2ikinetics_cond.GetDouble("resistance"));
+            s2icouplingparameters.set<double>(
+                "CONVTOL_IMPLBUTLERVOLMER", s2ikinetics_cond.GetDouble("CONVTOL_IMPLBUTLERVOLMER"));
             s2icouplingparameters.set<int>(
-                "ITEMAX_IMPLBUTLERVOLMER", s2icondition.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
+                "ITEMAX_IMPLBUTLERVOLMER", s2ikinetics_cond.GetInt("ITEMAX_IMPLBUTLERVOLMER"));
           }
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
-            s2icouplingparameters.set<double>("thermoperm", s2icondition.GetDouble("thermoperm"));
             s2icouplingparameters.set<double>(
-                "molar_heat_capacity", s2icondition.GetDouble("molar_heat_capacity"));
+                "thermoperm", s2ikinetics_cond.GetDouble("thermoperm"));
+            s2icouplingparameters.set<double>(
+                "molar_heat_capacity", s2ikinetics_cond.GetDouble("molar_heat_capacity"));
           }
           break;
         }
@@ -2875,19 +2877,20 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IConditionSpecificScaTraParametersToPa
       {
         case INPAR::S2I::growth_kinetics_butlervolmer:
         {
-          s2icouplingparameters.set<int>("numscal", s2icondition.GetInt("numscal"));
+          s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "stoichiometries", s2icondition.GetMutable<std::vector<int>>("stoichiometries"));
-          s2icouplingparameters.set<int>("numelectrons", s2icondition.GetInt("e-"));
-          s2icouplingparameters.set<double>("k_r", s2icondition.GetDouble("k_r"));
-          s2icouplingparameters.set<double>("alpha_a", s2icondition.GetDouble("alpha_a"));
-          s2icouplingparameters.set<double>("alpha_c", s2icondition.GetDouble("alpha_c"));
-          s2icouplingparameters.set<double>("density", s2icondition.GetDouble("density"));
-          s2icouplingparameters.set<double>("molar mass", s2icondition.GetDouble("molar mass"));
+              "stoichiometries", s2ikinetics_cond.GetMutable<std::vector<int>>("stoichiometries"));
+          s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
+          s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
+          s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
+          s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
+          s2icouplingparameters.set<double>("density", s2ikinetics_cond.GetDouble("density"));
+          s2icouplingparameters.set<double>("molar mass", s2ikinetics_cond.GetDouble("molar mass"));
           s2icouplingparameters.set<double>(
-              "regpar", s2icondition.GetDouble("regularization parameter"));
-          s2icouplingparameters.set<int>("regtype", s2icondition.GetInt("regularization type"));
-          s2icouplingparameters.set<double>("conductivity", s2icondition.GetDouble("conductivity"));
+              "regpar", s2ikinetics_cond.GetDouble("regularization parameter"));
+          s2icouplingparameters.set<int>("regtype", s2ikinetics_cond.GetInt("regularization type"));
+          s2icouplingparameters.set<double>(
+              "conductivity", s2ikinetics_cond.GetDouble("conductivity"));
           break;
         }
 

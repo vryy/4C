@@ -25,14 +25,14 @@
 void SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
     const std::string& condition_to_be_tested, Teuchos::RCP<DRT::Discretization> discretization)
 {
-  std::vector<DRT::Condition*> conditionsToBeTested;
-  discretization->GetCondition(condition_to_be_tested, conditionsToBeTested);
+  std::vector<DRT::Condition*> allConditionsToBeTested;
+  discretization->GetCondition(condition_to_be_tested, allConditionsToBeTested);
   std::vector<DRT::Condition*> s2ikinetics_conditions;
   discretization->GetCondition("S2IKinetics", s2ikinetics_conditions);
 
   // loop over all conditions to be tested and check for a consistent initialization of the s2i
   // conditions
-  for (const auto& conditionToBeTested : conditionsToBeTested)
+  for (const auto& conditionToBeTested : allConditionsToBeTested)
   {
     if (conditionToBeTested->GType() != DRT::Condition::Surface) continue;
     bool isslave(true);

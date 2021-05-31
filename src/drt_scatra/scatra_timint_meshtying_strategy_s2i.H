@@ -235,15 +235,15 @@ namespace SCATRA
     void SetConditionSpecificScaTraParameters(DRT::Condition& s2icondition) const;
 
     /*!
-     * \brief Writes S2ICoupling condition specific parameters to parameter list that is stored to
+     * \brief Writes S2IKinetics condition specific parameters to parameter list that is stored to
      * the boundary parameter class afterwards
      *
-     * @param[in]  s2icondition           ScaTra-ScaTra interface condition whose parameters are
+     * @param[in]  s2ikinetics_cond       ScaTra-ScaTra interface condition whose parameters are
      *                                    stored to the parameter list
      * @param[out] s2icouplingparameters  parameter list filled with condition specific parameters
      */
-    static void WriteS2IConditionSpecificScaTraParametersToParameterList(
-        DRT::Condition& s2icondition, Teuchos::ParameterList& s2icouplingparameters);
+    static void WriteS2IKineticsSpecificScaTraParametersToParameterList(
+        DRT::Condition& s2ikinetics_cond, Teuchos::ParameterList& s2icouplingparameters);
 
     //! compute history vector, i.e., the history part of the right-hand side vector with all
     //! contributions from the previous time step
