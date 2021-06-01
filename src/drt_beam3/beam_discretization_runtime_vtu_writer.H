@@ -120,6 +120,11 @@ class BeamDiscretizationRuntimeVtuWriter
    */
   void AppendElementGID();
 
+  /**
+   * \brief Append the element ghosting information.
+   */
+  void AppendElementGhostingInformation();
+
   /** \brief append internal (elastic) energy of element
    *
    *  \author eichinger

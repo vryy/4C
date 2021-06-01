@@ -112,6 +112,11 @@ class DiscretizationRuntimeVtuWriter
   void AppendElementGID(const std::string& resultname);
 
   /**
+   * \brief Write ghosting information to the elements.
+   */
+  void AppendElementGhostingInformation();
+
+  /**
    * \brief Write the BACI internal node GIDs for each element.
    *
    * @param resultname (in) Name of the field in the VTK file.
@@ -150,5 +155,19 @@ class DiscretizationRuntimeVtuWriter
   Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
   Teuchos::RCP<Epetra_Map> nodecolmap_last_geometry_set_;
 };
+
+namespace IO
+{
+  /**
+   * \brief Add a vector with the length of num_proc to each element, which contains a 1 for the
+   * ranks that ghost the element.
+   * @param discretization (in) Discretization
+   * @param runtime_vtuwriter (out) VTU writer
+   * @param is_beam (in) If beam or solid elements should be output.
+   */
+  void AppendElementGhostingInformation(
+      const Teuchos::RCP<const DRT::Discretization>& discretization,
+      const Teuchos::RCP<RuntimeVtuWriter>& runtime_vtuwriter, bool is_beam = false);
+}  // namespace IO
 
 #endif

@@ -34,6 +34,7 @@ DRT::ELEMENTS::BeamRuntimeVtuOutputParams::BeamRuntimeVtuOutputParams()
       write_rve_crosssection_forces_(false),
       write_ref_length_(false),
       write_element_gid_(false),
+      write_element_ghosting_(false),
       n_subsegments_(0)
 {
   // empty constructor
@@ -90,6 +91,9 @@ void DRT::ELEMENTS::BeamRuntimeVtuOutputParams::Init(
 
   write_element_gid_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GID");
+
+  write_element_ghosting_ =
+      (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_beams_paramslist, "ELEMENT_GHOSTING");
 
   n_subsegments_ = IO_vtk_structure_beams_paramslist.get<int>("NUMBER_SUBSEGMENTS");
   if (n_subsegments_ < 1)

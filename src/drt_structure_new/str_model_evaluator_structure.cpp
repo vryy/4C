@@ -702,6 +702,10 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkStructure(
   if (structure_vtu_output_params.OutputElementGID())
     vtu_writer_ptr_->AppendElementGID("element_gid");
 
+  // append element ghosting information if desired
+  if (structure_vtu_output_params.OutputElementGhosting())
+    vtu_writer_ptr_->AppendElementGhostingInformation();
+
   // append node GIDs if desired
   if (structure_vtu_output_params.OutputNodeGID()) vtu_writer_ptr_->AppendNodeGID("node_gid");
 
@@ -1099,6 +1103,10 @@ void STR::MODELEVALUATOR::Structure::WriteOutputRuntimeVtkBeams(
 
   // export beam element IDs
   if (beam_vtu_output_params.IsWriteElementGID()) beam_vtu_writer_ptr_->AppendElementGID();
+
+  // Ghosting information
+  if (beam_vtu_output_params.IsWriteElementGhosting())
+    beam_vtu_writer_ptr_->AppendElementGhostingInformation();
 
   // finalize everything and write all required VTU files to filesystem
   beam_vtu_writer_ptr_->WriteFiles();

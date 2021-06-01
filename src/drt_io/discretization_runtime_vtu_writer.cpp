@@ -24,6 +24,8 @@
 
 #include "../drt_beam3/beam3_base.H"
 
+#include "Epetra_FEVector.h"
+
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -445,6 +447,14 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultn
   runtime_vtuwriter_->AppendVisualizationCellDataVector(gid_of_row_elements, 1, resultname);
 }
 
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void DiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
+{
+  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_);
+}
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string& resultname)
@@ -491,4 +501,63 @@ void DiscretizationRuntimeVtuWriter::WriteCollectionFileOfAllWrittenFiles()
   runtime_vtuwriter_->WriteCollectionFileOfAllWrittenFiles(
       DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
       discretization_->Name());
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void IO::AppendElementGhostingInformation(
+    const Teuchos::RCP<const DRT::Discretization>& discretization,
+    const Teuchos::RCP<RuntimeVtuWriter>& runtime_vtuwriter, bool is_beam)
+{
+  // Set up a multivector which will be populated with all ghosting informations.
+  const Epetra_Comm& comm = discretization->ElementColMap()->Comm();
+  const int n_proc = comm.NumProc();
+  const int my_proc = comm.MyPID();
+
+  // Create Vectors to store the ghosting information.
+  Epetra_FEVector ghosting_information(*discretization->ElementRowMap(), n_proc);
+
+  // Get elements ghosted by this rank.
+  std::vector<int> my_ghost_elements;
+  my_ghost_elements.clear();
+  int count = 0;
+  for (int iele = 0; iele < discretization->NumMyColElements(); ++iele)
+  {
+    const DRT::Element* ele = discretization->lColElement(iele);
+    const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const bool is_beam_element = beamele != nullptr;
+    if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
+    {
+      count++;
+      if (ele->Owner() != my_proc) my_ghost_elements.push_back(ele->Id());
+    }
+  }
+
+  // Add to the multi vector.
+  std::vector<double> values(my_ghost_elements.size(), 1.0);
+  ghosting_information.SumIntoGlobalValues(
+      my_ghost_elements.size(), my_ghost_elements.data(), values.data(), my_proc);
+
+  // Assemble over all processors.
+  ghosting_information.GlobalAssemble();
+
+  // Output the ghosting data of the elements owned by this proc.
+  std::vector<double> ghosted_elements;
+  ghosted_elements.reserve(count * n_proc);
+  for (int iele = 0; iele < discretization->NumMyRowElements(); ++iele)
+  {
+    const DRT::Element* ele = discretization->lRowElement(iele);
+    const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const bool is_beam_element = beamele != nullptr;
+    if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
+    {
+      const int local_row = ghosting_information.Map().LID(ele->Id());
+      if (local_row == -1) dserror("The element has to exist in the row map.");
+      for (int i_proc = 0; i_proc < n_proc; i_proc++)
+        ghosted_elements.push_back(ghosting_information[i_proc][local_row]);
+    }
+  }
+
+  runtime_vtuwriter->AppendVisualizationCellDataVector(
+      ghosted_elements, n_proc, "element_ghosting");
 }

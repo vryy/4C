@@ -26,6 +26,7 @@ DRT::ELEMENTS::StructureRuntimeVtuOutputParams::StructureRuntimeVtuOutputParams(
       output_velocity_state_(false),
       output_element_owner_(false),
       output_element_gid_(false),
+      output_element_ghosting_(false),
       output_node_gid_(false),
       output_stress_strain_(false),
       gauss_point_data_output_type_(INPAR::STR::GaussPointDataOutputType::none)
@@ -50,6 +51,8 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_OWNER");
   output_element_gid_ =
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GID");
+  output_element_ghosting_ =
+      DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "ELEMENT_GHOSTING");
   output_node_gid_ =
       DRT::INPUT::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
   output_stress_strain_ =

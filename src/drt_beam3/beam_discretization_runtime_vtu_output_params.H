@@ -150,6 +150,13 @@ namespace DRT
         return write_element_gid_;
       };
 
+      /// write ghosting information
+      bool IsWriteElementGhosting() const
+      {
+        CheckInitSetup();
+        return write_element_ghosting_;
+      };
+
       /// number of visualization subsegments.
       unsigned int GetNumberVisualizationSubsegments() const
       {
@@ -225,6 +232,9 @@ namespace DRT
 
       /// whether to write the element GIDs.
       bool write_element_gid_;
+
+      /// whether to write the element ghosting information.
+      bool write_element_ghosting_;
 
       /// number of visualization subsegments
       unsigned int n_subsegments_;

@@ -72,6 +72,13 @@ namespace DRT
         return output_element_gid_;
       };
 
+      /// whether to write the ghosting information of elements
+      bool OutputElementGhosting() const
+      {
+        CheckInitSetup();
+        return output_element_ghosting_;
+      };
+
       /// whether to write the GIDs of the nodes
       bool OutputNodeGID() const
       {
@@ -127,6 +134,9 @@ namespace DRT
 
       /// whether to write the element GIDs
       bool output_element_gid_;
+
+      /// whether to write the element ghosting information
+      bool output_element_ghosting_;
 
       /// whether to write the node GIDs
       bool output_node_gid_;

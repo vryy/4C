@@ -26,6 +26,7 @@
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"
+#include "../drt_io/discretization_runtime_vtu_writer.H"
 
 
 /*-----------------------------------------------------------------------------------------------*
@@ -517,6 +518,14 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
 
   // append the solution vector to the visualization data of the vtu writer object
   runtime_vtuwriter_->AppendVisualizationCellDataVector(gid, 1, "element_gid");
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+void BeamDiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
+{
+  constexpr bool is_beam = true;
+  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_, is_beam);
 }
 
 /*-----------------------------------------------------------------------------------------------*
