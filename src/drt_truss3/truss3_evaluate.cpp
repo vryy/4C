@@ -414,23 +414,11 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDi
   // calculate force vector and stiffness matrix
   CalcInternalForceStiffTotLag(xcurr, DummyForce, DummyStiffMatrix);
 
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double density = 0;
+  // safety check
+  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
+    dserror("only St. Venant Kirchhoff material supported for truss element");
 
-  // assignment of material parameters; only St.Venant material is accepted for this truss
-  switch (currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:  // only linear elastic material supported
-    {
-      const auto* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      density = actmat->Density();
-    }
-    break;
-    default:
-      dserror("unknown or improper type of material law");
-      break;
-  }
+  const double density = Material()->Density();
 
   // calculating mass matrix
   if (massmatrix != nullptr)
@@ -485,28 +473,15 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   // calculating strain epsilon from node position by scalar product:
   epsilon = (lcurr - lrefe_) / lrefe_;
 
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
-  double density = 0;
+  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
+    dserror("only St. Venant Kirchhoff material supported for truss element");
 
-  // assignment of material parameters; only St.Venant material is accepted for this truss
-  switch (currmat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant:  // only linear elastic material supported
-    {
-      const auto* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      density = actmat->Density();
-    }
-    break;
-    default:
-      dserror("unknown or improper type of material law");
-      break;
-  }
+  const double youngs_modulus =
+      static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+  const double density = Material()->Density();
 
   // resulting force scaled by current length
-  double forcescalar = (ym * crosssec_ * epsilon) / lcurr;
+  double forcescalar = (youngs_modulus * crosssec_ * epsilon) / lcurr;
 
   // computing global internal forces
   for (int i = 0; i < ndof; ++i) DummyForce(i) = forcescalar * aux(i);
@@ -523,8 +498,11 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& D
   }
 
   for (int i = 0; i < ndof; ++i)
+  {
     for (int j = 0; j < ndof; ++j)
-      DummyStiffMatrix(i, j) += (ym * crosssec_ / (lcurr * lcurr * lcurr)) * aux(i) * aux(j);
+      DummyStiffMatrix(i, j) +=
+          (youngs_modulus * crosssec_ / (lcurr * lcurr * lcurr)) * aux(i) * aux(j);
+  }
 
   // calculating mass matrix.
   if (massmatrix != nullptr)
@@ -554,82 +532,81 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
    * is only important if an element changes its reference position during simulation)*/
 
   // current displacement = current position - reference position
-  LINALG::Matrix<6, 1> ucurr(nodal_positions_totlag);
+  static LINALG::Matrix<6, 1> ucurr(nodal_positions_totlag);
   ucurr -= X_;
 
   const int ndof = 6;
-  const int ndof_per_node = ndof / 2;
 
-  // auxiliary vector for both internal force and stiffness matrix: N^T_(,xi)*N_(,xi)*xcurr
-  LINALG::Matrix<6, 1> aux;
+  // effective displacement for strain of truss element (node1 - node2)
+  static LINALG::Matrix<6, 1> truss_disp;
+  truss_disp(0) = nodal_positions_totlag(0) - nodal_positions_totlag(3);
+  truss_disp(1) = nodal_positions_totlag(1) - nodal_positions_totlag(4);
+  truss_disp(2) = nodal_positions_totlag(2) - nodal_positions_totlag(5);
+  truss_disp(3) = truss_disp(0);
+  truss_disp(4) = truss_disp(1);
+  truss_disp(5) = truss_disp(2);
 
-  // computing auxiliary vector aux = N^T_{,xi} * N_{,xi} * nodal_positions_totlag
-  aux(0) = nodal_positions_totlag(0) - nodal_positions_totlag(3);
-  aux(1) = nodal_positions_totlag(1) - nodal_positions_totlag(4);
-  aux(2) = nodal_positions_totlag(2) - nodal_positions_totlag(5);
-  aux(3) = nodal_positions_totlag(3) - nodal_positions_totlag(0);
-  aux(4) = nodal_positions_totlag(4) - nodal_positions_totlag(1);
-  aux(5) = nodal_positions_totlag(5) - nodal_positions_totlag(2);
+  // derivative of effective displacement w.r.t. nodal displacements
+  static LINALG::Matrix<6, 6> dtruss_dispdu;
+  dtruss_dispdu.PutScalar(0.0);
+  dtruss_dispdu(0, 0) = dtruss_dispdu(1, 1) = dtruss_dispdu(2, 2) = dtruss_dispdu(3, 0) =
+      dtruss_dispdu(4, 1) = dtruss_dispdu(5, 2) = 1.0;
+  dtruss_dispdu(0, 3) = dtruss_dispdu(1, 4) = dtruss_dispdu(2, 5) = dtruss_dispdu(3, 3) =
+      dtruss_dispdu(4, 4) = dtruss_dispdu(5, 5) = -1.0;
+
+  // spatial derivative of shape functions
+  const double inv_lrefe = 1.0 / lrefe_;
+  static LINALG::Matrix<6, 1> dNdx;
+  dNdx(0) = dNdx(1) = dNdx(2) = inv_lrefe;
+  dNdx(3) = dNdx(4) = dNdx(5) = -inv_lrefe;
 
   // current length
-  lcurr_ = std::sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
+  lcurr_ = truss_disp.Norm2() / std::sqrt(2);
 
   // calculating strain epsilon from node position by scalar product:
-  // epsilon = (xrefe + 0.5*ucurr)^T * N_{,s}^T * N_{,s} * d
-  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l² - L²)/L² =( 2 L Δl + Δl² )/L² = Δl/L +
-  // 0.5(Δl/L)² )
-  double epsilon = 0;
-  epsilon += (X_(0) + 0.5 * ucurr(0)) * (ucurr(0) - ucurr(3));
-  epsilon += (X_(3) + 0.5 * ucurr(3)) * (ucurr(3) - ucurr(0));
-  epsilon += (X_(1) + 0.5 * ucurr(1)) * (ucurr(1) - ucurr(4));
-  epsilon += (X_(4) + 0.5 * ucurr(4)) * (ucurr(4) - ucurr(1));
-  epsilon += (X_(2) + 0.5 * ucurr(2)) * (ucurr(2) - ucurr(5));
-  epsilon += (X_(5) + 0.5 * ucurr(5)) * (ucurr(5) - ucurr(2));
-  epsilon /= lrefe_ * lrefe_;
+  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l² - L²)/L²)
+  const double lrefe2 = lrefe_ * lrefe_;
+  const double lcurr2 = lcurr_ * lcurr_;
+  const double epsilon = 0.5 * (lcurr2 - lrefe2) / lrefe2;
 
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
+  // safety check
+  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
+    dserror("only St. Venant Kirchhoff material supported for truss element");
 
-  // assignment of material parameters; only St.Venant material is accepted for this truss
-  switch (currmat->MaterialType())
+  double youngs_modulus = static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+
+  // 2nd Piola-Kirchhoff stress
+  const double PK2 = youngs_modulus * epsilon;
+
+  // domain integration factor for linear shape functions -> constant strains and stresses ->
+  // constant factor
+  const double int_fac = crosssec_ * lrefe_;
+
+  for (int row = 0; row < ndof; ++row)
   {
-    case INPAR::MAT::m_stvenant:  // only linear elastic material supported
-    {
-      const auto* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      break;
-    }
+    const double def_grad = truss_disp(row) * inv_lrefe;
 
-    default:
+    forcevec(row) = dNdx(row) * def_grad * PK2 * int_fac;
+
+    for (int col = 0; col < ndof; ++col)
     {
-      dserror("unknown or improper type of material law");
-      break;
+      // derivative of deformation gradient w.r.t. nodal displacement
+      const double d_def_grad_du = dtruss_dispdu(row, col) * inv_lrefe;
+
+      // derivative of 2nd Piola Kirchhoff stress w.r.t. nodal displacement
+      const double sign = (col < 3 ? 1.0 : -1.0);
+      const double d_PK2_du = youngs_modulus / lrefe2 * sign * truss_disp(col);
+
+      // product rule for derivative of forcevec w.r.t. nodal displacement = stiffmat
+      const double first_part = dNdx(row) * d_def_grad_du * PK2 * int_fac;
+      const double second_part = dNdx(row) * def_grad * d_PK2_du * int_fac;
+
+      stiffmat(row, col) = first_part + second_part;
     }
   }
 
-  eint_ = 0.5 * ym * crosssec_ * lrefe_ * epsilon * epsilon;
-
-  double lrefeinv = 1.0 / lrefe_;
-
-  // computing global internal forces
-  for (int i = 0; i < ndof; ++i) forcevec(i) = ym * crosssec_ * epsilon * lrefeinv * aux(i);
-
-  // computing linear stiffness matrix
-  for (int i = 0; i < ndof_per_node; ++i)
-  {
-    // stiffness entries for first node
-    stiffmat(i, i) = ym * crosssec_ * epsilon * lrefeinv;
-    stiffmat(i, ndof_per_node + i) = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
-    // stiffness entries for second node
-    stiffmat(i + ndof_per_node, i + ndof_per_node) = ym * crosssec_ * epsilon * lrefeinv;
-    stiffmat(i + ndof_per_node, i) = -1.0 * ym * crosssec_ * epsilon * lrefeinv;
-  }
-
-  double lrefepow3inv = lrefeinv * lrefeinv * lrefeinv;
-  for (int i = 0; i < ndof; ++i)
-    for (int j = 0; j < ndof; ++j)
-      stiffmat(i, j) += ym * crosssec_ * lrefepow3inv * aux(i) * aux(j);
+  // internal energy
+  eint_ = 0.5 * PK2 * epsilon * int_fac;
 }
 
 /*----------------------------------------------------------------------------*
