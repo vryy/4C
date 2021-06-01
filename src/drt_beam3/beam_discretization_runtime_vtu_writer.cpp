@@ -524,7 +524,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
 {
-  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_, true);
+  constexpr bool is_beam = true;
+  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_, is_beam);
 }
 
 /*-----------------------------------------------------------------------------------------------*

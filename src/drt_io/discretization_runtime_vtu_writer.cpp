@@ -452,7 +452,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultn
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
 {
-  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_, false);
+  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -524,7 +524,7 @@ void IO::AppendElementGhostingInformation(
   for (int iele = 0; iele < discretization->NumMyColElements(); ++iele)
   {
     const DRT::Element* ele = discretization->lColElement(iele);
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     const bool is_beam_element = beamele != nullptr;
     if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
     {
@@ -547,7 +547,7 @@ void IO::AppendElementGhostingInformation(
   for (int iele = 0; iele < discretization->NumMyRowElements(); ++iele)
   {
     const DRT::Element* ele = discretization->lRowElement(iele);
-    const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+    const auto* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
     const bool is_beam_element = beamele != nullptr;
     if ((is_beam_element and is_beam) or ((not is_beam_element) and (not is_beam)))
     {
