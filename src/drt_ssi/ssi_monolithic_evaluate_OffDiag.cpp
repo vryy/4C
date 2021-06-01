@@ -385,18 +385,13 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate scatra-scatra interface coupling
-  std::vector<DRT::Condition*> conditions;
-  scatra_->ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
-  for (const auto& condition : conditions)
+  for (auto kinetics_slave_cond : meshtying_strategy_s2i_->KineticsConditionsMeshtyingSlaveSide())
   {
-    if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
-    {
-      // collect condition specific data and store to scatra boundary parameter class
-      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*condition);
-      // evaluate the condition now
-      scatra_->ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrastructures2i, "S2IKinetics", condition->GetInt("ConditionID"));
-    }
+    // collect condition specific data and store to scatra boundary parameter class
+    meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+    // evaluate the condition
+    scatra_->ScaTraField()->Discretization()->EvaluateCondition(
+        condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
   }
 
   // finalize scatra-structure matrix block

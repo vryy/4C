@@ -186,6 +186,13 @@ namespace SCATRA
       return intlayergrowth_evaluation_;
     };
 
+    //! return the slave-side scatra-scatra interface kinetics conditions applied to a mesh tying
+    //! interface
+    const std::map<const int, DRT::Condition* const>& KineticsConditionsMeshtyingSlaveSide() const
+    {
+      return kinetics_conditions_meshtying_slaveside_;
+    }
+
     //! return vector of Lagrange multiplier dofs
     const Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
 
