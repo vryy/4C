@@ -29,7 +29,7 @@
 /**
  *
  */
-void BEAMINTERACTION::MortarShapeFunctionsToLagrangeValues(
+void BEAMINTERACTION::MortarShapeFunctionsToNumberOfLagrangeValues(
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
     unsigned int& n_lambda_node, unsigned int& n_lambda_element)
 {
@@ -232,7 +232,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
   }
 
   // Calculate angles between the projected basis vectors.
-  scalar_type alpha_21 = acos(projected_basis[0].Dot(projected_basis[1]));
+  scalar_type alpha_21 = std::acos(projected_basis[0].Dot(projected_basis[1]));
   scalar_type alpha_31 = 2.0 * M_PI - acos(projected_basis[0].Dot(projected_basis[2]));
 
   // Minimum relative angle.
@@ -588,8 +588,8 @@ void BEAMINTERACTION::CheckPlaneRotations(
 template <typename beam, typename other, typename mortar>
 void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
     const DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
-    LINALG::SparseMatrix& global_GB, LINALG::SparseMatrix& global_GS,
-    LINALG::SparseMatrix& global_FB, LINALG::SparseMatrix& global_FS,
+    LINALG::SparseMatrix& global_G_B, LINALG::SparseMatrix& global_G_S,
+    LINALG::SparseMatrix& global_FB_L, LINALG::SparseMatrix& global_FS_L,
     Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
     Epetra_FEVector& global_lambda_active,
     const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
@@ -620,15 +620,15 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
   {
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; ++i_beam)
     {
-      global_GB.FEAssemble(
+      global_G_B.FEAssemble(
           local_D(i_lambda, i_beam), lambda_row[i_lambda], beam_centerline_gid(i_beam));
-      global_FB.FEAssemble(
+      global_FB_L.FEAssemble(
           local_D(i_lambda, i_beam), beam_centerline_gid(i_beam), lambda_row[i_lambda]);
     }
     for (unsigned int i_other = 0; i_other < other::n_dof_; ++i_other)
     {
-      global_GS.FEAssemble(-local_M(i_lambda, i_other), lambda_row[i_lambda], other_row[i_other]);
-      global_FS.FEAssemble(-local_M(i_lambda, i_other), other_row[i_other], lambda_row[i_lambda]);
+      global_G_S.FEAssemble(-local_M(i_lambda, i_other), lambda_row[i_lambda], other_row[i_other]);
+      global_FS_L.FEAssemble(-local_M(i_lambda, i_other), other_row[i_other], lambda_row[i_lambda]);
     }
   }
   global_kappa.SumIntoGlobalValues(mortar::n_dof_, &lambda_row[0], local_kappa.A());

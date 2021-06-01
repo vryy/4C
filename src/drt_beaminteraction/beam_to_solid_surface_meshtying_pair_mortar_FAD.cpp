@@ -119,9 +119,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
     mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
-    LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
-    LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
+    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
+    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -213,8 +213,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
     {
       const double val = FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
-      global_GB.FEAssemble(val, lambda_gid[i_lambda], beam_centerline_gid(i_beam));
-      global_FB.FEAssemble(val, beam_centerline_gid(i_beam), lambda_gid[i_lambda]);
+      global_G_B.FEAssemble(val, lambda_gid[i_lambda], beam_centerline_gid(i_beam));
+      global_FB_L.FEAssemble(val, beam_centerline_gid(i_beam), lambda_gid[i_lambda]);
     }
 
   // Assemble into the matrices related to solid DOFs.
@@ -223,8 +223,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     {
       const double val =
           FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
-      global_GS.FEAssemble(val, lambda_gid[i_lambda], patch_gid[i_patch]);
-      global_FS.FEAssemble(val, patch_gid[i_patch], lambda_gid[i_lambda]);
+      global_G_S.FEAssemble(val, lambda_gid[i_lambda], patch_gid[i_patch]);
+      global_FS_L.FEAssemble(val, patch_gid[i_patch], lambda_gid[i_lambda]);
     }
 
   // Assemble into global coupling vector.

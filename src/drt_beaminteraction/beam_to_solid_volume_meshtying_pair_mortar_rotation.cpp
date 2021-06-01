@@ -41,15 +41,15 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, morta
 template <typename beam, typename solid, typename mortar, typename mortar_rot>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
     mortar_rot>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
-    LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
-    LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
+    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
+    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call the base method.
-  base_class::EvaluateAndAssembleMortarContributions(discret, mortar_manager, global_GB, global_GS,
-      global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
+  base_class::EvaluateAndAssembleMortarContributions(discret, mortar_manager, global_G_B,
+      global_G_S, global_FB_L, global_FS_L, global_constraint, global_kappa, global_lambda_active,
       displacement_vector);
 
   // If there are no intersection segments, return as no contact can occur.
@@ -70,10 +70,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   // Initialize local matrices.
   LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_g(true);
-  LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> local_GB(true);
-  LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> local_GS(true);
-  LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> local_FB(true);
-  LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> local_FS(true);
+  LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> local_G_B(true);
+  LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> local_G_S(true);
+  LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> local_FB_L(true);
+  LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> local_FS_L(true);
   LINALG::Matrix<mortar_rot::n_dof_, 1, double> local_kappa(true);
 
   const auto rot_coupling_type =
@@ -84,16 +84,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     // we have to evaluate the coupling terms w.r.t both of those coupling types.
     EvaluateRotationalCouplingTerms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_y_2d, q_solid,
-        triad_interpolation_scheme, ref_triad_interpolation_scheme, local_g, local_GB, local_GS,
-        local_FB, local_FS, local_kappa);
+        triad_interpolation_scheme, ref_triad_interpolation_scheme, local_g, local_G_B, local_G_S,
+        local_FB_L, local_FS_L, local_kappa);
     EvaluateRotationalCouplingTerms(
         INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_z_2d, q_solid,
-        triad_interpolation_scheme, ref_triad_interpolation_scheme, local_g, local_GB, local_GS,
-        local_FB, local_FS, local_kappa);
+        triad_interpolation_scheme, ref_triad_interpolation_scheme, local_g, local_G_B, local_G_S,
+        local_FB_L, local_FS_L, local_kappa);
   }
   else
     EvaluateRotationalCouplingTerms(rot_coupling_type, q_solid, triad_interpolation_scheme,
-        ref_triad_interpolation_scheme, local_g, local_GB, local_GS, local_FB, local_FS,
+        ref_triad_interpolation_scheme, local_g, local_G_B, local_G_S, local_FB_L, local_FS_L,
         local_kappa);
 
   // Get the GIDs of the solid and beam.
@@ -121,16 +121,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   {
     for (unsigned int i_dof_rot = 0; i_dof_rot < n_dof_rot_; i_dof_rot++)
     {
-      global_GB.FEAssemble(
-          local_GB(i_dof_lambda, i_dof_rot), lambda_gid_rot[i_dof_lambda], gid_rot(i_dof_rot));
-      global_FB.FEAssemble(
-          local_FB(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
+      global_G_B.FEAssemble(
+          local_G_B(i_dof_lambda, i_dof_rot), lambda_gid_rot[i_dof_lambda], gid_rot(i_dof_rot));
+      global_FB_L.FEAssemble(
+          local_FB_L(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
     }
     for (unsigned int i_dof_solid = 0; i_dof_solid < solid::n_dof_; i_dof_solid++)
     {
-      global_GS.FEAssemble(local_GS(i_dof_lambda, i_dof_solid), lambda_gid_rot[i_dof_lambda],
+      global_G_S.FEAssemble(local_G_S(i_dof_lambda, i_dof_solid), lambda_gid_rot[i_dof_lambda],
           gid_solid[i_dof_solid]);
-      global_FS.FEAssemble(local_FS(i_dof_solid, i_dof_lambda), gid_solid[i_dof_solid],
+      global_FS_L.FEAssemble(local_FS_L(i_dof_solid, i_dof_lambda), gid_solid[i_dof_solid],
           lambda_gid_rot[i_dof_lambda]);
     }
   }
@@ -149,10 +149,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
         ref_triad_interpolation_scheme,
     LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
-    LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_GB,
-    LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_GS,
-    LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB,
-    LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS,
+    LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
+    LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
+    LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
+    LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
     LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const
 {
   // Initialize variables.
@@ -301,10 +301,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Add to output matrices and vector.
       local_g += FADUTILS::CastToDouble(g_gp);
-      local_GB += d_g_d_psi_beam_times_T_beam_I;
-      local_GS += d_g_d_q_solid;
-      local_FB += d_fb_d_lambda_gp;
-      local_FS += d_fs_d_lambda_gp;
+      local_G_B += d_g_d_psi_beam_times_T_beam_I;
+      local_G_S += d_g_d_q_solid;
+      local_FB_L += d_fb_d_lambda_gp;
+      local_FS_L += d_fs_d_lambda_gp;
 
       // Calculate the scaling entries.
       for (unsigned int i_mortar_node = 0; i_mortar_node < mortar_rot::n_nodes_; i_mortar_node++)

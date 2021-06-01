@@ -34,9 +34,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
 template <typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
     mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
-    LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
-    LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
+    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
+    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
@@ -62,8 +62,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   EvaluateDM(local_D, local_M, local_kappa, local_constraint);
 
   // Assemble into global matrices.
-  AssembleLocalMortarContributions<beam, surface, mortar>(this, discret, mortar_manager, global_GB,
-      global_GS, global_FB, global_FS, global_constraint, global_kappa, global_lambda_active,
+  AssembleLocalMortarContributions<beam, surface, mortar>(this, discret, mortar_manager, global_G_B,
+      global_G_S, global_FB_L, global_FS_L, global_constraint, global_kappa, global_lambda_active,
       local_D, local_M, local_kappa, local_constraint);
 }
 

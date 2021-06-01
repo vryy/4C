@@ -304,16 +304,16 @@ namespace BEAMINTERACTION
     Teuchos::RCP<Epetra_FEVector> global_constraint_;
 
     //! Derivative of constraint vector w.r.t the beam DOF.
-    Teuchos::RCP<LINALG::SparseMatrix> global_GB_;
+    Teuchos::RCP<LINALG::SparseMatrix> global_G_B_;
 
     //! Derivative of constraint vector w.r.t the solid DOF.
-    Teuchos::RCP<LINALG::SparseMatrix> global_GS_;
+    Teuchos::RCP<LINALG::SparseMatrix> global_G_S_;
 
     //! Derivative of the beam coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<LINALG::SparseMatrix> global_FB_;
+    Teuchos::RCP<LINALG::SparseMatrix> global_FB_L_;
 
     //! Derivative of the solid coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<LINALG::SparseMatrix> global_FS_;
+    Teuchos::RCP<LINALG::SparseMatrix> global_FS_L_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.

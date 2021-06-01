@@ -6,7 +6,6 @@
 \level 3
 
 */
-// End doxygen header.
 
 
 #ifndef BEAM_TO_SOLID_UTILS_H
@@ -65,18 +64,18 @@ namespace BEAMINTERACTION
    * @param n_lambda_node (out) Number of Lagrange multiplicators per node.
    * @param n_lambda_element_ (out) Number of Lagrange multiplicators per element.
    */
-  void MortarShapeFunctionsToLagrangeValues(
+  void MortarShapeFunctionsToNumberOfLagrangeValues(
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions shape_function,
       unsigned int& n_lambda_node, unsigned int& n_lambda_element);
 
   /**
    * \brief Get the GIDs of the Lagrange multiplicator unknowns for a beam-to-solid pair.
-   * @param mortar_manager (in)
-   * @param contact_pair (in)
-   * @param n_mortar_pos (in)
-   * @param n_mortar_rot (in)
-   * @param lambda_gid_pos (out)
-   * @param lambda_gid_rot (out)
+   * @param mortar_manager (in) Mortar manager for the beam-to-solid condition
+   * @param contact_pair (in) Beam-to-solid contact pair
+   * @param n_mortar_pos (in) Number of positional mortar DOFs associated with the pair
+   * @param n_mortar_rot (in) Number of rotational mortar DOFs associated with the pair
+   * @param lambda_gid_pos (out) GIDs of positional mortar DOFs associated with the pair
+   * @param lambda_gid_rot (out) GIDs of rotational mortar DOFs associated with the pair
    */
   void GetMortarGID(const BeamToSolidMortarManager* mortar_manager,
       const BEAMINTERACTION::BeamContactPair* contact_pair, const unsigned int n_mortar_pos,
@@ -228,19 +227,19 @@ namespace BEAMINTERACTION
    * \brief Assemble local mortar contributions from the classical mortar matrices D and M into the
    * global matrices.
    *
-   * This function assumes that the mortar contributions are symmetric, i.e. global_GB =
-   * global_FB^T and global_GS = global_FS^T.
+   * This function assumes that the mortar contributions are symmetric, i.e. global_G_B =
+   * global_FB_L^T and global_G_S = global_FS_L^T.
    *
    * @param pair (in) The beam-to-solid pair.
-   * @param discret (in)
-   * @param mortar_manager (in)
-   * @param global_GB (in/out)
-   * @param global_GS (in/out)
-   * @param global_FB (in/out)
-   * @param global_FS (in/out)
-   * @param global_constraint (in/out)
-   * @param global_kappa (in/out)
-   * @param global_lambda_active (in/out)
+   * @param discret (in) Discretization
+   * @param mortar_manager (in) Mortar manager for the beam-to-solid condition
+   * @param global_G_B (in/out) Constraint equations derived w.r.t the beam DOFs
+   * @param global_G_S (in/out) Constraint equations derived w.r.t the solid DOFs
+   * @param global_FB_L (in/out) Beam force vector derived w.r.t the Lagrange multipliers
+   * @param global_FS_L (in/out) Solid force vector derived w.r.t the Lagrange multipliers
+   * @param global_constraint (in/out) Global constraint equations
+   * @param global_kappa (in/out) Global penalty scaling vector equations
+   * @param global_lambda_active (in/out) Global vector keeping track of active lagrange multipliers
    * @param local_D (in) Local D matrix of the pair.
    * @param local_M (in) Local M matrix of the pair.
    * @param local_kappa (in) Local scaling vector of the pair.
@@ -250,8 +249,8 @@ namespace BEAMINTERACTION
   template <typename beam, typename other, typename mortar>
   void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
       const DRT::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
-      LINALG::SparseMatrix& global_GB, LINALG::SparseMatrix& global_GS,
-      LINALG::SparseMatrix& global_FB, LINALG::SparseMatrix& global_FS,
+      LINALG::SparseMatrix& global_G_B, LINALG::SparseMatrix& global_G_S,
+      LINALG::SparseMatrix& global_FB_L, LINALG::SparseMatrix& global_FS_L,
       Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
       Epetra_FEVector& global_lambda_active,
       const LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,

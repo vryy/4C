@@ -68,17 +68,12 @@ namespace BEAMINTERACTION
     BeamToSolidVolumeMeshtyingPairMortarRotation();
 
     /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidVolumeMeshtyingPairMortarRotation(){};
-
-    /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
-        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_GB,
-        LINALG::SparseMatrix& global_GS, LINALG::SparseMatrix& global_FB,
-        LINALG::SparseMatrix& global_FS, Epetra_FEVector& global_constraint,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
+        LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
+        LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
         Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
         const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
@@ -104,10 +99,10 @@ namespace BEAMINTERACTION
         const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
         LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
-        LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_GB,
-        LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_GS,
-        LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB,
-        LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS,
+        LINALG::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
+        LINALG::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
+        LINALG::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
+        LINALG::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
         LINALG::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const;
 
     /**
