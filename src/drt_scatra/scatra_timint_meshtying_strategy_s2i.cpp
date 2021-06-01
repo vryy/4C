@@ -297,12 +297,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   // time measurement: evaluate condition 'S2IMeshtying'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'S2IMeshtying'");
 
-  // extract scatra-scatra coupling conditions from discretization
-  std::vector<DRT::Condition*> s2imeshtying_conditions;
-  scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
-  std::vector<DRT::Condition*> s2ikinetics_conditions;
-  scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
-
   switch (couplingtype_)
   {
     case INPAR::S2I::coupling_matching_nodes:
