@@ -309,11 +309,11 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
         for (int step = 0; step < histfractartstressall_stepsize; ++step)
           ExtractfromPack(position, data, histfractartstresslastall_->at(gp).at(step));
     }
+    // in the postprocessing mode, we do not unpack everything we have packed
+    // -> position check cannot be done in this case
+    if (position != data.size())
+      dserror("Mismatch in size of data %d <-> %d", data.size(), position);
   }
-
-  // in the postprocessing mode, we do not unpack everything we have packed
-  // -> position check cannot be done in this case
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
 
