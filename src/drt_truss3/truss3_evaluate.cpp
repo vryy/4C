@@ -547,36 +547,37 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   truss_disp(5) = truss_disp(2);
 
   // derivative of effective displacement w.r.t. nodal displacements
-  static LINALG::Matrix<6, 6> dtruss_dispdu;
-  dtruss_dispdu.PutScalar(0.0);
-  dtruss_dispdu(0, 0) = dtruss_dispdu(1, 1) = dtruss_dispdu(2, 2) = dtruss_dispdu(3, 0) =
-      dtruss_dispdu(4, 1) = dtruss_dispdu(5, 2) = 1.0;
-  dtruss_dispdu(0, 3) = dtruss_dispdu(1, 4) = dtruss_dispdu(2, 5) = dtruss_dispdu(3, 3) =
-      dtruss_dispdu(4, 4) = dtruss_dispdu(5, 5) = -1.0;
+  static LINALG::Matrix<6, 6> dtruss_disp_du;
+  dtruss_disp_du.PutScalar(0.0);
+  dtruss_disp_du(0, 0) = dtruss_disp_du(1, 1) = dtruss_disp_du(2, 2) = dtruss_disp_du(3, 0) =
+      dtruss_disp_du(4, 1) = dtruss_disp_du(5, 2) = 1.0;
+  dtruss_disp_du(0, 3) = dtruss_disp_du(1, 4) = dtruss_disp_du(2, 5) = dtruss_disp_du(3, 3) =
+      dtruss_disp_du(4, 4) = dtruss_disp_du(5, 5) = -1.0;
 
   // spatial derivative of shape functions
   const double inv_lrefe = 1.0 / lrefe_;
-  static LINALG::Matrix<6, 1> dNdx;
-  dNdx(0) = dNdx(1) = dNdx(2) = inv_lrefe;
-  dNdx(3) = dNdx(4) = dNdx(5) = -inv_lrefe;
+  static LINALG::Matrix<6, 1> dN_dx;
+  dN_dx(0) = dN_dx(1) = dN_dx(2) = inv_lrefe;
+  dN_dx(3) = dN_dx(4) = dN_dx(5) = -inv_lrefe;
 
   // current length
-  lcurr_ = truss_disp.Norm2() / std::sqrt(2);
+  lcurr_ = truss_disp.Norm2() * M_SQRT1_2;
 
   // calculating strain epsilon from node position by scalar product:
-  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l² - L²)/L²)
+  // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
   const double lrefe2 = lrefe_ * lrefe_;
   const double lcurr2 = lcurr_ * lcurr_;
-  const double epsilon = 0.5 * (lcurr2 - lrefe2) / lrefe2;
+  const double epsilon_GL = 0.5 * (lcurr2 - lrefe2) / lrefe2;
 
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
     dserror("only St. Venant Kirchhoff material supported for truss element");
 
-  double youngs_modulus = static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+  const double youngs_modulus =
+      static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
 
   // 2nd Piola-Kirchhoff stress
-  const double PK2 = youngs_modulus * epsilon;
+  const double PK2 = youngs_modulus * epsilon_GL;
 
   // domain integration factor for linear shape functions -> constant strains and stresses ->
   // constant factor
@@ -586,27 +587,27 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   {
     const double def_grad = truss_disp(row) * inv_lrefe;
 
-    forcevec(row) = dNdx(row) * def_grad * PK2 * int_fac;
+    forcevec(row) = dN_dx(row) * def_grad * PK2 * int_fac;
 
     for (int col = 0; col < ndof; ++col)
     {
       // derivative of deformation gradient w.r.t. nodal displacement
-      const double d_def_grad_du = dtruss_dispdu(row, col) * inv_lrefe;
+      const double ddef_grad_du = dtruss_disp_du(row, col) * inv_lrefe;
 
       // derivative of 2nd Piola Kirchhoff stress w.r.t. nodal displacement
       const double sign = (col < 3 ? 1.0 : -1.0);
-      const double d_PK2_du = youngs_modulus / lrefe2 * sign * truss_disp(col);
+      const double dPK2_du = youngs_modulus / lrefe2 * sign * truss_disp(col);
 
       // product rule for derivative of forcevec w.r.t. nodal displacement = stiffmat
-      const double first_part = dNdx(row) * d_def_grad_du * PK2 * int_fac;
-      const double second_part = dNdx(row) * def_grad * d_PK2_du * int_fac;
+      const double first_part = dN_dx(row) * ddef_grad_du * PK2 * int_fac;
+      const double second_part = dN_dx(row) * def_grad * dPK2_du * int_fac;
 
       stiffmat(row, col) = first_part + second_part;
     }
   }
 
   // internal energy
-  eint_ = 0.5 * PK2 * epsilon * int_fac;
+  eint_ = 0.5 * PK2 * epsilon_GL * int_fac;
 }
 
 /*----------------------------------------------------------------------------*
