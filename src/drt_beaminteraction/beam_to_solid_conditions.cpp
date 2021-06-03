@@ -360,6 +360,13 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup(
   // Call the parent method.
   BeamToSolidCondition::Setup(discret);
 
+  // Cast the geometry evaluation data to the correct type.
+  auto line_to_surface_evaluation_data =
+      Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
+          geometry_evaluation_data_, false);
+  if (line_to_surface_evaluation_data == Teuchos::null)
+    dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
+
   // Pointer to the beam contact parameters.
   Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
       beal_to_solid_surface_params = Teuchos::null;
@@ -382,7 +389,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup(
       {
         // The face element has to be created and added to the contact pair.
         Teuchos::RCP<GEOMETRYPAIR::FaceElement> new_face_element = GEOMETRYPAIR::FaceElementFactory(
-            find_in_condition->second, beal_to_solid_surface_params->GetIsFAD());
+            find_in_condition->second, beal_to_solid_surface_params->GetIsFAD(),
+            line_to_surface_evaluation_data->GetSurfaceNormalStrategy());
         new_face_element->SetPartOfPair(true);
         pair_face_elemets[solid_id] = new_face_element;
         pair->SetFaceElement(new_face_element);
@@ -425,7 +433,8 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup(
           {
             // It is not already in the needed faces -> add it.
             face_elements_needed[element_id] = GEOMETRYPAIR::FaceElementFactory(
-                find_in_condition->second, beal_to_solid_surface_params->GetIsFAD());
+                find_in_condition->second, beal_to_solid_surface_params->GetIsFAD(),
+                line_to_surface_evaluation_data->GetSurfaceNormalStrategy());
           }
         }
         else
@@ -436,13 +445,6 @@ void BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::Setup(
       }
     }
   }
-
-  // Cast the geometry evaluation data to the correct type.
-  auto line_to_surface_evaluation_data =
-      Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
-          geometry_evaluation_data_, false);
-  if (line_to_surface_evaluation_data == Teuchos::null)
-    dserror("Could not cast to GEOMETRYPAIR::LineToSurfaceEvaluationData.");
 
   // Setup the geometry data for the surface patch.
   line_to_surface_evaluation_data->Setup(discret, face_elements_needed);

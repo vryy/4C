@@ -12,6 +12,7 @@
 
 #include "../drt_geometry_pair/geometry_pair_scalar_types.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
+#include "../drt_inpar/inpar_geometry_pair.H"
 
 
 /**
@@ -393,7 +394,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::AverageNodalN
  *
  */
 Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
-    const Teuchos::RCP<const DRT::FaceElement>& face_element, const bool is_fad)
+    const Teuchos::RCP<const DRT::FaceElement>& face_element, const bool is_fad,
+    const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
 {
   if (not is_fad)
   {

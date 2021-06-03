@@ -40,6 +40,15 @@ namespace INPAR
     };
 
     /**
+     * Method to be used for normals in surface pairs.
+     */
+    enum class SurfaceNormals
+    {
+      standard,        ///< Use normals on the actual surface.
+      extended_volume  ///< Use normals from extended volume projection.
+    };
+
+    /**
      * \brief Map number of gauss points to 1D gauss rule
      */
     DRT::UTILS::GaussRule1D IntToGaussRule1D(const int n_gauss_points);

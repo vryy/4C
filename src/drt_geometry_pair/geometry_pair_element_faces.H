@@ -25,6 +25,13 @@ namespace GEOMETRYPAIR
   struct ConnectedFace;
   class GeometryPairLineToSurfacePatch_TestSuite;
 }  // namespace GEOMETRYPAIR
+namespace INPAR
+{
+  namespace GEOMETRYPAIR
+  {
+    enum class SurfaceNormals;
+  }
+}  // namespace INPAR
 
 
 namespace GEOMETRYPAIR
@@ -379,10 +386,12 @@ namespace GEOMETRYPAIR
    * \brief Create the templated version of the face element.
    * @param drt_face_element (in) Pointer to the DRT face element.
    * @param is_fad (in) If the created face element should consist of fad types.
+   * @param surface_normal_strategy (in) strategy to be used for surface normals.
    * @return RCP to the created GEOMETRYPAIR FaceElement.
    */
   Teuchos::RCP<FaceElement> FaceElementFactory(
-      const Teuchos::RCP<const DRT::FaceElement>& drt_face_element, const bool is_fad);
+      const Teuchos::RCP<const DRT::FaceElement>& drt_face_element, const bool is_fad,
+      const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 
 }  // namespace GEOMETRYPAIR
 
