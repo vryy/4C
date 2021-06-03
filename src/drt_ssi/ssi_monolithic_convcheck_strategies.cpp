@@ -55,13 +55,13 @@ void SSI::SSIMono::ConvCheckStrategyBase::GetAndCheckL2NormStructure(
     const SSI::SSIMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.MapsSubProblems()
-      ->ExtractVector(
-          ssi_mono.ssi_vectors_->Increment(), ssi_mono.GetProblemPosition(Subproblem::structure))
+      ->ExtractVector(ssi_mono.ssi_vectors_->Increment(),
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))
       ->Norm2(&incnorm);
 
   ssi_mono.MapsSubProblems()
-      ->ExtractVector(
-          ssi_mono.ssi_vectors_->Residual(), ssi_mono.GetProblemPosition(Subproblem::structure))
+      ->ExtractVector(ssi_mono.ssi_vectors_->Residual(),
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))
       ->Norm2(&resnorm);
 
   ssi_mono.StructureField()->Dispnp()->Norm2(&dofnorm);
@@ -76,12 +76,12 @@ void SSI::SSIMono::ConvCheckStrategyStd::GetAndCheckL2NormScaTra(
 {
   ssi_mono.MapsSubProblems()
       ->ExtractVector(ssi_mono.ssi_vectors_->Increment(),
-          ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))
       ->Norm2(&incnorm);
 
   ssi_mono.MapsSubProblems()
       ->ExtractVector(ssi_mono.ssi_vectors_->Residual(),
-          ssi_mono.GetProblemPosition(Subproblem::scalar_transport))
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))
       ->Norm2(&resnorm);
 
   ssi_mono.ScaTraField()->Phinp()->Norm2(&dofnorm);
@@ -196,14 +196,14 @@ void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormConc(
       ->Splitter()
       ->ExtractOtherVector(
           ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Increment(),
-              ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&incnorm);
 
   ssi_mono.ScaTraField()
       ->Splitter()
       ->ExtractOtherVector(
           ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Residual(),
-              ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&resnorm);
 
   ssi_mono.ScaTraField()
@@ -223,14 +223,14 @@ void SSI::SSIMono::ConvCheckStrategyElch::GetAndCheckL2NormPot(
       ->Splitter()
       ->ExtractCondVector(
           ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Increment(),
-              ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&incnorm);
 
   ssi_mono.ScaTraField()
       ->Splitter()
       ->ExtractCondVector(
           ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Residual(),
-              ssi_mono.GetProblemPosition(Subproblem::scalar_transport)))
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)))
       ->Norm2(&resnorm);
 
   ssi_mono.ScaTraField()
@@ -428,14 +428,16 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraM
 {
   ssi_mono.ScaTraManifold()
       ->Splitter()
-      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.ssi_vectors_->Increment(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->ExtractOtherVector(
+          ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Increment(),
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
       ->Norm2(&incnorm);
 
   ssi_mono.ScaTraManifold()
       ->Splitter()
-      ->ExtractOtherVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.ssi_vectors_->Residual(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->ExtractOtherVector(
+          ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Residual(),
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
       ->Norm2(&resnorm);
 
   ssi_mono.ScaTraManifold()
@@ -453,14 +455,16 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::GetAndCheckL2NormScaTraM
 {
   ssi_mono.ScaTraManifold()
       ->Splitter()
-      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.ssi_vectors_->Increment(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->ExtractCondVector(
+          ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Increment(),
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
       ->Norm2(&incnorm);
 
   ssi_mono.ScaTraManifold()
       ->Splitter()
-      ->ExtractCondVector(ssi_mono.MapsSubProblems()->ExtractVector(
-          ssi_mono.ssi_vectors_->Residual(), ssi_mono.GetProblemPosition(Subproblem::manifold)))
+      ->ExtractCondVector(
+          ssi_mono.MapsSubProblems()->ExtractVector(ssi_mono.ssi_vectors_->Residual(),
+              UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)))
       ->Norm2(&resnorm);
 
   ssi_mono.ScaTraManifold()

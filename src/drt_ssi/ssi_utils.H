@@ -12,6 +12,7 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
+#include "unordered_map"
 #include <Teuchos_ParameterList.hpp>
 
 namespace ADAPTER
@@ -29,6 +30,7 @@ namespace DRT
 namespace LINALG
 {
   class BlockSparseMatrixBase;
+  class MapExtractor;
   class MultiMapExtractor;
   class SparseMatrix;
   class SparseOperator;
@@ -38,6 +40,7 @@ namespace LINALG
 namespace SSI
 {
   class SSIMono;
+  enum class Subproblem;
 
   namespace UTILS
   {
@@ -231,6 +234,95 @@ namespace SSI
 
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> structure_residual_;
+    };
+
+    /*---------------------------------------------------------------------------------*
+     *---------------------------------------------------------------------------------*/
+    class SSIMaps
+    {
+     public:
+      //! constructor
+      explicit SSIMaps(const SSI::SSIMono& ssi_mono_algorithm);
+
+      //! get position within global dof map for specific sub problem
+      static int GetProblemPosition(Subproblem subproblem);
+
+      //! block maps of all sub problems organized in std map
+      std::unordered_map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>>
+      BlockMapsSubProblems() const
+      {
+        return block_maps_sub_problems_;
+      }
+
+      //! the multi map extractor of the scalar transport field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorScaTra() const;
+
+      //! the multi map extractor of the scalar transport on manifold field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorScaTraManifold() const;
+
+      //! the multi map extractor of the structure field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorStructure() const;
+
+      //! map extractor associated with blocks of global system matrix
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapsSystemMatrix() const
+      {
+        return block_maps_systemmatrix_;
+      }
+
+      //! all dofs of the SSI algorithm
+      Teuchos::RCP<const Epetra_Map> MapSystemMatrix() const { return map_system_matrix_; }
+
+      //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
+      {
+        return maps_sub_problems_;
+      }
+
+      //! the scalar transport dof row map
+      Teuchos::RCP<const Epetra_Map> ScaTraDofRowMap() const;
+
+      //! the scalar transport on manifolds dof row map
+      Teuchos::RCP<const Epetra_Map> ScaTraManifoldDofRowMap() const;
+
+      //! the structure dof row map
+      Teuchos::RCP<const Epetra_Map> StructureDofRowMap() const;
+
+      //! condensed structure dofs (inner and master side): other map
+      //! slave side structure dofs: cond map
+      Teuchos::RCP<const LINALG::MapExtractor> SlaveCondensedStructureMaps() const
+      {
+        return slave_condensed_structure_maps_;
+      }
+
+      //! slave side map in case of 3 domain mesh tying
+      Teuchos::RCP<const Epetra_Map> SlaveSide3DomainMeshytyingMap() const
+      {
+        return slave_side_3_domain_meshtying_map_;
+      }
+
+     private:
+      //! create and check the block maps of all sub problems
+      void CreateAndCheckBlockMapsSubProblems(const SSIMono& ssi_mono_algorithm);
+
+      //! block maps of all sub problems organized in std map
+      std::unordered_map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>>
+          block_maps_sub_problems_;
+
+      //! map extractor associated with blocks of global system matrix
+      Teuchos::RCP<const LINALG::MultiMapExtractor> block_maps_systemmatrix_;
+
+      //! all dofs of the SSI algorithm
+      Teuchos::RCP<const Epetra_Map> map_system_matrix_;
+
+      //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_sub_problems_;
+
+      //! condensed structure dofs (inner and master side): other map
+      //! slave side structure dofs: cond map
+      Teuchos::RCP<const LINALG::MapExtractor> slave_condensed_structure_maps_;
+
+      //! slave side map in case of 3 domain mesh tying
+      Teuchos::RCP<const Epetra_Map> slave_side_3_domain_meshtying_map_;
     };
 
     class SSISlaveSideConverter

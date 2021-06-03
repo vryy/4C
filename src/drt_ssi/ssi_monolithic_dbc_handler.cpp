@@ -10,6 +10,7 @@
 #include "ssi_monolithic_dbc_handler.H"
 
 #include "ssi_monolithic.H"
+#include "ssi_utils.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 
@@ -53,7 +54,7 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
   // apply Dirichlet boundary conditions to the structure part of the right hand side
   const auto& locsysmanager_structure = SSIMono()->StructureField()->LocsysManager();
   auto rhs_struct = ssi_mono_->MapsSubProblems()->ExtractVector(
-      rhs, SSIMono()->GetProblemPosition(SSI::Subproblem::structure));
+      rhs, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::structure));
   const auto zeros_struct = Teuchos::rcp(
       new Epetra_Vector(*ssi_mono_->StructureField()->GetDBCMapExtractor()->CondMap()));
 
@@ -65,7 +66,7 @@ void SSI::DBCHandlerBase::ApplyDBCToRHS(Teuchos::RCP<Epetra_Vector> rhs)
     locsysmanager_structure->RotateLocalToGlobal(rhs_struct);
 
   ssi_mono_->MapsSubProblems()->InsertVector(
-      rhs_struct, SSIMono()->GetProblemPosition(SSI::Subproblem::structure), rhs);
+      rhs_struct, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::structure), rhs);
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =

@@ -73,12 +73,12 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       block_map_structure_(ssi_mono.MapStructure()),
       do_output_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD")),
-      full_map_manifold_(
-          ssi_mono.MapsSubProblems()->Map(ssi_mono.GetProblemPosition(Subproblem::manifold))),
+      full_map_manifold_(ssi_mono.MapsSubProblems()->Map(
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold))),
       full_map_scatra_(ssi_mono.MapsSubProblems()->Map(
-          ssi_mono.GetProblemPosition(Subproblem::scalar_transport))),
-      full_map_structure_(
-          ssi_mono.MapsSubProblems()->Map(ssi_mono.GetProblemPosition(Subproblem::structure))),
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))),
+      full_map_structure_(ssi_mono.MapsSubProblems()->Map(
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))),
       icoup_structure_(ssi_mono.InterfaceCouplingAdapterStructure()),
       matrix_manifold_scatra_(Teuchos::null),
       matrix_manifold_structure_(Teuchos::null),

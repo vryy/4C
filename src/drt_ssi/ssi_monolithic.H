@@ -39,6 +39,7 @@ namespace SSI
 {
   namespace UTILS
   {
+    class SSIMaps;
     class SSIMatrices;
     class SSIVectors;
   }  // namespace UTILS
@@ -88,9 +89,6 @@ namespace SSI
 
     //! get vector containing positions within system matrix for specific subproblem
     Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
-
-    //! get position within global dof map for specific subproblem
-    int GetProblemPosition(Subproblem subproblem) const;
 
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
     const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
@@ -278,6 +276,9 @@ namespace SSI
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
 
     //! this object holds the system matrix and all sub blocks
     Teuchos::RCP<SSI::UTILS::SSIMatrices> ssi_matrices_;

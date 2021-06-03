@@ -77,6 +77,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
               comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
+      ssi_maps_(Teuchos::null),
       ssi_matrices_(Teuchos::null),
       ssi_vectors_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
@@ -674,6 +675,9 @@ void SSI::SSIMono::Setup()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::SetupSystem()
 {
+  // setup the ssi maps object
+  ssi_maps_ = Teuchos::rcp(new SSI::UTILS::SSIMaps(*this));
+
   // merge slave and master side block maps for interface matrix for scatra
   Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
 
@@ -696,13 +700,13 @@ void SSI::SSIMono::SetupSystem()
       IsScaTraManifold() ? 3 : 2, Teuchos::null);
   Teuchos::RCP<const Epetra_Map> merged_map;
 
-  partial_maps[GetProblemPosition(Subproblem::scalar_transport)] =
+  partial_maps[UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)] =
       Teuchos::rcp(new Epetra_Map(*ScaTraField()->DofRowMap()));
-  partial_maps[GetProblemPosition(Subproblem::structure)] =
+  partial_maps[UTILS::SSIMaps::GetProblemPosition(Subproblem::structure)] =
       Teuchos::rcp(new Epetra_Map(*StructureField()->DofRowMap()));
   if (IsScaTraManifold())
   {
-    partial_maps[GetProblemPosition(Subproblem::manifold)] =
+    partial_maps[UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)] =
         Teuchos::rcp(new Epetra_Map(*ScaTraManifold()->DofRowMap()));
     auto temp_map = LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
     merged_map = LINALG::MergeMap(temp_map, partial_maps[2], false);
@@ -838,7 +842,8 @@ void SSI::SSIMono::SetupSystem()
   {
     // initialize object, that performs evaluations of OD coupling
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
-        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        MapStructure(),
+        MapsSubProblems()->Map(UTILS::SSIMaps::GetProblemPosition(Subproblem::structure)),
         InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
         interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(),
         ScaTraManifoldBaseAlgorithm(), StructureField(), Meshtying3DomainIntersection()));
@@ -849,7 +854,8 @@ void SSI::SSIMono::SetupSystem()
   else
   {
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-        MapStructure(), MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+        MapStructure(),
+        MapsSubProblems()->Map(UTILS::SSIMaps::GetProblemPosition(Subproblem::structure)),
         InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
         interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), StructureField(),
         Meshtying3DomainIntersection()));
@@ -1060,13 +1066,13 @@ void SSI::SSIMono::UpdateIterScaTra()
 {
   // update scalar transport field
   ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
-      ssi_vectors_->Increment(), GetProblemPosition(Subproblem::scalar_transport)));
+      ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)));
   ScaTraField()->ComputeIntermediateValues();
 
   if (IsScaTraManifold())
   {
     ScaTraManifold()->UpdateIter(MapsSubProblems()->ExtractVector(
-        ssi_vectors_->Increment(), GetProblemPosition(Subproblem::manifold)));
+        ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)));
     ScaTraManifold()->ComputeIntermediateValues();
   }
 }
@@ -1077,7 +1083,7 @@ void SSI::SSIMono::UpdateIterStructure()
 {
   // set up structural increment vector
   const Teuchos::RCP<Epetra_Vector> increment_structure = MapsSubProblems()->ExtractVector(
-      ssi_vectors_->Increment(), GetProblemPosition(Subproblem::structure));
+      ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::structure));
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
@@ -1157,39 +1163,6 @@ Teuchos::RCP<std::vector<int>> SSI::SSIMono::GetBlockPositions(Subproblem subpro
   }
 
   return block_position;
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
-int SSI::SSIMono::GetProblemPosition(Subproblem subproblem) const
-{
-  int position = -1;
-
-  switch (subproblem)
-  {
-    case Subproblem::structure:
-    {
-      position = 1;
-      break;
-    }
-    case Subproblem::scalar_transport:
-    {
-      position = 0;
-      break;
-    }
-    case Subproblem::manifold:
-    {
-      position = 2;
-      break;
-    }
-    default:
-    {
-      dserror("Unknown type of subproblem");
-      break;
-    }
-  }
-
-  return position;
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1392,11 +1365,11 @@ void SSI::SSIMono::CalcInitialPotentialField()
     SolveLinearSystem();
 
     // update potential dofs in scatra and manifold fields
-    ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(
-        ssi_vectors_->Increment(), GetProblemPosition(Subproblem::scalar_transport)));
+    ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(ssi_vectors_->Increment(),
+        UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)));
     if (IsScaTraManifold())
       ScaTraManifold()->UpdateIter(MapsSubProblems()->ExtractVector(
-          ssi_vectors_->Increment(), GetProblemPosition(Subproblem::manifold)));
+          ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)));
 
     // copy initial state vector
     ScaTraField()->Phin()->Update(1.0, *ScaTraField()->Phinp(), 0.0);
@@ -1504,14 +1477,14 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
                           : Teuchos::null;
 
   rhs_scatra->Update(1.0,
-      *MapsSubProblems()->ExtractVector(
-          ssi_vectors_->Residual(), GetProblemPosition(Subproblem::scalar_transport)),
+      *MapsSubProblems()->ExtractVector(ssi_vectors_->Residual(),
+          UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)),
       0.0);
   if (IsScaTraManifold())
   {
     rhs_manifold->Update(1.0,
         *MapsSubProblems()->ExtractVector(
-            ssi_vectors_->Residual(), GetProblemPosition(Subproblem::manifold)),
+            ssi_vectors_->Residual(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)),
         0.0);
   }
 
@@ -1621,10 +1594,10 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
   // reconstruct global residual from partial residuals
   auto rhs_system = Teuchos::RCP<Epetra_Vector>(new Epetra_Vector(*DofRowMap(), true));
   MapsSubProblems()->InsertVector(
-      rhs_scatra, GetProblemPosition(Subproblem::scalar_transport), rhs_system);
+      rhs_scatra, UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport), rhs_system);
   if (IsScaTraManifold())
     MapsSubProblems()->InsertVector(
-        rhs_manifold, GetProblemPosition(Subproblem::manifold), rhs_system);
+        rhs_manifold, UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold), rhs_system);
 
   // apply artificial Dirichlet boundary conditions to system of equations to non-transported
   // scalars and structure
@@ -1655,14 +1628,14 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
   // copy solution to sub problmes
   auto phidtnp_scatra = MapsSubProblems()->ExtractVector(
-      phidtnp_system, GetProblemPosition(Subproblem::scalar_transport));
+      phidtnp_system, UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport));
   ScaTraField()->Phidtnp()->Update(1.0, *phidtnp_scatra, 0.0);
   ScaTraField()->Phidtn()->Update(1.0, *phidtnp_scatra, 0.0);
 
   if (IsScaTraManifold())
   {
-    auto phidtnp_manifold =
-        MapsSubProblems()->ExtractVector(phidtnp_system, GetProblemPosition(Subproblem::manifold));
+    auto phidtnp_manifold = MapsSubProblems()->ExtractVector(
+        phidtnp_system, UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold));
     ScaTraManifold()->Phidtnp()->Update(1.0, *phidtnp_manifold, 0.0);
     ScaTraManifold()->Phidtn()->Update(1.0, *phidtnp_manifold, 0.0);
   }

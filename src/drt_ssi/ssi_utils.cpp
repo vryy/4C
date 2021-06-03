@@ -720,6 +720,243 @@ Teuchos::RCP<LINALG::SparseMatrix> SSI::UTILS::SSIMatrices::SetupSparseMatrix(
       new LINALG::SparseMatrix(*row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
 
+/* ----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
+    : block_maps_sub_problems_(),
+      block_maps_systemmatrix_(Teuchos::null),
+      map_system_matrix_(Teuchos::null),
+      maps_sub_problems_(Teuchos::null),
+      slave_condensed_structure_maps_(Teuchos::null),
+      slave_side_3_domain_meshtying_map_(Teuchos::null)
+{
+  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
+      ssi_mono_algorithm.IsScaTraManifold() ? 3 : 2, Teuchos::null);
+  Teuchos::RCP<const Epetra_Map> merged_map;
+
+  partial_maps[GetProblemPosition(Subproblem::scalar_transport)] =
+      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.ScaTraField()->DofRowMap()));
+  partial_maps[GetProblemPosition(Subproblem::structure)] =
+      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.StructureField()->DofRowMap()));
+  if (ssi_mono_algorithm.IsScaTraManifold())
+  {
+    partial_maps[GetProblemPosition(Subproblem::manifold)] =
+        Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.ScaTraManifold()->DofRowMap()));
+    auto temp_map = LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
+    merged_map = LINALG::MergeMap(temp_map, partial_maps[2], false);
+  }
+  else
+    merged_map = LINALG::MergeMap(partial_maps[0], partial_maps[1], false);
+
+  maps_sub_problems_ = Teuchos::rcp(new LINALG::MultiMapExtractor(*merged_map, partial_maps));
+  // check global map extractor
+  maps_sub_problems_->CheckForValidMapExtractor();
+
+
+  switch (ssi_mono_algorithm.MatrixType())
+  {
+    case LINALG::MatrixType::block_field:
+    {
+      auto block_map_structure = Teuchos::rcp(new LINALG::MultiMapExtractor(
+          *ssi_mono_algorithm.StructureField()->Discretization()->DofRowMap(),
+          std::vector<Teuchos::RCP<const Epetra_Map>>(
+              1, ssi_mono_algorithm.StructureField()->DofRowMap())));
+
+      block_map_structure->CheckForValidMapExtractor();
+
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::structure, block_map_structure));
+
+      switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
+      {
+        case LINALG::MatrixType::sparse:
+        {
+          auto block_map_scatra = Teuchos::rcp(new LINALG::MultiMapExtractor(
+              *ssi_mono_algorithm.ScaTraField()->Discretization()->DofRowMap(),
+              std::vector<Teuchos::RCP<const Epetra_Map>>(
+                  1, ssi_mono_algorithm.ScaTraField()->DofRowMap())));
+
+          block_map_scatra->CheckForValidMapExtractor();
+
+          block_maps_sub_problems_.insert(
+              std::make_pair(Subproblem::scalar_transport, block_map_scatra));
+
+          if (ssi_mono_algorithm.IsScaTraManifold())
+          {
+            auto block_map_scatra_manifold = Teuchos::rcp(new LINALG::MultiMapExtractor(
+                *ssi_mono_algorithm.ScaTraManifold()->Discretization()->DofRowMap(),
+                std::vector<Teuchos::RCP<const Epetra_Map>>(
+                    1, ssi_mono_algorithm.ScaTraManifold()->DofRowMap())));
+
+            block_map_scatra_manifold->CheckForValidMapExtractor();
+
+            block_maps_sub_problems_.insert(
+                std::make_pair(Subproblem::manifold, block_map_scatra_manifold));
+          }
+          break;
+        }
+        case LINALG::MatrixType::block_condition:
+        case LINALG::MatrixType::block_condition_dof:
+        {
+          block_maps_sub_problems_.insert(std::make_pair(Subproblem::scalar_transport,
+              Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraField()->BlockMaps())));
+
+          if (ssi_mono_algorithm.IsScaTraManifold())
+          {
+            block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold,
+                Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraManifold()->BlockMaps())));
+          }
+
+          break;
+        }
+        default:
+        {
+          dserror("Invalid matrix type associated with scalar transport field!");
+          break;
+        }
+      }
+
+      CreateAndCheckBlockMapsSubProblems(ssi_mono_algorithm);
+
+      break;
+    }
+
+    case LINALG::MatrixType::sparse:
+    {
+      // nothing to do here
+      break;
+    }
+
+    default:
+    {
+      dserror("Type of global system matrix for scalar-structure interaction not recognized!");
+      break;
+    }
+  }
+
+  map_system_matrix_ = maps_sub_problems_->FullMap();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
+{
+  int position = -1;
+
+  switch (subproblem)
+  {
+    case Subproblem::structure:
+    {
+      position = 1;
+      break;
+    }
+    case Subproblem::scalar_transport:
+    {
+      position = 0;
+      break;
+    }
+    case Subproblem::manifold:
+    {
+      position = 2;
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of sub problem");
+      break;
+    }
+  }
+
+  return position;
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono& ssi_mono_algorithm)
+{
+  const int num_blocks_systemmatrix =
+      block_maps_sub_problems_.at(Subproblem::scalar_transport)->NumMaps() +
+      block_maps_sub_problems_.at(Subproblem::structure)->NumMaps() +
+      (ssi_mono_algorithm.IsScaTraManifold()
+              ? block_maps_sub_problems_.at(Subproblem::manifold)->NumMaps()
+              : 0);
+
+  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
+      num_blocks_systemmatrix, Teuchos::null);
+
+  for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::scalar_transport)->NumMaps(); ++i)
+
+  {
+    auto block_positions_scatra =
+        ssi_mono_algorithm.GetBlockPositions(Subproblem::scalar_transport);
+    partial_maps_system_matrix[block_positions_scatra->at(i)] =
+        block_maps_sub_problems_.at(Subproblem::scalar_transport)->Map(i);
+  }
+
+  partial_maps_system_matrix.at(
+      ssi_mono_algorithm.GetBlockPositions(Subproblem::structure)->at(0)) =
+      block_maps_sub_problems_.at(Subproblem::structure)->FullMap();
+
+  if (ssi_mono_algorithm.IsScaTraManifold())
+  {
+    for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::manifold)->NumMaps(); ++i)
+
+    {
+      auto block_positions_manifold = ssi_mono_algorithm.GetBlockPositions(Subproblem::manifold);
+      partial_maps_system_matrix[block_positions_manifold->at(i)] =
+          block_maps_sub_problems_.at(Subproblem::manifold)->Map(i);
+    }
+  }
+
+  block_maps_systemmatrix_ = Teuchos::rcp(
+      new LINALG::MultiMapExtractor(*maps_sub_problems_->FullMap(), partial_maps_system_matrix));
+
+  block_maps_systemmatrix_->CheckForValidMapExtractor();
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::MultiMapExtractorScaTra() const
+{
+  return block_maps_sub_problems_.at(Subproblem::scalar_transport);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::MultiMapExtractorScaTraManifold()
+    const
+{
+  return block_maps_sub_problems_.at(Subproblem::manifold);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::MultiMapExtractorStructure()
+    const
+{
+  return block_maps_sub_problems_.at(Subproblem::structure);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::ScaTraDofRowMap() const
+{
+  return MapsSubProblems()->Map(SSIMaps::GetProblemPosition(Subproblem::scalar_transport));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::ScaTraManifoldDofRowMap() const
+{
+  return MapsSubProblems()->Map(SSIMaps::GetProblemPosition(Subproblem::manifold));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::StructureDofRowMap() const
+{
+  return MapsSubProblems()->Map(SSIMaps::GetProblemPosition(Subproblem::structure));
+}
+
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 SSI::UTILS::SSISlaveSideConverter::SSISlaveSideConverter(
