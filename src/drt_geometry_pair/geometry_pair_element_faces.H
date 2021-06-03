@@ -37,6 +37,30 @@ namespace INPAR
 namespace GEOMETRYPAIR
 {
   /**
+   * \brief This structure "converts" a DRT face element type to the underlying volume element.
+   */
+  template <DRT::Element::DiscretizationType discretization>
+  struct FaceDiscretizationTypeToVolumeElement
+  {
+    typedef void volume_type_;
+  };
+  template <>
+  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad4>
+  {
+    typedef t_hex8 volume_type_;
+  };
+  template <>
+  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad8>
+  {
+    typedef t_hex20 volume_type_;
+  };
+  template <>
+  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad9>
+  {
+    typedef t_hex27 volume_type_;
+  };
+
+  /**
    * \brief Utility structure to represent the connection of faces to a patch.
    */
   struct ConnectedFace
@@ -379,6 +403,131 @@ namespace GEOMETRYPAIR
 
     //! Current normals.
     LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
+  };
+
+
+  /**
+   * \brief Class to handle extended volume coupling.
+   */
+  template <typename surface, typename scalar_type, typename volume>
+  class FaceElementTemplateExtendedVolume : public FaceElementTemplate<surface, scalar_type>
+  {
+   public:
+    //! Shortcut to the type of this templated object.
+    using my_type = FaceElementTemplateExtendedVolume<surface, scalar_type, volume>;
+
+    //! Shortcut to the base class.
+    using base_class = FaceElementTemplate<surface, scalar_type>;
+
+   public:
+    /**
+     * \brief Constructor (derived).
+     */
+    FaceElementTemplateExtendedVolume(const Teuchos::RCP<const DRT::FaceElement>& face_element)
+        : base_class(face_element),
+          surface_dof_lid_map_(true),
+          reference_normals_(true),
+          current_normals_(true),
+          volume_reference_position_(true),
+          volume_position_(true),
+          face_to_volume_coordinate_axis_map_(true),
+          face_to_volume_coordinate_axis_factor_(true),
+          third_direction_(-1),
+          third_direction_factor_(0){};
+
+    /**
+     * \brief Destructor.
+     */
+    virtual ~FaceElementTemplateExtendedVolume(){};
+
+    /**
+     * \brief Get the face GIDs and set the reference configuration.
+     *
+     * @param discret (in) Pointer to the discretization.
+     * @param face_elements (in) Vector with all face elements in the surface condition.
+     */
+    void Setup(const Teuchos::RCP<const DRT::Discretization>& discret,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        override;
+
+    /**
+     * \brief Set the needed displacement vectors for this face (derived).
+     */
+    void SetState(const Teuchos::RCP<const Epetra_Vector>& displacement,
+        const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+        override;
+
+    /**
+     * \brief Calculate the nodal normals for this face element.
+     * @tparam scalar_type_normal Scalar type for normals
+     * @param volume_position (in) Face position vector of the volume.
+     * @param surface_position (in) Face position vector of the surface.
+     * @param normals (out) Normals on the nodes.
+     */
+    template <typename scalar_type_normal>
+    void CalculateNormals(
+        const LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>& volume_position,
+        const LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
+        LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
+
+    /**
+     * \brief Return the reference normals on this face.
+     */
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals() const override
+    {
+      return &reference_normals_;
+    }
+
+    /**
+     * \brief Return the current normals on this face.
+     */
+    const LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals() const override
+    {
+      return &current_normals_;
+    }
+
+    /**
+     * \brief Return a normal on the element. (derived)
+     */
+    void EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+        LINALG::Matrix<3, 1, double>& n, const bool reference,
+        const bool averaged_normal) const override;
+
+   protected:
+    /**
+     * \brief Convert the face element parameter coordinates to the volume element parameter
+     * coordinates.
+     */
+    void XiFaceToXiVolume(
+        const LINALG::Matrix<2, 1, double>& xi_face, LINALG::Matrix<3, 1, double>& xi_volume) const;
+
+   protected:
+    //! Map between surface DOFs and volume DOFs.
+    LINALG::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
+
+    //! Reference normals.
+    LINALG::Matrix<3 * surface::n_nodes_, 1, double> reference_normals_;
+
+    //! Current normals.
+    LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type> current_normals_;
+
+    //! Reference position.
+    LINALG::Matrix<volume::n_dof_, 1, double> volume_reference_position_;
+
+    //! Current position.
+    LINALG::Matrix<volume::n_dof_, 1, scalar_type> volume_position_;
+
+    //! Map the face coordinate axis to the volume coordinate axis.
+    LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;
+
+    //! Factor for the transformed coordinate axis.
+    LINALG::Matrix<2, 1, int> face_to_volume_coordinate_axis_factor_;
+
+    //! Third, i.e. normal direction.
+    int third_direction_;
+
+    //! Factor for normal direction.
+    int third_direction_factor_;
   };
 
 

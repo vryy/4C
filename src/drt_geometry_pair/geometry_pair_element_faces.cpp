@@ -389,6 +389,247 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::AverageNodalN
   }
 }
 
+/**
+ *
+ */
+template <typename surface, typename scalar_type, typename volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::Setup(
+    const Teuchos::RCP<const DRT::Discretization>& discret,
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+{
+  // Get the DOF GIDs of this face and volume element.
+  this->patch_dof_gid_.clear();
+  std::vector<int> surface_gid;
+  std::vector<int> lmrowowner;
+  std::vector<int> lmstride;
+  this->GetDrtFaceElement()->LocationVector(*discret, surface_gid, lmrowowner, lmstride);
+  this->GetDrtFaceElement()->ParentElement()->LocationVector(
+      *discret, this->patch_dof_gid_, lmrowowner, lmstride);
+
+  // Safety checks.
+  if (this->patch_dof_gid_.size() != volume::n_dof_ or surface_gid.size() != surface::n_dof_)
+    dserror("Mismatch in GID sizes!");
+
+  // Calculate the face to volume DOF map.
+  for (unsigned i_dof_surf = 0; i_dof_surf < surface::n_dof_; i_dof_surf++)
+  {
+    auto dof_iterator =
+        find(this->patch_dof_gid_.begin(), this->patch_dof_gid_.end(), surface_gid[i_dof_surf]);
+    if (dof_iterator != this->patch_dof_gid_.end())
+    {
+      // Calculating the index.
+      surface_dof_lid_map_(i_dof_surf) = dof_iterator - this->patch_dof_gid_.begin();
+    }
+    else
+      dserror("Could not find the surface DOF %d in the volume DOFs", surface_gid[i_dof_surf]);
+  }
+
+  // Set the reference position.
+  volume_reference_position_.Clear();
+  this->face_reference_position_.Clear();
+  const DRT::Node* const* nodes = this->drt_face_element_->ParentElement()->Nodes();
+  for (unsigned int i_node = 0; i_node < volume::n_nodes_; i_node++)
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      volume_reference_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
+  for (unsigned int i_dof_surf = 0; i_dof_surf < surface::n_dof_; i_dof_surf++)
+    this->face_reference_position_(i_dof_surf) =
+        volume_reference_position_(surface_dof_lid_map_(i_dof_surf));
+
+  // Surface node to volume node map.
+  LINALG::Matrix<surface::n_nodes_, 1, int> surface_node_lid_map;
+  for (unsigned i_node_surf = 0; i_node_surf < surface::n_nodes_; i_node_surf++)
+    surface_node_lid_map(i_node_surf) = surface_dof_lid_map_(i_node_surf * 3) / 3;
+
+  if (surface_node_lid_map(0) == 0 and surface_node_lid_map(1) == 4 and
+      surface_node_lid_map(2) == 7 and surface_node_lid_map(3) == 3)
+  {
+    face_to_volume_coordinate_axis_map_(0) = 2;
+    face_to_volume_coordinate_axis_map_(1) = 1;
+    face_to_volume_coordinate_axis_factor_(0) = 1;
+    face_to_volume_coordinate_axis_factor_(1) = 1;
+    third_direction_ = 0;
+    third_direction_factor_ = -1;
+  }
+  else if (surface_node_lid_map(0) == 1 and surface_node_lid_map(1) == 2 and
+           surface_node_lid_map(2) == 6 and surface_node_lid_map(3) == 5)
+  {
+    face_to_volume_coordinate_axis_map_(0) = 1;
+    face_to_volume_coordinate_axis_map_(1) = 2;
+    face_to_volume_coordinate_axis_factor_(0) = 1;
+    face_to_volume_coordinate_axis_factor_(1) = 1;
+    third_direction_ = 0;
+    third_direction_factor_ = 1;
+  }
+  else if (surface_node_lid_map(0) == 0 and surface_node_lid_map(1) == 1 and
+           surface_node_lid_map(2) == 5 and surface_node_lid_map(3) == 4)
+  {
+    face_to_volume_coordinate_axis_map_(0) = 0;
+    face_to_volume_coordinate_axis_map_(1) = 2;
+    face_to_volume_coordinate_axis_factor_(0) = 1;
+    face_to_volume_coordinate_axis_factor_(1) = 1;
+    third_direction_ = 1;
+    third_direction_factor_ = -1;
+  }
+  else if (surface_node_lid_map(0) == 2 and surface_node_lid_map(1) == 3 and
+           surface_node_lid_map(2) == 7 and surface_node_lid_map(3) == 6)
+  {
+    face_to_volume_coordinate_axis_map_(0) = 0;
+    face_to_volume_coordinate_axis_map_(1) = 2;
+    face_to_volume_coordinate_axis_factor_(0) = -1;
+    face_to_volume_coordinate_axis_factor_(1) = 1;
+    third_direction_ = 1;
+    third_direction_factor_ = 1;
+  }
+  else if (surface_node_lid_map(0) == 0 and surface_node_lid_map(1) == 3 and
+           surface_node_lid_map(2) == 2 and surface_node_lid_map(3) == 1)
+  {
+    face_to_volume_coordinate_axis_map_(0) = 1;
+    face_to_volume_coordinate_axis_map_(1) = 0;
+    face_to_volume_coordinate_axis_factor_(0) = 1;
+    face_to_volume_coordinate_axis_factor_(1) = 1;
+    third_direction_ = 2;
+    third_direction_factor_ = -1;
+  }
+  else if (surface_node_lid_map(0) == 4 and surface_node_lid_map(1) == 5 and
+           surface_node_lid_map(2) == 6 and surface_node_lid_map(3) == 7)
+  {
+    face_to_volume_coordinate_axis_map_(0) = 0;
+    face_to_volume_coordinate_axis_map_(1) = 1;
+    face_to_volume_coordinate_axis_factor_(0) = 1;
+    face_to_volume_coordinate_axis_factor_(1) = 1;
+    third_direction_ = 2;
+    third_direction_factor_ = 1;
+  }
+  else
+    dserror("Could not map face to volume.");
+
+  // Calculate the reference normals.
+  CalculateNormals(volume_reference_position_, this->face_reference_position_, reference_normals_);
+}
+
+
+/**
+ *
+ */
+template <typename surface, typename scalar_type, typename volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::SetState(
+    const Teuchos::RCP<const Epetra_Vector>& displacement,
+    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+{
+  // Get all displacements for the current face / volume.
+  std::vector<double> volume_displacement;
+  DRT::UTILS::ExtractMyValues(*displacement, volume_displacement, this->patch_dof_gid_);
+
+  // Create the full length FAD types.
+  std::vector<scalar_type> patch_displacement_fad(volume::n_dof_);
+
+  volume_position_.PutScalar(0.0);
+  for (unsigned int i_dof = 0; i_dof < volume::n_dof_; i_dof++)
+  {
+    volume_position_(i_dof) = FADUTILS::HigherOrderFadValue<scalar_type>::apply(
+        volume::n_dof_ + this->n_beam_dof_, this->n_beam_dof_ + i_dof,
+        volume_displacement[i_dof] + volume_reference_position_(i_dof));
+  }
+  this->face_position_.PutScalar(0.0);
+  for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
+    this->face_position_(i_dof) = volume_position_(surface_dof_lid_map_(i_dof));
+
+  CalculateNormals(volume_position_, this->face_position_, current_normals_);
+}
+
+/**
+ *
+ */
+template <typename surface, typename scalar_type, typename volume>
+template <typename scalar_type_normal>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
+    volume>::CalculateNormals(const LINALG::Matrix<volume::n_dof_, 1, scalar_type_normal>&
+                                  volume_position,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type_normal>& surface_position,
+    LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const
+{
+  // Parameter coordinates corresponding to LIDs of nodes.
+  LINALG::Matrix<2, 1, double> xi_surface(true);
+  LINALG::SerialDenseMatrix nodal_coordinates =
+      DRT::UTILS::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+
+  // Loop over the faces and evaluate the "normals" at the nodes.
+  LINALG::Matrix<3, 1, double> xi_volume(true);
+  LINALG::Matrix<3, 1, scalar_type_normal> r_surface;
+  LINALG::Matrix<3, 1, scalar_type_normal> r_volume;
+  LINALG::Matrix<3, 3, scalar_type_normal> dr_volume;
+  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+  {
+    for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
+      xi_surface(i_dim) = nodal_coordinates(i_dim, i_node);
+    XiFaceToXiVolume(xi_surface, xi_volume);
+
+    EvaluatePosition<surface>(xi_surface, surface_position, r_surface);
+    EvaluatePosition<volume>(xi_volume, volume_position, r_volume);
+    r_volume -= r_surface;
+    if (FADUTILS::VectorNorm(r_volume) > 1e-10)
+      dserror("Nodal positions for face and volume do not match.");
+
+    EvaluatePositionDerivative1<volume>(xi_volume, volume_position, dr_volume);
+    for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+      normals(3 * i_node + i_dim) = third_direction_factor_ * dr_volume(i_dim, third_direction_);
+  }
+}
+
+/**
+ *
+ */
+template <typename surface, typename scalar_type, typename volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
+    volume>::EvaluateFaceNormalDouble(const LINALG::Matrix<2, 1, double>& xi,
+    LINALG::Matrix<3, 1, double>& n, const bool reference, const bool averaged_normal) const
+{
+  if (averaged_normal)
+  {
+    LINALG::Matrix<surface::n_dof_, 1, double> position_double(true);
+    LINALG::Matrix<3 * surface::n_nodes_, 1, double> normals_double;
+    bool valid_pointer = false;
+
+    if (reference)
+      VectorPointerToVectorDouble(this->GetReferenceNormals(), normals_double, valid_pointer);
+    else
+      VectorPointerToVectorDouble(this->GetCurrentNormals(), normals_double, valid_pointer);
+
+    if (valid_pointer)
+    {
+      // Return the normal calculated with the averaged normal field.
+      EvaluateSurfaceNormal<surface>(
+          xi, position_double, n, this->drt_face_element_.get(), &normals_double);
+    }
+    else
+    {
+      // Averaged normals are desired, but there is no valid pointer to them -> return a zero
+      // vector.
+      n.PutScalar(0.);
+    }
+  }
+  else
+  {
+    // If no averaged normals should be calculated we can call the base method here.
+    base_class::EvaluateFaceNormalDouble(xi, n, reference, false);
+  }
+}
+
+/**
+ *
+ */
+template <typename surface, typename scalar_type, typename volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
+    volume>::XiFaceToXiVolume(const LINALG::Matrix<2, 1, double>& xi_face,
+    LINALG::Matrix<3, 1, double>& xi_volume) const
+{
+  xi_volume(face_to_volume_coordinate_axis_map_(0)) =
+      xi_face(0) * face_to_volume_coordinate_axis_factor_(0);
+  xi_volume(face_to_volume_coordinate_axis_map_(1)) =
+      xi_face(1) * face_to_volume_coordinate_axis_factor_(1);
+  xi_volume(third_direction_) = third_direction_factor_;
+}
+
 
 /**
  *
@@ -431,33 +672,59 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   }
   else
   {
-    switch (face_element->Shape())
+    if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
     {
-      case DRT::Element::quad4:
-        return Teuchos::rcp(
-            new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
-                face_element, true));
-      case DRT::Element::quad8:
-        return Teuchos::rcp(
-            new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
-                face_element, true));
-      case DRT::Element::quad9:
-        return Teuchos::rcp(
-            new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
-                face_element, true));
-      case DRT::Element::tri3:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
-            face_element, true));
-      case DRT::Element::tri6:
-        return Teuchos::rcp(new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
-            face_element, true));
-      case DRT::Element::nurbs9:
-        return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
-            line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>>(face_element));
-      default:
-        dserror("Wrong discretization type given.");
+      switch (face_element->Shape())
+      {
+        case DRT::Element::quad4:
+          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad4,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hex8>(
+              face_element));
+        case DRT::Element::quad8:
+          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad8,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hex20>(
+              face_element));
+        case DRT::Element::quad9:
+          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad9,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>(
+              face_element));
+        default:
+          dserror("Got unexpected face type for extended volume coupling.");
+      }
+    }
+    else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
+    {
+      switch (face_element->Shape())
+      {
+        case DRT::Element::quad4:
+          return Teuchos::rcp(
+              new FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>(
+                  face_element, true));
+        case DRT::Element::quad8:
+          return Teuchos::rcp(
+              new FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>(
+                  face_element, true));
+        case DRT::Element::quad9:
+          return Teuchos::rcp(
+              new FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>(
+                  face_element, true));
+        case DRT::Element::tri3:
+          return Teuchos::rcp(
+              new FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>(
+                  face_element, true));
+        case DRT::Element::tri6:
+          return Teuchos::rcp(
+              new FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>(
+                  face_element, true));
+        case DRT::Element::nurbs9:
+          return Teuchos::rcp(new FaceElementTemplate<t_nurbs9,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>(face_element));
+        default:
+          dserror("Wrong discretization type given.");
+      }
     }
   }
 
+  dserror("Could not create a face element.");
   return Teuchos::null;
 }

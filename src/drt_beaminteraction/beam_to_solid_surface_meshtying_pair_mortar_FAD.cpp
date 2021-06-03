@@ -15,6 +15,7 @@ evaluated with FAD.
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
 #include "../drt_geometry_pair/geometry_pair_element_faces.H"
 #include "../drt_inpar/inpar_beam_to_solid.H"
+#include "../drt_inpar/inpar_geometry_pair.H"
 #include "beam_to_solid_utils.H"
 #include "../drt_beam3/triad_interpolation_local_rotation_vectors.H"
 
@@ -877,7 +878,38 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
           line_to_surface_patch_scalar_type, t_hermite, t_quad9, mortar>(rotational_coupling);
     case DRT::Element::nurbs9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
-          line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
+          line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
+          mortar>(rotational_coupling);
+    default:
+      dserror("Wrong element type for surface element.");
+      return Teuchos::null;
+  }
+}
+
+/**
+ *
+ */
+template <typename mortar>
+Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
+    const DRT::Element::DiscretizationType surface_shape, const bool rotational_coupling)
+{
+  using namespace BEAMINTERACTION;
+  using namespace GEOMETRYPAIR;
+
+  switch (surface_shape)
+  {
+    case DRT::Element::quad4:
+      return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
+          line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4,
+          mortar>(rotational_coupling);
+    case DRT::Element::quad8:
+      return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
+          line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
+          mortar>(rotational_coupling);
+    case DRT::Element::quad9:
+      return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
+          line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
           mortar>(rotational_coupling);
     default:
       dserror("Wrong element type for surface element.");
@@ -892,29 +924,50 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
     const DRT::Element::DiscretizationType surface_shape,
     const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction,
-    const bool rotational_coupling)
+    const bool rotational_coupling,
+    const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
 {
   using namespace GEOMETRYPAIR;
 
-  switch (mortar_shapefunction)
+  if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
   {
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+    switch (mortar_shapefunction)
     {
-      return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar<t_line2>(
-          surface_shape, rotational_coupling);
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line2>(
+            surface_shape, rotational_coupling);
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line3>(
+            surface_shape, rotational_coupling);
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line4>(
+            surface_shape, rotational_coupling);
+      default:
+        dserror("Wrong mortar shape function.");
     }
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+  }
+  else
+  {
+    switch (mortar_shapefunction)
     {
-      return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar<t_line3>(
-          surface_shape, rotational_coupling);
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+      {
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar<t_line2>(
+            surface_shape, rotational_coupling);
+      }
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+      {
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar<t_line3>(
+            surface_shape, rotational_coupling);
+      }
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+      {
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar<t_line4>(
+            surface_shape, rotational_coupling);
+      }
+      default:
+        dserror("Wrong mortar shape function.");
     }
-    case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
-    {
-      return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar<t_line4>(
-          surface_shape, rotational_coupling);
-    }
-    default:
-      dserror("Wrong mortar shape function.");
   }
 
   return Teuchos::null;

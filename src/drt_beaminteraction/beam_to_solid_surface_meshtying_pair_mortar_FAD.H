@@ -25,6 +25,10 @@ namespace INPAR
   {
     enum class BeamToSolidMortarShapefunctions;
   }
+  namespace GEOMETRYPAIR
+  {
+    enum class SurfaceNormals;
+  }
 }  // namespace INPAR
 namespace LARGEROTATIONS
 {
@@ -179,12 +183,14 @@ namespace BEAMINTERACTION
    * \brief Factory function for beam-to-solid mortar FAD pairs.
    * @param surface_shape (in) Type of surface element.
    * @param mortar_shapefunction (in) Type of mortar shape function.
+   * @param surface_normal_strategy (in) Strategy for surface normal evaluation.
    * @return Pointer to the created pair.
    */
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
       const DRT::Element::DiscretizationType surface_shape,
       const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction,
-      const bool rotational_coupling);
+      const bool rotational_coupling,
+      const INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy);
 }  // namespace BEAMINTERACTION
 
 #endif

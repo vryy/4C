@@ -344,7 +344,16 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<line_to_surface_patch_scalar_type,
       t_hermite, t_quad9, t_line2>;
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<
-      line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9, t_line2>;
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
+      t_line2>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4, t_line2>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
+      t_line2>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
+      t_line2>;
 
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<line_to_surface_patch_scalar_type,
       t_hermite, t_tri3, t_line3>;
@@ -357,7 +366,16 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<line_to_surface_patch_scalar_type,
       t_hermite, t_quad9, t_line3>;
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<
-      line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9, t_line3>;
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
+      t_line3>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4, t_line3>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
+      t_line3>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
+      t_line3>;
 
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<line_to_surface_patch_scalar_type,
       t_hermite, t_tri3, t_line4>;
@@ -370,5 +388,14 @@ namespace BEAMINTERACTION
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<line_to_surface_patch_scalar_type,
       t_hermite, t_quad9, t_line4>;
   template class BeamToSolidSurfaceMeshtyingPairMortarBase<
-      line_to_surface_patch_nurbs_scalar_type<t_hermite, t_nurbs9>, t_hermite, t_nurbs9, t_line4>;
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
+      t_line4>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4, t_line4>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
+      t_line4>;
+  template class BeamToSolidSurfaceMeshtyingPairMortarBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
+      t_line4>;
 }  // namespace BEAMINTERACTION
