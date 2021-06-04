@@ -1,0 +1,30 @@
+$$ remove any remaining commands in cubit
+reset
+
+$$ Initialize geometry
+brick x 1 y 1 z 1
+brick x 5e-1 y 5e-1 z 5e-1
+move Volume 2 x 75e-2 y 0 z 0
+volume 1 size {1e-1}
+volume 2 size {1e-1}
+
+mesh volume 1
+mesh volume 2
+
+$$ Assign nodesets, required for boundary conditions
+nodeset 1 surface 6
+nodeset 1 name "slave"
+nodeset 2 surface 10
+nodeset 2 name "master"
+nodeset 3 surface 4
+nodeset 3 name "wall"
+nodeset 4 surface 12
+nodeset 4 name "pushing"
+
+$$ Define element blocks, required for assigning different material properties
+block 1 volume 1
+block 2 volume 2
+
+$$ This line allows to create an .e /.exo file from the command line, the prefix xxx_ is needed for running the comlete framework test with ctest.
+export genesis "xxx_tutorial_contact_3d.e" block all dimension 3 overwrite
+exit
