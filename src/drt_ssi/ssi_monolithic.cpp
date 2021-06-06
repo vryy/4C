@@ -830,7 +830,8 @@ void SSI::SSIMono::SetupSystem()
   }
 
   // initialize sub blocks and system matrix
-  ssi_matrices_ = Teuchos::rcp(new SSI::UTILS::SSIMatrices(*this));
+  ssi_matrices_ = Teuchos::rcp(new SSI::UTILS::SSIMatrices(
+      ssi_maps_, matrixtype_, ScaTraField()->MatrixType(), IsScaTraManifold()));
 
   // initialize residual and increment vectors
   ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(*this));

@@ -44,6 +44,9 @@ namespace SSI
 
   namespace UTILS
   {
+    // forward declaration
+    class SSIMaps;
+
     //! Modification of time parameter list for problem with different time step size
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
@@ -90,8 +93,17 @@ namespace SSI
     class SSIMatrices
     {
      public:
-      //! constructor
-      explicit SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+      /*!
+       * @brief constructor
+       *
+       * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
+       * @param[in] ssi_matrixtype      the ssi matrix type
+       * @param[in] scatra_matrixtype   the scalar transport matrix type
+       * @param[in] is_scatra_manifold  flag indicating if a scatra manifold is used
+       */
+      SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
+          LINALG::MatrixType ssi_matrixtype, LINALG::MatrixType scatra_matrixtype,
+          bool is_scatra_manifold);
 
       //! call complete on the scalar transport manifold - structure off-diagonal matrix
       void CompleteScaTraManifoldStructureMatrix();
@@ -150,23 +162,25 @@ namespace SSI
       /*!
        * @brief initialize the scatra-structure interaction main-diagonal matrices
        *
-       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void InitializeMainDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+      void InitializeMainDiagMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
-       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
+       * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+      void InitializeOffDiagMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       /*!
        * @brief initialize the system matrix
        *
-       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       * @param[in] ssi_maps         pointer to the ssi maps object containing all relevant maps
+       * @param[in] ssi_matrixtype   the ssi matrix type
        */
-      void InitializeSystemMatrix(const SSI::SSIMono& ssi_mono_algorithm);
+      void InitializeSystemMatrix(
+          Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType ssi_matrixtype);
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
