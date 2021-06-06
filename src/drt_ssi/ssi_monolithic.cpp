@@ -834,7 +834,7 @@ void SSI::SSIMono::SetupSystem()
       ssi_maps_, matrixtype_, ScaTraField()->MatrixType(), IsScaTraManifold()));
 
   // initialize residual and increment vectors
-  ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(*this));
+  ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(ssi_maps_));
 
   // initialize strategy for assembly
   strategy_assemble_ = SSI::BuildAssembleStrategy(*this, matrixtype_, ScaTraField()->MatrixType());

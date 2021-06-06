@@ -635,11 +635,11 @@ void SSI::UTILS::SSIMatrices::ClearMatrices()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::UTILS::SSIVectors::SSIVectors(const SSI::SSIMono& ssi_mono)
-    : increment_(LINALG::CreateVector(*(ssi_mono.DofRowMap()), true)),
-      residual_(LINALG::CreateVector(*(ssi_mono.DofRowMap()), true)),
-      scatra_residual_(LINALG::CreateVector(*(ssi_mono.ScaTraField()->DofRowMap()), true)),
-      structure_residual_(LINALG::CreateVector(*(ssi_mono.StructureField()->DofRowMap()), true))
+SSI::UTILS::SSIVectors::SSIVectors(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+    : increment_(LINALG::CreateVector(*(ssi_maps->MapsSubProblems()->FullMap()), true)),
+      residual_(LINALG::CreateVector(*(ssi_maps->MapsSubProblems()->FullMap()), true)),
+      scatra_residual_(LINALG::CreateVector(*(ssi_maps->ScaTraDofRowMap()), true)),
+      structure_residual_(LINALG::CreateVector(*(ssi_maps->StructureDofRowMap()), true))
 {
 }
 

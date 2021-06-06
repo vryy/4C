@@ -215,8 +215,12 @@ namespace SSI
     class SSIVectors
     {
      public:
-      //! constructor
-      explicit SSIVectors(const SSI::SSIMono& ssi_mono);
+      /*!
+       * @brief constructor
+       *
+       * @param[in] ssi_maps  pointer to the ssi maps object containing all relevant maps
+       */
+      explicit SSIVectors(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       //! clear the increment vector
       void ClearIncrement();
