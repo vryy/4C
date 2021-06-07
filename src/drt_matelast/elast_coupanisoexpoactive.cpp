@@ -63,7 +63,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::RegisterAnisotropyExtensions(MAT::Anisot
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(DRT::PackBuffer& data) const
 {
-  AddtoPack(data, dPIact_);
   AddtoPack(data, lambdaact_);
   anisotropyExtension_.PackAnisotropy(data);
 }
@@ -74,9 +73,10 @@ void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(DRT::PackBuffer& data) const
 void MAT::ELASTIC::CoupAnisoExpoActive::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
-  ExtractfromPack(position, data, dPIact_);
   ExtractfromPack(position, data, lambdaact_);
   anisotropyExtension_.UnpackAnisotropy(data, position);
+
+  dPIact_ = EvaluatedPsiActive();
 }
 
 /*----------------------------------------------------------------------*/
@@ -87,9 +87,7 @@ void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, DRT::INPUT::LineDefinit
   // whole simulation)
   lambdaact_ = 1.0;
 
-  dPIact_ = params_->s_ / params_->dens_ *
-            (1.0 - std::pow(params_->lambdamax_ - lambdaact_, 2.0) /
-                       std::pow(params_->lambdamax_ - params_->lambda0_, 2.0));
+  dPIact_ = EvaluatedPsiActive();
 }
 
 
@@ -260,8 +258,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso(LINALG::Matrix<2, 1,
 
   dddPIII_aniso(0) = (3.0 + 2.0 * k2 * (I4 - 1.0) * (I4 - 1.0)) * 2.0 * k1 * k2 * (I4 - 1.0) *
                      exp(k2 * (I4 - 1.0) * (I4 - 1.0));
-
-  return;
 };
 
 
@@ -306,6 +302,13 @@ void MAT::ELASTIC::CoupAnisoExpoActive::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
+}
+
+double MAT::ELASTIC::CoupAnisoExpoActive::EvaluatedPsiActive() const
+{
+  return params_->s_ / params_->dens_ *
+         (1.0 - std::pow(params_->lambdamax_ - lambdaact_, 2.0) /
+                    std::pow(params_->lambdamax_ - params_->lambda0_, 2.0));
 }
 
 
