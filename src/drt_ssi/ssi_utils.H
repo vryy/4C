@@ -39,6 +39,7 @@ namespace LINALG
 
 namespace SSI
 {
+  class SSIBase;
   class SSIMono;
   enum class Subproblem;
 
@@ -305,19 +306,6 @@ namespace SSI
       //! the structure dof row map
       Teuchos::RCP<const Epetra_Map> StructureDofRowMap() const;
 
-      //! condensed structure dofs (inner and master side): other map
-      //! slave side structure dofs: cond map
-      Teuchos::RCP<const LINALG::MapExtractor> SlaveCondensedStructureMaps() const
-      {
-        return slave_condensed_structure_maps_;
-      }
-
-      //! slave side map in case of 3 domain mesh tying
-      Teuchos::RCP<const Epetra_Map> SlaveSide3DomainMeshytyingMap() const
-      {
-        return slave_side_3_domain_meshtying_map_;
-      }
-
      private:
       //! create and check the block maps of all sub problems
       void CreateAndCheckBlockMapsSubProblems(const SSIMono& ssi_mono_algorithm);
@@ -338,9 +326,44 @@ namespace SSI
       //! condensed structure dofs (inner and master side): other map
       //! slave side structure dofs: cond map
       Teuchos::RCP<const LINALG::MapExtractor> slave_condensed_structure_maps_;
+    };
 
-      //! slave side map in case of 3 domain mesh tying
-      Teuchos::RCP<const Epetra_Map> slave_side_3_domain_meshtying_map_;
+    class SSIMeshTyingMaps
+    {
+     public:
+      explicit SSIMeshTyingMaps(const SSI::SSIBase& ssi_algorithm);
+
+      //! condensed structure dofs (inner and master side)
+      Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const
+      {
+        return map_structure_condensed_;
+      }
+
+      //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
+      //! slave-side degrees of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const
+      {
+        return maps_coup_struct_;
+      }
+
+      //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+      //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const
+      {
+        return maps_coup_struct_3_domain_intersection_;
+      }
+
+     private:
+      //! condensed structure dofs (inner and master side)
+      Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
+
+      //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom,
+      //! 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_;
+
+      //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+      //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
     };
 
     class SSISlaveSideConverter

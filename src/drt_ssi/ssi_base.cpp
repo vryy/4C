@@ -66,6 +66,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
       slave_side_converter_(Teuchos::null),
+      ssi_meshtyingmaps_(Teuchos::null),
       ssicoupling_(Teuchos::null),
       ssiinterfacecontact_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
@@ -276,6 +277,9 @@ void SSI::SSIBase::Setup()
 
   // construct vector of zeroes
   zeros_structure_ = LINALG::CreateVector(*structure_->DofRowMap());
+
+  if (SSIInterfaceMeshtying())
+    ssi_meshtyingmaps_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTyingMaps(*this));
 
   // set flag
   SetIsSetup(true);

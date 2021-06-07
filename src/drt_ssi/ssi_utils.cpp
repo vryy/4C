@@ -717,9 +717,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
     : block_maps_sub_problems_(),
       block_maps_systemmatrix_(Teuchos::null),
       map_system_matrix_(Teuchos::null),
-      maps_sub_problems_(Teuchos::null),
-      slave_condensed_structure_maps_(Teuchos::null),
-      slave_side_3_domain_meshtying_map_(Teuchos::null)
+      maps_sub_problems_(Teuchos::null)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
       ssi_mono_algorithm.IsScaTraManifold() ? 3 : 2, Teuchos::null);
@@ -827,6 +825,65 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
   map_system_matrix_ = maps_sub_problems_->FullMap();
 }
 
+/* ----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(const SSI::SSIBase& ssi_algorithm)
+    : map_structure_condensed_(Teuchos::null),
+      maps_coup_struct_(Teuchos::null),
+      maps_coup_struct_3_domain_intersection_(Teuchos::null)
+{
+  // setup map with inner and master side (= condensed) structural dofs
+  {
+    if (ssi_algorithm.Meshtying3DomainIntersection())
+    {
+      auto map1 = Teuchos::rcp(
+          new const Epetra_Map(*ssi_algorithm.InterfaceCouplingAdapterStructure()->SlaveDofMap()));
+      auto map2 = Teuchos::rcp(new const Epetra_Map(
+          *ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap()));
+      auto map3 = LINALG::MultiMapExtractor::MergeMaps({map1, map2});
+
+      // set up map for interior and master-side structural degrees of freedom
+      map_structure_condensed_ =
+          LINALG::SplitMap(*ssi_algorithm.StructureField()->Discretization()->DofRowMap(), *map3);
+    }
+    else
+    {
+      // set up map for interior and master-side structural degrees of freedom
+      map_structure_condensed_ =
+          LINALG::SplitMap(*ssi_algorithm.StructureField()->Discretization()->DofRowMap(),
+              *ssi_algorithm.InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    }
+  }
+
+  // setup map extractor with inner, master, and slave side structural dofs
+  {
+    // set up structural map extractor holding interior and interface maps of degrees of freedom
+    std::vector<Teuchos::RCP<const Epetra_Map>> maps_surf(0, Teuchos::null);
+    maps_surf.emplace_back(LINALG::SplitMap(*map_structure_condensed_,
+        *ssi_algorithm.InterfaceCouplingAdapterStructure()->MasterDofMap()));
+    maps_surf.emplace_back(ssi_algorithm.InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    maps_surf.emplace_back(ssi_algorithm.InterfaceCouplingAdapterStructure()->MasterDofMap());
+    maps_coup_struct_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
+        *ssi_algorithm.StructureField()->Discretization()->DofRowMap(), maps_surf));
+    maps_coup_struct_->CheckForValidMapExtractor();
+
+    if (ssi_algorithm.Meshtying3DomainIntersection())
+    {
+      std::vector<Teuchos::RCP<const Epetra_Map>> maps_line(0, Teuchos::null);
+      maps_line.emplace_back(LINALG::SplitMap(
+          *ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap(),
+          *ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap()));
+      maps_line.emplace_back(
+          ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap());
+      maps_line.emplace_back(
+          ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap());
+      maps_coup_struct_3_domain_intersection_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
+          *ssi_algorithm.StructureField()->Discretization()->DofRowMap(), maps_line));
+      maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
+    }
+  }
+}
+
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
@@ -890,7 +947,6 @@ void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono&
   if (ssi_mono_algorithm.IsScaTraManifold())
   {
     for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::manifold)->NumMaps(); ++i)
-
     {
       auto block_positions_manifold = ssi_mono_algorithm.GetBlockPositions(Subproblem::manifold);
       partial_maps_system_matrix[block_positions_manifold->at(i)] =

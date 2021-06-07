@@ -54,8 +54,9 @@ namespace SSI
 
   namespace UTILS
   {
+    class SSIMeshTyingMaps;
     class SSISlaveSideConverter;
-  }
+  }  // namespace UTILS
 
   enum class RedistributionType
   {
@@ -415,6 +416,9 @@ namespace SSI
 
     //! slave side converter
     Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMeshTyingMaps> ssi_meshtyingmaps_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
