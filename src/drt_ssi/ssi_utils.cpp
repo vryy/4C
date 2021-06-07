@@ -794,6 +794,10 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
             block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold,
                 Teuchos::rcpFromRef(ssi_mono_algorithm.ScaTraManifold()->BlockMaps())));
           }
+          else
+          {
+            block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold, Teuchos::null));
+          }
 
           break;
         }
@@ -811,7 +815,9 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
 
     case LINALG::MatrixType::sparse:
     {
-      // nothing to do here
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::structure, Teuchos::null));
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::scalar_transport, Teuchos::null));
+      block_maps_sub_problems_.insert(std::make_pair(Subproblem::manifold, Teuchos::null));
       break;
     }
 

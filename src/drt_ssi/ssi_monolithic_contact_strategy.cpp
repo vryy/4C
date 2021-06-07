@@ -9,6 +9,7 @@
 
 #include "ssi_monolithic_contact_strategy.H"
 #include "ssi_monolithic.H"
+#include "ssi_utils.H"
 
 #include "../drt_contact/contact_nitsche_strategy_ssi.H"
 

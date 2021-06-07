@@ -91,22 +91,16 @@ namespace SSI
     Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
 
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
-    {
-      return maps_sub_problems_;
-    };
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const { return map_structure_; }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const;
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSystemMatrix() const
-    {
-      return maps_systemmatrix_;
-    }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSystemMatrix() const;
 
     // Return matrix type of global system matrix
     LINALG::MatrixType MatrixType() const { return matrixtype_; };
@@ -204,7 +198,7 @@ namespace SSI
 
     void Output() override;
 
-    //! do everthing, that has to be done once before first time step
+    //! do everything, that has to be done once before first time step
     void PrepareTimeLoop();
 
     void PrepareTimeStep() override;
@@ -255,18 +249,6 @@ namespace SSI
 
     //! Evaluation of coupling flux between scatra and manifold on scatra
     Teuchos::RCP<SSI::ScaTraManifoldScaTraFluxEvaluator> manifoldscatraflux_;
-
-    //! map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
-
-    //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
-
-    //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    Teuchos::RCP<LINALG::MultiMapExtractor> maps_sub_problems_;
-
-    //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
 
     //! type of global system matrix in global system of equations
     const LINALG::MatrixType matrixtype_;
