@@ -4236,40 +4236,34 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
     contact_pair.Init(Teuchos::null, pair_elements);
 
     // Evaluate the local matrices.
-    LINALG::SerialDenseMatrix local_D;
-    LINALG::SerialDenseMatrix local_M;
-    LINALG::SerialDenseVector local_kappa;
-    LINALG::SerialDenseVector local_constraint_offset;
+    LINALG::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
+    LINALG::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
+    LINALG::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
     contact_pair.CastGeometryPair()->Setup();
     contact_pair.ele1posref_ = q_beam;
     contact_pair.ele2posref_ = q_solid;
-    contact_pair.EvaluateDM(local_D, local_M, local_kappa, local_constraint_offset);
+    contact_pair.CastGeometryPair()->Evaluate(
+        contact_pair.ele1posref_, contact_pair.ele2posref_, contact_pair.line_to_3D_segments_);
+    contact_pair.EvaluateDM(local_D, local_M, local_kappa, local_constraint);
 
     // Check the results for D.
-    TS_ASSERT_EQUALS(local_D.M(), lambda_type::n_dof_);
-    TS_ASSERT_EQUALS(local_D.N(), beam_type::n_dof_);
-    for (int i_row = 0; i_row < local_D.M(); i_row++)
-      for (int i_col = 0; i_col < local_D.N(); i_col++)
+    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+      for (unsigned int i_col = 0; i_col < beam_type::n_dof_; i_col++)
         TS_ASSERT_DELTA(local_D(i_row, i_col), result_local_D(i_row, i_col), 1e-11);
 
     // Check the results for M.
-    TS_ASSERT_EQUALS(local_M.M(), lambda_type::n_dof_);
-    TS_ASSERT_EQUALS(local_M.N(), solid_type::n_dof_);
-    for (int i_row = 0; i_row < local_M.M(); i_row++)
-      for (int i_col = 0; i_col < local_M.N(); i_col++)
+    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+      for (unsigned int i_col = 0; i_col < solid_type::n_dof_; i_col++)
         TS_ASSERT_DELTA(local_M(i_row, i_col), result_local_M(i_row, i_col), 1e-11);
 
     // Check the results for kappa.
-    TS_ASSERT_EQUALS(local_kappa.M(), lambda_type::n_dof_);
-    TS_ASSERT_EQUALS(local_kappa.N(), 1);
-    for (int i_row = 0; i_row < local_M.M(); i_row++)
+    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
       TS_ASSERT_DELTA(local_kappa(i_row), result_local_kappa(i_row), 1e-11);
 
     // Check the results for the local constraint offset vector.
-    TS_ASSERT_EQUALS(local_constraint_offset.M(), lambda_type::n_dof_);
-    TS_ASSERT_EQUALS(local_constraint_offset.N(), 1);
-    for (int i_row = 0; i_row < local_M.M(); i_row++)
-      TS_ASSERT_DELTA(local_constraint_offset(i_row), 0.0, 1e-11);
+    for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+      TS_ASSERT_DELTA(local_constraint(i_row), 0.0, 1e-11);
   }
 
 

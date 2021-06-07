@@ -245,14 +245,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
       double beam_segmentation_factor = 0.0;
 
       // Loop over segments to evaluate the coupling potential.
-      for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+      const unsigned int n_segments = this->line_to_3D_segments_.size();
+      for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
       {
-        // Factor to account for a segment length not from -1 to 1.
+        // Factor to account for the integration segment length.
         beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
         // Gauss point loop.
-        for (unsigned int i_gp = 0;
-             i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+        const unsigned int n_gp =
+            this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+        for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
         {
           // Get the current Gauss point.
           const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =

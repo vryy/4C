@@ -38,7 +38,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     mortar>::EvaluateAndAssemble(const DRT::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda)
+    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix, const Epetra_Vector& global_lambda,
+    const Epetra_Vector& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -71,14 +72,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   double beam_segmentation_factor = 0.0;
 
   // Loop over segments to evaluate the coupling potential.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  const unsigned int n_segments = this->line_to_3D_segments_.size();
+  for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
-    // Factor to account for a segment length not from -1 to 1.
+    // Factor to account for the integration segment length.
     beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
-    for (unsigned int i_gp = 0;
-         i_gp < this->line_to_3D_segments_[i_segment].GetProjectionPoints().size(); i_gp++)
+    const unsigned int n_gp = this->line_to_3D_segments_[i_segment].GetProjectionPoints().size();
+    for (unsigned int i_gp = 0; i_gp < n_gp; i_gp++)
     {
       // Get the current Gauss point.
       const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point =
@@ -116,10 +118,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
  */
 template <typename scalar_type, typename beam, typename surface, typename mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssembleDM(const DRT::Discretization& discret,
-    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_D,
-    LINALG::SparseMatrix& global_M, Epetra_FEVector& global_constraint,
-    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active)
+    mortar>::EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+    const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
+    LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
+    LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+    Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -145,9 +149,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   double beam_segmentation_factor = 0.0;
 
   // Loop over segments.
-  for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
+  const unsigned int n_segments = this->line_to_3D_segments_.size();
+  for (unsigned int i_segment = 0; i_segment < n_segments; i_segment++)
   {
-    // Factor to account for a segment length not from -1 to 1.
+    // Factor to account for the integration segment length.
     beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.
@@ -203,18 +208,24 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   std::vector<int> lambda_gid;
   mortar_manager->LocationVector(this, lambda_gid);
 
-  // Assemble into the global D matrix.
+  // Assemble into the matrices related to beam DOFs.
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
     for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
-      global_D.FEAssemble(FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam)),
-          lambda_gid[i_lambda], beam_centerline_gid(i_beam));
+    {
+      const double val = FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
+      global_G_B.FEAssemble(val, lambda_gid[i_lambda], beam_centerline_gid(i_beam));
+      global_FB_L.FEAssemble(val, beam_centerline_gid(i_beam), lambda_gid[i_lambda]);
+    }
 
-  // Assemble into the global M matrix.
+  // Assemble into the matrices related to solid DOFs.
   for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
     for (unsigned int i_patch = 0; i_patch < patch_gid.size(); i_patch++)
-      global_M.FEAssemble(
-          -1.0 * FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch)),
-          lambda_gid[i_lambda], patch_gid[i_patch]);
+    {
+      const double val =
+          FADUTILS::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
+      global_G_S.FEAssemble(val, lambda_gid[i_lambda], patch_gid[i_patch]);
+      global_FS_L.FEAssemble(val, patch_gid[i_patch], lambda_gid[i_lambda]);
+    }
 
   // Assemble into global coupling vector.
   LINALG::Matrix<mortar::n_dof_, 1, double> constraint_vector_double =

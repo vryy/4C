@@ -35,7 +35,8 @@ template <typename scalar_type, typename beam, typename surface>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, beam,
     surface>::EvaluateAndAssemble(const Teuchos::RCP<const DRT::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix)
+    const Teuchos::RCP<LINALG::SparseMatrix>& stiffness_matrix,
+    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)

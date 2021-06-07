@@ -63,11 +63,13 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   {
     setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
         "Type of employed contact discretization",
-        tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section"),
+        tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section",
+            "gauss_point_cross_section_rotation"),
         tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
             BeamToSolidContactDiscretization::gauss_point_to_segment,
             BeamToSolidContactDiscretization::mortar,
-            BeamToSolidContactDiscretization::gauss_point_cross_section),
+            BeamToSolidContactDiscretization::gauss_point_cross_section,
+            BeamToSolidContactDiscretization::gauss_point_cross_section_rotation),
         &beam_to_solid_volume_mestying);
 
     setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
@@ -98,6 +100,39 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     //        pre-deform the structures and then couple them.
     setStringToIntegralParameter<int>("COUPLE_RESTART_STATE", "No",
         "Enable / disable the coupling of the restart configuration.", yesnotuple, yesnovalue,
+        &beam_to_solid_volume_mestying);
+
+    setStringToIntegralParameter<BeamToSolidRotationCoupling>("ROTATION_COUPLING", "none",
+        "Type of rotational coupling",
+        tuple<std::string>("none", "polar_decomposition_2d", "deformation_gradient_y_2d",
+            "deformation_gradient_z_2d", "deformation_gradient_average_2d", "fix_triad_2d",
+            "deformation_gradient_3d_local_1", "deformation_gradient_3d_local_2",
+            "deformation_gradient_3d_local_3", "deformation_gradient_3d_general",
+            "deformation_gradient_3d_base_1"),
+        tuple<BeamToSolidRotationCoupling>(BeamToSolidRotationCoupling::none,
+            BeamToSolidRotationCoupling::polar_decomposition_2d,
+            BeamToSolidRotationCoupling::deformation_gradient_y_2d,
+            BeamToSolidRotationCoupling::deformation_gradient_z_2d,
+            BeamToSolidRotationCoupling::deformation_gradient_average_2d,
+            BeamToSolidRotationCoupling::fix_triad_2d,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_local_1,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_local_2,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_local_3,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_general,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_base_1),
+        &beam_to_solid_volume_mestying);
+
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>(
+        "ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multipliers",
+        tuple<std::string>("none", "line2", "line3", "line4"),
+        tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
+            BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
+            BeamToSolidMortarShapefunctions::line4),
+        &beam_to_solid_volume_mestying);
+
+    DoubleParameter("ROTATION_COUPLING_PENALTY_PARAMETER", 0.0,
+        "Penalty parameter for rotational coupling in beam-to-solid volume mesh tying",
         &beam_to_solid_volume_mestying);
   }
 

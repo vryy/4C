@@ -15,6 +15,7 @@
 
 #include "beaminteraction_conditions.H"
 
+#include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_dserror.H"
 
 #include <unordered_map>
@@ -26,11 +27,18 @@
 namespace DRT
 {
   class FaceElement;
-}
+}  // namespace DRT
 namespace BEAMINTERACTION
 {
   class BeamToSolidParamsBase;
 }
+namespace INPAR
+{
+  namespace BEAMTOSOLID
+  {
+    enum class BeamToSolidMortarShapefunctions;
+  }
+}  // namespace INPAR
 
 
 namespace BEAMINTERACTION
@@ -223,7 +231,65 @@ namespace BEAMINTERACTION
     //! Map containing the global volume element IDs for each face element of the surface in this
     //! condition.
     std::unordered_map<int, Teuchos::RCP<const DRT::FaceElement>> surface_ids_;
-  };  // namespace BEAMINTERACTION
+  };
+
+
+  /**
+   * \brief Create a beam-to-solid volume pair depending on the solid volume shape.
+   * @tparam bts_class Beam-to-solid class to create
+   * @tparam bts_template_arguments Template arguments when creating the class
+   * @param shape (in) Shape of the solid volume
+   * @return The created beam-to-solid pair
+   */
+  template <template <typename...> class bts_class, typename... bts_template_arguments>
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShape(
+      const DRT::Element::DiscretizationType shape);
+
+  /**
+   * \brief Create a beam-to-solid volume pair depending on the solid volume shape, without nurbs.
+   *
+   * This is for pairs which are not compatible with nurbs discretizations.
+   *
+   * @tparam bts_class Beam-to-solid class to create
+   * @tparam bts_template_arguments Template arguments when creating the class
+   * @param shape
+   * @return The created beam-to-solid pair
+   */
+  template <template <typename...> class bts_class, typename... bts_template_arguments>
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShapeNoNurbs(
+      const DRT::Element::DiscretizationType shape);
+
+  /**
+   * \brief Create a beam-to-solid volume mortar pair depending on the solid volume shape and mortar
+   * shape function(s).
+   * @tparam bts_class Beam-to-solid class to create
+   * @tparam bts_mortar_template_arguments
+   * @tparam bts_mortar_shape Template collection of type of optional given (e.g. rotational) mortar
+   * shape functions
+   * @param shape (in) Shape of the solid volume
+   * @param mortar_shape_function (in) Mortar shape function to be appended to the
+   * bts_template_arguments in this call
+   * @param other_mortar_shape_function (in) Other mortar shape functions
+   * @return The created beam-to-solid pair
+   */
+  template <template <typename...> class bts_class, typename... bts_mortar_template_arguments,
+      typename... bts_mortar_shape>
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
+      const DRT::Element::DiscretizationType shape,
+      const INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shape_function,
+      bts_mortar_shape... other_mortar_shape_function);
+
+  /**
+   * \brief Call the pair creation based on the shape once all mortar shape functions have been
+   * converted to template arguments.
+   * @tparam bts_class Beam-to-solid class to create
+   * @tparam bts_mortar_template_arguments Template arguments when creating the class
+   * @param shape (in) Shape of the solid volume
+   * @return The created beam-to-solid pair
+   */
+  template <template <typename...> class bts_class, typename... bts_mortar_template_arguments>
+  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
+      const DRT::Element::DiscretizationType shape);
 }  // namespace BEAMINTERACTION
 
 #endif

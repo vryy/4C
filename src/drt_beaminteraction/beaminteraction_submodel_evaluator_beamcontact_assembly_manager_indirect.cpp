@@ -35,10 +35,11 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::
         const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& beam_to_solid_params)
     : BeamContactAssemblyManager()
 {
-  // Create the mortar manager.
+  // Create the mortar manager. We add 1 to the MaxAllGID since this gives the maximum GID and NOT
+  // the length of the GIDs.
   mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidMortarManager>(
       new BEAMINTERACTION::BeamToSolidMortarManager(
-          discret, beam_to_solid_params, discret->DofRowMap()->MaxAllGID()));
+          discret, beam_to_solid_params, discret->DofRowMap()->MaxAllGID() + 1));
 
   // Setup the mortar manager.
   mortar_manager_->Setup();
@@ -55,7 +56,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::Eva
     Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<LINALG::SparseMatrix> fe_sysmat)
 {
   // Evaluate the global mortar matrices.
-  mortar_manager_->EvaluateGlobalDM();
+  mortar_manager_->EvaluateGlobalCouplingContributions(data_state->GetDisColNp());
 
   // Add the global mortar matrices to the force vector and stiffness matrix.
   mortar_manager_->AddGlobalForceStiffnessPenaltyContributions(data_state, fe_sysmat, fe_sysvec);
@@ -65,5 +66,5 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::Eva
 double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::GetEnergy(
     const Teuchos::RCP<const Epetra_Vector>& disp) const
 {
-  return mortar_manager_->GetEnergy(disp);
+  return mortar_manager_->GetEnergy();
 }

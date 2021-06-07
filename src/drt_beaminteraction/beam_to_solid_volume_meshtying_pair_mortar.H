@@ -59,11 +59,14 @@ namespace BEAMINTERACTION
     virtual ~BeamToSolidVolumeMeshtyingPairMortar(){};
 
     /**
-     * \brief Evaluate the mortar matrices $D$ and $M$ for this contact element pair. (derived)
+     * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
-    bool EvaluateDM(LINALG::SerialDenseMatrix& local_D, LINALG::SerialDenseMatrix& local_M,
-        LINALG::SerialDenseVector& local_kappa,
-        LINALG::SerialDenseVector& local_constraint) override;
+    void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
+        const BeamToSolidMortarManager* mortar_manager, LINALG::SparseMatrix& global_G_B,
+        LINALG::SparseMatrix& global_G_S, LINALG::SparseMatrix& global_FB_L,
+        LINALG::SparseMatrix& global_FS_L, Epetra_FEVector& global_constraint,
+        Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
+        const Teuchos::RCP<const Epetra_Vector>& displacement_vector) override;
 
     /**
      * \brief This pair has no terms that need to be directly assembled into the global matrices.
@@ -88,6 +91,14 @@ namespace BEAMINTERACTION
 
    protected:
     /**
+     * \brief Evaluate the local mortar matrices for this contact element pair.
+     */
+    void EvaluateDM(LINALG::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
+        LINALG::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
+        LINALG::Matrix<mortar::n_dof_, 1, double>& local_kappa,
+        LINALG::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
+
+    /**
      * \brief For the mortar pairs it does not make sense to calculate forces at the integration
      * points.
      * @param r_beam (in) Position on the beam.
@@ -97,6 +108,10 @@ namespace BEAMINTERACTION
     void EvaluatePenaltyForce(const LINALG::Matrix<3, 1, scalar_type>& r_beam,
         const LINALG::Matrix<3, 1, scalar_type>& r_solid,
         LINALG::Matrix<3, 1, scalar_type>& force) const override;
+
+   protected:
+    //! Number of rotational Lagrange multiplier DOFS.
+    unsigned int n_mortar_rot_;
   };
 }  // namespace BEAMINTERACTION
 

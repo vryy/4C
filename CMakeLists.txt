@@ -863,6 +863,7 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_beam_contact_pair.cpp
   src/drt_beaminteraction/beam_to_beam_contact_params.cpp
   src/drt_beaminteraction/beam_to_beam_contact_variables.cpp
+  src/drt_beaminteraction/beam_to_solid_utils.cpp
   src/drt_beaminteraction/beam_to_solid_conditions.cpp
   src/drt_beaminteraction/beam_to_solid_mortar_manager.cpp
   src/drt_beaminteraction/beam_to_solid_pair_base.cpp
@@ -880,7 +881,9 @@ set(OBJS_DRT_BEAMINTERACTION_LIB
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_base.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_gauss_point_cross_section_rotation.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar.cpp
+  src/drt_beaminteraction/beam_to_solid_volume_meshtying_pair_mortar_rotation.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_params.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_params.cpp
   src/drt_beaminteraction/beam_to_solid_volume_meshtying_vtk_output_writer.cpp

@@ -78,8 +78,8 @@ namespace GEOMETRYPAIR
    * @param r (out) Position on the element.
    * @param element (in) Pointer to the element, needed for beam elements.
    */
-  template <typename element_type, typename T, typename V, typename scalar_type>
-  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<3, 1, scalar_type>& r,
+  template <typename element_type, typename T, typename V, typename scalar_type, unsigned int n_dim>
+  inline void EvaluatePosition(const T& xi, const V& q, LINALG::Matrix<n_dim, 1, scalar_type>& r,
       const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
@@ -92,9 +92,9 @@ namespace GEOMETRYPAIR
     // Calculate the position.
     r.Clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-      for (unsigned int dim = 0; dim < 3; dim++)
+      for (unsigned int dim = 0; dim < n_dim; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)
-          r(dim) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+          r(dim) += q(n_dim * element_type::n_val_ * node + n_dim * val + dim) *
                     N(element_type::n_val_ * node + val);
   }
 
@@ -145,39 +145,56 @@ namespace GEOMETRYPAIR
    * @param q (in) DOF for of the line.
    * @param r (out) Spatial position in the cross section.
    * @param element (in) Pointer to the line element.
+   * @param triad (in) Pointer to the cross section triad. If this parameter is given, this triad
+   * will be used not the one described above.
    */
   template <typename element_type, typename T1, typename T2, typename V, typename scalar_type>
   void EvaluatePositionLineCrossSection(const T1& eta, const T2& eta_cross_section, const V& q,
-      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr)
+      LINALG::Matrix<3, 1, scalar_type>& r, const DRT::Element* element = nullptr,
+      const LINALG::Matrix<3, 3, scalar_type>* triad = nullptr)
   {
     // Get the radius from the beam element.
     const double radius = (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element))
                               ->GetCircularCrossSectionRadiusForInteractions();
 
-    // Get the position and tangent along the centerline.
+    // Get the position along the centerline.
     EvaluatePosition<element_type>(eta, q, r, element);
-    LINALG::Matrix<3, 1, scalar_type> tangent, cross_section_director_2, cross_section_director_3;
-    EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
 
-    // The current implementation only allows tangential vectors in the x-y plane.
-    if (abs(tangent(2)) > CONSTANTS::pos_tol)
-      dserror("The tangent vector can not have a component in z direction! The component is %f!",
-          FADUTILS::CastToDouble(tangent(2)));
+    if (triad == nullptr)
+    {
+      LINALG::Matrix<3, 1, scalar_type> tangent, cross_section_director_2, cross_section_director_3;
+      EvaluatePositionDerivative1<element_type>(eta, q, tangent, element);
 
-    // Create the director vectors in the cross section.
-    // Director 2 is the one in the y-axis (reference configuration).
-    // Director 3 is the one in the z-axis (reference configuration).
-    tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
-    cross_section_director_2.Clear();
-    cross_section_director_2(0) = -tangent(1);
-    cross_section_director_2(1) = tangent(0);
-    cross_section_director_3.Clear();
-    cross_section_director_3(2) = 1.;
+      // The current implementation only allows tangential vectors in the x-y plane.
+      if (abs(tangent(2)) > CONSTANTS::pos_tol)
+        dserror("The tangent vector can not have a component in z direction! The component is %f!",
+            FADUTILS::CastToDouble(tangent(2)));
 
-    // Add the in cross section components of the position.
-    for (unsigned int dir = 0; dir < 3; dir++)
-      r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
-                             eta_cross_section(1) * cross_section_director_3(dir));
+      // Create the director vectors in the cross section.
+      // Director 2 is the one in the y-axis (reference configuration).
+      // Director 3 is the one in the z-axis (reference configuration).
+      tangent.Scale(1. / FADUTILS::VectorNorm(tangent));
+      cross_section_director_2.Clear();
+      cross_section_director_2(0) = -tangent(1);
+      cross_section_director_2(1) = tangent(0);
+      cross_section_director_3.Clear();
+      cross_section_director_3(2) = 1.;
+
+      // Add the in cross section components of the position.
+      for (unsigned int dir = 0; dir < 3; dir++)
+        r(dir) += radius * (eta_cross_section(0) * cross_section_director_2(dir) +
+                               eta_cross_section(1) * cross_section_director_3(dir));
+    }
+    else
+    {
+      // Use the given triad.
+      LINALG::Matrix<3, 1, scalar_type> cross_section_coordinates(true);
+      cross_section_coordinates(1) = radius * eta_cross_section(0);
+      cross_section_coordinates(2) = radius * eta_cross_section(1);
+      LINALG::Matrix<3, 1, scalar_type> cross_section_position;
+      cross_section_position.Multiply(*triad, cross_section_coordinates);
+      r += cross_section_position;
+    }
   }
 
   /**
@@ -226,7 +243,7 @@ namespace GEOMETRYPAIR
    * \brief Evaluate a position on the surface.
    *
    * @param xi (in) Parameter coordinates on the surface (the first two are in the surface
-   * parameter coordiantes, the third one is in the normal direction).
+   * parameter coordinates, the third one is in the normal direction).
    * @param q_surface (in) Degrees of freedom for the surface.
    * @param r (out) Position on the surface.
    * @param element (in) Pointer to the element object.
@@ -252,6 +269,75 @@ namespace GEOMETRYPAIR
     // Add the normal part to the position.
     normal.Scale(xi(2));
     r += normal;
+  }
+
+  /**
+   * \brief Evaluate the Jacobi matrix for a volume element.
+   *
+   * @param xi (in) Parameter coordinate on the element.
+   * @param X_volume (in) Reference positions for the element.
+   * @param J (out) 3D Jacobi matrix.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename volume, typename scalar_type>
+  void EvaluateJacobian(const LINALG::Matrix<3, 1, scalar_type>& xi,
+      const LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
+      LINALG::Matrix<3, 3, scalar_type>& J, const DRT::Element* element)
+  {
+    // Check at compile time if a volume (3D) element is given.
+    static_assert(volume::dim_ == 3, "EvaluateJacobian can only be called for 3D elements!");
+
+    // Get the derivatives of the reference position w.r.t the parameter coordinates. This is the
+    // transposed Jacobi matrix.
+    LINALG::Matrix<3, 3, scalar_type> dXdxi(true);
+    EvaluatePositionDerivative1<volume>(xi, X_volume, dXdxi, element);
+    J.Clear();
+    J.UpdateT(dXdxi);
+  }
+
+  /**
+   * \brief Evaluate the 3D deformation gradient F in a volume element.
+   *
+   * @param xi (in) Parameter coordinate on the element.
+   * @param X_volume (in) Reference positions for the element.
+   * @param q_volume (in) Degrees of freedom for the element.
+   * @param F (out) 3D deformation gradient.
+   * @param element (in) Pointer to the element, needed for beam elements.
+   */
+  template <typename volume, typename scalar_type_xi, typename scalar_type_dof,
+      typename scalar_type_result>
+  void EvaluateDeformationGradient(const LINALG::Matrix<3, 1, scalar_type_xi>& xi,
+      const LINALG::Matrix<volume::n_dof_, 1, double>& X_volume,
+      const LINALG::Matrix<volume::n_dof_, 1, scalar_type_dof>& q_volume,
+      LINALG::Matrix<3, 3, scalar_type_result>& F, const DRT::Element* element)
+  {
+    // Check at compile time if a volume (3D) element is given.
+    static_assert(
+        volume::dim_ == 3, "EvaluateDeformationGradient can only be called for 3D elements!");
+
+    // Get the inverse of the Jacobian.
+    LINALG::Matrix<3, 3, scalar_type_xi> inv_J(true);
+    EvaluateJacobian<volume>(xi, X_volume, inv_J, element);
+    LINALG::Inverse(inv_J);
+
+    // Get the derivatives of the shape functions w.r.t to the parameter coordinates.
+    LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdxi(true);
+    volume::EvaluateShapeFunctionDeriv1(
+        dNdxi, xi, std::integral_constant<unsigned int, volume::dim_>{}, element);
+
+    // Transform to derivatives w.r.t physical coordinates.
+    LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdX(true);
+    for (unsigned int i_row = 0; i_row < 3; i_row++)
+      for (unsigned int i_col = 0; i_col < volume::n_nodes_ * volume::n_val_; i_col++)
+        for (unsigned int i_sum = 0; i_sum < 3; i_sum++)
+          dNdX(i_row, i_col) += inv_J(i_row, i_sum) * dNdxi(i_sum, i_col);
+
+    // Calculate F.
+    F.Clear();
+    for (unsigned int i_row = 0; i_row < 3; i_row++)
+      for (unsigned int i_col = 0; i_col < 3; i_col++)
+        for (unsigned int i_sum = 0; i_sum < volume::n_nodes_ * volume::n_val_; i_sum++)
+          F(i_col, i_row) += dNdX(i_row, i_sum) * q_volume(3 * i_sum + i_col);
   }
 
   /**

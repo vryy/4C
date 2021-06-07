@@ -79,7 +79,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   // Loop over segments.
   for (unsigned int i_segment = 0; i_segment < this->line_to_3D_segments_.size(); i_segment++)
   {
-    // Factor to account for a segment length not from -1 to 1.
+    // Factor to account for the integration segment length.
     beam_segmentation_factor = 0.5 * this->line_to_3D_segments_[i_segment].GetSegmentLength();
 
     // Gauss point loop.

@@ -21,6 +21,8 @@
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
     : BeamToSolidParamsBase(),
       integration_points_circumference_(0),
+      rotation_coupling_(INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none),
+      rotational_coupling_penalty_parameter_(0.0),
       output_params_ptr_(Teuchos::null),
       couple_restart_state_(false)
 {
@@ -46,6 +48,27 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     integration_points_circumference_ =
         beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");
 
+    // Type of rotational coupling.
+    rotation_coupling_ = Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling>(
+        beam_to_solid_contact_params_list, "ROTATION_COUPLING");
+
+    // Mortar contact discretization to be used.
+    mortar_shape_function_rotation_ =
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions>(
+            beam_to_solid_contact_params_list, "ROTATION_COUPLING_MORTAR_SHAPE_FUNCTION");
+    if (GetContactDiscretization() ==
+            INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::mortar and
+        rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
+        mortar_shape_function_rotation_ ==
+            INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::none)
+      dserror(
+          "If mortar coupling and rotational coupling are activated, the shape function type for "
+          "rotational coupling has to be explicitly given.");
+
+    // Penalty parameter for rotational coupling.
+    rotational_coupling_penalty_parameter_ =
+        beam_to_solid_contact_params_list.get<double>("ROTATION_COUPLING_PENALTY_PARAMETER");
+
     // If the restart configuration should be coupled.
     couple_restart_state_ = (bool)DRT::INPUT::IntegralValue<int>(
         beam_to_solid_contact_params_list, "COUPLE_RESTART_STATE");
@@ -58,6 +81,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::Init()
     output_params_ptr_->Init();
     output_params_ptr_->Setup();
   }
+
+  // Sanity checks.
+  if (rotation_coupling_ != INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::none and
+      couple_restart_state_)
+    dserror("Coupling restart state combined with rotational coupling is not yet implemented!");
 
   isinit_ = true;
 }

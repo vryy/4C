@@ -91,6 +91,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::Evalu
     }
 
     // Each pair can also directly assembles terms into the global force vector and system matrix.
-    elepairptr->EvaluateAndAssemble(discret, fe_sysvec, fe_sysmat);
+    elepairptr->EvaluateAndAssemble(discret, fe_sysvec, fe_sysmat, data_state->GetDisColNp());
   }
 }
