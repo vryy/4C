@@ -1,0 +1,148 @@
+--------------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        2000
+//
+NODES                           2662
+//
+DIM                             3
+//
+MATERIALS                       2
+//
+NUMDF                           6
+//
+--------------------------------------------------------------------PROBLEM TYP
+// e.g. Fluid, Fluid_Ale, Fluid_XFEM, Ale, Structure, Fluid_Structure_Interaction, etc...
+PROBLEMTYP                      Structure
+//
+RESTART                         0
+//
+--------------------------------------------------------------------DISCRETISATION
+// Number of meshes in fluid field
+NUMFLUIDDIS                     0
+//
+// Number of meshes in structural field
+NUMSTRUCDIS                     1
+//
+// Number of meshes in ale field
+NUMALEDIS                       0
+//
+// Number of meshes in thermal field
+NUMTHERMDIS                     0
+//
+--------------------------------------------------------------------IO
+// Do you want to have binary output?
+//     Yes,No,yes,no,YES,NO
+OUTPUT_BIN                      yes
+//
+// Do you desire structural displ. output every Newton iteration
+//     Yes,No,yes,no,YES,NO
+OUTPUT_EVERY_ITER               no
+//
+// Add an output name affix by introducing a additional number
+OEI_FILE_COUNTER                0
+//
+// Output of displacements
+//     Yes,No,yes,no,YES,NO
+STRUCT_DISP                     Yes
+//
+// Output of stress
+//     No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_STRESS                   No
+//
+//     Yes,No,yes,no,YES,NO
+//
+// Amount of timesteps written to a single result file
+FILESTEPS                       1000
+//
+--------------------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+//
+// type of time integration control, e.g. Statics, GenAlpha, OneStepTheta, GEMM, ExplicitEuler, CentrDiff, etc. 
+DYNAMICTYP                      GenAlpha
+//
+// save displacements and contact forces every RESULTSEVRY steps
+RESULTSEVRY                     1
+//
+// write restart possibility every RESTARTEVRY steps
+RESTARTEVRY                     1
+//
+NLNSOL                          fullnewton
+// time step size
+TIMESTEP                        0.02
+//
+// maximum number of steps
+NUMSTEP                         6
+//
+// maximum time
+MAXTIME                         1.0
+//
+// type of damping: (1) Rayleigh damping matrix and use it from M_DAMP x M + K_DAMP x K, (2) Material based and calculated in elements
+//     no,No,NO,yes,Yes,YES,Rayleigh,Material,BrownianMotion
+DAMPING                         Yes
+//
+M_DAMP                          0.00001
+//
+K_DAMP                          0.00001
+//
+TOLRES                          1.0E-8
+//
+TOLDISP                         1.0E-8
+//
+NORM_RESF                       Abs
+//
+NORM_DISP                       Abs
+//
+NORMCOMBI_RESFDISP              And
+//
+MAXITER                         50
+//
+INT_STRATEGY                    Standard
+//
+--------------------------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+// mid-average type of internal forces
+//     Vague,ImrLike,TrLike
+GENAVG                          TrLike
+//RHO must be set to -1 to activate the four parameters
+RHO_INF                         1.0
+//
+--------------------------------------------------------------------CONTACT DYNAMIC
+LINEAR_SOLVER                   2
+//
+STRATEGY                        Lagrange
+//
+FRICTION                        None
+//
+SEMI_SMOOTH_NEWTON              Yes
+//
+SEMI_SMOOTH_CN                  1.0
+//
+--------------------------------------------------------------------MORTAR COUPLING
+// Type of employed set of shape functions
+//     Dual,dual,Standard,standard,std,PetrovGalerkin,petrovgalerkin,pg
+LM_SHAPEFCN                     Dual
+//
+// Type of contact search
+//     BruteForce, bruteforce, BruteForceEleBased, bruteforceelebased, BinaryTree, Binarytree, binarytree
+SEARCH_ALGORITHM                BinaryTree
+//
+// Radius / Bounding volume inflation for contact search
+SEARCH_PARAM                    0.3
+//
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+// The solver to attack the system of linear equations arising of FE approach with.
+//     Amesos_KLU_sym, Amesos_KLU_nonsym, Superlu, Aztec_MSR, LAPACK_sym, LAPACK_nonsym,
+//     UMFPACK, Belos, Stratimikos_Amesos, Stratimikos_Aztec, Stratimikos_Belos, undefined
+SOLVER                          UMFPACK
+//
+--------------------------------------------------------------------SOLVER 2
+NAME                            Contact_Solver
+SOLVER                          UMFPACK
+//
+-------------------------------------------------------------------MATERIALS
+// MAT_Struct_StVenantKirchhoff
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100.0 NUE 0.3 DENS 0.5
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 4000.0 NUE 0.3 DENS 1
+//
+--------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 2 VALUES 0 0.02 0.02

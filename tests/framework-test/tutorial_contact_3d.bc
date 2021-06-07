@@ -1,0 +1,48 @@
+------------------------------------------------BCSPECS
+$$ Assign material and element types to the element blocks
+Element Block, named: cuboid_large
+of Shape: HEX8
+has 1000 Elements
+*eb1="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 1 KINEM nonlinear EAS none"
+elementname="SOLIDH8"
+
+Element Block, named: cuboid_small
+of Shape: HEX8
+has 125 Elements
+*eb2="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 2 KINEM nonlinear EAS none"
+elementname="SOLIDH8"
+
+$$ Assign the contact problem specific conditions to the corresponding surfaces
+Node Set, named: slave
+Property Name: none
+has 36 Nodes
+*ns1="CONDITION"
+sectionname="DESIGN SURF MORTAR CONTACT CONDITIONS 3D"
+description="1 Slave"
+
+Node Set, named: master
+Property Name: none
+has 121 Nodes
+*ns2="CONDITION"
+sectionname="DESIGN SURF MORTAR CONTACT CONDITIONS 3D"
+description="1 Master"
+
+$$ Assign the Dirichlet Boundary Conditions
+Node Set, named: pushing
+Property Name: none
+has 36 Nodes
+*ns4="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 0 0 VAL -1.0 0.0 0.0 FUNCT 1 0 0"
+
+Node Set, named: wall
+Property Name: none
+has 121 Nodes
+*ns3="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0"
+-----------------------------------------VALIDCONDITIONS
