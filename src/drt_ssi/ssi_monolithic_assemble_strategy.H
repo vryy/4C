@@ -47,7 +47,8 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit AssembleStrategyBase(const SSI::SSIMono& ssi_mono);
+    explicit AssembleStrategyBase(
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     //! assemble RHS
     void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
@@ -90,12 +91,18 @@ namespace SSI
         Teuchos::RCP<const LINALG::SparseOperator> scatra_scatramanifold_matrix) = 0;
 
    protected:
-    //! monolithic algorithm for scalar-structure interaction
-    const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
+    //! solve additional scatra field on manifolds
+    bool IsScaTraManifold() const { return is_scatra_manifold_; }
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
 
    private:
-    //! monolithic algorithm for scalar-structure interaction
-    const SSI::SSIMono& ssi_mono_;
+    //! solve additional scatra field on manifolds
+    const bool is_scatra_manifold_;
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
   };
 
   //======================================================================================================
@@ -103,7 +110,8 @@ namespace SSI
   class AssembleStrategyBlock : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategyBlock(const SSI::SSIMono& ssi_mono);
+    explicit AssembleStrategyBlock(
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override = 0;
@@ -159,7 +167,8 @@ namespace SSI
   class AssembleStrategyBlockBlock : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
+    explicit AssembleStrategyBlockBlock(
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override;
@@ -191,7 +200,8 @@ namespace SSI
   class AssembleStrategyBlockSparse : public AssembleStrategyBlock
   {
    public:
-    explicit AssembleStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
+    explicit AssembleStrategyBlockSparse(
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override;
@@ -223,7 +233,8 @@ namespace SSI
   class AssembleStrategySparse : public AssembleStrategyBase
   {
    public:
-    explicit AssembleStrategySparse(const SSI::SSIMono& ssi_mono);
+    explicit AssembleStrategySparse(
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,
         Teuchos::RCP<const LINALG::SparseOperator> scatra_scatra_matrix) override;
@@ -251,7 +262,8 @@ namespace SSI
   };
 
   //! build specific assemble strategy
-  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(const SSI::SSIMono& ssi_mono,
+  Teuchos::RCP<SSI::AssembleStrategyBase> BuildAssembleStrategy(
+      Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold,
       LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
 
 }  // namespace SSI

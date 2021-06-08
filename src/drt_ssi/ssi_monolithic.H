@@ -87,9 +87,6 @@ namespace SSI
       return contact_strategy_nitsche_;
     }
 
-    //! get vector containing positions within system matrix for specific subproblem
-    Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
-
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const;
 

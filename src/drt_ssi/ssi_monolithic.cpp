@@ -338,11 +338,11 @@ void SSI::SSIMono::BuildNullSpaces() const
     {
       // equip smoother for scatra matrix blocks with null space
       ScaTraField()->BuildBlockNullSpaces(
-          solver_, GetBlockPositions(Subproblem::scalar_transport)->at(0));
+          solver_, ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0));
       if (IsScaTraManifold())
       {
         ScaTraManifold()->BuildBlockNullSpaces(
-            solver_, GetBlockPositions(Subproblem::manifold)->at(0));
+            solver_, ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0));
       }
       break;
     }
@@ -352,7 +352,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
       std::ostringstream scatrablockstr;
-      scatrablockstr << GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
+      scatrablockstr << ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsscatra =
           solver_->Params().sublist("Inverse" + scatrablockstr.str());
       blocksmootherparamsscatra.sublist("Aztec Parameters");
@@ -365,7 +365,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       if (IsScaTraManifold())
       {
         std::ostringstream scatramanifoldblockstr;
-        scatramanifoldblockstr << GetBlockPositions(Subproblem::manifold)->at(0) + 1;
+        scatramanifoldblockstr << ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0) + 1;
         Teuchos::ParameterList& blocksmootherparamsscatramanifold =
             solver_->Params().sublist("Inverse" + scatramanifoldblockstr.str());
         blocksmootherparamsscatramanifold.sublist("Aztec Parameters");
@@ -389,7 +389,7 @@ void SSI::SSIMono::BuildNullSpaces() const
 
   // store number of matrix block associated with structural field as string
   std::stringstream iblockstr;
-  iblockstr << GetBlockPositions(Subproblem::structure)->at(0) + 1;
+  iblockstr << ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0) + 1;
 
   // equip smoother for structural matrix block with empty parameter sub lists to trigger null space
   // computation
@@ -728,7 +728,8 @@ void SSI::SSIMono::SetupSystem()
   ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(ssi_maps_));
 
   // initialize strategy for assembly
-  strategy_assemble_ = SSI::BuildAssembleStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
+  strategy_assemble_ = SSI::BuildAssembleStrategy(
+      ssi_maps_, IsScaTraManifold(), matrixtype_, ScaTraField()->MatrixType());
 
   if (IsScaTraManifold())
   {
@@ -1009,56 +1010,6 @@ void SSI::SSIMono::UpdateIterStructure()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> SSI::SSIMono::GetBlockPositions(Subproblem subproblem) const
-{
-  if (matrixtype_ == LINALG::MatrixType::sparse) dserror("Sparse matrices have just one block");
-
-  Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
-
-  switch (subproblem)
-  {
-    case Subproblem::structure:
-    {
-      if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
-        block_position->emplace_back(1);
-      else
-        block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps());
-      break;
-    }
-    case Subproblem::scalar_transport:
-    {
-      if (ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
-        block_position->emplace_back(0);
-      else
-      {
-        for (int i = 0; i < ScaTraField()->BlockMaps().NumMaps(); ++i)
-          block_position->emplace_back(i);
-      }
-      break;
-    }
-    case Subproblem::manifold:
-    {
-      if (ScaTraManifold()->MatrixType() == LINALG::MatrixType::sparse)
-        block_position->emplace_back(2);
-      else
-      {
-        for (int i = 0; i < static_cast<int>(ScaTraManifold()->BlockMaps().NumMaps()); ++i)
-          block_position->emplace_back(ScaTraField()->BlockMaps().NumMaps() + 1 + i);
-      }
-      break;
-    }
-    default:
-    {
-      dserror("Unknown type of subproblem");
-      break;
-    }
-  }
-
-  return block_position;
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEquilibration()
 {
   Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> equilibration_method_vector;
@@ -1085,10 +1036,10 @@ Teuchos::RCP<std::vector<LINALG::EquilibrationMethod>> SSI::SSIMono::GetBlockEqu
       }
       else
       {
-        auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
-        auto block_position_structure = GetBlockPositions(Subproblem::structure);
+        auto block_positions_scatra = ssi_maps_->GetBlockPositions(Subproblem::scalar_transport);
+        auto block_position_structure = ssi_maps_->GetBlockPositions(Subproblem::structure);
         auto block_positions_scatra_manifold =
-            IsScaTraManifold() ? GetBlockPositions(Subproblem::manifold) : Teuchos::null;
+            IsScaTraManifold() ? ssi_maps_->GetBlockPositions(Subproblem::manifold) : Teuchos::null;
 
         equilibration_method_vector = Teuchos::rcp(new std::vector<LINALG::EquilibrationMethod>(
             block_positions_scatra->size() + block_position_structure->size() +
@@ -1358,8 +1309,8 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
             *LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system), *ones_struct)
       : LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
             LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system)
-                ->Matrix(GetBlockPositions(Subproblem::structure)->at(0),
-                    GetBlockPositions(Subproblem::structure)->at(0)),
+                ->Matrix(ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0),
+                    ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0)),
             *ones_struct);
 
   // extract residuals of scatra and manifold from global residual
@@ -1407,7 +1358,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
           auto massmatrix_scatra_block =
               LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_scatra);
 
-          auto positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
+          auto positions_scatra = ssi_maps_->GetBlockPositions(Subproblem::scalar_transport);
 
           for (int i = 0; i < static_cast<int>(positions_scatra->size()); ++i)
           {
@@ -1417,7 +1368,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
           }
           if (IsScaTraManifold())
           {
-            auto positions_manifold = GetBlockPositions(Subproblem::manifold);
+            auto positions_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold);
 
             auto massmatrix_manifold_block =
                 LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_manifold);
@@ -1438,14 +1389,15 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
           auto massmatrix_system_block =
               LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
 
-          const int position_scatra = GetBlockPositions(Subproblem::scalar_transport)->at(0);
+          const int position_scatra =
+              ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0);
 
           massmatrix_system_block->Matrix(position_scatra, position_scatra)
               .Add(*LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0, 1.0);
 
           if (IsScaTraManifold())
           {
-            const int position_manifold = GetBlockPositions(Subproblem::manifold)->at(0);
+            const int position_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0);
 
             massmatrix_system_block->Matrix(position_manifold, position_manifold)
                 .Add(*LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false, 1.0,

@@ -263,6 +263,9 @@ namespace SSI
       //! constructor
       explicit SSIMaps(const SSI::SSIMono& ssi_mono_algorithm);
 
+      //! get vector containing positions within system matrix for specific subproblem
+      Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+
       //! get position within global dof map for specific sub problem
       static int GetProblemPosition(Subproblem subproblem);
 
@@ -323,9 +326,14 @@ namespace SSI
       //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_sub_problems_;
 
-      //! condensed structure dofs (inner and master side): other map
-      //! slave side structure dofs: cond map
-      Teuchos::RCP<const LINALG::MapExtractor> slave_condensed_structure_maps_;
+      //! matrix type of scatra matrix
+      const LINALG::MatrixType scatra_matrixtype_;
+
+      //! matrix type of scatra manifold matrix
+      const LINALG::MatrixType scatra_manifold_matrixtype_;
+
+      //! matrix type of ssi matrix
+      const LINALG::MatrixType ssi_matrixtype_;
     };
 
     class SSIMeshTyingMaps

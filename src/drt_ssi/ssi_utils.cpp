@@ -717,7 +717,12 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
     : block_maps_sub_problems_(),
       block_maps_systemmatrix_(Teuchos::null),
       map_system_matrix_(Teuchos::null),
-      maps_sub_problems_(Teuchos::null)
+      maps_sub_problems_(Teuchos::null),
+      scatra_matrixtype_(ssi_mono_algorithm.ScaTraField()->MatrixType()),
+      scatra_manifold_matrixtype_(ssi_mono_algorithm.IsScaTraManifold()
+                                      ? ssi_mono_algorithm.ScaTraManifold()->MatrixType()
+                                      : LINALG::MatrixType::undefined),
+      ssi_matrixtype_(ssi_mono_algorithm.MatrixType())
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps(
       ssi_mono_algorithm.IsScaTraManifold() ? 3 : 2, Teuchos::null);
@@ -741,8 +746,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
   // check global map extractor
   maps_sub_problems_->CheckForValidMapExtractor();
 
-
-  switch (ssi_mono_algorithm.MatrixType())
+  switch (ssi_matrixtype_)
   {
     case LINALG::MatrixType::block_field:
     {
@@ -755,7 +759,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
 
       block_maps_sub_problems_.insert(std::make_pair(Subproblem::structure, block_map_structure));
 
-      switch (ssi_mono_algorithm.ScaTraField()->MatrixType())
+      switch (scatra_matrixtype_)
       {
         case LINALG::MatrixType::sparse:
         {
@@ -892,6 +896,61 @@ SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(const SSI::SSIBase& ssi_algorithm
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) const
+{
+  dsassert(ssi_matrixtype_ != LINALG::MatrixType::sparse, "Sparse matrices have just one block");
+
+  Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
+
+  switch (subproblem)
+  {
+    case Subproblem::structure:
+    {
+      if (scatra_matrixtype_ == LINALG::MatrixType::sparse)
+        block_position->emplace_back(1);
+      else
+        block_position->emplace_back(
+            BlockMapsSubProblems().at(Subproblem::scalar_transport)->NumMaps());
+      break;
+    }
+    case Subproblem::scalar_transport:
+    {
+      if (scatra_matrixtype_ == LINALG::MatrixType::sparse)
+        block_position->emplace_back(0);
+      else
+      {
+        for (int i = 0; i < BlockMapsSubProblems().at(Subproblem::scalar_transport)->NumMaps(); ++i)
+          block_position->emplace_back(i);
+      }
+      break;
+    }
+    case Subproblem::manifold:
+    {
+      if (scatra_manifold_matrixtype_ == LINALG::MatrixType::sparse)
+        block_position->emplace_back(2);
+      else
+      {
+        auto scatra_manifold_num_block_maps =
+            BlockMapsSubProblems().at(Subproblem::manifold)->NumMaps();
+
+        for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
+          block_position->emplace_back(
+              BlockMapsSubProblems().at(Subproblem::scalar_transport)->NumMaps() + 1 + i);
+      }
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of subproblem");
+      break;
+    }
+  }
+
+  return block_position;
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
 int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
 {
   int position = -1;
@@ -940,21 +999,19 @@ void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono&
   for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::scalar_transport)->NumMaps(); ++i)
 
   {
-    auto block_positions_scatra =
-        ssi_mono_algorithm.GetBlockPositions(Subproblem::scalar_transport);
+    auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
     partial_maps_system_matrix[block_positions_scatra->at(i)] =
         block_maps_sub_problems_.at(Subproblem::scalar_transport)->Map(i);
   }
 
-  partial_maps_system_matrix.at(
-      ssi_mono_algorithm.GetBlockPositions(Subproblem::structure)->at(0)) =
+  partial_maps_system_matrix.at(GetBlockPositions(Subproblem::structure)->at(0)) =
       block_maps_sub_problems_.at(Subproblem::structure)->FullMap();
 
   if (ssi_mono_algorithm.IsScaTraManifold())
   {
     for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::manifold)->NumMaps(); ++i)
     {
-      auto block_positions_manifold = ssi_mono_algorithm.GetBlockPositions(Subproblem::manifold);
+      auto block_positions_manifold = GetBlockPositions(Subproblem::manifold);
       partial_maps_system_matrix[block_positions_manifold->at(i)] =
           block_maps_sub_problems_.at(Subproblem::manifold)->Map(i);
     }

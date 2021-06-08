@@ -24,47 +24,53 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBase::AssembleStrategyBase(const SSI::SSIMono& ssi_mono) : ssi_mono_(ssi_mono)
+SSI::AssembleStrategyBase::AssembleStrategyBase(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    : is_scatra_manifold_(is_scatra_manifold), ssi_maps_(std::move(ssi_maps))
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlock::AssembleStrategyBlock(const SSI::SSIMono& ssi_mono)
-    : AssembleStrategyBase(ssi_mono),
+SSI::AssembleStrategyBlock::AssembleStrategyBlock(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    : AssembleStrategyBase(ssi_maps, is_scatra_manifold),
       block_position_scatra_(Teuchos::null),
       block_position_scatra_manifold_(Teuchos::null),
       position_structure_(-1)
 {
-  block_position_scatra_ = SSIMono().GetBlockPositions(SSI::Subproblem::scalar_transport);
-  position_structure_ = SSIMono().GetBlockPositions(SSI::Subproblem::structure)->at(0);
-  if (SSIMono().IsScaTraManifold())
-    block_position_scatra_manifold_ = SSIMono().GetBlockPositions(SSI::Subproblem::manifold);
+  block_position_scatra_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport);
+  position_structure_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::structure)->at(0);
+  if (IsScaTraManifold())
+    block_position_scatra_manifold_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::manifold);
 
   if (block_position_scatra_ == Teuchos::null) dserror("Cannot get position of scatra blocks");
   if (position_structure_ == -1) dserror("Cannot get position of structure block");
-  if (SSIMono().IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
+  if (IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
     dserror("Cannot get position of scatra manifold blocks");
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(const SSI::SSIMono& ssi_mono)
-    : AssembleStrategyBlock(ssi_mono)
+SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    : AssembleStrategyBlock(ssi_maps, is_scatra_manifold)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(const SSI::SSIMono& ssi_mono)
-    : AssembleStrategyBlock(ssi_mono)
+SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    : AssembleStrategyBlock(ssi_maps, is_scatra_manifold)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::AssembleStrategySparse::AssembleStrategySparse(const SSI::SSIMono& ssi_mono)
-    : AssembleStrategyBase(ssi_mono)
+SSI::AssembleStrategySparse::AssembleStrategySparse(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    : AssembleStrategyBase(ssi_maps, is_scatra_manifold)
 {
 }
 
@@ -465,31 +471,32 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
     Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_manifold_side,
     Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_scatra_side)
 {
-  SSIMono().MapsSubProblems()->InsertVector(
+  SSIMaps()->MapsSubProblems()->InsertVector(
       rhs_scatra, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
 
-  if (SSIMono().IsScaTraManifold())
+  if (IsScaTraManifold())
   {
-    SSIMono().MapsSubProblems()->InsertVector(
+    SSIMaps()->MapsSubProblems()->InsertVector(
         rhs_manifold, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::manifold), rhs);
 
-    SSIMono().MapsSubProblems()->InsertVector(
+    SSIMaps()->MapsSubProblems()->InsertVector(
         rhs_manifold, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::manifold), rhs);
 
-    SSIMono().MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_manifold_side,
+    SSIMaps()->MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_manifold_side,
         UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold), rhs);
 
-    SSIMono().MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_scatra_side,
+    SSIMaps()->MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_scatra_side,
         UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport), rhs);
   }
 
-  SSIMono().MapsSubProblems()->AddVector(
+  SSIMaps()->MapsSubProblems()->AddVector(
       rhs_structure, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::structure), rhs, -1.0);
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(const SSI::SSIMono& ssi_mono,
+Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold,
     LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSI::AssembleStrategyBase> assemblestrategy = Teuchos::null;
@@ -503,12 +510,14 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(const SSI::SS
         case LINALG::MatrixType::block_condition:
         case LINALG::MatrixType::block_condition_dof:
         {
-          assemblestrategy = Teuchos::rcp(new SSI::AssembleStrategyBlockBlock(ssi_mono));
+          assemblestrategy =
+              Teuchos::rcp(new SSI::AssembleStrategyBlockBlock(ssi_maps, is_scatra_manifold));
           break;
         }
         case LINALG::MatrixType::sparse:
         {
-          assemblestrategy = Teuchos::rcp(new SSI::AssembleStrategyBlockSparse(ssi_mono));
+          assemblestrategy =
+              Teuchos::rcp(new SSI::AssembleStrategyBlockSparse(ssi_maps, is_scatra_manifold));
           break;
         }
 
@@ -522,7 +531,8 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::BuildAssembleStrategy(const SSI::SS
     }
     case LINALG::MatrixType::sparse:
     {
-      assemblestrategy = Teuchos::rcp(new SSI::AssembleStrategySparse(ssi_mono));
+      assemblestrategy =
+          Teuchos::rcp(new SSI::AssembleStrategySparse(ssi_maps, is_scatra_manifold));
       break;
     }
     default:
