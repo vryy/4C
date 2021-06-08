@@ -287,6 +287,9 @@ namespace INPAR
                                       ///< gradient is a polynomial function of the intercalation
                                       ///< fraction that causes the volume change
       mix_growth_strategy_isotropic,  ///< Isotropic growth law for growth remodel mixture rule
+      mix_growth_strategy_stiffness,  ///< Growth modeled as an expansion of the entire cell (growth
+                                      ///< happens mainly in the direction of the smallest
+                                      ///< stiffness)
       mix_rule_simple,                ///< Simple rule for the mixture model
       mix_rule_growthremodel,         ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder

@@ -3679,6 +3679,19 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Extension of all constituents simultaneously -> Growth happens mainly in the direction with the
+  // smallest stiffness
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_GrowthStrategy_Stiffness",
+        "Extension of all constituents simultaneously", INPAR::MAT::mix_growth_strategy_stiffness));
+
+    AddNamedReal(
+        m, "KAPPA", "Penalty parameter for the modified penalty term for incompressibility");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Constant predefined prestretch
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Constant",
