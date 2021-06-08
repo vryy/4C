@@ -118,6 +118,9 @@ namespace SSI
      */
     void SolveLinearSystem();
 
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
+
     //! return algebraic solver for global system of equations
     const LINALG::Solver& Solver() const { return *solver_; };
 

@@ -766,7 +766,8 @@ void SSI::SSIMono::SetupSystem()
       SSI::BuildMeshtyingStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
 
   // instantiate Dirichlet boundary condition handler class
-  dbc_handler_ = SSI::BuildDBCHandler(Teuchos::rcp(this, false), matrixtype_);
+  dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
+      IsScaTraManifold() ? ScaTraManifold() : Teuchos::null, ssi_maps_, StructureField());
 }
 
 /*---------------------------------------------------------------------------------*
