@@ -14,6 +14,7 @@
 #include "../drt_mixture/mixture_prestress_strategy_isocyl.H"
 #include "../drt_mixture/mixture_prestress_strategy_constant.H"
 #include "../drt_mixture/mixture_prestress_strategy_iterative.H"
+#include "../drt_mixture/mixture_growth_strategy_isotropic.H"
 #include "../drt_mixture/mixture_rule_growthremodel.H"
 #include "../drt_mixture/mixture_rule_simple.H"
 
@@ -1512,6 +1513,8 @@ template MIXTURE::PAR::IterativePrestressStrategy* MAT::CreateMaterialParameterI
 template MIXTURE::PAR::SimpleMixtureRule* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 template MIXTURE::PAR::GrowthRemodelMixtureRule* MAT::CreateMaterialParameterInstance(
+    Teuchos::RCP<MAT::PAR::Material> curmat);
+template MIXTURE::PAR::IsotropicGrowthStrategy* MAT::CreateMaterialParameterInstance(
     Teuchos::RCP<MAT::PAR::Material> curmat);
 
 template void MAT::ClearFourTensor<3>(LINALG::FourTensor<3>& fourTensor);

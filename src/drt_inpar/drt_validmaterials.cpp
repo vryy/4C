@@ -3670,6 +3670,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Isotropic growth
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_GrowthStrategy_Isotropic", "isotropic growth",
+        INPAR::MAT::mix_growth_strategy_isotropic));
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Constant predefined prestretch
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MIX_Prestress_Strategy_Constant",
@@ -3744,7 +3753,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "Mixture rule for growth/remodel homogenized constrained mixture models",
         INPAR::MAT::mix_rule_growthremodel));
 
-    AddNamedInt(m, "GROWTH_TYPE", "Growth type (0: isotropic growth, 1: anisotropic growth)");
+    AddNamedInt(m, "GROWTH_STRATEGY", "Material id of the growth strategy");
     AddNamedReal(m, "DENS", "");
     AddNamedInt(m, "NUMCONST", "number of mixture constituents");
     AddNamedRealVector(
