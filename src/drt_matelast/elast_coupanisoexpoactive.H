@@ -34,9 +34,6 @@ namespace MAT
         /// standard constructor
         explicit CoupAnisoExpoActive(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-        /// destructor
-        ~CoupAnisoExpoActive() override = default;
-
         /// @name material parameters
         //@{
 
@@ -114,8 +111,6 @@ namespace MAT
      public:
       /// constructor with given material parameters
       explicit CoupAnisoExpoActive(MAT::ELASTIC::PAR::CoupAnisoExpoActive* params);
-
-      ~CoupAnisoExpoActive() override = default;
 
       ///@name Packing and Unpacking
       //@{
@@ -261,6 +256,9 @@ namespace MAT
       }
 
      private:
+      /// Evaluate the first derivative of the active fiber potential w.r.t active fiber stretch
+      double EvaluatedPsiActive() const;
+
       /// my material parameters
       MAT::ELASTIC::PAR::CoupAnisoExpoActive* params_;
 
