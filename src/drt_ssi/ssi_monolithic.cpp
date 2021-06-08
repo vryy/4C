@@ -758,7 +758,8 @@ void SSI::SSIMono::SetupSystem()
       matrixtype_, GetBlockEquilibration(), MapsSubProblems()->FullMap());
 
   // instantiate appropriate contact class
-  strategy_contact_ = SSI::BuildContactStrategy(*this, ScaTraField()->MatrixType());
+  strategy_contact_ =
+      SSI::BuildContactStrategy(CoNitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
 
   // instantiate appropriate mesh tying class
   strategy_meshtying_ =
