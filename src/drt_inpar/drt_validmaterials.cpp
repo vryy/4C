@@ -3679,6 +3679,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
+  // Anisotropic growth
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MIX_GrowthStrategy_Anisotropic",
+        "anisotropic growth", INPAR::MAT::mix_growth_strategy_anisotropic));
+
+
+    AddNamedInt(m, "INIT", "initialization modus for growth direction alignment", 1, true);
+    AddNamedInt(m, "FIBER_ID",
+        "Id of the fiber to point the growth direction (1 for first fiber, default)", 1, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // Extension of all constituents simultaneously -> Growth happens mainly in the direction with the
   // smallest stiffness
   {

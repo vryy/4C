@@ -2616,6 +2616,7 @@ set(OBJS_DRT_MIXTURE
   src/drt_mixture/mixture_constituent_remodelfiber.cpp
   src/drt_mixture/mixture_constituent_remodelfiber_expl.cpp
   src/drt_mixture/mixture_growth_strategy.cpp
+  src/drt_mixture/mixture_growth_strategy_anisotropic.cpp
   src/drt_mixture/mixture_growth_strategy_isotropic.cpp
   src/drt_mixture/mixture_growth_strategy_stiffness.cpp
   src/drt_mixture/mixture_rule.cpp

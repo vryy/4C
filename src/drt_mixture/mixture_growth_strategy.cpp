@@ -9,6 +9,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/material_service.H"
+#include "mixture_growth_strategy_anisotropic.H"
 #include "mixture_growth_strategy_isotropic.H"
 #include "mixture_growth_strategy_stiffness.H"
 
@@ -43,6 +44,10 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::Factor
     case INPAR::MAT::mix_growth_strategy_isotropic:
     {
       return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
+    }
+    case INPAR::MAT::mix_growth_strategy_anisotropic:
+    {
+      return MAT::CreateMaterialParameterInstance<MIXTURE::PAR::AnisotropicGrowthStrategy>(curmat);
     }
     case INPAR::MAT::mix_growth_strategy_stiffness:
     {
