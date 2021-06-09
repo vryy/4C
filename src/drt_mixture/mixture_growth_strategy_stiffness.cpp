@@ -23,7 +23,7 @@ MIXTURE::PAR::StiffnessGrowthStrategy::CreateGrowthStrategy()
 {
   std::unique_ptr<MIXTURE::StiffnessGrowthStrategy> strategy(
       new MIXTURE::StiffnessGrowthStrategy(this));
-  return strategy;
+  return std::move(strategy);
 }
 
 MIXTURE::StiffnessGrowthStrategy::StiffnessGrowthStrategy(

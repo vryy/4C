@@ -20,7 +20,7 @@ MIXTURE::PAR::IsotropicGrowthStrategy::CreateGrowthStrategy()
 {
   std::unique_ptr<MIXTURE::IsotropicGrowthStrategy> strategy(
       new MIXTURE::IsotropicGrowthStrategy());
-  return strategy;
+  return std::move(strategy);
 }
 
 void MIXTURE::IsotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradient(

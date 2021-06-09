@@ -11,6 +11,7 @@
 
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "mixture_rule.H"
+#include <memory>
 
 namespace MIXTURE
 {
