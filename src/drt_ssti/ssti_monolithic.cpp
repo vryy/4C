@@ -25,6 +25,7 @@
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 
 #include "../drt_ssi/ssi_monolithic_evaluate_OffDiag.H"
+#include "../drt_ssi/ssi_utils.H"
 
 #include "../drt_sti/sti_monolithic_evaluate_OffDiag.H"
 
@@ -403,19 +404,14 @@ void SSTI::SSTIMono::SetupSystem()
       Teuchos::rcp(new SSI::ScatraStructureOffDiagCouplingSSTI(ssti_maps_mono_->MapsStructure(),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
           ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
-          StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
-          StructuralMeshtying()->InterfaceCouplingAdapterStructure3DomainIntersection(),
-          interface_map_scatra, MeshtyingScatra(), ScaTraFieldBase(), StructureField(),
-          StructuralMeshtying()->Meshtying3DomainIntersection()));
+          SSTIStructureMeshTying(), MeshtyingScatra(), ScaTraField(), StructureField()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
       ssti_maps_mono_->MapsStructure(), ssti_maps_mono_->MapsThermo(),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
       ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
-      StructuralMeshtying()->InterfaceCouplingAdapterStructure(),
-      StructuralMeshtying()->InterfaceCouplingAdapterStructure3DomainIntersection(),
-      interface_map_thermo, MeshtyingThermo(), StructureField(), ThermoFieldBase(),
-      StructuralMeshtying()->Meshtying3DomainIntersection()));
+      SSTIStructureMeshTying(), interface_map_thermo, MeshtyingThermo(), StructureField(),
+      ThermoFieldBase()));
 
   scatrathermooffdiagcoupling_ = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
       ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
@@ -513,39 +509,36 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
       if (InterfaceMeshtying())
       {
         // displacements
-        StructuralMeshtying()->MapsInterfaceStructure()->InsertVector(
-            StructuralMeshtying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-                StructuralMeshtying()->MapsInterfaceStructure()->ExtractVector(
-                    StructureField()->Dispnp(), 1)),
-            0, StructureField()->WriteAccessDispnp());
+        MapsCoupStruct()->InsertVector(
+            SSTIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
+                MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
+            1, StructureField()->WriteAccessDispnp());
 
         // increments
         StructureField()->SetState(StructureField()->WriteAccessDispnp());
-        StructuralMeshtying()->MapsInterfaceStructure()->InsertVector(
-            StructuralMeshtying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-                StructuralMeshtying()->MapsInterfaceStructure()->ExtractVector(subincrement, 1)),
-            0, subincrement);
+        MapsCoupStruct()->InsertVector(
+            SSTIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
+                MapsCoupStruct()->ExtractVector(subincrement, 2)),
+            1, subincrement);
 
-        if (StructuralMeshtying()->Meshtying3DomainIntersection())
+        if (SSTIStructureMeshTying()->MeshTying3DomainIntersection())
         {
           // displacements
-          StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
-              StructuralMeshtying()
+          MapsCoupStruct3DomainIntersection()->InsertVector(
+              SSTIStructureMeshTying()
                   ->InterfaceCouplingAdapterStructure3DomainIntersection()
-                  ->MasterToSlave(StructuralMeshtying()
-                                      ->MapsInterfaceStructure3DomainIntersection()
-                                      ->ExtractVector(StructureField()->Dispnp(), 1)),
-              0, StructureField()->WriteAccessDispnp());
+                  ->MasterToSlave(MapsCoupStruct3DomainIntersection()->ExtractVector(
+                      StructureField()->Dispnp(), 2)),
+              1, StructureField()->WriteAccessDispnp());
           StructureField()->SetState(StructureField()->WriteAccessDispnp());
 
           // increments
-          StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->InsertVector(
-              StructuralMeshtying()
+          MapsCoupStruct3DomainIntersection()->InsertVector(
+              SSTIStructureMeshTying()
                   ->InterfaceCouplingAdapterStructure3DomainIntersection()
-                  ->MasterToSlave(StructuralMeshtying()
-                                      ->MapsInterfaceStructure3DomainIntersection()
-                                      ->ExtractVector(subincrement, 1)),
-              0, subincrement);
+                  ->MasterToSlave(
+                      MapsCoupStruct3DomainIntersection()->ExtractVector(subincrement, 2)),
+              1, subincrement);
         }
       }
       break;

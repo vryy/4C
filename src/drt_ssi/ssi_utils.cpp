@@ -837,31 +837,32 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
 
 /* ----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(const SSI::SSIBase& ssi_algorithm)
+SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(
+    Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure,
+    Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
+    const bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis)
     : map_structure_condensed_(Teuchos::null),
       maps_coup_struct_(Teuchos::null),
       maps_coup_struct_3_domain_intersection_(Teuchos::null)
 {
   // setup map with inner and master side (= condensed) structural dofs
   {
-    if (ssi_algorithm.Meshtying3DomainIntersection())
+    if (meshtying_3_domain_intersection)
     {
-      auto map1 = Teuchos::rcp(
-          new const Epetra_Map(*ssi_algorithm.InterfaceCouplingAdapterStructure()->SlaveDofMap()));
+      auto map1 =
+          Teuchos::rcp(new const Epetra_Map(*interface_coupling_adapter_structure->SlaveDofMap()));
       auto map2 = Teuchos::rcp(new const Epetra_Map(
-          *ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap()));
+          *interface_coupling_adapter_structure_3domain_intersection->SlaveDofMap()));
       auto map3 = LINALG::MultiMapExtractor::MergeMaps({map1, map2});
 
       // set up map for interior and master-side structural degrees of freedom
-      map_structure_condensed_ =
-          LINALG::SplitMap(*ssi_algorithm.StructureField()->Discretization()->DofRowMap(), *map3);
+      map_structure_condensed_ = LINALG::SplitMap(*structure_dis->DofRowMap(), *map3);
     }
     else
     {
       // set up map for interior and master-side structural degrees of freedom
-      map_structure_condensed_ =
-          LINALG::SplitMap(*ssi_algorithm.StructureField()->Discretization()->DofRowMap(),
-              *ssi_algorithm.InterfaceCouplingAdapterStructure()->SlaveDofMap());
+      map_structure_condensed_ = LINALG::SplitMap(
+          *structure_dis->DofRowMap(), *interface_coupling_adapter_structure->SlaveDofMap());
     }
   }
 
@@ -869,29 +870,59 @@ SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(const SSI::SSIBase& ssi_algorithm
   {
     // set up structural map extractor holding interior and interface maps of degrees of freedom
     std::vector<Teuchos::RCP<const Epetra_Map>> maps_surf(0, Teuchos::null);
-    maps_surf.emplace_back(LINALG::SplitMap(*map_structure_condensed_,
-        *ssi_algorithm.InterfaceCouplingAdapterStructure()->MasterDofMap()));
-    maps_surf.emplace_back(ssi_algorithm.InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    maps_surf.emplace_back(ssi_algorithm.InterfaceCouplingAdapterStructure()->MasterDofMap());
-    maps_coup_struct_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
-        *ssi_algorithm.StructureField()->Discretization()->DofRowMap(), maps_surf));
+    maps_surf.emplace_back(LINALG::SplitMap(
+        *map_structure_condensed_, *interface_coupling_adapter_structure->MasterDofMap()));
+    maps_surf.emplace_back(interface_coupling_adapter_structure->SlaveDofMap());
+    maps_surf.emplace_back(interface_coupling_adapter_structure->MasterDofMap());
+    maps_coup_struct_ =
+        Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_dis->DofRowMap(), maps_surf));
     maps_coup_struct_->CheckForValidMapExtractor();
 
-    if (ssi_algorithm.Meshtying3DomainIntersection())
+    if (meshtying_3_domain_intersection)
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> maps_line(0, Teuchos::null);
       maps_line.emplace_back(LINALG::SplitMap(
-          *ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap(),
-          *ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap()));
+          *interface_coupling_adapter_structure_3domain_intersection->MasterDofMap(),
+          *interface_coupling_adapter_structure_3domain_intersection->MasterDofMap()));
       maps_line.emplace_back(
-          ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap());
+          interface_coupling_adapter_structure_3domain_intersection->SlaveDofMap());
       maps_line.emplace_back(
-          ssi_algorithm.InterfaceCouplingAdapterStructure3DomainIntersection()->MasterDofMap());
-      maps_coup_struct_3_domain_intersection_ = Teuchos::rcp(new LINALG::MultiMapExtractor(
-          *ssi_algorithm.StructureField()->Discretization()->DofRowMap(), maps_line));
+          interface_coupling_adapter_structure_3domain_intersection->MasterDofMap());
+      maps_coup_struct_3_domain_intersection_ =
+          Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_dis->DofRowMap(), maps_line));
       maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
     }
   }
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureMaster() const
+{
+  return maps_coup_struct_->Map(2);
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureSlave() const
+{
+  return maps_coup_struct_->Map(1);
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureMaster3DomainIntersection()
+    const
+{
+  return maps_coup_struct_3_domain_intersection_->Map(2);
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureSlave3DomainIntersection()
+    const
+{
+  return maps_coup_struct_3_domain_intersection_->Map(1);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -909,8 +940,7 @@ Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem
       if (scatra_matrixtype_ == LINALG::MatrixType::sparse)
         block_position->emplace_back(1);
       else
-        block_position->emplace_back(
-            BlockMapsSubProblems().at(Subproblem::scalar_transport)->NumMaps());
+        block_position->emplace_back(MultiMapExtractorScaTra()->NumMaps());
       break;
     }
     case Subproblem::scalar_transport:
@@ -919,7 +949,7 @@ Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem
         block_position->emplace_back(0);
       else
       {
-        for (int i = 0; i < BlockMapsSubProblems().at(Subproblem::scalar_transport)->NumMaps(); ++i)
+        for (int i = 0; i < MultiMapExtractorScaTra()->NumMaps(); ++i)
           block_position->emplace_back(i);
       }
       break;
@@ -930,12 +960,10 @@ Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem
         block_position->emplace_back(2);
       else
       {
-        auto scatra_manifold_num_block_maps =
-            BlockMapsSubProblems().at(Subproblem::manifold)->NumMaps();
+        auto scatra_manifold_num_block_maps = MultiMapExtractorScaTraManifold()->NumMaps();
 
         for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
-          block_position->emplace_back(
-              BlockMapsSubProblems().at(Subproblem::scalar_transport)->NumMaps() + 1 + i);
+          block_position->emplace_back(MultiMapExtractorScaTra()->NumMaps() + 1 + i);
       }
       break;
     }
@@ -987,33 +1015,29 @@ int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
 void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono& ssi_mono_algorithm)
 {
   const int num_blocks_systemmatrix =
-      block_maps_sub_problems_.at(Subproblem::scalar_transport)->NumMaps() +
-      block_maps_sub_problems_.at(Subproblem::structure)->NumMaps() +
-      (ssi_mono_algorithm.IsScaTraManifold()
-              ? block_maps_sub_problems_.at(Subproblem::manifold)->NumMaps()
-              : 0);
+      MultiMapExtractorScaTra()->NumMaps() + MultiMapExtractorStructure()->NumMaps() +
+      (ssi_mono_algorithm.IsScaTraManifold() ? MultiMapExtractorScaTraManifold()->NumMaps() : 0);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
       num_blocks_systemmatrix, Teuchos::null);
 
-  for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::scalar_transport)->NumMaps(); ++i)
+  for (int i = 0; i < MultiMapExtractorScaTra()->NumMaps(); ++i)
 
   {
     auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
-    partial_maps_system_matrix[block_positions_scatra->at(i)] =
-        block_maps_sub_problems_.at(Subproblem::scalar_transport)->Map(i);
+    partial_maps_system_matrix[block_positions_scatra->at(i)] = MultiMapExtractorScaTra()->Map(i);
   }
 
   partial_maps_system_matrix.at(GetBlockPositions(Subproblem::structure)->at(0)) =
-      block_maps_sub_problems_.at(Subproblem::structure)->FullMap();
+      MultiMapExtractorStructure()->FullMap();
 
   if (ssi_mono_algorithm.IsScaTraManifold())
   {
-    for (int i = 0; i < block_maps_sub_problems_.at(Subproblem::manifold)->NumMaps(); ++i)
+    for (int i = 0; i < MultiMapExtractorScaTraManifold()->NumMaps(); ++i)
     {
       auto block_positions_manifold = GetBlockPositions(Subproblem::manifold);
       partial_maps_system_matrix[block_positions_manifold->at(i)] =
-          block_maps_sub_problems_.at(Subproblem::manifold)->Map(i);
+          MultiMapExtractorScaTraManifold()->Map(i);
     }
   }
 
@@ -1164,4 +1188,32 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
       }
     }
   }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(const std::string& conditionname_coupling,
+    const std::string& conditionname_3_domain_intersection,
+    const bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> struct_dis)
+    : icoup_structure_(Teuchos::null),
+      icoup_structure_3_domain_intersection_(Teuchos::null),
+      meshtying_3_domain_intersection_(meshtying_3_domain_intersection),
+      slave_side_converter_(Teuchos::null),
+      ssi_meshtyingmaps_(Teuchos::null)
+{
+  icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(struct_dis,
+      meshtying_3_domain_intersection, conditionname_coupling, conditionname_3_domain_intersection);
+
+  if (meshtying_3_domain_intersection)
+  {
+    icoup_structure_3_domain_intersection_ =
+        SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
+            struct_dis, conditionname_3_domain_intersection);
+  }
+
+  slave_side_converter_ = Teuchos::rcp(new SSI::UTILS::SSISlaveSideConverter(
+      icoup_structure_, icoup_structure_3_domain_intersection_, meshtying_3_domain_intersection));
+
+  ssi_meshtyingmaps_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTyingMaps(icoup_structure_,
+      icoup_structure_3_domain_intersection_, meshtying_3_domain_intersection, struct_dis));
 }

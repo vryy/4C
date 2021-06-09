@@ -15,7 +15,6 @@
 
 namespace ADAPTER
 {
-  class ScaTraBaseAlgorithm;
   class SSIStructureWrapper;
   class Coupling;
 }  // namespace ADAPTER
@@ -29,23 +28,26 @@ namespace LINALG
 namespace SCATRA
 {
   class MeshtyingStrategyS2I;
+  class ScaTraTimIntImpl;
 }  // namespace SCATRA
 
 namespace SSI
 {
+  namespace UTILS
+  {
+    class SSIStructureMeshTying;
+  }
+
   class ScatraStructureOffDiagCoupling
   {
    public:
     explicit ScatraStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-        Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        bool meshtying_3_domain_intersection);
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
     //! evaluate domain contributions to off-diagonal scatra-structure block of global system matrix
     void EvaluateOffDiagBlockScatraStructureDomain(
@@ -74,32 +76,30 @@ namespace SSI
     void EvaluateScatraStructureInterfaceSlaveSide(
         Teuchos::RCP<LINALG::SparseOperator> slavematrix);
 
+    //! map extractor associated with all degrees of freedom inside structural field
+    Teuchos::RCP<const Epetra_Map> FullMapStructure() const { return full_map_structure_; }
+
+    //! scatra discretization
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const { return scatra_; }
+
+   private:
     //! map extractor associated with all degrees of freedom inside structure field
     const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
 
     //! map extractor associated with all degrees of freedom inside structural field
     const Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
-    //! scatra-scatra interface coupling adapter for structure field
-    const Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_;
-
-    //! scatra-scatra interface coupling adapter for structure field with 3 intersection domains
-    const Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
-
-    //! map associated with all degrees of freedom on scatra interface
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
-
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
-    //! scatra problem
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    //! scatra discretization
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
     //! structure problem
     const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
 
-    //! indicates, if meshtying includes three entities
-    bool meshtying_3_domain_intersection_;
+    //! SSI structure meshtying object containing coupling adapters, converters and maps
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
   };
 
   class ScatraManifoldStructureOffDiagCoupling : public ScatraStructureOffDiagCoupling
@@ -108,21 +108,18 @@ namespace SSI
     explicit ScatraManifoldStructureOffDiagCoupling(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-        Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        bool meshtying_3_domain_intersection);
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
+        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
     void EvaluateOffDiagBlockScatraManifoldStructureDomain(
         Teuchos::RCP<LINALG::SparseOperator> scatramanifoldstructureblock) override;
 
    private:
-    //! scatra manifold problem
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_;
+    //! scatra manifold discretization
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold_;
   };
 
   /*!
@@ -134,17 +131,14 @@ namespace SSI
   class ScatraStructureOffDiagCouplingSSTI : public ScatraStructureOffDiagCoupling
   {
    public:
-    ScatraStructureOffDiagCouplingSSTI(
+    explicit ScatraStructureOffDiagCouplingSSTI(
         Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_scatra,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-        Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        bool meshtying_3_domain_intersection);
+        Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+        Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure);
 
     void EvaluateOffDiagBlockStructureScatraDomain(
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const override;

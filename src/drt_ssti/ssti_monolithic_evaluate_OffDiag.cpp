@@ -19,6 +19,8 @@
 
 #include "../drt_scatra_ele/scatra_ele_action.H"
 
+#include "../drt_ssi/ssi_utils.H"
+
 #include "../drt_structure_new/str_enum_lists.H"
 
 #include "../linalg/linalg_mapextractor.H"
@@ -32,23 +34,21 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapstructure,
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const Epetra_Map> full_map_thermo, Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
+    Teuchos::RCP<const Epetra_Map> full_map_thermo,
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying,
     Teuchos::RCP<const Epetra_Map> interface_map_thermo,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo, bool meshtying_3_domain_intersection)
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
     : blockmapstructure_(std::move(blockmapstructure)),
       blockmapthermo_(std::move(blockmapthermo)),
       full_map_structure_(std::move(full_map_structure)),
       full_map_thermo_(std::move(full_map_thermo)),
-      icoup_structure_(std::move(icoup_structure)),
-      icoup_structure_3_domain_intersection_(std::move(icoup_structure_3_domain_intersection)),
       interface_map_thermo_(std::move(interface_map_thermo)),
       meshtying_strategy_thermo_(std::move(meshtying_strategy_thermo)),
+      ssti_structure_meshtying_(std::move(ssti_structure_meshtying)),
       structure_(std::move(structure)),
-      thermo_(std::move(thermo)),
-      meshtying_3_domain_intersection_(meshtying_3_domain_intersection)
+      thermo_(std::move(thermo))
 {
 }
 
@@ -265,28 +265,31 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       {
         LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-            ADAPTER::CouplingSlaveConverter(*icoup_structure_), mastermatrixsparse, true, true);
+            InterfaceCouplingAdapterStructureSlaveConverter(), mastermatrixsparse, true, true);
 
-        if (meshtying_3_domain_intersection_)
+        if (ssti_structure_meshtying_->MeshTying3DomainIntersection())
         {
           LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
               ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-              ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_),
+              InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
               mastermatrixsparse, true, true);
         }
       }
 
       // finalize auxiliary system matrix
-      if (meshtying_3_domain_intersection_)
+      if (ssti_structure_meshtying_->MeshTying3DomainIntersection())
       {
         mastermatrixsparse.Complete(
-            *LINALG::MultiMapExtractor::MergeMaps({icoup_structure_->MasterDofMap(),
-                icoup_structure_3_domain_intersection_->MasterDofMap()}),
+            *LINALG::MultiMapExtractor::MergeMaps(
+                {ssti_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster(),
+                    ssti_structure_meshtying_->SSIMeshTyingMaps()
+                        ->MapStructureMaster3DomainIntersection()}),
             *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
       }
       else
       {
-        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
+        mastermatrixsparse.Complete(
+            *ssti_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster(),
             *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
       }
 
@@ -308,13 +311,13 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       // assemble into auxiliary system matrix
       LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
           ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-          ADAPTER::CouplingSlaveConverter(*icoup_structure_), *sparsemastermatrix, true, true);
+          InterfaceCouplingAdapterStructureSlaveConverter(), *sparsemastermatrix, true, true);
 
-      if (meshtying_3_domain_intersection_)
+      if (ssti_structure_meshtying_->MeshTying3DomainIntersection())
       {
         LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-            ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_),
+            InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
             *sparsemastermatrix, true, true);
       }
 
@@ -391,4 +394,22 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
       break;
     }
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ADAPTER::CouplingSlaveConverter&
+SSTI::ThermoStructureOffDiagCoupling::InterfaceCouplingAdapterStructureSlaveConverter() const
+{
+  return ssti_structure_meshtying_->SlaveSideConverter()
+      ->InterfaceCouplingAdapterStructureSlaveConverter();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+ADAPTER::CouplingSlaveConverter& SSTI::ThermoStructureOffDiagCoupling::
+    InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const
+{
+  return ssti_structure_meshtying_->SlaveSideConverter()
+      ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection();
 }

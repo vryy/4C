@@ -15,6 +15,7 @@
 namespace ADAPTER
 {
   class Coupling;
+  class CouplingSlaveConverter;
   class ScaTraBaseAlgorithm;
   class SSIStructureWrapper;
 }  // namespace ADAPTER
@@ -28,7 +29,15 @@ namespace LINALG
 namespace SCATRA
 {
   class MeshtyingStrategyS2I;
-}  // namespace SCATRA
+}
+
+namespace SSI
+{
+  namespace UTILS
+  {
+    class SSIStructureMeshTying;
+  }
+}  // namespace SSI
 
 namespace SSTI
 {
@@ -41,12 +50,11 @@ namespace SSTI
         Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
-        Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
-        Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying,
         Teuchos::RCP<const Epetra_Map> interface_map_thermo,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
-        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo, bool meshtying_3_domain_intersection);
+        Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
 
     //! derivative of structure residuals w.r.t. thermo dofs in domain
     void EvaluateOffDiagBlockStructureThermoDomain(
@@ -61,6 +69,10 @@ namespace SSTI
         Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface);
 
    private:
+    ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const;
+    ADAPTER::CouplingSlaveConverter&
+    InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const;
+
     void CopySlaveToMasterThermoStructureInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
@@ -78,26 +90,20 @@ namespace SSTI
     //! map extractor associated with all degrees of freedom inside thermo field
     const Teuchos::RCP<const Epetra_Map> full_map_thermo_;
 
-    //! scatra-scatra interface coupling adapter for structure field
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
-
-    //! scatra-scatra interface coupling adapter for structure field with 3 intersection domains
-    const Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
-
     //! map associated with all degrees of freedom on scatra interface
     const Teuchos::RCP<const Epetra_Map> interface_map_thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
 
+    //! SSTI structure meshtying object containing coupling adapters, converters and maps
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying_;
+
     //! structure problem
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
 
     //! thermo problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
-
-    //! indicates, if meshtying includes three entities
-    bool meshtying_3_domain_intersection_;
   };
 }  // namespace SSTI
 #endif  // #ifndef SSTI_MONOLITHIC_EVALUATE_OffDiag_H

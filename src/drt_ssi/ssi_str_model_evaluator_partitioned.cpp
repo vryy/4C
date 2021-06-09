@@ -64,77 +64,116 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
 
     // transform and assemble slave-side rows of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
         *ssi_part_->MapStructureCondensed(), 1.0,
-        &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
+        &ssi_part_->SSIStructureMeshTying()
+             ->SlaveSideConverter()
+             ->InterfaceCouplingAdapterStructureSlaveConverter(),
         nullptr, jac_new, true, true);
 
     // transform and assemble slave-side columns of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0, nullptr,
-        &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        1.0, nullptr,
+        &ssi_part_->SSIStructureMeshTying()
+             ->SlaveSideConverter()
+             ->InterfaceCouplingAdapterStructureSlaveConverter(),
         jac_new, true, true);
 
     // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
     LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0,
-        &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
-        &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        1.0,
+        &ssi_part_->SSIStructureMeshTying()
+             ->SlaveSideConverter()
+             ->InterfaceCouplingAdapterStructureSlaveConverter(),
+        &ssi_part_->SSIStructureMeshTying()
+             ->SlaveSideConverter()
+             ->InterfaceCouplingAdapterStructureSlaveConverter(),
         jac_new, true, true);
 
     if (meshtying_3_domain_intersection)
     {
       // transform and assemble slave-side rows of original Jacobian into new Jacobian
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap(),
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveDofMap(),
           *ssi_part_->MapStructureCondensed(), 1.0,
-          &ssi_part_->SlaveSideConverter()
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
           nullptr, jac_new, true, true);
 
       // transform and assemble slave-side columns of original Jacobian into new Jacobian
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap(), 1.0,
-          nullptr,
-          &ssi_part_->SlaveSideConverter()
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveDofMap(),
+          1.0, nullptr,
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
           jac_new, true, true);
 
       // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap(),
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap(), 1.0,
-          &ssi_part_->SlaveSideConverter()
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveDofMap(),
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveDofMap(),
+          1.0,
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          &ssi_part_->SlaveSideConverter()
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
           jac_new, true, true);
 
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap(), 1.0,
-          &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
-          &ssi_part_->SlaveSideConverter()
+          *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveDofMap(),
+          1.0,
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
+               ->InterfaceCouplingAdapterStructureSlaveConverter(),
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
           jac_new, true, true);
 
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap(),
-          *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 1.0,
-          &ssi_part_->SlaveSideConverter()
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveDofMap(),
+          *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+          1.0,
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          &ssi_part_->SlaveSideConverter()->InterfaceCouplingAdapterStructureSlaveConverter(),
+          &ssi_part_->SSIStructureMeshTying()
+               ->SlaveSideConverter()
+               ->InterfaceCouplingAdapterStructureSlaveConverter(),
           jac_new, true, true);
     }
 
     // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize structural
     // meshtying
     jac_new.Complete();
-    jac_new.ApplyDirichlet(*ssi_part_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    jac_new.ApplyDirichlet(
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap());
     if (meshtying_3_domain_intersection)
-      jac_new.ApplyDirichlet(
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveDofMap());
+    {
+      jac_new.ApplyDirichlet(*ssi_part_->SSIStructureMeshTying()
+                                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
+                                  ->SlaveDofMap());
+    }
 
     // replace old Jacobian by new one
     jac_sparse.Assign(LINALG::View, jac_new);
@@ -154,15 +193,17 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
   {
     // transform and assemble master-side part of structural increment vector to slave side
     ssi_part_->MapsCoupStruct()->InsertVector(
-        *ssi_part_->InterfaceCouplingAdapterStructure()->MasterToSlave(
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
             ssi_part_->MapsCoupStruct()->ExtractVector(dir_mutable, 2)),
         1, dir_mutable);
 
     if (ssi_part_->Meshtying3DomainIntersection())
     {
       ssi_part_->MapsCoupStruct3DomainIntersection()->InsertVector(
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
-              ssi_part_->MapsCoupStruct3DomainIntersection()->ExtractVector(dir_mutable, 2)),
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->MasterToSlave(
+                   ssi_part_->MapsCoupStruct3DomainIntersection()->ExtractVector(dir_mutable, 2)),
           1, dir_mutable);
     }
   }
@@ -213,7 +254,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
   {
     // transform and assemble slave-side part of structural right-hand side vector to master side
     ssi_part_->MapsCoupStruct()->AddVector(
-        *ssi_part_->InterfaceCouplingAdapterStructure()->SlaveToMaster(
+        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveToMaster(
             ssi_part_->MapsCoupStruct()->ExtractVector(f, 1)),
         2, f);
 
@@ -224,8 +265,9 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
     {
       // transform and assemble slave-side part of structural right-hand side vector to master side
       ssi_part_->MapsCoupStruct3DomainIntersection()->AddVector(
-          *ssi_part_->InterfaceCouplingAdapterStructure3DomainIntersection()->SlaveToMaster(
-              ssi_part_->MapsCoupStruct3DomainIntersection()->ExtractVector(f, 1)),
+          *ssi_part_->SSIStructureMeshTying()
+               ->InterfaceCouplingAdapterStructure3DomainIntersection()
+               ->SlaveToMaster(ssi_part_->MapsCoupStruct3DomainIntersection()->ExtractVector(f, 1)),
           2, f);
 
       // zero out slave-side part of structural right-hand side vector

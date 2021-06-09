@@ -48,8 +48,6 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
     : AlgorithmBase(comm, globaltimeparams),
       fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
-      icoup_structure_(Teuchos::null),
-      icoup_structure_3_domain_intersection_(Teuchos::null),
       isinit_(false),
       issetup_(false),
       is_scatra_manifold_(
@@ -62,8 +60,7 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       meshtying_strategy_s2i_(Teuchos::null),
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
-      slave_side_converter_(Teuchos::null),
-      ssi_meshtyingmaps_(Teuchos::null),
+      ssi_structure_meshtying_(Teuchos::null),
       ssicoupling_(Teuchos::null),
       ssiinterfacecontact_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
@@ -197,22 +194,9 @@ void SSI::SSIBase::Setup()
   // set up scatra-scatra interface coupling
   if (SSIInterfaceMeshtying())
   {
-    // check for consistent parameterization of these conditions
-    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-
-    // set up scatra-scatra interface coupling adapter for structure field
-    icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(structdis,
-        Meshtying3DomainIntersection(), "SSIInterfaceMeshtying", "SSIMeshtying3DomainIntersection");
-
-    if (Meshtying3DomainIntersection())
-    {
-      icoup_structure_3_domain_intersection_ =
-          SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
-              structdis, "SSIMeshtying3DomainIntersection");
-    }
-
-    slave_side_converter_ = Teuchos::rcp(new SSI::UTILS::SSISlaveSideConverter(
-        icoup_structure_, icoup_structure_3_domain_intersection_, Meshtying3DomainIntersection()));
+    ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
+        "SSIInterfaceMeshtying", "SSIMeshtying3DomainIntersection", Meshtying3DomainIntersection(),
+        structure_->Discretization()));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
@@ -233,9 +217,6 @@ void SSI::SSIBase::Setup()
 
   // construct vector of zeroes
   zeros_structure_ = LINALG::CreateVector(*structure_->DofRowMap());
-
-  if (SSIInterfaceMeshtying())
-    ssi_meshtyingmaps_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTyingMaps(*this));
 
   // set flag
   SetIsSetup(true);
@@ -909,7 +890,7 @@ void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct() const
 {
-  return ssi_meshtyingmaps_->MapsCoupStruct();
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct();
 }
 
 /*----------------------------------------------------------------------*/
@@ -917,12 +898,12 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct() con
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct3DomainIntersection()
     const
 {
-  return ssi_meshtyingmaps_->MapsCoupStruct3DomainIntersection();
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureCondensed() const
 {
-  return ssi_meshtyingmaps_->MapStructureCondensed();
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureCondensed();
 }

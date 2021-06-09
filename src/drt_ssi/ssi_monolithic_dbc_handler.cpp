@@ -16,6 +16,8 @@
 
 #include "../drt_lib/drt_locsys.H"
 
+#include "../drt_scatra/scatra_timint_implicit.H"
+
 #include "../linalg/linalg_blocksparsematrix.H"
 #include "../linalg/linalg_matrixtransform.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"

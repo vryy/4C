@@ -672,23 +672,6 @@ void SSI::SSIMono::SetupSystem()
   // setup the ssi maps object
   ssi_maps_ = Teuchos::rcp(new SSI::UTILS::SSIMaps(*this));
 
-  // merge slave and master side block maps for interface matrix for scatra
-  Teuchos::RCP<Epetra_Map> interface_map_scatra(Teuchos::null);
-
-  if (SSIInterfaceMeshtying())
-  {
-    // check whether slave-side degrees of freedom are Dirichlet-free
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps(2, Teuchos::null);
-    maps[0] = InterfaceCouplingAdapterStructure()->SlaveDofMap();
-    maps[1] = StructureField()->GetDBCMapExtractor()->CondMap();
-    if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
-      dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
-
-    interface_map_scatra = LINALG::MultiMapExtractor::MergeMaps(
-        {MeshtyingStrategyS2I()->CouplingAdapter()->MasterDofMap(),
-            MeshtyingStrategyS2I()->CouplingAdapter()->SlaveDofMap()});
-  }
-
   // perform initializations associated with global system matrix
   switch (matrixtype_)
   {
@@ -735,23 +718,17 @@ void SSI::SSIMono::SetupSystem()
   {
     // initialize object, that performs evaluations of OD coupling
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
-        MapStructure(),
-        MapsSubProblems()->Map(UTILS::SSIMaps::GetProblemPosition(Subproblem::structure)),
-        InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
-        interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(),
-        ScaTraManifoldBaseAlgorithm(), StructureField(), Meshtying3DomainIntersection()));
+        MapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
+        MeshtyingStrategyS2I(), ScaTraField(), ScaTraManifold(), StructureField()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
     manifoldscatraflux_ = Teuchos::rcp(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this));
   }
   else
   {
-    scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
-        MapStructure(),
-        MapsSubProblems()->Map(UTILS::SSIMaps::GetProblemPosition(Subproblem::structure)),
-        InterfaceCouplingAdapterStructure(), InterfaceCouplingAdapterStructure3DomainIntersection(),
-        interface_map_scatra, MeshtyingStrategyS2I(), ScaTraBaseAlgorithm(), StructureField(),
-        Meshtying3DomainIntersection()));
+    scatrastructureOffDiagcoupling_ = Teuchos::rcp(
+        new SSI::ScatraStructureOffDiagCoupling(MapStructure(), SSIMaps()->StructureDofRowMap(),
+            SSIStructureMeshTying(), MeshtyingStrategyS2I(), ScaTraField(), StructureField()));
   }
   // instantiate appropriate equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
@@ -763,7 +740,8 @@ void SSI::SSIMono::SetupSystem()
 
   // instantiate appropriate mesh tying class
   strategy_meshtying_ =
-      SSI::BuildMeshtyingStrategy(*this, matrixtype_, ScaTraField()->MatrixType());
+      SSI::BuildMeshtyingStrategy(IsScaTraManifold(), matrixtype_, ScaTraField()->MatrixType(),
+          Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
@@ -984,24 +962,29 @@ void SSI::SSIMono::UpdateIterStructure()
   if (SSIInterfaceMeshtying())
   {
     MapsCoupStruct()->InsertVector(
-        InterfaceCouplingAdapterStructure()->MasterToSlave(
+        SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
             MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
         1, StructureField()->WriteAccessDispnp());
     StructureField()->SetState(StructureField()->WriteAccessDispnp());
-    MapsCoupStruct()->InsertVector(InterfaceCouplingAdapterStructure()->MasterToSlave(
-                                       MapsCoupStruct()->ExtractVector(increment_structure, 2)),
+    MapsCoupStruct()->InsertVector(
+        SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
+            MapsCoupStruct()->ExtractVector(increment_structure, 2)),
         1, increment_structure);
 
     if (Meshtying3DomainIntersection())
     {
       MapsCoupStruct3DomainIntersection()->InsertVector(
-          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
-              MapsCoupStruct3DomainIntersection()->ExtractVector(StructureField()->Dispnp(), 2)),
+          SSIStructureMeshTying()
+              ->InterfaceCouplingAdapterStructure3DomainIntersection()
+              ->MasterToSlave(MapsCoupStruct3DomainIntersection()->ExtractVector(
+                  StructureField()->Dispnp(), 2)),
           1, StructureField()->WriteAccessDispnp());
       StructureField()->SetState(StructureField()->WriteAccessDispnp());
       MapsCoupStruct3DomainIntersection()->InsertVector(
-          InterfaceCouplingAdapterStructure3DomainIntersection()->MasterToSlave(
-              MapsCoupStruct3DomainIntersection()->ExtractVector(increment_structure, 2)),
+          SSIStructureMeshTying()
+              ->InterfaceCouplingAdapterStructure3DomainIntersection()
+              ->MasterToSlave(
+                  MapsCoupStruct3DomainIntersection()->ExtractVector(increment_structure, 2)),
           1, increment_structure);
     }
   }
@@ -1506,14 +1489,14 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsSubProblems() co
  *--------------------------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsScatra() const
 {
-  return ssi_maps_->BlockMapsSubProblems().at(Subproblem::scalar_transport);
+  return ssi_maps_->MultiMapExtractorScaTra();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapStructure() const
 {
-  return ssi_maps_->BlockMapsSubProblems().at(Subproblem::structure);
+  return ssi_maps_->MultiMapExtractorStructure();
 }
 
 /*--------------------------------------------------------------------------------------*

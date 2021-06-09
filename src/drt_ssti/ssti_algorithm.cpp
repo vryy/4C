@@ -44,7 +44,7 @@ SSTI::SSTIAlgorithm::SSTIAlgorithm(
       thermo_(Teuchos::null),
       meshtying_strategy_scatra_(Teuchos::null),
       meshtying_strategy_thermo_(Teuchos::null),
-      structural_meshtying_(Teuchos::rcp(new SSTI::SSTIStructuralMeshtying())),
+      ssti_structure_meshtying_(Teuchos::null),
       interfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSTIInterfaceMeshtying") !=
           nullptr),
@@ -174,9 +174,8 @@ void SSTI::SSTIAlgorithm::Setup()
   if (InterfaceMeshtying())
   {
     // check for consistent parameterization of these conditions
-    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
     SCATRA::SCATRAUTILS::CheckConsistencyWithS2IKineticsCondition(
-        "SSTIInterfaceMeshtying", structdis);
+        "SSTIInterfaceMeshtying", StructureField()->Discretization());
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_scatra_ = Teuchos::rcp_dynamic_cast<const SCATRA::MeshtyingStrategyS2I>(
@@ -195,10 +194,15 @@ void SSTI::SSTIAlgorithm::Setup()
       dserror("Invalid scatra-scatra interface coupling strategy!");
     if (meshtying_strategy_thermo_->CouplingType() != INPAR::S2I::coupling_matching_nodes)
       dserror("SSTI only implemented for interface coupling with matching interface nodes!");
-  }
 
-  // setup everything for SSTI structural meshtying
-  structural_meshtying_->Setup(*this);
+    // setup everything for SSTI structure meshtying
+    const bool meshtying_3_domain_intersection = DRT::INPUT::IntegralValue<bool>(
+        DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
+        "MESHTYING_3_DOMAIN_INTERSECTION");
+    ssti_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
+        "SSTIInterfaceMeshtying", "SSTIMeshtying3DomainIntersection",
+        meshtying_3_domain_intersection, StructureField()->Discretization()));
+  }
 
   issetup_ = true;
 }
@@ -450,6 +454,22 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
 
   return *thermoparams_copy;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSTI::SSTIAlgorithm::MapsCoupStruct() const
+{
+  return ssti_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor>
+SSTI::SSTIAlgorithm::MapsCoupStruct3DomainIntersection() const
+{
+  return ssti_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -79,7 +79,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))),
       full_map_structure_(ssi_mono.MapsSubProblems()->Map(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))),
-      icoup_structure_(ssi_mono.InterfaceCouplingAdapterStructure()),
+      icoup_structure_(ssi_mono.SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()),
       matrix_manifold_scatra_(Teuchos::null),
       matrix_manifold_structure_(Teuchos::null),
       matrix_scatra_manifold_(Teuchos::null),

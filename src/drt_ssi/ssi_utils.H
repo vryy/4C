@@ -47,6 +47,7 @@ namespace SSI
   {
     // forward declaration
     class SSIMaps;
+    class SSISlaveSideConverter;
 
     //! Modification of time parameter list for problem with different time step size
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
@@ -339,7 +340,10 @@ namespace SSI
     class SSIMeshTyingMaps
     {
      public:
-      explicit SSIMeshTyingMaps(const SSI::SSIBase& ssi_algorithm);
+      explicit SSIMeshTyingMaps(
+          Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure,
+          Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
+          bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis);
 
       //! condensed structure dofs (inner and master side)
       Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const
@@ -361,6 +365,12 @@ namespace SSI
         return maps_coup_struct_3_domain_intersection_;
       }
 
+      //! Slave and master side dofs of structure mesh tying
+      Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
+      Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
+      Teuchos::RCP<const Epetra_Map> MapStructureMaster3DomainIntersection() const;
+      Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
+
      private:
       //! condensed structure dofs (inner and master side)
       Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
@@ -372,6 +382,61 @@ namespace SSI
       //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
       //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
+    };
+
+    class SSIStructureMeshTying
+    {
+     public:
+      explicit SSIStructureMeshTying(const std::string& conditionname_coupling,
+          const std::string& conditionname_3_domain_intersection,
+          bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> struct_dis);
+
+      //! structure interface coupling adapter between two geometric entities
+      Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure() const
+      {
+        return icoup_structure_;
+      }
+
+      //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
+      //! intersection domains
+      Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure3DomainIntersection() const
+      {
+        return icoup_structure_3_domain_intersection_;
+      }
+
+      //! indicates, if meshtying includes triple points
+      bool MeshTying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
+
+      //! holds slave side converter of multiple coupling adapters
+      Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
+      {
+        return slave_side_converter_;
+      }
+
+      //! this object holds all maps relevant to mesh tying for scalar transport - structure
+      //! interaction
+      Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> SSIMeshTyingMaps() const
+      {
+        return ssi_meshtyingmaps_;
+      }
+
+     private:
+      //! structure interface coupling adapter between two geometric entities
+      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
+
+      //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
+      //! intersection domains
+      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
+
+      //! indicates, if meshtying includes triple points
+      const bool meshtying_3_domain_intersection_;
+
+      //! slave side converter
+      Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
+
+      //! this object holds all maps relevant to mesh tying for scalar transport - structure
+      //! interaction
+      Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> ssi_meshtyingmaps_;
     };
 
     class SSISlaveSideConverter

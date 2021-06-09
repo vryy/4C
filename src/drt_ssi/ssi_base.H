@@ -56,6 +56,7 @@ namespace SSI
   {
     class SSIMeshTyingMaps;
     class SSISlaveSideConverter;
+    class SSIStructureMeshTying;
   }  // namespace UTILS
 
   enum class RedistributionType
@@ -71,17 +72,6 @@ namespace SSI
    public:
     /// create using a Epetra_Comm
     explicit SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    //! return scatra-scatra interface coupling adapter for structure field
-    Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure() const
-    {
-      return icoup_structure_;
-    }
-
-    Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure3DomainIntersection() const
-    {
-      return icoup_structure_3_domain_intersection_;
-    }
 
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
@@ -186,12 +176,6 @@ namespace SSI
       return map_structure_on_scatra_manifold_;
     }
 
-    //! holds slave side converter og multiple coupling adapters
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
-    {
-      return slave_side_converter_;
-    }
-
     /// setup
     virtual void SetupSystem() = 0;
 
@@ -277,6 +261,12 @@ namespace SSI
     //! get bool indicating if we have at least one ssi interface contact condition
     bool SSIInterfaceContact() const { return ssiinterfacecontact_; }
 
+    //! SSI structure meshtying object containing coupling adapters, converters and maps
+    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> SSIStructureMeshTying() const
+    {
+      return ssi_structure_meshtying_;
+    }
+
    protected:
     //! get bool indicating if old structural time integration is used
     bool UseOldStructureTimeInt() const { return use_old_structure_; }
@@ -358,13 +348,6 @@ namespace SSI
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
 
-    //! structure interface coupling adapter between two geometric entities
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
-
-    //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
-    //! intersection domains
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
-
     //! flag indicating if class is initialized
     bool isinit_;
 
@@ -393,11 +376,8 @@ namespace SSI
     //! underlying scatra problem base algorithm on manifolds
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
 
-    //! slave side converter
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
-
-    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTyingMaps> ssi_meshtyingmaps_;
+    //! SSI structure mesh tying object containing coupling adapters, converters and maps
+    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;
