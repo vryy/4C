@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
+\brief Definition of a penalty term like growth strategy
 
 \level 3
 */
