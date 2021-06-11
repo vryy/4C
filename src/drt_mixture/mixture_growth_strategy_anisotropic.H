@@ -32,6 +32,13 @@ namespace MIXTURE
     };
   }  // namespace PAR
 
+  /*!
+   * @brief Growth is modeled as an inelastic expansion of the whole cell in one predefined
+   * direction
+   *
+   * The direction of growth can be specified with a fiber with the fiber id specified in FIBER_ID
+   *
+   */
   class AnisotropicGrowthStrategy : public MIXTURE::MixtureGrowthStrategy
   {
    public:

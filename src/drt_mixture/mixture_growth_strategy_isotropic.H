@@ -25,6 +25,9 @@ namespace MIXTURE
     };
   }  // namespace PAR
 
+  /*!
+   * @brief Growth is modeled as an inelastic volumentric expansion of the whole cell (isotropic).
+   */
   class IsotropicGrowthStrategy : public MIXTURE::MixtureGrowthStrategy
   {
    public:

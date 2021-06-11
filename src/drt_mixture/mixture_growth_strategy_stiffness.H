@@ -27,6 +27,19 @@ namespace MIXTURE
     };
   }  // namespace PAR
 
+  /*!
+   * @brief Growth modeled as an elastic expansion of the whole cell with a penalty type formulation
+   *
+   * This growth strategy uses a penalty term that ensures constant spatial density. The penalty
+   * term has the following form:
+   *
+   * \f[
+   *     \Psi = \frac{1}{2} \kappa (|F|^2 - \frac{\rho_0(s)}{\rho_0(s=0)})^2
+   * \f]
+   *
+   * The model is based on Braeu et al (2019),
+   * https://link.springer.com/article/10.1007%2Fs10237-018-1084-x
+   */
   class StiffnessGrowthStrategy : public MIXTURE::MixtureGrowthStrategy
   {
    public:
