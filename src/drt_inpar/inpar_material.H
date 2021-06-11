@@ -280,14 +280,19 @@ namespace INPAR
                            ///< linear function of the temperature
       mfi_no_growth,  ///< material with no volume change, i.e. inelastic deformation gradient is an
                       ///< identity tensor
-      mfi_poly_intercal_frac_aniso,  ///< volume change due to (anisotropic) inelastic deformation
-                                     ///< gradient is a polynomial function of the intercalation
-                                     ///< fraction that causes the volume change
-      mfi_poly_intercal_frac_iso,    ///< volume change due to (isotropic) inelastic deformation
-                                     ///< gradient is a polynomial function of the intercalation
-                                     ///< fraction that causes the volume change
-      mix_rule_simple,               ///< Simple rule for the mixture model
-      mix_rule_growthremodel,        ///< Homogenized constrained mixture
+      mfi_poly_intercal_frac_aniso,   ///< volume change due to (anisotropic) inelastic deformation
+                                      ///< gradient is a polynomial function of the intercalation
+                                      ///< fraction that causes the volume change
+      mfi_poly_intercal_frac_iso,     ///< volume change due to (isotropic) inelastic deformation
+                                      ///< gradient is a polynomial function of the intercalation
+                                      ///< fraction that causes the volume change
+      mix_growth_strategy_isotropic,  ///< Isotropic growth law for growth remodel mixture rule
+      mix_growth_strategy_anisotropic,  ///< Anisotropic growth law for growth remodel mixture rule
+      mix_growth_strategy_stiffness,  ///< Growth modeled as an expansion of the entire cell (growth
+                                      ///< happens mainly in the direction of the smallest
+                                      ///< stiffness)
+      mix_rule_simple,                ///< Simple rule for the mixture model
+      mix_rule_growthremodel,         ///< Homogenized constrained mixture
       mix_prestress_strategy_cylinder,   ///< Prestress strategy for a cylinder
       mix_prestress_strategy_iterative,  ///< Iterative prestress strategy for any geometry
       mix_prestress_strategy_constant,   ///< Constant, predefined prestretch

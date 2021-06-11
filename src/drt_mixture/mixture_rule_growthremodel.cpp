@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matpar_material.H"
 #include "mixture_constituent.H"
+#include "mixture_growth_strategy.H"
 
 // forward declarations
 namespace DRT
@@ -30,7 +31,7 @@ namespace DRT
 MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),
-      growth_type_(matdata->GetInt("GROWTH_TYPE")),
+      growth_strategy_matid_(matdata->GetInt("GROWTH_STRATEGY")),
       initial_reference_density_(matdata->GetDouble("DENS")),
       mass_fractions_(*matdata->Get<std::vector<double>>("MASSFRAC"))
 {
@@ -46,17 +47,34 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     MIXTURE::PAR::GrowthRemodelMixtureRule* params)
     : MixtureRule(params), params_(params)
 {
+  if (params->growth_strategy_matid_ <= 0)
+  {
+    dserror(
+        "You have not specified a growth strategy material id. Reference to the material with the "
+        "growth strategy.");
+  }
+  growthStrategy_ = MIXTURE::PAR::MixtureGrowthStrategy::Factory(params->growth_strategy_matid_)
+                        ->CreateGrowthStrategy();
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::PackMixtureRule(DRT::PackBuffer& data) const
 {
   MixtureRule::PackMixtureRule(data);
+
+  growthStrategy_->PackMixtureGrowthStrategy(data);
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::UnpackMixtureRule(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   MixtureRule::UnpackMixtureRule(position, data);
+
+  growthStrategy_->UnpackMixtureGrowthStrategy(position, data);
+}
+
+void MIXTURE::GrowthRemodelMixtureRule::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
+{
+  growthStrategy_->RegisterAnisotropyExtensions(anisotropy);
 }
 
 void MIXTURE::GrowthRemodelMixtureRule::Setup(Teuchos::ParameterList& params, const int eleGID)
@@ -78,7 +96,8 @@ void MIXTURE::GrowthRemodelMixtureRule::Update(
 
   // Evaluate inverse growth deformation gradient
   static LINALG::Matrix<3, 3> iFg;
-  EvaluateInverseGrowthDeformationGradient(iFg, gp);
+  growthStrategy_->EvaluateInverseGrowthDeformationGradient(
+      iFg, *this, ComputeCurrentReferenceGrowthScalar(gp), gp);
 
   for (const auto& constituent : Constituents())
   {
@@ -93,7 +112,9 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
   LINALG::Matrix<3, 3> iF_gM;  // growth deformation gradient
 
   // Evaluate growth kinematics
-  EvaluateInverseGrowthDeformationGradient(iF_gM, gp);
+  double currentReferenceGrowthScalar = ComputeCurrentReferenceGrowthScalar(gp);
+  growthStrategy_->EvaluateInverseGrowthDeformationGradient(
+      iF_gM, *this, currentReferenceGrowthScalar, gp);
 
 
   // define temporary matrices
@@ -115,55 +136,21 @@ void MIXTURE::GrowthRemodelMixtureRule::Evaluate(const LINALG::Matrix<3, 3>& F,
     S_stress.Update(current_ref_constituent_density, cstress, 1.0);
     cmat.Update(current_ref_constituent_density, ccmat, 1.0);
   }
+
+  growthStrategy_->AddGrowthStressCmat(
+      *this, currentReferenceGrowthScalar, F, E_strain, params, S_stress, cmat, gp, eleGID);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::EvaluateInverseGrowthDeformationGradient(
-    LINALG::Matrix<3, 3>& iFgM, int gp) const
+double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceGrowthScalar(int gp) const
 {
-  const double current_reference_density = ComputeCurrentReferenceDensity(gp);
-
-  iFgM.Clear();
-
-  switch (params_->growth_type_)
-  {
-    case PAR::GrowthRemodelMixtureRule::GROWTH_TYPE_ISOTROPIC:
-    {
-      for (int i = 0; i < 3; ++i)
-      {
-        iFgM(i, i) =
-            std::pow(current_reference_density / params_->initial_reference_density_, -1.0 / 3.0);
-      }
-      break;
-    }
-    case PAR::GrowthRemodelMixtureRule::GROWTH_TYPE_ANISOTROPIC:
-    {
-      dserror(
-          "The anisotropic growth is not yet implemented. Just implement the growth deformation "
-          "gradient here.");
-      break;
-    }
-    default:
-    {
-      dserror(
-          "The growth type %i is unknown. Please use either %i for isotropic growth or %i for "
-          "anisotropic growth",
-          params_->growth_type_, PAR::GrowthRemodelMixtureRule::GROWTH_TYPE_ISOTROPIC,
-          PAR::GrowthRemodelMixtureRule::GROWTH_TYPE_ANISOTROPIC);
-      break;
-    }
-  }
-}
-
-double MIXTURE::GrowthRemodelMixtureRule::ComputeCurrentReferenceDensity(int gp) const
-{
-  double current_reference_density = 0.0;
+  double current_reference_growth_scalar = 0.0;
   for (std::size_t i = 0; i < Constituents().size(); ++i)
   {
     MixtureConstituent& constituent = *Constituents()[i];
-    current_reference_density += params_->initial_reference_density_ * params_->mass_fractions_[i] *
-                                 constituent.GetGrowthScalar(gp);
+    current_reference_growth_scalar +=
+        params_->mass_fractions_[i] * constituent.GetGrowthScalar(gp);
   }
-  return current_reference_density;
+  return current_reference_growth_scalar;
 }
 
 double MIXTURE::GrowthRemodelMixtureRule::GetConstituentInitialReferenceMassDensity(
@@ -194,7 +181,7 @@ bool MIXTURE::GrowthRemodelMixtureRule::EvaluateVtkOutputData(
   {
     for (int gp = 0; gp < NumGP(); ++gp)
     {
-      data(gp, 0) = ComputeCurrentReferenceDensity(gp);
+      data(gp, 0) = ComputeCurrentReferenceGrowthScalar(gp) * params_->initial_reference_density_;
     }
     return true;
   }

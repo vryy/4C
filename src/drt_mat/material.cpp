@@ -851,6 +851,9 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mix_elasthyper_damage:
     case INPAR::MAT::mix_elasthyper_elastin_membrane:
     case INPAR::MAT::mix_muscle_weickenmeier:
+    case INPAR::MAT::mix_growth_strategy_anisotropic:
+    case INPAR::MAT::mix_growth_strategy_isotropic:
+    case INPAR::MAT::mix_growth_strategy_stiffness:
     case INPAR::MAT::mix_prestress_strategy_constant:
     case INPAR::MAT::mix_prestress_strategy_cylinder:
     case INPAR::MAT::mix_prestress_strategy_iterative:

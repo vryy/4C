@@ -43,6 +43,7 @@ namespace MIXTURE
   // forward declaration
   class GrowthRemodelMixtureRule;
   class MixtureConstituent;
+  class MixtureGrowthStrategy;
 
   namespace PAR
   {
@@ -66,7 +67,7 @@ namespace MIXTURE
       /// @name parameters of the mixture rule
       /// @{
 
-      const int growth_type_;
+      const int growth_strategy_matid_;
 
       /// Initial reference density of the whole material
       const double initial_reference_density_;
@@ -97,6 +98,8 @@ namespace MIXTURE
     void UnpackMixtureRule(
         std::vector<char>::size_type& position, const std::vector<char>& data) override;
 
+    void RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy) override;
+
     void Setup(Teuchos::ParameterList& params, int eleGID) override;
 
     void Update(
@@ -115,21 +118,6 @@ namespace MIXTURE
     double GetConstituentInitialReferenceMassDensity(
         const MIXTURE::MixtureConstituent& constituent) const;
 
-    /*!
-     * @brief Evaluates the inverse growth deformation gradient at the Gausspoint #gp
-     *
-     * The growth deformation gradient describes the deformation of the solid by addition/removal
-     * of materials. It depends on the growth type.
-     *
-     * In case of isotropic growth (#GROWTH_TYPE_ISOTROPIC), the growth deformation gradient is
-     *
-     * $\boldsymbol{F}_g = (\frac{\rho_0(s)}{\rho_0(0)})^(\frac 1 3)$
-     *
-     * @param iFgM (out) : Inverse of the growth deformation gradient
-     * @param gp (in) : Gauss point
-     */
-    void EvaluateInverseGrowthDeformationGradient(LINALG::Matrix<3, 3>& iFgM, int gp) const;
-
     void RegisterVtkOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;
 
@@ -137,9 +125,12 @@ namespace MIXTURE
         const std::string& name, Epetra_SerialDenseMatrix& data) const override;
 
    private:
-    double ComputeCurrentReferenceDensity(int gp) const;
+    double ComputeCurrentReferenceGrowthScalar(int gp) const;
+
     ///! Rule parameters as defined in the input file
     PAR::GrowthRemodelMixtureRule* params_{};
+
+    std::unique_ptr<MIXTURE::MixtureGrowthStrategy> growthStrategy_;
   };
 }  // namespace MIXTURE
 
