@@ -38,10 +38,7 @@
 SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSTIAlgorithm(comm, globaltimeparams),
       increment_(Teuchos::null),
-      itermax_(globaltimeparams.get<int>("ITEMAX")),
-      itertol_(globaltimeparams.sublist("MONOLITHIC").get<double>("CONVTOL")),
       residual_(Teuchos::null),
-      restol_(globaltimeparams.sublist("MONOLITHIC").get<double>("ABSTOLRES")),
       solver_(Teuchos::rcp(
           new LINALG::Solver(DRT::Problem::Instance()->SolverParams(
                                  globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
@@ -558,7 +555,6 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     default:
     {
       dserror("Unknown type of subproblem in SSTI");
-      break;
     }
   }
   return subincrement;

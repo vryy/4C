@@ -170,12 +170,6 @@ namespace SSI
     //! return map for interior and master-side structural degrees of freedom
     Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const;
 
-    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureOnScaTraManifold() const
-    {
-      return map_structure_on_scatra_manifold_;
-    }
-
     /// setup
     virtual void SetupSystem() = 0;
 
@@ -360,9 +354,6 @@ namespace SSI
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
     int iter_;
-
-    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_on_scatra_manifold_;
 
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;

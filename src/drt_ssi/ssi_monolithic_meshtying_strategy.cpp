@@ -34,7 +34,7 @@ SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
       temp_struct_scatra_mat_(Teuchos::null),
       is_scatra_manifold_(is_scatra_manifold),
       meshtying_3_domain_intersection_(meshtying_3_domain_intersection),
-      ssi_maps_(std::move(ssi_maps)),
+      ssi_maps_(ssi_maps),
       ssi_structure_meshtying_(std::move(ssi_structure_meshtying))
 {
 }

@@ -81,10 +81,6 @@ namespace SSI
     Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& sublist_manifold_params);
 
-    //! create MultiMapExtractor with dofs on SSISurfaceManifold and others
-    Teuchos::RCP<LINALG::MultiMapExtractor> CreateManifoldMultiMapExtractor(
-        Teuchos::RCP<DRT::Discretization> dis);
-
     //! modify scatra parameters for ssi specific values
     Teuchos::ParameterList ModifyScaTraParams(const Teuchos::ParameterList& scatraparams);
 
@@ -269,13 +265,6 @@ namespace SSI
 
       //! get position within global dof map for specific sub problem
       static int GetProblemPosition(Subproblem subproblem);
-
-      //! block maps of all sub problems organized in std map
-      std::unordered_map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>>
-      BlockMapsSubProblems() const
-      {
-        return block_maps_sub_problems_;
-      }
 
       //! the multi map extractor of the scalar transport field
       Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorScaTra() const;

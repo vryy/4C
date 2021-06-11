@@ -53,7 +53,6 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       is_scatra_manifold_(
           DRT::INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       iter_(0),
-      map_structure_on_scatra_manifold_(Teuchos::null),
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
           "MESHTYING_3_DOMAIN_INTERSECTION")),
@@ -205,14 +204,6 @@ void SSI::SSIBase::Setup()
     // safety checks
     if (meshtying_strategy_s2i_ == Teuchos::null)
       dserror("Invalid scatra-scatra interface coupling strategy!");
-  }
-
-  // create map of dofs on structure/scatra discretization that have the same nodes as manifold
-  // (scatra)
-  if (IsScaTraManifold())
-  {
-    map_structure_on_scatra_manifold_ =
-        SSI::UTILS::CreateManifoldMultiMapExtractor(StructureField()->Discretization());
   }
 
   // construct vector of zeroes

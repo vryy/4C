@@ -19,7 +19,6 @@
 
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
-#include "../drt_lib/drt_utils_vector.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
@@ -425,39 +424,6 @@ Teuchos::ParameterList SSI::UTILS::ModifyScaTraParams(const Teuchos::ParameterLi
     scatraparams_mutable->set<bool>("output_file_name_discretization", true);
 
   return *scatraparams_mutable;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::MultiMapExtractor> SSI::UTILS::CreateManifoldMultiMapExtractor(
-    Teuchos::RCP<DRT::Discretization> dis)
-{
-  std::vector<DRT::Condition*> conditions(0, nullptr);
-  dis->GetCondition("SSISurfaceManifold", conditions);
-  if (conditions.empty()) dserror("Condition SSISurfaceManifold not found");
-
-  // Build GID vector of nodes on this proc, sort, and remove duplicates
-  std::vector<int> condition_node_vec;
-  for (auto* condition : conditions)
-    DRT::UTILS::AddOwnedNodeGIDVector(dis, *condition->Nodes(), condition_node_vec);
-
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(condition_node_vec);
-
-  // Build GID vector of dofs
-  std::vector<int> condition_dof_vec;
-  for (int condition_node : condition_node_vec)
-  {
-    const auto* curr_node = dis->gNode(condition_node);
-    for (int j = 0; j < dis->NumDof(0, curr_node); ++j)
-      condition_dof_vec.emplace_back(dis->Dof(0, curr_node, j));
-  }
-  // maps of conditioned dofs and other dofs
-  const auto condition_dof_map = Teuchos::rcp(new const Epetra_Map(
-      -1, static_cast<int>(condition_dof_vec.size()), &condition_dof_vec[0], 0, dis->Comm()));
-  const auto non_condition_dof_map = LINALG::SplitMap(*dis->DofRowMap(), *condition_dof_map);
-
-  return Teuchos::rcp(
-      new LINALG::MapExtractor(*dis->DofRowMap(), non_condition_dof_map, condition_dof_map));
 }
 
 /*----------------------------------------------------------------------*/
