@@ -12,6 +12,11 @@
 #include "Epetra_Vector.h"
 #include "Teuchos_RCPDecl.hpp"
 
+namespace CONTACT
+{
+  class CoNitscheStrategySsi;
+}
+
 namespace LINALG
 {
   enum class MatrixType;
@@ -22,12 +27,19 @@ namespace SSI
 {
   class SSIMono;
 
+  namespace UTILS
+  {
+    class SSIMaps;
+  }
+
   //! base functionality for scatra structure contact interaction
   class ContactStrategyBase
   {
    public:
     //! constructor
-    explicit ContactStrategyBase(const SSI::SSIMono& ssi_mono);
+    explicit ContactStrategyBase(
+        Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     //! apply contact contributions to the scatra residual
     void ApplyContactToScatraResidual(Teuchos::RCP<Epetra_Vector> scatra_residual);
@@ -45,12 +57,21 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix) = 0;
 
    protected:
-    //! monolithic algorithm for scalar-structure interaction
-    const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
+    //! return contact nitsche strategy for ssi problems
+    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> CoNitscheStrategySsi() const
+    {
+      return contact_strategy_nitsche_;
+    }
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
 
    private:
-    //! monolithic algorithm for scalar-structure interaction
-    const SSI::SSIMono& ssi_mono_;
+    //! store contact nitsche strategy for ssi problems
+    Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_strategy_nitsche_;
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
   };
 
   //! SSI (sub) matrices are sparse matrices
@@ -58,7 +79,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit ContactStrategySparse(const SSI::SSIMono& ssi_mono);
+    explicit ContactStrategySparse(
+        Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     void ApplyContactToScatraScatra(
         Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix) override;
@@ -75,7 +98,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit ContactStrategyBlock(const SSI::SSIMono& ssi_mono);
+    explicit ContactStrategyBlock(
+        Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+        Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     void ApplyContactToScatraScatra(
         Teuchos::RCP<LINALG::SparseOperator> scatra_scatra_matrix) override;
@@ -89,6 +114,7 @@ namespace SSI
 
   //! build specific contact strategy
   Teuchos::RCP<SSI::ContactStrategyBase> BuildContactStrategy(
-      const SSI::SSIMono& ssi_mono, LINALG::MatrixType matrixtype_scatra);
+      Teuchos::RCP<CONTACT::CoNitscheStrategySsi> contact_nitsche_strategy,
+      Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType matrixtype_scatra);
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_CONTACT_STRATEGY_H

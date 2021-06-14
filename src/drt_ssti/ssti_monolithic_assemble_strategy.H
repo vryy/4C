@@ -127,9 +127,9 @@ namespace SSTI
     {
       return ssti_mono_->MeshtyingScatra();
     }
-    const Teuchos::RCP<SSTI::SSTIStructuralMeshtying> StructuralMeshtying() const
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> SSTIStructureMeshtying() const
     {
-      return ssti_mono_->StructuralMeshtying();
+      return ssti_mono_->SSTIStructureMeshTying();
     }
     //@}
 
@@ -141,44 +141,24 @@ namespace SSTI
       return ssti_mono_->StructureField();
     }
 
-    //! interior and master side dofs of structural meshtying
-    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const
-    {
-      return StructuralMeshtying()->MapStructureCondensed();
-    }
+    //! interior and master side dofs of structure meshtying
+    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const;
 
-    //! Slave side dofs of structural meshtying
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const
-    {
-      return StructuralMeshtying()->MapsInterfaceStructure()->Map(0);
-    }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const
-    {
-      return StructuralMeshtying()->MapsInterfaceStructure3DomainIntersection()->Map(0);
-    }
+    //! Slave side dofs of structure meshtying
+    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
+    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
     //@}
 
     //! Slave structure converter for structure coupling
     //@{
-    const Teuchos::RCP<ADAPTER::CouplingSlaveConverter> StructureSlaveConverter() const
-    {
-      return StructuralMeshtying()->InterfaceCouplingAdapterStructureSlaveConverter();
-    }
-    const Teuchos::RCP<ADAPTER::CouplingSlaveConverter> StructureSlaveConverter3DomainIntersection()
-        const
-    {
-      return StructuralMeshtying()
-          ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection();
-    }
+    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const;
+    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter3DomainIntersection() const;
     //@}
 
     //! flags indicating meshtying
     //@{
     bool InterfaceMeshtying() const { return ssti_mono_->InterfaceMeshtying(); }
-    bool Meshtying3DomainIntersection() const
-    {
-      return StructuralMeshtying()->Meshtying3DomainIntersection();
-    }
+    bool Meshtying3DomainIntersection() const;
     //@}
 
    private:

@@ -150,10 +150,7 @@ namespace SSTI
     //! Newton Raphson loop
     //@{
     Teuchos::RCP<Epetra_Vector> increment_;
-    unsigned int itermax_;
-    double itertol_;
     Teuchos::RCP<Epetra_Vector> residual_;
-    double restol_;
     Teuchos::RCP<LINALG::Solver> solver_;
     //@}
 

@@ -39,6 +39,7 @@ namespace SSI
 {
   namespace UTILS
   {
+    class SSIMaps;
     class SSIMatrices;
     class SSIVectors;
   }  // namespace UTILS
@@ -86,29 +87,17 @@ namespace SSI
       return contact_strategy_nitsche_;
     }
 
-    //! get vector containing positions within system matrix for specific subproblem
-    Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
-
-    //! get position within global dof map for specific subproblem
-    int GetProblemPosition(Subproblem subproblem) const;
-
     //! return global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
-    {
-      return maps_sub_problems_;
-    };
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const { return map_structure_; }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSystemMatrix() const
-    {
-      return maps_systemmatrix_;
-    }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const;
 
     // Return matrix type of global system matrix
     LINALG::MatrixType MatrixType() const { return matrixtype_; };
@@ -128,6 +117,9 @@ namespace SSI
      * performed within this call
      */
     void SolveLinearSystem();
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
 
     //! return algebraic solver for global system of equations
     const LINALG::Solver& Solver() const { return *solver_; };
@@ -206,7 +198,7 @@ namespace SSI
 
     void Output() override;
 
-    //! do everthing, that has to be done once before first time step
+    //! do everything, that has to be done once before first time step
     void PrepareTimeLoop();
 
     void PrepareTimeStep() override;
@@ -258,18 +250,6 @@ namespace SSI
     //! Evaluation of coupling flux between scatra and manifold on scatra
     Teuchos::RCP<SSI::ScaTraManifoldScaTraFluxEvaluator> manifoldscatraflux_;
 
-    //! map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> map_structure_;
-
-    //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
-
-    //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
-    Teuchos::RCP<LINALG::MultiMapExtractor> maps_sub_problems_;
-
-    //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_;
-
     //! type of global system matrix in global system of equations
     const LINALG::MatrixType matrixtype_;
 
@@ -278,6 +258,9 @@ namespace SSI
 
     //! algebraic solver for global system of equations
     Teuchos::RCP<LINALG::Solver> solver_;
+
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
 
     //! this object holds the system matrix and all sub blocks
     Teuchos::RCP<SSI::UTILS::SSIMatrices> ssi_matrices_;

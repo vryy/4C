@@ -2945,6 +2945,9 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
               DofRowMap()->IndexBase(), DofRowMap()->Comm()));
 
       // merge map with existing map for Dirichlet boundary conditions
+      // Note: the dbcmaps_ internal member is reset every time EvaluateDirichlet() is called on the
+      // discretization (part of ScaTraTimIntImpl::ApplyDirichletBC(...)) at the beginning of this
+      // method, therefore this adaptation has to be performed in each time step during cv phase
       AddDirichCond(dbcmap);
     }
   }

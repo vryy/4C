@@ -8,6 +8,8 @@
 /*----------------------------------------------------------------------*/
 #include "ssi_monolithic_evaluate_OffDiag.H"
 
+#include "ssi_utils.H"
+
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -32,21 +34,16 @@
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure, bool meshtying_3_domain_intersection)
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
     : block_map_structure_(std::move(block_map_structure)),
       full_map_structure_(std::move(full_map_structure)),
-      icoup_structure_(std::move(icoup_structure)),
-      icoup_structure_3_domain_intersection_(std::move(icoup_structure_3_domain_intersection)),
-      interface_map_scatra_(std::move(interface_map_scatra)),
       meshtying_strategy_s2i_(std::move(meshtying_strategy_s2i)),
       scatra_(std::move(scatra)),
       structure_(std::move(structure)),
-      meshtying_3_domain_intersection_(meshtying_3_domain_intersection)
+      ssi_structure_meshtying_(std::move(ssi_structure_meshtying))
 {
 }
 
@@ -55,17 +52,14 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupling(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure, bool meshtying_3_domain_intersection)
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_manifold,
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
     : ScatraStructureOffDiagCoupling(std::move(block_map_structure), std::move(full_map_structure),
-          std::move(icoup_structure), std::move(icoup_structure_3_domain_intersection),
-          std::move(interface_map_scatra), std::move(meshtying_strategy_s2i), std::move(scatra),
-          std::move(structure), meshtying_3_domain_intersection),
+          std::move(ssi_structure_meshtying), std::move(meshtying_strategy_s2i), std::move(scatra),
+          std::move(structure)),
       scatra_manifold_(std::move(scatra_manifold))
 {
 }
@@ -90,10 +84,10 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
   eleparams.set<int>("ndsvel", 1);
 
   // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->ClearState();
 
   // add state vectors to scalar transport discretization
-  scatra_->ScaTraField()->AddTimeIntegrationSpecificVectors();
+  ScaTraField()->AddTimeIntegrationSpecificVectors();
 
   // create strategy for assembly of scatra-structure matrix block
   DRT::AssembleStrategy strategyscatrastructure(
@@ -106,10 +100,10 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureDom
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-structure matrix block
-  scatra_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
+  ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
 
   // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->ClearState();
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -139,10 +133,10 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
   eleparams.set<int>("ndsvel", 1);
 
   // remove state vectors from scalar transport discretization
-  scatra_manifold_->ScaTraField()->Discretization()->ClearState();
+  scatra_manifold_->Discretization()->ClearState();
 
   // add state vectors to scalar transport discretization
-  scatra_manifold_->ScaTraField()->AddTimeIntegrationSpecificVectors();
+  scatra_manifold_->AddTimeIntegrationSpecificVectors();
 
   // create strategy for assembly of scatra-structure matrix block
   DRT::AssembleStrategy strategyscatrastructure(
@@ -155,10 +149,10 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::EvaluateOffDiagBlockScatraMani
       Teuchos::null, Teuchos::null, Teuchos::null);
 
   // assemble scatra-structure matrix block
-  scatra_manifold_->ScaTraField()->Discretization()->Evaluate(eleparams, strategyscatrastructure);
+  scatra_manifold_->Discretization()->Evaluate(eleparams, strategyscatrastructure);
 
   // remove state vectors from scalar transport discretization
-  scatra_manifold_->ScaTraField()->Discretization()->ClearState();
+  scatra_manifold_->Discretization()->ClearState();
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -169,7 +163,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockScatraStructureInt
   // slave and master matrix for evaluation of conditions
   Teuchos::RCP<LINALG::SparseOperator> slavematrix(Teuchos::null);
   Teuchos::RCP<LINALG::SparseOperator> mastermatrix(Teuchos::null);
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
@@ -222,7 +216,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
   // set time
   eleparams.set<double>("total time", structure_->Time());
   // set numscatradofspernode
-  eleparams.set<int>("numscatradofspernode", scatra_->ScaTraField()->NumDofPerNode());
+  eleparams.set<int>("numscatradofspernode", ScaTraField()->NumDofPerNode());
 
   // remove state vectors from structure discretization
   structure_->Discretization()->ClearState();
@@ -257,12 +251,12 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
     Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
 {
   mastermatrix->Zero();
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      const int numberscatrablocks = scatra_->ScaTraField()->BlockMaps().NumMaps();
+      const int numberscatrablocks = ScaTraField()->BlockMaps().NumMaps();
 
       // cast scatrastructureinterfaceslaveside
       // cast master and slave matrix
@@ -281,34 +275,40 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       {
         LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
-            ADAPTER::CouplingSlaveConverter(*icoup_structure_), mastermatrixsparse, true, true);
+            ssi_structure_meshtying_->SlaveSideConverter()
+                ->InterfaceCouplingAdapterStructureSlaveConverter(),
+            mastermatrixsparse, true, true);
 
-        if (meshtying_3_domain_intersection_)
+        if (ssi_structure_meshtying_->MeshTying3DomainIntersection())
         {
           LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
               ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
-              ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_),
+              ssi_structure_meshtying_->SlaveSideConverter()
+                  ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
               mastermatrixsparse, true, true);
         }
       }
 
       // finalize auxiliary system matrix
-      if (meshtying_3_domain_intersection_)
+      if (ssi_structure_meshtying_->MeshTying3DomainIntersection())
       {
         mastermatrixsparse.Complete(
-            *LINALG::MultiMapExtractor::MergeMaps({icoup_structure_->MasterDofMap(),
-                icoup_structure_3_domain_intersection_->MasterDofMap()}),
+            *LINALG::MultiMapExtractor::MergeMaps(
+                {ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster(),
+                    ssi_structure_meshtying_->SSIMeshTyingMaps()
+                        ->MapStructureMaster3DomainIntersection()}),
             *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap());
       }
       else
       {
-        mastermatrixsparse.Complete(*icoup_structure_->MasterDofMap(),
+        mastermatrixsparse.Complete(
+            *ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster(),
             *meshtying_strategy_s2i_->CouplingAdapter()->MasterDofMap());
       }
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
-          *block_map_structure_, scatra_->ScaTraField()->BlockMaps());
+          *block_map_structure_, ScaTraField()->BlockMaps());
       mastermatrix_split->Complete();
       blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -327,13 +327,16 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
       // scatrastructureinterface_sparse
       LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
           ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
-          ADAPTER::CouplingSlaveConverter(*icoup_structure_), *sparsemastermatrix, true, true);
+          ssi_structure_meshtying_->SlaveSideConverter()
+              ->InterfaceCouplingAdapterStructureSlaveConverter(),
+          *sparsemastermatrix, true, true);
 
-      if (meshtying_3_domain_intersection_)
+      if (ssi_structure_meshtying_->MeshTying3DomainIntersection())
       {
         LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
             ADAPTER::CouplingSlaveConverter(*meshtying_strategy_s2i_->CouplingAdapter()),
-            ADAPTER::CouplingSlaveConverter(*icoup_structure_3_domain_intersection_),
+            ssi_structure_meshtying_->SlaveSideConverter()
+                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
             *sparsemastermatrix, true, true);
       }
 
@@ -369,10 +372,10 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
   condparams.set<int>("ndsdisp", 1);
 
   // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->ClearState();
 
   // add state vectors to scalar transport discretization
-  scatra_->ScaTraField()->AddTimeIntegrationSpecificVectors();
+  ScaTraField()->AddTimeIntegrationSpecificVectors();
 
   // create strategy for assembly of auxiliary system matrix
   DRT::AssembleStrategy strategyscatrastructures2i(
@@ -390,12 +393,12 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
     // collect condition specific data and store to scatra boundary parameter class
     meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
     // evaluate the condition
-    scatra_->ScaTraField()->Discretization()->EvaluateCondition(
+    ScaTraField()->Discretization()->EvaluateCondition(
         condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
   }
 
   // finalize scatra-structure matrix block
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
@@ -420,7 +423,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
   }
 
   // remove state vectors from scalar transport discretization
-  scatra_->ScaTraField()->Discretization()->ClearState();
+  ScaTraField()->Discretization()->ClearState();
 }
 
 /*----------------------------------------------------------------------*
@@ -429,15 +432,13 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_scatra,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure,
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-    Teuchos::RCP<const Epetra_Map> interface_map_scatra,
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i,
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure, bool meshtying_3_domain_intersection)
-    : ScatraStructureOffDiagCoupling(block_map_structure, full_map_structure, icoup_structure,
-          icoup_structure_3_domain_intersection, interface_map_scatra, meshtying_strategy_s2i,
-          scatra, structure, meshtying_3_domain_intersection),
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra,
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
+    : ScatraStructureOffDiagCoupling(std::move(block_map_structure), std::move(full_map_structure),
+          std::move(ssi_structure_meshtying), std::move(meshtying_strategy_s2i), std::move(scatra),
+          std::move(structure)),
       full_map_scatra_(std::move(full_map_scatra))
 {
 }
@@ -450,7 +451,7 @@ void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatr
   ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDomain(structurescatradomain);
 
   // finalize structure-scatra matrix block
-  switch (scatra_->ScaTraField()->MatrixType())
+  switch (ScaTraField()->MatrixType())
   {
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
@@ -461,7 +462,7 @@ void SSI::ScatraStructureOffDiagCouplingSSTI::EvaluateOffDiagBlockStructureScatr
 
     case LINALG::MatrixType::sparse:
     {
-      structurescatradomain->Complete(*full_map_scatra_, *full_map_structure_);
+      structurescatradomain->Complete(*full_map_scatra_, *FullMapStructure());
       break;
     }
 

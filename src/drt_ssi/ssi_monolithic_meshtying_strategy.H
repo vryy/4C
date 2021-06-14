@@ -30,8 +30,10 @@ namespace SSI
 {
   namespace UTILS
   {
+    class SSIMaps;
     class SSISlaveSideConverter;
-  }
+    class SSIStructureMeshTying;
+  }  // namespace UTILS
 
   class SSIMono;
 
@@ -40,7 +42,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBase(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategyBase(bool is_scatra_manifold, bool meshtying_3_domain_intersection,
+        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
     /*!
      * @brief apply mesh tying to structure matrix
@@ -110,16 +114,23 @@ namespace SSI
     void ApplyMeshtyingToXXXStructure(LINALG::SparseMatrix& ssi_xxx_structure_matrix,
         const LINALG::SparseMatrix& xxx_structure_matrix);
 
-    //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
-    //! side)
-    //@{
-    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const { return mapstructurecondensed_; }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const { return mapstructureslave_; }
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const
-    {
-      return mapstructureslave3domainintersection_;
-    }
-    //@}
+    //! solve additional scatra field on manifolds
+    bool IsScaTraManifold() const { return is_scatra_manifold_; }
+
+    //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
+    //! slave-side degrees of freedom, 2: master-side degrees of freedom)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
+
+    //! Slave side dofs of structural meshtying
+    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
+    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
+
+    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
+
+    //! return map for interior and master-side structural degrees of freedom
+    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const;
 
     //! return the slave structure converter for structure coupling
     ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const;
@@ -127,8 +138,14 @@ namespace SSI
     //! return the slave structure converter for structure coupling with 3 domain intersection
     ADAPTER::CouplingSlaveConverter& StructureSlaveConverter3DomainIntersection() const;
 
-    //! monolithic algorithm for scalar-structure interaction
-    const SSI::SSIMono& SSIMono() const { return ssi_mono_; }
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
+
+    //! SSI structure meshtying object containing coupling adapters, converters and maps
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> SSIStructureMeshtying() const
+    {
+      return ssi_structure_meshtying_;
+    }
 
     //! scatra structure contribution matrix
     Teuchos::RCP<LINALG::SparseOperator> temp_scatra_struct_mat_;
@@ -152,22 +169,17 @@ namespace SSI
      */
     void FinalizeMeshtyingStructureMatrix(LINALG::SparseMatrix& ssi_structure_matrix);
 
-    //! interface maps (condensed: inner and master side, slave side, 3 domain intersection slave
-    //! side)
-    //@{
-    Teuchos::RCP<const Epetra_Map> mapstructurecondensed_;
-    Teuchos::RCP<const Epetra_Map> mapstructureslave_;
-    Teuchos::RCP<const Epetra_Map> mapstructureslave3domainintersection_;
-    //@}
+    //! solve additional scatra field on manifolds
+    const bool is_scatra_manifold_;
 
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;
 
-    //! slave side converter
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
+    //! this object holds all maps relevant to monolithic scalar transport - structure interaction
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
 
-    //! monolithic algorithm for scalar-structure interaction
-    const SSI::SSIMono& ssi_mono_;
+    //! SSI structure meshtying object containing coupling adapters, converters and maps
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
   };
 
   //! SSI problem is represented by one sparse matrix
@@ -175,7 +187,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategySparse(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategySparse(bool is_scatra_manifold, bool meshtying_3_domain_intersection,
+        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
@@ -193,7 +207,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBlock(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategyBlock(bool is_scatra_manifold, bool meshtying_3_domain_intersection,
+        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
@@ -236,7 +252,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBlockSparse(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategyBlockSparse(bool is_scatra_manifold,
+        bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
@@ -254,7 +272,9 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBlockBlock(const SSI::SSIMono& ssi_mono);
+    explicit MeshtyingStrategyBlockBlock(bool is_scatra_manifold,
+        bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
@@ -268,7 +288,9 @@ namespace SSI
   };
 
   //! build specific mesh tying strategy
-  Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(const SSI::SSIMono& ssi_mono,
-      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra);
+  Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(bool is_scatra_manifold,
+      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra,
+      bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+      Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_MESHTYING_STRATEGY_H

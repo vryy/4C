@@ -43,6 +43,14 @@ namespace SCATRA
   class ScaTraTimIntImpl;
 }  // namespace SCATRA
 
+namespace SSI
+{
+  namespace UTILS
+  {
+    class SSIStructureMeshTying;
+  }
+}  // namespace SSI
+
 namespace SSTI
 {
   class SSTIStructuralMeshtying;
@@ -74,19 +82,27 @@ namespace SSTI
     //! reset the counter for Newton-Raphson iterations (monolithic algorithm)
     void ResetIter() { iter_ = 0; }
 
+    //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
+    //! slave-side degrees of freedom, 2: master-side degrees of freedom)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
+
+    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
+
     //! return coupling
     //@{
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingScatra() const
     {
       return meshtying_strategy_scatra_;
-    };
+    }
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingThermo() const
     {
       return meshtying_strategy_thermo_;
-    };
-    const Teuchos::RCP<SSTI::SSTIStructuralMeshtying> StructuralMeshtying() const
+    }
+    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> SSTIStructureMeshTying() const
     {
-      return structural_meshtying_;
+      return ssti_structure_meshtying_;
     }
     //@}
 
@@ -154,7 +170,7 @@ namespace SSTI
     //@{
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
-    Teuchos::RCP<SSTI::SSTIStructuralMeshtying> structural_meshtying_;
+    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying_;
     //@}
 
     //! bool indicating if we have at least one ssi interface meshtying condition

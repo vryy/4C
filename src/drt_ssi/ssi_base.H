@@ -54,8 +54,10 @@ namespace SSI
 
   namespace UTILS
   {
+    class SSIMeshTyingMaps;
     class SSISlaveSideConverter;
-  }
+    class SSIStructureMeshTying;
+  }  // namespace UTILS
 
   enum class RedistributionType
   {
@@ -70,18 +72,6 @@ namespace SSI
    public:
     /// create using a Epetra_Comm
     explicit SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    //! return scatra-scatra interface coupling adapter for structure field
-    const Teuchos::RCP<ADAPTER::Coupling>& InterfaceCouplingAdapterStructure() const
-    {
-      return icoup_structure_;
-    };
-
-    const Teuchos::RCP<ADAPTER::Coupling>& InterfaceCouplingAdapterStructure3DomainIntersection()
-        const
-    {
-      return icoup_structure_3_domain_intersection_;
-    };
 
     //! return counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
@@ -171,35 +161,14 @@ namespace SSI
 
     //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
     //! slave-side degrees of freedom, 2: master-side degrees of freedom)
-    const Teuchos::RCP<const LINALG::MultiMapExtractor>& MapsCoupStruct() const
-    {
-      return maps_coup_struct_;
-    };
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
 
     //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
     //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-    const Teuchos::RCP<const LINALG::MultiMapExtractor>& MapsCoupStruct3DomainIntersection() const
-    {
-      return maps_coup_struct_3_domain_intersection_;
-    };
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
 
     //! return map for interior and master-side structural degrees of freedom
-    const Teuchos::RCP<const Epetra_Map>& MapStructureCondensed() const
-    {
-      return map_structure_condensed_;
-    };
-
-    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> MapStructureOnScaTraManifold() const
-    {
-      return map_structure_on_scatra_manifold_;
-    }
-
-    //! holds slave side converter og multiple coupling adapters
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
-    {
-      return slave_side_converter_;
-    };
+    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const;
 
     /// setup
     virtual void SetupSystem() = 0;
@@ -220,7 +189,7 @@ namespace SSI
     const Teuchos::RCP<::ADAPTER::SSIStructureWrapper>& StructureField() const
     {
       return structure_;
-    };
+    }
 
     /// pointer to the underlying structure problem base algorithm
     Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> StructureBaseAlgorithm() const
@@ -260,10 +229,10 @@ namespace SSI
     void EvaluateAndSetTemperatureField();
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
-    bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; };
+    bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; }
 
     //! indicates, if meshtying includes triple points
-    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; };
+    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
 
     //! return the scatra-scatra interface meshtying strategy
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
@@ -284,7 +253,13 @@ namespace SSI
     void Redistribute(RedistributionType redistribution_type);
 
     //! get bool indicating if we have at least one ssi interface contact condition
-    bool SSIInterfaceContact() const { return ssiinterfacecontact_; };
+    bool SSIInterfaceContact() const { return ssiinterfacecontact_; }
+
+    //! SSI structure meshtying object containing coupling adapters, converters and maps
+    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> SSIStructureMeshTying() const
+    {
+      return ssi_structure_meshtying_;
+    }
 
    protected:
     //! get bool indicating if old structural time integration is used
@@ -294,13 +269,13 @@ namespace SSI
     void CheckIsSetup() const
     {
       if (not IsSetup()) dserror("Setup() was not called.");
-    };
+    }
 
     //! check if \ref Init() was called
     void CheckIsInit() const
     {
       if (not IsInit()) dserror("Init(...) was not called.");
-    };
+    }
 
     //! copy modified time step from scatra to scatra manifold field
     void SetDtFromScaTraToManifold();
@@ -312,10 +287,10 @@ namespace SSI
     void SetDtFromScaTraToStructure();
 
     //! set flag true after setup or false if setup became invalid
-    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; };
+    void SetIsSetup(bool trueorfalse) { issetup_ = trueorfalse; }
 
     //! set flag true after init or false if init became invalid
-    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; };
+    void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; }
 
     //! set up structural model evaluator for scalar-structure interaction
     virtual void SetupModelEvaluator() const = 0;
@@ -367,13 +342,6 @@ namespace SSI
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;
 
-    //! structure interface coupling adapter between two geometric entities
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
-
-    //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
-    //! intersection domains
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
-
     //! flag indicating if class is initialized
     bool isinit_;
 
@@ -387,20 +355,6 @@ namespace SSI
     //! iterations (partitioned algorithm)
     int iter_;
 
-    //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom, 2:
-    //! master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_;
-
-    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
-    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
-
-    //! map for interior and master-side structural degrees of freedom
-    Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
-
-    //! MultiMapExtractor with Map 0: structure dofs on manifold, Map 1: others
-    Teuchos::RCP<LINALG::MultiMapExtractor> map_structure_on_scatra_manifold_;
-
     //! indicates, if meshtying includes three entities
     const bool meshtying_3_domain_intersection_;
 
@@ -413,8 +367,8 @@ namespace SSI
     //! underlying scatra problem base algorithm on manifolds
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
 
-    //! slave side converter
-    Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
+    //! SSI structure mesh tying object containing coupling adapters, converters and maps
+    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
 
     /// helper class for applying SSI couplings
     Teuchos::RCP<SSICouplingBase> ssicoupling_;

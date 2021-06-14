@@ -8,6 +8,8 @@
 */
 /*----------------------------------------------------------------------*/
 #include "ssi_str_model_evaluator_monolithic.H"
+#include "ssi_monolithic.H"
+#include "ssi_utils.H"
 
 #include <Epetra_IntVector.h>
 
@@ -17,11 +19,8 @@
 
 #include "../drt_io/io.H"
 
-#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
-
-#include "../drt_ssi/ssi_monolithic.H"
 
 #include "../drt_structure_new/str_model_evaluator_data.H"
 #include "../drt_structure_new/str_timint_basedataglobalstate.H"
@@ -86,14 +85,16 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
   {
     // initialize vectors for stresses and element numbers on slave and master sides of
     // scatra-scatra coupling interfaces
-    const auto stresses_slave(Teuchos::rcp(
-        new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
+    const auto stresses_slave(Teuchos::rcp(new Epetra_MultiVector(
+        *ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        2)));
     const auto stresses_master(Teuchos::rcp(new Epetra_MultiVector(
-        *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap(), 2)));
+        *ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterDofMap(),
+        2)));
     Epetra_IntVector numelement_slave(
-        *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
+        *ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap());
     Epetra_IntVector numelement_master(
-        *ssi_mono_->InterfaceCouplingAdapterStructure()->MasterDofMap());
+        *ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterDofMap());
 
     // extract scatra-scatra interface coupling conditions
     std::vector<DRT::Condition*> conditions;
@@ -156,13 +157,14 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
     }
 
     // communicate vectors from master to slave side
-    const auto stresses_master_to_slave(Teuchos::rcp(
-        new Epetra_MultiVector(*ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap(), 2)));
+    const auto stresses_master_to_slave(Teuchos::rcp(new Epetra_MultiVector(
+        *ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
+        2)));
     Epetra_IntVector numelement_master_to_slave(
-        *ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(
+        *ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap());
+    ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
         stresses_master, stresses_master_to_slave);
-    ssi_mono_->InterfaceCouplingAdapterStructure()->MasterToSlave(
+    ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
         numelement_master, numelement_master_to_slave);
 
     // add stresses together
@@ -174,7 +176,8 @@ void STR::MODELEVALUATOR::MonolithicSSI::DetermineStressStrain()
         (*(*stresses_slave)(ivec))[lid] /= numelement_slave[lid] + numelement_master_to_slave[lid];
 
     // communicate back
-    ssi_mono_->InterfaceCouplingAdapterStructure()->SlaveToMaster(stresses_slave, stresses_master);
+    ssi_mono_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveToMaster(
+        stresses_slave, stresses_master);
 
     // loop over all scatra-scatra interface coupling conditions
     for (auto& condition : conditions)

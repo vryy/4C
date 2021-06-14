@@ -12,6 +12,7 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
+#include "unordered_map"
 #include <Teuchos_ParameterList.hpp>
 
 namespace ADAPTER
@@ -29,6 +30,7 @@ namespace DRT
 namespace LINALG
 {
   class BlockSparseMatrixBase;
+  class MapExtractor;
   class MultiMapExtractor;
   class SparseMatrix;
   class SparseOperator;
@@ -37,10 +39,16 @@ namespace LINALG
 
 namespace SSI
 {
+  class SSIBase;
   class SSIMono;
+  enum class Subproblem;
 
   namespace UTILS
   {
+    // forward declaration
+    class SSIMaps;
+    class SSISlaveSideConverter;
+
     //! Modification of time parameter list for problem with different time step size
     void ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::ParameterList& ssiparams,
         Teuchos::ParameterList& scatradyn, Teuchos::ParameterList& sdyn);
@@ -73,10 +81,6 @@ namespace SSI
     Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
         const Teuchos::ParameterList& sublist_manifold_params);
 
-    //! create MultiMapExtractor with dofs on SSISurfaceManifold and others
-    Teuchos::RCP<LINALG::MultiMapExtractor> CreateManifoldMultiMapExtractor(
-        Teuchos::RCP<DRT::Discretization> dis);
-
     //! modify scatra parameters for ssi specific values
     Teuchos::ParameterList ModifyScaTraParams(const Teuchos::ParameterList& scatraparams);
 
@@ -87,8 +91,17 @@ namespace SSI
     class SSIMatrices
     {
      public:
-      //! constructor
-      explicit SSIMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+      /*!
+       * @brief constructor
+       *
+       * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
+       * @param[in] ssi_matrixtype      the ssi matrix type
+       * @param[in] scatra_matrixtype   the scalar transport matrix type
+       * @param[in] is_scatra_manifold  flag indicating if a scatra manifold is used
+       */
+      SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
+          LINALG::MatrixType ssi_matrixtype, LINALG::MatrixType scatra_matrixtype,
+          bool is_scatra_manifold);
 
       //! call complete on the scalar transport manifold - structure off-diagonal matrix
       void CompleteScaTraManifoldStructureMatrix();
@@ -147,23 +160,25 @@ namespace SSI
       /*!
        * @brief initialize the scatra-structure interaction main-diagonal matrices
        *
-       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void InitializeMainDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+      void InitializeMainDiagMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
-       * @param[in] ssi_mono_algorithm    scatra-structure interaction monolithic time integrator
+       * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void InitializeOffDiagMatrices(const SSI::SSIMono& ssi_mono_algorithm);
+      void InitializeOffDiagMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       /*!
        * @brief initialize the system matrix
        *
-       * @param[in] ssi_mono_algorithm  scatra-structure interaction monolithic time integrator
+       * @param[in] ssi_maps         pointer to the ssi maps object containing all relevant maps
+       * @param[in] ssi_matrixtype   the ssi matrix type
        */
-      void InitializeSystemMatrix(const SSI::SSIMono& ssi_mono_algorithm);
+      void InitializeSystemMatrix(
+          Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, LINALG::MatrixType ssi_matrixtype);
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
@@ -198,8 +213,12 @@ namespace SSI
     class SSIVectors
     {
      public:
-      //! constructor
-      explicit SSIVectors(const SSI::SSIMono& ssi_mono);
+      /*!
+       * @brief constructor
+       *
+       * @param[in] ssi_maps  pointer to the ssi maps object containing all relevant maps
+       */
+      explicit SSIVectors(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
       //! clear the increment vector
       void ClearIncrement();
@@ -231,6 +250,188 @@ namespace SSI
 
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> structure_residual_;
+    };
+
+    /*---------------------------------------------------------------------------------*
+     *---------------------------------------------------------------------------------*/
+    class SSIMaps
+    {
+     public:
+      //! constructor
+      explicit SSIMaps(const SSI::SSIMono& ssi_mono_algorithm);
+
+      //! get vector containing positions within system matrix for specific subproblem
+      Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+
+      //! get position within global dof map for specific sub problem
+      static int GetProblemPosition(Subproblem subproblem);
+
+      //! the multi map extractor of the scalar transport field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
+
+      //! the multi map extractor of the scalar transport on manifold field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
+
+      //! the multi map extractor of the structure field
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
+
+      //! map extractor associated with blocks of global system matrix
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
+      {
+        return block_map_system_matrix_;
+      }
+
+      //! all dofs of the SSI algorithm
+      Teuchos::RCP<const Epetra_Map> MapSystemMatrix() const { return map_system_matrix_; }
+
+      /*!
+       * @brief global map extractor
+       * @note only access with GetProblemPosition method
+       */
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
+      {
+        return maps_sub_problems_;
+      }
+
+      //! the scalar transport dof row map
+      Teuchos::RCP<const Epetra_Map> ScaTraDofRowMap() const;
+
+      //! the scalar transport on manifolds dof row map
+      Teuchos::RCP<const Epetra_Map> ScaTraManifoldDofRowMap() const;
+
+      //! the structure dof row map
+      Teuchos::RCP<const Epetra_Map> StructureDofRowMap() const;
+
+     private:
+      //! create and check the block maps of all sub problems
+      void CreateAndCheckBlockMapsSubProblems(const SSIMono& ssi_mono_algorithm);
+
+      //! block maps of all sub problems organized in std map
+      std::unordered_map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>>
+          block_maps_sub_problems_;
+
+      //! map extractor associated with blocks of global system matrix
+      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_system_matrix_;
+
+      //! all dofs of the SSI algorithm
+      Teuchos::RCP<const Epetra_Map> map_system_matrix_;
+
+      /*!
+       * @brief global map extractor
+       * @note only access with GetProblemPosition method
+       */
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_sub_problems_;
+
+      //! matrix type of scatra matrix
+      const LINALG::MatrixType scatra_matrixtype_;
+
+      //! matrix type of scatra manifold matrix
+      const LINALG::MatrixType scatra_manifold_matrixtype_;
+
+      //! matrix type of ssi matrix
+      const LINALG::MatrixType ssi_matrixtype_;
+    };
+
+    class SSIMeshTyingMaps
+    {
+     public:
+      explicit SSIMeshTyingMaps(
+          Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure,
+          Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
+          bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis);
+
+      //! condensed structure dofs (inner and master side)
+      Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const
+      {
+        return map_structure_condensed_;
+      }
+
+      //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
+      //! slave-side degrees of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const
+      {
+        return maps_coup_struct_;
+      }
+
+      //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+      //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const
+      {
+        return maps_coup_struct_3_domain_intersection_;
+      }
+
+      //! Slave and master side dofs of structure mesh tying
+      Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
+      Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
+      Teuchos::RCP<const Epetra_Map> MapStructureMaster3DomainIntersection() const;
+      Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
+
+     private:
+      //! condensed structure dofs (inner and master side)
+      Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
+
+      //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom,
+      //! 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_;
+
+      //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
+      //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
+      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
+    };
+
+    class SSIStructureMeshTying
+    {
+     public:
+      explicit SSIStructureMeshTying(const std::string& conditionname_coupling,
+          const std::string& conditionname_3_domain_intersection,
+          bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> struct_dis);
+
+      //! structure interface coupling adapter between two geometric entities
+      Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure() const
+      {
+        return icoup_structure_;
+      }
+
+      //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
+      //! intersection domains
+      Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure3DomainIntersection() const
+      {
+        return icoup_structure_3_domain_intersection_;
+      }
+
+      //! indicates, if meshtying includes triple points
+      bool MeshTying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
+
+      //! holds slave side converter of multiple coupling adapters
+      Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
+      {
+        return slave_side_converter_;
+      }
+
+      //! this object holds all maps relevant to mesh tying for scalar transport - structure
+      //! interaction
+      Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> SSIMeshTyingMaps() const
+      {
+        return ssi_meshtyingmaps_;
+      }
+
+     private:
+      //! structure interface coupling adapter between two geometric entities
+      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
+
+      //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
+      //! intersection domains
+      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
+
+      //! indicates, if meshtying includes triple points
+      const bool meshtying_3_domain_intersection_;
+
+      //! slave side converter
+      Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
+
+      //! this object holds all maps relevant to mesh tying for scalar transport - structure
+      //! interaction
+      Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> ssi_meshtyingmaps_;
     };
 
     class SSISlaveSideConverter
