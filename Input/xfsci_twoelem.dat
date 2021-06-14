@@ -162,7 +162,7 @@ MAT 3 MAT_fluid DYNVISCOSITY 0.2 DENSITY 1e-3 GAMMA 1.0
 LOWER_BOUND  -1 -1 0.95
 UPPER_BOUND  3 3 1.15
 INTERVALS   3 3 3
-ELEMENTS    FLUID HEX8 MAT 3 NA Euler GP 3 3 3
+ELEMENTS    FLUID HEX8 MAT 3 NA Euler
 PARTITION   structured
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a

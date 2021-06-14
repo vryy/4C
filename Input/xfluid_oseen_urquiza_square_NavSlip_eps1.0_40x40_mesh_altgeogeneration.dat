@@ -331,7 +331,7 @@ NODE 16 COORD 1.0 1.0 -0.2
 LOWER_BOUND                     -1.6 -1.6 -.04
 UPPER_BOUND                     1.6 1.6 .04
 INTERVALS                       40 40 1
-ELEMENTS                        FLUID HEX8 MAT 1 NA Euler GP 3 3 3
+ELEMENTS                        FLUID HEX8 MAT 1 NA Euler
 PARTITION                       auto
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS

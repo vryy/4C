@@ -303,7 +303,7 @@ VOLUME fluid DVOL 1
 LOWER_BOUND  0.0  0.0 -0.05
 UPPER_BOUND  1.6  1.6  0.05
 INTERVALS   2 2 1
-ELEMENTS    FLUID HEX20 MAT 1 NA Euler GP 3 3 3
+ELEMENTS    FLUID HEX20 MAT 1 NA Euler
 PARTITION   auto
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
