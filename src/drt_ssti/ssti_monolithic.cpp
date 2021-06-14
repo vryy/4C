@@ -331,10 +331,10 @@ void SSTI::SSTIMono::SetupSystem()
   ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(*this));
 
   // initialize global increment vector for Newton-Raphson iteration
-  increment_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubproblems()->FullMap(), true);
+  increment_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubProblems()->FullMap(), true);
 
   // initialize global residual vector
-  residual_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubproblems()->FullMap(), true);
+  residual_ = LINALG::CreateVector(*ssti_maps_mono_->MapsSubProblems()->FullMap(), true);
 
   if (matrixtype_ == LINALG::MatrixType::block_field)
   {
@@ -363,20 +363,20 @@ void SSTI::SSTIMono::SetupSystem()
       case LINALG::MatrixType::block_condition:
       {
         blockmapscatrainterface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingScatra(),
-            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsScatra()->NumMaps());
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->BlockMapScatra()->NumMaps());
 
         blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
-            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->BlockMapThermo()->NumMaps());
         blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
-            LINALG::MatrixType::block_condition, ssti_maps_mono_->MapsThermo()->NumMaps());
+            LINALG::MatrixType::block_condition, ssti_maps_mono_->BlockMapThermo()->NumMaps());
         break;
       }
       case LINALG::MatrixType::sparse:
       {
         blockmapthermointerface = ssti_maps_mono_->MapsInterfaceBlocks(MeshtyingThermo(),
-            LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
+            LINALG::MatrixType::sparse, ssti_maps_mono_->BlockMapThermo()->NumMaps());
         blockmapthermointerfaceslave = ssti_maps_mono_->MapsInterfaceBlocksSlave(MeshtyingThermo(),
-            LINALG::MatrixType::sparse, ssti_maps_mono_->MapsThermo()->NumMaps());
+            LINALG::MatrixType::sparse, ssti_maps_mono_->BlockMapThermo()->NumMaps());
         break;
       }
       default:
@@ -398,28 +398,28 @@ void SSTI::SSTIMono::SetupSystem()
 
   // initialize evaluation objects for coupling between subproblems
   scatrastructureoffdiagcoupling_ =
-      Teuchos::rcp(new SSI::ScatraStructureOffDiagCouplingSSTI(ssti_maps_mono_->MapsStructure(),
-          ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-          ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
+      Teuchos::rcp(new SSI::ScatraStructureOffDiagCouplingSSTI(ssti_maps_mono_->BlockMapStructure(),
+          ssti_maps_mono_->MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+          ssti_maps_mono_->MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
           SSTIStructureMeshTying(), MeshtyingScatra(), ScaTraField(), StructureField()));
 
   thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
-      ssti_maps_mono_->MapsStructure(), ssti_maps_mono_->MapsThermo(),
-      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::structure)),
-      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
+      ssti_maps_mono_->BlockMapStructure(), ssti_maps_mono_->BlockMapThermo(),
+      ssti_maps_mono_->MapsSubProblems()->Map(GetProblemPosition(Subproblem::structure)),
+      ssti_maps_mono_->MapsSubProblems()->Map(GetProblemPosition(Subproblem::thermo)),
       SSTIStructureMeshTying(), interface_map_thermo, MeshtyingThermo(), StructureField(),
       ThermoFieldBase()));
 
   scatrathermooffdiagcoupling_ = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
-      ssti_maps_mono_->MapsThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
-      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
-      ssti_maps_mono_->MapsSubproblems()->Map(GetProblemPosition(Subproblem::thermo)),
+      ssti_maps_mono_->BlockMapThermo(), blockmapthermointerface, blockmapthermointerfaceslave,
+      ssti_maps_mono_->MapsSubProblems()->Map(GetProblemPosition(Subproblem::scalar_transport)),
+      ssti_maps_mono_->MapsSubProblems()->Map(GetProblemPosition(Subproblem::thermo)),
       interface_map_scatra, interface_map_thermo, true, MeshtyingScatra(), MeshtyingThermo(),
       ScaTraFieldBase(), ThermoFieldBase()));
 
   // initialize equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
-      matrixtype_, GetBlockEquilibration(), AllMaps()->MapsSubproblems()->FullMap());
+      matrixtype_, GetBlockEquilibration(), AllMaps()->MapsSubProblems()->FullMap());
 }
 
 /*--------------------------------------------------------------------------*
@@ -499,7 +499,7 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     case Subproblem::structure:
     {
       // First, extract increment from domain and master side
-      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(
+      subincrement = ssti_maps_mono_->MapsSubProblems()->ExtractVector(
           increment_, GetProblemPosition(Subproblem::structure));
 
       // Second, copy master side displacements and increments to slave side for meshtying
@@ -542,13 +542,13 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
     }
     case Subproblem::scalar_transport:
     {
-      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(
+      subincrement = ssti_maps_mono_->MapsSubProblems()->ExtractVector(
           increment_, GetProblemPosition(Subproblem::scalar_transport));
       break;
     }
     case Subproblem::thermo:
     {
-      subincrement = ssti_maps_mono_->MapsSubproblems()->ExtractVector(
+      subincrement = ssti_maps_mono_->MapsSubProblems()->ExtractVector(
           increment_, GetProblemPosition(Subproblem::thermo));
       break;
     }
@@ -623,7 +623,7 @@ void SSTI::SSTIMono::LinearSolve()
     dserror("Complete() has not been called on global system matrix yet!");
 
   strategy_equilibration_->EquilibrateSystem(
-      ssti_matrices_->SystemMatrix(), residual_, *AllMaps()->MapsSystemMatrixSubblocks());
+      ssti_matrices_->SystemMatrix(), residual_, *AllMaps()->BlockMapSystemMatrix());
 
   solver_->Solve(
       ssti_matrices_->SystemMatrix()->EpetraOperator(), increment_, residual_, true, Iter() == 1);

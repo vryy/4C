@@ -69,8 +69,8 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
  *---------------------------------------------------------------------------------*/
 SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     const SSI::SSIMono& ssi_mono)
-    : block_map_scatra_(ssi_mono.MapsScatra()),
-      block_map_structure_(ssi_mono.MapStructure()),
+    : block_map_scatra_(ssi_mono.BlockMapScaTra()),
+      block_map_structure_(ssi_mono.BlockMapStructure()),
       do_output_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD")),
       full_map_manifold_(ssi_mono.MapsSubProblems()->Map(

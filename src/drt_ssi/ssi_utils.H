@@ -267,24 +267,27 @@ namespace SSI
       static int GetProblemPosition(Subproblem subproblem);
 
       //! the multi map extractor of the scalar transport field
-      Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorScaTra() const;
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
       //! the multi map extractor of the scalar transport on manifold field
-      Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorScaTraManifold() const;
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
 
       //! the multi map extractor of the structure field
-      Teuchos::RCP<const LINALG::MultiMapExtractor> MultiMapExtractorStructure() const;
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
 
       //! map extractor associated with blocks of global system matrix
-      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapsSystemMatrix() const
+      Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
       {
-        return block_maps_systemmatrix_;
+        return block_map_system_matrix_;
       }
 
       //! all dofs of the SSI algorithm
       Teuchos::RCP<const Epetra_Map> MapSystemMatrix() const { return map_system_matrix_; }
 
-      //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
+      /*!
+       * @brief global map extractor
+       * @note only access with GetProblemPosition method
+       */
       Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
       {
         return maps_sub_problems_;
@@ -308,12 +311,15 @@ namespace SSI
           block_maps_sub_problems_;
 
       //! map extractor associated with blocks of global system matrix
-      Teuchos::RCP<const LINALG::MultiMapExtractor> block_maps_systemmatrix_;
+      Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_system_matrix_;
 
       //! all dofs of the SSI algorithm
       Teuchos::RCP<const Epetra_Map> map_system_matrix_;
 
-      //! global map extractor (0: scalar transport, 1: structure, [2: scatra manifold])
+      /*!
+       * @brief global map extractor
+       * @note only access with GetProblemPosition method
+       */
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_sub_problems_;
 
       //! matrix type of scatra matrix

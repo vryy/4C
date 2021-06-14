@@ -91,13 +91,13 @@ namespace SSI
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const;
 
     //! return map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
     //! return map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapStructure() const;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSystemMatrix() const;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const;
 
     // Return matrix type of global system matrix
     LINALG::MatrixType MatrixType() const { return matrixtype_; };

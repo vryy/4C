@@ -465,8 +465,7 @@ void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      scatra_matrix_ = SetupBlockMatrix(
-          ssi_maps->MultiMapExtractorScaTra(), ssi_maps->MultiMapExtractorScaTra());
+      scatra_matrix_ = SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->BlockMapScaTra());
       break;
     }
 
@@ -494,16 +493,16 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      scatra_structure_matrix_ = SetupBlockMatrix(
-          ssi_maps->MultiMapExtractorScaTra(), ssi_maps->MultiMapExtractorStructure());
+      scatra_structure_matrix_ =
+          SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->BlockMapStructure());
 
-      structure_scatra_matrix_ = SetupBlockMatrix(
-          ssi_maps->MultiMapExtractorStructure(), ssi_maps->MultiMapExtractorScaTra());
+      structure_scatra_matrix_ =
+          SetupBlockMatrix(ssi_maps->BlockMapStructure(), ssi_maps->BlockMapScaTra());
 
       if (is_scatra_manifold_)
       {
-        scatramanifold_structure_matrix_ = SetupBlockMatrix(
-            ssi_maps->MultiMapExtractorScaTraManifold(), ssi_maps->MultiMapExtractorStructure());
+        scatramanifold_structure_matrix_ =
+            SetupBlockMatrix(ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapStructure());
       }
 
       break;
@@ -632,7 +631,7 @@ void SSI::UTILS::SSIMatrices::InitializeSystemMatrix(
     case LINALG::MatrixType::block_field:
     {
       system_matrix_ =
-          SetupBlockMatrix(ssi_maps->BlockMapsSystemMatrix(), ssi_maps->BlockMapsSystemMatrix());
+          SetupBlockMatrix(ssi_maps->BlockMapSystemMatrix(), ssi_maps->BlockMapSystemMatrix());
       break;
     }
 
@@ -681,7 +680,7 @@ Teuchos::RCP<LINALG::SparseMatrix> SSI::UTILS::SSIMatrices::SetupSparseMatrix(
  *----------------------------------------------------------------------*/
 SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
     : block_maps_sub_problems_(),
-      block_maps_systemmatrix_(Teuchos::null),
+      block_map_system_matrix_(Teuchos::null),
       map_system_matrix_(Teuchos::null),
       maps_sub_problems_(Teuchos::null),
       scatra_matrixtype_(ssi_mono_algorithm.ScaTraField()->MatrixType()),
@@ -906,7 +905,7 @@ Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem
       if (scatra_matrixtype_ == LINALG::MatrixType::sparse)
         block_position->emplace_back(1);
       else
-        block_position->emplace_back(MultiMapExtractorScaTra()->NumMaps());
+        block_position->emplace_back(BlockMapScaTra()->NumMaps());
       break;
     }
     case Subproblem::scalar_transport:
@@ -915,8 +914,7 @@ Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem
         block_position->emplace_back(0);
       else
       {
-        for (int i = 0; i < MultiMapExtractorScaTra()->NumMaps(); ++i)
-          block_position->emplace_back(i);
+        for (int i = 0; i < BlockMapScaTra()->NumMaps(); ++i) block_position->emplace_back(i);
       }
       break;
     }
@@ -926,10 +924,10 @@ Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem
         block_position->emplace_back(2);
       else
       {
-        auto scatra_manifold_num_block_maps = MultiMapExtractorScaTraManifold()->NumMaps();
+        auto scatra_manifold_num_block_maps = BlockMapScaTraManifold()->NumMaps();
 
         for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
-          block_position->emplace_back(MultiMapExtractorScaTra()->NumMaps() + 1 + i);
+          block_position->emplace_back(BlockMapScaTra()->NumMaps() + 1 + i);
       }
       break;
     }
@@ -981,57 +979,55 @@ int SSI::UTILS::SSIMaps::GetProblemPosition(Subproblem subproblem)
 void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono& ssi_mono_algorithm)
 {
   const int num_blocks_systemmatrix =
-      MultiMapExtractorScaTra()->NumMaps() + MultiMapExtractorStructure()->NumMaps() +
-      (ssi_mono_algorithm.IsScaTraManifold() ? MultiMapExtractorScaTraManifold()->NumMaps() : 0);
+      BlockMapScaTra()->NumMaps() + BlockMapStructure()->NumMaps() +
+      (ssi_mono_algorithm.IsScaTraManifold() ? BlockMapScaTraManifold()->NumMaps() : 0);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_system_matrix(
       num_blocks_systemmatrix, Teuchos::null);
 
-  for (int i = 0; i < MultiMapExtractorScaTra()->NumMaps(); ++i)
+  for (int i = 0; i < BlockMapScaTra()->NumMaps(); ++i)
 
   {
     auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
-    partial_maps_system_matrix[block_positions_scatra->at(i)] = MultiMapExtractorScaTra()->Map(i);
+    partial_maps_system_matrix[block_positions_scatra->at(i)] = BlockMapScaTra()->Map(i);
   }
 
   partial_maps_system_matrix.at(GetBlockPositions(Subproblem::structure)->at(0)) =
-      MultiMapExtractorStructure()->FullMap();
+      BlockMapStructure()->FullMap();
 
   if (ssi_mono_algorithm.IsScaTraManifold())
   {
-    for (int i = 0; i < MultiMapExtractorScaTraManifold()->NumMaps(); ++i)
+    for (int i = 0; i < BlockMapScaTraManifold()->NumMaps(); ++i)
     {
       auto block_positions_manifold = GetBlockPositions(Subproblem::manifold);
       partial_maps_system_matrix[block_positions_manifold->at(i)] =
-          MultiMapExtractorScaTraManifold()->Map(i);
+          BlockMapScaTraManifold()->Map(i);
     }
   }
 
-  block_maps_systemmatrix_ = Teuchos::rcp(
+  block_map_system_matrix_ = Teuchos::rcp(
       new LINALG::MultiMapExtractor(*maps_sub_problems_->FullMap(), partial_maps_system_matrix));
 
-  block_maps_systemmatrix_->CheckForValidMapExtractor();
+  block_map_system_matrix_->CheckForValidMapExtractor();
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::MultiMapExtractorScaTra() const
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::BlockMapScaTra() const
 {
   return block_maps_sub_problems_.at(Subproblem::scalar_transport);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::MultiMapExtractorScaTraManifold()
-    const
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::BlockMapScaTraManifold() const
 {
   return block_maps_sub_problems_.at(Subproblem::manifold);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::MultiMapExtractorStructure()
-    const
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::UTILS::SSIMaps::BlockMapStructure() const
 {
   return block_maps_sub_problems_.at(Subproblem::structure);
 }

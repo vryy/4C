@@ -113,16 +113,16 @@ SSI::MeshtyingStrategyBlockBlock::MeshtyingStrategyBlockBlock(const bool is_scat
           is_scatra_manifold, meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying)
 {
   temp_scatra_struct_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-      SSIMaps()->MultiMapExtractorScaTra(), SSIMaps()->MultiMapExtractorStructure());
+      SSIMaps()->BlockMapScaTra(), SSIMaps()->BlockMapStructure());
 
   if (IsScaTraManifold())
   {
     temp_scatramanifold_struct_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-        SSIMaps()->MultiMapExtractorScaTraManifold(), SSIMaps()->MultiMapExtractorStructure());
+        SSIMaps()->BlockMapScaTraManifold(), SSIMaps()->BlockMapStructure());
   }
 
   temp_struct_scatra_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-      SSIMaps()->MultiMapExtractorStructure(), SSIMaps()->MultiMapExtractorScaTra());
+      SSIMaps()->BlockMapStructure(), SSIMaps()->BlockMapScaTra());
 }
 
 /*----------------------------------------------------------------------*

@@ -58,49 +58,57 @@ namespace SSTI
    public:
     SSTIMaps(const SSTI::SSTIMono& ssti_mono_algorithm);
 
-    virtual ~SSTIMaps() = default;
-
     //! get maps of subproblems
     //@{
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsScatra() const { return maps_scatra_; };
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsStructure() const
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScatra() const
     {
-      return maps_structure_;
-    };
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsThermo() const { return maps_thermo_; };
+      return block_map_scatra_;
+    }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const
+    {
+      return block_map_structure_;
+    }
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermo() const
+    {
+      return block_map_thermo_;
+    }
     //@}
 
-    //! global map extractor (0: scalar transport, 1: structure, 2: thermo)
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubproblems() const
+    /*!
+     * @brief global map extractor
+     * @note only access with GetProblemPosition method
+     */
+    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSubProblems() const
     {
       return maps_subproblems_;
-    };
+    }
 
     //! return map with dofs on both sides of interface
-    const Teuchos::RCP<Epetra_Map> MapInterface(
+    Teuchos::RCP<Epetra_Map> MapInterface(
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy) const;
 
     //! return block map with dofs on both sides of interface
-    const Teuchos::RCP<LINALG::MultiMapExtractor> MapsInterfaceBlocks(
+    Teuchos::RCP<LINALG::MultiMapExtractor> MapsInterfaceBlocks(
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
         LINALG::MatrixType scatramatrixtype, unsigned nummaps) const;
 
     //! return block map with dofs on slave side of interface
-    const Teuchos::RCP<LINALG::MultiMapExtractor> MapsInterfaceBlocksSlave(
+    Teuchos::RCP<LINALG::MultiMapExtractor> MapsInterfaceBlocksSlave(
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtyingstrategy,
         LINALG::MatrixType scatramatrixtype, unsigned nummaps) const;
 
    private:
     //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_scatra_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_;
 
     //! map extractor associated with all degrees of freedom inside structural field
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_structure_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
+
+    //! map extractor associated with all degrees of freedom inside thermo field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_;
 
     //! global map extractor (0: scalar transport, 1: structure, 2: thermo)
     Teuchos::RCP<LINALG::MultiMapExtractor> maps_subproblems_;
-
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_thermo_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -111,17 +119,15 @@ namespace SSTI
    public:
     SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm);
 
-    ~SSTIMapsMono() override = default;
-
     //! map extractor associated with blocks of global system matrix
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> MapsSystemMatrixSubblocks() const
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapSystemMatrix() const
     {
-      return maps_systemmatrix_subblocks_;
+      return block_map_system_matrix_;
     };
 
    private:
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const LINALG::MultiMapExtractor> maps_systemmatrix_subblocks_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_system_matrix_;
   };
 
   /*---------------------------------------------------------------------------------*

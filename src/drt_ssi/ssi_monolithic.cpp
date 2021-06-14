@@ -718,7 +718,7 @@ void SSI::SSIMono::SetupSystem()
   {
     // initialize object, that performs evaluations of OD coupling
     scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraManifoldStructureOffDiagCoupling(
-        MapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
+        BlockMapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
         MeshtyingStrategyS2I(), ScaTraField(), ScaTraManifold(), StructureField()));
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
@@ -726,9 +726,9 @@ void SSI::SSIMono::SetupSystem()
   }
   else
   {
-    scatrastructureOffDiagcoupling_ = Teuchos::rcp(
-        new SSI::ScatraStructureOffDiagCoupling(MapStructure(), SSIMaps()->StructureDofRowMap(),
-            SSIStructureMeshTying(), MeshtyingStrategyS2I(), ScaTraField(), StructureField()));
+    scatrastructureOffDiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCoupling(
+        BlockMapStructure(), SSIMaps()->StructureDofRowMap(), SSIStructureMeshTying(),
+        MeshtyingStrategyS2I(), ScaTraField(), StructureField()));
   }
   // instantiate appropriate equilibration class
   strategy_equilibration_ = LINALG::BuildEquilibration(
@@ -799,7 +799,7 @@ void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) co
 void SSI::SSIMono::SolveLinearSystem()
 {
   strategy_equilibration_->EquilibrateSystem(
-      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), *MapsSystemMatrix());
+      ssi_matrices_->SystemMatrix(), ssi_vectors_->Residual(), *BlockMapSystemMatrix());
 
   // solve global system of equations
   // Dirichlet boundary conditions have already been applied to global system of equations
@@ -1283,8 +1283,8 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
       MatrixType() == LINALG::MatrixType::sparse
           ? Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
                 UTILS::SSIMatrices::SetupSparseMatrix(DofRowMap()))
-          : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(
-                UTILS::SSIMatrices::SetupBlockMatrix(MapsSystemMatrix(), MapsSystemMatrix()));
+          : Teuchos::rcp_dynamic_cast<LINALG::SparseOperator>(UTILS::SSIMatrices::SetupBlockMatrix(
+                BlockMapSystemMatrix(), BlockMapSystemMatrix()));
 
   // fill ones on main diag of structure block (not solved)
   auto ones_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(), true));
@@ -1487,21 +1487,21 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsSubProblems() co
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsScatra() const
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTra() const
 {
-  return ssi_maps_->MultiMapExtractorScaTra();
+  return ssi_maps_->BlockMapScaTra();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapStructure() const
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapStructure() const
 {
-  return ssi_maps_->MultiMapExtractorStructure();
+  return ssi_maps_->BlockMapStructure();
 }
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsSystemMatrix() const
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapSystemMatrix() const
 {
-  return ssi_maps_->BlockMapsSystemMatrix();
+  return ssi_maps_->BlockMapSystemMatrix();
 }

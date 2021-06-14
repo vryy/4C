@@ -79,7 +79,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraScatra(
       CoNitscheStrategySsi()
           ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_scatra)
           ->Split<LINALG::DefaultBlockMatrixStrategy>(
-              *SSIMaps()->MultiMapExtractorScaTra(), *SSIMaps()->MultiMapExtractorScaTra());
+              *SSIMaps()->BlockMapScaTra(), *SSIMaps()->BlockMapScaTra());
   scatra_scatra_blockmatrix->Complete();
 
   scatra_scatra_matrix_block->Add(*scatra_scatra_blockmatrix, false, 1.0, 1.0);
@@ -113,7 +113,7 @@ void SSI::ContactStrategyBlock::ApplyContactToScatraStructure(
       CoNitscheStrategySsi()
           ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::scatra_displ)
           ->Split<LINALG::DefaultBlockMatrixStrategy>(
-              *SSIMaps()->MultiMapExtractorStructure(), *SSIMaps()->MultiMapExtractorScaTra());
+              *SSIMaps()->BlockMapStructure(), *SSIMaps()->BlockMapScaTra());
   scatra_struct_blockmatrix->Complete();
 
   scatra_structure_matrix_block->Add(*scatra_struct_blockmatrix, false, 1.0, 1.0);
@@ -148,7 +148,7 @@ void SSI::ContactStrategyBlock::ApplyContactToStructureScatra(
       CoNitscheStrategySsi()
           ->GetMatrixBlockPtr(DRT::UTILS::MatBlockType::displ_scatra)
           ->Split<LINALG::DefaultBlockMatrixStrategy>(
-              *SSIMaps()->MultiMapExtractorScaTra(), *SSIMaps()->MultiMapExtractorStructure());
+              *SSIMaps()->BlockMapScaTra(), *SSIMaps()->BlockMapStructure());
   struct_scatra_blockmatrix->Complete();
 
   structure_scatra_matrix_block->Add(*struct_scatra_blockmatrix, false, 1.0, 1.0);

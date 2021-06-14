@@ -507,7 +507,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
   masterderiv.Complete(*MeshtyingThermo()->CouplingAdapter()->MasterDofMap(), *scatrainterface);
 
   const auto blockmasterderiv = masterderiv.Split<LINALG::DefaultBlockMatrixStrategy>(
-      *AllMaps()->MapsThermo(), *AllMaps()->MapsScatra());
+      *AllMaps()->BlockMapThermo(), *AllMaps()->BlockMapScatra());
 
   blockmasterderiv->Complete();
 
@@ -773,7 +773,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
           thermoscatrainterface_subblock, slaveflux, *MeshtyingThermo()->BlockMapsSlave().Map(i));
 
       slaveflux.Complete(
-          *AllMaps()->MapsScatra()->FullMap(), *MeshtyingThermo()->BlockMapsSlave().Map(i));
+          *AllMaps()->BlockMapScatra()->FullMap(), *MeshtyingThermo()->BlockMapsSlave().Map(i));
 
       LINALG::MatrixLogicalSplitAndTransform()(thermoscatrainterface_subblock,
           *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(),
@@ -782,11 +782,11 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
     }
   }
 
-  masterflux.Complete(
-      *AllMaps()->MapsScatra()->FullMap(), *MeshtyingThermo()->CouplingAdapter()->MasterDofMap());
+  masterflux.Complete(*AllMaps()->BlockMapScatra()->FullMap(),
+      *MeshtyingThermo()->CouplingAdapter()->MasterDofMap());
 
   const auto blockmasterflux = masterflux.Split<LINALG::DefaultBlockMatrixStrategy>(
-      *AllMaps()->MapsScatra(), *AllMaps()->MapsThermo());
+      *AllMaps()->BlockMapScatra(), *AllMaps()->BlockMapThermo());
 
   blockmasterflux->Complete();
 
@@ -1191,9 +1191,9 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
   RHS->PutScalar(0.0);
 
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
-  AllMaps()->MapsSubproblems()->InsertVector(
+  AllMaps()->MapsSubProblems()->InsertVector(
       RHSscatra, ssti_mono_->GetProblemPosition(Subproblem::scalar_transport), RHS);
-  AllMaps()->MapsSubproblems()->InsertVector(
+  AllMaps()->MapsSubProblems()->InsertVector(
       RHSthermo, ssti_mono_->GetProblemPosition(Subproblem::thermo), RHS);
 
   if (InterfaceMeshtying())
@@ -1255,12 +1255,12 @@ void SSTI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> RHS,
     }
 
     // assemble final structural right-hand side vector into monolithic right-hand side vector
-    AllMaps()->MapsSubproblems()->AddVector(
+    AllMaps()->MapsSubProblems()->AddVector(
         residual_structure, ssti_mono_->GetProblemPosition(Subproblem::structure), *RHS, -1.0);
   }
   else
   {
-    AllMaps()->MapsSubproblems()->AddVector(
+    AllMaps()->MapsSubProblems()->AddVector(
         RHSstructure, ssti_mono_->GetProblemPosition(Subproblem::structure), RHS, -1.0);
   }
 }
