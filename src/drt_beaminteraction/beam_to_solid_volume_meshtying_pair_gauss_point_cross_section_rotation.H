@@ -60,7 +60,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation(){};
+    virtual ~BeamToSolidVolumeMeshtyingPairGaussPointCrossSectionRotation() = default;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

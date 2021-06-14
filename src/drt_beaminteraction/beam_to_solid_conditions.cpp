@@ -564,6 +564,7 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
     {
       INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction =
           beam_to_surface_params->GetMortarShapeFunctionType();
+      bool rotational_coupling = beam_to_surface_params->GetIsRotationalCoupling();
 
       switch (coupling_type)
       {
@@ -574,7 +575,8 @@ BEAMINTERACTION::BeamToSolidConditionSurfaceMeshtying::CreateContactPairInternal
             reference_configuration_forced_to_zero_fad:
         case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
         case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
-          return BeamToSolidSurfaceMeshtyingPairMortarFADFactory(shape, mortar_shapefunction);
+          return BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
+              shape, mortar_shapefunction, rotational_coupling);
         default:
           dserror("Wrong coupling type.");
       }

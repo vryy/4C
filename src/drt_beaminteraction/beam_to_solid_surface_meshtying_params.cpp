@@ -20,7 +20,9 @@
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingParams()
     : BeamToSolidParamsBase(),
       coupling_type_(INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::none),
-      output_params_ptr_(Teuchos::null)
+      output_params_ptr_(Teuchos::null),
+      rotational_coupling_(false),
+      rotational_coupling_penalty_parameter_(-1.0)
 {
   // Empty Constructor.
 }
@@ -43,6 +45,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
     // Type of coupling evaluation to be used.
     coupling_type_ = Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling>(
         beam_to_solid_contact_params_list, "COUPLING_TYPE");
+
+    // Parameters for rotational coupling.
+    rotational_coupling_ = (bool)DRT::INPUT::IntegralValue<int>(
+        beam_to_solid_contact_params_list, "ROTATIONAL_COUPLING");
+    rotational_coupling_penalty_parameter_ =
+        beam_to_solid_contact_params_list.get<double>("ROTATIONAL_COUPLING_PENALTY_PARAMETER");
   }
 
   // Setup the output parameter object.

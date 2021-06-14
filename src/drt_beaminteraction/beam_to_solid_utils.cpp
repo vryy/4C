@@ -773,6 +773,29 @@ namespace BEAMINTERACTION
   initialize_template_get_solid_rotation_vector(t_tet10, 2);
   initialize_template_get_solid_rotation_vector(t_nurbs27, 2);
 
+#define initialize_template_get_surface_rotation_vector(a, fad_order)                            \
+  template void GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane<           \
+      FADUTILS::HigherOrderFadType<fad_order, Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>( \
+      const LINALG::Matrix<3, 3,                                                                 \
+          FADUTILS::HigherOrderFadType<fad_order,                                                \
+              Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&,                                \
+      const LINALG::Matrix<3, 3, double>&,                                                       \
+      LINALG::Matrix<3, 1,                                                                       \
+          FADUTILS::HigherOrderFadType<fad_order,                                                \
+              Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&);
+
+  initialize_template_get_surface_rotation_vector(t_quad4, 1);
+  initialize_template_get_surface_rotation_vector(t_quad8, 1);
+  initialize_template_get_surface_rotation_vector(t_quad9, 1);  // Also initializes nurbs9
+  initialize_template_get_surface_rotation_vector(t_tri3, 1);
+  initialize_template_get_surface_rotation_vector(t_tri6, 1);
+
+  initialize_template_get_surface_rotation_vector(t_quad4, 2);
+  initialize_template_get_surface_rotation_vector(t_quad8, 2);
+  initialize_template_get_surface_rotation_vector(t_quad9, 2);  // Also initializes nurbs9
+  initialize_template_get_surface_rotation_vector(t_tri3, 2);
+  initialize_template_get_surface_rotation_vector(t_tri6, 2);
+
 #define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)    \
   template void AssembleLocalMortarContributions<beam, other, mortar>(                  \
       const BEAMINTERACTION::BeamContactPair*, const DRT::Discretization&,              \

@@ -68,6 +68,11 @@ namespace BEAMINTERACTION
     BeamToSolidVolumeMeshtyingPairMortarRotation();
 
     /**
+     * \brief Destructor.
+     */
+    virtual ~BeamToSolidVolumeMeshtyingPairMortarRotation() = default;
+
+    /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)
      */
     void EvaluateAndAssembleMortarContributions(const DRT::Discretization& discret,
