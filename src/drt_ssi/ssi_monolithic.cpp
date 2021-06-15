@@ -149,23 +149,6 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     if (!ssi_matrices_->ScaTraStructureMatrix()->Filled())
       ssi_matrices_->CompleteScaTraStructureMatrix();
 
-    if (IsScaTraManifold())
-    {
-      if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
-        ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
-
-      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          ssi_matrices_->ScaTraManifoldStructureMatrix(),
-          IsUncompleteOfMatricesNecessaryForMeshTying());
-
-      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
-          manifoldscatraflux_->MatrixManifoldStructure(),
-          IsUncompleteOfMatricesNecessaryForMeshTying());
-
-      strategy_meshtying_->ApplyMeshtyingToScatraStructure(
-          manifoldscatraflux_->MatrixScaTraStructure(), true);
-    }
-
     strategy_meshtying_->ApplyMeshtyingToScatraStructure(
         ssi_matrices_->ScaTraStructureMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
@@ -177,6 +160,28 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 
     ssi_vectors_->StructureResidual()->Update(
         1.0, strategy_meshtying_->ApplyMeshtyingToStructureRHS(StructureField()->RHS()), 1.0);
+
+    if (IsScaTraManifold())
+    {
+      if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
+        ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+      if (!manifoldscatraflux_->MatrixManifoldStructure()->Filled())
+        manifoldscatraflux_->CompleteMatrixManifoldStructure();
+      if (!manifoldscatraflux_->MatrixScaTraStructure()->Filled())
+        manifoldscatraflux_->CompleteMatrixScaTraStructure();
+
+      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
+          ssi_matrices_->ScaTraManifoldStructureMatrix(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
+
+      strategy_meshtying_->ApplyMeshtyingToScatraManifoldStructure(
+          manifoldscatraflux_->MatrixManifoldStructure(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
+
+      strategy_meshtying_->ApplyMeshtyingToScatraStructure(
+          manifoldscatraflux_->MatrixScaTraStructure(),
+          IsUncompleteOfMatricesNecessaryForMeshTying());
+    }
   }
   // copy the structure residual and matrix if we do not have a mesh tying problem
   else
@@ -415,8 +420,13 @@ void SSI::SSIMono::CompleteSubproblemMatrices()
   if (IsScaTraManifold())
   {
     ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+
+    manifoldscatraflux_->CompleteMatrixManifoldScaTra();
     manifoldscatraflux_->CompleteMatrixManifoldStructure();
+    manifoldscatraflux_->CompleteMatrixScaTraManifold();
     manifoldscatraflux_->CompleteMatrixScaTraStructure();
+    manifoldscatraflux_->CompleteSystemMatrixManifold();
+    manifoldscatraflux_->CompleteSystemMatrixScaTra();
   }
 }
 
@@ -1490,6 +1500,13 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::MapsSubProblems() co
 Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTra() const
 {
   return ssi_maps_->BlockMapScaTra();
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIMono::BlockMapScaTraManifold() const
+{
+  return ssi_maps_->BlockMapScaTraManifold();
 }
 
 /*--------------------------------------------------------------------------------------*

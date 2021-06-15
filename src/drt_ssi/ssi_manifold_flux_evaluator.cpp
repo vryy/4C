@@ -40,12 +40,13 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(Teuchos::rcp(new ADAPTER::Coupling())),
+      evaluate_master_side_(
+          !(DRT::UTILS::HaveSameNodes(condition_manifold, condition_kinetics, false))),
       manifold_conditionID_(condition_manifold->GetInt("ConditionID")),
       manifold_map_extractor_(Teuchos::null),
       scatra_map_extractor_(Teuchos::null),
-      slave_converter_(Teuchos::null),
-      evaluate_master_side_(
-          !(DRT::UTILS::HaveSameNodes(condition_manifold, condition_kinetics, false)))
+      size_matrix_graph_(),
+      slave_converter_(Teuchos::null)
 {
   std::vector<int> inodegidvec_manifold;
   DRT::UTILS::AddOwnedNodeGIDVector(
@@ -63,6 +64,27 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 
   manifold_map_extractor_ = Teuchos::rcp(
       new LINALG::MapExtractor(*manifolddis->DofRowMap(), coupling_adapter_->SlaveDofMap(), true));
+
+  // initially, the matrices are empty
+  size_matrix_graph_.insert(std::make_pair(BlockMatrixType::ManifoldScaTra, 0));
+  size_matrix_graph_.insert(std::make_pair(BlockMatrixType::ManifoldStructure, 0));
+  size_matrix_graph_.insert(std::make_pair(BlockMatrixType::ScaTraManifold, 0));
+  size_matrix_graph_.insert(std::make_pair(BlockMatrixType::ScaTraStructure, 0));
+  size_matrix_graph_.insert(std::make_pair(BlockMatrixType::SysMatManifold, 0));
+  size_matrix_graph_.insert(std::make_pair(BlockMatrixType::SysMatScaTra, 0));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+bool SSI::ManifoldScaTraCoupling::CheckAndSetSizeGraph(const BlockMatrixType block, const int size)
+{
+  // check, if size of matrix graph changed between last evaluation and this evaluation
+  const bool changed_size = size != size_matrix_graph_.at(block);
+
+  // update new size
+  size_matrix_graph_.at(block) = size;
+
+  return changed_size;
 }
 
 /*---------------------------------------------------------------------------------*
@@ -70,6 +92,7 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     const SSI::SSIMono& ssi_mono)
     : block_map_scatra_(ssi_mono.BlockMapScaTra()),
+      block_map_scatra_manifold_(ssi_mono.BlockMapScaTraManifold()),
       block_map_structure_(ssi_mono.BlockMapStructure()),
       do_output_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->SSIControlParams().sublist("MANIFOLD"), "ADD_MANIFOLD")),
@@ -129,19 +152,16 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
     {
-      auto scatramanifoldblockmaps =
-          Teuchos::rcpFromRef(scatra_manifold_->ScaTraField()->BlockMaps());
-
       systemmatrix_manifold_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
-          scatramanifoldblockmaps, scatramanifoldblockmaps);
+          block_map_scatra_manifold_, block_map_scatra_manifold_);
       systemmatrix_scatra_ =
           SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, block_map_scatra_);
-      matrix_manifold_structure_ =
-          SSI::UTILS::SSIMatrices::SetupBlockMatrix(scatramanifoldblockmaps, block_map_structure_);
+      matrix_manifold_structure_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+          block_map_scatra_manifold_, block_map_structure_);
       matrix_manifold_scatra_ =
-          SSI::UTILS::SSIMatrices::SetupBlockMatrix(scatramanifoldblockmaps, block_map_scatra_);
+          SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_manifold_, block_map_scatra_);
       matrix_scatra_manifold_ =
-          SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, scatramanifoldblockmaps);
+          SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, block_map_scatra_manifold_);
       matrix_scatra_structure_ =
           SSI::UTILS::SSIMatrices::SetupBlockMatrix(block_map_scatra_, block_map_structure_);
 
@@ -205,6 +225,31 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixManifoldScaTra()
+{
+  switch (scatra_->ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      matrix_manifold_scatra_->Complete();
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      matrix_manifold_scatra_->Complete(*full_map_scatra_, *full_map_manifold_);
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixManifoldStructure()
 {
   switch (scatra_->ScaTraField()->MatrixType())
@@ -218,6 +263,31 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixManifoldStructure()
     case LINALG::MatrixType::sparse:
     {
       matrix_manifold_structure_->Complete(*full_map_structure_, *full_map_manifold_);
+      break;
+    }
+    default:
+    {
+      dserror("Invalid matrix type associated with scalar transport field!");
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixScaTraManifold()
+{
+  switch (scatra_->ScaTraField()->MatrixType())
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      matrix_scatra_manifold_->Complete();
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      matrix_scatra_manifold_->Complete(*full_map_manifold_, *full_map_scatra_);
       break;
     }
     default:
@@ -255,6 +325,20 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixScaTraStructure()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteSystemMatrixManifold()
+{
+  systemmatrix_scatra_->Complete();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteSystemMatrixScaTra()
+{
+  systemmatrix_manifold_->Complete();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
 {
   // clear matrices and rhs from last evaluation
@@ -269,9 +353,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
   rhs_scatra_->PutScalar(0.0);
 
   // evaluate all scatra-manifold coupling conditions
-  for (const auto& scatra_manifold_coupling : scatra_manifold_couplings_)
+  for (auto scatra_manifold_coupling : scatra_manifold_couplings_)
   {
-    // clear matrices and rhs from last condition
+    // clear matrices and rhs from last condition. Maps are different for each condition (need for
+    // UnComplete()).
     systemmatrix_manifold_cond_->Zero();
     systemmatrix_manifold_cond_->UnComplete();
     systemmatrix_scatra_cond_->Zero();
@@ -292,38 +377,11 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Evaluate()
 
     CopyScaTraManifoldScaTraMasterSide(scatra_manifold_coupling);
 
+    // This is needed because the graph of the matrices could change from step to step in case we
+    // have zero flux (and then zero entries in the matrices)
+    UnCompleteMatricesIfNecessary(scatra_manifold_coupling);
+
     AddConditionContribution();
-  }
-
-  systemmatrix_manifold_->Complete();
-  systemmatrix_scatra_->Complete();
-
-  switch (scatra_->ScaTraField()->MatrixType())
-  {
-    case LINALG::MatrixType::block_condition:
-    case LINALG::MatrixType::block_condition_dof:
-    {
-      matrix_manifold_scatra_->Complete();
-      matrix_manifold_structure_->Complete();
-      matrix_scatra_manifold_->Complete();
-      matrix_scatra_structure_->Complete();
-
-      break;
-    }
-    case LINALG::MatrixType::sparse:
-    {
-      matrix_manifold_scatra_->Complete(*full_map_scatra_, *full_map_manifold_);
-      matrix_manifold_structure_->Complete(*full_map_structure_, *full_map_manifold_);
-      matrix_scatra_manifold_->Complete(*full_map_manifold_, *full_map_scatra_);
-      matrix_scatra_structure_->Complete(*full_map_structure_, *full_map_scatra_);
-
-      break;
-    }
-    default:
-    {
-      dserror("Invalid matrix type associated with scalar transport field!");
-      break;
-    }
   }
 }
 
@@ -649,4 +707,40 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
       scatra_manifold_->ScaTraField()->Time(), scatra_manifold_->ScaTraField()->Step());
 
   runtime_csvwriter_->WriteFile();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ScaTraManifoldScaTraFluxEvaluator::UnCompleteMatricesIfNecessary(
+    Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
+{
+  bool do_uncomplete = false;
+  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ManifoldScaTra,
+          matrix_manifold_scatra_cond_->EpetraMatrix()->MaxNumEntries()))
+    do_uncomplete = true;
+  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ManifoldStructure,
+          matrix_manifold_structure_cond_->EpetraMatrix()->MaxNumEntries()))
+    do_uncomplete = true;
+  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ScaTraManifold,
+          matrix_scatra_manifold_cond_->EpetraMatrix()->MaxNumEntries()))
+    do_uncomplete = true;
+  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ScaTraStructure,
+          matrix_scatra_structure_cond_->EpetraMatrix()->MaxNumEntries()))
+    do_uncomplete = true;
+  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::SysMatManifold,
+          systemmatrix_manifold_cond_->EpetraMatrix()->MaxNumEntries()))
+    do_uncomplete = true;
+  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::SysMatScaTra,
+          systemmatrix_scatra_cond_->EpetraMatrix()->MaxNumEntries()))
+    do_uncomplete = true;
+
+  if (do_uncomplete)
+  {
+    matrix_manifold_scatra_->UnComplete();
+    matrix_manifold_structure_->UnComplete();
+    matrix_scatra_manifold_->UnComplete();
+    matrix_scatra_structure_->UnComplete();
+    systemmatrix_manifold_->UnComplete();
+    systemmatrix_scatra_->UnComplete();
+  }
 }

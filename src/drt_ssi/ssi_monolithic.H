@@ -93,6 +93,8 @@ namespace SSI
     //! return map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTra() const;
 
+    Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapScaTraManifold() const;
+
     //! return map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapStructure() const;
 
