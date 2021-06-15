@@ -44,12 +44,12 @@ namespace SSI
   //! type of coupling/system matrix block
   enum class BlockMatrixType
   {
-    ManifoldScaTra,
-    ManifoldStructure,
-    ScaTraManifold,
-    ScaTraStructure,
-    SysMatManifold,
-    SysMatScaTra
+    ManifoldScaTra,     //! derivative of flux into/out of manifold w.r.t. scatra
+    ManifoldStructure,  //! derivative of flux into/out of manifold w.r.t. structure
+    ScaTraManifold,     //! derivative of flux into/out of scatra w.r.t. manifold
+    ScaTraStructure,    //! derivative of flux into/out of scatra w.r.t. structure
+    SysMatManifold,     //! derivative of flux into/out of manifold w.r.t. manifold
+    SysMatScaTra        //! derivative of flux into/out of scatra w.r.t. scatra
   };
 
   //! holds everything to evaluate coupling between scatra and scatra manifold
@@ -62,7 +62,10 @@ namespace SSI
 
     //! Check if graph of matrix has changed compared to last evaluation. Afterwards, store new size
     //! of graph
-    bool CheckAndSetSizeGraph(BlockMatrixType block, int size);
+    //! \param block  graph of which matrix should be checked
+    //! \param size   new size of graph
+    //! \return       does old size of graph match new size?
+    bool CheckAndSetSizeOfMatrixGraph(BlockMatrixType block, int size);
 
     //! Kinetics condition on scatra dis
     DRT::Condition* ConditionKinetics() const { return condition_kinetics_; }
@@ -104,7 +107,7 @@ namespace SSI
     //! coupling adapter between manifold (master) and scatra (slave)
     Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
 
-    //! Evaluate coupling on slave side of scatra-scatra interface or on master side
+    //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
     const bool evaluate_master_side_;
 
     //! condition ID of manifold condition
@@ -198,7 +201,10 @@ namespace SSI
     //! prepare evaluation of coupling condition: set elemental data
     void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
-    //! uncomplete global matrices if graph of condition matrices changes
+    //! uncomplete all global matrices if any matrices holding the condition contributions have
+    //! updated graphs (i.e. zeros become non-zeros or vice versa). In this case the graph of the
+    //! global matrices needs to be updated as well to be able to add the local matrices to the
+    //! global matrices
     void UnCompleteMatricesIfNecessary(
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 

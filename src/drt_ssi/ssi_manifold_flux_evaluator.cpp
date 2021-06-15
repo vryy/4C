@@ -76,7 +76,8 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-bool SSI::ManifoldScaTraCoupling::CheckAndSetSizeGraph(const BlockMatrixType block, const int size)
+bool SSI::ManifoldScaTraCoupling::CheckAndSetSizeOfMatrixGraph(
+    const BlockMatrixType block, const int size)
 {
   // check, if size of matrix graph changed between last evaluation and this evaluation
   const bool changed_size = size != size_matrix_graph_.at(block);
@@ -327,14 +328,14 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteMatrixScaTraStructure()
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteSystemMatrixManifold()
 {
-  systemmatrix_scatra_->Complete();
+  systemmatrix_manifold_->Complete();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::CompleteSystemMatrixScaTra()
 {
-  systemmatrix_manifold_->Complete();
+  systemmatrix_scatra_->Complete();
 }
 
 /*----------------------------------------------------------------------*
@@ -714,26 +715,41 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
 void SSI::ScaTraManifoldScaTraFluxEvaluator::UnCompleteMatricesIfNecessary(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
+  // get size of graphs of conditions matrices
+  const int size_manifold_scatra_graph_ =
+      matrix_manifold_scatra_cond_->EpetraMatrix()->MaxNumEntries();
+  const int size_manifold_structure_graph =
+      matrix_manifold_structure_cond_->EpetraMatrix()->MaxNumEntries();
+  const int size_scatra_manifold_graph =
+      matrix_scatra_manifold_cond_->EpetraMatrix()->MaxNumEntries();
+  const int size_scatra_structure_graph =
+      matrix_scatra_structure_cond_->EpetraMatrix()->MaxNumEntries();
+  const int size_manifold_sysmat_graph =
+      systemmatrix_manifold_cond_->EpetraMatrix()->MaxNumEntries();
+  const int size_scatra_sysmat_graph = systemmatrix_scatra_cond_->EpetraMatrix()->MaxNumEntries();
+
+  // check if size of any condition matrix was updated and store new size
   bool do_uncomplete = false;
-  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ManifoldScaTra,
-          matrix_manifold_scatra_cond_->EpetraMatrix()->MaxNumEntries()))
+  if (scatra_manifold_coupling->CheckAndSetSizeOfMatrixGraph(
+          BlockMatrixType::ManifoldScaTra, size_manifold_scatra_graph_))
     do_uncomplete = true;
-  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ManifoldStructure,
-          matrix_manifold_structure_cond_->EpetraMatrix()->MaxNumEntries()))
+  if (scatra_manifold_coupling->CheckAndSetSizeOfMatrixGraph(
+          BlockMatrixType::ManifoldStructure, size_manifold_structure_graph))
     do_uncomplete = true;
-  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ScaTraManifold,
-          matrix_scatra_manifold_cond_->EpetraMatrix()->MaxNumEntries()))
+  if (scatra_manifold_coupling->CheckAndSetSizeOfMatrixGraph(
+          BlockMatrixType::ScaTraManifold, size_scatra_manifold_graph))
     do_uncomplete = true;
-  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::ScaTraStructure,
-          matrix_scatra_structure_cond_->EpetraMatrix()->MaxNumEntries()))
+  if (scatra_manifold_coupling->CheckAndSetSizeOfMatrixGraph(
+          BlockMatrixType::ScaTraStructure, size_scatra_structure_graph))
     do_uncomplete = true;
-  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::SysMatManifold,
-          systemmatrix_manifold_cond_->EpetraMatrix()->MaxNumEntries()))
+  if (scatra_manifold_coupling->CheckAndSetSizeOfMatrixGraph(
+          BlockMatrixType::SysMatManifold, size_manifold_sysmat_graph))
     do_uncomplete = true;
-  if (scatra_manifold_coupling->CheckAndSetSizeGraph(BlockMatrixType::SysMatScaTra,
-          systemmatrix_scatra_cond_->EpetraMatrix()->MaxNumEntries()))
+  if (scatra_manifold_coupling->CheckAndSetSizeOfMatrixGraph(
+          BlockMatrixType::SysMatScaTra, size_scatra_sysmat_graph))
     do_uncomplete = true;
 
+  // uncomplete all global matrices if condition matrices have updated graph
   if (do_uncomplete)
   {
     matrix_manifold_scatra_->UnComplete();
