@@ -12,7 +12,6 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
-#include "unordered_map"
 #include <Teuchos_ParameterList.hpp>
 
 namespace ADAPTER
@@ -307,8 +306,7 @@ namespace SSI
       void CreateAndCheckBlockMapsSubProblems(const SSIMono& ssi_mono_algorithm);
 
       //! block maps of all sub problems organized in std map
-      std::unordered_map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>>
-          block_maps_sub_problems_;
+      std::map<Subproblem, Teuchos::RCP<const LINALG::MultiMapExtractor>> block_maps_sub_problems_;
 
       //! map extractor associated with blocks of global system matrix
       Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_system_matrix_;
