@@ -34,9 +34,9 @@ B) Cube 3 and cube 4 test the mixed muscle material
 	* constituent 2 with GAMMA = 7.5
 	mixing c1 and c2 50:50 should produce the same stress response as MAT1 due to linear relationship between GAMMA and stress
    - MAT4: active material behaviour with parameters as as in Weickenmeier/Thesis Engelhardt p.46/47 
-	* constituent 1 with ACTMUNUM = 0.0052070/2
-	* constituent 2 with	
-	mixing c1 and c2 50:50 should produce the same stress response as MAT2 due to linear relationship between ACTMUNUM and active stress
+	* constituent 1 with ACTMUNUM = 0.0052070/2 and GAMMA = 0.1599/2
+	* constituent 2 with	ACTMUNUM = 0.0052070*2 and GAMMA = 0.1599*2
+	mixing c1 and c2 50:50 should produce the same stress response as MAT2 due to linear relationship between ACTMUNUM and active stress / GAMMA and passive stress
 
 Note that incompressibility parameter kappa was divided by 10 to decrease simulation runtime
 
@@ -129,8 +129,8 @@ MAT 32 MIX_Constituent_Muscle_Weickenmeier ALPHA 15.0 BETA 1.0 GAMMA 2.5 KAPPA 1
 // active mixed material used for cube 4
 MAT 4 MAT_MixtureElastHyper NUMCONST 2 MATIDSCONST 41 42 MATIDMIXTURERULE 40
 MAT 40 MIX_Rule_Simple NUMCONST 2 MASSFRAC 0.5 0.5 DENS 1.0
-MAT 41 MIX_Constituent_Muscle_Weickenmeier ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 OMEGA0 0.7388 ACTMUNUM 0.0052070/2 MUTYPESNUM 3 INTERSTIM 0.004 0.004 0.004 FRACACTMU 0.05 0.29 0.66 FTWITCH 25.0 44.0 768.0 TTWITCH 0.02 0.011 0.011 LAMBDAMIN 0.682 LAMBDAOPT 1.192 DOTLAMBDAMIN 1.0 KE 0.0 KC 0.0 ACTTIMESNUM 2 ACTTIMES 0.0 1.0 ACTINTERVALSNUM 1 ACTVALUES 1.0
-MAT 42 MIX_Constituent_Muscle_Weickenmeier ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 OMEGA0 0.7388 ACTMUNUM 0.0052070*2 MUTYPESNUM 3 INTERSTIM 0.004 0.004 0.004 FRACACTMU 0.05 0.29 0.66 FTWITCH 25.0 44.0 768.0 TTWITCH 0.02 0.011 0.011 LAMBDAMIN 0.682 LAMBDAOPT 1.192 DOTLAMBDAMIN 1.0 KE 0.0 KC 0.0 ACTTIMESNUM 2 ACTTIMES 0.0 1.0 ACTINTERVALSNUM 1 ACTVALUES 1.0
+MAT 41 MIX_Constituent_Muscle_Weickenmeier ALPHA 19.69 BETA 1.19 GAMMA 0.07995 KAPPA 100.0 OMEGA0 0.7388 ACTMUNUM 0.0026035 MUTYPESNUM 3 INTERSTIM 0.004 0.004 0.004 FRACACTMU 0.05 0.29 0.66 FTWITCH 25.0 44.0 768.0 TTWITCH 0.02 0.011 0.011 LAMBDAMIN 0.682 LAMBDAOPT 1.192 DOTLAMBDAMIN 1.0 KE 0.0 KC 0.0 ACTTIMESNUM 2 ACTTIMES 0.0 1.0 ACTINTERVALSNUM 1 ACTVALUES 1.0
+MAT 42 MIX_Constituent_Muscle_Weickenmeier ALPHA 19.69 BETA 1.19 GAMMA 0.3198 KAPPA 100.0 OMEGA0 0.7388 ACTMUNUM 0.010414 MUTYPESNUM 3 INTERSTIM 0.004 0.004 0.004 FRACACTMU 0.05 0.29 0.66 FTWITCH 25.0 44.0 768.0 TTWITCH 0.02 0.011 0.011 LAMBDAMIN 0.682 LAMBDAOPT 1.192 DOTLAMBDAMIN 1.0 KE 0.0 KC 0.0 ACTTIMESNUM 2 ACTTIMES 0.0 1.0 ACTINTERVALSNUM 1 ACTVALUES 1.0
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 32
 NDLINE  0
