@@ -20,6 +20,8 @@
 #include "scatra_ele_parameter_std.H"
 
 #include "../drt_fiber/drt_fiber_node.H"
+#include "../drt_fiber/drt_fiber_utils.H"
+#include "../drt_fiber/nodal_fiber_holder.H"
 
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/matlist.H"
@@ -119,100 +121,27 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   {
     actmat->ResetDiffusionTensor();
 
-    // get fiber information at corners of element
-    DRT::Node** nodes = ele->Nodes();
-    int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    std::vector<Epetra_SerialDenseVector> fibernodes(numnodes, Epetra_SerialDenseVector(3));
-    std::vector<Epetra_SerialDenseVector> cirnodes(numnodes, Epetra_SerialDenseVector(3));
-    std::vector<Epetra_SerialDenseVector> tannodes(numnodes, Epetra_SerialDenseVector(3));
-    std::vector<double> helixnodes(numnodes);
-    std::vector<double> transversenodes(numnodes);
-
-    for (int inode = 0; inode < numnodes; ++inode)
-    {
-      DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[inode]);
-      if (!fnode) dserror("No fiber direction defined on nodes or elements");
-      for (unsigned int j = 0; j < this->nsd_; ++j)
-      {
-        fibernodes[inode](j) = fnode->Fiber1()[j];
-        cirnodes[inode](j) = fnode->Cir()[j];
-        tannodes[inode](j) = fnode->Tan()[j];
-      }
-      helixnodes[inode] = fnode->Helix();
-      transversenodes[inode] = fnode->Transverse();
-    }
-
     Teuchos::RCP<DRT::UTILS::ShapeValues<distype>> shapes =
         Teuchos::rcp(new DRT::UTILS::ShapeValues<distype>(1, false, 2 * hdgele->Degree()));
 
     shapes->Evaluate(*ele);
 
+    std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
+        shapefcns(shapes->nqpoints_);
+
+    for (std::size_t q = 0; q < shapes->nqpoints_; ++q)
+    {
+      for (std::size_t i = 0; i < shapes->ndofs_; ++i)
+      {
+        shapefcns[q](i) = shapes->funct(i, q);
+      }
+    }
+
+    FIBER::NodalFiberHolder gpFiberHolder;
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
+
     std::vector<LINALG::Matrix<probdim, 1>> fibergp(shapes->nqpoints_);
-
-    // case fibers are interpolated
-    if ((fibernodes[0]).Norm2() > 1e-13)
-    {
-      // interpolate fibers to integration points
-      for (unsigned int i = 0; i < this->nsd_; ++i)
-        for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
-          for (unsigned int j = 0; j < shapes->ndofs_; ++j)
-            fibergp[q](i, 0) += shapes->funct(j, q) * fibernodes[j](i);
-    }
-    else  // case coordinate system is interpolated
-    {
-      std::vector<LINALG::Matrix<probdim, 1>> cirgp(shapes->nqpoints_);
-      std::vector<LINALG::Matrix<probdim, 1>> tangp(shapes->nqpoints_);
-      std::vector<LINALG::Matrix<probdim, 1>> radgp(shapes->nqpoints_);
-      std::vector<double> helixgp(shapes->nqpoints_);
-      std::vector<double> transversegp(shapes->nqpoints_);
-      Epetra_SerialDenseVector tmpvector(3);
-
-
-      // interpolate circumferential and tangential directions to integration points
-      for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
-      {
-        LINALG::Matrix<probdim, 1> tmptan;
-        for (unsigned int j = 0; j < shapes->ndofs_; ++j)
-        {
-          for (unsigned int i = 0; i < this->nsd_; ++i)
-          {
-            cirgp[q](i, 0) += shapes->funct(j, q) * cirnodes[j](i);
-            tmptan(i, 0) += shapes->funct(j, q) * tannodes[j](i);
-          }
-          helixgp[q] += shapes->funct(j, q) * helixnodes[j];
-          transversegp[q] += shapes->funct(j, q) * transversenodes[j];
-        }
-        cirgp[q].Scale(1 / cirgp[q].Norm2());
-        tmptan.Scale(1 / tmptan.Norm2());
-        // ensure that the circumferential direction is orthogonal to the tangential direction
-        for (unsigned int i = 0; i < this->nsd_; ++i)
-          tangp[q](i, 0) = tmptan(i, 0) - tmptan.Dot(cirgp[q]) * cirgp[q](i, 0);
-        tangp[q].Scale(1 / tangp[q].Norm2());
-      }
-      for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
-      {
-        // Cross product and normalize
-        tmpvector(0) = cirgp[q](1, 0) * tangp[q](2, 0) - cirgp[q](2, 0) * tangp[q](1, 0);
-        tmpvector(1) = cirgp[q](2, 0) * tangp[q](0, 0) - cirgp[q](0, 0) * tangp[q](2, 0);
-        tmpvector(2) = cirgp[q](0, 0) * tangp[q](1, 0) - cirgp[q](1, 0) * tangp[q](0, 0);
-
-        for (unsigned int i = 0; i < this->nsd_; ++i) radgp[q] = tmpvector(i) / tmpvector.Norm2();
-      }
-
-      double scale = PI / 180.;
-      for (unsigned int q = 0; q < shapes->nqpoints_; ++q)
-      {
-        double tmp1 = cos(helixgp[q] * scale) * cos(transversegp[q] * scale);
-        double tmp2 = sin(helixgp[q] * scale) * cos(transversegp[q] * scale);
-        double tmp3 = sin(transversegp[q] * scale);
-
-        for (unsigned int i = 0; i < 3; ++i)
-        {
-          tmpvector(i) = tmp1 * cirgp[q](i, 0) + tmp2 * tangp[q](i, 0) + tmp3 * radgp[q](i, 0);
-          fibergp[q](i, 0) = tmpvector(i) / tmpvector.Norm2();
-        }
-      }
-    }
+    DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
 
     for (unsigned int q = 0; q < shapes->nqpoints_; ++q) actmat->SetupDiffusionTensor(fibergp[q]);
 
@@ -279,118 +208,33 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
   {
     actmat->ResetDiffusionTensor();
 
-    // get fiber information at corners of element
-    DRT::Node** nodes = ele->Nodes();
-    int numnodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-    std::vector<Epetra_SerialDenseVector> fibernodes(numnodes, Epetra_SerialDenseVector(3));
-    std::vector<Epetra_SerialDenseVector> cirnodes(numnodes, Epetra_SerialDenseVector(3));
-    std::vector<Epetra_SerialDenseVector> tannodes(numnodes, Epetra_SerialDenseVector(3));
-    std::vector<double> helixnodes(numnodes);
-    std::vector<double> transversenodes(numnodes);
-
-    for (int inode = 0; inode < numnodes; ++inode)
-    {
-      DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[inode]);
-      if (!fnode) dserror("No fiber direction defined on nodes or elements");
-      for (unsigned int j = 0; j < this->nsd_; ++j)
-      {
-        fibernodes[inode](j) = fnode->Fiber1()[j];
-        cirnodes[inode](j) = fnode->Cir()[j];
-        tannodes[inode](j) = fnode->Tan()[j];
-      }
-      helixnodes[inode] = fnode->Helix();
-      transversenodes[inode] = fnode->Transverse();
-    }
-
     const DRT::UTILS::IntPointsAndWeights<DRT::UTILS::DisTypeToDim<distype>::dim> intpoints(
         SCATRA::DisTypeToMatGaussRule<distype>::GetGaussRule(2 * hdgele->Degree()));
-    unsigned int nqpoints = intpoints.IP().nquad;
+    const std::size_t numgp = intpoints.IP().nquad;
 
-    // coordinate of gauss points
+    std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>
+        shapefcns(numgp);
+
     LINALG::Matrix<probdim, 1> gp_coord(true);
-    LINALG::SerialDenseMatrix funct(this->nen_, nqpoints);
-
-    for (int q = 0; q < intpoints.IP().nquad; ++q)
+    for (std::size_t q = 0; q < numgp; ++q)
     {
       // gaussian points coordinates
       for (int idim = 0; idim < DRT::UTILS::DisTypeToDim<distype>::dim; ++idim)
         gp_coord(idim) = intpoints.IP().qxg[q][idim];
 
-      LINALG::Matrix<4, 1> myfunct(funct.A() + q * this->nen_, true);
-      DRT::UTILS::shape_function<distype>(gp_coord, myfunct);
+      DRT::UTILS::shape_function<distype>(gp_coord, shapefcns[q]);
     }
 
-    std::vector<LINALG::Matrix<probdim, 1>> fibergp(nqpoints);
+    FIBER::NodalFiberHolder gpFiberHolder;
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele->Nodes(), shapefcns, gpFiberHolder);
 
-    // case fibers are interpolated
-    if ((fibernodes[0]).Norm2() > 1e-13)
-    {
-      // interpolate fibers to integration points
-      for (unsigned int i = 0; i < this->nsd_; ++i)
-        for (unsigned int q = 0; q < nqpoints; ++q)
-          for (unsigned int j = 0; j < this->nen_; ++j)
-            fibergp[q](i, 0) += funct(j, q) * fibernodes[j](i);
-    }
-    else  // case coordinate system is interpolated
-    {
-      std::vector<LINALG::Matrix<probdim, 1>> cirgp(nqpoints);
-      std::vector<LINALG::Matrix<probdim, 1>> tangp(nqpoints);
-      std::vector<LINALG::Matrix<probdim, 1>> radgp(nqpoints);
-      std::vector<double> helixgp(nqpoints);
-      std::vector<double> transversegp(nqpoints);
-      Epetra_SerialDenseVector tmpvector(3);
+    std::vector<LINALG::Matrix<probdim, 1>> fibergp(numgp);
+    DRT::FIBER::UTILS::SetupCardiacFibers<probdim>(gpFiberHolder, fibergp);
 
 
-      // interpolate circumferential and tangential directions to integration points
-      for (unsigned int q = 0; q < nqpoints; ++q)
-      {
-        LINALG::Matrix<probdim, 1> tmptan;
-        for (unsigned int j = 0; j < this->nen_; ++j)
-        {
-          for (unsigned int i = 0; i < this->nsd_; ++i)
-          {
-            cirgp[q](i, 0) += funct(j, q) * cirnodes[j](i);
-            tmptan(i, 0) += funct(j, q) * tannodes[j](i);
-          }
-          helixgp[q] += funct(j, q) * helixnodes[j];
-          transversegp[q] += funct(j, q) * transversenodes[j];
-        }
-        cirgp[q].Scale(1 / cirgp[q].Norm2());
-        tmptan.Scale(1 / tmptan.Norm2());
-        // ensure that the circumferential direction is orthogonal to the tangential direction
-        for (unsigned int i = 0; i < this->nsd_; ++i)
-          tangp[q](i, 0) = tmptan(i, 0) - tmptan.Dot(cirgp[q]) * cirgp[q](i, 0);
-        tangp[q].Scale(1 / tangp[q].Norm2());
-      }
-      for (unsigned int q = 0; q < nqpoints; ++q)
-      {
-        // Cross product and normalize
-        tmpvector(0) = cirgp[q](1, 0) * tangp[q](2, 0) - cirgp[q](2, 0) * tangp[q](1, 0);
-        tmpvector(1) = cirgp[q](2, 0) * tangp[q](0, 0) - cirgp[q](0, 0) * tangp[q](2, 0);
-        tmpvector(2) = cirgp[q](0, 0) * tangp[q](1, 0) - cirgp[q](1, 0) * tangp[q](0, 0);
+    for (unsigned int q = 0; q < numgp; ++q) actmat->SetupDiffusionTensor(fibergp[q]);
 
-        for (unsigned int i = 0; i < this->nsd_; ++i) radgp[q] = tmpvector(i) / tmpvector.Norm2();
-      }
-
-      double scale = PI / 180.;
-      for (unsigned int q = 0; q < nqpoints; ++q)
-      {
-        double tmp1 = cos(helixgp[q] * scale) * cos(transversegp[q] * scale);
-        double tmp2 = sin(helixgp[q] * scale) * cos(transversegp[q] * scale);
-        double tmp3 = sin(transversegp[q] * scale);
-
-        for (unsigned int i = 0; i < 3; ++i)
-        {
-          tmpvector(i) = tmp1 * cirgp[q](i, 0) + tmp2 * tangp[q](i, 0) + tmp3 * radgp[q](i, 0);
-          fibergp[q](i, 0) = tmpvector(i) / tmpvector.Norm2();
-        }
-      }
-    }
-
-
-    for (unsigned int q = 0; q < nqpoints; ++q) actmat->SetupDiffusionTensor(fibergp[q]);
-
-    for (unsigned int q = 0; q < nqpoints; ++q)
+    for (unsigned int q = 0; q < numgp; ++q)
     {
       Epetra_SerialDenseMatrix difftensortmp(this->nsd_, this->nsd_);
       LINALG::Matrix<probdim, probdim> diff(true);

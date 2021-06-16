@@ -2585,6 +2585,7 @@ src/drt_tutorial/tutorial_ele/tutorial_ele.cpp
 
 set(OBJS_DRT_FIBER_LIB
   src/drt_fiber/drt_fiber_node.cpp
+  src/drt_fiber/drt_fiber_utils.cpp
   src/drt_fiber/nodal_fiber_holder.cpp)
 
 set(OBJS_DRT_GEOMETRY_PAIR
