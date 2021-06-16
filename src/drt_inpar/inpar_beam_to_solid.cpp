@@ -108,6 +108,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             "deformation_gradient_z_2d", "deformation_gradient_average_2d", "fix_triad_2d",
             "deformation_gradient_3d_local_1", "deformation_gradient_3d_local_2",
             "deformation_gradient_3d_local_3", "deformation_gradient_3d_general",
+            "deformation_gradient_3d_general_in_cross_section_plane",
             "deformation_gradient_3d_base_1"),
         tuple<BeamToSolidRotationCoupling>(BeamToSolidRotationCoupling::none,
             BeamToSolidRotationCoupling::polar_decomposition_2d,
@@ -119,6 +120,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_2,
             BeamToSolidRotationCoupling::deformation_gradient_3d_local_3,
             BeamToSolidRotationCoupling::deformation_gradient_3d_general,
+            BeamToSolidRotationCoupling::deformation_gradient_3d_general_in_cross_section_plane,
             BeamToSolidRotationCoupling::deformation_gradient_3d_base_1),
         &beam_to_solid_volume_mestying);
 
