@@ -41,6 +41,17 @@ namespace SSI
 {
   class SSIMono;
 
+  //! type of coupling/system matrix block
+  enum class BlockMatrixType
+  {
+    ManifoldScaTra,     //! derivative of flux into/out of manifold w.r.t. scatra
+    ManifoldStructure,  //! derivative of flux into/out of manifold w.r.t. structure
+    ScaTraManifold,     //! derivative of flux into/out of scatra w.r.t. manifold
+    ScaTraStructure,    //! derivative of flux into/out of scatra w.r.t. structure
+    SysMatManifold,     //! derivative of flux into/out of manifold w.r.t. manifold
+    SysMatScaTra        //! derivative of flux into/out of scatra w.r.t. scatra
+  };
+
   //! holds everything to evaluate coupling between scatra and scatra manifold
   class ManifoldScaTraCoupling
   {
@@ -48,6 +59,13 @@ namespace SSI
     ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretization> manifolddis,
         Teuchos::RCP<DRT::Discretization> scatradis, DRT::Condition* condition_manifold,
         DRT::Condition* condition_kinetics, int ndof_per_node);
+
+    //! Check if graph of matrix has changed compared to last evaluation. Afterwards, store new size
+    //! of graph
+    //! \param block  graph of which matrix should be checked
+    //! \param size   new size of graph
+    //! \return       does old size of graph match new size?
+    bool CheckAndSetSizeOfMatrixGraph(BlockMatrixType block, int size);
 
     //! Kinetics condition on scatra dis
     DRT::Condition* ConditionKinetics() const { return condition_kinetics_; }
@@ -89,6 +107,9 @@ namespace SSI
     //! coupling adapter between manifold (master) and scatra (slave)
     Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
 
+    //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
+    const bool evaluate_master_side_;
+
     //! condition ID of manifold condition
     const int manifold_conditionID_;
 
@@ -98,11 +119,11 @@ namespace SSI
     //! Map exctractor for dofs in this kinetics condition
     Teuchos::RCP<LINALG::MapExtractor> scatra_map_extractor_;
 
+    //! map with the size of the graph of each matrix
+    std::map<BlockMatrixType, int> size_matrix_graph_;
+
     //! Slave converter for scatra - manifold coupling
     Teuchos::RCP<ADAPTER::CouplingSlaveConverter> slave_converter_;
-
-    //! Evaluate coupling on slave side of scatra-scatra interface or on master side
-    const bool evaluate_master_side_;
   };
 
   /*---------------------------------------------------------------------------------*
@@ -113,10 +134,14 @@ namespace SSI
    public:
     explicit ScaTraManifoldScaTraFluxEvaluator(const SSI::SSIMono& ssi_mono);
 
-    //! call complete on coupling matrices
+    //! call complete on system matrices and coupling matrices
     //@{
-    void CompleteMatrixScaTraStructure();
+    void CompleteMatrixManifoldScaTra();
     void CompleteMatrixManifoldStructure();
+    void CompleteMatrixScaTraManifold();
+    void CompleteMatrixScaTraStructure();
+    void CompleteSystemMatrixManifold();
+    void CompleteSystemMatrixScaTra();
     //@}
 
     //! write inflow fluxes to csv file
@@ -176,8 +201,18 @@ namespace SSI
     //! prepare evaluation of coupling condition: set elemental data
     void PreEvaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
+    //! uncomplete all global matrices if any matrices holding the condition contributions have
+    //! updated graphs (i.e. zeros become non-zeros or vice versa). In this case the graph of the
+    //! global matrices needs to be updated as well to be able to add the local matrices to the
+    //! global matrices
+    void UnCompleteMatricesIfNecessary(
+        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_;
+
+    //! map extractor associated with all degrees of freedom inside scatra manifold field
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_scatra_manifold_;
 
     //! map extractor associated with all degrees of freedom inside structure field
     Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
