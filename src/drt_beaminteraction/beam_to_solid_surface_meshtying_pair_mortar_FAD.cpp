@@ -267,6 +267,7 @@ void GetSurfaceBasis(const LINALG::Matrix<3, 1, double>& xi,
   // Calculate normal on the basis vectors.
   LINALG::Matrix<3, 1, scalar_type_basis> element_surface_normal;
   element_surface_normal.CrossProduct(dr_surf_0, dr_surf_1);
+  element_surface_normal.Scale(1.0 / FADUTILS::VectorNorm(element_surface_normal));
 
   // Put the new basis vectors in a matrix.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
