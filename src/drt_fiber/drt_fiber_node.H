@@ -36,6 +36,7 @@ namespace DRT
       Helix,
       Transverse
     };
+
     class FiberNodeType : public DRT::ParObjectType
     {
      public:
@@ -72,13 +73,13 @@ namespace DRT
 
       \param id     (in): A globally unique fiber node
       \param coords (in): vector of nodal coordinates, length 3
-      \param fibers (in): unordered map of fiber vectors
-      \param angles (in): unordered map of angles
+      \param fibers (in): map of fiber vectors
+      \param angles (in): map of angles
       \param owner  (in): Owner of this node.
       */
       FiberNode(int id, std::array<double, 3> coords,
-          std::unordered_map<FIBER::FiberType, std::array<double, 3>> fibers,
-          std::unordered_map<FIBER::AngleType, double> angles, const int owner);
+          std::map<FIBER::FiberType, std::array<double, 3>> fibers,
+          std::map<FIBER::AngleType, double> angles, const int owner);
 
       FiberNode(const DRT::FIBER::FiberNode& old) = default;
 
@@ -123,12 +124,9 @@ namespace DRT
 
       //@}
 
-      inline const std::unordered_map<FiberType, std::array<double, 3>>& Fibers() const
-      {
-        return fibers_;
-      }
+      inline const std::map<FiberType, std::array<double, 3>>& Fibers() const { return fibers_; }
 
-      inline const std::unordered_map<AngleType, double>& Angles() const { return angles_; }
+      inline const std::map<AngleType, double>& Angles() const { return angles_; }
 
       /*!
       \brief Print this node
@@ -140,11 +138,11 @@ namespace DRT
       //@}
 
      protected:
-      /// Unordered map of fibers
-      std::unordered_map<FiberType, std::array<double, 3>> fibers_;
+      /// map of fibers
+      std::map<FiberType, std::array<double, 3>> fibers_;
 
-      /// Unordered map of angles
-      std::unordered_map<AngleType, double> angles_;
+      /// map of angles
+      std::map<AngleType, double> angles_;
 
     };  // class FiberNode
 

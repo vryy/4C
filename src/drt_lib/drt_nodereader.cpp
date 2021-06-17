@@ -308,8 +308,8 @@ namespace DRT
               {
                 // read fiber node
                 std::array<double, 3> coords = {0.0, 0.0, 0.0};
-                std::unordered_map<FIBER::FiberType, std::array<double, 3>> fibers;
-                std::unordered_map<FIBER::AngleType, double> angles;
+                std::map<FIBER::FiberType, std::array<double, 3>> fibers;
+                std::map<FIBER::AngleType, double> angles;
 
                 int nodeid;
                 // read in the node coordinates and fiber direction

@@ -17,16 +17,16 @@ DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
 {
   std::array<double, 3> dummy_coords = {999., 999., 999.};
-  std::unordered_map<FIBER::FiberType, std::array<double, 3>> fibers;
-  std::unordered_map<FIBER::AngleType, double> angles;
+  std::map<FIBER::FiberType, std::array<double, 3>> fibers;
+  std::map<FIBER::AngleType, double> angles;
   auto* object = new DRT::FIBER::FiberNode(-1, dummy_coords, fibers, angles, -1);
   object->Unpack(data);
   return object;
 }
 
 DRT::FIBER::FiberNode::FiberNode(int id, std::array<double, 3> coords,
-    std::unordered_map<FIBER::FiberType, std::array<double, 3>> fibers,
-    std::unordered_map<FIBER::AngleType, double> angles, const int owner)
+    std::map<FIBER::FiberType, std::array<double, 3>> fibers,
+    std::map<FIBER::AngleType, double> angles, const int owner)
     : DRT::Node(id, coords.data(), owner), fibers_(std::move(fibers)), angles_(std::move(angles))
 {
 }

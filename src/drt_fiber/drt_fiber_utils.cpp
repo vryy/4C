@@ -21,8 +21,8 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
   // number of nodes per element
   constexpr int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   std::array<DRT::FIBER::FiberNode*, nen> fiberNodes;
-  std::unordered_map<DRT::FIBER::FiberType, std::array<std::array<double, 3>, nen>> fibers;
-  std::unordered_map<DRT::FIBER::AngleType, std::array<double, nen>> angles;
+  std::map<DRT::FIBER::FiberType, std::array<std::array<double, 3>, nen>> fibers;
+  std::map<DRT::FIBER::AngleType, std::array<double, nen>> angles;
 
   for (int inode = 0; inode < nen; ++inode)
   {
