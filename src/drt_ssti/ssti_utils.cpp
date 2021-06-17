@@ -241,11 +241,8 @@ SSTI::SSTIMapsMono::SSTIMapsMono(const SSTI::SSTIMono& ssti_mono_algorithm)
  *---------------------------------------------------------------------------------*/
 SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
     const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
-    Teuchos::RCP<Epetra_Map> interface_map_scatra, Teuchos::RCP<Epetra_Map> interface_map_thermo,
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
-    Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool interfacemeshtying)
-    : interface_map_scatra_(interface_map_scatra),
-      matrixtype_scatra_(matrixtype_scatra),
+    bool interfacemeshtying)
+    : matrixtype_scatra_(matrixtype_scatra),
       ssti_maps_mono_(ssti_maps_mono),
       systemmatrix_(Teuchos::null),
       scatrastructuredomain_(Teuchos::null),
@@ -304,13 +301,13 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
       if (interfacemeshtying_)
       {
         scatrastructureinterface_ =
-            SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->BlockMapStructure());
+            SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapStructure());
         thermostructureinterface_ =
-            SetupBlockMatrix(blockmapthermointerface, ssti_maps_mono->BlockMapStructure());
+            SetupBlockMatrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapStructure());
         scatrathermointerface_ =
-            SetupBlockMatrix(blockmapscatrainterface, ssti_maps_mono->BlockMapThermo());
+            SetupBlockMatrix(ssti_maps_mono->BlockMapScatra(), ssti_maps_mono->BlockMapThermo());
         thermoscatrainterface_ =
-            SetupBlockMatrix(blockmapthermointerface, ssti_maps_mono->BlockMapScatra());
+            SetupBlockMatrix(ssti_maps_mono->BlockMapThermo(), ssti_maps_mono->BlockMapScatra());
       }
       break;
     }
@@ -325,10 +322,10 @@ SSTI::SSTIMatrices::SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono
 
       if (interfacemeshtying_)
       {
-        scatrastructureinterface_ = SetupSparseMatrix(interface_map_scatra);
-        thermostructureinterface_ = SetupSparseMatrix(interface_map_thermo);
-        scatrathermointerface_ = SetupSparseMatrix(interface_map_scatra);
-        thermoscatrainterface_ = SetupSparseMatrix(interface_map_thermo);
+        scatrastructureinterface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+        thermostructureinterface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapThermo()->FullMap());
+        scatrathermointerface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapScatra()->FullMap());
+        thermoscatrainterface_ = SetupSparseMatrix(ssti_maps_mono->BlockMapThermo()->FullMap());
       }
       break;
     }
@@ -381,8 +378,8 @@ void SSTI::SSTIMatrices::CompleteScaTraStructureMatrices()
           *ssti_maps_mono_->BlockMapScatra()->FullMap());
       if (interfacemeshtying_)
       {
-        scatrastructureinterface_->Complete(
-            *ssti_maps_mono_->BlockMapStructure()->FullMap(), *interface_map_scatra_);
+        scatrastructureinterface_->Complete(*ssti_maps_mono_->BlockMapStructure()->FullMap(),
+            *ssti_maps_mono_->BlockMapScatra()->FullMap());
       }
       break;
     }

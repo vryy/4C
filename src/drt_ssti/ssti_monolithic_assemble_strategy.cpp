@@ -477,9 +477,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
   auto scatrathermointerface_block =
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatrathermointerface);
 
-  const auto scatrainterface = AllMaps()->MapInterface(MeshtyingScatra());
-
-  LINALG::SparseMatrix masterderiv(*scatrainterface, 27, false, true);
+  LINALG::SparseMatrix masterderiv(*AllMaps()->BlockMapScatra()->FullMap(), 27, false, true);
 
   for (int i = 0; i < static_cast<int>(BlockPositionScaTra()->size()); ++i)
   {
@@ -504,7 +502,8 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoInterface(
     }
   }
 
-  masterderiv.Complete(*MeshtyingThermo()->CouplingAdapter()->MasterDofMap(), *scatrainterface);
+  masterderiv.Complete(*MeshtyingThermo()->CouplingAdapter()->MasterDofMap(),
+      *AllMaps()->BlockMapScatra()->FullMap());
 
   const auto blockmasterderiv = masterderiv.Split<LINALG::DefaultBlockMatrixStrategy>(
       *AllMaps()->BlockMapThermo(), *AllMaps()->BlockMapScatra());
@@ -748,8 +747,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
   auto thermoscatrainterface_block =
       LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(thermoscatrainterface);
 
-  LINALG::SparseMatrix masterflux(
-      *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(), 27, false, true);
+  LINALG::SparseMatrix masterflux(*AllMaps()->BlockMapThermo()->FullMap(), 27, false, true);
 
   for (int i = 0; i < static_cast<int>(BlockPositionThermo()->size()); ++i)
   {
@@ -767,13 +765,13 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
       // into system matrix
       ADAPTER::CouplingSlaveConverter thermo_converter(*MeshtyingThermo()->CouplingAdapter());
 
-      LINALG::SparseMatrix slaveflux(*MeshtyingThermo()->BlockMapsSlave().Map(i), 27, false, true);
+      LINALG::SparseMatrix slaveflux(*AllMaps()->BlockMapThermo()->FullMap(), 27, false, true);
 
       SCATRA::MeshtyingStrategyS2I::ExtractMatrixRows(
           thermoscatrainterface_subblock, slaveflux, *MeshtyingThermo()->BlockMapsSlave().Map(i));
 
       slaveflux.Complete(
-          *AllMaps()->BlockMapScatra()->FullMap(), *MeshtyingThermo()->BlockMapsSlave().Map(i));
+          *AllMaps()->BlockMapScatra()->FullMap(), *AllMaps()->BlockMapThermo()->FullMap());
 
       LINALG::MatrixLogicalSplitAndTransform()(thermoscatrainterface_subblock,
           *MeshtyingThermo()->CouplingAdapter()->MasterDofMap(),
@@ -782,8 +780,8 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatraInterface(
     }
   }
 
-  masterflux.Complete(*AllMaps()->BlockMapScatra()->FullMap(),
-      *MeshtyingThermo()->CouplingAdapter()->MasterDofMap());
+  masterflux.Complete(
+      *AllMaps()->BlockMapScatra()->FullMap(), *AllMaps()->BlockMapThermo()->FullMap());
 
   const auto blockmasterflux = masterflux.Split<LINALG::DefaultBlockMatrixStrategy>(
       *AllMaps()->BlockMapScatra(), *AllMaps()->BlockMapThermo());
