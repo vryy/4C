@@ -791,6 +791,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     case INPAR::MAT::mes_coupneohooke:
     case INPAR::MAT::mes_coupblatzko:
     case INPAR::MAT::mes_isoneohooke:
+    case INPAR::MAT::mes_isoogden:
     case INPAR::MAT::mes_isoyeoh:
     case INPAR::MAT::mes_iso1pow:
     case INPAR::MAT::mes_iso2pow:

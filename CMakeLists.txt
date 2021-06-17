@@ -584,6 +584,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isomooneyrivlin.cpp
   src/drt_matelast/elast_isomuscle_blemker.cpp
   src/drt_matelast/elast_isoneohooke.cpp
+  src/drt_matelast/elast_isoogden.cpp
   src/drt_matelast/elast_iso1pow.cpp
   src/drt_matelast/elast_iso2pow.cpp
   src/drt_matelast/elast_coup1pow.cpp

@@ -35,6 +35,7 @@
 #include "elast_isomooneyrivlin.H"
 #include "elast_isomuscle_blemker.H"
 #include "elast_isoneohooke.H"
+#include "elast_isoogden.H"
 #include "elast_isotestmaterial.H"
 #include "elast_isovarga.H"
 #include "elast_isovolHUdependentneohooke.H"
@@ -312,6 +313,13 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
         curmat->SetParameter(new MAT::ELASTIC::PAR::IsoNeoHooke(curmat));
       auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoNeoHooke*>(curmat->Parameter());
       return Teuchos::rcp(new IsoNeoHooke(params));
+    }
+    case INPAR::MAT::mes_isoogden:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::ELASTIC::PAR::IsoOgden(curmat));
+      auto* params = static_cast<MAT::ELASTIC::PAR::IsoOgden*>(curmat->Parameter());
+      return Teuchos::rcp(new IsoOgden(params));
     }
     case INPAR::MAT::mes_iso1pow:
     {
