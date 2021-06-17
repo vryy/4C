@@ -27,7 +27,7 @@
  *  given displacement field                                             |
  *----------------------------------------------------------------------*/
 void DRT::UTILS::UpdateMaterialConfigWithDispVector(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Vector> disp)
+    const Teuchos::RCP<DRT::Discretization>& dis, const Teuchos::RCP<const Epetra_Vector>& disp)
 {
   const int numnode = (dis->NodeColMap())->NumMyElements();
 

@@ -60,7 +60,7 @@ namespace DRT
       explicit MaterialComponent(std::string name, bool optional = false);
 
       /// virtual destructor is mandatory
-      virtual ~MaterialComponent() {}
+      virtual ~MaterialComponent() = default;
 
       /// write my part of the default (comment) line of the material
       virtual void DefaultLine(std::ostream& stream) = 0;
@@ -83,7 +83,7 @@ namespace DRT
      protected:
       /// push back token into stream so that it can be read again
       Teuchos::RCP<std::stringstream> PushBack(
-          std::string token, Teuchos::RCP<std::stringstream> stream);
+          const std::string& token, const Teuchos::RCP<std::stringstream>& stream);
 
       /// for optional components
       bool optional_;
@@ -119,14 +119,15 @@ namespace DRT
           bool optional = false      ///< Whether this string is optional in the dat file
       );
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       /// default value
@@ -151,14 +152,15 @@ namespace DRT
       SeparatorMaterialComponent(
           std::string separator, std::string description, bool optional = false);
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       /// separator string, i.e. the NAME of variable in DAT input file
@@ -187,14 +189,15 @@ namespace DRT
           const int defaultvalue = 0,                  ///< a default value
           bool optional = false);
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       /// a default value
@@ -230,14 +233,15 @@ namespace DRT
           bool optional = false        ///< whether this material component can be skipped
       );
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       /// length of vector of parameters
@@ -265,14 +269,15 @@ namespace DRT
           bool optional = false                ///< optional parameter
       );
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       double defaultvalue_;
@@ -302,14 +307,15 @@ namespace DRT
           bool optional = false             ///< optional parameter
       );
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       /// length of vector of parameters
@@ -334,14 +340,15 @@ namespace DRT
           const bool defaultvalue = false,              ///< a default value
           bool optional = false);
 
-      virtual void DefaultLine(std::ostream& stream);
+      void DefaultLine(std::ostream& stream) override;
 
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond);
+      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
 
-      virtual void Describe(std::ostream& stream);
+      void Describe(std::ostream& stream) override;
 
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material);
+      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<MAT::PAR::Material> material) override;
 
      private:
       /// transcribe Boolean to Yes/No
@@ -395,17 +402,17 @@ namespace DRT
       /// add a concrete component to the material line definition
       ///
       /// Add new components to the input line. One at a time.
-      void AddComponent(Teuchos::RCP<MaterialComponent> c);
+      void AddComponent(const Teuchos::RCP<MaterialComponent>& c);
 
       /// read all materials from my input file section
       void Read(const Problem& problem,  ///< global problem instance that manages the input
           DatFileReader& reader,  ///< the actual dat file reader that has access to the dat file
-          Teuchos::RCP<MAT::PAR::Bundle> mmap  ///< the materials we read here
+          const Teuchos::RCP<MAT::PAR::Bundle>& mmap  ///< the materials we read here
       );
 
       /// print my DAT file section and possible materials from the Discretization
       std::ostream& Print(std::ostream& stream,  ///< the output stream
-          const Discretization* dis = NULL, const bool color = false);
+          const Discretization* dis = nullptr, const bool color = false);
 
       /// my material name
       std::string Name() const { return materialname_; }
@@ -436,10 +443,10 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the int value into
     /// MAT::PAR::Material.
-    inline void AddNamedInt(Teuchos::RCP<MaterialDefinition>
+    inline void AddNamedInt(const Teuchos::RCP<MaterialDefinition>&
                                 matdef,  ///< a material definition to which named integer is added
-        const std::string name,          ///< name of integer to add
-        const std::string description,   ///< description about value
+        const std::string& name,         ///< name of integer to add
+        const std::string& description,  ///< description about value
         const int defaultvalue = 0,      ///< default value
         const bool optional = false      ///< optional parameter if true
     )
@@ -454,13 +461,13 @@ namespace DRT
     /// The name on the input line becomes the name used to put the int value into
     /// MAT::PAR::Material.
     inline void AddNamedIntVector(
-        Teuchos::RCP<MaterialDefinition>
-            matdef,                     ///< a material definition to which named integer is added
-        const std::string name,         ///< name of integer to add
-        const std::string description,  ///< description about value
-        const int size,                 ///< number vector components
-        const int defaultvalue = 0,     ///< optional default value for initialization
-        const bool optional = false     ///< optional parameter if true
+        const Teuchos::RCP<MaterialDefinition>&
+            matdef,                      ///< a material definition to which named integer is added
+        const std::string& name,         ///< name of integer to add
+        const std::string& description,  ///< description about value
+        const int size,                  ///< number vector components
+        const int defaultvalue = 0,      ///< optional default value for initialization
+        const bool optional = false      ///< optional parameter if true
     )
     {
       matdef->AddComponent(
@@ -474,11 +481,12 @@ namespace DRT
     /// The name on the input line becomes the name used to put the int value into
     /// MAT::PAR::Material.
     inline void AddNamedIntVector(
-        Teuchos::RCP<MaterialDefinition>
-            matdef,                     ///< a material definition to which named integer is added
-        const std::string name,         ///< name of integer to add
-        const std::string description,  ///< description about value
-        const std::string sizename,  ///< named entry which holds number of vector components; named
+        const Teuchos::RCP<MaterialDefinition>&
+            matdef,                      ///< a material definition to which named integer is added
+        const std::string& name,         ///< name of integer to add
+        const std::string& description,  ///< description about value
+        const std::string&
+            sizename,                ///< named entry which holds number of vector components; named
                                      ///< entry _must_ be added _prior_ to this vector component
         const int defaultvalue = 0,  ///< optional default value for initialization
         const bool optional = false  ///< optional parameter if true
@@ -493,10 +501,10 @@ namespace DRT
     /// add a separator followed by a single real value
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
-    inline void AddNamedReal(Teuchos::RCP<MaterialDefinition>
+    inline void AddNamedReal(const Teuchos::RCP<MaterialDefinition>&
                                  matdef,  ///< a material definition to which named real is added
-        const std::string name,           ///< name of real to add
-        const std::string description,    ///< description about value
+        const std::string& name,          ///< name of real to add
+        const std::string& description,   ///< description about value
         const double defaultvalue = 0.0,  ///< optional default value for initialization
         const bool optional = false       ///< optional parameter if true
     )
@@ -510,10 +518,10 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.
     inline void AddNamedRealVector(
-        Teuchos::RCP<MaterialDefinition>
-            matdef,              ///< a material definition to which named vector of reals is added
-        const std::string name,  ///< name of vector of reals to add
-        const std::string description,    ///< description about values
+        const Teuchos::RCP<MaterialDefinition>&
+            matdef,               ///< a material definition to which named vector of reals is added
+        const std::string& name,  ///< name of vector of reals to add
+        const std::string& description,   ///< description about values
         const int size,                   ///< number vector components
         const double defaultvalue = 0.0,  ///< optional default value for initialization
         const bool optional = false       ///< optional parameter if true
@@ -529,12 +537,13 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material.
     inline void AddNamedRealVector(
-        Teuchos::RCP<MaterialDefinition>
-            matdef,              ///< a material definition to which named vector of reals is added
-        const std::string name,  ///< name of vector of reals to add
-        const std::string description,  ///< description about values
-        const std::string sizename,  ///< named entry which holds number of vector components; named
-                                     ///< entry _must_ be added _prior_ to this vector component
+        const Teuchos::RCP<MaterialDefinition>&
+            matdef,               ///< a material definition to which named vector of reals is added
+        const std::string& name,  ///< name of vector of reals to add
+        const std::string& description,  ///< description about values
+        const std::string&
+            sizename,  ///< named entry which holds number of vector components; named
+                       ///< entry _must_ be added _prior_ to this vector component
         const double defaultvalue = 0.0,  ///< optional default value for initialization
         const bool optional = false       ///< optional parameter if true
     )
@@ -549,12 +558,12 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the value into MAT::PAR::Material
     inline void AddNamedString(
-        Teuchos::RCP<MaterialDefinition>
-            matdef,                      ///< a material definition to which named string is added
-        const std::string name,          ///< name of real to add
-        const std::string description,   ///< description about value
-        const std::string defaultvalue,  ///< default string
-        const bool optional = false      ///< optional parameter if true
+        const Teuchos::RCP<MaterialDefinition>&
+            matdef,                       ///< a material definition to which named string is added
+        const std::string& name,          ///< name of real to add
+        const std::string& description,   ///< description about value
+        const std::string& defaultvalue,  ///< default string
+        const bool optional = false       ///< optional parameter if true
     )
     {
       matdef->AddComponent(
@@ -567,10 +576,10 @@ namespace DRT
     ///
     /// The name on the input line becomes the name used to put the bool value into
     /// MAT::PAR::Material.
-    inline void AddNamedBool(Teuchos::RCP<MaterialDefinition>
+    inline void AddNamedBool(const Teuchos::RCP<MaterialDefinition>&
                                  matdef,  ///< a material definition to which named Boolean is added
-        const std::string name,           ///< name of Boolean to add
-        const std::string description,    ///< description about value
+        const std::string& name,          ///< name of Boolean to add
+        const std::string& description,   ///< description about value
         const bool defaultvalue = false,  ///< default bool
         const bool optional = false       ///< optional parameter if true
     )
@@ -588,11 +597,11 @@ namespace DRT
     /// The name on the input line becomes the name used to put the bool value into
     /// MAT::PAR::Material.
     inline void AddNamedSeparator(
-        Teuchos::RCP<MaterialDefinition>
-            matdef,                     ///< a material definition to which named separator is added
-        const std::string name,         ///< name of Boolean to add
-        const std::string description,  ///< description about value
-        const bool optional = false     ///< optional parameter if true
+        const Teuchos::RCP<MaterialDefinition>&
+            matdef,               ///< a material definition to which named separator is added
+        const std::string& name,  ///< name of Boolean to add
+        const std::string& description,  ///< description about value
+        const bool optional = false      ///< optional parameter if true
     )
     {
       matdef->AddComponent(
@@ -603,8 +612,8 @@ namespace DRT
     ///
     /// this method checks for coincidental material names or types
     void AppendMaterialDefinition(std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>&
-                                      matlist,            ///< list of defined materials
-        Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat  ///< material to add
+                                      matlist,                   ///< list of defined materials
+        const Teuchos::RCP<DRT::INPUT::MaterialDefinition>& mat  ///< material to add
     );
 
   }  // namespace INPUT

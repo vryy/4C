@@ -12,7 +12,7 @@
 
 #include <algorithm>
 #include <iterator>
-
+#include <utility>
 #include "drt_conditiondefinition.H"
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
@@ -22,13 +22,13 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::INPUT::ConditionComponent::ConditionComponent(std::string name) : name_(name) {}
+DRT::INPUT::ConditionComponent::ConditionComponent(std::string name) : name_(std::move(name)) {}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(
-    std::string token, Teuchos::RCP<std::stringstream> stream)
+    const std::string& token, const Teuchos::RCP<std::stringstream>& stream)
 {
   Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
   (*out) << token << " ";
@@ -47,8 +47,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(
 DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
     std::string defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
     const Teuchos::Array<std::string>& stringcondvalues, bool optional)
-    : ConditionComponent(name),
-      defaultvalue_(defaultvalue),
+    : ConditionComponent(std::move(name)),
+      defaultvalue_(std::move(defaultvalue)),
       datfilevalues_(datfilevalues),
       stringcondvalues_(stringcondvalues),
       intcondvalues_(Teuchos::tuple<int>(-1)),
@@ -72,8 +72,8 @@ DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
 DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
     std::string defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
     const Teuchos::Array<int>& intcondvalues, bool optional)
-    : ConditionComponent(name),
-      defaultvalue_(defaultvalue),
+    : ConditionComponent(std::move(name)),
+      defaultvalue_(std::move(defaultvalue)),
       datfilevalues_(datfilevalues),
       stringcondvalues_(Teuchos::tuple<std::string>("notdefined")),
       intcondvalues_(intcondvalues),
@@ -115,10 +115,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
   std::string value;
   (*condline) >> value;
 
-  if (value == "") value = defaultvalue_;
+  if (value.empty()) value = defaultvalue_;
 
-  Teuchos::Array<std::string>::iterator i =
-      std::find(datfilevalues_.begin(), datfilevalues_.end(), value);
+  auto i = std::find(datfilevalues_.begin(), datfilevalues_.end(), value);
   if (i == datfilevalues_.end())
   {
     dserror("unrecognized std::string '%s' while reading variable '%s' in '%s'", value.c_str(),
@@ -139,7 +138,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::SeparatorConditionComponent::SeparatorConditionComponent(
     std::string separator, bool optional)
-    : ConditionComponent("*SEPARATOR*"), separator_(separator), optional_(optional)
+    : ConditionComponent("*SEPARATOR*"), separator_(std::move(separator)), optional_(optional)
 {
 }
 
@@ -172,7 +171,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(
 
   if (sep != separator_)
   {
-    if (sep == "" && optional_)
+    if (sep.empty() && optional_)
     {
       // not given, fall back to default line
       condline = PushBack(separator_, condline);
@@ -193,7 +192,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntConditionComponent::IntConditionComponent(
     std::string name, bool fortranstyle, bool noneallowed, bool optional)
-    : ConditionComponent(name),
+    : ConditionComponent(std::move(name)),
       fortranstyle_(fortranstyle),
       noneallowed_(noneallowed),
       optional_(optional)
@@ -245,7 +244,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
     nnumber = -1;
   }
   // in case the parameter is optional and no value is given
-  else if (optional_ and snumber == "")
+  else if (optional_ and snumber.empty())
   {
     condline = PushBack("", condline);
   }
@@ -269,7 +268,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorConditionComponent::IntVectorConditionComponent(
     std::string name, int length, bool fortranstyle, bool noneallowed, bool optional)
-    : ConditionComponent(name),
+    : ConditionComponent(std::move(name)),
       length_(length),
       fortranstyle_(fortranstyle),
       noneallowed_(noneallowed),
@@ -305,17 +304,17 @@ void DRT::INPUT::IntVectorConditionComponent::DefaultLine(std::ostream& stream)
 void DRT::INPUT::IntVectorConditionComponent::Print(
     std::ostream& stream, const DRT::Condition* cond)
 {
-  const std::vector<int>* v = cond->Get<std::vector<int>>(Name());
-  for (unsigned i = 0; i < v->size(); ++i)
+  const auto* v = cond->Get<std::vector<int>>(Name());
+  for (int i : *v)
   {
-    if (noneallowed_ and (*v)[i] == -1)
+    if (noneallowed_ and i == -1)
       stream << "none ";
     else
     {
       if (fortranstyle_)
-        stream << (*v)[i] + 1 << " ";
+        stream << i + 1 << " ";
       else
-        stream << (*v)[i] + 1 << " ";
+        stream << i + 1 << " ";
     }
   }
 }
@@ -347,7 +346,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
       nnumber = -1;
     }
     // in case the parameter is optional and no value is given
-    else if (optional_ and i == 0 and snumber == "")
+    else if (optional_ and i == 0 and snumber.empty())
     {
       condline = PushBack("", condline);
       break;
@@ -383,7 +382,7 @@ void DRT::INPUT::IntVectorConditionComponent::SetLength(int length)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealConditionComponent::RealConditionComponent(std::string name)
-    : ConditionComponent(name)
+    : ConditionComponent(std::move(name))
 {
 }
 
@@ -418,7 +417,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
     std::string name, int length, bool optional)
-    : ConditionComponent(name), length_(length), optional_(optional)
+    : ConditionComponent(std::move(name)), length_(length), optional_(optional)
 {
 }
 
@@ -436,8 +435,8 @@ void DRT::INPUT::RealVectorConditionComponent::DefaultLine(std::ostream& stream)
 void DRT::INPUT::RealVectorConditionComponent::Print(
     std::ostream& stream, const DRT::Condition* cond)
 {
-  const std::vector<double>* v = cond->Get<std::vector<double>>(Name());
-  for (unsigned i = 0; i < v->size(); ++i) stream << (*v)[i] << " ";
+  const auto* v = cond->Get<std::vector<double>>(Name());
+  for (double i : *v) stream << i << " ";
 }
 
 
@@ -459,7 +458,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
 
     // in case the parameter is optional and no value is
     // given
-    if (optional_ and i == 0 and snumber == "")
+    if (optional_ and i == 0 and snumber.empty())
     {
       condline = PushBack("", condline);
       break;
@@ -493,12 +492,12 @@ DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle(std::string name,
     std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp,
     std::vector<Teuchos::RCP<SeparatorConditionComponent>> realvectsepcomp,
     std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp)
-    : ConditionComponent(name),
-      intcomp_(intcomp),
-      intvectsepcomp_(intvectsepcomp),
-      intvectcomp_(intvectcomp),
-      realvectsepcomp_(realvectsepcomp),
-      realvectcomp_(realvectcomp){};
+    : ConditionComponent(std::move(name)),
+      intcomp_(std::move(intcomp)),
+      intvectsepcomp_(std::move(intvectsepcomp)),
+      intvectcomp_(std::move(intvectcomp)),
+      realvectsepcomp_(std::move(realvectsepcomp)),
+      realvectcomp_(std::move(realvectcomp)){};
 
 void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
 {
@@ -570,12 +569,12 @@ DRT::INPUT::IntRealBundle::IntRealBundle(std::string name,
     std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp,
     std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp,
     std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp)
-    : ConditionComponent(name),
-      intcomp_(intcomp),
-      intsepcomp_(intsepcomp),
-      intvectcomp_(intvectcomp),
-      realsepcomp_(realsepcomp),
-      realvectcomp_(realvectcomp){};
+    : ConditionComponent(std::move(name)),
+      intcomp_(std::move(intcomp)),
+      intsepcomp_(std::move(intsepcomp)),
+      intvectcomp_(std::move(intvectcomp)),
+      realsepcomp_(std::move(realsepcomp)),
+      realvectcomp_(std::move(realvectcomp)){};
 
 /*----------------------------------------------------------------------*
  | CondCompBundle::DefaultLine()                              ehrl 09/12|
@@ -688,7 +687,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntRealBundle::Read(ConditionDefinit
  *----------------------------------------------------------------------*/
 DRT::INPUT::CondCompBundle::CondCompBundle(
     std::string name, std::vector<Teuchos::RCP<ConditionComponent>> condcomp, int model)
-    : ConditionComponent(name), condcomp_(condcomp), model_(model)
+    : ConditionComponent(std::move(name)), condcomp_(std::move(condcomp)), model_(model)
 {
 }
 
@@ -699,9 +698,9 @@ DRT::INPUT::CondCompBundle::CondCompBundle(
 void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
 {
   // default line of selected condition component bundle
-  for (unsigned int i = 0; i < condcomp_.size(); ++i)
+  for (auto& i : condcomp_)
   {
-    condcomp_[i]->DefaultLine(stream);
+    i->DefaultLine(stream);
     stream << " ";
   }
 
@@ -714,9 +713,9 @@ void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
 void DRT::INPUT::CondCompBundle::Print(std::ostream& stream, const DRT::Condition* cond)
 {
   // printing of selected condition component bundle
-  for (unsigned int i = 0; i < condcomp_.size(); ++i)
+  for (auto& i : condcomp_)
   {
-    condcomp_[i]->Print(stream, cond);
+    i->Print(stream, cond);
     stream << " ";
   }
 
@@ -730,7 +729,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundle::Read(ConditionDefini
     Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
 {
   // reading of selected condition component bundle
-  for (unsigned int i = 0; i < condcomp_.size(); ++i) condcomp_[i]->Read(def, condline, condition);
+  for (auto& i : condcomp_) i->Read(def, condline, condition);
 
   return condline;
 }
@@ -745,7 +744,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundle::Read(ConditionDefini
 DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(std::string name,
     Teuchos::RCP<StringConditionComponent> stringcomp,
     std::vector<Teuchos::RCP<CondCompBundle>> condcomp)
-    : ConditionComponent(name), stringcomp_(stringcomp), condcomp_(condcomp)
+    : ConditionComponent(std::move(name)),
+      stringcomp_(std::move(stringcomp)),
+      condcomp_(std::move(condcomp))
 {
 }
 
@@ -764,12 +765,12 @@ void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
   stringcomp_->DefaultLine(str);
   std::string defaultvalue = str.str();
 
-  for (unsigned int ii = 0; ii < condcomp_.size(); ++ii)
+  for (auto& ii : condcomp_)
   {
-    if (defaultvalue.compare((condcomp_[ii])->Name()) == 0)
+    if (defaultvalue.compare(ii->Name()) == 0)
     {
       // print default condition component bundle (default bundle)
-      condcomp_[ii]->DefaultLine(stream);
+      ii->DefaultLine(stream);
       break;
     }
   }
@@ -793,12 +794,12 @@ void DRT::INPUT::CondCompBundleSelector::Print(std::ostream& stream, const DRT::
   stringcomp_->DefaultLine(str);
   std::string defaultvalue = str.str();
 
-  for (unsigned int ii = 0; ii < condcomp_.size(); ++ii)
+  for (auto& ii : condcomp_)
   {
-    if (defaultvalue.compare((condcomp_[ii])->Name()) == 0)
+    if (defaultvalue.compare(ii->Name()) == 0)
     {
       // print default condition component bundle (default bundle)
-      condcomp_[ii]->DefaultLine(stream);
+      ii->DefaultLine(stream);
       break;
     }
   }
@@ -838,9 +839,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundleSelector::Read(Conditi
 DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
     std::string conditionname, std::string description, DRT::Condition::ConditionType condtype,
     bool buildgeometry, DRT::Condition::GeometryType gtype)
-    : sectionname_(sectionname),
-      conditionname_(conditionname),
-      description_(description),
+    : sectionname_(std::move(sectionname)),
+      conditionname_(std::move(conditionname)),
+      description_(std::move(description)),
       condtype_(condtype),
       buildgeometry_(buildgeometry),
       gtype_(gtype)
@@ -850,7 +851,7 @@ DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::ConditionDefinition::AddComponent(Teuchos::RCP<ConditionComponent> c)
+void DRT::INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<ConditionComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -865,7 +866,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
   name += sectionname_;
   std::vector<const char*> section = reader.Section(name);
 
-  if (section.size() > 0)
+  if (!section.empty())
   {
     std::stringstream line(section[0]);
     std::string dobj;
@@ -910,7 +911,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
           sectionname_.c_str());
     }
 
-    for (std::vector<const char*>::iterator i = section.begin() + 1; i != section.end(); ++i)
+    for (auto i = section.begin() + 1; i != section.end(); ++i)
     {
       Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
 
@@ -946,9 +947,9 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
       Teuchos::RCP<DRT::Condition> condition =
           Teuchos::rcp(new DRT::Condition(dobjid, condtype_, buildgeometry_, gtype_));
 
-      for (unsigned j = 0; j < inputline_.size(); ++j)
+      for (auto& j : inputline_)
       {
-        condline = inputline_[j]->Read(this, condline, condition);
+        condline = j->Read(this, condline, condition);
       }
 
       //------------------------------- put condition in map of conditions
@@ -1008,13 +1009,13 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
   }
 
   int count = 0;
-  if (dis != NULL)
+  if (dis != nullptr)
   {
     std::vector<Condition*> conds;
     dis->GetCondition(conditionname_, conds);
-    for (unsigned c = 0; c < conds.size(); ++c)
+    for (auto& cond : conds)
     {
-      if (conds[c]->GType() == gtype_)
+      if (cond->GType() == gtype_)
       {
         count += 1;
       }
@@ -1027,27 +1028,27 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
   stream << ' ' << yellowlight << count << endcolor << '\n';
 
   stream << blue2light << "//" << magentalight << "E num - ";
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (auto& i : inputline_)
   {
-    inputline_[i]->DefaultLine(stream);
+    i->DefaultLine(stream);
     stream << " ";
   }
 
   stream << endcolor << "\n";
 
-  if (dis != NULL)
+  if (dis != nullptr)
   {
     std::vector<Condition*> conds;
     dis->GetCondition(conditionname_, conds);
 
-    for (unsigned c = 0; c < conds.size(); ++c)
+    for (auto& cond : conds)
     {
-      if (conds[c]->GType() == gtype_)
+      if (cond->GType() == gtype_)
       {
-        stream << "E " << conds[c]->Id() << " - ";
-        for (unsigned i = 0; i < inputline_.size(); ++i)
+        stream << "E " << cond->Id() << " - ";
+        for (auto& i : inputline_)
         {
-          inputline_[i]->Print(stream, conds[c]);
+          i->Print(stream, cond);
           stream << " ";
         }
         stream << "\n";

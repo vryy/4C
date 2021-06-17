@@ -59,7 +59,7 @@ namespace DRT
       explicit ConditionComponent(std::string name);
 
       /// virtual destructor is mandatory
-      virtual ~ConditionComponent() {}
+      virtual ~ConditionComponent() = default;
 
       /// write my part of the default (comment) line of the condition
       virtual void DefaultLine(std::ostream& stream) = 0;
@@ -77,7 +77,7 @@ namespace DRT
      protected:
       /// push back token into stream so that it can be read again
       Teuchos::RCP<std::stringstream> PushBack(
-          std::string token, Teuchos::RCP<std::stringstream> stream);
+          const std::string& token, const Teuchos::RCP<std::stringstream>& stream);
 
      private:
       /// my condition variable name
@@ -123,10 +123,11 @@ namespace DRT
           const Teuchos::Array<std::string>& datfilevalues,
           const Teuchos::Array<int>& intcondvalues, bool optional = false);
 
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
       std::string defaultvalue_;
@@ -158,10 +159,11 @@ namespace DRT
       /// construct a separator component that does read a string without setting a variable
       SeparatorConditionComponent(std::string separator, bool optional = false);
 
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
       std::string separator_;
@@ -195,10 +197,11 @@ namespace DRT
        */
       explicit IntConditionComponent(std::string name, bool fortranstyle = false,
           bool noneallowed = false, bool optional = false);
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
       bool fortranstyle_;
@@ -234,10 +237,11 @@ namespace DRT
        */
       IntVectorConditionComponent(std::string name, int length, bool fortranstyle = false,
           bool noneallowed = false, bool optional = false);
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
       virtual void SetLength(int newlength);
 
      private:
@@ -265,10 +269,11 @@ namespace DRT
         \param name variable name in DRT::Condition
        */
       RealConditionComponent(std::string name);
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
     };
 
 
@@ -290,10 +295,11 @@ namespace DRT
         \param length number of double values expected
        */
       RealVectorConditionComponent(std::string name, int length, bool optional = false);
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
       virtual void SetLength(int newlength);
 
      private:
@@ -325,10 +331,11 @@ namespace DRT
           std::vector<Teuchos::RCP<SeparatorConditionComponent>> realvectsepcomp,
           std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp);
 
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
       Teuchos::RCP<IntConditionComponent> intcomp_;
@@ -391,10 +398,11 @@ namespace DRT
           std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp,
           std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp);
 
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
       //! handles the number of condition components per Int/Real-VectorConditionComponent
@@ -427,10 +435,11 @@ namespace DRT
       CondCompBundle(
           std::string name, std::vector<Teuchos::RCP<ConditionComponent>> condcomp, int model);
 
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
       int Model() { return model_; };
 
@@ -460,10 +469,11 @@ namespace DRT
       CondCompBundleSelector(std::string name, Teuchos::RCP<StringConditionComponent> stringcomp,
           std::vector<Teuchos::RCP<CondCompBundle>> condcomp);
 
-      virtual void DefaultLine(std::ostream& stream);
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond);
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition);
+      void DefaultLine(std::ostream& stream) override;
+      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
+          Teuchos::RCP<std::stringstream> condline,
+          Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
       //! handling of the model type
@@ -520,7 +530,7 @@ namespace DRT
         right. The order is important! On reading we try and read component
         after component.
        */
-      void AddComponent(Teuchos::RCP<ConditionComponent> c);
+      void AddComponent(const Teuchos::RCP<ConditionComponent>& c);
 
       /// read all conditions from my input file section
       /*!
@@ -533,7 +543,7 @@ namespace DRT
 
       /// print my dat file section and possible conditions from the Discretization
       std::ostream& Print(
-          std::ostream& stream, const Discretization* dis = NULL, bool color = false);
+          std::ostream& stream, const Discretization* dis = nullptr, bool color = false);
 
       /// name of my section in input file
       std::string SectionName() const { return sectionname_; }
@@ -567,7 +577,8 @@ namespace DRT
     /*!
       The name on the input line becomes the name used to put the int value into DRT::Condition.
      */
-    inline void AddNamedInt(Teuchos::RCP<ConditionDefinition> conddef, std::string name)
+    inline void AddNamedInt(
+        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name)
     {
       conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
       conddef->AddComponent(Teuchos::rcp(new IntConditionComponent(name)));
@@ -577,7 +588,8 @@ namespace DRT
     /*!
       The name on the input line becomes the name used to put the value into DRT::Condition.
      */
-    inline void AddNamedReal(Teuchos::RCP<ConditionDefinition> conddef, std::string name)
+    inline void AddNamedReal(
+        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name)
     {
       conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
       conddef->AddComponent(Teuchos::rcp(new RealConditionComponent(name)));
@@ -588,7 +600,7 @@ namespace DRT
       The name on the input line becomes the name used to put the value into DRT::Condition.
      */
     inline void AddNamedVector(
-        Teuchos::RCP<ConditionDefinition> conddef, const std::string name, const int size)
+        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name, const int size)
     {
       conddef->AddComponent(Teuchos::rcp(new SeparatorConditionComponent(name)));
       conddef->AddComponent(Teuchos::rcp(new RealVectorConditionComponent(name, size)));

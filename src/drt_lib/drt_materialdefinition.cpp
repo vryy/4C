@@ -16,6 +16,7 @@
 #include <iterator>
 
 #include <string>
+#include <utility> 
 #include <vector>
 #include <iostream>
 
@@ -30,7 +31,7 @@
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::INPUT::MaterialComponent::MaterialComponent(std::string name, bool optional)
-    : optional_(optional), name_(name)
+    : optional_(optional), name_(std::move(name))
 {
 }
 
@@ -38,7 +39,7 @@ DRT::INPUT::MaterialComponent::MaterialComponent(std::string name, bool optional
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::MaterialComponent::PushBack(
-    std::string token, Teuchos::RCP<std::stringstream> stream)
+    const std::string& token, const Teuchos::RCP<std::stringstream>& stream)
 {
   Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
   (*out) << token << " ";
@@ -52,7 +53,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::MaterialComponent::PushBack(
  *----------------------------------------------------------------------*/
 DRT::INPUT::StringMaterialComponent::StringMaterialComponent(
     std::string name, std::string defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
 {
 }
 
@@ -122,7 +123,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::SeparatorMaterialComponent::SeparatorMaterialComponent(
     std::string separator, std::string description, bool optional)
-    : MaterialComponent("*SEPARATOR*", optional), separator_(separator), description_(description)
+    : MaterialComponent("*SEPARATOR*", optional),
+      separator_(std::move(separator)),
+      description_(std::move(description))
 {
 }
 
@@ -197,7 +200,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntMaterialComponent::IntMaterialComponent(
     std::string name, const int defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -266,7 +269,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
     std::string name, int length, const int defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(length),
       lengthname_("*UNDEFINED*"),
       defaultvalue_(defaultvalue)
@@ -277,9 +280,9 @@ DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
     std::string name, std::string lengthname, const int defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(-1),
-      lengthname_(lengthname),
+      lengthname_(std::move(lengthname)),
       defaultvalue_(defaultvalue)
 {
 }
@@ -298,12 +301,12 @@ void DRT::INPUT::IntVectorMaterialComponent::DefaultLine(std::ostream& stream)
 void DRT::INPUT::IntVectorMaterialComponent::Print(
     std::ostream& stream, const MAT::PAR::Material* cond)
 {
-  const std::vector<int>* v = cond->Get<std::vector<int>>(Name());
-  for (unsigned i = 0; i < v->size(); ++i)
+  const auto* v = cond->Get<std::vector<int>>(Name());
+  for (int i : *v)
   {
     //    stream << (*v)[i]+1 << " ";  // ??? : this is used in
     //    DRT::INPUT::IntVectorConditionComponent::Print
-    stream << (*v)[i] << " ";
+    stream << i << " ";
   }
 }
 
@@ -368,7 +371,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealMaterialComponent::RealMaterialComponent(
     std::string name, const double defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -437,7 +440,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
     std::string name, int length, const double defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(length),
       lengthname_("*UNDEFINED*"),
       defaultvalue_(defaultvalue)
@@ -448,9 +451,9 @@ DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
     std::string name, std::string lengthname, const double defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(-1),
-      lengthname_(lengthname),
+      lengthname_(std::move(lengthname)),
       defaultvalue_(defaultvalue)
 {
 }
@@ -470,8 +473,8 @@ void DRT::INPUT::RealVectorMaterialComponent::DefaultLine(std::ostream& stream)
 void DRT::INPUT::RealVectorMaterialComponent::Print(
     std::ostream& stream, const MAT::PAR::Material* cond)
 {
-  const std::vector<double>* v = cond->Get<std::vector<double>>(Name());
-  for (unsigned i = 0; i < v->size(); ++i) stream << (*v)[i] << " ";
+  const auto* v = cond->Get<std::vector<double>>(Name());
+  for (double i : *v) stream << i << " ";
 }
 
 
@@ -539,7 +542,7 @@ const std::string DRT::INPUT::BoolMaterialComponent::lineTrue_ = "Yes";
 const std::string DRT::INPUT::BoolMaterialComponent::lineFalse_ = "No";
 DRT::INPUT::BoolMaterialComponent::BoolMaterialComponent(
     std::string name, const bool defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -626,13 +629,15 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
 /*======================================================================*/
 DRT::INPUT::MaterialDefinition::MaterialDefinition(
     std::string materialname, std::string description, INPAR::MAT::MaterialType mattype)
-    : materialname_(materialname), description_(description), mattype_(mattype)
+    : materialname_(std::move(materialname)),
+      description_(std::move(description)),
+      mattype_(mattype)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::MaterialDefinition::AddComponent(Teuchos::RCP<MaterialComponent> c)
+void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<MaterialComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -641,12 +646,12 @@ void DRT::INPUT::MaterialDefinition::AddComponent(Teuchos::RCP<MaterialComponent
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::MaterialDefinition::Read(
-    const Problem& problem, DatFileReader& reader, Teuchos::RCP<MAT::PAR::Bundle> mmap)
+    const Problem& problem, DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
 
-  if (section.size() > 0)
+  if (!section.empty())
   {
     for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
     {
@@ -694,8 +699,7 @@ void DRT::INPUT::MaterialDefinition::Read(
             Teuchos::rcp(new MAT::PAR::Material(matid, mattype_, materialname_));
         // fill the latter
 
-        for (unsigned j = 0; j < inputline_.size(); ++j)
-          condline = inputline_[j]->Read(this, condline, material);
+        for (auto& j : inputline_) condline = j->Read(this, condline, material);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -744,18 +748,18 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
   // the descriptive lines (comments)
   stream << blue2light << comment << std::endl;
   stream << blue2light << comment << " " << magentalight << description_ << std::endl;
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (auto& i : inputline_)
   {
     std::ostringstream desc;
-    inputline_[i]->Describe(desc);
-    if (desc.str().size() > 0) stream << comment << desc.str() << std::endl;
+    i->Describe(desc);
+    if (!desc.str().empty()) stream << comment << desc.str() << std::endl;
   }
 
   // the default line
   stream << blue2light << comment << "MAT 0   " << magentalight << materialname_ << "   ";
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (auto& i : inputline_)
   {
-    inputline_[i]->DefaultLine(stream);
+    i->DefaultLine(stream);
     stream << " ";
   }
 
@@ -769,7 +773,7 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::AppendMaterialDefinition(
     std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist,
-    Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat)
+    const Teuchos::RCP<DRT::INPUT::MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type
   std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>::const_iterator m;
