@@ -90,9 +90,9 @@ GEOMETRY_PAIR_SEARCH_POINTS           2
 ROTATIONAL_COUPLING                   yes
 ROTATIONAL_COUPLING_PENALTY_PARAMETER   1
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE -5.67017321714683407e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 12 QUANTITY dispy VALUE -2.32001183410529360e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE  2.61118689307929808e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 12 QUANTITY dispx VALUE -5.58442991970419834e-03 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 12 QUANTITY dispy VALUE -2.31323836312985670e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 12 QUANTITY dispz VALUE  2.60549989758660339e-01 TOLERANCE 1e-10
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = beam3r_herm2line3_static_beam_to_solid_surface_coupling_rotation_mortar_consistent_FAD_line3.xml
 -----------------------------------------------------------------------MATERIALS
