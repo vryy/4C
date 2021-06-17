@@ -434,7 +434,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleScatraThermoDomain(
       auto scatrathermodomain_subblock = scatrathermodomain_block->Matrix(iblock, jblock);
       auto systemmatrix_subblock = systemmatrix_block->Matrix(
           BlockPositionScaTra()->at(iblock), BlockPositionThermo()->at(jblock));
-
+      systemmatrix_subblock.UnComplete();
       systemmatrix_subblock.Add(scatrathermodomain_subblock, false, 1.0, 1.0);
     }
   }
@@ -451,6 +451,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleScatraThermoDomain(
           ->Matrix(BlockPositionScaTra()->at(0), BlockPositionThermo()->at(0));
   auto scatrathermodomain_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatrathermodomain);
 
+  systemmatrix_subblock.UnComplete();
   systemmatrix_subblock.Add(*scatrathermodomain_sparse, false, 1.0, 1.0);
 }
 
@@ -691,7 +692,7 @@ void SSTI::AssembleStrategyBlockBlock::AssembleThermoScatra(
     {
       auto systemmatrix_block_ithermo_jscatra = systemmatrix_block->Matrix(
           BlockPositionThermo()->at(iblock), BlockPositionScaTra()->at(jblock));
-
+      systemmatrix_block_ithermo_jscatra.UnComplete();
       systemmatrix_block_ithermo_jscatra.Add(
           thermoscatradomain_block->Matrix(iblock, jblock), false, 1.0, 1.0);
     }
@@ -713,7 +714,7 @@ void SSTI::AssembleStrategyBlockSparse::AssembleThermoScatra(
 
   auto& systemmatrix_block_thermo_scatra =
       systemmatrix_block->Matrix(BlockPositionThermo()->at(0), BlockPositionScaTra()->at(0));
-
+  systemmatrix_block_thermo_scatra.UnComplete();
   systemmatrix_block_thermo_scatra.Add(*thermoscatradomain_sparse, false, 1.0, 1.0);
 
   if (InterfaceMeshtying()) AssembleThermoScatraInterface(systemmatrix, thermoscatrainterface);
