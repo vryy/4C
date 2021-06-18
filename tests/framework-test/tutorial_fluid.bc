@@ -10,7 +10,7 @@ of Shape: TET4
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="FLUID"
-description="MAT 1 NA Euler GP_TET 4 GP_ALT standard"
+description="MAT 1 NA Euler"
 elementname="FLUID" 
 
 Element Block, named: 
@@ -18,7 +18,7 @@ of Shape: HEX8
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="STRUCTURE"
-description="MAT 1 EAS mild KINTYP nln"
+description="MAT 1 EAS mild KINEM nonlinear"
 elementname="SOLIDH8" 
 
 Node Set, named:
