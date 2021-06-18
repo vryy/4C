@@ -230,13 +230,13 @@ namespace DRT
     }
 
     /*!
- \brief Add stuff to the end of a char vector data
+    \brief Add stuff to the end of a char vector data
 
- This method is templated for std::array<T, n>
- \param data (in/out) : char string stuff shall be added to
- \param stuff (in)    : std::array<T, n> that get's added to stuff
+    This method is templated for std::array<T, n>
+    \param data (in/out) : char string stuff shall be added to
+    \param stuff (in)    : std::array<T, n> that get's added to stuff
 
- */
+    */
     template <typename T, std::size_t numentries>
     static void AddtoPack(PackBuffer& data, const std::array<T, numentries>& stuff)
     {
@@ -589,16 +589,16 @@ namespace DRT
     }
 
     /*!
- @brief Extract stuff from a char vector data and increment position
+    @brief Extract stuff from a char vector data and increment position
 
- This method is templated for stuff of type std::array<T, n>
+    This method is templated for stuff of type std::array<T, n>
 
- @param position (in/out) : place in data where to extract stuff. Position will be incremented
- by this method
- @param data (in)         : char vector where stuff is extracted from
- @param stuff (out)       : std::array<T, n> to extract from data
+    @param position (in/out) : place in data where to extract stuff. Position will be incremented
+    by this method
+    @param data (in)         : char vector where stuff is extracted from
+    @param stuff (out)       : std::array<T, n> to extract from data
 
- */
+    */
     template <typename T, std::size_t numentries>
     static void ExtractfromPack(std::vector<char>::size_type& position,
         const std::vector<char>& data, std::array<T, numentries>& stuff)
