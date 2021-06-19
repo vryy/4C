@@ -18,7 +18,7 @@ namespace DRT
     /*!
      * \brief Type of the fiber
      */
-    enum FiberType
+    enum class FiberType
     {
       Fiber1,
       Fiber2,
@@ -31,7 +31,7 @@ namespace DRT
     /*!
      * \brief Type of the Angle
      */
-    enum AngleType
+    enum class AngleType
     {
       Helix,
       Transverse

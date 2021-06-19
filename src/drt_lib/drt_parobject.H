@@ -129,6 +129,11 @@ namespace DRT
    */
   class ParObject
   {
+   private:
+    template <class T>
+    using is_enum_class =
+        std::integral_constant<bool, !std::is_convertible<T, int>{} && std::is_enum<T>{}>;
+
    public:
     /*!
      \brief Standard Constructor
@@ -208,6 +213,23 @@ namespace DRT
     static void AddtoPack(PackBuffer& data, const unsigned& stuff) { data.AddtoPack(stuff); }
 
     static void AddtoPack(PackBuffer& data, const double& stuff) { data.AddtoPack(stuff); }
+
+    /*!
+     \brief Add scoped enums to the end of a char vector data
+
+     \param data (in/out) : Pack buffer where stuff should be added
+     \param stuff (in)    : scoped enum to be added to the data
+
+     \note This method is template for scoped enums only. Unscoped enums are currently usually
+     unpacked as ints and then converted, so they are excluded here.
+
+     */
+    template <class T,
+        typename Enable = typename std::enable_if<is_enum_class<T>::value, void>::type>
+    static void AddtoPack(PackBuffer& data, const T& stuff)
+    {
+      data.AddtoPack<T>(stuff);
+    }
 
     static void AddtoPack(PackBuffer& data, const ParObject& obj);
 
