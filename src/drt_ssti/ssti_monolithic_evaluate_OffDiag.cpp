@@ -36,7 +36,6 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_thermo,
     Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying,
-    Teuchos::RCP<const Epetra_Map> interface_map_thermo,
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo)
@@ -44,7 +43,6 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
       blockmapthermo_(std::move(blockmapthermo)),
       full_map_structure_(std::move(full_map_structure)),
       full_map_thermo_(std::move(full_map_thermo)),
-      interface_map_thermo_(std::move(interface_map_thermo)),
       meshtying_strategy_thermo_(std::move(meshtying_strategy_thermo)),
       ssti_structure_meshtying_(std::move(ssti_structure_meshtying)),
       structure_(std::move(structure)),
@@ -164,7 +162,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockThermoStructureIn
 
     case LINALG::MatrixType::sparse:
     {
-      thermostructureinterface->Complete(*full_map_structure_, *interface_map_thermo_);
+      thermostructureinterface->Complete(*full_map_structure_, *full_map_thermo_);
       break;
     }
 

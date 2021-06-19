@@ -138,10 +138,7 @@ namespace SSTI
    public:
     SSTIMatrices(Teuchos::RCP<SSTI::SSTIMapsMono> ssti_maps_mono,
         const LINALG::MatrixType matrixtype_global, const LINALG::MatrixType matrixtype_scatra,
-        Teuchos::RCP<Epetra_Map> interface_map_scatra,
-        Teuchos::RCP<Epetra_Map> interface_map_thermo,
-        Teuchos::RCP<LINALG::MultiMapExtractor> blockmapscatrainterface,
-        Teuchos::RCP<LINALG::MultiMapExtractor> blockmapthermointerface, bool interfacemeshtying);
+        bool interfacemeshtying);
 
     //! method that clears all ssi matrices
     void ClearMatrices();
@@ -178,9 +175,6 @@ namespace SSTI
 
     Teuchos::RCP<LINALG::SparseMatrix> SetupSparseMatrix(
         const Teuchos::RCP<const Epetra_Map> row_map);
-
-    //! scalar transport interface map
-    Teuchos::RCP<Epetra_Map> interface_map_scatra_;
 
     //! scalar transport matrix type
     const LINALG::MatrixType matrixtype_scatra_;

@@ -51,7 +51,6 @@ namespace SSTI
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
         Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssti_structure_meshtying,
-        Teuchos::RCP<const Epetra_Map> interface_map_thermo,
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
@@ -89,9 +88,6 @@ namespace SSTI
 
     //! map extractor associated with all degrees of freedom inside thermo field
     const Teuchos::RCP<const Epetra_Map> full_map_thermo_;
-
-    //! map associated with all degrees of freedom on scatra interface
-    const Teuchos::RCP<const Epetra_Map> interface_map_thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;

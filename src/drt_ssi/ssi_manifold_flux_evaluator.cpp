@@ -715,18 +715,18 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::Output()
 void SSI::ScaTraManifoldScaTraFluxEvaluator::UnCompleteMatricesIfNecessary(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
+  // definition of lambda function to get size of graph for given matrix
+  auto graph_size = [](Teuchos::RCP<LINALG::SparseMatrix> matrix) {
+    return matrix->EpetraMatrix()->Graph().NumGlobalEntries();
+  };
+
   // get size of graphs of conditions matrices
-  const int size_manifold_scatra_graph_ =
-      matrix_manifold_scatra_cond_->EpetraMatrix()->MaxNumEntries();
-  const int size_manifold_structure_graph =
-      matrix_manifold_structure_cond_->EpetraMatrix()->MaxNumEntries();
-  const int size_scatra_manifold_graph =
-      matrix_scatra_manifold_cond_->EpetraMatrix()->MaxNumEntries();
-  const int size_scatra_structure_graph =
-      matrix_scatra_structure_cond_->EpetraMatrix()->MaxNumEntries();
-  const int size_manifold_sysmat_graph =
-      systemmatrix_manifold_cond_->EpetraMatrix()->MaxNumEntries();
-  const int size_scatra_sysmat_graph = systemmatrix_scatra_cond_->EpetraMatrix()->MaxNumEntries();
+  const int size_manifold_scatra_graph_ = graph_size(matrix_manifold_scatra_cond_);
+  const int size_manifold_structure_graph = graph_size(matrix_manifold_structure_cond_);
+  const int size_scatra_manifold_graph = graph_size(matrix_scatra_manifold_cond_);
+  const int size_scatra_structure_graph = graph_size(matrix_scatra_structure_cond_);
+  const int size_manifold_sysmat_graph = graph_size(systemmatrix_manifold_cond_);
+  const int size_scatra_sysmat_graph = graph_size(systemmatrix_scatra_cond_);
 
   // check if size of any condition matrix was updated and store new size
   bool do_uncomplete = false;
