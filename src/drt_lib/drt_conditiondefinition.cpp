@@ -236,7 +236,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
   std::string snumber;
   (*condline) >> snumber;
 
-  int nnumber;
+  int nnumber = 0;
 
   // in case 'none' is allowed as an input value
   if ((noneallowed_ and snumber == "none"))
@@ -251,8 +251,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
   // all other cases
   else
   {
-    nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
-        snumber, nnumber, Name(), def->SectionName(), 1, optional_);
+    nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+        snumber, Name(), def->SectionName(), 1, optional_);
   }
   if (fortranstyle_)
   {
@@ -332,21 +332,19 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
 
   std::vector<int> nnumbers(length_, initialize_value);
 
-  for (int i = 0; i < length_; ++i)
+  for (auto& current_nnumber : nnumbers)
   {
     // read string from stream (need to handle ints and "none" arguments)
     std::string snumber;
     (*condline) >> snumber;
 
-    int nnumber;
-
     // in case 'none' is allowed as an input value
     if (noneallowed_ and snumber == "none")
     {
-      nnumber = -1;
+      current_nnumber = -1;
     }
     // in case the parameter is optional and no value is given
-    else if (optional_ and i == 0 and snumber.empty())
+    else if (optional_ and snumber.empty())
     {
       condline = PushBack("", condline);
       break;
@@ -354,16 +352,14 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
     // all other cases
     else
     {
-      nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
-          snumber, nnumber, Name(), def->SectionName(), length_, optional_);
+      current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+          snumber, Name(), def->SectionName(), length_, optional_);
     }
 
     if (fortranstyle_)
     {
-      if (not noneallowed_ or nnumber != -1) nnumber -= 1;
+      if (not noneallowed_ or current_nnumber != -1) current_nnumber -= 1;
     }
-
-    nnumbers[i] = nnumber;
   }
 
   condition->Add(Name(), nnumbers);
@@ -406,9 +402,26 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(
     DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<DRT::Condition> condition)
 {
-  double ndouble;
-  (*condline) >> ndouble;
-  condition->Add(Name(), ndouble);
+  // read string from stream
+  std::string snumber;
+  (*condline) >> snumber;
+
+  double nnumber = 0.0;
+
+  // no optional_ parameter for RealConditionComponent, parameter is always optional
+  // hence no check for optional but only check if no value is given
+  if (snumber.empty())
+  {
+    condline = PushBack("", condline);
+  }
+  // all other cases
+  else
+  {
+    nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+        snumber, Name(), def->SectionName(), 1, true);
+  }
+
+  condition->Add(Name(), nnumber);
   return condline;
 }
 
@@ -448,17 +461,15 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
 {
   std::vector<double> nnumbers(length_, 0.0);
 
-  for (int i = 0; i < length_; ++i)
+  for (auto& current_nnumber : nnumbers)
   {
-    // read string from stream (need to handle doubles and "none" arguments)
+    // read string from stream
     std::string snumber;
     (*condline) >> snumber;
 
-    double nnumber;
-
     // in case the parameter is optional and no value is
     // given
-    if (optional_ and i == 0 and snumber.empty())
+    if (optional_ and snumber.empty())
     {
       condline = PushBack("", condline);
       break;
@@ -466,12 +477,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
     // all other cases
     else
     {
-      // use false for noneallowed_ as not specified for real components
-      nnumber = DRT::UTILS::convertAndValidateStringToNumber<double>(
-          snumber, nnumber, Name(), def->SectionName(), length_, optional_);
+      current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+          snumber, Name(), def->SectionName(), length_, optional_);
     }
-
-    nnumbers[i] = nnumber;
   }
 
   condition->Add(Name(), nnumbers);

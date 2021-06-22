@@ -360,8 +360,8 @@ bool DRT::INPUT::NamedComponent<type>::Read(std::istream& stream)
 {
   stream >> value_;
 
-  DRT::UTILS::checkStreamForUnparsedCharacters(
-      stream, name_, DRT::UTILS::stringFromDataType<type>());
+  DRT::UTILS::CheckStreamForUnparsedCharacters(
+      stream, name_, DRT::UTILS::StringFromDataType<type>());
 
   return !(stream.fail());
 }
@@ -418,8 +418,8 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
   {
     stream >> values_[i];
 
-    DRT::UTILS::checkStreamForUnparsedCharacters(
-        stream, name_, DRT::UTILS::stringFromDataType<type>());
+    DRT::UTILS::CheckStreamForUnparsedCharacters(
+        stream, name_, DRT::UTILS::StringFromDataType<type>());
   }
 
   return !(stream.fail());
@@ -464,8 +464,8 @@ bool DRT::INPUT::NamedVectorComponent<std::pair<T1, T2>>::Read(std::istream& str
     // here we require whitespaces between name and values
     stream >> values_[i].second;
 
-    DRT::UTILS::checkStreamForUnparsedCharacters(
-        stream, name_, DRT::UTILS::stringFromDataType<T2>());
+    DRT::UTILS::CheckStreamForUnparsedCharacters(
+        stream, name_, DRT::UTILS::StringFromDataType<T2>());
   }
 
   return !(stream.fail());

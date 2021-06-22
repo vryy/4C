@@ -16,7 +16,7 @@
 #include <iterator>
 
 #include <string>
-#include <utility> 
+#include <utility>
 #include <vector>
 #include <iostream>
 
@@ -247,8 +247,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
     std::string snumber;
     *condline >> snumber;
 
-    nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
-        snumber, nnumber, Name(), def->Name(), 1, optional_);
+    nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+        snumber, Name(), def->Name(), 1, optional_);
 
     // remove parameter value from stringstream "condline"
     condline->str(
@@ -337,16 +337,14 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   if ((size_t)position != condline->str().size())
   {
     // extract integer parameter vector from stringstream "condline"
-    for (int i = 0; i < length_; ++i)
+    for (auto& current_nnumber : nnumbers)
     {
       // extract integer vector component as string
       std::string snumber;
       *condline >> snumber;
 
-      int nnumber = 0;
-
-      nnumber = DRT::UTILS::convertAndValidateStringToNumber<int>(
-          snumber, nnumber, Name(), def->Name(), length_, optional_);
+      current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+          snumber, Name(), def->Name(), length_, optional_);
 
       // remove parameter value from stringstream "condline"
       condline->str(
@@ -354,9 +352,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
 
       // reset current position in stringstream "condline"
       condline->seekg(position);
-
-      // insert int vector component into int parameter vector
-      nnumbers[i] = nnumber;
     }
   }
 
@@ -418,8 +413,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
     std::string snumber;
     *condline >> snumber;
 
-    nnumber = DRT::UTILS::convertAndValidateStringToNumber<double>(
-        snumber, nnumber, Name(), def->Name(), 1, optional_);
+    nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+        snumber, Name(), def->Name(), 1, optional_);
 
     // remove parameter value from stringstream "condline"
     condline->str(
@@ -506,16 +501,14 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   if ((size_t)position != condline->str().size())
   {
     // extract double parameter vector from stringstream "condline"
-    for (int i = 0; i < length_; ++i)
+    for (auto& current_nnumber : nnumbers)
     {
       // extract double vector component as string
       std::string snumber;
       *condline >> snumber;
 
-      double nnumber;
-
-      nnumber = DRT::UTILS::convertAndValidateStringToNumber<double>(
-          snumber, nnumber, Name(), def->Name(), length_, optional_);
+      current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+          snumber, Name(), def->Name(), length_, optional_);
 
       // remove parameter value from stringstream "condline"
       condline->str(
@@ -523,9 +516,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
 
       // reset current position in stringstream "condline"
       condline->seekg(position);
-
-      // insert double vector component into double parameter vector
-      nnumbers[i] = nnumber;
     }
   }
 

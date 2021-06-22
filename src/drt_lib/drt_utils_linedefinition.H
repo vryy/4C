@@ -27,30 +27,25 @@ namespace DRT
     */
     /*----------------------------------------------------------------------*/
     template <class T>
-    std::string stringFromDataType()
-    {
-      dserror(
-          "You shouldn't land here. The template function is not spezialied for this data type.");
-      return "";
-    }
+    std::string StringFromDataType() = delete;
 
-    /// spezialisation for int
+    /// specialisation for int
     template <>
-    inline std::string stringFromDataType<int>()
+    inline std::string StringFromDataType<int>()
     {
       return "integer";
     }
 
-    /// spezialisation for double
+    /// specialisation for double
     template <>
-    inline std::string stringFromDataType<double>()
+    inline std::string StringFromDataType<double>()
     {
       return "double";
     }
 
-    /// spezialisation for string
+    /// specialisation for string
     template <>
-    inline std::string stringFromDataType<std::string>()
+    inline std::string StringFromDataType<std::string>()
     {
       return "string";
     }
@@ -62,7 +57,7 @@ namespace DRT
       the correct data type.
     */
     /*----------------------------------------------------------------------*/
-    void checkStreamForUnparsedCharacters(
+    void CheckStreamForUnparsedCharacters(
         std::istream& stream, std::string variableName, std::string correctDataType)
     {
       if (!(stream.eof()))  // otherwise peek writes a failbit

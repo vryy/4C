@@ -3,15 +3,12 @@
 \brief unit tests for LineDefinition
 
 \level 3
-
-\maintainer Sebastian Proell
-
 */
 #ifndef UNIT_DRT_LINEDEFINITION_H_
 #define UNIT_DRT_LINEDEFINITION_H_
 
 #include <cxxtest/TestSuite.h>
-#include "../../../src/drt_lib/drt_linedefinition.H"
+#include "src/drt_lib/drt_linedefinition.H"
 
 namespace DRT
 {
@@ -32,7 +29,7 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
 
   void tearDown() override { lineDefinition = Teuchos::null; }
 
-  // Tag: single string definition
+  // Tag
   void test_AddTag()
   {
     std::istringstream input("OMEGA");
@@ -61,7 +58,7 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  // String: single string variable
+  // String
   void test_AddString()
   {
     std::istringstream input("OMEGA");
@@ -76,7 +73,7 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  // Int: single integer variable
+  // Int
   void test_AddInt()
   {
     std::istringstream input("1");
@@ -91,24 +88,21 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  /* Test fails with dserror, cannot activate
   void test_ReadFalse_When_IntRequired_But_DoubleGiven()
   {
     std::istringstream input("1.23");
     lineDefinition->AddInt("OMEGA");
-    AssertReadReturnsFalse(input);
+    AssertThrowsError(input);
   }
-  */
 
-  /* Test fails with dserror, cannot activate
   void test_ReadFalse_When_IntConcatenatedWithSomething()
   {
     std::istringstream input("1*8e+2");
     lineDefinition->AddInt("OMEGA");
-    AssertReadReturnsFalse(input);
-  } */
+    AssertThrowsError(input);
+  }
 
-  // Int Vector: vector of integer variables
+  // Int Vector
   void test_AddIntVector()
   {
     std::istringstream input("1 2 3");
@@ -130,16 +124,14 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  /* Test fails with dserror, cannot activate
   void test_ReadFalse_When_IntVectorRequired_But_DoubleVectorEntriesGiven()
   {
     std::istringstream input("1.23 2.34 3.45");
     lineDefinition->AddIntVector("OMEGA", 3);
-    AssertReadReturnsFalse(input);
+    AssertThrowsError(input);
   }
-  */
 
-  // Double Vector: vector of integer variables
+  // Double Vector
   void test_AddDoubleVector()
   {
     std::istringstream input("1 2 3");
@@ -176,11 +168,10 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-
   void test_ReadFalse_When_NamedStringRequired_But_NoNameGiven()
   {
     std::istringstream input("TEST");
-    lineDefinition->AddNamedDouble("OMEGA");
+    lineDefinition->AddNamedString("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
@@ -199,14 +190,12 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  /* Test fails with dserror, cannot activate
   void test_ReadFalse_When_NamedIntRequired_But_DoubleGiven()
   {
     std::istringstream input("OMEGA 1.23");
     lineDefinition->AddNamedInt("OMEGA");
-    AssertReadReturnsFalse(input);
+    AssertThrowsError(input);
   }
-  */
 
   void test_ReadFalse_When_NamedIntRequired_But_NoNameGiven()
   {
@@ -237,14 +226,12 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  /* Test fails with dserror, cannot activate
   void test_ReadFalse_When_NamedIntVectorRequired_But_DoubleVectorEntriesGiven()
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45");
     lineDefinition->AddNamedIntVector("OMEGA", 3);
-    AssertReadReturnsFalse(input);
+    AssertThrowsError(input);
   }
-  */
 
   void test_ReadFalse_When_NamedIntVectorRequired_But_NoNameGiven()
   {
@@ -268,14 +255,12 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
     AssertReadReturnsFalse(input);
   }
 
-  /* Test fails with dserror, cannot activate
   void test_ReadFalse_When_NamedDoubleConcatenatedWithSomething()
   {
     std::istringstream input("OMEGA 123.45*893");
     lineDefinition->AddNamedDouble("OMEGA");
-    AssertReadReturnsFalse(input);
+    AssertThrowsError(input);
   }
-  */
 
   void test_ReadFalse_When_NamedDoubleRequired_But_NoNameGiven()
   {
@@ -344,9 +329,15 @@ class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
 
  private:
   void AssertReadReturnsTrue(std::istringstream& input) { TS_ASSERT(lineDefinition->Read(input)); }
+
   void AssertReadReturnsFalse(std::istringstream& input)
   {
     TS_ASSERT(not lineDefinition->Read(input));
+  }
+
+  void AssertThrowsError(std::istringstream& input)
+  {
+    TS_ASSERT_THROWS_ANYTHING(lineDefinition->Read(input));
   }
 };
 
