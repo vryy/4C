@@ -886,15 +886,29 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct() con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct3DomainIntersection()
-    const
+Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureInterior() const
 {
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureInterior();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureCondensed() const
+Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureMaster() const
 {
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureCondensed();
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureSlave() const
+{
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureSlave();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct3DomainIntersection()
+    const
+{
+  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
 }

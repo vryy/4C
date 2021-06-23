@@ -338,12 +338,6 @@ namespace SSI
           Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
           bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis);
 
-      //! condensed structure dofs (inner and master side)
-      Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const
-      {
-        return map_structure_condensed_;
-      }
-
       //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
       //! slave-side degrees of freedom, 2: master-side degrees of freedom)
       Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const
@@ -358,6 +352,9 @@ namespace SSI
         return maps_coup_struct_3_domain_intersection_;
       }
 
+      //! Interior dofs of structure mesh tying
+      Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
+
       //! Slave and master side dofs of structure mesh tying
       Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
       Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
@@ -365,9 +362,6 @@ namespace SSI
       Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
 
      private:
-      //! condensed structure dofs (inner and master side)
-      Teuchos::RCP<const Epetra_Map> map_structure_condensed_;
-
       //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom,
       //! 2: master-side degrees of freedom)
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_;

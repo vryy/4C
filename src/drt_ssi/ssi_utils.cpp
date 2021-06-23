@@ -806,37 +806,33 @@ SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(
     Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure,
     Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
     const bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis)
-    : map_structure_condensed_(Teuchos::null),
-      maps_coup_struct_(Teuchos::null),
-      maps_coup_struct_3_domain_intersection_(Teuchos::null)
+    : maps_coup_struct_(Teuchos::null), maps_coup_struct_3_domain_intersection_(Teuchos::null)
 {
-  // setup map with inner and master side (= condensed) structural dofs
+  // setup map with interior and master side structural dofs
+  Teuchos::RCP<Epetra_Map> map_structure_interior_master(Teuchos::null);
+  if (meshtying_3_domain_intersection)
   {
-    if (meshtying_3_domain_intersection)
-    {
-      auto map1 =
-          Teuchos::rcp(new const Epetra_Map(*interface_coupling_adapter_structure->SlaveDofMap()));
-      auto map2 = Teuchos::rcp(new const Epetra_Map(
-          *interface_coupling_adapter_structure_3domain_intersection->SlaveDofMap()));
-      auto map3 = LINALG::MultiMapExtractor::MergeMaps({map1, map2});
+    auto combined_slave_dof_maps =
+        LINALG::MultiMapExtractor::MergeMaps({interface_coupling_adapter_structure->SlaveDofMap(),
+            interface_coupling_adapter_structure_3domain_intersection->SlaveDofMap()});
 
-      // set up map for interior and master-side structural degrees of freedom
-      map_structure_condensed_ = LINALG::SplitMap(*structure_dis->DofRowMap(), *map3);
-    }
-    else
-    {
-      // set up map for interior and master-side structural degrees of freedom
-      map_structure_condensed_ = LINALG::SplitMap(
-          *structure_dis->DofRowMap(), *interface_coupling_adapter_structure->SlaveDofMap());
-    }
+    // set up map for interior and master-side structural degrees of freedom
+    map_structure_interior_master =
+        LINALG::SplitMap(*structure_dis->DofRowMap(), *combined_slave_dof_maps);
+  }
+  else
+  {
+    // set up map for interior and master-side structural degrees of freedom
+    map_structure_interior_master = LINALG::SplitMap(
+        *structure_dis->DofRowMap(), *interface_coupling_adapter_structure->SlaveDofMap());
   }
 
-  // setup map extractor with inner, master, and slave side structural dofs
+  // setup map extractor with interior, master, and slave side structural dofs
   {
     // set up structural map extractor holding interior and interface maps of degrees of freedom
     std::vector<Teuchos::RCP<const Epetra_Map>> maps_surf(0, Teuchos::null);
     maps_surf.emplace_back(LINALG::SplitMap(
-        *map_structure_condensed_, *interface_coupling_adapter_structure->MasterDofMap()));
+        *map_structure_interior_master, *interface_coupling_adapter_structure->MasterDofMap()));
     maps_surf.emplace_back(interface_coupling_adapter_structure->SlaveDofMap());
     maps_surf.emplace_back(interface_coupling_adapter_structure->MasterDofMap());
     maps_coup_struct_ =
@@ -858,6 +854,13 @@ SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(
       maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
     }
   }
+}
+
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureInterior() const
+{
+  return maps_coup_struct_->Map(0);
 }
 
 /*--------------------------------------------------------------------------------------*

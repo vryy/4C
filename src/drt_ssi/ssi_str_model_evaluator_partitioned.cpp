@@ -58,23 +58,53 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
     // initialize new Jacobian
     LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
 
-    // assemble interior and master-side rows and columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->MapStructureCondensed(), 1., nullptr, nullptr, jac_new);
+    // assemble interior rows and columns of original Jacobian into new Jacobian
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
+        *ssi_part_->MapStructureInterior(), 1.0, nullptr, nullptr, jac_new, true, true);
 
-    // transform and assemble slave-side rows of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-        *ssi_part_->MapStructureCondensed(), 1.0,
+    // assemble interior rows and master-side columns of original Jacobian into new Jacobian
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
+        *ssi_part_->MapStructureMaster(), 1.0, nullptr, nullptr, jac_new, true, true);
+
+    // assemble master-side rows and interior columns of original Jacobian into new Jacobian
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureMaster(),
+        *ssi_part_->MapStructureInterior(), 1.0, nullptr, nullptr, jac_new, true, true);
+
+    // assemble master-side rows and columns of original Jacobian into new Jacobian
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureMaster(),
+        *ssi_part_->MapStructureMaster(), 1.0, nullptr, nullptr, jac_new, true, true);
+
+    // transform and assemble slave-side rows of original Jacobian into new Jacobian (interior
+    // columns)
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureSlave(),
+        *ssi_part_->MapStructureInterior(), 1.0,
         &ssi_part_->SSIStructureMeshTying()
              ->SlaveSideConverter()
              ->InterfaceCouplingAdapterStructureSlaveConverter(),
         nullptr, jac_new, true, true);
 
-    // transform and assemble slave-side columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-        1.0, nullptr,
+    // transform and assemble slave-side rows of original Jacobian into new Jacobian (master-side
+    // columns)
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureSlave(),
+        *ssi_part_->MapStructureMaster(), 1.0,
+        &ssi_part_->SSIStructureMeshTying()
+             ->SlaveSideConverter()
+             ->InterfaceCouplingAdapterStructureSlaveConverter(),
+        nullptr, jac_new, true, true);
+
+    // transform and assemble slave-side columns of original Jacobian into new Jacobian (interior
+    // rows)
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
+        *ssi_part_->MapStructureSlave(), 1.0, nullptr,
+        &ssi_part_->SSIStructureMeshTying()
+             ->SlaveSideConverter()
+             ->InterfaceCouplingAdapterStructureSlaveConverter(),
+        jac_new, true, true);
+
+    // transform and assemble slave-side columns of original Jacobian into new Jacobian (master-side
+    // rows)
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureMaster(),
+        *ssi_part_->MapStructureSlave(), 1.0, nullptr,
         &ssi_part_->SSIStructureMeshTying()
              ->SlaveSideConverter()
              ->InterfaceCouplingAdapterStructureSlaveConverter(),
@@ -95,23 +125,19 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
 
     if (meshtying_3_domain_intersection)
     {
-      // transform and assemble slave-side rows of original Jacobian into new Jacobian
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveDofMap(),
-          *ssi_part_->MapStructureCondensed(), 1.0,
+      // transform and assemble slave-side rows of original Jacobian into new Jacobian (interior
+      // columns)
+      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureSlave(),
+          *ssi_part_->MapStructureInterior(), 1.0,
           &ssi_part_->SSIStructureMeshTying()
                ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
           nullptr, jac_new, true, true);
 
-      // transform and assemble slave-side columns of original Jacobian into new Jacobian
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureCondensed(),
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveDofMap(),
-          1.0, nullptr,
+      // transform and assemble slave-side columns of original Jacobian into new Jacobian (interior
+      // rows)
+      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
+          *ssi_part_->MapStructureSlave(), 1.0, nullptr,
           &ssi_part_->SSIStructureMeshTying()
                ->SlaveSideConverter()
                ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
