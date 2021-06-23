@@ -128,11 +128,6 @@ namespace BEAMINTERACTION
     };
 
     /**
-     * \brief Destructor.
-     */
-    virtual ~BeamToSolidSurfaceMeshtyingPairMortarRotationFAD() = default;
-
-    /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
      * matrix (derived).
      */
