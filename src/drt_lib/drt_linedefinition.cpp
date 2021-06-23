@@ -13,7 +13,8 @@
 #include "drt_linedefinition.H"
 #include "drt_dserror.H"
 #include <iterator>
-
+#include <utility>
+#include "drt_utils_linedefinition.H"
 
 namespace DRT
 {
@@ -23,21 +24,21 @@ namespace DRT
     class TagComponent : public LineComponent
     {
      public:
-      TagComponent(std::string name) : name_(name) {}
+      TagComponent(std::string name) : name_(std::move(name)) {}
 
-      virtual ~TagComponent() {}
+      ~TagComponent() override = default;
 
-      virtual LineComponent* Clone() { return new TagComponent(name_); }
+      LineComponent* Clone() override { return new TagComponent(name_); }
 
-      virtual void Print(std::ostream& stream) { stream << name_; }
+      void Print(std::ostream& stream) override { stream << name_; }
 
-      virtual bool Read(LineDefinition& definition, std::istream& stream);
+      bool Read(LineDefinition& definition, std::istream& stream) override;
 
-      virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream);
+      bool Read(LineDefinition& definition, std::string& name, std::istream& stream) override;
 
-      virtual bool Read(std::istream& stream);
+      bool Read(std::istream& stream) override;
 
-      virtual bool IsNamed(std::string name) { return name == name_; }
+      bool IsNamed(std::string name) override { return name == name_; }
 
      private:
       std::string name_;
@@ -48,21 +49,24 @@ namespace DRT
     class NamedComponent : public LineComponent
     {
      public:
-      NamedComponent(std::string name, type value) : name_(name), value_(value) {}
+      NamedComponent(std::string name, type value)
+          : name_(std::move(name)), value_(std::move(value))
+      {
+      }
 
-      virtual ~NamedComponent() {}
+      ~NamedComponent() override = default;
 
-      virtual LineComponent* Clone() { return new NamedComponent(name_, value_); }
+      LineComponent* Clone() override { return new NamedComponent(name_, value_); }
 
-      virtual void Print(std::ostream& stream) { stream << name_ << " " << value_; }
+      void Print(std::ostream& stream) override { stream << name_ << " " << value_; }
 
-      virtual bool Read(LineDefinition& definition, std::istream& stream);
+      bool Read(LineDefinition& definition, std::istream& stream) override;
 
-      virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream);
+      bool Read(LineDefinition& definition, std::string& name, std::istream& stream) override;
 
-      virtual bool Read(std::istream& stream);
+      bool Read(std::istream& stream) override;
 
-      virtual bool IsNamed(std::string name) { return name == name_; }
+      bool IsNamed(std::string name) override { return name == name_; }
 
       type Value() const { return value_; }
 
@@ -78,13 +82,13 @@ namespace DRT
      public:
       UnnamedComponent(std::string name, type value) : NamedComponent<type>(name, value) {}
 
-      virtual ~UnnamedComponent() {}
+      ~UnnamedComponent() override = default;
 
-      virtual LineComponent* Clone() { return new UnnamedComponent(this->name_, this->value_); }
+      LineComponent* Clone() override { return new UnnamedComponent(this->name_, this->value_); }
 
-      virtual void Print(std::ostream& stream) { stream << this->value_; }
+      void Print(std::ostream& stream) override { stream << this->value_; }
 
-      virtual bool Read(LineDefinition& definition, std::istream& stream)
+      bool Read(LineDefinition& definition, std::istream& stream) override
       {
         return NamedComponent<type>::Read(stream);
       }
@@ -130,30 +134,32 @@ namespace DRT
     class NamedVectorComponent : public LineComponent
     {
      public:
-      NamedVectorComponent(std::string name, int length) : name_(name), values_(length) {}
-
-      NamedVectorComponent(std::string name, const std::vector<type>& values)
-          : name_(name), values_(values.begin(), values.end())
+      NamedVectorComponent(std::string name, int length) : name_(std::move(name)), values_(length)
       {
       }
 
-      virtual ~NamedVectorComponent() {}
+      NamedVectorComponent(std::string name, const std::vector<type>& values)
+          : name_(std::move(name)), values_(values.begin(), values.end())
+      {
+      }
 
-      virtual LineComponent* Clone() { return new NamedVectorComponent<type>(name_, values_); }
+      ~NamedVectorComponent() override = default;
 
-      virtual void Print(std::ostream& stream)
+      LineComponent* Clone() override { return new NamedVectorComponent<type>(name_, values_); }
+
+      void Print(std::ostream& stream) override
       {
         stream << name_ << " ";
         std::copy(values_.begin(), values_.end(), std::ostream_iterator<type>(stream, " "));
       }
 
-      virtual bool Read(LineDefinition& definition, std::istream& stream);
+      bool Read(LineDefinition& definition, std::istream& stream) override;
 
-      virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream);
+      bool Read(LineDefinition& definition, std::string& name, std::istream& stream) override;
 
-      virtual bool Read(std::istream& stream);
+      bool Read(std::istream& stream) override;
 
-      virtual bool IsNamed(std::string name) { return name == name_; }
+      bool IsNamed(std::string name) override { return name == name_; }
 
       std::vector<type> Value() const { return values_; }
 
@@ -168,38 +174,39 @@ namespace DRT
     class NamedVectorComponent<std::pair<T1, T2>> : public LineComponent
     {
      public:
-      NamedVectorComponent(std::string name, int length) : name_(name), values_(length) {}
-
-      NamedVectorComponent(std::string name, const std::vector<std::pair<T1, T2>>& values)
-          : name_(name), values_(values.begin(), values.end())
+      NamedVectorComponent(std::string name, int length) : name_(std::move(name)), values_(length)
       {
       }
 
-      virtual ~NamedVectorComponent() {}
+      NamedVectorComponent(std::string name, const std::vector<std::pair<T1, T2>>& values)
+          : name_(std::move(name)), values_(values.begin(), values.end())
+      {
+      }
 
-      virtual LineComponent* Clone()
+      ~NamedVectorComponent() override = default;
+
+      LineComponent* Clone() override
       {
         return new NamedVectorComponent<std::pair<T1, T2>>(name_, values_);
       }
 
-      virtual void Print(std::ostream& stream)
+      void Print(std::ostream& stream) override
       {
         stream << name_ << " ";
-        for (typename std::vector<std::pair<T1, T2>>::iterator it = values_.begin();
-             it != values_.end(); it++)
+        for (auto it = values_.begin(); it != values_.end(); it++)
         {
           stream << it->first << " ";
           stream << it->second << " ";
         };
       }
 
-      virtual bool Read(LineDefinition& definition, std::istream& stream);
+      bool Read(LineDefinition& definition, std::istream& stream) override;
 
-      virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream);
+      bool Read(LineDefinition& definition, std::string& name, std::istream& stream) override;
 
-      virtual bool Read(std::istream& stream);
+      bool Read(std::istream& stream) override;
 
-      virtual bool IsNamed(std::string name) { return name == name_; }
+      bool IsNamed(std::string name) override { return name == name_; }
 
       std::vector<std::pair<T1, T2>> Value() const { return values_; }
 
@@ -223,20 +230,20 @@ namespace DRT
       {
       }
 
-      virtual ~UnnamedVectorComponent() {}
+      ~UnnamedVectorComponent() override = default;
 
-      virtual LineComponent* Clone()
+      LineComponent* Clone() override
       {
         return new UnnamedVectorComponent<type>(this->name_, this->values_);
       }
 
-      virtual void Print(std::ostream& stream)
+      void Print(std::ostream& stream) override
       {
         std::copy(
             this->values_.begin(), this->values_.end(), std::ostream_iterator<type>(stream, " "));
       }
 
-      virtual bool Read(LineDefinition& definition, std::istream& stream)
+      bool Read(LineDefinition& definition, std::istream& stream) override
       {
         return NamedVectorComponent<type>::Read(stream);
       }
@@ -249,30 +256,30 @@ namespace DRT
     {
      public:
       NamedVariableVectorComponent(std::string name, std::string lengthdef)
-          : NamedVectorComponent<type>(name, 0), lengthdef_(lengthdef)
+          : NamedVectorComponent<type>(name, 0), lengthdef_(std::move(lengthdef))
       {
       }
 
       NamedVariableVectorComponent(
           std::string name, const std::vector<type>& values, std::string lengthdef)
-          : NamedVectorComponent<type>(name, values), lengthdef_(lengthdef)
+          : NamedVectorComponent<type>(name, values), lengthdef_(std::move(lengthdef))
       {
       }
 
-      virtual ~NamedVariableVectorComponent() {}
+      ~NamedVariableVectorComponent() override = default;
 
-      virtual LineComponent* Clone()
+      LineComponent* Clone() override
       {
         return new NamedVariableVectorComponent<type>(this->name_, this->values_, lengthdef_);
       }
 
-      virtual void Print(std::ostream& stream)
+      void Print(std::ostream& stream) override
       {
         stream << this->name_ << " [...]";
         // std::copy(values_.begin(), values_.end(), std::ostream_iterator<type>(stream, " "));
       }
 
-      virtual bool Read(LineDefinition& definition, std::string& name, std::istream& stream);
+      bool Read(LineDefinition& definition, std::string& name, std::istream& stream) override;
 
      private:
       std::string lengthdef_;
@@ -352,6 +359,10 @@ template <class type>
 bool DRT::INPUT::NamedComponent<type>::Read(std::istream& stream)
 {
   stream >> value_;
+
+  DRT::UTILS::CheckStreamForUnparsedCharacters(
+      stream, name_, DRT::UTILS::StringFromDataType<type>());
+
   return !(stream.fail());
 }
 
@@ -406,6 +417,9 @@ bool DRT::INPUT::NamedVectorComponent<type>::Read(std::istream& stream)
   for (unsigned i = 0; i < values_.size(); ++i)
   {
     stream >> values_[i];
+
+    DRT::UTILS::CheckStreamForUnparsedCharacters(
+        stream, name_, DRT::UTILS::StringFromDataType<type>());
   }
 
   return !(stream.fail());
@@ -449,6 +463,9 @@ bool DRT::INPUT::NamedVectorComponent<std::pair<T1, T2>>::Read(std::istream& str
     stream >> values_[i].first;
     // here we require whitespaces between name and values
     stream >> values_[i].second;
+
+    DRT::UTILS::CheckStreamForUnparsedCharacters(
+        stream, name_, DRT::UTILS::StringFromDataType<T2>());
   }
 
   return !(stream.fail());
@@ -480,7 +497,7 @@ bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineDefinition::LineDefinition() {}
+DRT::INPUT::LineDefinition::LineDefinition() = default;
 
 
 /*----------------------------------------------------------------------*/
@@ -492,14 +509,13 @@ DRT::INPUT::LineDefinition::~LineDefinition() { Clear(); }
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition::LineDefinition(const DRT::INPUT::LineDefinition& other)
 {
-  for (unsigned i = 0; i < other.components_.size(); ++i)
+  for (auto component : other.components_)
   {
-    components_.push_back(other.components_[i]->Clone());
+    components_.push_back(component->Clone());
   }
-  for (std::map<std::string, LineComponent*>::const_iterator i = other.optionaltail_.begin();
-       i != other.optionaltail_.end(); ++i)
+  for (const auto& i : other.optionaltail_)
   {
-    optionaltail_[i->first] = i->second->Clone();
+    optionaltail_[i.first] = i.second->Clone();
   }
   std::copy(other.readtailcomponents_.begin(), other.readtailcomponents_.end(),
       std::inserter(readtailcomponents_, readtailcomponents_.begin()));
@@ -512,14 +528,13 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::operator=(
     const DRT::INPUT::LineDefinition& other)
 {
   Clear();
-  for (unsigned i = 0; i < other.components_.size(); ++i)
+  for (auto component : other.components_)
   {
-    components_.push_back(other.components_[i]->Clone());
+    components_.push_back(component->Clone());
   }
-  for (std::map<std::string, LineComponent*>::const_iterator i = other.optionaltail_.begin();
-       i != other.optionaltail_.end(); ++i)
+  for (const auto& i : other.optionaltail_)
   {
-    optionaltail_[i->first] = i->second->Clone();
+    optionaltail_[i.first] = i.second->Clone();
   }
   std::copy(other.readtailcomponents_.begin(), other.readtailcomponents_.end(),
       std::inserter(readtailcomponents_, readtailcomponents_.begin()));
@@ -539,15 +554,14 @@ Teuchos::RCP<DRT::INPUT::LineDefinition> DRT::INPUT::LineDefinition::Clone()
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::Clear()
 {
-  for (unsigned i = 0; i < components_.size(); ++i)
+  for (auto& component : components_)
   {
-    delete components_[i];
+    delete component;
   }
   components_.resize(0);
-  for (std::map<std::string, LineComponent*>::iterator i = optionaltail_.begin();
-       i != optionaltail_.end(); ++i)
+  for (auto& i : optionaltail_)
   {
-    delete i->second;
+    delete i.second;
   }
   optionaltail_.clear();
   readtailcomponents_.clear();
@@ -558,7 +572,7 @@ void DRT::INPUT::LineDefinition::Clear()
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddTag(std::string name)
 {
-  components_.push_back(new TagComponent(name));
+  components_.push_back(new TagComponent(std::move(name)));
   return *this;
 }
 
@@ -567,7 +581,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddTag(std::string name)
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddString(std::string name)
 {
-  components_.push_back(new UnnamedComponent<std::string>(name, "''"));
+  components_.push_back(new UnnamedComponent<std::string>(std::move(name), "''"));
   return *this;
 }
 
@@ -576,7 +590,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddString(std::string na
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddInt(std::string name)
 {
-  components_.push_back(new UnnamedComponent<int>(name, 0));
+  components_.push_back(new UnnamedComponent<int>(std::move(name), 0));
   return *this;
 }
 
@@ -585,7 +599,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddInt(std::string name)
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddIntVector(std::string name, int length)
 {
-  components_.push_back(new UnnamedVectorComponent<int>(name, length));
+  components_.push_back(new UnnamedVectorComponent<int>(std::move(name), length));
   return *this;
 }
 
@@ -595,7 +609,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddIntVector(std::string
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddDoubleVector(
     std::string name, int length)
 {
-  components_.push_back(new UnnamedVectorComponent<double>(name, length));
+  components_.push_back(new UnnamedVectorComponent<double>(std::move(name), length));
   return *this;
 }
 
@@ -604,7 +618,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddDoubleVector(
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedString(std::string name)
 {
-  components_.push_back(new NamedComponent<std::string>(name, "''"));
+  components_.push_back(new NamedComponent<std::string>(std::move(name), "''"));
   return *this;
 }
 
@@ -613,7 +627,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedString(std::stri
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedInt(std::string name)
 {
-  components_.push_back(new NamedComponent<int>(name, 0));
+  components_.push_back(new NamedComponent<int>(std::move(name), 0));
   return *this;
 }
 
@@ -623,7 +637,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedInt(std::string 
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedIntVector(
     std::string name, int length)
 {
-  components_.push_back(new NamedVectorComponent<int>(name, length));
+  components_.push_back(new NamedVectorComponent<int>(std::move(name), length));
   return *this;
 }
 
@@ -632,7 +646,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedIntVector(
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDouble(std::string name)
 {
-  components_.push_back(new NamedComponent<double>(name, 0.0));
+  components_.push_back(new NamedComponent<double>(std::move(name), 0.0));
   return *this;
 }
 
@@ -642,7 +656,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDouble(std::stri
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(
     std::string name, int length)
 {
-  components_.push_back(new NamedVectorComponent<double>(name, length));
+  components_.push_back(new NamedVectorComponent<double>(std::move(name), length));
   return *this;
 }
 
@@ -652,14 +666,15 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddNamedDoubleVector(
     std::string name, std::string lengthdef)
 {
-  components_.push_back(new NamedVariableVectorComponent<double>(name, lengthdef));
+  components_.push_back(
+      new NamedVariableVectorComponent<double>(std::move(name), std::move(lengthdef)));
   return *this;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalTag(std::string name)
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalTag(const std::string& name)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -670,7 +685,8 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalTag(std::stri
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(std::string name)
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(
+    const std::string& name)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -681,7 +697,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedString(s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedInt(std::string name)
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedInt(const std::string& name)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -693,7 +709,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedInt(std:
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedIntVector(
-    std::string name, int length)
+    const std::string& name, int length)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -704,7 +720,8 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedIntVecto
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(std::string name)
+DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(
+    const std::string& name)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -716,7 +733,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDouble(s
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVector(
-    std::string name, int length)
+    const std::string& name, int length)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -728,11 +745,11 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVe
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVector(
-    std::string name, std::string lengthdef)
+    const std::string& name, std::string lengthdef)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
-  optionaltail_[name] = new NamedVariableVectorComponent<double>(name, lengthdef);
+  optionaltail_[name] = new NamedVariableVectorComponent<double>(name, std::move(lengthdef));
   return *this;
 }
 
@@ -740,7 +757,7 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedDoubleVe
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedStringVector(
-    std::string name, int length)
+    const std::string& name, int length)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
@@ -752,11 +769,11 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedStringVe
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedStringVector(
-    std::string name, std::string lengthdef)
+    const std::string& name, std::string lengthdef)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
-  optionaltail_[name] = new NamedVariableVectorComponent<std::string>(name, lengthdef);
+  optionaltail_[name] = new NamedVariableVectorComponent<std::string>(name, std::move(lengthdef));
   return *this;
 }
 
@@ -764,12 +781,12 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedStringVe
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedPairOfStringAndDoubleVector(
-    std::string name, std::string lengthdef)
+    const std::string& name, std::string lengthdef)
 {
   if (optionaltail_.find(name) != optionaltail_.end())
     dserror("optional component '%s' already defined", name.c_str());
   optionaltail_[name] =
-      new NamedVariableVectorComponent<std::pair<std::string, double>>(name, lengthdef);
+      new NamedVariableVectorComponent<std::pair<std::string, double>>(name, std::move(lengthdef));
   return *this;
 }
 
@@ -778,18 +795,17 @@ DRT::INPUT::LineDefinition& DRT::INPUT::LineDefinition::AddOptionalNamedPairOfSt
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
 {
-  for (unsigned i = 0; i < components_.size(); ++i)
+  for (auto& component : components_)
   {
-    components_[i]->Print(stream);
+    component->Print(stream);
     stream << ' ';
   }
-  if (optionaltail_.size() > 0)
+  if (!optionaltail_.empty())
   {
     stream << "[ ";
-    for (std::map<std::string, LineComponent*>::iterator i = optionaltail_.begin();
-         i != optionaltail_.end(); ++i)
+    for (auto& i : optionaltail_)
     {
-      i->second->Print(stream);
+      i.second->Print(stream);
       stream << ' ';
     }
     stream << "] ";
@@ -799,7 +815,7 @@ void DRT::INPUT::LineDefinition::Print(std::ostream& stream)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::INPUT::LineDefinition::Read(std::istream& stream) { return Read(stream, 0); }
+bool DRT::INPUT::LineDefinition::Read(std::istream& stream) { return Read(stream, nullptr); }
 
 
 /*----------------------------------------------------------------------*/
@@ -807,11 +823,11 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream) { return Read(stream
 bool DRT::INPUT::LineDefinition::Read(std::istream& stream, const std::string* skipname)
 {
   readtailcomponents_.clear();
-  for (unsigned i = 0; i < components_.size(); ++i)
+  for (auto& component : components_)
   {
-    if (!skipname || !components_[i]->IsNamed(*skipname))
+    if (!skipname || !component->IsNamed(*skipname))
     {
-      if (not components_[i]->Read(*this, stream))
+      if (not component->Read(*this, stream))
       {
         return false;
       }
@@ -829,26 +845,41 @@ bool DRT::INPUT::LineDefinition::Read(std::istream& stream, const std::string* s
       // duplicated optional component
       return false;
     }
-    std::map<std::string, LineComponent*>::iterator i = optionaltail_.find(name);
+    auto i = optionaltail_.find(name);
     if (i == optionaltail_.end()) return false;
     if (not i->second->Read(*this, name, stream)) return false;
     readtailcomponents_.insert(name);
   }
+
+  // check if any other unused strings except from comments and whitespaces are given
+  std::string superfluousstring;
+  stream >> superfluousstring;  // stream strips whitespaces
+
+  // return false if there are any other unused strings except from comments
+  if (!superfluousstring.empty() & (superfluousstring.rfind("//", 0) != 0))
+  // rfind: if "//" found at start returns npos=0, which is fine
+  {
+    return false;
+  }
+
   return true;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool DRT::INPUT::LineDefinition::HaveNamed(std::string name) { return FindNamed(name) != NULL; }
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractString(std::string name, std::string& value)
+bool DRT::INPUT::LineDefinition::HaveNamed(std::string name)
 {
-  NamedComponent<std::string>* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
-  if (c != NULL)
+  return FindNamed(std::move(name)) != nullptr;
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::LineDefinition::ExtractString(const std::string& name, std::string& value)
+{
+  auto* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
+  if (c != nullptr)
   {
     value = c->Value();
     return;
@@ -862,8 +893,8 @@ void DRT::INPUT::LineDefinition::ExtractString(std::string name, std::string& va
 /*----------------------------------------------------------------------*/
 bool DRT::INPUT::LineDefinition::FindString(std::string name)
 {
-  NamedComponent<std::string>* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
-  if (c != NULL)
+  auto* c = dynamic_cast<NamedComponent<std::string>*>(FindNamed(std::move(name)));
+  if (c != nullptr)
   {
     return true;
   }
@@ -877,10 +908,10 @@ bool DRT::INPUT::LineDefinition::FindString(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractInt(std::string name, int& value)
+void DRT::INPUT::LineDefinition::ExtractInt(const std::string& name, int& value)
 {
-  NamedComponent<int>* c = dynamic_cast<NamedComponent<int>*>(FindNamed(name));
-  if (c != NULL) value = c->Value();
+  auto* c = dynamic_cast<NamedComponent<int>*>(FindNamed(name));
+  if (c != nullptr) value = c->Value();
   {
     return;
   }
@@ -890,10 +921,10 @@ void DRT::INPUT::LineDefinition::ExtractInt(std::string name, int& value)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractIntVector(std::string name, std::vector<int>& v)
+void DRT::INPUT::LineDefinition::ExtractIntVector(const std::string& name, std::vector<int>& v)
 {
-  NamedVectorComponent<int>* c = dynamic_cast<NamedVectorComponent<int>*>(FindNamed(name));
-  if (c != NULL)
+  auto* c = dynamic_cast<NamedVectorComponent<int>*>(FindNamed(name));
+  if (c != nullptr)
   {
     v = c->Value();
     return;
@@ -904,10 +935,10 @@ void DRT::INPUT::LineDefinition::ExtractIntVector(std::string name, std::vector<
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractDouble(std::string name, double& value)
+void DRT::INPUT::LineDefinition::ExtractDouble(const std::string& name, double& value)
 {
-  NamedComponent<double>* c = dynamic_cast<NamedComponent<double>*>(FindNamed(name));
-  if (c != NULL)
+  auto* c = dynamic_cast<NamedComponent<double>*>(FindNamed(name));
+  if (c != nullptr)
   {
     value = c->Value();
     return;
@@ -918,10 +949,11 @@ void DRT::INPUT::LineDefinition::ExtractDouble(std::string name, double& value)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractDoubleVector(std::string name, std::vector<double>& v)
+void DRT::INPUT::LineDefinition::ExtractDoubleVector(
+    const std::string& name, std::vector<double>& v)
 {
-  NamedVectorComponent<double>* c = dynamic_cast<NamedVectorComponent<double>*>(FindNamed(name));
-  if (c != NULL)
+  auto* c = dynamic_cast<NamedVectorComponent<double>*>(FindNamed(name));
+  if (c != nullptr)
   {
     v = c->Value();
     return;
@@ -932,19 +964,19 @@ void DRT::INPUT::LineDefinition::ExtractDoubleVector(std::string name, std::vect
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::INPUT::LineDefinition::ExtractStringVector(std::string name, std::vector<std::string>& v)
+void DRT::INPUT::LineDefinition::ExtractStringVector(
+    const std::string& name, std::vector<std::string>& v)
 {
-  NamedVectorComponent<std::string>* c =
-      dynamic_cast<NamedVectorComponent<std::string>*>(FindNamed(name));
-  if (c != NULL)
+  auto* c = dynamic_cast<NamedVectorComponent<std::string>*>(FindNamed(name));
+  if (c != nullptr)
   {
     v = c->Value();
     return;
   }
   else
   {
-    NamedComponent<std::string>* c1 = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
-    if (c1 != NULL)
+    auto* c1 = dynamic_cast<NamedComponent<std::string>*>(FindNamed(name));
+    if (c1 != nullptr)
     {
       v.push_back(c1->Value());
       return;
@@ -957,11 +989,10 @@ void DRT::INPUT::LineDefinition::ExtractStringVector(std::string name, std::vect
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::LineDefinition::ExtractPairOfStringAndDoubleVector(
-    std::string name, std::vector<std::pair<std::string, double>>& v)
+    const std::string& name, std::vector<std::pair<std::string, double>>& v)
 {
-  NamedVectorComponent<std::pair<std::string, double>>* c =
-      dynamic_cast<NamedVectorComponent<std::pair<std::string, double>>*>(FindNamed(name));
-  if (c != NULL)
+  auto* c = dynamic_cast<NamedVectorComponent<std::pair<std::string, double>>*>(FindNamed(name));
+  if (c != nullptr)
   {
     v = c->Value();
     return;
@@ -972,24 +1003,24 @@ void DRT::INPUT::LineDefinition::ExtractPairOfStringAndDoubleVector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(std::string name)
+DRT::INPUT::LineComponent* DRT::INPUT::LineDefinition::FindNamed(const std::string& name)
 {
   if (readtailcomponents_.find(name) != readtailcomponents_.end())
   {
-    std::map<std::string, LineComponent*>::iterator i = optionaltail_.find(name);
+    auto i = optionaltail_.find(name);
     if (i != optionaltail_.end()) return i->second;
   }
   else
   {
-    for (unsigned i = 0; i < components_.size(); ++i)
+    for (auto& component : components_)
     {
-      if (components_[i]->IsNamed(name))
+      if (component->IsNamed(name))
       {
-        return components_[i];
+        return component;
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1010,10 +1041,10 @@ void DRT::INPUT::Lines::Print(std::ostream& stream)
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
   stream << greenlight << sectionname_ << endcolor << '\n';
 
-  for (unsigned i = 0; i < definitions_.size(); ++i)
+  for (auto& definition : definitions_)
   {
     stream << "// ";
-    definitions_[i].Print(stream);
+    definition.Print(stream);
     stream << '\n';
   }
 }
@@ -1031,14 +1062,16 @@ std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> DRT::INPUT::Lines::Read(
   std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> lines;
 
   std::vector<const char*> section = reader.Section(name.str());
-  if (section.size() > 0)
+  // these are the lines of the section stored in [0],[1],...
+  if (!section.empty())
   {
-    for (std::vector<const char*>::iterator i = section.begin(); i != section.end(); ++i)
+    for (auto& i : section)
     {
-      Teuchos::RCP<DRT::INPUT::LineDefinition> line = Read(*i);
+      Teuchos::RCP<DRT::INPUT::LineDefinition> line = Read(i);
+      // line now is one entry of section
       if (line == Teuchos::null)
       {
-        dserror("read failed in section '%s': line '%s'", name.str().c_str(), *i);
+        dserror("read failed in section '%s': line '%s'", name.str().c_str(), i);
       }
       lines.push_back(line);
     }
@@ -1052,12 +1085,12 @@ std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> DRT::INPUT::Lines::Read(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::INPUT::LineDefinition> DRT::INPUT::Lines::Read(const char* line)
 {
-  for (unsigned i = 0; i < definitions_.size(); ++i)
+  for (auto& definition : definitions_)
   {
     Teuchos::RCP<std::stringstream> l = Teuchos::rcp(new std::stringstream(line));
-    if (definitions_[i].Read(*l))
+    if (definition.Read(*l))
     {
-      return definitions_[i].Clone();
+      return definition.Clone();
     }
   }
   return Teuchos::null;

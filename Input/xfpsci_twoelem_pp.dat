@@ -193,7 +193,7 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
 LOWER_BOUND  -1 -1 0.95
 UPPER_BOUND  3 3 1.15
 INTERVALS   3 3 3
-ELEMENTS    FLUID HEX8 MAT 7 NA Euler GP 3 3 3
+ELEMENTS    FLUID HEX8 MAT 7 NA Euler
 PARTITION   structured
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a

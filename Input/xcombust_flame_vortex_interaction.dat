@@ -297,7 +297,7 @@ VOLUME fluid DVOL 1
 LOWER_BOUND                     0.0 0.0 0.0
  //UPPER_BOUND                     100.0 200.0 1.0
 //INTERVALS                       65 129 1
-ELEMENTS                        FLUID HEX8 MAT 1 NA Euler GP 3 3 3
+ELEMENTS                        FLUID HEX8 MAT 1 NA Euler
 PARTITION                       auto
 UPPER_BOUND                     100.0 200.0 4.0//100.0 200.0 1.0
 INTERVALS                       25 51 1 // 65 129 1

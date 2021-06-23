@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "drt_inputreader.H"
@@ -35,7 +36,7 @@ namespace DRT
     class LineComponent
     {
      public:
-      virtual ~LineComponent() {}
+      virtual ~LineComponent() = default;
 
       /// creat an exact copy of this component
       virtual LineComponent* Clone() = 0;
@@ -126,22 +127,22 @@ namespace DRT
       LineDefinition& AddNamedDoubleVector(std::string name, std::string lengthdef);
 
       /// add a single string definition
-      LineDefinition& AddOptionalTag(std::string name);
+      LineDefinition& AddOptionalTag(const std::string& name);
 
       /// add a name followed by a variable string
-      LineDefinition& AddOptionalNamedString(std::string name);
+      LineDefinition& AddOptionalNamedString(const std::string& name);
 
       /// add a name followed by an integer variable
-      LineDefinition& AddOptionalNamedInt(std::string name);
+      LineDefinition& AddOptionalNamedInt(const std::string& name);
 
       /// add a name followed by a vector of integer variables
-      LineDefinition& AddOptionalNamedIntVector(std::string name, int length);
+      LineDefinition& AddOptionalNamedIntVector(const std::string& name, int length);
 
       /// add a name followed by a double variable
-      LineDefinition& AddOptionalNamedDouble(std::string name);
+      LineDefinition& AddOptionalNamedDouble(const std::string& name);
 
       /// add a name followed by a vector of double variables
-      LineDefinition& AddOptionalNamedDoubleVector(std::string name, int length);
+      LineDefinition& AddOptionalNamedDoubleVector(const std::string& name, int length);
 
       /// add a name followed by a vector of double variables
       /*!
@@ -149,10 +150,10 @@ namespace DRT
             that gives the length of the vector. The integer component has to
             precede the vector definition on the input line.
        */
-      LineDefinition& AddOptionalNamedDoubleVector(std::string name, std::string lengthdef);
+      LineDefinition& AddOptionalNamedDoubleVector(const std::string& name, std::string lengthdef);
 
       /// add a name followed by a vector of string variables
-      LineDefinition& AddOptionalNamedStringVector(std::string name, int length);
+      LineDefinition& AddOptionalNamedStringVector(const std::string& name, int length);
 
       /// add a name followed by a vector of string variables
       /*!
@@ -161,7 +162,7 @@ namespace DRT
             precede the vector definition on the input line.
             The space defines the separation between a string and the next one.
        */
-      LineDefinition& AddOptionalNamedStringVector(std::string name, std::string lengthdef);
+      LineDefinition& AddOptionalNamedStringVector(const std::string& name, std::string lengthdef);
 
       /// add a name followed by a vector of double variables
       /*!
@@ -170,7 +171,7 @@ namespace DRT
         precede the vector definition on the input line.
        */
       LineDefinition& AddOptionalNamedPairOfStringAndDoubleVector(
-          std::string name, std::string lengthdef);
+          const std::string& name, std::string lengthdef);
 
       //@}
 
@@ -201,21 +202,21 @@ namespace DRT
       /// @name Extract values from read LineDefinition
       /// There has to be a named component of the given type
 
-      void ExtractString(std::string name, std::string& value);
+      void ExtractString(const std::string& name, std::string& value);
       bool FindString(std::string name);
-      void ExtractInt(std::string name, int& value);
-      void ExtractIntVector(std::string name, std::vector<int>& v);
-      void ExtractDouble(std::string name, double& value);
-      void ExtractDoubleVector(std::string name, std::vector<double>& v);
-      void ExtractStringVector(std::string name, std::vector<std::string>& v);
+      void ExtractInt(const std::string& name, int& value);
+      void ExtractIntVector(const std::string& name, std::vector<int>& v);
+      void ExtractDouble(const std::string& name, double& value);
+      void ExtractDoubleVector(const std::string& name, std::vector<double>& v);
+      void ExtractStringVector(const std::string& name, std::vector<std::string>& v);
       void ExtractPairOfStringAndDoubleVector(
-          std::string name, std::vector<std::pair<std::string, double>>& v);
+          const std::string& name, std::vector<std::pair<std::string, double>>& v);
 
       //@}
 
      private:
       /// find named component with given name
-      LineComponent* FindNamed(std::string name);
+      LineComponent* FindNamed(const std::string& name);
 
       /// remove all components
       void Clear();
@@ -254,7 +255,7 @@ namespace DRT
     {
      public:
       /// construct to read a given section
-      explicit Lines(std::string sectionname) : sectionname_(sectionname) {}
+      explicit Lines(std::string sectionname) : sectionname_(std::move(sectionname)) {}
 
       /// add a new LineDefinition
       void Add(const LineDefinition& ld) { definitions_.push_back(ld); }

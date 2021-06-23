@@ -81,7 +81,7 @@ LOWER_BOUND  -1 -1 -1
 UPPER_BOUND  1 1 1
 INTERVALS   5 5 5
 ROTATION 10 20 30
-ELEMENTS FLUID HEX8 MAT 1 NA Euler GP 3 3 3
+ELEMENTS FLUID HEX8 MAT 1 NA Euler
 PARTITION structured
 -------------------------------------------------------------------------END
 //                              END

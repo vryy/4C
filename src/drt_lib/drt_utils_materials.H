@@ -28,9 +28,9 @@ namespace DRT
      *
      */
     void UpdateMaterialConfigWithDispVector(
-        Teuchos::RCP<DRT::Discretization>
+        const Teuchos::RCP<DRT::Discretization>&
             dis,  ///< discretization of which material configuration shall be updated
-        Teuchos::RCP<const Epetra_Vector>
+        const Teuchos::RCP<const Epetra_Vector>&
             disp  ///< displacement vector which is used for moving the nodes
     );
 

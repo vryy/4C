@@ -16,19 +16,22 @@
 #include <iterator>
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <iostream>
 
 #include "drt_materialdefinition.H"
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
+#include "drt_utils_cond_and_mat_definition.H"
 
 #include "../drt_mat/material.H"
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::INPUT::MaterialComponent::MaterialComponent(std::string name, bool optional)
-    : optional_(optional), name_(name)
+    : optional_(optional), name_(std::move(name))
 {
 }
 
@@ -36,7 +39,7 @@ DRT::INPUT::MaterialComponent::MaterialComponent(std::string name, bool optional
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::MaterialComponent::PushBack(
-    std::string token, Teuchos::RCP<std::stringstream> stream)
+    const std::string& token, const Teuchos::RCP<std::stringstream>& stream)
 {
   Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
   (*out) << token << " ";
@@ -50,7 +53,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::MaterialComponent::PushBack(
  *----------------------------------------------------------------------*/
 DRT::INPUT::StringMaterialComponent::StringMaterialComponent(
     std::string name, std::string defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
 {
 }
 
@@ -120,7 +123,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::SeparatorMaterialComponent::SeparatorMaterialComponent(
     std::string separator, std::string description, bool optional)
-    : MaterialComponent("*SEPARATOR*", optional), separator_(separator), description_(description)
+    : MaterialComponent("*SEPARATOR*", optional),
+      separator_(std::move(separator)),
+      description_(std::move(description))
 {
 }
 
@@ -195,7 +200,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntMaterialComponent::IntMaterialComponent(
     std::string name, const int defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -229,7 +234,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
     Teuchos::RCP<MAT::PAR::Material> material)
 {
   // initialize integer parameter value to be read
-  int integer = defaultvalue_;
+  int nnumber = defaultvalue_;
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -238,39 +243,23 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
   // material line of input file
   if ((size_t)position != condline->str().size())
   {
-    // extract integer parameter value from stringstream "condline" as string
-    std::string sinteger;
-    *condline >> sinteger;
+    // extract integer vector component as string
+    std::string snumber;
+    *condline >> snumber;
 
-    // try to convert to integer
-    char* check;
+    nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+        snumber, Name(), def->Name(), 1, optional_);
 
-    // check if it actually is an integer
-    double double_val = strtod(sinteger.c_str(), &check);
-    double int_val;
-    if (modf(double_val, &int_val) == 0.0)
-      integer = int_val;
-    else
-      dserror("Value of parameter '%s' for material '%s' expected INT but got DOUBLE!",
-          Name().c_str(), def->Name().c_str());
-
-    // return error in case the conversion was not successful
-    if (sinteger == check)
-      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-          Name().c_str(), def->Name().c_str());
-
-    integer = strtol(sinteger.c_str(), &check, 10);
-
-    // remove double parameter value from stringstream "condline"
+    // remove parameter value from stringstream "condline"
     condline->str(
-        condline->str().erase((size_t)condline->tellg() - sinteger.size(), sinteger.size()));
+        condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
     // reset current position in stringstream "condline"
     condline->seekg(position);
   }
 
-  // add double parameter value to material parameter list
-  material->Add(Name(), integer);
+  // add int parameter value to material parameter list
+  material->Add(Name(), nnumber);
 
   return condline;
 }
@@ -280,7 +269,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
     std::string name, int length, const int defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(length),
       lengthname_("*UNDEFINED*"),
       defaultvalue_(defaultvalue)
@@ -291,9 +280,9 @@ DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
     std::string name, std::string lengthname, const int defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(-1),
-      lengthname_(lengthname),
+      lengthname_(std::move(lengthname)),
       defaultvalue_(defaultvalue)
 {
 }
@@ -312,12 +301,12 @@ void DRT::INPUT::IntVectorMaterialComponent::DefaultLine(std::ostream& stream)
 void DRT::INPUT::IntVectorMaterialComponent::Print(
     std::ostream& stream, const MAT::PAR::Material* cond)
 {
-  const std::vector<int>* v = cond->Get<std::vector<int>>(Name());
-  for (unsigned i = 0; i < v->size(); ++i)
+  const auto* v = cond->Get<std::vector<int>>(Name());
+  for (int i : *v)
   {
     //    stream << (*v)[i]+1 << " ";  // ??? : this is used in
     //    DRT::INPUT::IntVectorConditionComponent::Print
-    stream << (*v)[i] << " ";
+    stream << i << " ";
   }
 }
 
@@ -338,7 +327,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   if (length_ == -1) dserror("Trouble to get length of integer vector material component.");
 
   // initialize integer parameter vector to be read
-  std::vector<int> integers(length_, defaultvalue_);
+  std::vector<int> nnumbers(length_, defaultvalue_);
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -348,44 +337,26 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   if ((size_t)position != condline->str().size())
   {
     // extract integer parameter vector from stringstream "condline"
-    for (int i = 0; i < length_; ++i)
+    for (auto& current_nnumber : nnumbers)
     {
       // extract integer vector component as string
-      std::string sinteger;
-      *condline >> sinteger;
+      std::string snumber;
+      *condline >> snumber;
 
-      // try to convert to double
-      char* check;
-      int integer = 0;
+      current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+          snumber, Name(), def->Name(), length_, optional_);
 
-      // check if it actually is an integer
-      double double_val = strtod(sinteger.c_str(), &check);
-      double int_val;
-      if (modf(double_val, &int_val) == 0.0)
-        integer = int_val;
-      else
-        dserror("Value of parameter '%s' for material '%s' expected INT but got DOUBLE!",
-            Name().c_str(), def->Name().c_str());
-
-      // return error in case the conversion was not successful
-      if (sinteger == check)
-        dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-            Name().c_str(), def->Name().c_str());
-
-      // remove double parameter value from stringstream "condline"
+      // remove parameter value from stringstream "condline"
       condline->str(
-          condline->str().erase((size_t)condline->tellg() - sinteger.size(), sinteger.size()));
+          condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
       // reset current position in stringstream "condline"
       condline->seekg(position);
-
-      // insert double vector component into double parameter vector
-      integers[i] = integer;
     }
   }
 
-  // add double parameter vector to material parameter list
-  material->Add(Name(), integers);
+  // add int parameter vector to material parameter list
+  material->Add(Name(), nnumbers);
 
   return condline;
 }
@@ -395,7 +366,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealMaterialComponent::RealMaterialComponent(
     std::string name, const double defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -429,7 +400,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
     Teuchos::RCP<MAT::PAR::Material> material)
 {
   // initialize double parameter value to be read
-  double number = defaultvalue_;
+  double nnumber = defaultvalue_;
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -438,20 +409,14 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
   // material line of input file
   if ((size_t)position != condline->str().size())
   {
-    // extract double parameter value from stringstream "condline" as string
+    // read string from stream (need to handle doubles and "none" arguments)
     std::string snumber;
     *condline >> snumber;
 
-    // try to convert to double
-    char* check;
-    number = strtod(snumber.c_str(), &check);
+    nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+        snumber, Name(), def->Name(), 1, optional_);
 
-    // return error in case the conversion was not successful
-    if (snumber == check)
-      dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-          Name().c_str(), def->Name().c_str());
-
-    // remove double parameter value from stringstream "condline"
+    // remove parameter value from stringstream "condline"
     condline->str(
         condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
@@ -460,7 +425,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
   }
 
   // add double parameter value to material parameter list
-  material->Add(Name(), number);
+  material->Add(Name(), nnumber);
 
   return condline;
 }
@@ -470,7 +435,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
     std::string name, int length, const double defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(length),
       lengthname_("*UNDEFINED*"),
       defaultvalue_(defaultvalue)
@@ -481,9 +446,9 @@ DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
     std::string name, std::string lengthname, const double defaultvalue, bool optional)
-    : MaterialComponent(name, optional),
+    : MaterialComponent(std::move(name), optional),
       length_(-1),
-      lengthname_(lengthname),
+      lengthname_(std::move(lengthname)),
       defaultvalue_(defaultvalue)
 {
 }
@@ -503,8 +468,8 @@ void DRT::INPUT::RealVectorMaterialComponent::DefaultLine(std::ostream& stream)
 void DRT::INPUT::RealVectorMaterialComponent::Print(
     std::ostream& stream, const MAT::PAR::Material* cond)
 {
-  const std::vector<double>* v = cond->Get<std::vector<double>>(Name());
-  for (unsigned i = 0; i < v->size(); ++i) stream << (*v)[i] << " ";
+  const auto* v = cond->Get<std::vector<double>>(Name());
+  for (double i : *v) stream << i << " ";
 }
 
 
@@ -526,7 +491,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
     dserror("Trouble to get length of real vector material component.");
 
   // initialize double parameter vector to be read
-  std::vector<double> numbers(length_, defaultvalue_);
+  std::vector<double> nnumbers(length_, defaultvalue_);
 
   // get current position in stringstream "condline"
   std::streampos position = condline->tellg();
@@ -536,37 +501,26 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   if ((size_t)position != condline->str().size())
   {
     // extract double parameter vector from stringstream "condline"
-    for (int i = 0; i < length_; ++i)
+    for (auto& current_nnumber : nnumbers)
     {
       // extract double vector component as string
       std::string snumber;
       *condline >> snumber;
 
-      // try to convert to double
-      char* check;
-      double number = strtod(snumber.c_str(), &check);
+      current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+          snumber, Name(), def->Name(), length_, optional_);
 
-      // return error in case the conversion was not successful
-      if (snumber == check)
-        dserror(
-            "Values in parameter vector '%s' for material '%s' not properly specified in input "
-            "file!",
-            Name().c_str(), def->Name().c_str());
-
-      // remove double parameter value from stringstream "condline"
+      // remove parameter value from stringstream "condline"
       condline->str(
           condline->str().erase((size_t)condline->tellg() - snumber.size(), snumber.size()));
 
       // reset current position in stringstream "condline"
       condline->seekg(position);
-
-      // insert double vector component into double parameter vector
-      numbers[i] = number;
     }
   }
 
   // add double parameter vector to material parameter list
-  material->Add(Name(), numbers);
+  material->Add(Name(), nnumbers);
 
   return condline;
 }
@@ -578,7 +532,7 @@ const std::string DRT::INPUT::BoolMaterialComponent::lineTrue_ = "Yes";
 const std::string DRT::INPUT::BoolMaterialComponent::lineFalse_ = "No";
 DRT::INPUT::BoolMaterialComponent::BoolMaterialComponent(
     std::string name, const bool defaultvalue, bool optional)
-    : MaterialComponent(name, optional), defaultvalue_(defaultvalue)
+    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -665,13 +619,15 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
 /*======================================================================*/
 DRT::INPUT::MaterialDefinition::MaterialDefinition(
     std::string materialname, std::string description, INPAR::MAT::MaterialType mattype)
-    : materialname_(materialname), description_(description), mattype_(mattype)
+    : materialname_(std::move(materialname)),
+      description_(std::move(description)),
+      mattype_(mattype)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::MaterialDefinition::AddComponent(Teuchos::RCP<MaterialComponent> c)
+void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<MaterialComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -680,12 +636,12 @@ void DRT::INPUT::MaterialDefinition::AddComponent(Teuchos::RCP<MaterialComponent
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::MaterialDefinition::Read(
-    const Problem& problem, DatFileReader& reader, Teuchos::RCP<MAT::PAR::Bundle> mmap)
+    const Problem& problem, DatFileReader& reader, const Teuchos::RCP<MAT::PAR::Bundle>& mmap)
 {
   std::string name = "--MATERIALS";
   std::vector<const char*> section = reader.Section(name);
 
-  if (section.size() > 0)
+  if (!section.empty())
   {
     for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
     {
@@ -733,8 +689,7 @@ void DRT::INPUT::MaterialDefinition::Read(
             Teuchos::rcp(new MAT::PAR::Material(matid, mattype_, materialname_));
         // fill the latter
 
-        for (unsigned j = 0; j < inputline_.size(); ++j)
-          condline = inputline_[j]->Read(this, condline, material);
+        for (auto& j : inputline_) condline = j->Read(this, condline, material);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -783,18 +738,18 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
   // the descriptive lines (comments)
   stream << blue2light << comment << std::endl;
   stream << blue2light << comment << " " << magentalight << description_ << std::endl;
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (auto& i : inputline_)
   {
     std::ostringstream desc;
-    inputline_[i]->Describe(desc);
-    if (desc.str().size() > 0) stream << comment << desc.str() << std::endl;
+    i->Describe(desc);
+    if (!desc.str().empty()) stream << comment << desc.str() << std::endl;
   }
 
   // the default line
   stream << blue2light << comment << "MAT 0   " << magentalight << materialname_ << "   ";
-  for (unsigned i = 0; i < inputline_.size(); ++i)
+  for (auto& i : inputline_)
   {
-    inputline_[i]->DefaultLine(stream);
+    i->DefaultLine(stream);
     stream << " ";
   }
 
@@ -808,7 +763,7 @@ std::ostream& DRT::INPUT::MaterialDefinition::Print(
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::AppendMaterialDefinition(
     std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>& matlist,
-    Teuchos::RCP<DRT::INPUT::MaterialDefinition> mat)
+    const Teuchos::RCP<DRT::INPUT::MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type
   std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>::const_iterator m;

@@ -519,7 +519,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   redairwayinletcomponents.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 2, true, true)));
   redairwayinletcomponents.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, true)));
   for (unsigned i = 0; i < redairwayinletcomponents.size(); ++i)
     raw_in_bc->AddComponent(redairwayinletcomponents[i]);
 
