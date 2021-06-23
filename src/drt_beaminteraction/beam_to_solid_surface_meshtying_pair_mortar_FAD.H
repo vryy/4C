@@ -164,6 +164,15 @@ namespace BEAMINTERACTION
         const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
         LINALG::Matrix<3, 1, scalar_type_rot>& psi_solid,
         const DRT::Element* element = nullptr) const;
+
+    /**
+     * \brief Get the rotational GIDs for the beam and surface.
+     * @param discret (in) Discretization.
+     * @param gid_surface (out) GIDs for the surface that influence the rotation.
+     * @param gid_rot (out) Rotational GIDs for the beam
+     */
+    void GetPairRotationalGIDs(const DRT::Discretization& discret, std::vector<int>& gid_surface,
+        LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const;
   };
 
   /**

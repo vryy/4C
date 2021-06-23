@@ -543,13 +543,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     }
   }
 
-  // Get the GIDs of the solid and beam.
-  std::vector<int> lm_beam, gid_surface, lmowner, lmstride;
-  this->Element1()->LocationVector(discret, lm_beam, lmowner, lmstride);
-  this->face_element_->GetDrtFaceElement()->LocationVector(discret, gid_surface, lmowner, lmstride);
-  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  // Get the rotational GIDs of the surface and beam.
+  std::vector<int> gid_surface;
   LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
-  for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
+  GetPairRotationalGIDs(discret, gid_surface, gid_rot);
 
   // Assemble into global matrix.
   for (unsigned int i_dof_beam = 0; i_dof_beam < n_dof_rot_; i_dof_beam++)
@@ -779,13 +776,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     }
   }
 
-  // Get the GIDs of the surface and beam.
-  std::vector<int> lm_beam, gid_surface, lmowner, lmstride;
-  this->Element1()->LocationVector(discret, lm_beam, lmowner, lmstride);
-  this->face_element_->GetDrtFaceElement()->LocationVector(discret, gid_surface, lmowner, lmstride);
-  int rot_dof_indices[] = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  // Get the rotational GIDs of the surface and beam.
+  std::vector<int> gid_surface;
   LINALG::Matrix<n_dof_rot_, 1, int> gid_rot;
-  for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
+  GetPairRotationalGIDs(discret, gid_surface, gid_rot);
 
   // Get the Lagrange multiplier GIDs.
   std::vector<int> lambda_gid_rot;
@@ -817,6 +811,23 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     }
   }
 }
+
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface, typename mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
+    mortar>::GetPairRotationalGIDs(const DRT::Discretization& discret,
+    std::vector<int>& gid_surface, LINALG::Matrix<n_dof_rot_, 1, int>& gid_rot) const
+{
+  // Get the GIDs of the surface and beam.
+  std::vector<int> lm_beam, lmowner, lmstride;
+  this->Element1()->LocationVector(discret, lm_beam, lmowner, lmstride);
+  this->face_element_->GetDrtFaceElement()->LocationVector(discret, gid_surface, lmowner, lmstride);
+  std::array<int, n_dof_rot_> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
+  for (unsigned int i = 0; i < n_dof_rot_; i++) gid_rot(i) = lm_beam[rot_dof_indices[i]];
+}
+
 
 /**
  *
