@@ -411,7 +411,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         d_f_surface_d_phi_times_T_beam_times_I_beam_tilde_full;
 
     // Initialize scalar variables.
-    double segment_jacobian, beam_segmentation_factor;
+    double segment_jacobian = 0.0;
+    double beam_segmentation_factor = 0.0;
 
     // Calculate the meshtying forces.
     // Loop over segments.
@@ -649,7 +650,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     LINALG::Matrix<mortar::n_dof_, surface::n_dof_, double> d_g_d_q_surface;
 
     // Initialize scalar variables.
-    double segment_jacobian, beam_segmentation_factor;
+    double segment_jacobian = 0.0;
+    double beam_segmentation_factor = 0.0;
 
     // Calculate the meshtying forces.
     // Loop over segments.
