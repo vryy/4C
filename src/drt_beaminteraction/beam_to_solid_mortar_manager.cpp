@@ -159,7 +159,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
       my_lambda_gid_rotational.push_back(my_lambda_gid_start_value + i_dof +
                                          i_node * n_lambda_node_ + n_lambda_node_translational_);
   }
-  my_lambda_gid_start_value += (int)(n_nodes * n_lambda_node_);
+  my_lambda_gid_start_value += static_cast<int>(n_nodes * n_lambda_node_);
   for (unsigned int i_element = 0; i_element < n_element; i_element++)
   {
     for (unsigned int i_dof = 0; i_dof < n_lambda_element_translational_; i_dof++)

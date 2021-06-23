@@ -95,6 +95,11 @@ namespace BEAMINTERACTION
    * @param surface Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
    * functions for displacement coupling.
+   *
+   * @tparam scalar_type Scalar type for position DOFs.
+   * @tparam beam Type of used line element.
+   * @tparam scalar_type Type of used surface element.
+   * @tparam scalar_type Type of used mortar interpolation.
    */
   template <typename scalar_type, typename beam, typename surface, typename mortar>
   class BeamToSolidSurfaceMeshtyingPairMortarRotationFAD

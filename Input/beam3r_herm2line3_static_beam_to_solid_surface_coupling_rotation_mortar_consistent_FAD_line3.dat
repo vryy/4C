@@ -23,7 +23,6 @@ TIMESTEP                              1.0
 NUMSTEP                               3
 MAXTIME                               3.0
 LOADLIN                               no
-//DIVERCONT        continue
 ------------------------------------------------------------------------SOLVER 1
 NAME                                  Structure_Solver
 SOLVER                                Superlu
