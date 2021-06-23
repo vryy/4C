@@ -466,21 +466,24 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         T_surface_inv = T_surface;
         LINALG::Inverse(T_surface_inv);
 
-        // Evaluate shape functions.
+        // Evaluate mortar shape functions.
         mortar::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
             std::integral_constant<unsigned int, mortar::dim_>{});
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
+        // Get the shape functions for the interpolation of the beam rotations. This is currently
+        // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
+        const unsigned int n_nodes_rot = 3;
         DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
-        for (unsigned int i_node = 0; i_node < 3; i_node++)
+        for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
 
         triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
             I_beam_tilde, projected_gauss_point.GetEta());
-        for (unsigned int i_node = 0; i_node < 3; i_node++)
+        for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
             for (unsigned int i_dim_1 = 0; i_dim_1 < 3; i_dim_1++)
               I_beam_tilde_full(i_dim_0, i_node * 3 + i_dim_1) =
@@ -699,21 +702,24 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         T_surface_inv = T_surface;
         LINALG::Inverse(T_surface_inv);
 
-        // Evaluate shape functions.
+        // Evaluate mortar shape functions.
         mortar::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
             std::integral_constant<unsigned int, mortar::dim_>{});
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
+        // Get the shape functions for the interpolation of the beam rotations. This is currently
+        // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
+        const unsigned int n_nodes_rot = 3;
         DRT::UTILS::shape_function_1D(L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
-        for (unsigned int i_node = 0; i_node < 3; i_node++)
+        for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
 
         triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
             I_beam_tilde, projected_gauss_point.GetEta());
-        for (unsigned int i_node = 0; i_node < 3; i_node++)
+        for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
             for (unsigned int i_dim_1 = 0; i_dim_1 < 3; i_dim_1++)
               I_beam_tilde_full(i_dim_0, i_node * 3 + i_dim_1) =
