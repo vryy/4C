@@ -200,7 +200,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Update(
   C.MultiplyTN(1.0, F, F);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  const LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  const LINALG::Matrix<3, 3>& M = anisotropyExtension_.GetStructuralTensor(gp, 0);
 
   // product C^T*M
   LINALG::Matrix<3, 3> transpCM(false);
