@@ -132,7 +132,7 @@ namespace DRT
    private:
     template <class T>
     using is_enum_class =
-        std::integral_constant<bool, !std::is_convertible<T, int>{} && std::is_enum<T>{}>;
+        std::integral_constant<bool, !std::is_convertible<T, int>::value && std::is_enum<T>::value>;
 
    public:
     /*!
