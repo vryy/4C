@@ -222,12 +222,6 @@ namespace MIXTURE
     /// Weickenmeier material parameters
     MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params_{};
 
-    /// Total simulation time
-    double t_tot_;
-
-    /// Timestep size
-    double timestep_;
-
     /// Fibre stretch of the previous timestep
     double lambdaMOld_;
 

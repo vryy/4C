@@ -103,8 +103,6 @@ MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weick
     MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params, int id)
     : MixtureConstituent(params, id),
       params_(params),
-      t_tot_(0),
-      timestep_(0),
       lambdaMOld_(1.0),
       anisotropy_(),
       anisotropyExtension_(true, 0.0, 0,
@@ -112,12 +110,6 @@ MIXTURE::MixtureConstituent_Muscle_Weickenmeier::MixtureConstituent_Muscle_Weick
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
-  // initialize total simulation time
-  t_tot_ = 0.0;
-
-  // initialize timestep size
-  timestep_ = 0.0;
-
   // initialize lambdaMOld_
   lambdaMOld_ = 1.0;
 
@@ -144,10 +136,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::PackConstituent(DRT::PackB
   int matid = -1;
   if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   DRT::ParObject::AddtoPack(data, matid);
-
-  DRT::ParObject::AddtoPack(data, t_tot_);
-
-  DRT::ParObject::AddtoPack(data, timestep_);
 
   DRT::ParObject::AddtoPack(data, lambdaMOld_);
 
@@ -181,10 +169,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::UnpackConstituent(
     }
   }
 
-  DRT::ParObject::ExtractfromPack(position, data, t_tot_);
-
-  DRT::ParObject::ExtractfromPack(position, data, timestep_);
-
   DRT::ParObject::ExtractfromPack(position, data, lambdaMOld_);
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
@@ -216,7 +200,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Update(
   C.MultiplyTN(1.0, F, F);
 
   // structural tensor M, i.e. dyadic product of fibre directions
-  LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
+  const LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
 
   // product C^T*M
   LINALG::Matrix<3, 3> transpCM(false);
@@ -236,15 +220,6 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
   // constitutive tensor of constituent
   static LINALG::Matrix<6, 6> ccmat(false);
   ccmat.Clear();
-
-  // save current simulation time
-  t_tot_ = params.get<double>("total time", -1);
-  if (abs(t_tot_ + 1.0) < 1e-14)
-    dserror("No total time given for muscle Weickenmeier constituent!");
-  // save (time) step size
-  timestep_ = params.get<double>("delta time", -1);
-  if (abs(timestep_ + 1.0) < 1e-14)
-    dserror("No time step size given for muscle Weickenmeier constituent!");
 
   // get passive material parameters
   const double alpha = params_->alpha_;
@@ -382,6 +357,14 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::Evaluate(const LINALG::Mat
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStress(
     Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa)
 {
+  // save current simulation time
+  double t_tot = params.get<double>("total time", -1);
+  if (abs(t_tot + 1.0) < 1e-14) dserror("No total time given for muscle Weickenmeier constituent!");
+  // save (time) step size
+  double timestep = params.get<double>("delta time", -1);
+  if (abs(timestep + 1.0) < 1e-14)
+    dserror("No time step size given for muscle Weickenmeier constituent!");
+
   // get active microstructural parameters from params_
   const double Na = params_->Na_;
   const int muTypesNum = params_->muTypesNum_;
@@ -421,9 +404,9 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
                                             // the current activation interval
 
       // determine end time of activation interval
-      if (t_tot_ < actTimes[actinterval + 1])
-      {                  // if inside of actinterval
-        t_end = t_tot_;  // set end time to current simulation time
+      if (t_tot < actTimes[actinterval + 1])
+      {                 // if inside of actinterval
+        t_end = t_tot;  // set end time to current simulation time
       }
       else
       {                                     // if outside of actinterval
@@ -433,7 +416,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
       // superposition of single twitches
       while (t_iMU_jstim < t_end)
       {  // for all impulses from start of actinterval until determined end time of actinterval
-        ratiotime = (t_tot_ - t_iMU_jstim) / T[iMU];
+        ratiotime = (t_tot - t_iMU_jstim) / T[iMU];
 
         // add single twitch force response for stimulus jstim and motor unit iMU scaled by
         // percentage activation prescribed in actinterval
@@ -477,9 +460,9 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
 
   // BW Euler approximation of derivatives
   // dotLambdaM = (lambdaM_n - lambdaM_{n-1})/dt approximated through BW Euler
-  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep_;
+  double dotLambdaM = (lambdaM - lambdaMOld_) / timestep;
   // dDotLambdaMdLambdaM = 1/dt approximated through BW Euler
-  double dDotLambdaMdLambdaM = 1 / timestep_;
+  double dDotLambdaMdLambdaM = 1 / timestep;
 
   double ratioDotLambdaM = dotLambdaM / dotLambdaMMin;  // helper variable
 
