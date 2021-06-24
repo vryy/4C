@@ -7,12 +7,14 @@
  *-----------------------------------------------------------------------*/
 
 #include "so_utils.H"
+#include <algorithm>
 
 #include "../linalg/linalg_utils_densematrix_svd.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fiber/drt_fiber_node.H"
+#include "../drt_fiber/nodal_fiber_holder.H"
 #include "prestress.H"
 
 template <DRT::Element::DiscretizationType distype>
@@ -59,145 +61,6 @@ void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<doub
   LINALG::SVD<nsd, nsd>(defgrd, Q, S, VT);
   R.MultiplyNN(Q, VT);
 }
-
-
-/*----------------------------------------------------------------------*
- | interpolate nodal fibers to gauss point                              |
- |                                pfaller (adapted from hoermann) 07/18 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::UTILS::NodalFiber(DRT::Node** nodes,
-    const std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-        1>>& shapefcts,
-    std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& gpfiber1,
-    std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& gpfiber2)
-{
-  // number of nodes per element
-  const int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-
-  // spatial dimension
-  const int nsd = DRT::UTILS::DisTypeToDim<distype>::dim;
-
-  // number of gauss points
-  const int ngp = shapefcts.size();
-
-  std::vector<Epetra_SerialDenseVector> fibernodes1(nen, Epetra_SerialDenseVector(3));
-  std::vector<Epetra_SerialDenseVector> fibernodes2(nen, Epetra_SerialDenseVector(3));
-  std::vector<Epetra_SerialDenseVector> cirnodes(nen, Epetra_SerialDenseVector(3));
-  std::vector<Epetra_SerialDenseVector> tannodes(nen, Epetra_SerialDenseVector(3));
-  std::vector<double> helixnodes(nen);
-  std::vector<double> transversenodes(nen);
-
-  // read cosy information from node
-  for (int inode = 0; inode < nen; ++inode)
-  {
-    DRT::FIBER::FiberNode* fnode = dynamic_cast<DRT::FIBER::FiberNode*>(nodes[inode]);
-    if (!fnode) dserror("No fiber direction defined on nodes or elements");
-    for (int j = 0; j < nsd; ++j)
-    {
-      fibernodes1[inode](j) = fnode->Fiber1()[j];
-      fibernodes2[inode](j) = fnode->Fiber2()[j];
-      cirnodes[inode](j) = fnode->Cir()[j];
-      tannodes[inode](j) = fnode->Tan()[j];
-    }
-    helixnodes[inode] = fnode->Helix();
-    transversenodes[inode] = fnode->Transverse();
-  }
-
-  // case fibers 1 are interpolated
-  if ((fibernodes1[0]).Norm2() > 1e-13)
-  {
-    // interpolate fibers to integration points
-    for (int i = 0; i < nsd; ++i)
-      for (int q = 0; q < ngp; ++q)
-        for (int j = 0; j < nen; ++j) gpfiber1[q](i, 0) += shapefcts[q](j) * fibernodes1[j](i);
-    for (int q = 0; q < ngp; ++q) gpfiber1[q].Scale(1.0 / gpfiber1[q].Norm2());
-
-    // fiber 2
-    if ((fibernodes2[0]).Norm2() > 1e-13)
-    {
-      // interpolate fibers to integration points
-      for (int i = 0; i < nsd; ++i)
-        for (int q = 0; q < ngp; ++q)
-          for (int j = 0; j < nen; ++j) gpfiber2[q](i, 0) += shapefcts[q](j) * fibernodes2[j](i);
-      for (int q = 0; q < ngp; ++q) gpfiber2[q].Scale(1.0 / gpfiber2[q].Norm2());
-    }
-  }
-  // case coordinate system is interpolated
-  else
-  {
-    std::vector<LINALG::Matrix<nsd, 1>> cirgp(ngp);
-    std::vector<LINALG::Matrix<nsd, 1>> tangp(ngp);
-    std::vector<LINALG::Matrix<nsd, 1>> radgp(ngp);
-    std::vector<double> helixgp(ngp);
-    std::vector<double> transversegp(ngp);
-    Epetra_SerialDenseVector tmpvector(3);
-    Epetra_SerialDenseVector ftmp(3);
-    Epetra_SerialDenseVector stmp(3);
-
-    // interpolate circumferential and tangential directions to gauss points
-    for (int q = 0; q < ngp; ++q)
-    {
-      LINALG::Matrix<nsd, 1> tmptan;
-      for (int j = 0; j < nen; ++j)
-      {
-        for (int i = 0; i < nsd; ++i)
-        {
-          cirgp[q](i, 0) += shapefcts[q](j) * cirnodes[j](i);
-          tmptan(i, 0) += shapefcts[q](j) * tannodes[j](i);
-        }
-        helixgp[q] += shapefcts[q](j) * helixnodes[j];
-        transversegp[q] += shapefcts[q](j) * transversenodes[j];
-      }
-      cirgp[q].Scale(1.0 / cirgp[q].Norm2());
-      tmptan.Scale(1.0 / tmptan.Norm2());
-
-      // ensure that the circumferential direction is orthogonal to the tangential direction
-      for (int i = 0; i < nsd; ++i)
-        tangp[q](i, 0) = tmptan(i, 0) - tmptan.Dot(cirgp[q]) * cirgp[q](i, 0);
-      tangp[q].Scale(1.0 / tangp[q].Norm2());
-    }
-
-    // get rad direction at gp
-    for (int q = 0; q < ngp; ++q)
-    {
-      // Cross product and normalize
-      tmpvector(0) = cirgp[q](1, 0) * tangp[q](2, 0) - cirgp[q](2, 0) * tangp[q](1, 0);
-      tmpvector(1) = cirgp[q](2, 0) * tangp[q](0, 0) - cirgp[q](0, 0) * tangp[q](2, 0);
-      tmpvector(2) = cirgp[q](0, 0) * tangp[q](1, 0) - cirgp[q](1, 0) * tangp[q](0, 0);
-
-      for (int i = 0; i < nsd; ++i) radgp[q] = tmpvector(i) / tmpvector.Norm2();
-    }
-
-    double scale = PI / 180.;
-    for (int q = 0; q < ngp; ++q)
-    {
-      // fiber 1 vector in cir,tan,rad cosy
-      double fc = cos(helixgp[q] * scale) * cos(transversegp[q] * scale);
-      double ft = sin(helixgp[q] * scale) * cos(transversegp[q] * scale);
-      double fr = sin(transversegp[q] * scale);
-
-      // fiber 2 vector in cir,tan,rad cosy
-      double sc = cos((helixgp[q] + 90.0) * scale) * cos(transversegp[q] * scale);
-      double st = sin((helixgp[q] + 90.0) * scale) * cos(transversegp[q] * scale);
-      double sr = sin(transversegp[q] * scale);
-
-      // fiber 1/2 vector in global cosy
-      for (int i = 0; i < nsd; ++i)
-      {
-        ftmp(i) = fc * cirgp[q](i, 0) + ft * tangp[q](i, 0) + fr * radgp[q](i, 0);
-        stmp(i) = sc * cirgp[q](i, 0) + st * tangp[q](i, 0) + sr * radgp[q](i, 0);
-      }
-      for (int i = 0; i < nsd; ++i)
-      {
-        gpfiber1[q](i, 0) = ftmp(i) / ftmp.Norm2();
-        gpfiber2[q](i, 0) = stmp(i) / stmp.Norm2();
-      }
-    }
-  }
-  return;
-}
-
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial(
@@ -369,27 +232,8 @@ void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
   inverseJacobian.Invert();
 }
 
-template <DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::UTILS::HaveNodalFibers(DRT::Node** nodes)
-{
-  constexpr int numberOfNodes = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-  auto nodeHasFibers = [](const Node* n) {
-    return dynamic_cast<const DRT::FIBER::FiberNode*>(n) != nullptr;
-  };
-  return std::all_of(&nodes[0], &nodes[numberOfNodes], nodeHasFibers);
-}
-
 template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(
     const DRT::Element*, const std::vector<double>&, LINALG::Matrix<3, 3>&);
-template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet10>(DRT::Node**,
-    const std::vector<LINALG::Matrix<10, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
-    std::vector<LINALG::Matrix<3, 1>>&);
-template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::hex8>(DRT::Node**,
-    const std::vector<LINALG::Matrix<8, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
-    std::vector<LINALG::Matrix<3, 1>>&);
-template void DRT::ELEMENTS::UTILS::NodalFiber<DRT::Element::tet4>(DRT::Node**,
-    const std::vector<LINALG::Matrix<4, 1>>&, std::vector<LINALG::Matrix<3, 1>>&,
-    std::vector<LINALG::Matrix<3, 1>>&);
 
 template void DRT::ELEMENTS::UTILS::GetTemperatureForStructuralMaterial<DRT::Element::tet4>(
     const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement,
@@ -496,7 +340,3 @@ template void DRT::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates<DRT::Element
 template void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian<DRT::Element::tet4>(
     const LINALG::Matrix<4, 3>& xrefe, const LINALG::Matrix<3, 4>& derivs,
     LINALG::Matrix<3, 3>& inverseJacobian);
-
-template bool DRT::ELEMENTS::UTILS::HaveNodalFibers<DRT::Element::tet4>(DRT::Node** nodes);
-template bool DRT::ELEMENTS::UTILS::HaveNodalFibers<DRT::Element::tet10>(DRT::Node** nodes);
-template bool DRT::ELEMENTS::UTILS::HaveNodalFibers<DRT::Element::hex8>(DRT::Node** nodes);

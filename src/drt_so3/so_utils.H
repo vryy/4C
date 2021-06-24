@@ -26,14 +26,6 @@ namespace DRT
               DRT::UTILS::DisTypeToDim<distype>::dim>& R);
 
       template <DRT::Element::DiscretizationType distype>
-      void NodalFiber(DRT::Node** nodes,
-          const std::vector<
-              LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>>&
-              shapefcts,
-          std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& fibergp,
-          std::vector<LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim, 1>>& sheetgp);
-
-      template <DRT::Element::DiscretizationType distype>
       void GetTemperatureForStructuralMaterial(
           const LINALG::Matrix<DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, 1>&
               shapefctsGP,
@@ -166,17 +158,6 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
           LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
               DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
-
-      /*!
-       * \brief Check whether all nodes of the element have fibers.
-       *
-       * \tparam distype Discretization type
-       * \param nodes Pointer to the nodes of the element
-       * \return true All nodes have fibers
-       * \return false At least one one does not have a fiber
-       */
-      template <DRT::Element::DiscretizationType distype>
-      bool HaveNodalFibers(DRT::Node** nodes);
     }  // namespace UTILS
   }    // namespace ELEMENTS
 }  // namespace DRT

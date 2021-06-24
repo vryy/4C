@@ -109,6 +109,7 @@ namespace DRT
    string
    template<typename T, typename U>
    std::vector<T>  // especially useful to pack other packs into a pack, e.g. a class packing its
+   std::array<T, n>
    own base class
    std::map<T,U>   // especially useful to pack other packs into a pack, e.g. a class
    std::unordered_map<T,U>
@@ -128,6 +129,11 @@ namespace DRT
    */
   class ParObject
   {
+   private:
+    template <class T>
+    using is_enum_class =
+        std::integral_constant<bool, !std::is_convertible<T, int>{} && std::is_enum<T>{}>;
+
    public:
     /*!
      \brief Standard Constructor
@@ -208,6 +214,23 @@ namespace DRT
 
     static void AddtoPack(PackBuffer& data, const double& stuff) { data.AddtoPack(stuff); }
 
+    /*!
+     \brief Add scoped enums to the end of a char vector data
+
+     \param data (in/out) : Pack buffer where stuff should be added
+     \param stuff (in)    : scoped enum to be added to the data
+
+     \note This method is template for scoped enums only. Unscoped enums are currently usually
+     unpacked as ints and then converted, so they are excluded here.
+
+     */
+    template <class T,
+        typename Enable = typename std::enable_if<is_enum_class<T>::value, void>::type>
+    static void AddtoPack(PackBuffer& data, const T& stuff)
+    {
+      data.AddtoPack<T>(stuff);
+    }
+
     static void AddtoPack(PackBuffer& data, const ParObject& obj);
 
     static void AddtoPack(PackBuffer& data, const ParObject* obj);
@@ -226,6 +249,20 @@ namespace DRT
       int numele = stuff.size();
       AddtoPack(data, numele);
       AddtoPack(data, &stuff[0], numele * sizeof(T));
+    }
+
+    /*!
+    \brief Add stuff to the end of a char vector data
+
+    This method is templated for std::array<T, n>
+    \param data (in/out) : char string stuff shall be added to
+    \param stuff (in)    : std::array<T, n> that get's added to stuff
+
+    */
+    template <typename T, std::size_t numentries>
+    static void AddtoPack(PackBuffer& data, const std::array<T, numentries>& stuff)
+    {
+      AddtoPack(data, &stuff[0], numentries * sizeof(T));
     }
 
     /*!
@@ -570,6 +607,25 @@ namespace DRT
       ExtractfromPack(position, data, dim);
       stuff.resize(dim);
       int size = dim * sizeof(T);
+      ExtractfromPack(position, data, &stuff[0], size);
+    }
+
+    /*!
+    @brief Extract stuff from a char vector data and increment position
+
+    This method is templated for stuff of type std::array<T, n>
+
+    @param position (in/out) : place in data where to extract stuff. Position will be incremented
+    by this method
+    @param data (in)         : char vector where stuff is extracted from
+    @param stuff (out)       : std::array<T, n> to extract from data
+
+    */
+    template <typename T, std::size_t numentries>
+    static void ExtractfromPack(std::vector<char>::size_type& position,
+        const std::vector<char>& data, std::array<T, numentries>& stuff)
+    {
+      int size = numentries * sizeof(T);
       ExtractfromPack(position, data, &stuff[0], size);
     }
 

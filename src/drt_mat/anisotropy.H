@@ -222,6 +222,7 @@ namespace MAT
     void RegisterAnisotropyExtension(BaseAnisotropyExtension& extension);
 
    private:
+    void InsertFibers(std::vector<LINALG::Matrix<3, 1>> fiber);
     /// Number of Gauss points
     unsigned numgp_ = 0;
 

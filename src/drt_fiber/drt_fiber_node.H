@@ -3,11 +3,7 @@
 
 \brief   This is basically a (3d-) node with an additional fiber direction.
 
-
-
 \level 2
-
-
 *----------------------------------------------------------------------*/
 #ifndef FIBER_NODE_H
 #define FIBER_NODE_H
@@ -19,14 +15,36 @@ namespace DRT
 {
   namespace FIBER
   {
+    /*!
+     * \brief Type of the fiber
+     */
+    enum class FiberType
+    {
+      Fiber1,
+      Fiber2,
+      Fiber3,
+      Circular,
+      Tangential,
+      Radial
+    };
+
+    /*!
+     * \brief Type of the Angle
+     */
+    enum class AngleType
+    {
+      Helix,
+      Transverse
+    };
+
     class FiberNodeType : public DRT::ParObjectType
     {
      public:
-      std::string Name() const { return "FiberNodeType"; }
+      std::string Name() const override { return "FiberNodeType"; }
 
       static FiberNodeType& Instance() { return instance_; };
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static FiberNodeType instance_;
@@ -55,36 +73,21 @@ namespace DRT
 
       \param id     (in): A globally unique fiber node
       \param coords (in): vector of nodal coordinates, length 3
-      \param fiber  (in): fiber direction, length 3
-      \param cosy   (in): circumferential and transverse direction, length 6
-      \param angle  (in): helix and transverse angle, length 2
+      \param fibers (in): map of fiber vectors
+      \param angles (in): map of angles
       \param owner  (in): Owner of this node.
       */
-      FiberNode(int id, const double* coords, const double* fiber1, const double* fiber2,
-          const double* cosy, const double* angle, const int owner);
+      FiberNode(int id, std::array<double, 3> coords,
+          std::map<FIBER::FiberType, std::array<double, 3>> fibers,
+          std::map<FIBER::AngleType, double> angles, const int owner);
 
-      /*!
-      \brief Copy Constructor
-
-      Makes a deep copy of a fiber node
-
-      \param old (in): The fiber node to copy
-
-      */
-      FiberNode(const DRT::FIBER::FiberNode& old);
+      FiberNode(const DRT::FIBER::FiberNode& old) = default;
 
       /*!
       \brief Deep copy the derived class and return
              pointer to it
-
       */
-      virtual DRT::FIBER::FiberNode* Clone() const;
-
-      /*!
-      \brief Destructor
-
-      */
-      virtual ~FiberNode();
+      DRT::FIBER::FiberNode* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -94,7 +97,7 @@ namespace DRT
 
       \return the parobject id
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FiberNodeType::Instance().UniqueParObjectId();
       }
@@ -107,7 +110,7 @@ namespace DRT
       \param data (in/out): a char vector to pack the data into
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -117,69 +120,29 @@ namespace DRT
       \param data (in): a char vector to unpack the data from
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
-      //! @name Additional access methods
+      inline const std::map<FiberType, std::array<double, 3>>& Fibers() const { return fibers_; }
 
-      /*!
-      \brief Return fiber direction
-      */
-      virtual inline const double* Fiber1() const { return &fiber1_[0]; }
-
-      /*!
-      \brief Return fiber direction
-      */
-      virtual inline const double* Fiber2() const { return &fiber2_[0]; }
-
-      /*!
-      \brief Return fiber direction
-      */
-      virtual inline const double* Cir() const { return &cir_[0]; }
-
-      /*!
-      \brief Return fiber direction
-      */
-      virtual inline const double* Tan() const { return &tan_[0]; }
-
-      /*!
-      \brief Return fiber direction
-      */
-      virtual inline double Helix() const { return helix_; }
-
-      /*!
-      \brief Return fiber direction
-      */
-      virtual inline double Transverse() const { return transverse_; }
+      inline const std::map<AngleType, double>& Angles() const { return angles_; }
 
       /*!
       \brief Print this node
 
       \param os ofstrem
       */
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //@}
 
      protected:
-      //! fiber direction 1
-      std::vector<double> fiber1_;
+      /// map of fibers
+      std::map<FiberType, std::array<double, 3>> fibers_;
 
-      //! fiber direction 2
-      std::vector<double> fiber2_;
-
-      //! circumferential direction
-      std::vector<double> cir_;
-
-      //! tangential direction
-      std::vector<double> tan_;
-
-      //! helix angle
-      double helix_;
-
-      //! transverse angle
-      double transverse_;
+      /// map of angles
+      std::map<AngleType, double> angles_;
 
     };  // class FiberNode
 

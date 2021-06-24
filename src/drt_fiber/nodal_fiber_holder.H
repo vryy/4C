@@ -15,32 +15,13 @@
 #include <vector>
 #include <unordered_map>
 #include "../linalg/linalg_fixedsizematrix.H"
+#include "drt_fiber_node.H"
 
 namespace DRT
 {
+  class PackBuffer;
   namespace FIBER
   {
-    /*!
-     * \brief Type of the fiber
-     *
-     * In future, the FiberType should differentiate between different kinds of fiber definition,
-     * like the "FIBERX" notation, "RAD AXI CIR" notation, ...
-     * The way nodal fibers are implemented now however does not allow this differentiation.
-     */
-    enum class FiberType
-    {
-      Fiber1,
-      Fiber2
-    };
-
-    /*!
-     * @brief We need this custom hash class to be able to use an enum class as a key in a std::map
-     */
-    struct FiberTypeHash
-    {
-      std::size_t operator()(FiberType t) const { return static_cast<std::size_t>(t); }
-    };
-
     /*!
      * \brief This class holds the different fibers on the Gauss point level.
      *
@@ -66,11 +47,51 @@ namespace DRT
        */
       const std::vector<LINALG::Matrix<3, 1>>& GetFiber(FiberType type) const;
 
+      /*!
+       * \brief Returns a reference to a list of fibers belonging to the specific type for each
+       * Gauss point
+       *
+       * @param type Type of the fiber
+       * @return Reference to the fiber
+       */
+      std::vector<LINALG::Matrix<3, 1>>& GetFiberMutual(FiberType type);
+
+      /*!
+       * \brief Sets a type of angle
+       *
+       * @param type Type of the angle
+       * @param fiber angle value
+       */
+      void SetAngle(AngleType type, const std::vector<double>& angle);
+
+      /*!
+       * \brief Returns the value of the angle of the type for each Gauss point
+       *
+       * @param type Type of the angle
+       * @return value of the angle
+       */
+      const std::vector<double>& GetAngle(AngleType type) const;
+
+      /*!
+       * \brief Checks, whether the holder contains fibers of the type @type
+       *
+       * \param type Type of the fiber
+       * \return true type is contained in the holder
+       * \return false type is not contained in the holder
+       */
+      bool ContainsFiber(FiberType type) const;
+
       /**
        * Returns the number of fibers stored in the fiber holder
        * @return number of fibers
        */
-      unsigned int Size() const;
+      unsigned int FibersSize() const;
+
+      /**
+       * Returns the number of angles stored in the fiber holder
+       * @return number of fibers
+       */
+      unsigned int AnglesSize() const;
 
       /*!
        * \brief Print a short summary of the Map into an output stream.
@@ -83,7 +104,8 @@ namespace DRT
        */
       friend std::ostream& operator<<(std::ostream& os, const NodalFiberHolder& holder)
       {
-        os << "NodalFiberHolder {Count=" << holder.Size() << "}";
+        os << "NodalFiberHolder {Fibers count=" << holder.FibersSize()
+           << ", Angles count=" << holder.AnglesSize() << "}";
         return os;
       }
 
@@ -96,12 +118,15 @@ namespace DRT
       friend bool operator==(
           const DRT::FIBER::NodalFiberHolder& holder1, const DRT::FIBER::NodalFiberHolder& holder2)
       {
-        return holder1.map_ == holder2.map_;
+        return holder1.fibers_ == holder2.fibers_ && holder1.angles_ == holder2.angles_;
       }
 
      private:
       /// Map holding GP fibers of different names
-      std::unordered_map<FiberType, const std::vector<LINALG::Matrix<3, 1>>, FiberTypeHash> map_;
+      std::map<FiberType, std::vector<LINALG::Matrix<3, 1>>> fibers_;
+
+      /// Map holding GP angles of different names
+      std::map<AngleType, std::vector<double>> angles_;
     };
   }  // namespace FIBER
 }  // namespace DRT

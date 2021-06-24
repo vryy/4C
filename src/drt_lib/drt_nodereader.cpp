@@ -19,6 +19,7 @@
 #include "../drt_io/io_pstream.H"
 
 #include <Epetra_Time.h>
+#include <istream>
 
 namespace DRT
 {
@@ -306,77 +307,107 @@ namespace DRT
               else if (tmp == "FNODE")
               {
                 // read fiber node
-                double coords[3] = {0., 0., 0.}, fiber1[3] = {0., 0., 0.}, fiber2[3] = {0., 0., 0.};
-                double cosy[6] = {0., 0., 0., 0., 0., 0.}, angle[2] = {0., 0.};
+                std::array<double, 3> coords = {0.0, 0.0, 0.0};
+                std::map<FIBER::FiberType, std::array<double, 3>> fibers;
+                std::map<FIBER::AngleType, double> angles;
 
                 int nodeid;
                 // read in the node coordinates and fiber direction
                 file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
-                // store current position of file reader
-                int length = file.tellg();
-                file >> tmp2;
                 nodeid--;
                 maxnodeid = std::max(maxnodeid, nodeid) + 1;
-                std::vector<Teuchos::RCP<DRT::Discretization>> diss = FindDisNode(nodeid);
-                std::string tmp3, tmp4, tmp5;
 
-                if (tmp2 == "FIBER1")  // fiber information
+                while (true)
                 {
-                  file >> fiber1[0] >> fiber1[1] >> fiber1[2];
-                  length = file.tellg();
-                  file >> tmp;
+                  // store current position of file reader
+                  std::ifstream::pos_type length = file.tellg();
+                  // try to read new fiber direction or coordinate system
+                  file >> tmp2;
 
-                  if (tmp == "CIR")
-                    dserror("Ambiguous fiber definition.");
-                  else if (tmp == "FIBER2")
-                    file >> fiber2[0] >> fiber2[1] >> fiber2[2];
-                  else
-                    file.seekg(length);
-                }
-                else if (tmp2 == "CIR")  // circumferential direction
-                {
-                  file >> cosy[0] >> cosy[1] >> cosy[2];
-                  file >> tmp3;
+                  DRT::FIBER::FiberType fiberType;
+                  DRT::FIBER::AngleType angleType;
+                  int num_components;
 
-                  if (tmp3 != "TAN")  // no tangential direction information
-                    dserror("Reading of tangential direction failed!");
+                  if (tmp2 == "FIBER1")
+                  {
+                    fiberType = DRT::FIBER::FiberType::Fiber1;
+                    num_components = 3;
+                  }
+                  else if (tmp2 == "FIBER2")
+                  {
+                    fiberType = DRT::FIBER::FiberType::Fiber2;
+                    num_components = 3;
+                  }
+                  else if (tmp2 == "FIBER3")
+                  {
+                    fiberType = DRT::FIBER::FiberType::Fiber3;
+                    num_components = 3;
+                  }
+                  else if (tmp2 == "CIR")
+                  {
+                    fiberType = DRT::FIBER::FiberType::Circular;
+                    num_components = 3;
+                  }
+                  else if (tmp2 == "TAN")
+                  {
+                    fiberType = DRT::FIBER::FiberType::Tangential;
+                    num_components = 3;
+                  }
+                  else if (tmp2 == "RAD")
+                  {
+                    fiberType = DRT::FIBER::FiberType::Radial;
+                    num_components = 3;
+                  }
+                  else if (tmp2 == "HELIX")
+                  {
+                    angleType = DRT::FIBER::AngleType::Helix;
+                    num_components = 1;
+                  }
+                  else if (tmp2 == "TRANS")
+                  {
+                    angleType = DRT::FIBER::AngleType::Transverse;
+                    num_components = 1;
+                  }
                   else
                   {
-                    file >> cosy[3] >> cosy[4] >> cosy[5];
-                    file >> tmp4;
+                    // No more fiber information. Jump to last position.
+                    file.seekg(length);
+                    break;
+                  }
 
-                    if (tmp4 != "HELIX")  // no helix angle information
-                      dserror("Reading of helix angle failed!");
-                    else
-                    {
-                      file >> angle[0];
-                      file >> tmp5;
-
-                      if (tmp5 != "TRANS")  // no transverse angle information
-                        dserror("Reading of transverse angle failed!");
-                      else
-                        file >> angle[1];
-                    }
+                  // add fiber / angle to the map
+                  switch (num_components)
+                  {
+                    case 1:
+                      file >> angles[angleType];
+                      break;
+                    case 3:
+                      file >> fibers[fiberType][0] >> fibers[fiberType][1] >> fibers[fiberType][2];
+                      break;
+                    default:
+                      dserror("Unknown number of components");
                   }
                 }
-                else if (tmp2 == "TAN" || tmp2 == "HELIX" || tmp2 == "TRANS")  // angle information
-                  dserror("Reading of circumferential direction failed!");
-                else  // no fiber information
-                  file.seekg(length);
+
                 // add fiber information to node
-                for (unsigned i = 0; i < diss.size(); ++i)
+                std::vector<Teuchos::RCP<DRT::Discretization>> discretizations =
+                    FindDisNode(nodeid);
+                for (auto& dis : discretizations)
                 {
-                  Teuchos::RCP<DRT::FIBER::FiberNode> node = Teuchos::rcp(new DRT::FIBER::FiberNode(
-                      nodeid, coords, fiber1, fiber2, cosy, angle, myrank));
-                  diss[i]->AddNode(node);
+                  auto node = Teuchos::rcp(
+                      new DRT::FIBER::FiberNode(nodeid, coords, fibers, angles, myrank));
+                  dis->AddNode(node);
                 }
+
                 ++bcount;
                 if (block != nblock - 1)  // last block takes all the rest
-                  if (bcount == bsize)    // block is full
+                {
+                  if (bcount == bsize)  // block is full
                   {
                     ++filecount;
                     break;
                   }
+                }
               }
               else if (tmp.find("--") == 0)
                 break;

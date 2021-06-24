@@ -121,21 +121,25 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
   {
     const auto& fiberHolder = params.get<DRT::FIBER::NodalFiberHolder>("fiberholder");
 
-    std::vector<LINALG::Matrix<3, 1>> gpfiber1 =
-        fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber1);
-    std::vector<LINALG::Matrix<3, 1>> gpfiber2 =
-        fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber2);
+    bool containsFiber1 = fiberHolder.ContainsFiber(DRT::FIBER::FiberType::Fiber1);
+    bool containsFiber2 = fiberHolder.ContainsFiber(DRT::FIBER::FiberType::Fiber2);
+    bool containsFiber3 = fiberHolder.ContainsFiber(DRT::FIBER::FiberType::Fiber3);
 
     gpFibers_.resize(numgp_);
-    for (unsigned gp = 0; gp < numgp_; ++gp)
-    {
-      gpFibers_[gp].resize(2);
-      gpFibers_[gp][0].Update(gpfiber1.at(gp));
-      gpFibers_[gp][1].Update(gpfiber2.at(gp));
-    }
+    if (containsFiber1) InsertFibers(fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber1));
+    if (containsFiber2) InsertFibers(fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber2));
+    if (containsFiber3) InsertFibers(fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber3));
   }
 
   OnGPFibersInitialized();
+}
+
+void MAT::Anisotropy::InsertFibers(std::vector<LINALG::Matrix<3, 1>> fiber)
+{
+  for (unsigned gp = 0; gp < numgp_; ++gp)
+  {
+    gpFibers_[gp].emplace_back(fiber[gp]);
+  }
 }
 
 void MAT::Anisotropy::SetElementFibers(const std::vector<LINALG::Matrix<3, 1>>& fibers)
