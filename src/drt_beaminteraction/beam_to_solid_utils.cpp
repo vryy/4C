@@ -173,6 +173,11 @@ void BEAMINTERACTION::GetSolidRotationVector(
       GetSolidRotationVectorDeformationGradient3DGeneral<solid>(
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
       return;
+    case INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::
+        deformation_gradient_3d_general_in_cross_section_plane:
+      GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane<solid>(
+          xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
+      return;
     case INPAR::BEAMTOSOLID::BeamToSolidRotationCoupling::deformation_gradient_3d_base_1:
       GetSolidRotationVectorDeformationGradient3DBase1<solid>(
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
@@ -266,6 +271,98 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
 
   // Get the rotation angle.
   LARGEROTATIONS::triadtoquaternion(new_basis, rot_quat);
+  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+}
+
+
+/**
+ *
+ */
+template <typename solid, typename scalar_type>
+void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
+    const LINALG::Matrix<3, 1, double>& xi,
+    const LINALG::Matrix<solid::n_dof_, 1, double>& q_solid_ref,
+    const LINALG::Matrix<solid::n_dof_, 1, scalar_type>& q_solid,
+    const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+    LINALG::Matrix<3, 1, scalar_type>& psi_solid, const DRT::Element* element)
+{
+  // Get basis vectors of reference triad in the current configuration.
+  LINALG::Matrix<3, 3, double> ref_triad;
+  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, ref_triad);
+  LINALG::Matrix<3, 3, scalar_type> deformation_gradient;
+  GEOMETRYPAIR::EvaluateDeformationGradient<solid>(
+      xi, q_solid_ref, q_solid, deformation_gradient, element);
+
+  // Get the rotation angle.
+  GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
+      deformation_gradient, ref_triad, psi_solid);
+}
+
+/**
+ *
+ */
+template <typename scalar_type>
+void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
+    const LINALG::Matrix<3, 3, scalar_type>& F, const LINALG::Matrix<3, 3, double>& beam_ref_triad,
+    LINALG::Matrix<3, 1, scalar_type>& psi_solid)
+{
+  // Get the current cross section basis vectors.
+  std::array<LINALG::Matrix<3, 1, scalar_type>, 2> cross_section_basis_vector;
+  for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
+  {
+    cross_section_basis_vector[i_basis].PutScalar(0.0);
+    for (unsigned int i_row = 0; i_row < 3; i_row++)
+      for (unsigned int i_col = 0; i_col < 3; i_col++)
+        cross_section_basis_vector[i_basis](i_row) +=
+            F(i_row, i_col) * beam_ref_triad(i_col, i_basis + 1);
+  }
+
+  // Get the normal on the cross section.
+  LINALG::Matrix<3, 1, scalar_type> cross_section_normal_vector;
+  cross_section_normal_vector.CrossProduct(
+      cross_section_basis_vector[0], cross_section_basis_vector[1]);
+  cross_section_normal_vector.Scale(1.0 / FADUTILS::VectorNorm(cross_section_normal_vector));
+
+  // Average the current cross section basis vectors.
+  LINALG::Matrix<3, 1, scalar_type> cross_section_average_vector(true);
+  for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
+  {
+    cross_section_basis_vector[i_basis].Scale(
+        1.0 / FADUTILS::VectorNorm(cross_section_basis_vector[i_basis]));
+    cross_section_average_vector += cross_section_basis_vector[i_basis];
+  }
+  cross_section_average_vector.Scale(1.0 / FADUTILS::VectorNorm(cross_section_average_vector));
+
+  // Calculate the current solid triad.
+  LINALG::Matrix<3, 1, scalar_type> cross_section_third_vector;
+  cross_section_third_vector.CrossProduct(
+      cross_section_normal_vector, cross_section_average_vector);
+  LINALG::Matrix<3, 3, scalar_type> solid_triad_ref;
+  for (unsigned int i_row = 0; i_row < 3; i_row++)
+  {
+    solid_triad_ref(i_row, 0) = cross_section_normal_vector(i_row);
+    solid_triad_ref(i_row, 1) = cross_section_average_vector(i_row);
+    solid_triad_ref(i_row, 2) = cross_section_third_vector(i_row);
+  }
+
+  // Calculate the relative matrix.
+  LINALG::Matrix<3, 3, scalar_type> beam_ref_triad_fad;
+  for (unsigned int i_row = 0; i_row < 3; i_row++)
+    for (unsigned int i_col = 0; i_col < 3; i_col++)
+      beam_ref_triad_fad(i_row, i_col) = beam_ref_triad(i_row, i_col);
+
+  LINALG::Matrix<3, 1, scalar_type> rot_vec(true);
+  LINALG::Matrix<4, 1, scalar_type> rot_quat(true);
+  LINALG::Matrix<3, 3, scalar_type> solid_triad_rel(true);
+
+  rot_vec(0) = -M_PI_4;
+  LARGEROTATIONS::angletoquaternion(rot_vec, rot_quat);
+  LARGEROTATIONS::quaterniontotriad(rot_quat, solid_triad_rel);
+
+  // Get the rotation angle.
+  LINALG::Matrix<3, 3, scalar_type> solid_triad;
+  solid_triad.Multiply(solid_triad_ref, solid_triad_rel);
+  LARGEROTATIONS::triadtoquaternion(solid_triad, rot_quat);
   LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
 }
 
@@ -675,6 +772,29 @@ namespace BEAMINTERACTION
   initialize_template_get_solid_rotation_vector(t_tet4, 2);
   initialize_template_get_solid_rotation_vector(t_tet10, 2);
   initialize_template_get_solid_rotation_vector(t_nurbs27, 2);
+
+#define initialize_template_get_surface_rotation_vector(a, fad_order)                            \
+  template void GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane<           \
+      FADUTILS::HigherOrderFadType<fad_order, Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>( \
+      const LINALG::Matrix<3, 3,                                                                 \
+          FADUTILS::HigherOrderFadType<fad_order,                                                \
+              Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&,                                \
+      const LINALG::Matrix<3, 3, double>&,                                                       \
+      LINALG::Matrix<3, 1,                                                                       \
+          FADUTILS::HigherOrderFadType<fad_order,                                                \
+              Sacado::Fad::SLFad<double, 3 + a::n_dof_>>::type>&);
+
+  initialize_template_get_surface_rotation_vector(t_quad4, 1);
+  initialize_template_get_surface_rotation_vector(t_quad8, 1);
+  initialize_template_get_surface_rotation_vector(t_quad9, 1);  // Also initializes nurbs9
+  initialize_template_get_surface_rotation_vector(t_tri3, 1);
+  initialize_template_get_surface_rotation_vector(t_tri6, 1);
+
+  initialize_template_get_surface_rotation_vector(t_quad4, 2);
+  initialize_template_get_surface_rotation_vector(t_quad8, 2);
+  initialize_template_get_surface_rotation_vector(t_quad9, 2);  // Also initializes nurbs9
+  initialize_template_get_surface_rotation_vector(t_tri3, 2);
+  initialize_template_get_surface_rotation_vector(t_tri6, 2);
 
 #define initialize_template_assemble_local_mortar_contributions(beam, other, mortar)    \
   template void AssembleLocalMortarContributions<beam, other, mortar>(                  \

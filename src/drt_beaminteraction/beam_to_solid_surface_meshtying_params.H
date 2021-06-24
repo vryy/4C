@@ -77,6 +77,19 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns if rotational coupling is activated.
+     */
+    inline bool GetIsRotationalCoupling() const { return rotational_coupling_; }
+
+    /**
+     * \brief Returns the penalty parameter for rotational coupling.
+     */
+    inline double GetRotationalCouplingPenaltyParameter() const
+    {
+      return rotational_coupling_penalty_parameter_;
+    }
+
+    /**
      * \brief Returns a pointer to the vtk output parameters.
      * @return Pointer to vtk output parameters.
      */
@@ -88,6 +101,12 @@ namespace BEAMINTERACTION
 
     //! Pointer to the vtk output parameters for beam to solid volume meshtying.
     Teuchos::RCP<BeamToSolidSurfaceVtkOutputParams> output_params_ptr_;
+
+    //! If rotational coupling should be activated.
+    bool rotational_coupling_;
+
+    //! Penalty parameter for rotational coupling.
+    double rotational_coupling_penalty_parameter_;
   };
 
 }  // namespace BEAMINTERACTION

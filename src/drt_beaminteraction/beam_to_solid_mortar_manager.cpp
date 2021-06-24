@@ -11,6 +11,7 @@
 
 #include "beam_contact_pair.H"
 #include "beam_contact_params.H"
+#include "beam_to_solid_surface_meshtying_params.H"
 #include "beam_to_solid_volume_meshtying_params.H"
 #include "beam_to_solid_utils.H"
 #include "beaminteraction_calc_utils.H"
@@ -74,6 +75,9 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   auto beam_to_volume_params =
       Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_);
+  auto beam_to_surface_params =
+      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
+          beam_to_solid_params_);
   if (beam_to_volume_params != Teuchos::null)
   {
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
@@ -85,6 +89,19 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     n_lambda_node_rotational_ = n_lambda_node_temp;
     n_lambda_element_ += n_lambda_element_temp;
     n_lambda_element_rotational_ = n_lambda_element_temp;
+  }
+  else if (beam_to_surface_params != Teuchos::null)
+  {
+    if (beam_to_surface_params->GetIsRotationalCoupling())
+    {
+      MortarShapeFunctionsToNumberOfLagrangeValues(
+          beam_to_surface_params->GetMortarShapeFunctionType(), n_lambda_node_temp,
+          n_lambda_element_temp);
+      n_lambda_node_ += n_lambda_node_temp;
+      n_lambda_node_rotational_ = n_lambda_node_temp;
+      n_lambda_element_ += n_lambda_element_temp;
+      n_lambda_element_rotational_ = n_lambda_element_temp;
+    }
   }
 }
 
@@ -142,7 +159,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::Setup()
       my_lambda_gid_rotational.push_back(my_lambda_gid_start_value + i_dof +
                                          i_node * n_lambda_node_ + n_lambda_node_translational_);
   }
-  my_lambda_gid_start_value += n_nodes * n_lambda_node_;
+  my_lambda_gid_start_value += static_cast<int>(n_nodes * n_lambda_node_);
   for (unsigned int i_element = 0; i_element < n_element; i_element++)
   {
     for (unsigned int i_dof = 0; i_dof < n_lambda_element_translational_; i_dof++)
@@ -536,7 +553,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::AddGlobalForceStiffnessPenaltyCo
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
   Teuchos::RCP<Epetra_Vector> lambda_col = GetGlobalLambdaCol();
-  for (auto& elepairptr : contact_pairs_)
+  for (const auto& elepairptr : contact_pairs_)
     elepairptr->EvaluateAndAssemble(
         *discret_, this, force, stiff, *lambda_col, *data_state->GetDisColNp());
 }
@@ -612,10 +629,17 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToSolidMortarManager::PenaltyIn
   auto beam_to_volume_params =
       Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_);
+  auto beam_to_surface_params =
+      Teuchos::rcp_dynamic_cast<const BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>(
+          beam_to_solid_params_);
   if (beam_to_volume_params != Teuchos::null)
     penalty_rotation = beam_to_volume_params->GetRotationalCouplingPenaltyParameter();
+  else if (beam_to_surface_params != Teuchos::null)
+    penalty_rotation = beam_to_surface_params->GetRotationalCouplingPenaltyParameter();
   else if (lambda_dof_rowmap_rotations_->NumGlobalElements() > 0)
-    dserror("Rotational penalty coupling only implemented for beam-to-volume case.");
+    dserror(
+        "Rotational penalty coupling only implemented for beam-to-volume and beam-to-surface "
+        "case.");
 
   // Calculate the local inverse of kappa.
   double penalty = 0.0;
