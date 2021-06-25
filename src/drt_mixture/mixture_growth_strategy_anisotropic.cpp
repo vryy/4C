@@ -66,8 +66,8 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradien
   LINALG::Matrix<3, 3> Id(false);
   MAT::IdentityMatrix(Id);
 
-  iFgM.Update(1.0 + 1.0 / currentReferenceGrowthScalar,
-      anisotropyExtension_.GetStructuralTensor(gp, 0), -1.0, Id);
+  iFgM.Update(1.0 / currentReferenceGrowthScalar - 1.0,
+      anisotropyExtension_.GetStructuralTensor(gp, 0), 1.0, Id);
 }
 
 void MIXTURE::AnisotropicGrowthStrategy::AddGrowthStressCmat(
