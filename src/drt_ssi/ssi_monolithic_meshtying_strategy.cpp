@@ -132,60 +132,84 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
     Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix)
 {
   /* Transform and assemble the structure matrix into the ssi structure matrix block by block:
-   * S_m: structure interior and master side dofs
+   * S_i:  structure interior dofs
+   * S_m:  structure master side dofs
    * S_ss: structure slave surface dofs
    * S_sl: structure slave line dofs
    *
-   *       S_m  S_ss  S_sl
-   *       --------------
-   * S_m  |  a |  b |  c |
-   * S_ss |  d |  e |  f |
-   * S_sl |  g |  h |  i |
-   *       --------------
+   *      | S_i | S_m | S_ss| S_sl|
+   *      |-----|-----|-----|-----|
+   * S_i  |  a  |  b  |  c  |  d  |
+   * S_m  |  e  |  f  |  g  |  -  |
+   * S_ss |  h  |  i  |  j  |  k  |
+   * S_sl |  l  |  -  |  m  |  n  |
+   *      -------------------------
    */
-  // assemble derivatives of interior & master dofs w.r.t. interior & master dofs (block a)
-  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureCondensed(),
-      *MapStructureCondensed(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
+  // assemble derivatives of interior dofs w.r.t. interior dofs (block a)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureInterior(),
+      *MapStructureInterior(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
-  // assemble derivatives of surface slave dofs w.r.t. master & interior dofs (block d)
+  // assemble derivatives of interior dofs w.r.t. master dofs (block b)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureInterior(),
+      *MapStructureMaster(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
+
+  // assemble derivatives of master dofs w.r.t. interior dofs (block e)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureMaster(),
+      *MapStructureInterior(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
+
+  // assemble derivatives of master dofs w.r.t. master dofs (block f)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureMaster(),
+      *MapStructureMaster(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
+
+  // assemble derivatives of surface slave dofs w.r.t. interior dofs (block h)
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
-      *MapStructureCondensed(), 1.0, &StructureSlaveConverter(), nullptr, ssi_structure_matrix,
-      true, true);
+      *MapStructureInterior(), 1.0, &StructureSlaveConverter(), nullptr, ssi_structure_matrix, true,
+      true);
 
-  // assemble derivatives of master & interior w.r.t. surface slave dofs (block b)
-  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureCondensed(),
+  // assemble derivatives of surface slave dofs w.r.t. master dofs (block i)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
+      *MapStructureMaster(), 1.0, &StructureSlaveConverter(), nullptr, ssi_structure_matrix, true,
+      true);
+
+  // assemble derivatives of interior w.r.t. surface slave dofs (block c)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureInterior(),
       *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), ssi_structure_matrix, true,
       true);
 
-  // assemble derivatives of surface slave dofs w.r.t. surface slave dofs (block e)
+  // assemble derivatives of master w.r.t. surface slave dofs (block g)
+  LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureMaster(),
+      *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), ssi_structure_matrix, true,
+      true);
+
+  // assemble derivatives of surface slave dofs w.r.t. surface slave dofs (block j)
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
       *MapStructureSlave(), 1.0, &StructureSlaveConverter(), &StructureSlaveConverter(),
       ssi_structure_matrix, true, true);
 
   if (Meshtying3DomainIntersection())
   {
-    // assemble derivatives of line slave dofs w.r.t. master & interior (block g)
+    // assemble derivatives of line slave dofs w.r.t. interior dofs (block l)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
-        *MapStructureSlave3DomainIntersection(), *MapStructureCondensed(), 1.0,
+        *MapStructureSlave3DomainIntersection(), *MapStructureInterior(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), nullptr, ssi_structure_matrix, true, true);
 
-    // assemble derivatives of master & interior w.r.t. line slave dofs (block c)
-    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureCondensed(),
+    // assemble derivatives of interior dofs w.r.t. line slave dofs (block d)
+    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureInterior(),
         *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
-    // assemble derivatives of line slave dof w.r.t. line slave dofs (block i)
+    // assemble derivatives of line slave dofs w.r.t. line slave dofs (block n)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureSlave3DomainIntersection(), 1.0,
         &StructureSlaveConverter3DomainIntersection(),
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
-    // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block f)
+    // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block k)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
         *MapStructureSlave3DomainIntersection(), 1.0, &StructureSlaveConverter(),
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
-    // assemble derivatives of line slave dofs w.r.t. surface slave dofs (block h)
+    // assemble derivatives of line slave dofs w.r.t. surface slave dofs (block m)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureSlave(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), &StructureSlaveConverter(),
@@ -204,9 +228,13 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToXXXStructure(
   // uncomplete matrix first
   ssi_xxx_structure_matrix.UnComplete();
 
-  // assemble derivatives of x w.r.t. structure master & interior dofs
+  // assemble derivatives of x w.r.t. structure interior dofs
   LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
-      *MapStructureCondensed(), 1.0, nullptr, nullptr, ssi_xxx_structure_matrix, true, true);
+      *MapStructureInterior(), 1.0, nullptr, nullptr, ssi_xxx_structure_matrix, true, true);
+
+  // assemble derivatives of x w.r.t. structure master dofs
+  LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
+      *MapStructureMaster(), 1.0, nullptr, nullptr, ssi_xxx_structure_matrix, true, true);
 
   // assemble derivatives of x w.r.t. structure surface slave dofs
   LINALG::MatrixLogicalSplitAndTransform()(xxx_structure_matrix, xxx_structure_matrix.RangeMap(),
@@ -466,8 +494,13 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureXXX(
     LINALG::SparseMatrix& ssi_structure_xxx_matrix,
     const LINALG::SparseMatrix& structure_xxx_matrix)
 {
-  // assemble derivatives of structure master & interior dofs w.r.t. scatra dofs
-  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *MapStructureCondensed(),
+  // assemble derivatives of structure interior dofs w.r.t. scatra dofs
+  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *MapStructureInterior(),
+      structure_xxx_matrix.DomainMap(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
+      true);
+
+  // assemble derivatives of structure master dofs w.r.t. scatra dofs
+  LINALG::MatrixLogicalSplitAndTransform()(structure_xxx_matrix, *MapStructureMaster(),
       structure_xxx_matrix.DomainMap(), 1.0, nullptr, nullptr, ssi_structure_xxx_matrix, true,
       true);
 
@@ -609,6 +642,20 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::MeshtyingStrategyBase::MapsCo
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::MeshtyingStrategyBase::MapStructureInterior() const
+{
+  return SSIStructureMeshtying()->SSIMeshTyingMaps()->MapStructureInterior();
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
+Teuchos::RCP<const Epetra_Map> SSI::MeshtyingStrategyBase::MapStructureMaster() const
+{
+  return SSIStructureMeshtying()->SSIMeshTyingMaps()->MapStructureMaster();
+}
+
+/*-------------------------------------------------------------------------*
+ *-------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> SSI::MeshtyingStrategyBase::MapStructureSlave() const
 {
   return SSIStructureMeshtying()->SSIMeshTyingMaps()->MapStructureSlave();
@@ -628,11 +675,4 @@ Teuchos::RCP<const Epetra_Map> SSI::MeshtyingStrategyBase::MapStructureSlave3Dom
     const
 {
   return SSIStructureMeshtying()->SSIMeshTyingMaps()->MapStructureSlave3DomainIntersection();
-}
-
-/*-------------------------------------------------------------------------*
- *-------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::MeshtyingStrategyBase::MapStructureCondensed() const
-{
-  return SSIStructureMeshtying()->SSIMeshTyingMaps()->MapStructureCondensed();
 }

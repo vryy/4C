@@ -121,16 +121,19 @@ namespace SSI
     //! slave-side degrees of freedom, 2: master-side degrees of freedom)
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
 
-    //! Slave side dofs of structural meshtying
+    //! Interior dofs of structural mesh tying
+    Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
+
+    //! Master side dofs of structural mesh tying
+    Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
+
+    //! Slave side dofs of structural mesh tying
     Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
     Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
 
     //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
     //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
-
-    //! return map for interior and master-side structural degrees of freedom
-    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const;
 
     //! return the slave structure converter for structure coupling
     ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const;

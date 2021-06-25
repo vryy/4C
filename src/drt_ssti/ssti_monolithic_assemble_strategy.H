@@ -141,10 +141,13 @@ namespace SSTI
       return ssti_mono_->StructureField();
     }
 
-    //! interior and master side dofs of structure meshtying
-    Teuchos::RCP<const Epetra_Map> MapStructureCondensed() const;
+    //! Interior dofs of structure mesh tying
+    Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
 
-    //! Slave side dofs of structure meshtying
+    //! Master side dofs of structure mesh tying
+    Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
+
+    //! Slave side dofs of structure mesh tying
     Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
     Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
     //@}
