@@ -70,9 +70,8 @@ namespace DRT
     template <typename T>
     T ConvertStringToNumber(
         const std::string&
-            snumber,       ///< string read from the line to be converted to an int or double
-        std::size_t& pos)  ///< position of the next character in string after the numerical value
-        = delete;
+            snumber,        ///< string read from the line to be converted to an int or double
+        std::size_t& pos);  ///< position of the next character in string after the numerical value
 
     /// specialization for int
     template <>

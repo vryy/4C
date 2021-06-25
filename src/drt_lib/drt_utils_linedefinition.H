@@ -27,7 +27,7 @@ namespace DRT
     */
     /*----------------------------------------------------------------------*/
     template <class T>
-    std::string StringFromDataType() = delete;
+    std::string StringFromDataType();
 
     /// specialisation for int
     template <>
