@@ -63,12 +63,17 @@ namespace MIXTURE
           lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximimum
       //! @}
 
-      //! @name velocity dependent activation contribution
+      //! @name velocity dependent activation contribution: slight modification of original function
+      //! given by Weickenmeier et. al.
       //! @{
       const double dotLambdaMMin_;  ///< minimal stretch rate
       const double ke_;  ///< dimensionless constant controlling the curvature of the velocity
                          ///< dependent activation function in the eccentric case
       const double kc_;  ///< dimensionless constant controlling the curvature of the velocity
+                         ///< dependent activation function in the concentric case
+      const double de_;  ///< dimensionless constant controlling the amplitude of the velocity
+                         ///< dependent activation function in the eccentric case
+      const double dc_;  ///< dimensionless constant controlling the amplitude of the velocity
                          ///< dependent activation function in the concentric case
       //! @}
       //! @}
@@ -96,6 +101,19 @@ namespace MIXTURE
    * physically motivated constitutive model for 3D numerical simulation of skeletal muscles’,
    * International journal for numerical methods in biomedical engineering, vol. 30, no. 5, pp.
    * 545–562, 2014, doi: 10.1002/cnm.2618.
+   *
+   * Amongst others, the Weickenmeier material accounts for the velocity dependence of the active
+   * force production. However, the given function produces unsuitable values - in the sense that it
+   * fails to reproduce experimetally observerd force-velocity curves. Thus, a slight modification
+   * of the velocity dependence in the style of Böl et. al. is introduced here. Böl et. al. scale
+   * and shift the eccentric branch of the velocity dependency using the parameter d. To be able to
+   * turn the velocity dependency on and off, this concept is adopted for the concentric branch as
+   * well. Choosing de=dc=0 leads to a neglection of the velocity dependence. Choosing dc=1 and
+   * de=d-1 reproduces the function presented by Böl et. al.
+   *
+   * Reference: M. Böl and S. Reese, ‘Micromechanical modelling of skeletal muscles based on the
+   * finite element method’, Computer Methods in Biomechanics and Biomedical Engineering, vol. 11,
+   * no. 5, pp. 489-504, 2008, doi: 10.1080/10255840701771750.
    */
   class MixtureConstituent_Muscle_Weickenmeier : public MIXTURE::MixtureConstituent
   {
@@ -121,6 +139,10 @@ namespace MIXTURE
     void PreEvaluate(
         MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
+    // Updates the material and all its summands, called in between timesteps after convergence
+    void Update(
+        const LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, int gp, int eleGID) override;
+
     // Evaluate stress and material tangent of the constituent and add to mixture stress and cmat
     void Evaluate(const LINALG::Matrix<3, 3>& F, const LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
@@ -135,7 +157,6 @@ namespace MIXTURE
      *  \param[in,out] Pa Active nominal stress
      *  \param[in,out] derivPa Derivative of active nominal stress w.r.t. the fiber stretch
      */
-    /// Evaluate active nominal stress Pa and its derivative w.r.t. the fiber stretch
     void EvaluateActiveNominalStress(
         Teuchos::ParameterList& params, const double lambdaM, double& Pa, double& derivPa);
 
@@ -201,8 +222,8 @@ namespace MIXTURE
     /// Weickenmeier material parameters
     MIXTURE::PAR::MixtureConstituent_Muscle_Weickenmeier* params_{};
 
-    /// Total simulation time
-    double t_tot_;
+    /// Fibre stretch of the previous timestep
+    double lambdaMOld_;
 
     /// Holder for anisotropic behavior
     MAT::Anisotropy anisotropy_;

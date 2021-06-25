@@ -3660,6 +3660,12 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "KC",
         "parameter controlling the curvature of the velocity dependent activation function in the "
         "concentric case");
+    AddNamedReal(m, "DE",
+        "parameter controlling the amplitude of the velocity dependent activation function in the "
+        "eccentric case");
+    AddNamedReal(m, "DC",
+        "parameter controlling the amplitude of the velocity dependent activation function in the "
+        "concentric case");
     AddNamedInt(m, "ACTTIMESNUM", "number of time boundaries to prescribe activation");
     AddNamedRealVector(m, "ACTTIMES", "time boundaries between intervals", "ACTTIMESNUM");
     AddNamedInt(m, "ACTINTERVALSNUM", "number of time intervals to prescribe activation");
