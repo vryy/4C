@@ -95,6 +95,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream, "TRUSS3");
   PrintElementLines(stream, "TRUSS3SCATRA");
   PrintElementLines(stream, "WALL");
+  PrintElementLines(stream, "WALLNURBS");
   PrintElementLines(stream, "WALLSCATRA");
   PrintElementLines(stream, "WALLQ4PORO");
   PrintElementLines(stream, "WALLQ4POROSCATRA");

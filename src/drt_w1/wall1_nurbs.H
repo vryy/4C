@@ -34,10 +34,7 @@ namespace DRT
         virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
 
         virtual void SetupElementDefinition(
-            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
-        {
-          // do nothing. Definition inserted by normal wall element.
-        }
+            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
 
         virtual void NodalBlockInformation(
             DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);

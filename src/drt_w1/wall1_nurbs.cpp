@@ -11,6 +11,7 @@
 #include "wall1_nurbs.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
+#include "../drt_lib/drt_linedefinition.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 
@@ -30,7 +31,7 @@ DRT::ParObject* DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::Wall1NurbsType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "WALL")
+  if (eletype == "WALLNURBS")
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
@@ -61,6 +62,30 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
   DRT::UTILS::ComputeStructure2DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
+void DRT::ELEMENTS::NURBS::Wall1NurbsType::SetupElementDefinition(
+    std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+{
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLNURBS"];
+
+  defs["NURBS4"]
+      .AddIntVector("NURBS4", 4)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddNamedString("EAS")
+      .AddNamedDouble("THICK")
+      .AddNamedString("STRESS_STRAIN")
+      .AddNamedIntVector("GP", 2);
+
+  defs["NURBS9"]
+      .AddIntVector("NURBS9", 9)
+      .AddNamedInt("MAT")
+      .AddNamedString("KINEM")
+      .AddNamedString("EAS")
+      .AddNamedDouble("THICK")
+      .AddNamedString("STRESS_STRAIN")
+      .AddNamedIntVector("GP", 2);
+}
+
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/09|
@@ -69,6 +94,7 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
 DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(int id, int owner)
     : DRT::ELEMENTS::Wall1::Wall1(id, owner)
 {
+  SetNurbsElement() = true;
   return;
 }
 
@@ -79,6 +105,7 @@ DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(int id, int owner)
 DRT::ELEMENTS::NURBS::Wall1Nurbs::Wall1Nurbs(const DRT::ELEMENTS::NURBS::Wall1Nurbs& old)
     : DRT::ELEMENTS::Wall1::Wall1(old)
 {
+  SetNurbsElement() = true;
   return;
 }
 
