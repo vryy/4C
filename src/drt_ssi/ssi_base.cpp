@@ -253,9 +253,10 @@ void SSI::SSIBase::InitDiscretizations(
           {std::make_pair("ScaTraManifoldInitfield", "Initfield")},
           {std::make_pair("ManifoldDirichlet", "Dirichlet")}};
 
-      if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
-              problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS") !=
-          INPAR::SCATRA::outputscalars_none)
+      const auto output_scalar_type = DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
+          problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS");
+      if (output_scalar_type == INPAR::SCATRA::outputscalars_condition or
+          output_scalar_type == INPAR::SCATRA::outputscalars_entiredomain_condition)
       {
         std::map<std::string, std::string> tempmap = {
             std::make_pair("SSISurfaceManifold", "TotalAndMeanScalar")};
