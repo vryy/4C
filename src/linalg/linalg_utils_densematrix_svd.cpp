@@ -34,12 +34,10 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A, LINALG::SerialDenseMatrix& Q
 
   if (info) dserror("Lapack's dgesvd returned %d", info);
 
+  // 0 for off-diagonal, otherwise s
+  S.Zero();
   for (int i = 0; i < std::min(n, m); ++i)
   {
-    for (int j = 0; j < std::min(n, m); ++j)
-    {
-      S(i, j) = (i == j) * s[i];  // 0 for off-diagonal, otherwise s
-    }
+    S(i, i) = s[i];
   }
-  return;
 }

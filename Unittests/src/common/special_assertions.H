@@ -10,7 +10,10 @@
 #ifndef UNIT_SPECIAL_ASSERTIONS_H_
 #define UNIT_SPECIAL_ASSERTIONS_H_
 
+#include <cxxtest/TestSuite.h>
 #include <src/linalg/linalg_fixedsizematrix.H>
+#include <Epetra_SerialDenseMatrix.h>
+#include "src/linalg/linalg_serialdensematrix.H"
 
 namespace TESTING
 {
@@ -31,6 +34,27 @@ namespace TESTING
     for (unsigned row = 0; row < M; ++row)
     {
       for (unsigned col = 0; col < N; ++col)
+      {
+        TS_ASSERT_DELTA(mat1(row, col), mat2(row, col), delta);
+      }
+    }
+  }
+
+  /*!
+   * \brief Compares each entry of two matrices with a specified tolerance
+   *
+   * \param mat1 Matrix 1
+   * \param mat2 Matrix 2
+   * \param delta Maximum allowed tolerance
+   */
+  inline void AssertDelta(const LINALG::SerialDenseMatrix& mat1,
+      const LINALG::SerialDenseMatrix& mat2, const double delta)
+  {
+    TS_ASSERT_EQUALS(mat1.RowDim(), mat2.RowDim())
+    TS_ASSERT_EQUALS(mat1.ColDim(), mat2.ColDim())
+    for (int row = 0; row < mat1.RowDim(); ++row)
+    {
+      for (int col = 0; col < mat1.ColDim(); ++col)
       {
         TS_ASSERT_DELTA(mat1(row, col), mat2(row, col), delta);
       }
