@@ -14,11 +14,18 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void DRT::UTILS::AddOwnedNodeGID(
+    Teuchos::RCP<DRT::Discretization> dis, const int nodegid, std::vector<int>& my_gid_vec)
+{
+  if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_vec.push_back(nodegid);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void DRT::UTILS::AddOwnedNodeGIDVector(Teuchos::RCP<DRT::Discretization> dis,
     const std::vector<int>& global_node_gid_vec, std::vector<int>& my_gid_vec)
 {
-  for (const int nodegid : global_node_gid_vec)
-    if (IsNodeGIDOnThisProc(dis, nodegid)) my_gid_vec.push_back(nodegid);
+  for (const int nodegid : global_node_gid_vec) AddOwnedNodeGID(dis, nodegid, my_gid_vec);
 }
 
 /*----------------------------------------------------------------------*/
