@@ -127,6 +127,7 @@ void SCATRA::TimIntOneStepTheta::SetElementTimeParameter(bool forcedincrementals
   eleparams.set<double>("time-step length", dta_);
   eleparams.set<double>("total time", time_);
   eleparams.set<double>("time factor", theta_ * dta_);
+  eleparams.set<double>("time derivative factor", 1.0 / (theta_ * dta_));
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements

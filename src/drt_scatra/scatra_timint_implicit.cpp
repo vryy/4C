@@ -2833,6 +2833,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // compute values at the interior of the elements (required for hdg)
     ComputeInteriorValues();
 
+    ComputeTimeDerivative();
   }  // nonlinear iteration
 
   // calculate mean concentration of micro discretization and set state to nds_micro_

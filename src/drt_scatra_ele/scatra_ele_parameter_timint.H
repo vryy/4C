@@ -51,6 +51,7 @@ namespace DRT
       bool IsStationary() const { return is_stationary_; };
       bool IsIncremental() const { return is_incremental_; };
       double Time() const { return time_; };
+      double TimeDerivativeFac() const { return timederivativefac_; }
       double Dt() const { return dt_; };
       double TimeFac() const { return timefac_; };
       double TimeFacRhs() const { return timefacrhs_; };
@@ -65,6 +66,7 @@ namespace DRT
       bool is_stationary_;
       bool is_incremental_;
       double time_;
+      double timederivativefac_;
       double dt_;
       double timefac_;
       double timefacrhs_;

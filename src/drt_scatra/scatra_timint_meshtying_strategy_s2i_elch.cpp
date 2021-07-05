@@ -236,10 +236,10 @@ void SCATRA::MeshtyingStrategyS2IElch::Update() const
                 const double slavepot = (*scatratimint_->Phiafnp())[doflid_scatra + 1];
 
                 // extract master-side lithium concentration associated with current node
-                const double masterphi = (*imasterphinp_)[doflid_scatra];
+                const double masterphi = (*imasterphi_on_slave_side_np_)[doflid_scatra];
 
                 // extract master-side electric potential associated with current node
-                const double masterpot = (*imasterphinp_)[doflid_scatra + 1];
+                const double masterpot = (*imasterphi_on_slave_side_np_)[doflid_scatra + 1];
 
                 // compute interface layer resistance associated with current node
                 const double resistance = (*growthn_)[doflid_growth] * conductivity_inverse;
@@ -402,30 +402,15 @@ SCATRA::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
 {
 }
 
-
 /*---------------------------------------------------------------------------*
- | evaluate and assemble interface linearizations and residuals   fang 01/16 |
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix&
-        k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseMatrix&
-        k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-    Epetra_SerialDenseVector& r_m   //!< master-side residual vector
-)
+    const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
+    MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
+    DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
@@ -475,7 +460,7 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFac() * fac;
     const double timefacrhsfac =
         DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->TimeFacRhs() * fac;
-    if (timefacfac < 0. or timefacrhsfac < 0.) dserror("Integration factor is negative!");
+    if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
 
     DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
         distypeS>::template EvaluateS2ICouplingAtIntegrationPoint<distypeM>(matelectrode,
@@ -486,33 +471,16 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
   }
 }
 
-
-/*--------------------------------------------------------------------------------------------------------*
- | evaluate and assemble interface linearizations and residuals for node-to-segment coupling   fang
- 08/16 |
- *--------------------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
-void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(
-    DRT::Condition& condition,            //!< scatra-scatra interface coupling condition
-    const MORTAR::MortarNode& slavenode,  //!< slave-side node
-    const double& lumpedarea,  //!< lumped interface area fraction associated with slave-side node
-    MORTAR::MortarElement& slaveelement,   //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,  //!< master-side mortar element
-    const std::vector<LINALG::Matrix<my::nen_slave_, 1>>&
-        ephinp_slave,  //!< state variables at slave-side nodes
-    const std::vector<LINALG::Matrix<my::nen_master_, 1>>&
-        ephinp_master,  //!< state variables at master-side nodes
-    Epetra_SerialDenseMatrix&
-        k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_sm,  //!< linearizations of slave-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseMatrix&
-        k_ms,  //!< linearizations of master-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
-        k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
-    Epetra_SerialDenseVector& r_s,  //!< slave-side residual vector
-    Epetra_SerialDenseVector& r_m   //!< master-side residual vector
-)
+void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::Condition& condition,
+    const MORTAR::MortarNode& slavenode, const double& lumpedarea,
+    MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
+    const std::vector<LINALG::Matrix<my::nen_slave_, 1>>& ephinp_slave,
+    const std::vector<LINALG::Matrix<my::nen_master_, 1>>& ephinp_master,
+    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
+    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)

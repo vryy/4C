@@ -76,6 +76,7 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
       is_stationary_(false),
       is_incremental_(false),
       time_(-1.0),
+      timederivativefac_(-1.0),
       dt_(0.0),
       timefac_(0.0),
       timefacrhs_(0.0),
@@ -87,11 +88,8 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
 
 
 //----------------------------------------------------------------------*/
-// set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(
-    Teuchos::ParameterList& parameters  //!< parameter list
-)
+void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterList& parameters)
 {
   // get control parameters
   is_stationary_ = parameters.get<bool>("using stationary formulation");
@@ -155,7 +153,7 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(
     if (not is_incremental_) timefacrhs_ = 0.0;
   }
 
-  return;
+  timederivativefac_ = parameters.get<double>("time derivative factor", -1.0);
 }
 
 

@@ -113,7 +113,7 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) c
   eleparams.set<int>("action", SCATRA::set_time_parameter);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
-  if (forcedincrementalsolver == false)
+  if (!forcedincrementalsolver)
     eleparams.set<bool>("incremental solver", incremental_);
   else
     eleparams.set<bool>("incremental solver", true);
@@ -122,12 +122,14 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) c
   eleparams.set<double>("total time", time_);
   eleparams.set<double>("time factor", theta_ * dta_);
   eleparams.set<double>("alpha_F", 1.0);
+  if (Step() == 1)
+    eleparams.set<double>("time derivative factor", 1.0 / dta_);
+  else
+    eleparams.set<double>("time derivative factor", 3.0 / (2.0 * dta_));
 
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
 

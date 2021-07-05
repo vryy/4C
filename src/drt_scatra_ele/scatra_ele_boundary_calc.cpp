@@ -356,6 +356,14 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
+    case SCATRA::bd_calc_s2icoupling_capacitance:
+    {
+      EvaluateS2ICouplingCapacitance(
+          discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra);
+
+      break;
+    }
+
     case SCATRA::bd_calc_s2icoupling_od:
     {
       EvaluateS2ICouplingOD(ele, params, discretization, la, elemat1_epetra);

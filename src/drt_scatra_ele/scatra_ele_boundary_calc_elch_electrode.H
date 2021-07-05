@@ -115,6 +115,57 @@ namespace DRT
           Epetra_SerialDenseVector& r_m);
 
       /*!
+       * @brief evaluate capacitive part of the scatra-scatra interface coupling condition at
+       * integration point
+       *
+       * @param[in] eslavephidtnp  time derivative of state variables at slave-side nodes at time
+       *                           n+1
+       * @param[in] emasterphidtnp time derivative of state variables at master-side nodes at time
+       *                           n+1
+       * @param[in] eslavephinp    state variables at slave-side nodes at time n+1
+       * @param[in] emasterphinp   state variables at master-side nodes at time n+1
+       * @param[in] funct_slave    slave-side shape function values
+       * @param[in] funct_master   master-side shape function values
+       * @param[in] test_slave     slave-side test function values
+       * @param[in] test_master    master-side test function values
+       * @param[in] kineticmodel   kinetic model of scatra-scatra interface condition
+       * @param[in] numelectrons   number of electrons involved in charge transfer
+       * @param[in] capacitance    surface capacitance at the interface
+       * @param[in] timederivfac   factor to account for time-derivative in linearization
+       * @param[in] timefacfac     time-integration factor times domain-integration factor
+       * @param[in] timefacrhsfac  time-integration factor for right-hand side times
+       *                           domain-integration factor
+       * @param[out] k_ss  linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] k_ms  linearizations of master-side residuals w.r.t. slave-side dofs
+       * @param[out] r_s   slave-side residual vector
+       * @param[out] r_m   master-side residual vector
+       *
+       * @tparam distype_master This method is templated on the master-side discretization type.
+       */
+      template <DRT::Element::DiscretizationType distype_master>
+      static void EvaluateS2ICouplingCapacitanceAtIntegrationPoint(
+          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephidtnp,
+          const std::vector<LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              emasterphidtnp,
+          const std::vector<LINALG::Matrix<my::nen_, 1>>& eslavephinp,
+          const std::vector<LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>>&
+              emasterphinp,
+          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              funct_master,
+          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              test_master,
+          int kineticmodel, int numelectrons, double capacitance, double timederivfac,
+          double timefacfac, double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
+          Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseVector& r_s,
+          Epetra_SerialDenseVector& r_m);
+
+      /*!
        * \brief calculate out-parameters such as residual vectors and linearizations of residuals
        *
        * \remark This is a static method as it is called from
@@ -162,6 +213,40 @@ namespace DRT
           Epetra_SerialDenseMatrix& k_ms, Epetra_SerialDenseMatrix& k_mm,
           Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
 
+
+      /*!
+       * @brief calculate residual vectors and linearizations of residuals due to capacitive flux at
+       * the scatra-scatra interface
+       *
+       * @param[in] funct_slave     slave-side shape function values
+       * @param[in] test_slave      slave-side test function values
+       * @param[in] test_master     master-side test function values
+       * @param[in] numelectrons    number of electrons involved in charge transfer
+       * @param[in] timefacfac      time-integration factor times domain-integration factor
+       * @param[in] timefacrhsfac   time-integration factor for right-hand side times
+       *                            domain-integration factor
+       * @param[in] nen_master      number of nodes of master-side mortar element
+       * @param[in] jC              capacitance mass flux density
+       * @param[in] djC_dpot_slave  derivative of capacitance mass flux density w.r.t. electric
+       *                            potential at the slave-side
+       * @param[out] k_ss  linearizations of slave-side residuals w.r.t. slave-side dofs
+       * @param[out] k_ms  linearizations of master-side residuals w.r.t. slave-side dofs
+       * @param[out] r_s   slave-side residual vector
+       * @param[out] r_m   master-side residual vector
+       *
+       * @tparam distype_master  This method is templated on the master-side discretization type.
+       */
+      template <DRT::Element::DiscretizationType distype_master>
+      static void CalculateRHSandGlobalSystemCapacitiveFlux(
+          const LINALG::Matrix<my::nen_, 1>& funct_slave,
+          const LINALG::Matrix<my::nen_, 1>& test_slave,
+          const LINALG::Matrix<
+              DRT::UTILS::DisTypeToNumNodePerEle<distype_master>::numNodePerElement, 1>&
+              test_master,
+          int numelectrons, double timefacfac, double timefacrhsfac, int nen_master, double jC,
+          double djC_dpot_slave, Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_ms,
+          Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m);
+
      protected:
       //! protected constructor for singletons
       ScaTraEleBoundaryCalcElchElectrode(
@@ -176,6 +261,11 @@ namespace DRT
           Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
           Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
           ) override;
+
+      void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+          Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual,
+          Epetra_SerialDenseVector& emasterresidual) override;
 
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition

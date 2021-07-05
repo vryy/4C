@@ -328,6 +328,9 @@ namespace SCATRA
     //! case) or for linearizations of master fluxes w.r.t. slave and master dofs (mortar case)
     Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
 
+    //! auxiliary system matrix for linearizations of master fluxes w.r.t. slave dofs
+    Teuchos::RCP<LINALG::SparseMatrix> imasterslavematrix_;
+
     //! flag for meshtying method
     const INPAR::S2I::CouplingType couplingtype_;
 
@@ -370,8 +373,14 @@ namespace SCATRA
     //! auxiliary residual vector for master residuals
     Teuchos::RCP<Epetra_FEVector> imasterresidual_;
 
+    //! time derivative of slave dofs of scatra-scatra interface
+    Teuchos::RCP<Epetra_Vector> islavephidtnp_;
+
+    //! time derivative of master dofs transformed to slave side of scatra-scatra interface
+    Teuchos::RCP<Epetra_Vector> imasterphidt_on_slave_side_np_;
+
     //! master dofs transformed to slave side of scatra-scatra interface
-    Teuchos::RCP<Epetra_Vector> imasterphinp_;
+    Teuchos::RCP<Epetra_Vector> imasterphi_on_slave_side_np_;
 
     //! flag for interface side underlying Lagrange multiplier definition
     const INPAR::S2I::InterfaceSides lmside_;
@@ -460,6 +469,10 @@ namespace SCATRA
 
     //! build map extractors associated with blocks of global system matrix
     void BuildBlockMapExtractors();
+
+    //! evaluate and assemble all contributions due to capacitive fluxes at the scatra-scatra
+    //! interface
+    void EvaluateAndAssembleCapacitiveContributions();
 
     /*!
      * @brief  evaluate single mortar integration cell
@@ -667,6 +680,9 @@ namespace SCATRA
         const INPAR::S2I::InterfaceSides vector1_side,
         const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
         const INPAR::S2I::InterfaceSides vector2_side) const;
+
+    //! flag indicating if we have capacitive interface flux contributions
+    bool has_capacitive_contributions_;
 
     //! slave-side scatra-scatra interface kinetics conditions applied to a mesh tying interface
     std::map<const int, DRT::Condition* const> kinetics_conditions_meshtying_slaveside_;

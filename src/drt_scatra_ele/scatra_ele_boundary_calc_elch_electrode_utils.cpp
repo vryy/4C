@@ -29,6 +29,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   {
     case INPAR::S2I::kinetics_butlervolmerreduced:
     case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
+    case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
     {
       dj_dc_slave = j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
       dj_dc_master = 0.0;
@@ -217,5 +218,6 @@ bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsReducedButlerVolm
 {
   return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance);
 }

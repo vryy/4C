@@ -46,6 +46,7 @@ namespace DRT
       void SetRegularization(Teuchos::ParameterList& parameters);
       void SetResistance(Teuchos::ParameterList& parameters);
       void SetResistivity(Teuchos::ParameterList& parameters);
+      void SetCapacitance(Teuchos::ParameterList& parameters);
       void SetStoichiometries(Teuchos::ParameterList& parameters);
       void SetThermoPerm(Teuchos::ParameterList& parameters);
       ///@}
@@ -70,6 +71,7 @@ namespace DRT
       INPAR::S2I::RegularizationType RegularizationType() const { return regularizationtype_; };
       double Resistance() const { return resistance_; };
       double Resistivity() const { return resistivity_; };
+      double Capacitance() const { return capacitance_; };
       std::vector<int>* Stoichiometries() const { return stoichiometries_; };
       double ThermoPerm() const { return thermoperm_; };
       ///@}
@@ -133,6 +135,9 @@ namespace DRT
 
       /// resistivity of the interface layer material associated to S2ICouplingGrowth condition
       double resistivity_;
+
+      /// surface capacitance at interface associated with S2ICoupling condition
+      double capacitance_;
 
       /// vector of stoichiometric coefficients for scatra-scatra interface
       std::vector<int>* stoichiometries_;

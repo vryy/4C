@@ -237,6 +237,26 @@ namespace DRT
           Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
 
+      /*!
+       * @brief evaluate flux due to capacitance of scatra-scatra interface coupling condition
+       *
+       * @param[in] discretization   discretization
+       * @param[in] la               location array
+       * @param[out] eslavematrix    element matrix for slave side, i.e. slave-side residuals w.r.t.
+       *                             slave-side dofs
+       * @param[out] emastermatrix   element matrix for master side, i.e. master-side residuals
+       *                             w.r.t. slave-side dofs
+       * @param[out] eslaveresidual  element residual due to capacitive flux at slave side
+       * @param[out] emasterresidual element residual due to capacitive flux at master side
+       */
+      virtual void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+          Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual,
+          Epetra_SerialDenseVector& emasterresidual)
+      {
+        dserror("not yet implemented!");
+      };
+
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
       virtual void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element

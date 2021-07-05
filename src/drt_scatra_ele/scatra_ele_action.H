@@ -133,6 +133,8 @@ namespace SCATRA
     bd_calc_normal_vectors,
     bd_calc_Robin,                     ///< Robin boundary condition
     bd_calc_s2icoupling,               ///< evaluate scatra-scatra interface coupling conditions
+    bd_calc_s2icoupling_capacitance,   ///< evaluate capacitance part of scatra-scatra interface
+                                       ///< coupling conditions
     bd_calc_s2icoupling_growthgrowth,  ///< evaluate global growth-growth matrix block for
                                        ///< scatra-scatra interface coupling involving interface
                                        ///< layer growth

@@ -870,6 +870,20 @@ void SCATRA::ScaTraTimIntElch::ReadRestartProblemSpecific(
     // read restart of cccv condition
     cccv_condition_->ReadRestart(reader);
   }
+
+  std::vector<DRT::Condition*> s2ikinetics_conditions(0, nullptr);
+  Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  for (auto* s2ikinetics_cond : s2ikinetics_conditions)
+  {
+    // only slave side has relevant information
+    if (s2ikinetics_cond->GetInt("interface side") == static_cast<int>(INPAR::S2I::side_slave) and
+        s2ikinetics_cond->GetInt("kinetic model") ==
+            static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
+    {
+      reader.ReadVector(phidtnp_, "phidtnp");
+      break;
+    }
+  }
 }
 
 /*------------------------------------------------------------------------------*
@@ -1619,6 +1633,20 @@ void SCATRA::ScaTraTimIntElch::OutputRestart() const
 
     // is time step adaptivity activated?
     output_->WriteInt("adapted_timestep_active", adapted_timestep_active_);
+  }
+
+  std::vector<DRT::Condition*> s2ikinetics_conditions(0, nullptr);
+  Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
+  for (auto* s2ikinetics_cond : s2ikinetics_conditions)
+  {
+    // only slave side has relevant information
+    if (s2ikinetics_cond->GetInt("interface side") == static_cast<int>(INPAR::S2I::side_slave) and
+        s2ikinetics_cond->GetInt("kinetic model") ==
+            static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
+    {
+      output_->WriteVector("phidtnp", phidtnp_);
+      break;
+    }
   }
 }
 
