@@ -34,7 +34,7 @@ namespace MIXTURE
    * term has the following form:
    *
    * \f[
-   *     \Psi = \frac{1}{2} \kappa (|F|^2 - \frac{\rho_0(s)}{\rho_0(s=0)})^2
+   *     \Psi = \frac{1}{2} \kappa (|F| - \frac{\rho_0(s)}{\rho_0(s=0)})^2
    * \f]
    *
    * The model is based on Braeu et al (2019),

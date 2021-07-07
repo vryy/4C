@@ -53,10 +53,11 @@ void MIXTURE::StiffnessGrowthStrategy::AddGrowthStressCmat(const MIXTURE::Mixtur
   UTILS::VOIGT::Stresses::MatrixToVector(iC, iC_stress);
 
   const double kappa = params_->kappa_;
-  const double I3 = std::pow(F.Determinant(), 2);
+  const double detF = F.Determinant();
+  const double I3 = detF * detF;
 
-  const double dPi = kappa * (I3 - currentReferenceGrowthScalar);
-  const double ddPi = kappa;
+  const double dPi = 0.5 * kappa * (1.0 - currentReferenceGrowthScalar / detF);
+  const double ddPi = 0.25 * kappa * currentReferenceGrowthScalar / std::pow(detF, 3);
 
   const double gamma2 = 2.0 * I3 * dPi;
   const double delta5 = 4. * (I3 * dPi + I3 * I3 * ddPi);
