@@ -59,6 +59,7 @@
 #include "linalg_utils_sparse_algebra_math.H"
 
 #include "lib_globalproblem.H"
+#include "lib_utils_parallel.H"
 
 #include "lib_condition_utils.H"
 #include "lib_condition_selector.H"
@@ -340,7 +341,18 @@ void fsi_immersed_drt()
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
 
-  structdis->FillComplete();
+  // Redistribute beams in the case of point coupling conditions
+
+  if (structdis->GetCondition("PointCoupling") != NULL)
+  {
+    structdis->FillComplete(false, false, false);
+    DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
+  }
+  else if (not structdis->Filled() || not structdis->HaveDofs())
+  {
+    structdis->FillComplete();
+    std::cout << "Called FillComplete\n";
+  }
 
   problem->GetDis("fluid")->FillComplete();
 
