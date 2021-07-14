@@ -450,9 +450,6 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     if (scatradis->AddDofSet(structdofset) != 1) dserror("unexpected dof sets in scatra field");
     if (structdis->AddDofSet(scatradofset) != 1) dserror("unexpected dof sets in structure field");
 
-    std::vector<DRT::Condition*> conds;
-    structdis->GetCondition("SSISurfaceManifold", conds);
-
     // set dummy coupling id, as coupling between scatra_manifold dis and structdis/scatradis should
     // be setup for all conditions
     std::set<int> couplingids;
