@@ -216,15 +216,13 @@ namespace SSI
 
     void ApplyMeshtyingToScatraManifoldStructure(
         Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
-        bool do_uncomplete) override = 0;
+        bool do_uncomplete) override;
 
     void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix,
-        bool do_uncomplete) override = 0;
+        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) override;
 
     void ApplyMeshtyingToStructureScatra(
-        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix,
-        bool do_uncomplete) override = 0;
+        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) override;
 
    protected:
     //! position of scatra blocks in system matrix
@@ -250,50 +248,10 @@ namespace SSI
     int position_structure_;
   };
 
-  //! SSI problem is composed of sparse structure sub matrix and sparse scatra sub matrix
-  class MeshtyingStrategyBlockSparse : public MeshtyingStrategyBlock
-  {
-   public:
-    //! constructor
-    explicit MeshtyingStrategyBlockSparse(bool is_scatra_manifold,
-        bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
-
-    void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
-        bool do_uncomplete) override;
-
-    void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) override;
-
-    void ApplyMeshtyingToStructureScatra(
-        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) override;
-  };
-
-  //! SSI problem is composed of sparse structure sub matrix and block scatra sub matrix
-  class MeshtyingStrategyBlockBlock : public MeshtyingStrategyBlock
-  {
-   public:
-    //! constructor
-    explicit MeshtyingStrategyBlockBlock(bool is_scatra_manifold,
-        bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
-
-    void ApplyMeshtyingToScatraManifoldStructure(
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix,
-        bool do_uncomplete) override;
-
-    void ApplyMeshtyingToScatraStructure(
-        Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, bool do_uncomplete) override;
-
-    void ApplyMeshtyingToStructureScatra(
-        Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, bool do_uncomplete) override;
-  };
-
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(bool is_scatra_manifold,
-      LINALG::MatrixType matrixtype_ssi, LINALG::MatrixType matrixtype_scatra,
-      bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+      LINALG::MatrixType matrixtype_scatra, bool meshtying_3_domain_intersection,
+      Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_MESHTYING_STRATEGY_H

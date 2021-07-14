@@ -749,9 +749,8 @@ void SSI::SSIMono::SetupSystem()
       SSI::BuildContactStrategy(CoNitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
 
   // instantiate appropriate mesh tying class
-  strategy_meshtying_ =
-      SSI::BuildMeshtyingStrategy(IsScaTraManifold(), matrixtype_, ScaTraField()->MatrixType(),
-          Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
+  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(IsScaTraManifold(), ScaTraField()->MatrixType(),
+      Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
