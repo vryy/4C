@@ -351,7 +351,6 @@ void fsi_immersed_drt()
   else if (not structdis->Filled() || not structdis->HaveDofs())
   {
     structdis->FillComplete();
-    std::cout << "Called FillComplete\n";
   }
 
   problem->GetDis("fluid")->FillComplete();
@@ -441,7 +440,15 @@ void fsi_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  structdis->FillComplete();
+  if (structdis->GetCondition("PointCoupling") != NULL)
+  {
+    structdis->FillComplete(false, false, false);
+    DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
+  }
+  else if (not structdis->Filled() || not structdis->HaveDofs())
+  {
+    structdis->FillComplete();
+  }
 
   if (DRT::INPUT::IntegralValue<bool>(
           (problem->XFluidDynamicParams().sublist("GENERAL")), "XFLUIDFLUID"))
