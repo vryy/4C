@@ -102,8 +102,12 @@ namespace SSI
           LINALG::MatrixType ssi_matrixtype, LINALG::MatrixType scatra_matrixtype,
           bool is_scatra_manifold);
 
+      void CompleteScaTraManifoldScaTraMatrix();
+
       //! call complete on the scalar transport manifold - structure off-diagonal matrix
       void CompleteScaTraManifoldStructureMatrix();
+
+      void CompleteScaTraScaTraManifoldMatrix();
 
       //! call complete on the scalar transport - structure off-diagonal matrix
       void CompleteScaTraStructureMatrix();
@@ -133,6 +137,15 @@ namespace SSI
         return structure_scatra_matrix_;
       }
       Teuchos::RCP<LINALG::SparseMatrix> StructureMatrix() { return structure_matrix_; }
+      Teuchos::RCP<LINALG::SparseOperator> ManifoldMatrix() { return manifold_matrix_; }
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraScaTraManifoldMatrix()
+      {
+        return scatra_scatramanifold_matrix_;
+      }
+      Teuchos::RCP<LINALG::SparseOperator> ScaTraManifoldScaTraMatrix()
+      {
+        return scatramanifold_scatra_matrix_;
+      }
       //@}
 
       /*!
@@ -203,6 +216,9 @@ namespace SSI
       Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix_;
       Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix_;
       Teuchos::RCP<LINALG::SparseMatrix> structure_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> manifold_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatra_scatramanifold_matrix_;
+      Teuchos::RCP<LINALG::SparseOperator> scatramanifold_scatra_matrix_;
       //@}
     };
 
@@ -216,8 +232,10 @@ namespace SSI
        * @brief constructor
        *
        * @param[in] ssi_maps  pointer to the ssi maps object containing all relevant maps
+       * @param[in] is_scatra_manifold  flag indicating if a scatra manifold is used
        */
-      explicit SSIVectors(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
+      explicit SSIVectors(
+          Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, bool is_scatra_manifold);
 
       //! clear the increment vector
       void ClearIncrement();
@@ -237,9 +255,16 @@ namespace SSI
       //! residual vector on right-hand side of structure system
       Teuchos::RCP<Epetra_Vector> StructureResidual() { return structure_residual_; }
 
+      Teuchos::RCP<Epetra_Vector> ManifoldResidual() { return manifold_residual_; }
+
      private:
       //! global increment vector for Newton-Raphson iteration
       Teuchos::RCP<Epetra_Vector> increment_;
+
+      //! flag indicating if we have a scatra manifold
+      const bool is_scatra_manifold_;
+
+      Teuchos::RCP<Epetra_Vector> manifold_residual_;
 
       //! residual vector on right-hand side of global system of equations
       Teuchos::RCP<Epetra_Vector> residual_;

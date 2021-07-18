@@ -163,16 +163,17 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
         *MapStructureSlave3DomainIntersection(), *MapStructureInterior(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), nullptr, ssi_structure_matrix, true, true);
 
-    // assemble derivatives of master dofs w.r.t. line slave dofs (block d)
+    // assemble derivatives of interior dofs w.r.t. line slave dofs (block d)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureInterior(),
         *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
+    // assemble derivatives of line slave dofs w.r.t. master dofs (block n)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureMaster(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), nullptr, ssi_structure_matrix, true, true);
 
-    // assemble derivatives of master dofs w.r.t. line slave dofs (block )
+    // assemble derivatives of master dofs w.r.t. line slave dofs (block h)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureMaster(),
         *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);

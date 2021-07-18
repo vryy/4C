@@ -7,7 +7,7 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "ssi_manifold_flux_evaluator.H"
+#include "ssi_manifold_utils.H"
 
 #include "ssi_monolithic.H"
 #include "ssi_utils.H"
@@ -23,6 +23,7 @@
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_matchingoctree.H"
 #include "../drt_lib/drt_utils_gid_vector.H"
 
 #include "../drt_scatra/scatra_timint_implicit.H"
@@ -31,6 +32,8 @@
 
 #include "../linalg/linalg_matrixtransform.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
@@ -759,4 +762,674 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::UnCompleteMatricesIfNecessary(
     systemmatrix_manifold_->UnComplete();
     systemmatrix_scatra_->UnComplete();
   }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, const bool is_manifold_meshtying)
+    : is_manifold_meshtying_(is_manifold_meshtying),
+      condensed_dof_map_(Teuchos::null),
+      ssi_maps_(std::move(ssi_maps)),
+      meshtying_handler_()
+{
+  if (is_manifold_meshtying_)
+  {
+    SetupMeshTyingHandler(scatra_manifold_dis, ssi_maps_);
+    Teuchos::RCP<Epetra_Map> slave_dof_map = Teuchos::null;
+
+    // merge slave dof maps from all mesh tying conditions
+    for (const auto& meshtying : meshtying_handler_)
+    {
+      auto coupling_adapter = meshtying.first;
+      if (slave_dof_map == Teuchos::null)
+        slave_dof_map = Teuchos::rcp(new Epetra_Map(*coupling_adapter->SlaveDofMap()));
+      else
+      {
+        auto slave_dof_map_old = Teuchos::rcp(new Epetra_Map(*slave_dof_map));
+        slave_dof_map = LINALG::MergeMap(slave_dof_map_old, coupling_adapter->SlaveDofMap());
+      }
+    }
+    // exclusive interior and master dofs across all slave conditions
+    condensed_dof_map_ = LINALG::SplitMap(*ssi_maps_->ScaTraManifoldDofRowMap(), *slave_dof_map);
+  }
+  else
+    condensed_dof_map_ = ssi_maps_->ScaTraManifoldDofRowMap();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategyBase::SetupMeshTyingHandler(
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps)
+{
+  // data types to handle coupling between slave and master in coupling_vec
+  // coupling_type: key: master gid, value: slave gid and distance between both
+  // key_type: key: condition a, value: condition b
+  using coupling_type = std::map<int, std::pair<int, double>>;
+  using key_type = std::pair<int, int>;
+  std::map<key_type, coupling_type> coupling_vec;
+
+  std::vector<DRT::Condition*> manifold_conditions(0, nullptr);
+  scatra_manifold_dis->GetCondition("SSISurfaceManifold", manifold_conditions);
+
+  // fill coupling_vec with slave master pairing using NodeMatchingOctree to find matching nodes
+  // between all SSISurfaceManifold conditions (nodes from all procs)
+  for (int a = 0; a < static_cast<int>(manifold_conditions.size()); ++a)
+  {
+    auto* manifold_condition_a = manifold_conditions.at(a);
+
+    std::vector<int> inodegidvec_a = *manifold_condition_a->Nodes();
+
+    DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+    tree.Init(*scatra_manifold_dis, inodegidvec_a, 150, 1.0e-8);
+    tree.Setup();
+
+    for (int b = a + 1; b < static_cast<int>(manifold_conditions.size()); ++b)
+    {
+      auto* manifold_condition_b = manifold_conditions.at(b);
+
+      std::vector<int> inodegidvec_b = *manifold_condition_b->Nodes();
+
+      coupling_type val;
+      key_type key = std::make_pair(a, b);
+      coupling_vec.emplace(key, val);
+
+      tree.FindMatch(*scatra_manifold_dis, inodegidvec_b, coupling_vec.at(key));
+    }
+  }
+
+  // construct set of unique master GIDs within coupling_vec -> master_gids
+  std::set<int> master_gids;
+
+  for (const auto& coupling : coupling_vec)
+  {
+    for (const auto& pair : coupling.second)
+    {
+      const int gid_node1 = pair.first;
+      const int gid_node2 = pair.second.first;
+
+      if (gid_node1 == gid_node2) master_gids.insert(gid_node1);
+    }
+  }
+
+  // assigning slave GIDs (unique key) to master GIDs (non unique values, a master node can have
+  // multiple slave nodes) -> coupling_pair
+  std::map<int, int> coupling_pair;
+
+  for (const auto& coupling : coupling_vec)
+  {
+    for (const auto& pair : coupling.second)
+    {
+      const int gid_node1 = pair.first;
+      const int gid_node2 = pair.second.first;
+      if (gid_node1 != gid_node2)
+      {
+        if (master_gids.find(gid_node1) != master_gids.end())
+          coupling_pair.insert(std::make_pair(gid_node2, gid_node1));
+        else if (master_gids.find(gid_node2) != master_gids.end())
+          coupling_pair.insert(std::make_pair(gid_node1, gid_node2));
+      }
+    }
+  }
+
+  // get number of slave nodes per master node -> max. number gives number of needed adapters
+  int my_max_adapters = 0;
+  std::map<int, int> master_coupling;
+  for (auto pair : coupling_pair)
+  {
+    const int master_node_gid = pair.second;
+    if (master_coupling.empty())
+    {
+      master_coupling.insert(std::make_pair(master_node_gid, 1));
+      my_max_adapters = 1;
+    }
+    else
+    {
+      if (master_coupling.find(master_node_gid) != master_coupling.end())
+      {
+        master_coupling[master_node_gid]++;
+        if (my_max_adapters < master_coupling[master_node_gid])
+          my_max_adapters = master_coupling[master_node_gid];
+      }
+      else
+        master_coupling.insert(std::make_pair(master_node_gid, 1));
+    }
+  }
+
+  int glob_max_adapters = 0;
+  scatra_manifold_dis->Comm().MaxAll(&my_max_adapters, &glob_max_adapters, 1);
+
+  // setup coupling adapters
+  for (int iadapter = 0; iadapter < glob_max_adapters; ++iadapter)
+  {
+    std::vector<int> inodegidvec_master;
+    std::vector<int> inodegidvec_slave;
+
+    for (auto master_gid : master_gids)
+    {
+      // check if this master node has iadapter + 1 slave nodes
+      if (!master_coupling.empty())
+      {
+        if (master_coupling.at(master_gid) == iadapter + 1)
+        {
+          DRT::UTILS::AddOwnedNodeGID(scatra_manifold_dis, master_gid, inodegidvec_master);
+
+          int counter = 0;
+          for (auto pair : coupling_pair)
+          {
+            const int master_gid_coupling = pair.second;
+
+            if (master_gid_coupling == master_gid and counter == iadapter)
+            {
+              if (counter == iadapter)
+              {
+                const int slave_gid_coupling = pair.first;
+
+                DRT::UTILS::AddOwnedNodeGID(
+                    scatra_manifold_dis, slave_gid_coupling, inodegidvec_slave);
+              }
+              counter++;
+            }
+          }
+        }
+      }
+    }
+
+    auto coupling_adapter = Teuchos::rcp(new ADAPTER::Coupling());
+    coupling_adapter->SetupCoupling(*scatra_manifold_dis, *scatra_manifold_dis, inodegidvec_master,
+        inodegidvec_slave, DRT::Problem::Instance()->NDim() - 1, true, 1.0e-8);
+
+    // setup multimap extractor for each coupling adapter
+    auto slave_map = coupling_adapter->SlaveDofMap();
+    auto master_map = coupling_adapter->MasterDofMap();
+    auto interior_map = LINALG::SplitMap(
+        *ssi_maps->ScaTraManifoldDofRowMap(), *LINALG::MergeMap(slave_map, master_map));
+
+    std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
+    maps.emplace_back(interior_map);
+    maps.emplace_back(master_map);
+    maps.emplace_back(slave_map);
+
+    auto coupling_map_extractor =
+        Teuchos::rcp(new LINALG::MultiMapExtractor(*ssi_maps->ScaTraManifoldDofRowMap(), maps));
+    coupling_map_extractor->CheckForValidMapExtractor();
+
+    // combine coupling adapter and multimap extractor
+    meshtying_handler_.emplace_back(std::make_pair(coupling_adapter, coupling_map_extractor));
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SSI::ManifoldMeshTyingStrategySparse::ManifoldMeshTyingStrategySparse(
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis, Teuchos::RCP<UTILS::SSIMaps> ssi_maps,
+    const bool is_manifold_meshtying)
+    : ManifoldMeshTyingStrategyBase(scatra_manifold_dis, ssi_maps, is_manifold_meshtying)
+{
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+SSI::ManifoldMeshTyingStrategyBlock::ManifoldMeshTyingStrategyBlock(
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, const bool is_manifold_meshtying)
+    : ManifoldMeshTyingStrategyBase(scatra_manifold_dis, ssi_maps, is_manifold_meshtying),
+      condensed_block_dof_map_(Teuchos::null),
+      meshtying_block_handler_()
+{
+  // split condensed_dof_map into blocks
+  std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_condensed_block_dof_map;
+  for (int i = 0; i < ssi_maps_->BlockMapScaTraManifold()->NumMaps(); ++i)
+  {
+    partial_maps_condensed_block_dof_map.emplace_back(
+        LINALG::IntersectMap(*condensed_dof_map_, *ssi_maps_->BlockMapScaTraManifold()->Map(i)));
+  }
+
+  condensed_block_dof_map_ = Teuchos::rcp(
+      new LINALG::MultiMapExtractor(*condensed_dof_map_, partial_maps_condensed_block_dof_map));
+
+  // couple meshyting_handler_ and condensed_block_dof_map_ to meshtying_block_handler_
+  for (const auto& meshtying : MeshTyingHandler())
+  {
+    auto coupling_adapter = meshtying.first;
+    auto slave_dof_map = coupling_adapter->SlaveDofMap();
+
+    std::vector<Teuchos::RCP<const Epetra_Map>> partial_maps_slave_block_dof_map;
+    for (int i = 0; i < ssi_maps_->BlockMapScaTraManifold()->NumMaps(); ++i)
+    {
+      partial_maps_slave_block_dof_map.emplace_back(
+          LINALG::IntersectMap(*slave_dof_map, *ssi_maps_->BlockMapScaTraManifold()->Map(i)));
+    }
+    auto slave_dof_block_map = Teuchos::rcp(
+        new LINALG::MultiMapExtractor(*slave_dof_map, partial_maps_slave_block_dof_map));
+
+    meshtying_block_handler_.emplace_back(std::make_pair(meshtying, slave_dof_block_map));
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategyBase::ApplyMeshTyingToManifoldRHS(
+    Teuchos::RCP<Epetra_Vector> rhs_manifold)
+{
+  if (is_manifold_meshtying_)
+  {
+    for (const auto& meshtying : meshtying_handler_)
+    {
+      auto multimap = meshtying.second;
+      auto coupling_adapter = meshtying.first;
+
+      auto slave_dofs = multimap->ExtractVector(rhs_manifold, 2);
+      auto slave_to_master_dofs = coupling_adapter->SlaveToMaster(slave_dofs);
+      multimap->AddVector(slave_to_master_dofs, 1, rhs_manifold);
+      multimap->PutScalar(*rhs_manifold, 2, 0.0);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> manifold_matrix)
+{
+  auto ssi_manifold_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(ssi_manifold_matrix);
+  auto manifold_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(manifold_matrix);
+
+  LINALG::MatrixLogicalSplitAndTransform()(*manifold_sparse, *condensed_dof_map_,
+      *condensed_dof_map_, 1.0, nullptr, nullptr, *ssi_manifold_sparse, true, true);
+
+  if (is_manifold_meshtying_)
+  {
+    for (const auto& meshtying : MeshTyingHandler())
+    {
+      auto coupling_adapter = meshtying.first;
+
+      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+      LINALG::MatrixLogicalSplitAndTransform()(*manifold_sparse, *cond_slave_dof_map,
+          *cond_slave_dof_map, 1.0, &converter, &converter, *ssi_manifold_sparse, true, true);
+      LINALG::MatrixLogicalSplitAndTransform()(*manifold_sparse, *cond_slave_dof_map,
+          *condensed_dof_map_, 1.0, &converter, nullptr, *ssi_manifold_sparse, true, true);
+      LINALG::MatrixLogicalSplitAndTransform()(*manifold_sparse, *condensed_dof_map_,
+          *cond_slave_dof_map, 1.0, nullptr, &converter, *ssi_manifold_sparse, true, true);
+    }
+
+    // Finalize: put 1.0 on main diag of slave dofs
+    const double one = 1.0;
+    for (const auto& meshtying : MeshTyingHandler())
+    {
+      auto coupling_adapter = meshtying.first;
+
+      auto slave_dof_map = coupling_adapter->SlaveDofMap();
+      for (int doflid_slave = 0; doflid_slave < slave_dof_map->NumMyElements(); ++doflid_slave)
+      {
+        // extract global ID of current slave-side row
+        const int dofgid_slave = slave_dof_map->GID(doflid_slave);
+        if (dofgid_slave < 0) dserror("Local ID not found!");
+
+        // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column indices
+        if (ssi_manifold_sparse->Filled())
+        {
+          const int rowlid_slave = ssi_manifold_sparse->RowMap().LID(dofgid_slave);
+          if (rowlid_slave < 0) dserror("Global ID not found!");
+          if (ssi_manifold_sparse->EpetraMatrix()->ReplaceMyValues(
+                  rowlid_slave, 1, &one, &rowlid_slave))
+            dserror("ReplaceMyValues failed!");
+        }
+
+        // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column
+        // indices
+        else if (ssi_manifold_sparse->EpetraMatrix()->InsertGlobalValues(
+                     dofgid_slave, 1, &one, &dofgid_slave))
+          dserror("InsertGlobalValues failed!");
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> manifold_matrix)
+{
+  auto ssi_manifold_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(ssi_manifold_matrix);
+  auto manifold_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_matrix);
+
+  for (int row = 0; row < condensed_block_dof_map_->NumMaps(); ++row)
+  {
+    for (int col = 0; col < condensed_block_dof_map_->NumMaps(); ++col)
+    {
+      LINALG::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+          *condensed_block_dof_map_->Map(row), *condensed_block_dof_map_->Map(col), 1.0, nullptr,
+          nullptr, ssi_manifold_block->Matrix(row, col), true, true);
+
+      if (is_manifold_meshtying_)
+      {
+        for (const auto& block_meshtying : MeshTyingBlockHandler())
+        {
+          auto meshtying = block_meshtying.first;
+          auto coupling_adapter = meshtying.first;
+          auto cond_block_slave_dof_map = block_meshtying.second;
+          auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+          LINALG::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+              *cond_block_slave_dof_map->Map(row), *cond_block_slave_dof_map->Map(col), 1.0,
+              &converter, &converter, ssi_manifold_block->Matrix(row, col), true, true);
+          LINALG::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+              *cond_block_slave_dof_map->Map(row), *condensed_block_dof_map_->Map(col), 1.0,
+              &converter, nullptr, ssi_manifold_block->Matrix(row, col), true, true);
+          LINALG::MatrixLogicalSplitAndTransform()(manifold_block->Matrix(row, col),
+              *condensed_block_dof_map_->Map(row), *cond_block_slave_dof_map->Map(col), 1.0,
+              nullptr, &converter, ssi_manifold_block->Matrix(row, col), true, true);
+        }
+
+        // Finalize: put 1.0 on main diag of slave dofs
+        const double one = 1.0;
+        if (row == col)
+        {
+          for (const auto& meshtying : MeshTyingHandler())
+          {
+            auto coupling_adapter = meshtying.first;
+
+            auto slave_dof_map = coupling_adapter->SlaveDofMap();
+            for (int doflid_slave = 0; doflid_slave < slave_dof_map->NumMyElements();
+                 ++doflid_slave)
+            {
+              // extract global ID of current slave-side row
+              const int dofgid_slave = slave_dof_map->GID(doflid_slave);
+              if (dofgid_slave < 0) dserror("Local ID not found!");
+
+              // apply pseudo Dirichlet conditions to filled matrix, i.e., to local row and column
+              // indices
+              if (ssi_manifold_block->Matrix(row, row).Filled())
+              {
+                const int rowlid_slave =
+                    ssi_manifold_block->Matrix(row, row).RowMap().LID(dofgid_slave);
+                if (rowlid_slave < 0) dserror("Global ID not found!");
+                if (ssi_manifold_block->Matrix(row, row).EpetraMatrix()->ReplaceMyValues(
+                        rowlid_slave, 1, &one, &rowlid_slave))
+                  dserror("ReplaceMyValues failed!");
+              }
+
+              // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and
+              // column indices
+              else if (ssi_manifold_block->Matrix(row, row).EpetraMatrix()->InsertGlobalValues(
+                           dofgid_slave, 1, &one, &dofgid_slave))
+                dserror("InsertGlobalValues failed!");
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldScatraMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_scatra_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> manifold_scatra_matrix)
+{
+  auto ssi_manifold_scatra_sparse =
+      LINALG::CastToSparseMatrixAndCheckSuccess(ssi_manifold_scatra_matrix);
+  auto manifold_scatra_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(manifold_scatra_matrix);
+
+  LINALG::MatrixLogicalSplitAndTransform()(*manifold_scatra_sparse, *condensed_dof_map_,
+      *ssi_maps_->ScaTraDofRowMap(), 1.0, nullptr, nullptr, *ssi_manifold_scatra_sparse, true,
+      true);
+
+  if (is_manifold_meshtying_)
+  {
+    for (const auto& meshtying : MeshTyingHandler())
+    {
+      auto coupling_adapter = meshtying.first;
+
+      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+      LINALG::MatrixLogicalSplitAndTransform()(*manifold_scatra_sparse, *cond_slave_dof_map,
+          *ssi_maps_->ScaTraDofRowMap(), 1.0, &converter, nullptr, *ssi_manifold_scatra_sparse,
+          true, true);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldScatraMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_scatra_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> manifold_scatra_matrix)
+{
+  auto ssi_manifold_scatra_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(ssi_manifold_scatra_matrix);
+  auto manifold_scatra_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_scatra_matrix);
+
+  for (int row = 0; row < condensed_block_dof_map_->NumMaps(); ++row)
+  {
+    for (int col = 0; col < ssi_maps_->BlockMapScaTra()->NumMaps(); ++col)
+    {
+      LINALG::MatrixLogicalSplitAndTransform()(manifold_scatra_block->Matrix(row, col),
+          *condensed_block_dof_map_->Map(row), *ssi_maps_->BlockMapScaTra()->Map(col), 1.0, nullptr,
+          nullptr, ssi_manifold_scatra_block->Matrix(row, col), true, true);
+
+      if (is_manifold_meshtying_)
+      {
+        for (const auto& block_meshtying : MeshTyingBlockHandler())
+        {
+          auto meshtying = block_meshtying.first;
+          auto coupling_adapter = meshtying.first;
+          auto cond_block_slave_dof_map = block_meshtying.second;
+          auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+          LINALG::MatrixLogicalSplitAndTransform()(manifold_scatra_block->Matrix(row, col),
+              *cond_block_slave_dof_map->Map(row), *ssi_maps_->BlockMapScaTra()->Map(col), 1.0,
+              &converter, nullptr, ssi_manifold_scatra_block->Matrix(row, col), true, true);
+        }
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldStructureMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix)
+{
+  auto ssi_manifold_structure_sparse =
+      LINALG::CastToSparseMatrixAndCheckSuccess(ssi_manifold_structure_matrix);
+  auto manifold_structure_sparse =
+      LINALG::CastToSparseMatrixAndCheckSuccess(manifold_structure_matrix);
+
+  auto temp_manifold_structure =
+      SSI::UTILS::SSIMatrices::SetupSparseMatrix(ssi_maps_->ScaTraManifoldDofRowMap());
+  LINALG::MatrixLogicalSplitAndTransform()(*ssi_manifold_structure_sparse, *condensed_dof_map_,
+      *ssi_maps_->StructureDofRowMap(), 1.0, nullptr, nullptr, *temp_manifold_structure, true,
+      true);
+  LINALG::MatrixLogicalSplitAndTransform()(*manifold_structure_sparse, *condensed_dof_map_,
+      *ssi_maps_->StructureDofRowMap(), 1.0, nullptr, nullptr, *temp_manifold_structure, true,
+      true);
+
+  if (is_manifold_meshtying_)
+  {
+    for (const auto& meshtying : MeshTyingHandler())
+    {
+      auto coupling_adapter = meshtying.first;
+
+      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+      // manifold - structure
+      LINALG::MatrixLogicalSplitAndTransform()(*ssi_manifold_structure_sparse, *cond_slave_dof_map,
+          *ssi_maps_->StructureDofRowMap(), 1.0, &converter, nullptr, *temp_manifold_structure,
+          true, true);
+      LINALG::MatrixLogicalSplitAndTransform()(*manifold_structure_sparse, *cond_slave_dof_map,
+          *ssi_maps_->StructureDofRowMap(), 1.0, &converter, nullptr, *temp_manifold_structure,
+          true, true);
+    }
+  }
+
+  ssi_manifold_structure_sparse->Zero();
+  temp_manifold_structure->Complete(
+      *ssi_maps_->StructureDofRowMap(), *ssi_maps_->ScaTraManifoldDofRowMap());
+  ssi_manifold_structure_sparse->UnComplete();
+  ssi_manifold_structure_sparse->Add(*temp_manifold_structure, false, 1.0, 0.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldStructureMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix)
+{
+  auto ssi_manifold_structure_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(ssi_manifold_structure_matrix);
+  auto manifold_structure_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_structure_matrix);
+
+  auto temp_manifold_structure = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
+      ssi_maps_->BlockMapScaTraManifold(), ssi_maps_->BlockMapStructure());
+
+  for (int row = 0; row < condensed_block_dof_map_->NumMaps(); ++row)
+  {
+    LINALG::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->Matrix(row, 0),
+        *condensed_block_dof_map_->Map(row), *ssi_maps_->StructureDofRowMap(), 1.0, nullptr,
+        nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
+    LINALG::MatrixLogicalSplitAndTransform()(manifold_structure_block->Matrix(row, 0),
+        *condensed_block_dof_map_->Map(row), *ssi_maps_->StructureDofRowMap(), 1.0, nullptr,
+        nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
+
+    if (is_manifold_meshtying_)
+    {
+      for (const auto& block_meshtying : MeshTyingBlockHandler())
+      {
+        auto meshtying = block_meshtying.first;
+        auto coupling_adapter = meshtying.first;
+        auto cond_block_slave_dof_map = block_meshtying.second;
+        auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+        // manifold - structure
+        LINALG::MatrixLogicalSplitAndTransform()(ssi_manifold_structure_block->Matrix(row, 0),
+            *cond_block_slave_dof_map->Map(row), *ssi_maps_->StructureDofRowMap(), 1.0, &converter,
+            nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
+        LINALG::MatrixLogicalSplitAndTransform()(manifold_structure_block->Matrix(row, 0),
+            *cond_block_slave_dof_map->Map(row), *ssi_maps_->StructureDofRowMap(), 1.0, &converter,
+            nullptr, temp_manifold_structure->Matrix(row, 0), true, true);
+      }
+    }
+  }
+
+  ssi_manifold_structure_block->Zero();
+  temp_manifold_structure->Complete();
+  ssi_manifold_structure_block->UnComplete();
+  ssi_manifold_structure_block->Add(*temp_manifold_structure, false, 1.0, 0.0);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToScatraManifoldMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> scatra_manifold_matrix)
+{
+  auto ssi_scatra_manifold_sparse =
+      LINALG::CastToSparseMatrixAndCheckSuccess(ssi_scatra_manifold_matrix);
+  auto scatra_manifold_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(scatra_manifold_matrix);
+
+  ssi_scatra_manifold_sparse->UnComplete();
+  LINALG::MatrixLogicalSplitAndTransform()(*scatra_manifold_sparse, *ssi_maps_->ScaTraDofRowMap(),
+      *condensed_dof_map_, 1.0, nullptr, nullptr, *ssi_scatra_manifold_sparse, true, true);
+
+  if (is_manifold_meshtying_)
+  {
+    for (const auto& meshtying : MeshTyingHandler())
+    {
+      auto coupling_adapter = meshtying.first;
+
+      auto cond_slave_dof_map = coupling_adapter->SlaveDofMap();
+      auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+      LINALG::MatrixLogicalSplitAndTransform()(*scatra_manifold_sparse,
+          *ssi_maps_->ScaTraDofRowMap(), *cond_slave_dof_map, 1.0, nullptr, &converter,
+          *ssi_scatra_manifold_sparse, true, true);
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToScatraManifoldMatrix(
+    Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
+    Teuchos::RCP<LINALG::SparseOperator> scatra_manifold_matrix)
+{
+  auto ssi_scatra_manifold_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(ssi_scatra_manifold_matrix);
+  auto scatra_manifold_block =
+      LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_manifold_matrix);
+
+  ssi_scatra_manifold_block->UnComplete();
+
+  for (int row = 0; row < ssi_maps_->BlockMapScaTra()->NumMaps(); ++row)
+  {
+    for (int col = 0; col < condensed_block_dof_map_->NumMaps(); ++col)
+    {
+      LINALG::MatrixLogicalSplitAndTransform()(scatra_manifold_block->Matrix(row, col),
+          *ssi_maps_->BlockMapScaTra()->Map(row), *condensed_block_dof_map_->Map(col), 1.0, nullptr,
+          nullptr, ssi_scatra_manifold_block->Matrix(row, col), true, true);
+
+      if (is_manifold_meshtying_)
+      {
+        for (const auto& block_meshtying : MeshTyingBlockHandler())
+        {
+          auto meshtying = block_meshtying.first;
+          auto coupling_adapter = meshtying.first;
+          auto cond_block_slave_dof_map = block_meshtying.second;
+          auto converter = ADAPTER::CouplingSlaveConverter(*coupling_adapter);
+
+          LINALG::MatrixLogicalSplitAndTransform()(scatra_manifold_block->Matrix(row, col),
+              *ssi_maps_->BlockMapScaTra()->Map(row), *cond_block_slave_dof_map->Map(col), 1.0,
+              nullptr, &converter, ssi_scatra_manifold_block->Matrix(row, col), true, true);
+        }
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> SSI::BuildManifoldMeshTyingStrategy(
+    Teuchos::RCP<DRT::Discretization> scatra_manifold_dis, Teuchos::RCP<UTILS::SSIMaps> ssi_maps,
+    const bool is_manifold_meshtying, LINALG::MatrixType matrixtype_manifold)
+{
+  Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> meshtyingstrategy = Teuchos::null;
+
+  switch (matrixtype_manifold)
+  {
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      meshtyingstrategy = Teuchos::rcp(new SSI::ManifoldMeshTyingStrategyBlock(
+          scatra_manifold_dis, ssi_maps, is_manifold_meshtying));
+      break;
+    }
+    case LINALG::MatrixType::sparse:
+    {
+      meshtyingstrategy = Teuchos::rcp(new SSI::ManifoldMeshTyingStrategySparse(
+          scatra_manifold_dis, ssi_maps, is_manifold_meshtying));
+      break;
+    }
+
+    default:
+    {
+      dserror("unknown matrix type of Manifold field");
+      break;
+    }
+  }
+
+  return meshtyingstrategy;
 }

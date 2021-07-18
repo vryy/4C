@@ -53,9 +53,7 @@ namespace SSI
     //! assemble RHS
     void AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
         Teuchos::RCP<const Epetra_Vector> rhs_structure,
-        Teuchos::RCP<const Epetra_Vector> rhs_manifold,
-        Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_manifold_side,
-        Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_scatra_side);
+        Teuchos::RCP<const Epetra_Vector> rhs_manifold);
 
     //! assemble ScaTra-ScaTra-Block into system matrix
     virtual void AssembleScatraScatra(Teuchos::RCP<LINALG::SparseOperator> systemmatrix,

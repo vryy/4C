@@ -467,9 +467,7 @@ void SSI::AssembleStrategySparse::AssembleScatramanifoldStructure(
  *----------------------------------------------------------------------*/
 void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
     Teuchos::RCP<const Epetra_Vector> rhs_scatra, Teuchos::RCP<const Epetra_Vector> rhs_structure,
-    Teuchos::RCP<const Epetra_Vector> rhs_manifold,
-    Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_manifold_side,
-    Teuchos::RCP<const Epetra_Vector> rhs_manifold_scatra_coupling_scatra_side)
+    Teuchos::RCP<const Epetra_Vector> rhs_manifold)
 {
   SSIMaps()->MapsSubProblems()->InsertVector(
       rhs_scatra, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::scalar_transport), rhs);
@@ -478,15 +476,6 @@ void SSI::AssembleStrategyBase::AssembleRHS(Teuchos::RCP<Epetra_Vector> rhs,
   {
     SSIMaps()->MapsSubProblems()->InsertVector(
         rhs_manifold, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::manifold), rhs);
-
-    SSIMaps()->MapsSubProblems()->InsertVector(
-        rhs_manifold, UTILS::SSIMaps::GetProblemPosition(SSI::Subproblem::manifold), rhs);
-
-    SSIMaps()->MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_manifold_side,
-        UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold), rhs);
-
-    SSIMaps()->MapsSubProblems()->AddVector(rhs_manifold_scatra_coupling_scatra_side,
-        UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport), rhs);
   }
 
   SSIMaps()->MapsSubProblems()->AddVector(

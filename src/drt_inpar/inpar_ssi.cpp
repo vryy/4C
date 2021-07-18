@@ -179,6 +179,9 @@ void INPAR::SSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   BoolParameter("ADD_MANIFOLD", "no", "activate additional manifold?", &ssidynmanifold);
 
+  BoolParameter("MESHTYING_MANIFOLD", "no",
+      "activate meshtying betweeen all manifold fields in case they intersect?", &ssidynmanifold);
+
   setStringToIntegralParameter<int>("INITIALFIELD", "zero_field",
       "Initial field for scalar transport on manifold",
       tuple<std::string>("zero_field", "field_by_function", "field_by_condition"),

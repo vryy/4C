@@ -2521,7 +2521,7 @@ src/drt_ssi/ssi_dyn.cpp
 src/drt_ssi/ssi_base.cpp
 src/drt_ssi/ssi_clonestrategy.cpp
 src/drt_ssi/ssi_coupling.cpp
-src/drt_ssi/ssi_manifold_flux_evaluator.cpp
+src/drt_ssi/ssi_manifold_utils.cpp
 src/drt_ssi/ssi_monolithic.cpp
 src/drt_ssi/ssi_monolithic_assemble_strategy.cpp
 src/drt_ssi/ssi_monolithic_contact_strategy.cpp
