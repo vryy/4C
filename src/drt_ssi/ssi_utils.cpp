@@ -25,6 +25,7 @@
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../drt_lib/drt_matchingoctree.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1231,7 +1232,8 @@ SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(const std::string& cond
       icoup_structure_3_domain_intersection_(Teuchos::null),
       meshtying_3_domain_intersection_(meshtying_3_domain_intersection),
       slave_side_converter_(Teuchos::null),
-      ssi_meshtyingmaps_(Teuchos::null)
+      ssi_meshtyingmaps_(Teuchos::null),
+      meshtying_handler_()
 {
   icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(struct_dis,
       meshtying_3_domain_intersection, conditionname_coupling, conditionname_3_domain_intersection);

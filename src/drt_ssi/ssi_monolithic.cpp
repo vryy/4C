@@ -116,12 +116,17 @@ void SSI::SSIMono::ApplyDBCToSystem()
  *-------------------------------------------------------------------------------*/
 bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
 {
-  // check for calculation of initial time derivative and initial potential field and first time
-  // step
-  if (Step() <= 1) return true;
+  // check for first iteration in calculation of initial time derivative
+  if (IterationCount() == 0 and Step() == 0 and !DoCalculateInitialPotentialField()) return true;
 
-  if (IterationCount() == 1)
+  if (IterationCount() <= 2)
   {
+    // check for first iteration in standard Newton loop
+    if (Step() == 1 and !DoCalculateInitialPotentialField()) return true;
+
+    // check for first iterations in calculation of initial potential field
+    if (Step() == 0 and DoCalculateInitialPotentialField()) return true;
+
     // check for first iteration in restart simulations
     if (IsRestart())
     {
@@ -223,7 +228,8 @@ void SSI::SSIMono::ApplyManifoldMeshtying()
 
   // scatra - manifold
   strategy_manifold_meshtying_->ApplyMeshtyingToScatraManifoldMatrix(
-      ssi_matrices_->ScaTraScaTraManifoldMatrix(), manifoldscatraflux_->MatrixScaTraManifold());
+      ssi_matrices_->ScaTraScaTraManifoldMatrix(), manifoldscatraflux_->MatrixScaTraManifold(),
+      IsUncompleteOfMatricesNecessaryForMeshTying());
 
   // manifold - scatra
   strategy_manifold_meshtying_->ApplyMeshtyingToManifoldScatraMatrix(
@@ -237,8 +243,6 @@ void SSI::SSIMono::ApplyManifoldMeshtying()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
-  if (IsUncompleteOfMatricesNecessaryForMeshTying()) ssi_matrices_->SystemMatrix()->UnComplete();
-
   AssembleMatScaTra();
 
   AssembleMatStructure();

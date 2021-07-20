@@ -13,6 +13,7 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <set>
 #include "memory"
 
 class RuntimeCsvWriter;
@@ -287,11 +288,14 @@ namespace SSI
     //@}
   };
 
-  //! data types for meshtying handlers for standard and block case
-  using mestying_handler_type =
+  //! data types for mesh tying handlers for sparse case: coupling adapter and MultiMapExtractor
+  //! splitting dofs into interior, master, and slave
+  using meshtying_handler_type =
       std::pair<Teuchos::RCP<ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
-  using mestying_block_handler_type =
-      std::pair<mestying_handler_type, Teuchos::RCP<LINALG::MultiMapExtractor>>;
+  //! data types for mesh tying handlers for block case: standard mesh tying handler and
+  //! MultiMapExtractor splitting slave dofs into blocks
+  using meshtying_block_handler_type =
+      std::pair<meshtying_handler_type, Teuchos::RCP<LINALG::MultiMapExtractor>>;
 
   //! Base class to handle mesh tying between manifold fields
   class ManifoldMeshTyingStrategyBase
@@ -306,25 +310,25 @@ namespace SSI
     //! apply mesh tying to manifold system matrix
     virtual void ApplyMeshtyingToManifoldMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_matrix) = 0;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_matrix) = 0;
 
     //! apply mesh tying to scatra manifold - scatra matrix
     virtual void ApplyMeshtyingToManifoldScatraMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_scatra_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_scatra_matrix) = 0;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_scatra_matrix) = 0;
 
     //! apply mesh tying to scatra manifold - structure matrix
     virtual void ApplyMeshtyingToManifoldStructureMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) = 0;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix) = 0;
 
     //! apply mesh tying to scatra manifold - scatra matrix
     virtual void ApplyMeshtyingToScatraManifoldMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatra_manifold_matrix) = 0;
+        Teuchos::RCP<const LINALG::SparseOperator> scatra_manifold_matrix, bool do_uncomplete) = 0;
 
     //! handles all coupling adapters and multimap extractors
-    std::vector<mestying_handler_type> MeshTyingHandler() const { return meshtying_handler_; }
+    std::vector<meshtying_handler_type> MeshTyingHandler() const { return meshtying_handler_; }
 
    protected:
     //! should meshtying between manifold fields be applied?
@@ -337,12 +341,25 @@ namespace SSI
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
 
    private:
-    // setup coupling adapters and multimap extractors to handle mesh tying
+    //! construct coupling pairs between two node GIDs based on SSISurfaceManifold condition and
+    //! communicate to all procs
+    std::vector<std::pair<int, int>> ConstructCouplingPairs(
+        Teuchos::RCP<DRT::Discretization> scatra_manifold_dis);
+
+    //! define which node is master and which node is slave from coupling_pairs based on master_gids
+    std::map<int, int> DefineMasterSlavePairing(
+        const std::vector<std::pair<int, int>>& coupling_pairs, std::set<int> master_gids);
+
+    //! find list of unique master nodes from all coupling_pairs
+    std::set<int> FindMasterNodeGIDS(std::vector<std::pair<int, int>> coupling_pairs);
+
+    //! setup coupling adapters and multimap extractors to handle mesh tying
     void SetupMeshTyingHandler(Teuchos::RCP<DRT::Discretization> scatra_manifold_dis,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps);
 
-    //! handles all coupling adapters and multimap extractors
-    std::vector<mestying_handler_type> meshtying_handler_;
+    //! handles all coupling adapters and multimap extractors: coupling adapter and
+    //! MultiMapExtractor (interior, master, slave)
+    std::vector<meshtying_handler_type> meshtying_handler_;
   };
 
   class ManifoldMeshTyingStrategySparse : public ManifoldMeshTyingStrategyBase
@@ -352,19 +369,20 @@ namespace SSI
         Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     void ApplyMeshtyingToManifoldMatrix(Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_matrix) override;
 
     void ApplyMeshtyingToManifoldScatraMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_scatra_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_scatra_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_scatra_matrix) override;
 
     void ApplyMeshtyingToManifoldStructureMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix) override;
 
     void ApplyMeshtyingToScatraManifoldMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatra_manifold_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> scatra_manifold_matrix,
+        bool do_uncomplete) override;
   };
 
   class ManifoldMeshTyingStrategyBlock : public ManifoldMeshTyingStrategyBase
@@ -374,22 +392,24 @@ namespace SSI
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     void ApplyMeshtyingToManifoldMatrix(Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_matrix) override;
 
     void ApplyMeshtyingToManifoldScatraMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_scatra_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_scatra_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_scatra_matrix) override;
 
     void ApplyMeshtyingToManifoldStructureMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix) override;
 
     void ApplyMeshtyingToScatraManifoldMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
-        Teuchos::RCP<LINALG::SparseOperator> scatra_manifold_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> scatra_manifold_matrix,
+        bool do_uncomplete) override;
 
-    //! handles all coupling adapters and multimap extractors with additional multimap extractors
-    std::vector<mestying_block_handler_type> MeshTyingBlockHandler() const
+    //! handles all coupling adapters and multimap extractors with additional MultiMapExtractor
+    //! splitting the slave dof map into blocks
+    std::vector<meshtying_block_handler_type> MeshTyingBlockHandler() const
     {
       return meshtying_block_handler_;
     }
@@ -399,7 +419,8 @@ namespace SSI
     Teuchos::RCP<LINALG::MultiMapExtractor> condensed_block_dof_map_;
 
     //! handles all coupling adapters and multimap extractors with additional multimap extractors
-    std::vector<mestying_block_handler_type> meshtying_block_handler_;
+    //! that split the slave dof map into blocks
+    std::vector<meshtying_block_handler_type> meshtying_block_handler_;
   };
 
   //! build specific mesh tying strategy

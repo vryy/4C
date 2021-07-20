@@ -279,7 +279,7 @@ void SSI::SSIBase::InitDiscretizations(
 
       scatra_manifold_dis->FillComplete();
 
-      //! in case no mesh tying between manifolds: unite manifold domains -> create new
+      //! in case of mesh tying between manifolds: unite manifold domains -> create new
       //! ScatraPartitioning condition
       if (is_manifold_meshtying_)
       {
@@ -713,7 +713,7 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
           if (!scatra_manifold_dis->HaveGlobalNode(gid)) scatra_node_col_vec.emplace_back(gid);
       }
       // remove duplicates
-      sort(scatra_node_col_vec.begin(), scatra_node_col_vec.end());
+      std::sort(scatra_node_col_vec.begin(), scatra_node_col_vec.end());
       scatra_node_col_vec.erase(unique(scatra_node_col_vec.begin(), scatra_node_col_vec.end()),
           scatra_node_col_vec.end());
 

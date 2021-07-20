@@ -264,6 +264,7 @@ namespace SSI
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
 
+      //! residual vector on right-hand side of manifold scalar transport system
       Teuchos::RCP<Epetra_Vector> manifold_residual_;
 
       //! residual vector on right-hand side of global system of equations
@@ -396,6 +397,10 @@ namespace SSI
       Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
     };
 
+    //! data types for mesh tying handlers for standard and block case
+    using meshtying_handler_type =
+        std::pair<Teuchos::RCP<ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
+
     class SSIStructureMeshTying
     {
      public:
@@ -449,6 +454,9 @@ namespace SSI
       //! this object holds all maps relevant to mesh tying for scalar transport - structure
       //! interaction
       Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> ssi_meshtyingmaps_;
+
+      //! handles all coupling adapters and multimap extractors
+      std::vector<meshtying_handler_type> meshtying_handler_;
     };
 
     class SSISlaveSideConverter
