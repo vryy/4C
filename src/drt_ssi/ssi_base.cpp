@@ -634,19 +634,6 @@ void SSI::SSIBase::CheckSSIFlags() const
     }
   }
 
-  if (SSIInterfaceContact() and SSIInterfaceMeshtying())
-  {
-    dserror(
-        "Currently it is not possible to have an 'SSIInterfaceContact' condition and an "
-        "'SSIInterfaceMeshtying' condition at the same time. The problem is, that for the scatra "
-        "field the decision whether mesh tying is performed or not is based on the 'S2ICoupling' "
-        "condition which is also used for the SSIInterfaceContact as it defines the parameters of "
-        "the interface equation to be solved. It would be cleaner to separate those "
-        "functionalities [a) perform meshtying, b) what interface equations and what parameters "
-        "are needed] in the scatra field, because then the hack IsS2IMeshtying() in "
-        "CreateMeshtyingStrategy in scatra_timint_implicit.cpp would not be required any more.");
-  }
-
   const bool is_nitsche_penalty_adaptive(DRT::INPUT::IntegralValue<int>(
       DRT::Problem::Instance()->ContactDynamicParams(), "NITSCHE_PENALTY_ADAPTIVE"));
 

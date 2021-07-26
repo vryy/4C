@@ -99,7 +99,7 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
  *----------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
     LINALG::SparseMatrix& ssi_structure_matrix,
-    Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix)
+    Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix, const bool do_uncomplete)
 {
   /* Transform and assemble the structure matrix into the ssi structure matrix block by block:
    * S_i:  structure interior dofs
@@ -115,6 +115,9 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
    * S_sl |  m  |  n  |  o  |  p  |
    *      -------------------------
    */
+  // uncomplete the ssi matrix if necessary
+  if (do_uncomplete) ssi_structure_matrix.UnComplete();
+
   // assemble derivatives of interior dofs w.r.t. interior dofs (block a)
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureInterior(),
       *MapStructureInterior(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
@@ -376,6 +379,7 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToStructureScatra(
       LINALG::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
 
   // apply mesh tying contributions to temp matrix and complete it
+  if (do_uncomplete) temp_struct_scatra_sparse_matrix->UnComplete();
   ApplyMeshtyingToStructureXXX(*temp_struct_scatra_sparse_matrix, *struct_scatra_sparse_matrix);
   temp_struct_scatra_sparse_matrix->Complete(
       *SSIMaps()->ScaTraDofRowMap(), *SSIMaps()->StructureDofRowMap());
@@ -396,6 +400,7 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToStructureScatra(
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
+  if (do_uncomplete) temp_struct_scatra_block_matrix->UnComplete();
   for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
   {
     ApplyMeshtyingToStructureXXX(temp_struct_scatra_block_matrix->Matrix(0, iblock),
@@ -473,9 +478,8 @@ void SSI::MeshtyingStrategyBase::FinalizeMeshtyingStructureMatrix(
     }
 
     // apply pseudo Dirichlet conditions to unfilled matrix, i.e., to global row and column indices
-    else if (ssi_structure_matrix.EpetraMatrix()->InsertGlobalValues(
-                 dofgid_slave, 1, &one, &dofgid_slave))
-      dserror("InsertGlobalValues failed!");
+    else
+      ssi_structure_matrix.EpetraMatrix()->InsertGlobalValues(dofgid_slave, 1, &one, &dofgid_slave);
   }
 }
 

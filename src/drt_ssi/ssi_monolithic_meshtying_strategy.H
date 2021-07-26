@@ -51,9 +51,11 @@ namespace SSI
      *
      * @param[out] ssi_structure_matrix  structure matrix including mesh tying constraints
      * @param[in] structure_matrix       structure matrix from structure problem
+     * @param[in] do_uncomplete          flag indicating if we need to uncomplete the matrix before
+     *                                   adding something
      */
     void ApplyMeshtyingToStructureMatrix(LINALG::SparseMatrix& ssi_structure_matrix,
-        Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix);
+        Teuchos::RCP<const LINALG::SparseMatrix> structure_matrix, bool do_uncomplete);
 
     /*!
      * @brief apply mesh tying to scatra manifold structure matrix
