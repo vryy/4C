@@ -255,6 +255,9 @@ namespace SSI
     //! solve additional scatra field on manifolds
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
 
+    //! activate mesh tying between overlapping manifold fields
+    bool IsScaTraManifoldMeshtying() const { return is_manifold_meshtying_; }
+
     //! Redistribute nodes and elements on processors
     void Redistribute(RedistributionType redistribution_type);
 
@@ -356,6 +359,9 @@ namespace SSI
 
     //! solve additional scatra field on manifolds
     const bool is_scatra_manifold_;
+
+    //! activate mesh tying between overlapping manifold fields
+    const bool is_manifold_meshtying_;
 
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)

@@ -71,47 +71,6 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
       block_position_scatra_manifold_(Teuchos::null),
       position_structure_(-1)
 {
-  block_position_scatra_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport);
-  position_structure_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::structure)->at(0);
-  if (IsScaTraManifold())
-    block_position_scatra_manifold_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::manifold);
-
-  // safety checks
-  if (block_position_scatra_ == Teuchos::null) dserror("Cannot get position of scatra blocks");
-  if (position_structure_ == -1) dserror("Cannot get position of structure block");
-  if (IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
-    dserror("Cannot get position of scatra manifold blocks");
-}
-
-/*-------------------------------------------------------------------------*
- *-------------------------------------------------------------------------*/
-SSI::MeshtyingStrategyBlockSparse::MeshtyingStrategyBlockSparse(const bool is_scatra_manifold,
-    const bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
-    : MeshtyingStrategyBlock(
-          is_scatra_manifold, meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying)
-{
-  temp_scatra_struct_mat_ =
-      SSI::UTILS::SSIMatrices::SetupSparseMatrix(SSIMaps()->ScaTraDofRowMap());
-
-  if (IsScaTraManifold())
-  {
-    temp_scatramanifold_struct_mat_ =
-        SSI::UTILS::SSIMatrices::SetupSparseMatrix(SSIMaps()->ScaTraManifoldDofRowMap());
-  }
-
-  temp_struct_scatra_mat_ =
-      SSI::UTILS::SSIMatrices::SetupSparseMatrix(SSIMaps()->StructureDofRowMap());
-}
-
-/*-------------------------------------------------------------------------*
- *-------------------------------------------------------------------------*/
-SSI::MeshtyingStrategyBlockBlock::MeshtyingStrategyBlockBlock(const bool is_scatra_manifold,
-    const bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
-    : MeshtyingStrategyBlock(
-          is_scatra_manifold, meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying)
-{
   temp_scatra_struct_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
       SSIMaps()->BlockMapScaTra(), SSIMaps()->BlockMapStructure());
 
@@ -123,6 +82,17 @@ SSI::MeshtyingStrategyBlockBlock::MeshtyingStrategyBlockBlock(const bool is_scat
 
   temp_struct_scatra_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
       SSIMaps()->BlockMapStructure(), SSIMaps()->BlockMapScaTra());
+
+  block_position_scatra_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport);
+  position_structure_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::structure)->at(0);
+  if (IsScaTraManifold())
+    block_position_scatra_manifold_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::manifold);
+
+  // safety checks
+  if (block_position_scatra_ == Teuchos::null) dserror("Cannot get position of scatra blocks");
+  if (position_structure_ == -1) dserror("Cannot get position of structure block");
+  if (IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
+    dserror("Cannot get position of scatra manifold blocks");
 }
 
 /*----------------------------------------------------------------------*
@@ -140,9 +110,9 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
    *      | S_i | S_m | S_ss| S_sl|
    *      |-----|-----|-----|-----|
    * S_i  |  a  |  b  |  c  |  d  |
-   * S_m  |  e  |  f  |  g  |  -  |
-   * S_ss |  h  |  i  |  j  |  k  |
-   * S_sl |  l  |  -  |  m  |  n  |
+   * S_m  |  e  |  f  |  g  |  h  |
+   * S_ss |  i  |  j  |  k  |  l  |
+   * S_sl |  m  |  n  |  o  |  p  |
    *      -------------------------
    */
   // assemble derivatives of interior dofs w.r.t. interior dofs (block a)
@@ -161,12 +131,12 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureMaster(),
       *MapStructureMaster(), 1.0, nullptr, nullptr, ssi_structure_matrix, true, true);
 
-  // assemble derivatives of surface slave dofs w.r.t. interior dofs (block h)
+  // assemble derivatives of surface slave dofs w.r.t. interior dofs (block i)
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
       *MapStructureInterior(), 1.0, &StructureSlaveConverter(), nullptr, ssi_structure_matrix, true,
       true);
 
-  // assemble derivatives of surface slave dofs w.r.t. master dofs (block i)
+  // assemble derivatives of surface slave dofs w.r.t. master dofs (block j)
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
       *MapStructureMaster(), 1.0, &StructureSlaveConverter(), nullptr, ssi_structure_matrix, true,
       true);
@@ -181,14 +151,14 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
       *MapStructureSlave(), 1.0, nullptr, &StructureSlaveConverter(), ssi_structure_matrix, true,
       true);
 
-  // assemble derivatives of surface slave dofs w.r.t. surface slave dofs (block j)
+  // assemble derivatives of surface slave dofs w.r.t. surface slave dofs (block k)
   LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
       *MapStructureSlave(), 1.0, &StructureSlaveConverter(), &StructureSlaveConverter(),
       ssi_structure_matrix, true, true);
 
   if (Meshtying3DomainIntersection())
   {
-    // assemble derivatives of line slave dofs w.r.t. interior dofs (block l)
+    // assemble derivatives of line slave dofs w.r.t. interior dofs (block m)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureInterior(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), nullptr, ssi_structure_matrix, true, true);
@@ -198,18 +168,28 @@ void SSI::MeshtyingStrategyBase::ApplyMeshtyingToStructureMatrix(
         *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
-    // assemble derivatives of line slave dofs w.r.t. line slave dofs (block n)
+    // assemble derivatives of line slave dofs w.r.t. master dofs (block n)
+    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
+        *MapStructureSlave3DomainIntersection(), *MapStructureMaster(), 1.0,
+        &StructureSlaveConverter3DomainIntersection(), nullptr, ssi_structure_matrix, true, true);
+
+    // assemble derivatives of master dofs w.r.t. line slave dofs (block h)
+    LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureMaster(),
+        *MapStructureSlave3DomainIntersection(), 1.0, nullptr,
+        &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
+
+    // assemble derivatives of line slave dofs w.r.t. line slave dofs (block p)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureSlave3DomainIntersection(), 1.0,
         &StructureSlaveConverter3DomainIntersection(),
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
-    // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block k)
+    // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix, *MapStructureSlave(),
         *MapStructureSlave3DomainIntersection(), 1.0, &StructureSlaveConverter(),
         &StructureSlaveConverter3DomainIntersection(), ssi_structure_matrix, true, true);
 
-    // assemble derivatives of line slave dofs w.r.t. surface slave dofs (block m)
+    // assemble derivatives of line slave dofs w.r.t. surface slave dofs (block o)
     LINALG::MatrixLogicalSplitAndTransform()(*structure_matrix,
         *MapStructureSlave3DomainIntersection(), *MapStructureSlave(), 1.0,
         &StructureSlaveConverter3DomainIntersection(), &StructureSlaveConverter(),
@@ -318,28 +298,7 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraManifoldStructure(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToScatraManifoldStructure(
-    Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
-{
-  temp_scatramanifold_struct_mat_->Zero();
-  auto temp_scatramanifold_struct_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatramanifold_struct_mat_);
-  auto manifold_structure_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(manifold_structure_matrix);
-
-  // apply mesh tying contributions to temp matrix and complete it
-  ApplyMeshtyingToXXXStructure(
-      *temp_scatramanifold_struct_sparse_matrix, *manifold_structure_sparse_matrix);
-  temp_scatramanifold_struct_sparse_matrix->Complete(
-      *SSIMaps()->StructureDofRowMap(), *SSIMaps()->ScaTraManifoldDofRowMap());
-
-  if (do_uncomplete) manifold_structure_sparse_matrix->UnComplete();
-  manifold_structure_sparse_matrix->Add(*temp_scatramanifold_struct_sparse_matrix, false, 1.0, 0.0);
-}
-
-/*-------------------------------------------------------------------------*
- *-------------------------------------------------------------------------*/
-void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToScatraManifoldStructure(
+void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraManifoldStructure(
     Teuchos::RCP<LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
 {
   temp_scatramanifold_struct_mat_->Zero();
@@ -383,27 +342,7 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToScatraStructure(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToScatraStructure(
-    Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
-{
-  temp_scatra_struct_mat_->Zero();
-  auto temp_scatra_struct_domain_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(temp_scatra_struct_mat_);
-  auto scatra_structure_matrix_sparse =
-      LINALG::CastToSparseMatrixAndCheckSuccess(scatra_structure_matrix);
-
-  ApplyMeshtyingToXXXStructure(
-      *temp_scatra_struct_domain_sparse_matrix, *scatra_structure_matrix_sparse);
-  temp_scatra_struct_domain_sparse_matrix->Complete(
-      *SSIMaps()->StructureDofRowMap(), *SSIMaps()->ScaTraDofRowMap());
-
-  if (do_uncomplete) scatra_structure_matrix_sparse->UnComplete();
-  scatra_structure_matrix_sparse->Add(*temp_scatra_struct_domain_sparse_matrix, false, 1.0, 0.0);
-}
-
-/*-------------------------------------------------------------------------*
- *-------------------------------------------------------------------------*/
-void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToScatraStructure(
+void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraStructure(
     Teuchos::RCP<LINALG::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
 {
   temp_scatra_struct_mat_->Zero();
@@ -447,27 +386,7 @@ void SSI::MeshtyingStrategySparse::ApplyMeshtyingToStructureScatra(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::MeshtyingStrategyBlockSparse::ApplyMeshtyingToStructureScatra(
-    Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
-{
-  temp_struct_scatra_mat_->Zero();
-  auto temp_struct_scatra_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(temp_struct_scatra_mat_);
-  auto struct_scatra_sparse_matrix =
-      LINALG::CastToSparseMatrixAndCheckSuccess(structure_scatra_matrix);
-
-  // apply mesh tying contributions to temp matrix and complete it
-  ApplyMeshtyingToStructureXXX(*temp_struct_scatra_sparse_matrix, *struct_scatra_sparse_matrix);
-  temp_struct_scatra_sparse_matrix->Complete(
-      *SSIMaps()->ScaTraDofRowMap(), *SSIMaps()->StructureDofRowMap());
-
-  if (do_uncomplete) struct_scatra_sparse_matrix->UnComplete();
-  struct_scatra_sparse_matrix->Add(*temp_struct_scatra_sparse_matrix, false, 1.0, 0.0);
-}
-
-/*-------------------------------------------------------------------------*
- *-------------------------------------------------------------------------*/
-void SSI::MeshtyingStrategyBlockBlock::ApplyMeshtyingToStructureScatra(
+void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToStructureScatra(
     Teuchos::RCP<LINALG::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->Zero();
@@ -563,39 +482,19 @@ void SSI::MeshtyingStrategyBase::FinalizeMeshtyingStructureMatrix(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool is_scatra_manifold,
-    const LINALG::MatrixType matrixtype_ssi, const LINALG::MatrixType matrixtype_scatra,
-    const bool meshtying_3_domain_intersection, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+    const LINALG::MatrixType matrixtype_scatra, const bool meshtying_3_domain_intersection,
+    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying)
 {
   Teuchos::RCP<SSI::MeshtyingStrategyBase> meshtying_strategy = Teuchos::null;
 
-  switch (matrixtype_ssi)
+  switch (matrixtype_scatra)
   {
-    case LINALG::MatrixType::block_field:
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
     {
-      switch (matrixtype_scatra)
-      {
-        case LINALG::MatrixType::block_condition:
-        case LINALG::MatrixType::block_condition_dof:
-        {
-          meshtying_strategy = Teuchos::rcp(new SSI::MeshtyingStrategyBlockBlock(is_scatra_manifold,
-              meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying));
-          break;
-        }
-        case LINALG::MatrixType::sparse:
-        {
-          meshtying_strategy =
-              Teuchos::rcp(new SSI::MeshtyingStrategyBlockSparse(is_scatra_manifold,
-                  meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying));
-          break;
-        }
-
-        default:
-        {
-          dserror("unknown matrix type of ScaTra field");
-          break;
-        }
-      }
+      meshtying_strategy = Teuchos::rcp(new SSI::MeshtyingStrategyBlock(
+          is_scatra_manifold, meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying));
       break;
     }
     case LINALG::MatrixType::sparse:
@@ -604,9 +503,10 @@ Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::BuildMeshtyingStrategy(const bool 
           is_scatra_manifold, meshtying_3_domain_intersection, ssi_maps, ssi_structure_meshtying));
       break;
     }
+
     default:
     {
-      dserror("unknown matrix type of SSI problem");
+      dserror("unknown matrix type of ScaTra field");
       break;
     }
   }

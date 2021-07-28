@@ -52,6 +52,8 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       issetup_(false),
       is_scatra_manifold_(
           DRT::INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
+      is_manifold_meshtying_(DRT::INPUT::IntegralValue<bool>(
+          globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       iter_(0),
       meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
           DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
@@ -249,13 +251,21 @@ void SSI::SSIBase::InitDiscretizations(
       // clone conditions. Needed this way, as many conditions are cloned from SSISurfaceManifold.
       std::vector<std::map<std::string, std::string>> conditions_to_copy = {
           {std::make_pair("SSISurfaceManifold", "SSISurfaceManifold")},
-          {std::make_pair("SSISurfaceManifold", "ScatraPartitioning")},
           {std::make_pair("ScaTraManifoldInitfield", "Initfield")},
           {std::make_pair("ManifoldDirichlet", "Dirichlet")}};
 
-      if (DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
-              problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS") !=
-          INPAR::SCATRA::outputscalars_none)
+      //! in case of no mesh tying between manifolds: partition manifold domains
+      if (!is_manifold_meshtying_)
+      {
+        std::map<std::string, std::string> temp_map = {
+            std::make_pair("SSISurfaceManifold", "ScatraPartitioning")};
+        conditions_to_copy.emplace_back(temp_map);
+      }
+
+      const auto output_scalar_type = DRT::INPUT::IntegralValue<INPAR::SCATRA::OutputScalarType>(
+          problem->ScalarTransportDynamicParams(), "OUTPUTSCALARS");
+      if (output_scalar_type == INPAR::SCATRA::outputscalars_condition or
+          output_scalar_type == INPAR::SCATRA::outputscalars_entiredomain_condition)
       {
         std::map<std::string, std::string> tempmap = {
             std::make_pair("SSISurfaceManifold", "TotalAndMeanScalar")};
@@ -268,6 +278,41 @@ void SSI::SSIBase::InitDiscretizations(
         creator.CopyConditions(*structdis, *scatra_manifold_dis, condition_to_copy);
 
       scatra_manifold_dis->FillComplete();
+
+      //! in case of mesh tying between manifolds: unite manifold domains -> create new
+      //! ScatraPartitioning condition
+      if (is_manifold_meshtying_)
+      {
+        // create vector of all node GIDs (all procs) of manifold dis
+        int num_my_nodes = scatra_manifold_dis->NodeRowMap()->NumMyElements();
+        std::vector<int> my_node_ids(num_my_nodes);
+        for (int lid = 0; lid < num_my_nodes; ++lid)
+          my_node_ids[lid] = scatra_manifold_dis->NodeRowMap()->GID(lid);
+
+        int max_num_nodes = 0;
+        Comm().MaxAll(&num_my_nodes, &max_num_nodes, 1);
+
+        // resize vector and fill with place holders (-1)
+        my_node_ids.resize(max_num_nodes, -1);
+
+        std::vector<int> glob_node_ids(max_num_nodes * Comm().NumProc(), -1);
+        Comm().GatherAll(&my_node_ids[0], &glob_node_ids[0], static_cast<int>(my_node_ids.size()));
+
+        // remove place holders (-1)
+        glob_node_ids.erase(
+            std::remove(glob_node_ids.begin(), glob_node_ids.end(), -1), glob_node_ids.end());
+
+        // create new condition
+        const int num_conditions = static_cast<int>(scatra_manifold_dis->GetAllConditions().size());
+        auto cond = Teuchos::rcp(new DRT::Condition(
+            num_conditions + 1, DRT::Condition::ScatraPartitioning, true, DRT::Condition::Surface));
+        cond->Add("ConditionID", 0);
+        cond->Add("Node Ids", glob_node_ids);
+
+        scatra_manifold_dis->SetCondition("ScatraPartitioning", cond);
+
+        scatra_manifold_dis->FillComplete();
+      }
     }
   }
   else
@@ -658,28 +703,36 @@ void SSI::SSIBase::Redistribute(const RedistributionType redistribution_type)
           scatra_manifold_dis, true, true, true);
 
       // build map with scatra nodes on manifold condition
-      std::vector<int> scatra_manifold_node_col_vec(0);
-      for (int lid = 0; lid < scatradis->NodeColMap()->NumMyElements(); ++lid)
+      std::vector<int> scatra_node_col_vec(0);
+      std::vector<DRT::Condition*> manifold_conditions_on_scatra;
+      scatradis->GetCondition("SSISurfaceManifold", manifold_conditions_on_scatra);
+
+      for (auto* manifold_condition_on_scatra : manifold_conditions_on_scatra)
       {
-        if (scatradis->gNode(scatradis->NodeColMap()->GID(lid))
-                ->GetCondition("SSISurfaceManifold") != nullptr)
-          scatra_manifold_node_col_vec.push_back(scatradis->NodeColMap()->GID(lid));
+        for (int gid : *manifold_condition_on_scatra->Nodes())
+          if (!scatra_manifold_dis->HaveGlobalNode(gid)) scatra_node_col_vec.emplace_back(gid);
       }
+      // remove duplicates
+      std::sort(scatra_node_col_vec.begin(), scatra_node_col_vec.end());
+      scatra_node_col_vec.erase(unique(scatra_node_col_vec.begin(), scatra_node_col_vec.end()),
+          scatra_node_col_vec.end());
+
       auto scatra_node_col_map =
-          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(scatra_manifold_node_col_vec.size()),
-              &scatra_manifold_node_col_vec[0], 0, scatradis->Comm()));
+          Teuchos::rcp(new Epetra_Map(-1, static_cast<int>(scatra_node_col_vec.size()),
+              &scatra_node_col_vec[0], 0, scatradis->Comm()));
+
+      scatra_manifold_dis->ExportColumnNodes(
+          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatra_node_col_map, true));
+      scatra_manifold_dis->FillComplete();
 
       // export new distributed column nodes on other fields to enable field coupling
       structdis->ExportColumnNodes(
           *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *structdis->NodeColMap(), true));
       scatradis->ExportColumnNodes(
           *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatradis->NodeColMap(), true));
-      scatra_manifold_dis->ExportColumnNodes(
-          *LINALG::MergeMap(*scatra_manifold_dis->NodeColMap(), *scatra_node_col_map, true));
 
       structdis->FillComplete();
       scatradis->FillComplete();
-      scatra_manifold_dis->FillComplete();
     }
     else
     {

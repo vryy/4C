@@ -9,7 +9,7 @@
 #include "ssi_monolithic.H"
 
 #include "ssi_coupling.H"
-#include "ssi_manifold_flux_evaluator.H"
+#include "ssi_manifold_utils.H"
 #include "ssi_monolithic_assemble_strategy.H"
 #include "ssi_monolithic_contact_strategy.H"
 #include "ssi_monolithic_convcheck_strategies.H"
@@ -78,6 +78,7 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       strategy_contact_(Teuchos::null),
       strategy_convcheck_(Teuchos::null),
       strategy_equilibration_(Teuchos::null),
+      strategy_manifold_meshtying_(Teuchos::null),
       strategy_meshtying_(Teuchos::null),
       timer_(Teuchos::rcp(new Epetra_Time(comm)))
 {
@@ -118,9 +119,12 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
   // check for first iteration in calculation of initial time derivative
   if (IterationCount() == 0 and Step() == 0 and !DoCalculateInitialPotentialField()) return true;
 
-  if (IterationCount() == 1)
+  if (IterationCount() <= 2)
   {
-    // check for first iteration in calculation of initial potential field
+    // check for first iteration in standard Newton loop
+    if (Step() == 1 and !DoCalculateInitialPotentialField()) return true;
+
+    // check for first iterations in calculation of initial potential field
     if (Step() == 0 and DoCalculateInitialPotentialField()) return true;
 
     // check for first iteration in restart simulations
@@ -193,6 +197,50 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
+void SSI::SSIMono::ApplyManifoldMeshtying()
+{
+  if (!manifoldscatraflux_->SystemMatrixManifold()->Filled())
+    manifoldscatraflux_->SystemMatrixManifold()->Complete();
+
+  if (!ssi_matrices_->ScaTraManifoldStructureMatrix()->Filled())
+    ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+
+  if (!manifoldscatraflux_->MatrixManifoldStructure()->Filled())
+    manifoldscatraflux_->CompleteMatrixManifoldStructure();
+
+  if (!manifoldscatraflux_->MatrixScaTraManifold()->Filled())
+    manifoldscatraflux_->CompleteMatrixScaTraManifold();
+
+  if (!manifoldscatraflux_->MatrixManifoldScatra()->Filled())
+    manifoldscatraflux_->CompleteMatrixManifoldScaTra();
+
+  // apply mesh tying to...
+  // manifold - manifold
+  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldMatrix(
+      ssi_matrices_->ManifoldMatrix(), ScaTraManifold()->SystemMatrixOperator());
+  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldMatrix(
+      ssi_matrices_->ManifoldMatrix(), manifoldscatraflux_->SystemMatrixManifold());
+
+  // manifold - structure
+  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldStructureMatrix(
+      ssi_matrices_->ScaTraManifoldStructureMatrix(),
+      manifoldscatraflux_->MatrixManifoldStructure());
+
+  // scatra - manifold
+  strategy_manifold_meshtying_->ApplyMeshtyingToScatraManifoldMatrix(
+      ssi_matrices_->ScaTraScaTraManifoldMatrix(), manifoldscatraflux_->MatrixScaTraManifold(),
+      IsUncompleteOfMatricesNecessaryForMeshTying());
+
+  // manifold - scatra
+  strategy_manifold_meshtying_->ApplyMeshtyingToManifoldScatraMatrix(
+      ssi_matrices_->ScaTraManifoldScaTraMatrix(), manifoldscatraflux_->MatrixManifoldScatra());
+
+  // RHS
+  strategy_manifold_meshtying_->ApplyMeshTyingToManifoldRHS(ssi_vectors_->ManifoldResidual());
+}
+
+/*--------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------*/
 void SSI::SSIMono::AssembleMatAndRHS()
 {
   AssembleMatScaTra();
@@ -207,9 +255,7 @@ void SSI::SSIMono::AssembleMatAndRHS()
   // assemble monolithic RHS
   strategy_assemble_->AssembleRHS(ssi_vectors_->Residual(), ssi_vectors_->ScatraResidual(),
       ssi_vectors_->StructureResidual(),
-      IsScaTraManifold() ? ScaTraManifold()->Residual() : Teuchos::null,
-      IsScaTraManifold() ? manifoldscatraflux_->RHSManifold() : Teuchos::null,
-      IsScaTraManifold() ? manifoldscatraflux_->RHSScaTra() : Teuchos::null);
+      IsScaTraManifold() ? ssi_vectors_->ManifoldResidual() : Teuchos::null);
 }
 
 /*--------------------------------------------------------------------------*
@@ -231,16 +277,11 @@ void SSI::SSIMono::AssembleMatScaTraManifold()
 {
   // assemble scatra manifold - scatra manifold block into system matrix
   strategy_assemble_->AssembleScatramanifoldScatramanifold(
-      ssi_matrices_->SystemMatrix(), ScaTraManifold()->SystemMatrixOperator());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ManifoldMatrix());
 
   // assemble scatra manifold-structure block into system matrix
   strategy_assemble_->AssembleScatramanifoldStructure(
       ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldStructureMatrix());
-
-  // assemble contributions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
-  // manifold side
-  strategy_assemble_->AssembleScatramanifoldScatramanifold(
-      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->SystemMatrixManifold());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
   // scatra side
@@ -250,15 +291,12 @@ void SSI::SSIMono::AssembleMatScaTraManifold()
   // assemble contributions from scatra - scatra manifold coupling: derivs. of manifold side w.r.t.
   // scatra side
   strategy_assemble_->AssembleScatraScatramanifold(
-      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixScaTraManifold());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraScaTraManifoldMatrix());
 
   // assemble contributions from scatra - scatra manifold coupling: derivs. of scatra side w.r.t.
   // manifold side
   strategy_assemble_->AssembleScatramanifoldScatra(
-      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixManifoldScatra());
-
-  strategy_assemble_->AssembleScatramanifoldStructure(
-      ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixManifoldStructure());
+      ssi_matrices_->SystemMatrix(), ssi_matrices_->ScaTraManifoldScaTraMatrix());
 
   strategy_assemble_->AssembleScatraStructure(
       ssi_matrices_->SystemMatrix(), manifoldscatraflux_->MatrixScaTraStructure());
@@ -301,6 +339,9 @@ void SSI::SSIMono::EvaluateSubproblems()
 
   // apply mesh tying to sub problems
   ApplyMeshtyingToSubProblems();
+
+  // apply mesh tying to manifold domains
+  if (IsScaTraManifold()) ApplyManifoldMeshtying();
 
   // apply contact contributions to sub problems
   if (SSIInterfaceContact()) ApplyContactToSubProblems();
@@ -419,7 +460,10 @@ void SSI::SSIMono::CompleteSubproblemMatrices()
 
   if (IsScaTraManifold())
   {
+    ssi_matrices_->ManifoldMatrix()->Complete();
     ssi_matrices_->CompleteScaTraManifoldStructureMatrix();
+    ssi_matrices_->CompleteScaTraScaTraManifoldMatrix();
+    ssi_matrices_->CompleteScaTraManifoldScaTraMatrix();
 
     manifoldscatraflux_->CompleteMatrixManifoldScaTra();
     manifoldscatraflux_->CompleteMatrixManifoldStructure();
@@ -718,7 +762,7 @@ void SSI::SSIMono::SetupSystem()
       ssi_maps_, matrixtype_, ScaTraField()->MatrixType(), IsScaTraManifold()));
 
   // initialize residual and increment vectors
-  ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(ssi_maps_));
+  ssi_vectors_ = Teuchos::rcp(new SSI::UTILS::SSIVectors(ssi_maps_, IsScaTraManifold()));
 
   // initialize strategy for assembly
   strategy_assemble_ = SSI::BuildAssembleStrategy(
@@ -733,6 +777,11 @@ void SSI::SSIMono::SetupSystem()
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
     manifoldscatraflux_ = Teuchos::rcp(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this));
+
+    // initialize object, that performs meshtying between manifold domains
+    strategy_manifold_meshtying_ =
+        SSI::BuildManifoldMeshTyingStrategy(ScaTraManifold()->Discretization(), ssi_maps_,
+            IsScaTraManifoldMeshtying(), ScaTraManifold()->MatrixType());
   }
   else
   {
@@ -749,9 +798,8 @@ void SSI::SSIMono::SetupSystem()
       SSI::BuildContactStrategy(CoNitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
 
   // instantiate appropriate mesh tying class
-  strategy_meshtying_ =
-      SSI::BuildMeshtyingStrategy(IsScaTraManifold(), matrixtype_, ScaTraField()->MatrixType(),
-          Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
+  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(IsScaTraManifold(), ScaTraField()->MatrixType(),
+      Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
@@ -954,8 +1002,24 @@ void SSI::SSIMono::UpdateIterScaTra()
 
   if (IsScaTraManifold())
   {
-    ScaTraManifold()->UpdateIter(MapsSubProblems()->ExtractVector(
-        ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)));
+    auto increment_manifold = MapsSubProblems()->ExtractVector(
+        ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold));
+
+    // reconstruct slave side solution from master side
+    if (IsScaTraManifoldMeshtying())
+    {
+      for (const auto& meshtying : strategy_manifold_meshtying_->MeshTyingHandler())
+      {
+        auto coupling_adapter = meshtying.first;
+        auto multimap = meshtying.second;
+
+        auto master_dofs = multimap->ExtractVector(increment_manifold, 1);
+        auto master_dofs_to_slave = coupling_adapter->MasterToSlave(master_dofs);
+        multimap->InsertVector(master_dofs_to_slave, 2, increment_manifold);
+      }
+    }
+
+    ScaTraManifold()->UpdateIter(increment_manifold);
     ScaTraManifold()->ComputeIntermediateValues();
   }
 }
@@ -1091,8 +1155,13 @@ void SSI::SSIMono::EvaluateScaTraManifold()
   // evaluate single problem
   ScaTraManifold()->PrepareLinearSolve();
 
+  ssi_vectors_->ManifoldResidual()->Update(1.0, *ScaTraManifold()->Residual(), 1.0);
+
   // evaluate coupling fluxes
   manifoldscatraflux_->Evaluate();
+
+  ssi_vectors_->ManifoldResidual()->Update(1.0, *manifoldscatraflux_()->RHSManifold(), 1.0);
+  ssi_vectors_->ScatraResidual()->Update(1.0, *manifoldscatraflux_()->RHSScaTra(), 1.0);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1203,11 +1272,7 @@ void SSI::SSIMono::CalcInitialPotentialField()
     SolveLinearSystem();
 
     // update potential dofs in scatra and manifold fields
-    ScaTraField()->UpdateIter(MapsSubProblems()->ExtractVector(ssi_vectors_->Increment(),
-        UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport)));
-    if (IsScaTraManifold())
-      ScaTraManifold()->UpdateIter(MapsSubProblems()->ExtractVector(
-          ssi_vectors_->Increment(), UTILS::SSIMaps::GetProblemPosition(Subproblem::manifold)));
+    UpdateIterScaTra();
 
     // copy initial state vector
     ScaTraField()->Phin()->Update(1.0, *ScaTraField()->Phinp(), 0.0);

@@ -17,6 +17,16 @@ namespace DRT
   namespace UTILS
   {
     /*!
+     * \brief Add nodal GID on this processor to existing vector of GIDs
+     *
+     * @param[in] dis                   discretization, that holds nodes with GIDs
+     * @param[in] nodegid               nodal GID
+     * @param[out] my_gid_vec           vector with my node GIDs
+     */
+    void AddOwnedNodeGID(
+        Teuchos::RCP<DRT::Discretization> dis, int nodegid, std::vector<int>& my_gid_vec);
+
+    /*!
      * \brief Add nodal GIDs on this processor to existing vector from vector with global GIDs
      *
      * @param[in] dis                   discretization, that holds nodes with GIDs

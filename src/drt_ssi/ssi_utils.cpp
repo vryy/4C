@@ -25,6 +25,7 @@
 
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../drt_lib/drt_matchingoctree.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -441,7 +442,10 @@ SSI::UTILS::SSIMatrices::SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi
       scatramanifold_structure_matrix_(Teuchos::null),
       scatra_structure_matrix_(Teuchos::null),
       structure_scatra_matrix_(Teuchos::null),
-      structure_matrix_(Teuchos::null)
+      structure_matrix_(Teuchos::null),
+      manifold_matrix_(Teuchos::null),
+      scatra_scatramanifold_matrix_(Teuchos::null),
+      scatramanifold_scatra_matrix_(Teuchos::null)
 {
   // fill maps related to scalar transport manifold if relevant
   if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->ScaTraManifoldDofRowMap();
@@ -466,12 +470,19 @@ void SSI::UTILS::SSIMatrices::InitializeMainDiagMatrices(
     case LINALG::MatrixType::block_condition_dof:
     {
       scatra_matrix_ = SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->BlockMapScaTra());
+      if (is_scatra_manifold_)
+        manifold_matrix_ = SetupBlockMatrix(
+            ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapScaTraManifold());
+
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
       scatra_matrix_ = SetupSparseMatrix(scatra_dofrowmap_);
+
+      if (is_scatra_manifold_) manifold_matrix_ = SetupSparseMatrix(scatramanifold_dofrowmap_);
+
       break;
     }
 
@@ -503,6 +514,10 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
       {
         scatramanifold_structure_matrix_ =
             SetupBlockMatrix(ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapStructure());
+        scatramanifold_scatra_matrix_ =
+            SetupBlockMatrix(ssi_maps->BlockMapScaTraManifold(), ssi_maps->BlockMapScaTra());
+        scatra_scatramanifold_matrix_ =
+            SetupBlockMatrix(ssi_maps->BlockMapScaTra(), ssi_maps->BlockMapScaTraManifold());
       }
 
       break;
@@ -516,6 +531,8 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
       if (is_scatra_manifold_)
       {
         scatramanifold_structure_matrix_ = SetupSparseMatrix(scatramanifold_dofrowmap_);
+        scatramanifold_scatra_matrix_ = SetupSparseMatrix(scatramanifold_dofrowmap_);
+        scatra_scatramanifold_matrix_ = SetupSparseMatrix(scatra_dofrowmap_);
       }
 
       break;
@@ -531,6 +548,25 @@ void SSI::UTILS::SSIMatrices::InitializeOffDiagMatrices(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldScaTraMatrix()
+{
+  switch (scatra_matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+      ScaTraManifoldScaTraMatrix()()->Complete(*scatra_dofrowmap_, *scatramanifold_dofrowmap_);
+      break;
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+      ScaTraManifoldScaTraMatrix()()->Complete();
+      break;
+    default:
+      dserror("Not supported LINALG::MatrixType!");
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldStructureMatrix()
 {
   switch (scatra_matrixtype_)
@@ -541,6 +577,25 @@ void SSI::UTILS::SSIMatrices::CompleteScaTraManifoldStructureMatrix()
     case LINALG::MatrixType::block_condition:
     case LINALG::MatrixType::block_condition_dof:
       ScaTraManifoldStructureMatrix()->Complete();
+      break;
+    default:
+      dserror("Not supported LINALG::MatrixType!");
+      break;
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::UTILS::SSIMatrices::CompleteScaTraScaTraManifoldMatrix()
+{
+  switch (scatra_matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+      ScaTraScaTraManifoldMatrix()->Complete(*scatramanifold_dofrowmap_, *scatra_dofrowmap_);
+      break;
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+      ScaTraScaTraManifoldMatrix()->Complete();
       break;
     default:
       dserror("Not supported LINALG::MatrixType!");
@@ -592,16 +647,28 @@ void SSI::UTILS::SSIMatrices::ClearMatrices()
 {
   system_matrix_->Zero();
   scatra_matrix_->Zero();
-  if (is_scatra_manifold_) scatramanifold_structure_matrix_->Zero();
   scatra_structure_matrix_->Zero();
   structure_scatra_matrix_->Zero();
   structure_matrix_->Zero();
+
+  if (is_scatra_manifold_)
+  {
+    scatramanifold_structure_matrix_->Zero();
+    manifold_matrix_->Zero();
+    scatra_scatramanifold_matrix_->Zero();
+    scatramanifold_scatra_matrix_->Zero();
+  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-SSI::UTILS::SSIVectors::SSIVectors(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+SSI::UTILS::SSIVectors::SSIVectors(
+    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : increment_(LINALG::CreateVector(*(ssi_maps->MapsSubProblems()->FullMap()), true)),
+      is_scatra_manifold_(is_scatra_manifold),
+      manifold_residual_(is_scatra_manifold
+                             ? LINALG::CreateVector(*(ssi_maps->ScaTraManifoldDofRowMap()), true)
+                             : Teuchos::null),
       residual_(LINALG::CreateVector(*(ssi_maps->MapsSubProblems()->FullMap()), true)),
       scatra_residual_(LINALG::CreateVector(*(ssi_maps->ScaTraDofRowMap()), true)),
       structure_residual_(LINALG::CreateVector(*(ssi_maps->StructureDofRowMap()), true))
@@ -619,6 +686,7 @@ void SSI::UTILS::SSIVectors::ClearResiduals()
   residual_->PutScalar(0.0);
   scatra_residual_->PutScalar(0.0);
   structure_residual_->PutScalar(0.0);
+  if (is_scatra_manifold_) manifold_residual_->PutScalar(0.0);
 }
 
 /*---------------------------------------------------------------------------------*
@@ -1164,7 +1232,8 @@ SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(const std::string& cond
       icoup_structure_3_domain_intersection_(Teuchos::null),
       meshtying_3_domain_intersection_(meshtying_3_domain_intersection),
       slave_side_converter_(Teuchos::null),
-      ssi_meshtyingmaps_(Teuchos::null)
+      ssi_meshtyingmaps_(Teuchos::null),
+      meshtying_handler_()
 {
   icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(struct_dis,
       meshtying_3_domain_intersection, conditionname_coupling, conditionname_3_domain_intersection);

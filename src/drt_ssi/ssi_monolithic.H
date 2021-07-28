@@ -47,6 +47,7 @@ namespace SSI
   class AssembleStrategyBase;
   class ContactStrategyBase;
   class DBCHandlerBase;
+  class ManifoldMeshTyingStrategyBase;
   class MeshtyingStrategyBase;
   class ScatraStructureOffDiagCoupling;
   class ScaTraManifoldScaTraFluxEvaluator;
@@ -141,6 +142,9 @@ namespace SSI
 
     //! apply the Dirichlet boundary conditions to the ssi system, i.e. matrices and residuals
     void ApplyDBCToSystem();
+
+    //! apply mesh tying between manifold domains on matrices and residuals
+    void ApplyManifoldMeshtying();
 
     //! perform mesh tying on matrices and residuals as obtained from sub problems
     void ApplyMeshtyingToSubProblems();
@@ -282,6 +286,9 @@ namespace SSI
 
     //! all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<LINALG::Equilibration> strategy_equilibration_;
+
+    //! strategy how to apply mesh tying on manifold domains
+    Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> strategy_manifold_meshtying_;
 
     //! strategy how to apply mesh tying to system matrix and rhs
     Teuchos::RCP<SSI::MeshtyingStrategyBase> strategy_meshtying_;
