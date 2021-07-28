@@ -719,8 +719,9 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::UnCompleteMatricesIfNecessary(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
   // definition of lambda function to get size of graph for given matrix
-  auto graph_size = [](Teuchos::RCP<LINALG::SparseMatrix> matrix)
-  { return matrix->EpetraMatrix()->Graph().NumGlobalEntries(); };
+  auto graph_size = [](Teuchos::RCP<LINALG::SparseMatrix> matrix) {
+    return matrix->EpetraMatrix()->Graph().NumGlobalEntries();
+  };
 
   // get size of graphs of conditions matrices
   const int size_manifold_scatra_graph_ = graph_size(matrix_manifold_scatra_cond_);

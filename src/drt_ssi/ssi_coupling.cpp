@@ -465,13 +465,13 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
         new DRT::DofSetGIDBasedWrapper(scatra_manifold_dis, scatra_manifold_dis->GetDofSetProxy()));
 
     auto proxy_structure_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-        structgidmatchingdofset, structdis, "SSISurfaceManifold", couplingids));
+        structgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
 
     auto proxy_scatra_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-        scatragidmatchingdofset, scatradis, "SSISurfaceManifold", couplingids));
+        scatragidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
 
-    auto proxy_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
-        scatramanifoldgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
+    auto proxy_scatramanifold_scatra = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
+        scatramanifoldgidmatchingdofset, scatradis, "SSISurfaceManifold", couplingids));
 
     if (scatra_manifold_dis->AddDofSet(proxy_structure_scatramanifold) != 1)
       dserror("unexpected dof sets in scatra manifold field");
@@ -479,7 +479,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     if (scatra_manifold_dis->AddDofSet(proxy_scatra_scatramanifold) != 2)
       dserror("unexpected dof sets in scatra manifold field");
 
-    if (scatradis->AddDofSet(proxy_scatramanifold) != 2)
+    if (scatradis->AddDofSet(proxy_scatramanifold_scatra) != 2)
       dserror("unexpected dof sets in scatra field");
   }
 
