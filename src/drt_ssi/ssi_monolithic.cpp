@@ -224,7 +224,8 @@ void SSI::SSIMono::ApplyManifoldMeshtying()
   // manifold - structure
   strategy_manifold_meshtying_->ApplyMeshtyingToManifoldStructureMatrix(
       ssi_matrices_->ScaTraManifoldStructureMatrix(),
-      manifoldscatraflux_->MatrixManifoldStructure());
+      manifoldscatraflux_->MatrixManifoldStructure(),
+      IsUncompleteOfMatricesNecessaryForMeshTying());
 
   // scatra - manifold
   strategy_manifold_meshtying_->ApplyMeshtyingToScatraManifoldMatrix(

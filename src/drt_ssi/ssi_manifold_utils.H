@@ -320,7 +320,8 @@ namespace SSI
     //! apply mesh tying to scatra manifold - structure matrix
     virtual void ApplyMeshtyingToManifoldStructureMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix) = 0;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) = 0;
 
     //! apply mesh tying to scatra manifold - scatra matrix
     virtual void ApplyMeshtyingToScatraManifoldMatrix(
@@ -377,7 +378,8 @@ namespace SSI
 
     void ApplyMeshtyingToManifoldStructureMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) override;
 
     void ApplyMeshtyingToScatraManifoldMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,
@@ -400,7 +402,8 @@ namespace SSI
 
     void ApplyMeshtyingToManifoldStructureMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix) override;
+        Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix,
+        bool do_uncomplete) override;
 
     void ApplyMeshtyingToScatraManifoldMatrix(
         Teuchos::RCP<LINALG::SparseOperator> ssi_scatra_manifold_matrix,

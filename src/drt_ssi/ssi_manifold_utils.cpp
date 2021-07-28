@@ -719,9 +719,8 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::UnCompleteMatricesIfNecessary(
     Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
 {
   // definition of lambda function to get size of graph for given matrix
-  auto graph_size = [](Teuchos::RCP<LINALG::SparseMatrix> matrix) {
-    return matrix->EpetraMatrix()->Graph().NumGlobalEntries();
-  };
+  auto graph_size = [](Teuchos::RCP<LINALG::SparseMatrix> matrix)
+  { return matrix->EpetraMatrix()->Graph().NumGlobalEntries(); };
 
   // get size of graphs of conditions matrices
   const int size_manifold_scatra_graph_ = graph_size(matrix_manifold_scatra_cond_);
@@ -1373,7 +1372,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldScatraMatrix(
  *----------------------------------------------------------------------*/
 void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldStructureMatrix(
     Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-    Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix)
+    Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
 {
   auto ssi_manifold_structure_sparse =
       LINALG::CastToSparseMatrixAndCheckSuccess(ssi_manifold_structure_matrix);
@@ -1411,6 +1410,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldStructureMatr
   }
 
   ssi_manifold_structure_sparse->Zero();
+  if (do_uncomplete) ssi_manifold_structure_sparse->UnComplete();
   temp_manifold_structure->Complete(
       *ssi_maps_->StructureDofRowMap(), *ssi_maps_->ScaTraManifoldDofRowMap());
   ssi_manifold_structure_sparse->Add(*temp_manifold_structure, false, 1.0, 0.0);
@@ -1420,7 +1420,7 @@ void SSI::ManifoldMeshTyingStrategySparse::ApplyMeshtyingToManifoldStructureMatr
  *----------------------------------------------------------------------*/
 void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldStructureMatrix(
     Teuchos::RCP<LINALG::SparseOperator> ssi_manifold_structure_matrix,
-    Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix)
+    Teuchos::RCP<const LINALG::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
 {
   auto ssi_manifold_structure_block =
       LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(ssi_manifold_structure_matrix);
@@ -1461,6 +1461,7 @@ void SSI::ManifoldMeshTyingStrategyBlock::ApplyMeshtyingToManifoldStructureMatri
   }
 
   ssi_manifold_structure_block->Zero();
+  if (do_uncomplete) ssi_manifold_structure_block->UnComplete();
   temp_manifold_structure->Complete();
   ssi_manifold_structure_block->Add(*temp_manifold_structure, false, 1.0, 0.0);
 }
