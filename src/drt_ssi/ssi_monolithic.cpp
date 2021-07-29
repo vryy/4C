@@ -138,7 +138,9 @@ bool SSI::SSIMono::IsUncompleteOfMatricesNecessaryForMeshTying() const
     }
   }
 
-  return false;
+  // if we have at least one contact interface the dofs that are in contact can change and therefore
+  // also the matrices have to be uncompleted
+  return SSIInterfaceContact();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -156,8 +158,8 @@ void SSI::SSIMono::ApplyMeshtyingToSubProblems()
     strategy_meshtying_->ApplyMeshtyingToScatraStructure(
         ssi_matrices_->ScaTraStructureMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
-    strategy_meshtying_->ApplyMeshtyingToStructureMatrix(
-        *ssi_matrices_->StructureMatrix(), StructureField()->SystemMatrix());
+    strategy_meshtying_->ApplyMeshtyingToStructureMatrix(*ssi_matrices_->StructureMatrix(),
+        StructureField()->SystemMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
 
     strategy_meshtying_->ApplyMeshtyingToStructureScatra(
         ssi_matrices_->StructureScaTraMatrix(), IsUncompleteOfMatricesNecessaryForMeshTying());
