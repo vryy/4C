@@ -45,6 +45,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_Time.h>
 
@@ -847,6 +848,25 @@ void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 
   // set state for contact evaluation
   SetSSIContactStates(phi);
+
+  if (IsScaTraManifold())
+  {
+    // scatra values on master side copied to manifold
+    auto imasterphinp_on_manifold =
+        LINALG::CreateVector(*ScaTraManifold()->Discretization()->DofRowMap(), true);
+
+    for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
+    {
+      if (coup->EvaluateMasterSide())
+      {
+        auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
+        auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
+        coup->ManifoldMapExtractor()->AddCondVector(
+            imasterphinp_manifold, imasterphinp_on_manifold);
+      }
+    }
+    ScaTraManifold()->Discretization()->SetState(3, "imasterscatra", imasterphinp_on_manifold);
+  }
 }
 
 /*---------------------------------------------------------------------------------*

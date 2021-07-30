@@ -188,6 +188,12 @@ namespace SSI
     //! write coupling fluxes (inflow into manifold) to csv file
     void Output();
 
+    //! return all scatra-scatra manifold coupling operators
+    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>> ScaTraManifoldCouplings()
+    {
+      return scatra_manifold_couplings_;
+    }
+
    private:
     //! Add to global matrices and rhs
     void AddConditionContribution();

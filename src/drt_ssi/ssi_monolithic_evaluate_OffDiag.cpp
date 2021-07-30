@@ -390,11 +390,15 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateScatraStructureInterfaceSlaveS
   // evaluate scatra-scatra interface coupling
   for (auto kinetics_slave_cond : meshtying_strategy_s2i_->KineticsConditionsMeshtyingSlaveSide())
   {
-    // collect condition specific data and store to scatra boundary parameter class
-    meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
-    // evaluate the condition
-    ScaTraField()->Discretization()->EvaluateCondition(
-        condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
+    if (kinetics_slave_cond.second->GetInt("kinetic model") !=
+        static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+    {
+      // collect condition specific data and store to scatra boundary parameter class
+      meshtying_strategy_s2i_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+      // evaluate the condition
+      ScaTraField()->Discretization()->EvaluateCondition(
+          condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
+    }
   }
 
   // finalize scatra-structure matrix block

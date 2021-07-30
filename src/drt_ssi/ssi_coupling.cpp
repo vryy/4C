@@ -440,10 +440,12 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
   }
   else
   {
-    // build a proxy of the structure discretization for the scatra field
+    // build a proxy of the structure discretization for the other fields
     auto structdofset = structdis->GetDofSetProxy();
-    // build a proxy of the scatra discretization for the structure field
+    // build a proxy of the scatra discretization for the other fields
     auto scatradofset = scatradis->GetDofSetProxy();
+    // build a proxy of the scatra manifold discretization for the other fields
+    auto manifolddofset = scatra_manifold_dis->GetDofSetProxy();
 
     // add proxy dofssets of other fields to discretizations and check if number of dofsets is
     // correct
@@ -461,8 +463,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
     auto scatragidmatchingdofset =
         Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatradis, scatradis->GetDofSetProxy()));
 
-    auto scatramanifoldgidmatchingdofset = Teuchos::rcp(
-        new DRT::DofSetGIDBasedWrapper(scatra_manifold_dis, scatra_manifold_dis->GetDofSetProxy()));
+    auto scatramanifoldgidmatchingdofset =
+        Teuchos::rcp(new DRT::DofSetGIDBasedWrapper(scatra_manifold_dis, manifolddofset));
 
     auto proxy_structure_scatramanifold = Teuchos::rcp(new DRT::DofSetDefinedMappingWrapper(
         structgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
@@ -481,6 +483,9 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::Init(const int ndim,
 
     if (scatradis->AddDofSet(proxy_scatramanifold_scatra) != 2)
       dserror("unexpected dof sets in scatra field");
+
+    if (scatra_manifold_dis->AddDofSet(manifolddofset) != 3)
+      dserror("unexpected dof sets in scatra manifold field");
   }
 
   if (DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT") != -1)

@@ -1266,3 +1266,18 @@ void SSI::UTILS::SSIStructureMeshTying::CheckSlaveSideHasDirichletConditions(
   if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
     dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
 }
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+SSI::UTILS::SSIStructureMeshTyingHandler::SSIStructureMeshTyingHandler(
+    Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling,
+    Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
+    Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation)
+    : slave_master_coupling_(std::move(slave_master_coupling)),
+      slave_master_extractor_(std::move(slave_master_extractor)),
+      slave_side_converter_(Teuchos::null),
+      slave_slave_transformation_(std::move(slave_slave_transformation))
+{
+  slave_side_converter_ =
+      Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*slave_master_coupling_));
+}

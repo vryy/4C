@@ -120,8 +120,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       equilibration_(Teuchos::null),
       kinetics_conditions_meshtying_slaveside_(),
       slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
-      meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
-          parameters.sublist("S2I COUPLING"), "MESHTYING_3_DOMAIN_INTERSECTION"))
+      separate_contions_(DRT::INPUT::IntegralValue<bool>(
+          parameters.sublist("S2I COUPLING"), "SEPARATE_CONDITIONS"))
 {
   // empty constructor
 }  // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -320,20 +320,24 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       islaveresidual_->PutScalar(0.);
       for (auto kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
-        // collect condition specific data and store to scatra boundary parameter class
-        SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+        if (kinetics_slave_cond.second->GetInt("kinetic model") !=
+            static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+        {
+          // collect condition specific data and store to scatra boundary parameter class
+          SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
 
-        if (not slaveonly_)
-        {
-          scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
-              imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
-              kinetics_slave_cond.second->GetInt("ConditionID"));
-        }
-        else
-        {
-          scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
-              Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
-              kinetics_slave_cond.second->GetInt("ConditionID"));
+          if (not slaveonly_)
+          {
+            scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+                imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
+                kinetics_slave_cond.second->GetInt("ConditionID"));
+          }
+          else
+          {
+            scatratimint_->Discretization()->EvaluateCondition(condparams, islavematrix_,
+                Teuchos::null, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKinetics",
+                kinetics_slave_cond.second->GetInt("ConditionID"));
+          }
         }
       }
       scatratimint_->Discretization()->ClearState();
@@ -1780,7 +1784,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               kinetics_conditions_meshtying_slaveside_.end())
           {
             kinetics_conditions_meshtying_slaveside_.insert(
-                std::pair<const int, DRT::Condition* const>(s2ikinetics_cond_id, s2ikinetics_cond));
+                std::make_pair(s2ikinetics_cond_id, s2ikinetics_cond));
           }
           else
           {
@@ -1796,8 +1800,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
         {
           if (masterconditions.find(s2ikinetics_cond_id) == masterconditions.end())
           {
-            masterconditions.insert(
-                std::pair<const int, DRT::Condition* const>(s2ikinetics_cond_id, s2ikinetics_cond));
+            masterconditions.insert(std::make_pair(s2ikinetics_cond_id, s2ikinetics_cond));
           }
           else
           {
@@ -1836,22 +1839,65 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // construct new (empty coupling adapter)
       icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-      // merge all s2i coupling conditions and build slave-master coupling
-      if (!meshtying_3_domain_intersection_)
+      // initialize int vectors for global ids of slave and master interface nodes
+      if (separate_contions_)
       {
-        // initialize int vectors for global ids of slave and master interface nodes
-        std::vector<int> islavenodegidvec;
-        std::vector<int> imasternodegidvec;
+        std::vector<std::vector<int>> islavenodegidvec_cond;
+        std::vector<std::vector<int>> imasternodegidvec_cond;
 
         for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
         {
-          DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
-              *kinetics_slave_cond.second->Nodes(), islavenodegidvec);
+          std::vector<int> islavenodegidvec;
+          std::vector<int> imasternodegidvec;
+
+          const int kineticsID = kinetics_slave_cond.first;
+          auto* kinetics_condition = kinetics_slave_cond.second;
+
+          if (kinetics_condition->GetInt("kinetic model") !=
+              static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+          {
+            DRT::UTILS::AddOwnedNodeGIDVector(
+                scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+
+            auto mastercondition = masterconditions.find(kineticsID);
+            if (mastercondition == masterconditions.end())
+              dserror("Could not find master condition");
+
+            DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+                *mastercondition->second->Nodes(), imasternodegidvec);
+
+            islavenodegidvec_cond.push_back(islavenodegidvec);
+            imasternodegidvec_cond.push_back(imasternodegidvec);
+          }
         }
-        for (auto& mastercondition : masterconditions)
+
+        icoup_->SetupCoupling(*(scatratimint_->Discretization()),
+            *(scatratimint_->Discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
+            scatratimint_->NumDofPerNode(), true, 1.0e-8);
+      }
+      else
+      {
+        std::vector<int> islavenodegidvec;
+        std::vector<int> imasternodegidvec;
+
+        for (const auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
         {
-          DRT::UTILS::AddOwnedNodeGIDVector(
-              scatratimint_->Discretization(), *mastercondition.second->Nodes(), imasternodegidvec);
+          const int kineticsID = kinetics_slave_cond.first;
+          auto* kinetics_condition = kinetics_slave_cond.second;
+
+          if (kinetics_condition->GetInt("kinetic model") !=
+              static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+          {
+            DRT::UTILS::AddOwnedNodeGIDVector(
+                scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+
+            auto mastercondition = masterconditions.find(kineticsID);
+            if (mastercondition == masterconditions.end())
+              dserror("Could not find master condition");
+            else
+              DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
+                  *mastercondition->second->Nodes(), imasternodegidvec);
+          }
         }
 
         DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
@@ -1859,68 +1905,6 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,
-            scatratimint_->NumDofPerNode(), true, 1.e-8);
-      }
-
-      // build slave master coupling for each s2i condition separately
-      else
-      {
-        // initialize int vectors for global ids of slave and master interface nodes
-        std::vector<std::vector<int>> islavenodegidvec_cond;
-        std::vector<std::vector<int>> imasternodegidvec_cond;
-
-        bool has_no_flux_kinetics = false;
-
-        // loop over slave conditions and build vector of nodes for slave and master condition with
-        // same ID
-        for (auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
-        {
-          std::vector<int> islavenodegidvec;
-          std::vector<int> imasternodegidvec;
-
-          DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
-              *kinetics_slave_cond.second->Nodes(), islavenodegidvec);
-
-          DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
-
-          auto mastercondition = masterconditions.find(kinetics_slave_cond.first);
-          if (mastercondition != masterconditions.end())
-          {
-            DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
-                *mastercondition->second->Nodes(), imasternodegidvec);
-          }
-
-          DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
-
-          // remove nodes from slave side line condition to avoid non-unique slave-master relation
-          if (kinetics_slave_cond.second->GetInt("kinetic model") ==
-              static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
-          {
-            has_no_flux_kinetics = true;
-
-            std::vector<DRT::Condition*> conditionstriplemeshtying(0, nullptr);
-            scatratimint_->Discretization()->GetCondition(
-                "Meshtying3DomainIntersection", conditionstriplemeshtying);
-
-            for (const auto& conditiontriplemeshtying : conditionstriplemeshtying)
-            {
-              DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
-                  *conditiontriplemeshtying->Nodes(), islavenodegidvec);
-              DRT::UTILS::RemoveNodeGIDsFromVector(scatratimint_->Discretization(),
-                  *conditiontriplemeshtying->Nodes(), imasternodegidvec);
-            }
-          }
-
-          islavenodegidvec_cond.push_back(islavenodegidvec);
-          imasternodegidvec_cond.push_back(imasternodegidvec);
-        }
-
-        if (!has_no_flux_kinetics)
-          dserror("Triple meshtying in S2I coupling only for 'NoInterfaceFlux' so far");
-
-        // setup non-mortar coupling adapter
-        icoup_->SetupCoupling(*(scatratimint_->Discretization()),
-            *(scatratimint_->Discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
             scatratimint_->NumDofPerNode(), true, 1.0e-8);
       }
 
