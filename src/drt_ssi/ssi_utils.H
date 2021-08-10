@@ -408,6 +408,10 @@ namespace SSI
           const std::string& conditionname_3_domain_intersection,
           bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> struct_dis);
 
+      //! check if one dof has slave side conditions and Dirichlet conditions
+      void CheckSlaveSideHasDirichletConditions(
+          Teuchos::RCP<const Epetra_Map> struct_dbc_map) const;
+
       //! structure interface coupling adapter between two geometric entities
       Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure() const
       {

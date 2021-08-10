@@ -952,3 +952,12 @@ Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct3Domai
 {
   return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSIBase::SetupSystem()
+{
+  if (ssiinterfacemeshtying_)
+    SSIStructureMeshTying()->CheckSlaveSideHasDirichletConditions(
+        StructureField()->GetDBCMapExtractor()->CondMap());
+}

@@ -54,7 +54,6 @@ namespace SSI
 
   namespace UTILS
   {
-    class SSIMeshTyingMaps;
     class SSISlaveSideConverter;
     class SSIStructureMeshTying;
   }  // namespace UTILS
@@ -177,7 +176,7 @@ namespace SSI
     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
 
     /// setup
-    virtual void SetupSystem() = 0;
+    virtual void SetupSystem();
 
     /// timeloop of coupled problem
     virtual void Timeloop() = 0;
