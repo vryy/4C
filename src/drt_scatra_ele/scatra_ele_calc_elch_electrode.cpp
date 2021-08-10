@@ -167,6 +167,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
 
   // element rhs: standard Galerkin terms from potential equation
   CalcRhsPotEquDiviOhm(erhs, rhsfac, VarManager()->InvF(), VarManager()->GradPot(), 1.);
+
+  // safety check
+  if (my::bodyforce_[my::numscal_].Dot(my::funct_) != 0.0)
+    dserror("body force not implemented for potential equation");
 }
 
 /*----------------------------------------------------------------------*

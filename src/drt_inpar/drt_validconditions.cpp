@@ -231,6 +231,7 @@ DRT::INPUT::ValidConditions()
   condlist.push_back(pointtransportneumann);
   condlist.push_back(linetransportneumann);
   condlist.push_back(surftransportneumann);
+  condlist.push_back(voltransportneumann);
 
   condlist.push_back(pointthermoneumann);
   condlist.push_back(linethermoneumann);
