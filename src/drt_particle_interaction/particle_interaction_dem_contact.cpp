@@ -158,6 +158,7 @@ double PARTICLEINTERACTION::DEMContact::GetNormalContactStiffness() const
 
 void PARTICLEINTERACTION::DEMContact::CheckCriticalTimeStep() const
 {
+  if (particleengineinterface_->GetNumberOfParticles() == 0) return;
   // init value of minimum mass
   double minmass = std::numeric_limits<double>::max();
 
