@@ -320,6 +320,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
 
       break;
     }
+    case INPAR::S2I::kinetics_nointerfaceflux:
+      break;
     default:
     {
       dserror("Evaluation is not implemented for this scatra-scatra interface kinetic model: %i",
