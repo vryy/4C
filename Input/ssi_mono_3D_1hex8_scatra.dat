@@ -8,7 +8,8 @@ simple, academic test case for monolithic scalar-structure interaction:
 - three-dimensional problem involving standard scalar transport
 - cubic domain discretized by 1 hex8 element
 - constant initial value 1.0 of transported scalar
-- homogeneous Neumann boundary conditions for entire scalar transport field
+- homogeneous Neumann boundary conditions for entire scalar transport field during first 10 time steps
+- volumetric Neumann boundary condition for entire scalar transport field during last 10 time steps
 - structural field stretched in x-direction by a factor of 2 via Dirichlet boundary conditions
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    1
@@ -33,7 +34,7 @@ FDCHECK                         global
 FDCHECKTOL                      4.e-4
 SKIPINITDER                     Yes
 -------------------------------------------------------SSI CONTROL
-NUMSTEP                         10
+NUMSTEP                         20
 TIMESTEP                        0.1
 COUPALGO                        ssi_Monolithic
 SCATRATIMINTTYPE                Standard
@@ -50,30 +51,30 @@ MAT 4 MAT_InelasticDefgradNoGrowth
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
 ------------------------------------------------------------FUNCT1
-COMPONENT 0 FUNCTION 1.0
+FUNCTION 1.0
 ------------------------------------------------------------FUNCT2
-COMPONENT 0 FUNCTION t
+FUNCTION 0.5*(1.0-cos(pi*t))*heaviside(1.0-t)+heaviside(t-1.0)
+------------------------------------------------------------FUNCT3
+FUNCTION heaviside(t-1.0)
 ------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  2.58906814408230490e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  2.58906814408230534e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 3 QUANTITY phi VALUE  2.58906814408230534e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  2.58906814408230534e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 5 QUANTITY phi VALUE  2.58906814408230534e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  2.58906814408230534e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 7 QUANTITY phi VALUE  2.58906814408230579e+00 TOLERANCE 2.6e-08
-SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  2.58906814408230579e+00 TOLERANCE 2.6e-08
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1.e-09
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE  2.76114936016189694e-01 TOLERANCE 2.8e-09
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -2.76114936016190027e-01 TOLERANCE 2.8e-09
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  9.99999999999999889e-01 TOLERANCE 1.0e-08
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE  2.76114936016190027e-01 TOLERANCE 2.8e-09
-STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE -2.76114936016189916e-01 TOLERANCE 2.8e-09
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  1.45286725596158783e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.45286725596158828e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 3 QUANTITY phi VALUE  1.45286725596158739e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 4 QUANTITY phi VALUE  1.45286725596158872e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE  1.45286725596158783e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 6 QUANTITY phi VALUE  1.45286725596158650e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE  1.45286725596158783e+00 TOLERANCE 1.5e-08
+SCATRA DIS scatra NODE 8 QUANTITY phi VALUE  1.45286725596158672e+00 TOLERANCE 1.5e-08
 ------------------------------------------------DESIGN DESCRIPTION
+NDVOL  1
 NDSURF  2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
-E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
-E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 2 none none
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 2 none none
+---------------------------DESIGN VOL TRANSPORT NEUMANN CONDITIONS
+DVOL  1
+E 1 - NUMDOF 1 ONOFF 1  VAL 1.0  FUNCT 3
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -83,6 +84,15 @@ NODE 5 DSURFACE 2
 NODE 6 DSURFACE 2
 NODE 7 DSURFACE 2
 NODE 8 DSURFACE 2
+------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
 -------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e-01
 NODE 2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
