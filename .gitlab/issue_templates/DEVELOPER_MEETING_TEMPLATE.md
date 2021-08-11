@@ -10,7 +10,7 @@
 - Host: @somebody
 - Notes: @somebody-else
 
-/zoom https://tum-conf.zoom.us/j/66092257079
+/zoom https://tum-conf.zoom.us/j/66092257079?pwd=ZDNIV3JJb1VOK1FVR1ZIMkFJc2hJQT09
 
 <!-- List of participants -->
 
