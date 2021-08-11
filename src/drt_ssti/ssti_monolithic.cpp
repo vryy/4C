@@ -327,6 +327,10 @@ void SSTI::SSTIMono::Setup()
  *--------------------------------------------------------------------------*/
 void SSTI::SSTIMono::SetupSystem()
 {
+  if (InterfaceMeshtying())
+    SSTIStructureMeshTying()->CheckSlaveSideHasDirichletConditions(
+        StructureField()->GetDBCMapExtractor()->CondMap());
+
   // Setup all kind of maps
   ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(*this));
 

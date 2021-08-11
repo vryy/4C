@@ -726,6 +726,8 @@ void SSI::SSIMono::Setup()
  *--------------------------------------------------------------------------*/
 void SSI::SSIMono::SetupSystem()
 {
+  SSI::SSIBase::SetupSystem();
+
   // setup the ssi maps object
   ssi_maps_ = Teuchos::rcp(new SSI::UTILS::SSIMaps(*this));
 

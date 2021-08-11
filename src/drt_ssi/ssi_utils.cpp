@@ -1251,3 +1251,16 @@ SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(const std::string& cond
   ssi_meshtyingmaps_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTyingMaps(icoup_structure_,
       icoup_structure_3_domain_intersection_, meshtying_3_domain_intersection, struct_dis));
 }
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::CheckSlaveSideHasDirichletConditions(
+    Teuchos::RCP<const Epetra_Map> struct_dbc_map) const
+{
+  // check if slave side dofs are part of DBC maps
+  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2, Teuchos::null);
+  maps[0] = ssi_meshtyingmaps_->MapsCoupStruct()->Map(1);
+  maps[1] = struct_dbc_map;
+  if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
+    dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
+}

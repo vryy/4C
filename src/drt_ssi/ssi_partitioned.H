@@ -56,9 +56,6 @@ namespace SSI
     */
     void Setup() override;
 
-    /// setup of single fields (if needed)
-    void SetupSystem() override;
-
     /// time loop of coupled problem
     void Timeloop() override = 0;
 
