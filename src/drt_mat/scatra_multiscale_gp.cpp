@@ -296,6 +296,7 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentration() const
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
   eleparams.set("inverting", false);
+  eleparams.set("calc_grad_phi", false);
 
   // initialize result vector: first component = concentration integral, second component = domain
   // integral

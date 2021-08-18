@@ -260,10 +260,12 @@ namespace DRT
       );
 
       //! calculate scalar(s) and domain integral
-      virtual void CalculateScalars(const DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector& scalars,                  //!< scalar to be computed
-          const bool inverting                                //!< bool indicating inversion
-      );
+      //! \param ele   the element we are dealing with
+      //! \param scalars   scalar to be computed
+      //! \param inverting   inversion of evaluated scalar?
+      //! \param calc_grad_phi  calculation of gradient of phi of transported scalar?
+      virtual void CalculateScalars(const DRT::Element* ele, Epetra_SerialDenseVector& scalars,
+          bool inverting, bool calc_grad_phi);
 
       //! calculate scalar time derivative(s) and domain integral
       void CalculateScalarTimeDerivatives(

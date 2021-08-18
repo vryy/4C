@@ -157,10 +157,9 @@ namespace DRT
       );
 
       //! calculate scalar(s) and domain integral
-      virtual void CalculateScalars(const DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector& scalars,                  //!< scalar to be computed
-          const bool inverting                                //!< bool indicating inversion
-      );
+      void CalculateScalars(const DRT::Element* ele, Epetra_SerialDenseVector& scalars,
+          bool inverting, bool calc_grad_phi) override;
+
 
       //! get poro diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerPoro> DiffManager()

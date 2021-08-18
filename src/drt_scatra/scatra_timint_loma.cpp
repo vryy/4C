@@ -247,6 +247,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
+  eleparams.set("calc_grad_phi", false);
 
   // provide displacement field in case of ALE
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
@@ -290,6 +291,7 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
+  eleparams.set("calc_grad_phi", false);
 
   // provide displacement field in case of ALE
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);

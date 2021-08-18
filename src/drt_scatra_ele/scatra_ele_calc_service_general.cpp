@@ -152,16 +152,26 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::calc_total_and_mean_scalars:
     {
       // get flag for inverting
-      bool inverting = params.get<bool>("inverting");
-
+      const bool inverting = params.get<bool>("inverting");
+      if (!params.isParameter("calc_grad_phi"))
+      {
+        std::cout << std::endl;
+      }
+      const bool calc_grad_phi = params.get<bool>("calc_grad_phi");
       // need current scalar vector
       // -> extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      auto phinp = discretization.GetState("phinp");
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
+#ifdef DEBUG
+      if ((!calc_grad_phi and elevec1_epetra.Length() != numdofpernode_ + 1) or
+          (calc_grad_phi and elevec1_epetra.Length() != numdofpernode_ + numscal_ + 1))
+        dserror("length of elevec1_epetra not correct");
+#endif
+
       // calculate scalars and domain integral
-      CalculateScalars(ele, elevec1_epetra, inverting);
+      CalculateScalars(ele, elevec1_epetra, inverting, calc_grad_phi);
 
       break;
     }
@@ -1608,8 +1618,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDomainIntegral(
 |  calculate scalar(s) and domain integral                     vg 09/08|
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(
-    const DRT::Element* ele, Epetra_SerialDenseVector& scalars, const bool inverting)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(const DRT::Element* ele,
+    Epetra_SerialDenseVector& scalars, const bool inverting, const bool calc_grad_phi)
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1618,42 +1628,41 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
   {
+    // evaluate everything on current GP
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
 
-    // calculate integrals of (inverted) scalar(s) and domain
-    if (inverting)
+    for (int k = 0; k < numdofpernode_; k++)
     {
-      for (unsigned i = 0; i < nen_; i++)
+      // evaluate 1.0/phi if needed
+      LINALG::Matrix<nen_, 1> inv_ephinp(true);
+      if (inverting)
       {
-        const double fac_funct_i = fac * funct_(i);
-        for (int k = 0; k < numdofpernode_; k++)
+        for (unsigned i = 0; i < nen_; i++)
         {
-          if (std::abs(ephinp_[k](i, 0)) > EPS14)
-            scalars[k] += fac_funct_i / ephinp_[k](i, 0);
-          else
-            dserror("Division by zero");
+          const double inv_value = 1.0 / ephinp_[k](i);
+          if (std::abs(inv_value) < EPS14) dserror("Division by zero");
+          inv_ephinp(i) = inv_value;
         }
-        // for domain volume
-        scalars[numdofpernode_] += fac_funct_i;
       }
-    }
-    else
-    {
-      for (unsigned i = 0; i < nen_; i++)
-      {
-        const double fac_funct_i = fac * funct_(i);
-        for (int k = 0; k < numdofpernode_; k++)
-        {
-          scalars[k] += fac_funct_i * ephinp_[k](i, 0);
-        }
-        // for domain volume
-        scalars[numdofpernode_] += fac_funct_i;
-      }
-    }
-  }  // loop over integration points
 
-  return;
-}  // ScaTraEleCalc::CalculateScalars
+      // project phi or 1.0/phi to current GP and multiply with domain integration factor
+      const double phi_gp = funct_.Dot(inverting ? inv_ephinp : ephinp_[k]);
+      scalars[k] += phi_gp * fac;
+    }
+    scalars[numdofpernode_] += fac;
+
+    if (calc_grad_phi)
+    {
+      DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetInternalVariablesForMatAndRHS();
+
+      for (int k = 0; k < numscal_; k++)
+      {
+        const double gradphi_l2norm_gp = scatravarmanager_->GradPhi()[k].Norm2();
+        scalars[numdofpernode_ + 1 + k] += gradphi_l2norm_gp * fac;
+      }
+    }
+  }
+}
 
 
 /*----------------------------------------------------------------------*
