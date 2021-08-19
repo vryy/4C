@@ -730,7 +730,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
 
     // get associated degrees of freedom
     std::vector<int> nodedofs = discret_->Dof(0, lnode);
-    const int numdof = nodedofs.size();
+    const int numdof = static_cast<int>(nodedofs.size());
 
     // initialize nodal density value
     double density = 1.;
@@ -3160,7 +3160,7 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
       if (scatratimint->Step() == 0 and condid == 0)
       {
         file.open(filename.c_str(), std::fstream::trunc);
-        file << "Step,Time," + label + "ID," + label + "Integral" << std::endl;
+        file << "Step,Time," << label << "ID," << label << "Integral" << std::endl;
       }
       else
         file.open(filename.c_str(), std::fstream::app);
@@ -3297,7 +3297,7 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
   // number of different numbers of dofs on all procs
   int maxsize = 0;
   // number of different numbers of dofs on this procs
-  int mysize = mynumdofpernode.size();
+  int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
   discret->Comm().MaxAll(&mysize, &maxsize, 1);
 
@@ -3310,7 +3310,7 @@ void SCATRA::ScalarHandler::Setup(const ScaTraTimIntImpl* const scatratimint)
 
   // communicate
   discret->Comm().GatherAll(
-      &vecmynumdofpernode[0], &vecnumdofpernode[0], vecmynumdofpernode.size());
+      &vecmynumdofpernode[0], &vecnumdofpernode[0], static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)
@@ -3355,7 +3355,7 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
   // number of different numbers of dofs on all procs
   int maxsize = 0;
   // number of different numbers of dofs on this procs
-  int mysize = mynumdofpernode.size();
+  int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
   discret->Comm().MaxAll(&mysize, &maxsize, 1);
 
@@ -3368,7 +3368,7 @@ int SCATRA::ScalarHandler::NumDofPerNodeInCondition(
 
   // communicate
   discret->Comm().GatherAll(
-      &vecmynumdofpernode[0], &vecnumdofpernode[0], vecmynumdofpernode.size());
+      &vecmynumdofpernode[0], &vecnumdofpernode[0], static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set
   for (int& ndofpernode : vecnumdofpernode)

@@ -10,7 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "scatra_ele_calc.H"
-#include "scatra_ele.H"
+
 #include "scatra_ele_action.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
@@ -20,7 +20,6 @@
 
 #include "../drt_lib/drt_utils.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_geometry/position_array.H"
 
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS13 and so on
 #include "../drt_lib/drt_globalproblem.H"
@@ -130,9 +129,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       LINALG::Matrix<3, nen_> eflux(true);
 
       // do a loop for systems of transported scalars
-      for (std::vector<int>::iterator it = writefluxids->begin(); it != writefluxids->end(); ++it)
+      for (int& writefluxid : *writefluxids)
       {
-        int k = (*it) - 1;
+        int k = writefluxid - 1;
         // calculate flux vectors for actual scalar
         eflux.Clear();
         CalculateFlux(eflux, ele, fluxtype, k);
@@ -241,7 +240,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
         // set Prt without averaging (only clipping)
         // calculate inverse of turbulent Prandtl number times (C_s*Delta)^2
-        double inv_Prt = 0.0;
+        double inv_Prt;
         if (abs(MkMk) < 1E-16)
         {
           // std::cout << "warning: abs(MkMk) < 1E-16 -> set inverse of turbulent Prandtl number to
@@ -596,9 +595,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        {
           // initialize micro scale in multi-scale simulations
           Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
               ->Initialize(ele->Id(), iquad);
+        }
       }
 
       break;
@@ -626,9 +627,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           SetInternalVariablesForMatAndRHS();
 
           if (action == SCATRA::micro_scale_prepare_time_step)
+          {
             // prepare time step on micro scale
             Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
                 ->PrepareTimeStep(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)));
+          }
           else
           {
             // solve micro scale
@@ -831,7 +834,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
     edispnp_.Clear();
 
   // check for the action parameter
-  const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
 
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -941,9 +944,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
     }  // loop over degrees of freedom
 
   }  // loop over integration points
-
-  return;
-
 }  // ScaTraEleCalc::CalcGradientAtNodes
 
 
@@ -977,9 +977,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
       case INPAR::SCATRA::l2_proj_system_dual:
       {
         if (diffmanager_->GetIsotropicDiff(0) != 0.0)
+        {
           dserror(
               "The dual shape function do not support an "
               "additional diffusive term!");
+        }
 
         VOLMORTAR::UTILS::dual_shape_function<distype>(
             dual_funct_, xsi_.A(), *ele, INPAR::VOLMORTAR::dualquad_no_mod);
@@ -1057,9 +1059,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
     }  // loop over degrees of freedom
 
   }  // loop over integration points
-
-  return;
-
 }  // ScaTraEleCalc::CalcGradientAtNodes
 
 
@@ -1112,7 +1111,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCurvatureAtNodes(const 
       }
 
       // get curvature at Gauss point
-      double curvature_gp = 0.0;
+      double curvature_gp;
 
       double grad_phi_norm = grad_phi.Norm2();
       {
@@ -1167,10 +1166,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCurvatureAtNodes(const 
     }  // loop over degrees of freedom
 
   }  // loop over integration points
-
-
-  return;
-
 }  // ScaTraEleCalc::CalcCurvatureAtNodes
 
 
@@ -1258,8 +1253,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
   params.set<double>("dens_temp_hat", dens_temp_hat);
   params.set<double>("phi2_hat", phi2_hat);
   params.set<double>("phiexpression_hat", phiexpression_hat);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcBoxFilter
 
 
@@ -1367,9 +1360,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
 
       // calculation of stabilization parameter at integration point
       if (scatrapara_->TauGP())
+      {
         CalcTau(tau[k], diffmanager_->GetIsotropicDiff(k),
             reamanager_->GetStabilizationCoeff(k, scatravarmanager_->Phinp(k)), densnp[k],
             scatravarmanager_->ConVel(k), vol);
+      }
 
       const double fac_tau = fac * tau[k];
 
@@ -1410,8 +1405,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
   // computed by AssembleMatAndRHS() routine (see CalcInitialTimeDerivative() routine on time
   // integrator level)
   emat.Scale(scatraparatimint_->TimeFacRhs());
-
-  return;
 }  // ScaTraEleCalc::CalcInitialTimeDerivative()
 
 
@@ -1428,8 +1421,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CorrectRHSFromCalcRHSLinMas
     CalcRHSLinMass(erhs, k, 0.0, -fac, 0.0, densnp);
   else
     dserror("Must be incremental!");
-
-  return;
 }
 
 
@@ -1468,9 +1459,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateShapeFunctions(
     }
 
   }  // loop over integration points
-
-  return;
-
 }  // ScaTraEleCalc::IntegrateShapeFunction
 
 /*----------------------------------------------------------------------*
@@ -1554,7 +1542,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateFlux(LINALG::Matri
       default:
         dserror("received illegal flag inside flux evaluation for whole domain");
         break;
-    };
+    }
     // q at integration point
 
     // integrate and assemble everything into the "flux" vector
@@ -1576,8 +1564,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateFlux(LINALG::Matri
       flux(idim, vi) = 0.0;
     }
   }
-
-  return;
 }  // ScaTraCalc::CalculateFlux
 
 
@@ -1609,8 +1595,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDomainIntegral(
 
   // write result into result vector
   scalar(0) = domainintegral;
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalcDomainIntegral
 
 
@@ -1702,8 +1686,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalarTimeDerivati
     // calculate integral of domain
     scalars(numscal_) += fac;
   }  // loop over integration points
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalculateScalarTimeDerivatives
 
 
@@ -1768,8 +1750,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateMomentumAndVolume(
     momandvol(nsd_) += fac_funct * (1.0 - heavyside_epsilon);
 
   }  // loop over integration points
-
-  return;
 }  // ScaTraEleCalc::CalculateMomentumAndVolume
 
 
@@ -1805,8 +1785,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiffMatrix(
       // emat(fvi,fui) -= taufac*conv(vi)*conv(ui);
     }
   }  // integration loop
-
-  return;
 }  // ScaTraImpl::CalcSubgrDiffMatrix
 
 
@@ -1981,8 +1959,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
   if (scatraparatimint_->IsGenAlpha())
     for (int k = 0; k < numscal_; ++k)
       for (unsigned i = 0; i < nen_; ++i) ehist_[k](i, 0) = ehist_original[k](i, 0);
-
-  return;
 }
 
 /*---------------------------------------------------------------------*
@@ -2004,8 +1980,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
   const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
 
-  const INPAR::SCATRA::CalcError errortype =
-      DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
+  const auto errortype = DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag");
   switch (errortype)
   {
     case INPAR::SCATRA::calcerror_byfunction:
@@ -2163,8 +2138,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
       dserror("Unknown analytical solution!");
       break;
   }  // switch(errortype)
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleCalc<distype,probdim>::CalErrorComparedToAnalytSolution
 
 
@@ -2327,8 +2300,6 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHeteroReacMatAndRHS(
 
     }  // end loop all scalars
   }    // end loop Gauss points
-
-  return;
 }
 
 
