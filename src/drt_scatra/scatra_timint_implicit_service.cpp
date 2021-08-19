@@ -2709,7 +2709,7 @@ void SCATRA::OutputScalarsStrategyBase::PrepareEvaluate(
   // set action for elements
   eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
   eleparams.set("inverting", false);
-  eleparams.set("calc_grad_phi", output_grad_);
+  eleparams.set("calc_grad_phi", output_mean_grad_);
 
   // provide number of dof set for mesh displacements in case of ALE
   if (scatratimint->isale_) eleparams.set<int>("ndsdisp", scatratimint->nds_disp_);
@@ -2780,8 +2780,8 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   myrank_ = scatratimint->myrank_;
   runtime_csvwriter_ = std::make_shared<RuntimeCsvWriter>(myrank_);
 
-  output_grad_ =
-      DRT::INPUT::IntegralValue<bool>(*scatratimint->ScatraParameterList(), "OUTPUTSCALARSGRAD");
+  output_mean_grad_ = DRT::INPUT::IntegralValue<bool>(
+      *scatratimint->ScatraParameterList(), "OUTPUTSCALARSMEANGRAD");
 
   std::string filename("");
   if (scatratimint->ScatraParameterList()->isParameter("output_file_name_discretization") and
@@ -2814,10 +2814,10 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
   numscal_ = scatratimint->scalarhandler_->NumScal();
 
   // initialize result vectors associated with entire domain
-  const int num_active_scalars = output_grad_ ? numscal_ : 0;
-  totalscalars_[-1].resize(numdofpernode_, 0.0);
-  meanscalars_[-1].resize(numdofpernode_ + num_active_scalars, 0.0);
-  domainintegral_[-1] = 0.0;
+  const int num_active_scalars = output_mean_grad_ ? numscal_ : 0;
+  totalscalars_[dummy_domain_id_].resize(numdofpernode_, 0.0);
+  meanscalars_[dummy_domain_id_].resize(numdofpernode_ + num_active_scalars, 0.0);
+  domainintegral_[dummy_domain_id_] = 0.0;
 
   // register output in csv writer
   runtime_csvwriter_->RegisterDataVector("Integral of entire domain", 1, 16);
@@ -2828,7 +2828,7 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
     runtime_csvwriter_->RegisterDataVector(
         "Mean value of scalar " + std::to_string(k + 1) + " in entire domain", 1, 16);
   }
-  if (output_grad_)
+  if (output_mean_grad_)
   {
     for (int k = 0; k < numscal_; ++k)
     {
@@ -2851,18 +2851,19 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
     for (int k = 0; k < numdofpernode_; ++k)
     {
       std::cout << "|  overall  |    " << std::setw(2) << k + 1 << "     |    " << std::scientific
-                << std::setprecision(6) << totalscalars_[-1][k] << "    |   " << domainintegral_[-1]
-                << "  |    " << meanscalars_[-1][k] << "   |" << std::endl;
+                << std::setprecision(6) << totalscalars_[dummy_domain_id_][k] << "    |   "
+                << domainintegral_[dummy_domain_id_] << "  |    "
+                << meanscalars_[dummy_domain_id_][k] << "   |" << std::endl;
     }
-    /*if (output_grad_)
+    if (output_mean_grad_)
     {
       for (int k = 0; k < numscal_; ++k)
       {
         std::cout << "|  overall  |  grad. " << k + 1 << "  |        ----        |   "
-                  << domainintegral_[-1] << "  |    " << meanscalars_[-1][numdofpernode_ + 1 + k]
-                  << "   |" << std::endl;
+                  << domainintegral_[dummy_domain_id_] << "  |    "
+                  << meanscalars_[dummy_domain_id_][numdofpernode_ + 1 + k] << "   |" << std::endl;
       }
-    }*/
+    }
   }
 }
 
@@ -2870,23 +2871,24 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
  *----------------------------------------------------------------------------------*/
 void SCATRA::OutputScalarsStrategyDomain::PassToCSVWriter()
 {
-  runtime_csvwriter_->AppendDataVector("Integral of entire domain", {domainintegral_[-1]});
+  runtime_csvwriter_->AppendDataVector(
+      "Integral of entire domain", {domainintegral_[dummy_domain_id_]});
   for (int k = 0; k < numdofpernode_; ++k)
   {
     runtime_csvwriter_->AppendDataVector(
         "Total value of scalar " + std::to_string(k + 1) + " in entire domain",
-        {totalscalars_[-1][k]});
+        {totalscalars_[dummy_domain_id_][k]});
     runtime_csvwriter_->AppendDataVector(
         "Mean value of scalar " + std::to_string(k + 1) + " in entire domain",
-        {meanscalars_[-1][k]});
+        {meanscalars_[dummy_domain_id_][k]});
   }
-  if (output_grad_)
+  if (output_mean_grad_)
   {
     for (int k = 0; k < numscal_; ++k)
     {
       runtime_csvwriter_->AppendDataVector(
           "Mean value of gradient of scalar " + std::to_string(k + 1) + " in entire domain",
-          {meanscalars_[-1][numdofpernode_ + 1 + k]});
+          {meanscalars_[dummy_domain_id_][numdofpernode_ + 1 + k]});
     }
   }
 }
@@ -2903,7 +2905,7 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
 
   // initialize result vector
   // first components = scalar integrals, last component = domain integral
-  const int num_active_scalars = output_grad_ ? numscal_ : 0;
+  const int num_active_scalars = output_mean_grad_ ? numscal_ : 0;
   auto scalars =
       Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode_ + 1 + num_active_scalars));
 
@@ -2915,20 +2917,20 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
     scalars->Scale(4. * PI);
 
   // extract domain integral
-  domainintegral_[-1] = (*scalars)[numdofpernode_];
+  domainintegral_[dummy_domain_id_] = (*scalars)[numdofpernode_];
 
   // compute results
   for (int k = 0; k < numdofpernode_; ++k)
   {
-    totalscalars_[-1][k] = (*scalars)[k];
-    meanscalars_[-1][k] = (*scalars)[k] / domainintegral_[-1];
+    totalscalars_[dummy_domain_id_][k] = (*scalars)[k];
+    meanscalars_[dummy_domain_id_][k] = (*scalars)[k] / domainintegral_[dummy_domain_id_];
   }
-  if (output_grad_)
+  if (output_mean_grad_)
   {
     for (int k = 0; k < numscal_; ++k)
     {
-      meanscalars_[-1][numdofpernode_ + k] =
-          (*scalars)[numdofpernode_ + 1 + k] / domainintegral_[-1];
+      meanscalars_[dummy_domain_id_][numdofpernode_ + k] =
+          (*scalars)[numdofpernode_ + 1 + k] / domainintegral_[dummy_domain_id_];
     }
   }
 }
@@ -2969,7 +2971,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
 
     // initialize result vectors associated with current condition
     totalscalars_[condid].resize(numdofpernodepercondition_[condid], 0.0);
-    const int num_active_scalars = output_grad_ ? numscalpercondition_[condid] : 0;
+    const int num_active_scalars = output_mean_grad_ ? numscalpercondition_[condid] : 0;
     meanscalars_[condid].resize(numdofpernodepercondition_[condid] + num_active_scalars, 0.0);
     domainintegral_[condid] = 0.0;
 
@@ -2984,7 +2986,7 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
           "Mean value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
           1, 16);
     }
-    if (output_grad_)
+    if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
       {
@@ -3042,7 +3044,7 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
                   << "    |   " << domainintegral_[condid] << "  |    " << meanscalars_[condid][k]
                   << "   |" << std::endl;
       }
-      if (output_grad_)
+      if (output_mean_grad_)
       {
         for (int k = 0; k < numscalpercondition_[condid]; ++k)
         {
@@ -3076,7 +3078,7 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
           "Mean value of scalar " + std::to_string(k + 1) + " in domain " + std::to_string(condid),
           {meanscalars_[condid][k]});
     }
-    if (output_grad_)
+    if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
       {
@@ -3208,7 +3210,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
 
     // initialize result vector
     // first components = scalar integrals, last component = domain integral
-    const int num_active_scalars = output_grad_ ? numscalpernode : 0;
+    const int num_active_scalars = output_mean_grad_ ? numscalpernode : 0;
     auto scalars =
         Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode + 1 + num_active_scalars));
 
@@ -3228,7 +3230,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
       totalscalars_[condid][k] = (*scalars)[k];
       meanscalars_[condid][k] = (*scalars)[k] / domainintegral_[condid];
     }
-    if (output_grad_)
+    if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
       {

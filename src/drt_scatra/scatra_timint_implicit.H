@@ -1558,7 +1558,7 @@ namespace SCATRA
     int myrank_;
 
     //! do output of mean of gradient
-    bool output_grad_;
+    bool output_mean_grad_;
 
     //! writes evaluated data to output
     std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
@@ -1573,7 +1573,7 @@ namespace SCATRA
   class OutputScalarsStrategyDomain : virtual public OutputScalarsStrategyBase
   {
    public:
-    OutputScalarsStrategyDomain() : numdofpernode_(0){};
+    OutputScalarsStrategyDomain() : dummy_domain_id_(-1), numdofpernode_(0), numscal_(0){};
 
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
@@ -1585,6 +1585,7 @@ namespace SCATRA
     void PrintToScreen() override;
 
    private:
+    const int dummy_domain_id_;
     //! number of degrees of freedom per node
     int numdofpernode_;
 

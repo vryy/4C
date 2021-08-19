@@ -139,7 +139,7 @@ void INPAR::SCATRA::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
       tuple<int>(outputscalars_none, outputscalars_entiredomain, outputscalars_condition,
           outputscalars_entiredomain_condition),
       &scatradyn);
-  BoolParameter("OUTPUTSCALARSGRAD", "No", "Output of mean gradient of scalars", &scatradyn);
+  BoolParameter("OUTPUTSCALARSMEANGRAD", "No", "Output of mean gradient of scalars", &scatradyn);
   BoolParameter("OUTINTEGRREAC", "No", "Output of integral reaction values", &scatradyn);
   BoolParameter("OUTPUT_GMSH", "No", "Do you want to write Gmsh postprocessing files?", &scatradyn);
 
