@@ -1540,7 +1540,7 @@ namespace SCATRA
         const ScaTraTimIntImpl* const scatratimint, Teuchos::ParameterList& eleparams);
 
     //! print header of table for summary of mean values to screen
-    void PrintHeaderToScreen();
+    void PrintHeaderToScreen(const std::string& dis_name);
 
     //! Print evaluated data to screen
     virtual void PrintToScreen() = 0;
@@ -1557,7 +1557,10 @@ namespace SCATRA
     //! process number
     int myrank_;
 
-    // writes evaluated data to output
+    //! do output of mean of gradient
+    bool output_mean_grad_;
+
+    //! writes evaluated data to output
     std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;
 
     //! total values of transported scalars
@@ -1570,7 +1573,7 @@ namespace SCATRA
   class OutputScalarsStrategyDomain : virtual public OutputScalarsStrategyBase
   {
    public:
-    OutputScalarsStrategyDomain() : domainid_(-1), numdofpernode_(0){};
+    OutputScalarsStrategyDomain() : dummy_domain_id_(-1), numdofpernode_(0), numscal_(0){};
 
    protected:
     void EvaluateIntegrals(const ScaTraTimIntImpl* const scatratimint) override;
@@ -1582,11 +1585,12 @@ namespace SCATRA
     void PrintToScreen() override;
 
    private:
-    // set domain ID equal to -1 for entire domain (as dummy to also use map)
-    const int domainid_;
-
+    const int dummy_domain_id_;
     //! number of degrees of freedom per node
     int numdofpernode_;
+
+    //! number of transported scalars
+    int numscal_;
   };
 
   /*========================================================================*/
@@ -1611,8 +1615,12 @@ namespace SCATRA
    private:
     //! vector of 'TotalAndMeanScalar'-conditions
     std::vector<DRT::Condition*> conditions_;
+
     //! number of degrees of freedom per node per 'TotalAndMeanScalar'-conditions
-    std::vector<int> numdofpernodepercondition_;
+    std::map<int, int> numdofpernodepercondition_;
+
+    //! number of scalars per 'TotalAndMeanScalar'-conditions
+    std::map<int, int> numscalpercondition_;
   };
 
   /*========================================================================*/

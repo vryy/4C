@@ -410,6 +410,8 @@ Teuchos::ParameterList SSI::UTILS::CloneScaTraManifoldParams(
       INPAR::SCATRA::outputscalars_none)
     scatra_manifold_params->set<bool>("output_file_name_discretization", true);
 
+  scatra_manifold_params->set<std::string>("OUTPUTSCALARSMEANGRAD", "No");
+
   scatra_manifold_params->set<std::string>("ADAPTIVE_TIMESTEPPING", "No");
 
   return *scatra_manifold_params;

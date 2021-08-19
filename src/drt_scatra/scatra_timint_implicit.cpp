@@ -654,6 +654,7 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   Teuchos::ParameterList eleparams;
   eleparams.set<int>("action", SCATRA::calc_total_and_mean_scalars);
   eleparams.set("inverting", false);
+  eleparams.set("calc_grad_phi", false);
 
   // provide displacement field in case of ALE
   if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);

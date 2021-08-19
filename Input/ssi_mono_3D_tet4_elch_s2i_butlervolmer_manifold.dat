@@ -40,6 +40,7 @@ LINEAR_SOLVER                   1
 VELOCITYFIELD                   Navier_Stokes
 CONVFORM                        conservative
 OUTPUTSCALARS                   entire_domain_and_by_condition
+OUTPUTSCALARSMEANGRAD           Yes
 ADAPTIVE_TIMESTEPPING           Yes
 SKIPINITDER                     Yes
 ----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION

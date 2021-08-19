@@ -188,7 +188,7 @@ int DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::EvaluateAction(DRT::Element* ele,
       ExtractElementAndNodeValuesPoro(ele, params, discretization, la);
 
       // calculate scalars and domain integral
-      CalculateScalars(ele, elevec1_epetra, inverting);
+      CalculateScalars(ele, elevec1_epetra, inverting, false);
 
       break;
     }
@@ -486,7 +486,7 @@ double DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorePressure()
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(
-    const DRT::Element* ele, Epetra_SerialDenseVector& scalars, const bool inverting)
+    const DRT::Element* ele, Epetra_SerialDenseVector& scalars, bool inverting, bool calc_grad_phi)
 {
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
