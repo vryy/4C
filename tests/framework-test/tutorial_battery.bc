@@ -1,0 +1,319 @@
+----------- Mesh contents -----------
+
+Mesh consists of 1114 Nodes, 3623 Elements, organized in 
+5 ElementBlocks, 24 NodeSets, 0 SideSets 
+
+---------- Syntax examples ----------
+
+Element Block, named: 
+of Shape: TET4
+has 9417816 Elements
+'*eb0="ELEMENT"'
+sectionname="FLUID"
+description="MAT 1 NA Euler"
+elementname="FLUID" 
+
+Element Block, named: 
+of Shape: HEX8
+has 9417816 Elements
+'*eb0="ELEMENT"'
+sectionname="STRUCTURE"
+description="MAT 1 KINEM nonlinear EAS none"
+elementname="SOLIDH8" 
+
+Node Set, named:
+Property Name: INFLOW
+has 45107 Nodes
+'*ns0="CONDITION"'
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 0 0 0 0"
+
+MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'
+The 'E num' in the dat-file depends on the order of the specification below
+------------------------------------------------BCSPECS
+
+Element Block, named: anode
+of Shape: TET4
+has 62 Elements
+*eb1="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 12 KINEM nonlinear TYPE ElchElectrode"
+elementname="SOLIDT4SCATRA"
+*eb1="CONDITION"
+sectionname="DESIGN VOL INITIAL FIELD CONDITIONS"
+description="ScaTra 1"
+
+Element Block, named: electrolyte
+of Shape: TET4
+has 1725 Elements
+*eb2="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 8 KINEM nonlinear TYPE ElchDiffCond"
+elementname="SOLIDT4SCATRA"
+*eb2="CONDITION"
+sectionname="DESIGN VOL INITIAL FIELD CONDITIONS"
+description="ScaTra 2"
+*eb2="CONDITION"
+sectionname="DESIGN VOL TRANSPORT DIRICH CONDITIONS"
+description="NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0"
+
+Element Block, named: cathode
+of Shape: TET4
+has 1588 Elements
+*eb3="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 2 KINEM nonlinear TYPE ElchElectrode"
+elementname="SOLIDT4SCATRA"
+*eb3="CONDITION"
+sectionname="DESIGN VOL INITIAL FIELD CONDITIONS"
+description="ScaTra 3"
+*eb3="CONDITION"
+sectionname="DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS"
+description="ID 0 c_0% 43196.78 c_100% 24362.37 one_hour 3600000"
+
+Element Block, named: anode_cc
+of Shape: TET4
+has 37 Elements
+*eb4="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 16 KINEM nonlinear TYPE ElchElectrode"
+elementname="SOLIDT4SCATRA"
+*eb4="CONDITION"
+sectionname="DESIGN VOL INITIAL FIELD CONDITIONS"
+description="ScaTra 4"
+*eb4="CONDITION"
+sectionname="DESIGN VOL TRANSPORT DIRICH CONDITIONS"
+description="NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0"
+
+Element Block, named: cathode_cc
+of Shape: TET4
+has 211 Elements
+*eb5="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 16 KINEM nonlinear TYPE ElchElectrode"
+elementname="SOLIDT4SCATRA"
+*eb5="CONDITION"
+sectionname="DESIGN VOL INITIAL FIELD CONDITIONS"
+description="ScaTra 5"
+*eb5="CONDITION"
+sectionname="DESIGN VOL TRANSPORT DIRICH CONDITIONS"
+description="NUMDOF 2 ONOFF 1 0 VAL 1.2e3 0.0 FUNCT 0 0"
+
+Node Set, named: an-side_cc
+Property Name: none
+has 16 Nodes
+*ns1="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none"
+*ns1="CONDITION"
+sectionname="DESIGN SURF TRANSPORT DIRICH CONDITIONS"
+description="NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT 0 0"
+*ns1="CONDITION"
+sectionname="DESIGN CELL VOLTAGE SURF CONDITIONS"
+description="ID 0"
+
+Node Set, named: cc-side_(sl)_of_an-cc_interface
+Property Name: none
+has 10 Nodes
+*ns2="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="0 Slave S2IKineticsID 0"
+*ns2="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="0 Slave KineticModel ConstantInterfaceResistance resistance 1.0e-5"
+
+Node Set, named: an-side_(ma)_of_an-cc_interface
+Property Name: none
+has 10 Nodes
+*ns3="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="0 Master S2IKineticsID 0"
+*ns3="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="0 Master"
+
+Node Set, named: an-side_(sl)_of_an-el_interface
+Property Name: none
+has 8 Nodes
+*ns4="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="1 Slave S2IKineticsID 1"
+*ns4="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="1 Slave KineticModel Butler-VolmerReduced numscal 1 stoichiometries -1 e- 1 k_r 1.036426957e-3 alpha_a 0.5 alpha_c 0.5"
+
+Node Set, named: el-side_(ma)_of_an-el_interface
+Property Name: none
+has 8 Nodes
+*ns5="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="1 Master S2IKineticsID 1"
+*ns5="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="1 Master"
+
+Node Set, named: el-side_(ma)_of_cat-el_interface
+Property Name: none
+has 195 Nodes
+*ns6="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="2 Master S2IKineticsID 2"
+*ns6="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="2 Master"
+
+Node Set, named: cat-side_(sl)_of_cat-el_interfac
+Property Name: none
+has 195 Nodes
+*ns7="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="2 Slave S2IKineticsID 2"
+*ns7="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="2 Slave KineticModel Butler-Volmer numscal 1 stoichiometries -1 e- 1 k_r 2.07e-5 alpha_a 0.5 alpha_c 0.5"
+
+Node Set, named: cat-side_(ma)_of_cat-cc_interfac
+Property Name: none
+has 12 Nodes
+*ns8="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="3 Master S2IKineticsID 3"
+*ns8="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="3 Master"
+
+Node Set, named: cc-side_(sl)_of_cat-comp_cat-cc_
+Property Name: none
+has 12 Nodes
+*ns9="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="3 Slave S2IKineticsID 3"
+*ns9="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="3 Slave KineticModel ConstantInterfaceResistance resistance 1.0e-5"
+
+Node Set, named: sol-el-side_(ma)_of_comp_cat-cc_
+Property Name: none
+has 35 Nodes
+*ns10="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="4 Master S2IKineticsID 4"
+*ns10="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="4 Master"
+
+Node Set, named: cc-side_(sl)_of_sol-el-comp_cat-
+Property Name: none
+has 35 Nodes
+*ns11="CONDITION"
+sectionname="DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS"
+description="4 Slave S2IKineticsID 4"
+*ns11="CONDITION"
+sectionname="DESIGN S2I KINETICS SURF CONDITIONS"
+description="4 Slave KineticModel NoInterfaceFlux"
+
+Node Set, named: cat-side_cc
+Property Name: none
+has 58 Nodes
+*ns12="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none"
+*ns12="CONDITION"
+sectionname="DESIGN SURF TRANSPORT NEUMANN CONDITIONS"
+description="NUMDOF 2 ONOFF 0 1 VAL 0.0 5.839316572e-6 FUNCT 0 0"
+*ns12="CONDITION"
+sectionname="DESIGN CELL VOLTAGE SURF CONDITIONS"
+description="ID 1"
+
+Node Set, named: battery_surface_normal_to_y
+Property Name: none
+has 151 Nodes
+*ns13="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: battery_surface_normal_to_z
+Property Name: none
+has 133 Nodes
+*ns14="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: battery_surface_normal_to_(0_1_1
+Property Name: none
+has 248 Nodes
+*ns15="CONDITION"
+sectionname="DESIGN SURF LOCSYS CONDITIONS"
+description="ROTANGLE 0.7853981634 0.0 0.0 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0"
+*ns15="CONDITION"
+sectionname="DESIGN SURF DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: battery_curves_in_y-direction
+Property Name: none
+has 14 Nodes
+*ns16="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: battery_curves_in_z-direction
+Property Name: none
+has 14 Nodes
+*ns17="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: battery_curves_in_(0_1_-1)-direc
+Property Name: none
+has 19 Nodes
+*ns18="CONDITION"
+sectionname="DESIGN LINE LOCSYS CONDITIONS"
+description="ROTANGLE 0.7853981634 0.0 0.0 FUNCT 0 0 0 USEUPDATEDNODEPOS 0 USECONSISTENTNODENORMAL 0"
+*ns18="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: battery_curves_in_x-direction
+Property Name: none
+has 61 Nodes
+*ns19="CONDITION"
+sectionname="DESIGN LINE DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: cat-side_(sl)_line_triple_point
+Property Name: none
+has 6 Nodes
+*ns20="CONDITION"
+sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
+description="0 Slave"
+
+Node Set, named: cc-side_(sl)_line_triple_point
+Property Name: none
+has 6 Nodes
+*ns21="CONDITION"
+sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
+description="1 Slave"
+
+Node Set, named: el-side_(ma)_line_triple_point
+Property Name: none
+has 6 Nodes
+*ns22="CONDITION"
+sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
+description="0 Master"
+*ns22="CONDITION"
+sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
+description="1 Master"
+
+Node Set, named: vertices_an-side_cc
+Property Name: none
+has 3 Nodes
+*ns23="CONDITION"
+sectionname="DESIGN POINT DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none"
+
+Node Set, named: vertices_cat-side_cc
+Property Name: none
+has 3 Nodes
+*ns24="CONDITION"
+sectionname="DESIGN POINT DIRICH CONDITIONS"
+description="NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT none none none"

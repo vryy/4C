@@ -1908,10 +1908,11 @@ baci_test(activefiber_rectangle_cell_dirich_h8 2 "")
 
 
 # testing the whole framework: from cubit via pre_exodus and baci to the post-filter:
+baci_framework_test(tutorial_battery 2 "")
+baci_framework_test(tutorial_contact_3d 2 "")
 baci_framework_test(tutorial_fluid 2 "")
 baci_framework_test(tutorial_fsi 2 "")
 baci_framework_test(tutorial_fsi_3d 2 fsi_part_struct_solver.xml)
-baci_framework_test(tutorial_contact_3d 2 "")
 
 # cut test
 cut_test(2)
