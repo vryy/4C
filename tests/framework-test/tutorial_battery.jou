@@ -1,0 +1,307 @@
+reset
+
+$ --------------------------
+$ |       variables        |
+$ --------------------------
+$ parameters
+# {n_c=1}               $ number of spherical cathode particles in axial direction
+# {r=1}                 $ dimensionless particle radius
+# {r_non_conn=0.2}      $ dimensionless non-connected particle radius
+# {theta=30}            $ overlap angle in degrees
+# {sep=1.0}             $ dimensionless axial thickness of separator
+# {an=1.0}              $ dimensionless axial thickness of anode plate
+# {cc_cat=0.1}          $ dimensionless axial thickness of current collector at cathode side
+# {cc_an=0.1}           $ dimensionless axial thickness of current collector at cathode side
+# {meshsize_e=0.5}      $ size of finite elements for electrolyte as a fraction of the dimensionless particle radius
+# {meshsize_c=0.5}      $ size of finite elements for cathode as a fraction of the dimensionless particle radius
+# {meshsize_cat_non=0.1}        $ size of finite elements for cathode particle non-connected as a fraction of the dimensionless particle radius
+# {meshsize_a=0.5}      $ size of finite elements for anode as a fraction of the dimensionless particle radius
+# {meshsize_cc_cat=0.2} $ size of finite elements for current collectors as a fraction of the dimensionless particle radius
+# {meshsize_cc_an=0.2}  $ size of finite elements for current collectors as a fraction of the dimensionless particle radius
+# {interfacemeshsize_c=0.3}             $ size of finite elements for cathode-electrolyte interface as a fraction of the dimensionless particle radius
+# {interfacemeshsize_a=0.5}             $ size of finite elements for anode-electrolyte interface as a fraction of the dimensionless particle radius
+# {contactcurveintervals_e=0}           $ number of meshing intervals along electrolyte-side contact curve between two particles
+# {particlediameterintervals_c=0}       $ number of meshing intervals along diameter of one cathode particle
+# {matching=1}          $ flag indicating whether interface nodes are matching or not
+# {meshrefinements_c=0} $ number of uniform refinements of elements at cathode-electrolyte interface
+# {meshrefinements_a=0} $ number of uniform refinements of elements at anode-electrolyte interface
+# {scaling=0.001}       $ geometric scaling factor for unit conversion purposes
+# {tol=0.00001}         $ tolerance for geometric operations
+
+$ --------------------------
+$ |        geometry        |
+$ --------------------------
+$ anode
+create brick x {an} y {2*r*cos(theta/360*PI)} z {2*r*cos(theta/360*PI)}
+compress
+move volume 1 x {an/2 + (2*n_c-3)*r*cos(theta/360*PI)+2*r+sep}
+compress
+
+$ electrolyte
+create brick x {(n_c-1)*2*r*cos(theta/360*PI)+2*r+sep} y {2*r*cos(theta/360*PI)} z {2*r*cos(theta/360*PI)}
+compress
+move volume 2 x {(n_c-2)*r*cos(theta/360*PI)+r+sep/2}
+compress
+
+$ cathode
+# {i=0}
+# {Loop(n_c)}
+  create sphere radius {r}
+  # {if(i>0)}
+    move volume 4 x {i*2*r*cos(theta/360*PI)}
+    unite volume 3 4
+    compress
+  # {endif}
+  # {++i}
+# {EndLoop}
+compress
+
+$ insert one non-connected sphere
+create sphere radius {r_non_conn}
+move volume 4 x {-r*cos(theta/360*PI)} y {-r*cos(theta/360*PI)} z {r*cos(theta/360*PI)}
+intersect volume 2 4 keep
+subtract volume 4 from volume 2
+volume 5 id 4
+
+$ anode current collector
+create brick x {cc_an} y {2*r*cos(theta/360*PI)} z {2*r*cos(theta/360*PI)}
+compress
+move volume 5 x {cc_an/2 + an + (2*n_c-3)*r*cos(theta/360*PI)+2*r+sep}
+compress
+
+$ cathode current collector
+create brick x {cc_cat} y {2*r*cos(theta/360*PI)} z {2*r*cos(theta/360*PI)}
+compress
+move volume 6 x {-cc_cat/2-r*cos(theta/360*PI)}
+
+$ trim the connected cathode spheres to the box size and cut those spheres from the electrolyte
+intersect volume 2 3 keep
+subtract volume 3 from volume 2
+volume 7 id 3
+compress
+
+$ cut out symmetric cuboid
+webcut volume all with plane zplane imprint
+delete volume 7 8 9 10 11
+compress
+webcut volume all with plane yplane imprint
+delete volume 7 8 9 10 11
+compress
+$ cut out symmetric wedge
+webcut volume all with plane yplane rotate 45 about x imprint
+delete volume 7 8 9 10 11 12
+compress
+
+$ --------------------------
+$ |          mesh          |
+$ --------------------------
+imprint volume all
+# {if(matching==1)}
+  merge volume all
+# {else}
+  $not yet implemented
+  Stop
+  merge volume all except 1 3
+# {endif}
+volume all scheme tetmesh
+set tetmesher interior points on
+set tetmesher optimize level 3 overconstrained off sliver off
+set tetmesher boundary recovery off
+volume 1 size {meshsize_a*r}
+# {if(interfacemeshsize_a>0.0)}
+  surface with x_max = {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep} in volume 1 size {interfacemeshsize_a}
+# {endif}
+volume 2 size {meshsize_e*r}
+volume 3 size {meshsize_c*r}
+# {if(interfacemeshsize_c>0.0)}
+  surface with not is_plane in volume 3 size {interfacemeshsize_c}
+# {endif}
+# {if(contactcurveintervals_e>0 && (matching!=1 || (interfacemeshsize_a==0.0 && interfacemeshsize_c==0.0)))}
+  curve with length <= {2*PI*r*sin(theta/360*PI)} and with Y_Min == Y_Max in volume 2 interval {contactcurveintervals_e}
+# {endif}
+# {if(particlediameterintervals_c>0)}
+  curve with Y_Min == 0 and Y_Max == 0 in volume 3 interval {n_c*particlediameterintervals_c} scheme equal
+# {endif}
+volume 4 size {meshsize_cat_non*r}
+volume 5 size {meshsize_cc_an}
+volume 6 size {meshsize_cc_cat}
+mesh volume all
+# {if(meshrefinements_a>0)}
+  refine surface with x_max = {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep} in volume 1 numsplit {meshrefinements_a} bias 1.0 depth 1 smooth
+# {endif}
+# {if(meshrefinements_c>0)}
+  refine surface with not is_plane in volume 3 numsplit {meshrefinements_c} bias 1.0 depth 1 smooth
+# {endif}
+# {if(matching==1)}
+  unmerge volume all
+# {endif}
+
+compress all
+
+$ --------------------------
+$ |  blocks and nodesets   |
+$ --------------------------
+# anode
+block 1 volume 1
+block 1 Name "anode"
+
+# electrolyte
+block 2 volume 2
+block 2 Name "electrolyte"
+
+# cathode
+block 3 volume 3
+block 3 volume 4
+block 3 Name "cathode"
+
+# anode side current collector
+block 4 volume 5
+block 4 Name "anode cc"
+
+# cathode side current collector
+block 5 volume 6
+block 5 Name "cathode cc"
+
+# anode-side current collector
+nodeset 1 surface with x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+cc_an-tol} in volume 5
+nodeset 1 Name "an-side cc"
+
+# current collector-side of anode-current collector interface
+nodeset 2 surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+tol} in volume 5
+nodeset 2 Name "cc-side (sl) of an-cc interface"
+
+# anode-side of anode-current collector interface
+nodeset 3 surface with x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an-tol} in volume 1
+nodeset 3 Name "an-side (ma) of an-cc interface"
+
+# anode-side of anode-electrolyte interface
+nodeset 4 surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+tol} in volume 1
+nodeset 4 Name "an-side (sl) of an-el interface"
+
+# electrolyte-side of anode-electrolyte interface
+nodeset 5 surface with x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep-tol} in volume 2
+nodeset 5 Name "el-side (ma) of an-el interface"
+
+# electrolyte-side of cathode-electrolyte interface
+nodeset 6 surface with not is_plane in volume 2
+nodeset 6 Name "el-side (ma) of cat-el interface"
+
+# cathode-side of cathode-electrolyte interface
+nodeset 7 surface with not is_plane in volume 3 4
+#nodeset 7 Name "cat-side (sl) of cat-el interface" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# cathode-side of composite cathode-current collector interface
+nodeset 8 surface with x_max <= {-r*cos(theta/360*PI) + tol} in volume 3 4
+#nodeset 8 Name "cat-side (ma) of cat-cc interface" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# current collector-side of cathode part composite cathode-current collector interface
+nodeset 9 surface with x_min >= {-r*cos(theta/360*PI) - tol} and z_max <= {0.5*r*cos(theta/360*PI)} in volume 6
+nodeset 9 surface with x_min >= {-r*cos(theta/360*PI) - tol} and z_min >= {0.5*r*cos(theta/360*PI)} in volume 6
+#nodeset 9 Name "cc-side (sl) of cat-comp_cat-cc interface" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# solid electrolyte-side of composite cathode-current collector interface
+nodeset 10 surface with x_max <= {-r*cos(theta/360*PI) + tol} in volume 2
+#nodeset 10 Name "sol-el-side (ma) of comp_cat-cc interface" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# current collector-side of cathode part composite cathode-current collector interface
+nodeset 11 surface with x_min >= {-r*cos(theta/360*PI) - tol} and z_min <= {0.5*r*cos(theta/360*PI)} and z_max >= {0.5*r*cos(theta/360*PI)} in volume 6
+#nodeset 11 Name "cc-side (sl) of sol-el-comp_cat-cc interface" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# cathode-side current collector
+nodeset 12 surface with x_max <= {-r*cos(theta/360*PI)-cc_cat} in volume 6
+nodeset 12 Name "cat-side cc"
+
+# battery surface normal to y axis
+# add all surfaces that are normal to the y axis
+nodeset 13 surface with y_max <= {-r*cos(theta/360*PI)} in volume all
+# remove lines of cathode and anode as they are the slave side nodes -> no DBC can be prescribed here
+nodeset 13 node in surface with not is_plane in volume 3 4 remove
+nodeset 13 node in surface with x_min >= {-r*cos(theta/360*PI)-tol} in volume 6 remove
+nodeset 13 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+tol} in volume 5 remove
+nodeset 13 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+tol} in volume 1 remove
+nodeset 13 Name "battery surface normal to y"
+
+# battery surface normal to z axis
+# add all surfaces that are normal to the z axis
+nodeset 14 surface with z_max <= {0.0} in volume all
+# remove lines of cathode and anode as they are the slave side nodes -> no DBC can be prescribed here
+nodeset 14 node in surface with not is_plane in volume 3 4 remove
+nodeset 14 node in surface with x_min >= {-r*cos(theta/360*PI)-tol} in volume 6 remove
+nodeset 14 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+tol} in volume 5 remove
+nodeset 14 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+tol} in volume 1 remove
+nodeset 14 Name "battery surface normal to z"
+
+# battery surface which normal vector is (0 1 1)
+# add surfaces that are normal to (0 1 1) - vector of volume 1
+nodeset 15 surface with ((x_max - x_min > {an-tol} ) && (y_max - y_min > {0.7071*r*cos(theta/360*PI)} ) && (z_max - z_min > {0.7071*r*cos(theta/360*PI)} )) in volume 1
+# add surfaces that are normal to (0 1 1) - vector of volume 2 & 3
+nodeset 15 surface with ((x_max - x_min > {r+(2*n_c - 1)*r*cos(theta/360*PI) - tol} ) && (y_max - y_min > {0.7071*r*cos(theta/360*PI)} ) && (z_max - z_min > {0.7071*r*cos(theta/360*PI)} ) && is_plane ) in volume 2 & 3
+# add surfaces that are normal to (0 1 1) - vector of volume 4
+nodeset 15 surface with (x_max - x_min > {r_non_conn - tol} ) && y_max > {-r*cos(theta/360*PI) + tol} && is_plane in volume 4
+# add surfaces that are normal to (0 1 1) - vector of volume 5
+nodeset 15 surface with ((x_max - x_min > {cc_an-tol} ) && (y_max - y_min > {0.7071*r*cos(theta/360*PI)} ) && (z_max - z_min > {0.7071*r*cos(theta/360*PI)} )) in volume 5
+# add surfaces that are normal to (0 1 1) - vector of volume 6
+nodeset 15 surface with ((x_max - x_min > {cc_cat-tol} ) && (y_max - y_min > {0.7071*r*cos(theta/360*PI)} ) && (z_max - z_min > {0.7071*r*cos(theta/360*PI)} )) in volume 6
+# remove lines of cathode and anode as they are the slave side nodes -> no DBC can be prescribed here
+nodeset 15 node in surface with not is_plane in volume 3 4 remove
+nodeset 15 node in surface with x_min >= {-r*cos(theta/360*PI)-tol} in volume 6 remove
+nodeset 15 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+tol} in volume 5 remove
+nodeset 15 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+tol} in volume 1 remove
+#nodeset 15 Name "battery surface normal to (0 1 1) vector" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# lines in y-direction that need a DBC
+nodeset 16 curve with (((x_max - x_min) < {tol}) && ((z_max - z_min) < {tol}) && (x_max <= {-r*cos(theta/360*PI)-cc_cat})) in volume 6
+nodeset 16 curve with (((x_max - x_min) < {tol}) && ((z_max - z_min) < {tol}) && (x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+cc_an-tol})) in volume 5
+nodeset 16 Name "battery curves in y-direction"
+
+# lines in z-direction that need a DBC
+nodeset 17 curve with (((x_max - x_min) < {tol}) && ((y_max - y_min) < {tol}) && (x_max <= {-r*cos(theta/360*PI)-cc_cat})) in volume 6
+nodeset 17 curve with (((x_max - x_min) < {tol}) && ((y_max - y_min) < {tol}) && (x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+cc_an-tol})) in volume 5
+nodeset 17 Name "battery curves in z-direction"
+
+# all lines  in (0 1 -1) direction that need a DBC
+nodeset 18 curve with ((y_max - y_min) > {tol} && (z_max - z_min) > {tol} && (x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+cc_an-tol})) in volume 5
+nodeset 18 curve with ((y_max - y_min) > {tol} && (z_max - z_min) > {tol} && (x_max <= {-r*cos(theta/360*PI)-cc_cat})) in volume 6
+#nodeset 18 Name "battery curves in (0 1 -1)-direction" #commented since string is too long for the tutorial-framework, yet it is good to have descriptive names
+
+# all lines at the battery edges in x-direction
+nodeset 19 curve with ((y_max == y_min) && (z_max == z_min)) in volume all
+# remove slave side nodes
+nodeset 19 node in surface with not is_plane in volume 3 4 remove
+nodeset 19 node in surface with x_min >= {-r*cos(theta/360*PI)-tol} in volume 6 remove
+nodeset 19 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+tol} in volume 5 remove
+nodeset 19 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+tol} in volume 1 remove
+nodeset 19 Name "battery curves in x-direction"
+
+# cathode side triple point line
+nodeset 20 curve with (x_max <= {-r*cos(theta/360*PI) + tol} && ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && y_min < {-r*sin(theta/360*PI)*cos(45/180*PI)-tol} ) in volume 3
+nodeset 20 curve with (x_max <= {-r*cos(theta/360*PI) + tol} && ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && z_max < {r*cos(theta/360*PI)-r_non_conn*cos(45/180*PI)+tol} ) in volume 4
+nodeset 20 Name "cat-side (sl) line triple point"
+
+# cathode current-collector side triple point line
+nodeset 21 curve with ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && (z_max - z_min) < {r_non_conn*(1-cos(45/180*PI))+tol} in volume 6
+nodeset 21 curve with ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && (y_max - y_min) < {r*sin(theta/360*PI)*(1-cos(45/180*PI))+tol} in volume 6
+nodeset 21 Name "cc-side (sl) line triple point"
+
+# solid electrolyte side triple point line
+nodeset 22 curve with (((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && ((y_max - y_min) < {r*sin(theta/360*PI)})) in surface with x_max <= {-r*cos(theta/360*PI) + tol} in volume 2
+nodeset 22 Name "el-side (ma) line triple point"
+
+# all vertices at anode-side current collector
+nodeset 23 vertex in surface with x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+cc_an-tol} in volume 5
+nodeset 23 Name "vertices an-side cc
+
+# all vertices at the cathode-side current collector
+nodeset 24 vertex in surface with x_max <= {-r*cos(theta/360*PI)-cc_cat} in volume 6
+nodeset 24 Name "vertices cat-side cc"
+
+$ --------------------------
+$ |        scaling         |
+$ --------------------------
+volume all scale {scaling}
+
+$ --------------------------
+$ |         export         |
+$ --------------------------
+export genesis "xxx_tutorial_battery.e" block all dimension 3 overwrite
+exit
