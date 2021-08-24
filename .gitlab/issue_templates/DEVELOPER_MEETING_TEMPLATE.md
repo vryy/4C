@@ -15,7 +15,7 @@
 <!-- List of participants -->
 
 ### Invited Participants
-@baci/baci_collaborators @baci/baci_developers @baci/baci_maintainers
+@baci/baci_collaborators @baci/baci_developers @baci/baci_maintainer
 
 ## Agenda
 <!-- Team members can add items to the agenda before the meeting.          -->
