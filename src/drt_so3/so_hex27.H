@@ -337,6 +337,7 @@ namespace DRT
         calc_struct_linstiffmass,
         calc_struct_nlnstiffmass,
         calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
+        struct_calc_internalinertiaforce,
         calc_struct_stress,
         calc_struct_eleload,
         calc_struct_fsiload,
