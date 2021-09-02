@@ -1,5 +1,5 @@
 <!-- Set default label -->
-/label "type::developer meeting"
+/label "type::meeting notes"
 
 <!-- Set the following issue title: "BACI Developer Meeting on dd.mm.yyyy" -->
 
