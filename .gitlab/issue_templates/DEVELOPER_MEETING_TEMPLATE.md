@@ -1,3 +1,6 @@
+<!-- Set default label -->
+/label "type::meeting notes"
+
 <!-- Set the following issue title: "BACI Developer Meeting on dd.mm.yyyy" -->
 
 > **Important:** Document progress, decisions and action items of this meeting in this issue.
