@@ -335,10 +335,10 @@ namespace BEAMINTERACTION
       t_tri6>;
   template class BeamToSolidSurfaceMeshtyingPairBase<
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9>;
-   template class BeamToSolidSurfaceMeshtyingPairBase<
-     line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4>;
-   template class BeamToSolidSurfaceMeshtyingPairBase<
-     line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8>;
-   template class BeamToSolidSurfaceMeshtyingPairBase<
-     line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8>;
+  template class BeamToSolidSurfaceMeshtyingPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9>;
 }  // namespace BEAMINTERACTION
