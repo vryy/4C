@@ -229,13 +229,8 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     // Add the geometry pair input parameters.
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
 
-    // Add the surface normal option.
-    setStringToIntegralParameter<GEOMETRYPAIR::SurfaceNormals>("GEOMETRY_PAIR_SURFACE_NORMALS",
-        "standard", "How the surface normals are evaluated",
-        tuple<std::string>("standard", "extended_volume"),
-        tuple<GEOMETRYPAIR::SurfaceNormals>(
-            GEOMETRYPAIR::SurfaceNormals::standard, GEOMETRYPAIR::SurfaceNormals::extended_volume),
-        &beam_to_solid_surface_mestying);
+    // Add the surface options.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_mestying);
   }
 
   // Beam to solid surface parameters.

@@ -63,6 +63,16 @@ namespace INPAR
      */
     void SetValidParametersLineTo3D(Teuchos::ParameterList& list);
 
+    /**
+     * \brief Set valid input parameters for line to surface geometry pairs.
+     *
+     * This function adds all available input parameters for line to surface pairs, that are not yet
+     * added in the SetValidParametersLineTo3D function.
+     *
+     * @param (out) Parameter list to add the line to surface parameters to.
+     */
+    void SetValidParametersLineToSurface(Teuchos::ParameterList& list);
+
   }  // namespace GEOMETRYPAIR
 
 }  // namespace INPAR
