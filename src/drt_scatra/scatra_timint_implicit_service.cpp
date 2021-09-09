@@ -2814,9 +2814,9 @@ void SCATRA::OutputScalarsStrategyDomain::InitStrategySpecific(
   numscal_ = scatratimint->scalarhandler_->NumScal();
 
   // initialize result vectors associated with entire domain
-  const int num_active_scalars = output_mean_grad_ ? numscal_ : 0;
   totalscalars_[dummy_domain_id_].resize(numdofpernode_, 0.0);
-  meanscalars_[dummy_domain_id_].resize(numdofpernode_ + num_active_scalars, 0.0);
+  meanscalars_[dummy_domain_id_].resize(numdofpernode_, 0.0);
+  meangradients_[dummy_domain_id_].resize(numscal_, 0.0);
   domainintegral_[dummy_domain_id_] = 0.0;
 
   // register output in csv writer
@@ -2861,7 +2861,7 @@ void SCATRA::OutputScalarsStrategyDomain::PrintToScreen()
       {
         std::cout << "|  overall  |  grad. " << k + 1 << "  |        ----        |   "
                   << domainintegral_[dummy_domain_id_] << "  |    "
-                  << meanscalars_[dummy_domain_id_][numdofpernode_ + 1 + k] << "   |" << std::endl;
+                  << meangradients_[dummy_domain_id_][k] << "   |" << std::endl;
       }
     }
   }
@@ -2888,7 +2888,7 @@ void SCATRA::OutputScalarsStrategyDomain::PassToCSVWriter()
     {
       runtime_csvwriter_->AppendDataVector(
           "Mean value of gradient of scalar " + std::to_string(k + 1) + " in entire domain",
-          {meanscalars_[dummy_domain_id_][numdofpernode_ + 1 + k]});
+          {meangradients_[dummy_domain_id_][k]});
     }
   }
 }
@@ -2929,7 +2929,7 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
   {
     for (int k = 0; k < numscal_; ++k)
     {
-      meanscalars_[dummy_domain_id_][numdofpernode_ + k] =
+      meangradients_[dummy_domain_id_][k] =
           (*scalars)[numdofpernode_ + 1 + k] / domainintegral_[dummy_domain_id_];
     }
   }
@@ -2971,8 +2971,8 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
 
     // initialize result vectors associated with current condition
     totalscalars_[condid].resize(numdofpernodepercondition_[condid], 0.0);
-    const int num_active_scalars = output_mean_grad_ ? numscalpercondition_[condid] : 0;
-    meanscalars_[condid].resize(numdofpernodepercondition_[condid] + num_active_scalars, 0.0);
+    meanscalars_[condid].resize(numdofpernodepercondition_[condid], 0.0);
+    meangradients_[condid].resize(numscalpercondition_[condid], 0.0);
     domainintegral_[condid] = 0.0;
 
     // register all data vectors
@@ -3049,8 +3049,8 @@ void SCATRA::OutputScalarsStrategyCondition::PrintToScreen()
         for (int k = 0; k < numscalpercondition_[condid]; ++k)
         {
           std::cout << condid_string.str() << "  grad. " << k + 1 << "  |        ----        |   "
-                    << domainintegral_[condid] << "  |    "
-                    << meanscalars_[condid][numdofpernode + 1 + k] << "   |" << std::endl;
+                    << domainintegral_[condid] << "  |    " << meangradients_[condid][k] << "   |"
+                    << std::endl;
         }
       }
     }
@@ -3085,7 +3085,7 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
         runtime_csvwriter_->AppendDataVector("Mean value of gradient of scalar " +
                                                  std::to_string(k + 1) + " in domain " +
                                                  std::to_string(condid),
-            {meanscalars_[condid][numdofpernodepercondition_[condid] + 1 + k]});
+            {meanscalars_[condid][k]});
       }
     }
   }
@@ -3233,10 +3233,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
     if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
-      {
-        meanscalars_[condid][numdofpernode + k] =
-            (*scalars)[numdofpernode + 1 + k] / domainintegral_[condid];
-      }
+        meangradients_[condid][k] = (*scalars)[numdofpernode + 1 + k] / domainintegral_[condid];
     }
   }
 }

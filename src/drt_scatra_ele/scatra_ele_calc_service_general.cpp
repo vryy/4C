@@ -152,10 +152,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     {
       // get flag for inverting
       const bool inverting = params.get<bool>("inverting");
-      if (!params.isParameter("calc_grad_phi"))
-      {
-        std::cout << std::endl;
-      }
+
       const bool calc_grad_phi = params.get<bool>("calc_grad_phi");
       // need current scalar vector
       // -> extract local values from the global vectors
