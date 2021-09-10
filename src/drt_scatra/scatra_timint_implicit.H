@@ -1554,6 +1554,9 @@ namespace SCATRA
     //! mean values of transported scalars
     std::map<const int, std::vector<double>> meanscalars_;
 
+    //! mean values of gradient of transported scalars
+    std::map<const int, std::vector<double>> meangradients_;
+
     //! process number
     int myrank_;
 
