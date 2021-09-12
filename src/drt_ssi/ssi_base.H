@@ -301,7 +301,7 @@ namespace SSI
     void SetIsInit(bool trueorfalse) { isinit_ = trueorfalse; }
 
     //! set up structural model evaluator for scalar-structure interaction
-    virtual void SetupModelEvaluator() const = 0;
+    virtual void SetupModelEvaluator() const {};
 
    private:
     /*!

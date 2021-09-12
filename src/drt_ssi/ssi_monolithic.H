@@ -216,8 +216,6 @@ namespace SSI
     //! set up a pointer to the contact strategy of the structural field and store it
     void SetupContactStrategy();
 
-    void SetupModelEvaluator() const override;
-
     //! set scatra solution on structure field
     void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const override;
 

@@ -17,7 +17,6 @@
 #include "ssi_monolithic_evaluate_OffDiag.H"
 #include "ssi_monolithic_meshtying_strategy.H"
 #include "ssi_resulttest.H"
-#include "ssi_str_model_evaluator_monolithic.H"
 #include "ssi_utils.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
@@ -810,33 +809,6 @@ void SSI::SSIMono::SetupSystem()
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
       IsScaTraManifold() ? ScaTraManifold() : Teuchos::null, ssi_maps_, StructureField());
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SetupModelEvaluator() const
-{
-  // construct and register structural model evaluator if necessary
-
-  const bool do_output_stress =
-      DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
-          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none;
-  const bool smooth_output_interface_stress = DRT::INPUT::IntegralValue<bool>(
-      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
-      "SMOOTH_OUTPUT_INTERFACE_STRESS");
-
-  if (Meshtying3DomainIntersection() and smooth_output_interface_stress)
-    dserror("Smoothing of interface stresses not implemented for triple meshtying.");
-
-  if (smooth_output_interface_stress and !do_output_stress)
-    dserror("Smoothing of interface stresses only when stress output is written.");
-
-  if (do_output_stress and SSIInterfaceMeshtying())
-  {
-    StructureBaseAlgorithm()->RegisterModelEvaluator("Monolithic Coupling Model",
-        Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(
-            Teuchos::rcp(this, false), smooth_output_interface_stress)));
-  }
 }
 
 /*---------------------------------------------------------------------------------*

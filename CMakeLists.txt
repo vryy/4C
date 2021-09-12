@@ -2536,7 +2536,6 @@ src/drt_ssi/ssi_partitioned_1wc.cpp
 src/drt_ssi/ssi_partitioned_2wc.cpp
 src/drt_ssi/ssi_resulttest.cpp
 src/drt_ssi/ssi_utils.cpp
-src/drt_ssi/ssi_str_model_evaluator_monolithic.cpp
 src/drt_ssi/ssi_str_model_evaluator_partitioned.cpp
 )
 
