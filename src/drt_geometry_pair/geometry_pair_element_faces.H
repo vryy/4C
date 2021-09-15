@@ -42,22 +42,22 @@ namespace GEOMETRYPAIR
   template <DRT::Element::DiscretizationType discretization>
   struct FaceDiscretizationTypeToVolumeElement
   {
-    typedef void volume_type_;
+    using volume_type_ = void;
   };
   template <>
   struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad4>
   {
-    typedef t_hex8 volume_type_;
+    using volume_type_ = t_hex8;
   };
   template <>
   struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad8>
   {
-    typedef t_hex20 volume_type_;
+    using volume_type_ = t_hex20;
   };
   template <>
   struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad9>
   {
-    typedef t_hex27 volume_type_;
+    using volume_type_ = t_hex27;
   };
 
   /**
@@ -438,7 +438,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~FaceElementTemplateExtendedVolume(){};
+    ~FaceElementTemplateExtendedVolume() = default;
 
     /**
      * \brief Get the face GIDs and set the reference configuration.
