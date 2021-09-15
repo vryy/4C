@@ -81,7 +81,7 @@ BINSTRATEGY::BinningStrategy::BinningStrategy()
 
 void BINSTRATEGY::BinningStrategy::Init(
     std::vector<Teuchos::RCP<DRT::Discretization>> const discret,
-    std::vector<Teuchos::RCP<Epetra_Vector>> disnp)
+    std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
 {
   // create binning discretization
   bindis_ = Teuchos::rcp(new DRT::Discretization("binning", comm_));
@@ -976,7 +976,7 @@ void BINSTRATEGY::BinningStrategy::DistributeElesToBins(const DRT::Discretizatio
 
 void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleAABB(
     Teuchos::RCP<DRT::Discretization> const& discret, std::map<int, std::set<int>>& bintorowelemap,
-    Teuchos::RCP<Epetra_Vector> disnp) const
+    Teuchos::RCP<const Epetra_Vector> disnp) const
 {
   bintorowelemap.clear();
 
@@ -998,7 +998,7 @@ void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleAABB(
 
 void BINSTRATEGY::BinningStrategy::DistributeSingleElementToBinsUsingEleAABB(
     Teuchos::RCP<DRT::Discretization> const& discret, DRT::Element* eleptr,
-    std::vector<int>& binIds, Teuchos::RCP<Epetra_Vector> const& disnp) const
+    std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const
 {
   binIds.clear();
   DRT::Node** nodes = eleptr->Nodes();
@@ -1130,7 +1130,7 @@ void BINSTRATEGY::BinningStrategy::RemoveAllElesFromBins()
 
 void BINSTRATEGY::BinningStrategy::GetijkOfSingleNodeInCurrentPosition(
     Teuchos::RCP<DRT::Discretization> const& discret, DRT::Node const* const node,
-    Teuchos::RCP<Epetra_Vector> const& disnp, int ijk[3]) const
+    Teuchos::RCP<const Epetra_Vector> const& disnp, int ijk[3]) const
 {
   double currpos[3] = {0.0, 0.0, 0.0};
   BINSTRATEGY::UTILS::GetCurrentNodePos(discret, node, disnp, currpos);
@@ -1140,7 +1140,7 @@ void BINSTRATEGY::BinningStrategy::GetijkOfSingleNodeInCurrentPosition(
 
 void BINSTRATEGY::BinningStrategy::DistributeRowNodesToBins(
     Teuchos::RCP<DRT::Discretization> discret, std::map<int, std::vector<int>>& bin_to_rownodes_map,
-    Teuchos::RCP<Epetra_Vector> disnp) const
+    Teuchos::RCP<const Epetra_Vector> disnp) const
 {
   // current position of nodes
   double currpos[3] = {0.0, 0.0, 0.0};
@@ -1177,7 +1177,8 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
 {
   // initialize dummys
   std::vector<std::map<int, std::set<int>>> dummy1(discret.size());
-  std::vector<Teuchos::RCP<Epetra_Vector>> dummy2(discret.size());
+  std::vector<Teuchos::RCP<const Epetra_Vector>> dummy2(discret.size());
+  std::vector<Teuchos::RCP<Epetra_Vector>> mutabledummy2(discret.size());
 
   // ------------------------------------------------------------------------
   // create bins, weight them according to number of nodes (of discrets) they
@@ -1208,7 +1209,7 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
     // start with standard ghosting
     // ----------------------------------------------------------------------
     StandardDiscretizationGhosting(
-        discret[i], newrowbins, dummy2[i], stdelecolmap[i], stdnodecolmap[i]);
+        discret[i], newrowbins, mutabledummy2[i], stdelecolmap[i], stdnodecolmap[i]);
 
     // ----------------------------------------------------------------------
     // extended ghosting
@@ -1266,7 +1267,7 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
 
 Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBinsToProcs(
     std::vector<Teuchos::RCP<DRT::Discretization>>& discret,
-    std::vector<Teuchos::RCP<Epetra_Vector>>& disnp,
+    std::vector<Teuchos::RCP<const Epetra_Vector>>& disnp,
     std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
     bool repartition) const
 {
@@ -1715,7 +1716,7 @@ void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
 
 void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
     std::vector<Teuchos::RCP<DRT::Discretization>> discret,
-    std::vector<Teuchos::RCP<Epetra_Vector>> disnp,
+    std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
     LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions_, bool set_bin_size_lower_bound_)
 {
   // reset lower bound for bin size
@@ -1764,7 +1765,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
 
 double BINSTRATEGY::BinningStrategy::ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
     std::vector<Teuchos::RCP<DRT::Discretization>> discret,
-    std::vector<Teuchos::RCP<Epetra_Vector>> disnp)
+    std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
 {
   double bin_size_lower_bound = 0.0;
 
@@ -1886,7 +1887,7 @@ void BINSTRATEGY::BinningStrategy::CreateBinsBasedOnBinSizeLowerBoundAndBinningD
 
 void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
     Teuchos::RCP<DRT::Discretization> discret, LINALG::Matrix<3, 2>& XAABB,
-    Teuchos::RCP<Epetra_Vector> disnp, bool set_bin_size_lower_bound_)
+    Teuchos::RCP<const Epetra_Vector> disnp, bool set_bin_size_lower_bound_)
 {
   // set_bin_size_lower_bound_ as largest element in discret on each proc
   double locmax_set_bin_size_lower_bound = 0.0;
@@ -1975,7 +1976,7 @@ void BINSTRATEGY::BinningStrategy::ComputeMinBinningDomainContainingAllElementsO
 }
 
 void BINSTRATEGY::BinningStrategy::TransferNodesAndElements(
-    Teuchos::RCP<DRT::Discretization>& discret, Teuchos::RCP<Epetra_Vector> disnp,
+    Teuchos::RCP<DRT::Discretization>& discret, Teuchos::RCP<const Epetra_Vector> disnp,
     std::map<int, std::set<int>>& bintorowelemap)
 {
   TEUCHOS_FUNC_TIME_MONITOR("BINSTRATEGY::BinningStrategy::TransferNodesAndElements");
