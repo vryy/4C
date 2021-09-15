@@ -149,7 +149,7 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
   LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
 
-  std::vector<Teuchos::RCP<Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetMutableDisColNp());
+  std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetDisColNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
   binstrategy_->Init(discret_vec, disp_vec);
   binstrategy_->SetDeformingBinningDomainHandler(
@@ -357,9 +357,12 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
 
   // displacement vector according to periodic boundary conditions
-  std::vector<Teuchos::RCP<Epetra_Vector>> disnp(
+  std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
       1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap())));
-  LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *disnp[0]);
+  LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *mutabledisnp[0]);
+
+  std::vector<Teuchos::RCP<const Epetra_Vector>> disnp(
+      1, Teuchos::rcp(new const Epetra_Vector(*mutabledisnp[0])));
 
   // nodes, that are owned by a proc, are distributed to the bins of this proc
   std::vector<std::map<int, std::vector<int>>> nodesinbin(1);
@@ -1134,7 +1137,7 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformForceStiff()
 void STR::MODELEVALUATOR::BeamInteraction::PrintBinningInfoToScreen() const
 {
   std::vector<Teuchos::RCP<DRT::Discretization>> discret_vec(1, ia_discret_);
-  std::vector<Teuchos::RCP<Epetra_Vector>> disnp_vec(1, Teuchos::null);
+  std::vector<Teuchos::RCP<const Epetra_Vector>> disnp_vec(1, Teuchos::null);
 
   double bin_size_lower_bound =
       binstrategy_->ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(

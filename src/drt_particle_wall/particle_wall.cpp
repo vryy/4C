@@ -275,7 +275,7 @@ void PARTICLEWALL::WallHandlerBase::RelateBinsToColWallEles()
     // get corresponding bin ids for element
     std::vector<int> binids;
     binstrategy_->DistributeSingleElementToBinsUsingEleAABB(
-        walldiscretization_, ele, binids, walldatastate_->GetRefMutableDispCol());
+        walldiscretization_, ele, binids, walldatastate_->GetDispCol());
 
     // relate ids of owned bins to column wall elements
     for (int gidofbin : binids)

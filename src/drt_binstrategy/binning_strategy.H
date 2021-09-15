@@ -114,8 +114,8 @@ namespace BINSTRATEGY
      */
     void Init(std::vector<Teuchos::RCP<DRT::Discretization>> const discret =
                   std::vector<Teuchos::RCP<DRT::Discretization>>(),
-        std::vector<Teuchos::RCP<Epetra_Vector>> disnp =
-            std::vector<Teuchos::RCP<Epetra_Vector>>());
+        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp =
+            std::vector<Teuchos::RCP<const Epetra_Vector>>());
 
     /*!
      * \brief set up binning strategy
@@ -501,7 +501,7 @@ namespace BINSTRATEGY
      */
     void DistributeRowElementsToBinsUsingEleAABB(Teuchos::RCP<DRT::Discretization> const& discret,
         std::map<int, std::set<int>>& bintorowelemap,
-        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null) const;
+        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
     /*!
      * \brief distribute single element to bins using its axis aligned bounding box idea
@@ -513,7 +513,7 @@ namespace BINSTRATEGY
      */
     void DistributeSingleElementToBinsUsingEleAABB(Teuchos::RCP<DRT::Discretization> const& discret,
         DRT::Element* eleptr, std::vector<int>& binIds,
-        Teuchos::RCP<Epetra_Vector> const& disnp) const;
+        Teuchos::RCP<const Epetra_Vector> const& disnp) const;
 
     /*!
      * \brief elements of input discretization are assigned to bins
@@ -558,7 +558,8 @@ namespace BINSTRATEGY
      * \param[out] ijk requested ijk
      */
     void GetijkOfSingleNodeInCurrentPosition(Teuchos::RCP<DRT::Discretization> const& discret,
-        DRT::Node const* const node, Teuchos::RCP<Epetra_Vector> const& disnp, int ijk[3]) const;
+        DRT::Node const* const node, Teuchos::RCP<const Epetra_Vector> const& disnp,
+        int ijk[3]) const;
 
     /*!
      * \brief assign node to bins
@@ -569,7 +570,7 @@ namespace BINSTRATEGY
      */
     void DistributeRowNodesToBins(Teuchos::RCP<DRT::Discretization> discret,
         std::map<int, std::vector<int>>& bin_to_rownodes_map,
-        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null) const;
+        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
 
     /*!
@@ -617,7 +618,7 @@ namespace BINSTRATEGY
      */
     Teuchos::RCP<Epetra_Map> WeightedDistributionOfBinsToProcs(
         std::vector<Teuchos::RCP<DRT::Discretization>>& discret,
-        std::vector<Teuchos::RCP<Epetra_Vector>>& disnp,
+        std::vector<Teuchos::RCP<const Epetra_Vector>>& disnp,
         std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
         bool repartition = false) const;
 
@@ -704,7 +705,7 @@ namespace BINSTRATEGY
      */
     void ComputeMinBinningDomainContainingAllElementsOfMultipleDiscrets(
         std::vector<Teuchos::RCP<DRT::Discretization>> discret,
-        std::vector<Teuchos::RCP<Epetra_Vector>> disnp,
+        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
         LINALG::Matrix<3, 2>& domain_bounding_box_corner_positions, bool set_bin_size_lower_bound_);
 
     /*!
@@ -717,7 +718,7 @@ namespace BINSTRATEGY
      */
     double ComputeLowerBoundForBinSizeAsMaxEdgeLengthOfAABBOfLargestEle(
         std::vector<Teuchos::RCP<DRT::Discretization>> discret,
-        std::vector<Teuchos::RCP<Epetra_Vector>> disnp);
+        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp);
 
     /*!
      * \brief create bins based on AABB and lower bound for bin size
@@ -738,7 +739,8 @@ namespace BINSTRATEGY
      */
     void ComputeMinBinningDomainContainingAllElementsOfSingleDiscret(
         Teuchos::RCP<DRT::Discretization> discret, LINALG::Matrix<3, 2>& XAABB,
-        Teuchos::RCP<Epetra_Vector> disnp = Teuchos::null, bool set_bin_size_lower_bound_ = false);
+        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null,
+        bool set_bin_size_lower_bound_ = false);
 
     /*!
      * \brief transfer nodes and elements of input discretization in case they have moved to new
@@ -749,7 +751,7 @@ namespace BINSTRATEGY
      * \param[in] bintorowelemap bin to row element map
      */
     void TransferNodesAndElements(Teuchos::RCP<DRT::Discretization>& discret,
-        Teuchos::RCP<Epetra_Vector> disnp, std::map<int, std::set<int>>& bintorowelemap);
+        Teuchos::RCP<const Epetra_Vector> disnp, std::map<int, std::set<int>>& bintorowelemap);
 
     //! \}
 
