@@ -1075,7 +1075,7 @@ void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<DRT::Discretiza
 
 void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<DRT::Element*>& eles,
     std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
-    bool roweles)
+    bool roweles) const
 {
   // loop over all bins
   std::vector<int>::const_iterator biniter;

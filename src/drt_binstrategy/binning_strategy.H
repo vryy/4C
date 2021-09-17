@@ -535,7 +535,7 @@ namespace BINSTRATEGY
      */
     void GetBinContent(std::set<DRT::Element*>& eles,
         std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
-        bool roweles = false);
+        bool roweles = false) const;
 
     /*!
      * \brief remove elements of specific type from all bins
