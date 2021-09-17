@@ -314,6 +314,7 @@ void FBI::FBIGeometryCoupler::ComputeCurrentPositions(DRT::Discretization& dis,
   std::vector<int> src_dofs(
       9);  // todo this does not work for all possible elements, does it? Variable size?
   std::vector<double> mydisp(3, 0.0);
+
   for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = dis.lColNode(lid);

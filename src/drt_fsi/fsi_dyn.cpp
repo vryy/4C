@@ -330,7 +330,7 @@ void fluid_freesurf_drt()
   }
 }
 /*----------------------------------------------------------------------*/
-// entry point for FSI using multidimensional immersed method
+// entry point for FSI using multidimensional immersed method (FBI)
 /*----------------------------------------------------------------------*/
 void fsi_immersed_drt()
 {
@@ -338,13 +338,6 @@ void fsi_immersed_drt()
 
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
-
-  // make sure the discretizations are filled in the right order
-  // this creates dof numbers with
-  //
-  //       structure dof < fluid dof
-  //
-  // We rely on this ordering in certain non-intuitive places!
 
   structdis->FillComplete();
 
