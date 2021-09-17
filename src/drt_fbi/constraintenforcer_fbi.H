@@ -93,6 +93,11 @@ namespace ADAPTER
     virtual void Evaluate();
 
     /**
+     * \brief Recomputes all coupling related quantities without performing a search
+     */
+    virtual void RecomputeCouplingWithoutPairCreation();
+
+    /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
      * structure field.
      *
@@ -150,6 +155,11 @@ namespace ADAPTER
      * elements ids which they potentially cut
      */
     void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
+
+    /**
+     * \brief Resets the state, i.e. the velocity of all interaction pairs
+     */
+    void ResetAllPairStates();
 
     /**
      * \brief Extracts current element dofs that are needed for the computations on pair level

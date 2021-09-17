@@ -90,7 +90,7 @@ void ADAPTER::FBIConstraintBridge::ResetPair(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::ResetBridge()
+void ADAPTER::FBIConstraintBridge::Clear()
 {
   // Delete all pairs and segmentation information
   meshtying_pairs_->clear();

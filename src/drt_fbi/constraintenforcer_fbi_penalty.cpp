@@ -43,7 +43,8 @@ void ADAPTER::FBIPenaltyConstraintenforcer::Setup(
     log.close();
   }
 }
-
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<const LINALG::SparseOperator>
 ADAPTER::FBIPenaltyConstraintenforcer::AssembleFluidCouplingMatrix() const
 {

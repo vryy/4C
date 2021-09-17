@@ -130,8 +130,11 @@ namespace ADAPTER
       return geometry_evaluation_data_;
     };
 
-    /// Clears the pair vector and builds the pairs anew
-    virtual void ResetBridge();
+    /// Clears the pair vector and segmentation information
+    virtual void Clear();
+
+    /// Resets class members of the bridge
+    virtual void ResetBridge() = 0;
 
     /// Sets the fluid solve flag
     virtual void PrepareFluidSolve() = 0;

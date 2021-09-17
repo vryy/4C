@@ -51,7 +51,6 @@ void ADAPTER::FBIConstraintBridgePenalty::Evaluate(
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridgePenalty::ResetBridge()
 {
-  ADAPTER::FBIConstraintBridge::ResetBridge();
   fs_->PutScalar(0.0);
   Cff_->Reset();
   ff_->PutScalar(0.0);

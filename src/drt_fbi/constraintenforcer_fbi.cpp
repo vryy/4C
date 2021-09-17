@@ -118,6 +118,7 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
   // Before each search we delete all pair and segment information
+  bridge_->Clear();
   bridge_->ResetBridge();
 
   // Do the search in the geometrycoupler_ and return the possible pair ids
@@ -161,7 +162,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid(int
 };
 
 /*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintenforcer::RecomputeCouplingWithoutPairCreation()
+{
+  // Before each search we delete all pair and segment information
+  bridge_->ResetBridge();
 
+  ResetAllPairStates();
+
+  // Create all needed matrix and vector contributions based on the current state
+  bridge_->Evaluate(discretizations_[0], discretizations_[1],
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp(), structure_->Velnp());
+};
+
+/*----------------------------------------------------------------------*/
 // return the structure force
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::FluidToStructure()
 {
@@ -227,7 +240,34 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
     }
   }
 }
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
+{
+  // Get current state
+  column_structure_displacement_ =
+      DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp());
+  column_structure_velocity_ =
+      DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
+  column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
+  std::vector<DRT::Element const*> ele_ptrs(2);
+  Teuchos::RCP<std::vector<double>> beam_dofvec = Teuchos::rcp(new std::vector<double>);
+  Teuchos::RCP<std::vector<double>> fluid_dofvec = Teuchos::rcp(new std::vector<double>);
+
+  for (auto pairiterator = bridge_->GetPairs()->begin(); pairiterator != bridge_->GetPairs()->end();
+       pairiterator++)
+  {
+    ele_ptrs[0] = (*pairiterator)->Element1();
+    ele_ptrs[1] = (*pairiterator)->Element2();
+
+    // Extract current element dofs, i.e. positions and velocities
+    ExtractCurrentElementDofs(ele_ptrs, beam_dofvec, fluid_dofvec);
+
+    // Finally tell the bridge to create the pair
+    bridge_->ResetPair(beam_dofvec, fluid_dofvec, *pairiterator);
+  }
+}
 /*----------------------------------------------------------------------*/
 
 void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(

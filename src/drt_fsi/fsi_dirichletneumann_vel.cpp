@@ -67,6 +67,8 @@ void FSI::DirichletNeumannVel::Setup()
 Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
     Teuchos::RCP<Epetra_Vector> ivel, const FillType fillFlag)
 {
+  const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
+
   FSI::Partitioned::FluidOp(ivel, fillFlag);
 
   if (fillFlag == User)
@@ -85,12 +87,12 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::FluidOp(
 
     MBFluidField()->SetItemax(itemax);
 
-    const Teuchos::ParameterList& fbi = DRT::Problem::Instance()->FBIParams();
-
-    if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
-            INPAR::FBI::BeamToFluidCoupling::fluid) &&
+    if (Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") !=
+            INPAR::FBI::BeamToFluidCoupling::fluid &&
         fbi.get<int>("STARTSTEP") < Step())
-      constraint_manager_->Evaluate();
+    {
+      constraint_manager_->RecomputeCouplingWithoutPairCreation();
+    }
 
     return FluidToStruct(ivel);
   }
@@ -118,13 +120,13 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::StructOp(
   StructureField()->Solve();
   StructureField()->writeGmshStrucOutputStep();
 
-  if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
-          INPAR::FBI::BeamToFluidCoupling::solid) &&
-      fbi.get<int>("STARTSTEP") < Step())
+  if (fbi.get<int>("STARTSTEP") < Step())
   {
     constraint_manager_->PrepareFluidSolve();
     constraint_manager_->Evaluate();
-    Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
+    if (!(Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidCoupling>(fbi, "COUPLING") ==
+            INPAR::FBI::BeamToFluidCoupling::solid))
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(MBFluidField(), true)->ResetExternalForces();
   }
 
   return StructToFluid(iforce);
