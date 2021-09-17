@@ -44,6 +44,9 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
 void FBI::FBIGeometryCoupler::Setup(std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector> structure_displacement)
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
+  Teuchos::TimeMonitor monitor(*t);
+
   fluidpositions_ = Teuchos::rcp(new std::map<int, LINALG::Matrix<3, 1>>);
   beampositions_ = Teuchos::rcp(new std::map<int, LINALG::Matrix<3, 1>>);
 
@@ -62,6 +65,9 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::Search(
     std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
     Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Search");
+  Teuchos::TimeMonitor monitor(*t);
+
   // Vector to hand elements pointers to the bridge object
   Teuchos::RCP<std::map<int, std::vector<int>>> pairids =
       Teuchos::rcp(new std::map<int, std::vector<int>>);
@@ -168,6 +174,10 @@ void FBI::FBIGeometryCoupler::PreparePairCreation(
     std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
     Teuchos::RCP<std::map<int, std::vector<int>>> pairids)
 {
+  Teuchos::RCP<Teuchos::Time> t =
+      Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::PreparePairCreation");
+  Teuchos::TimeMonitor monitor(*t);
+
   std::vector<std::vector<int>> element_senddata(discretizations[0]->Comm().NumProc());
   std::vector<std::vector<int>> node_senddata(discretizations[0]->Comm().NumProc());
   std::vector<std::vector<int>> pairids_to_send(element_senddata.size());
