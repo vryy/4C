@@ -19,6 +19,8 @@ interaction.
 #include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"  // todo put this into bridge to keep everything beam specific in there
+#include "../drt_beaminteraction/beam_contact_pair.H"
+#include "../drt_binstrategy/binning_strategy.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_inpar/inpar_fbi.H"
@@ -90,9 +92,6 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap(),
       fluidmatrix, meshtying);
-
-  geometrycoupler_->Setup(discretizations_);
-
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {
     geometrycoupler_->ExtendBeamGhosting(*(structure->Discretization()));
@@ -101,6 +100,9 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
         ->SetupMultiMapExtractor();
   }
+
+  geometrycoupler_->Setup(discretizations_,
+      DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -116,6 +118,8 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
       DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
   column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
+
+  geometrycoupler_->UpdateBinning(discretizations_[0], column_structure_displacement_);
 
   // Before each search we delete all pair and segment information
   bridge_->Clear();
@@ -312,3 +316,10 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
     if ((i + 1) % 4) fluid_dofvec->push_back(vel_tmp[i]);
   }
 }
+
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FBIConstraintenforcer::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+{
+  geometrycoupler_->SetBinning(binning);
+};

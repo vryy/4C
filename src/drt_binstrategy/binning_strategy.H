@@ -493,7 +493,7 @@ namespace BINSTRATEGY
         std::map<int, std::set<int>>& binelemap, bool isslave) const;
 
     /*!
-     * \brief distribute elements to bins exploiting axis aligned bounding box idea
+     * \brief distribute all row elements to bins exploiting axis aligned bounding box idea
      *
      * \param[in] discret discretization containing the elements that are distributed to bins
      * \param[out] bintorowelemap map of bins and assigned row elements
@@ -501,6 +501,17 @@ namespace BINSTRATEGY
      */
     void DistributeRowElementsToBinsUsingEleAABB(Teuchos::RCP<DRT::Discretization> const& discret,
         std::map<int, std::set<int>>& bintorowelemap,
+        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
+
+    /*!
+     * \brief distribute all column elements to bins exploiting axis aligned bounding box idea
+     *
+     * \param[in] discret discretization containing the elements that are distributed to bins
+     * \param[out] bintocolelemap map of bins and assigned column elements
+     * \param[in] disnp current col displacement state
+     */
+    void DistributeColElementsToBinsUsingEleAABB(Teuchos::RCP<DRT::Discretization> const& discret,
+        std::map<int, std::set<int>>& bintocolelemap,
         Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
 
     /*!
@@ -845,6 +856,7 @@ namespace BINSTRATEGY
      * \brief local communicator
      */
     Teuchos::RCP<Epetra_Comm> comm_;
+
   };  // namespace BINSTRATEGY
 
   /*!

@@ -14,17 +14,22 @@
 #include "ad_fbi_constraintbridge.H"
 #include "ad_fbi_constraintbridge_penalty.H"
 #include "immersed_geometry_coupler_fbi.H"
+#include "immersedcoupler_factory.H"
 
+#include "../drt_inpar/inpar_fbi.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<ADAPTER::FBIConstraintenforcer> ADAPTER::ConstraintEnforcerFactory::CreateEnforcer(
-    const Teuchos::ParameterList& fsidyn)
+    const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn)
 {
   Teuchos::RCP<ADAPTER::FBIConstraintBridge> bridge =
       Teuchos::rcp(new ADAPTER::FBIConstraintBridgePenalty());
-  Teuchos::RCP<FBI::FBIGeometryCoupler> coupler = Teuchos::rcp(new FBI::FBIGeometryCoupler());
+
+  Teuchos::RCP<FBI::FBIGeometryCoupler> coupler =
+      FBI::GeometryCouplerFactory::CreateGeometryCoupler(fbidyn);
+
   return Teuchos::rcp(new ADAPTER::FBIPenaltyConstraintenforcer(bridge, coupler));
 }

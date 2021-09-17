@@ -28,6 +28,10 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}
 namespace DRT
 {
   class Discretization;
@@ -82,6 +86,13 @@ namespace ADAPTER
      */
     virtual void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
         Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid);
+
+    /** \brief Hand the binning strategy used for the distribution of the fluid mesh
+     *  to the object responsible for the element pair search in the FBI framework
+     *
+     *  \param[in] binning binning strategy object
+     */
+    void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning);
 
     /**
      * \brief Computes the coupling matrices

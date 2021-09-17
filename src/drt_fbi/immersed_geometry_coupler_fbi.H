@@ -21,6 +21,11 @@ namespace ADAPTER
   class ConstraintEnforcerFactory;
 }
 
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}
+
 namespace DRT
 {
   class Discretization;
@@ -33,23 +38,34 @@ namespace GEO
 
 namespace FBI
 {
+  class GeometryCouplerFactory;
+
   /**
    * \brief Class to wrap all generic geometric and parallelism related functionality in order
    * to simulate a beam immersed in fluid
    */
   class FBIGeometryCoupler
   {
-    friend ADAPTER::ConstraintEnforcerFactory;
+    friend GeometryCouplerFactory;
 
    public:
     /// empty destructor
     virtual ~FBIGeometryCoupler() = default;
 
+    /**
+     * \brief Sets the binning strategy in the binning coupler
+     *
+     * \param[in] binning binning strategy
+     */
+    virtual void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning);
+
     /** \brief Setup the Geoemtry object
      *
      * \param[in] discretizations vector containing the structure and fluid discretization
+     * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void Setup(std::vector<Teuchos::RCP<DRT::Discretization>>&);
+    virtual void Setup(std::vector<Teuchos::RCP<DRT::Discretization>>&,
+        Teuchos::RCP<const Epetra_Vector> structure_displacement);
 
     /**
      * \brief Performs the search to find possible beam-fluid element pairs
@@ -96,6 +112,14 @@ namespace FBI
         std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
         Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
+    /** \brief Update distribution of elements to bins
+     *
+     * \param[in] structure_discretization structure discretization
+     * \param[in] structure_displacement vector containing the column structure displacement
+     */
+    virtual void UpdateBinning(Teuchos::RCP<DRT::Discretization>& structure_discretization,
+        Teuchos::RCP<const Epetra_Vector> structure_column_displacement){};
+
    protected:
     FBIGeometryCoupler();
     /**
@@ -130,8 +154,6 @@ namespace FBI
       return beampositions_;
     };
 
-    /// Get function for the search tree
-    virtual Teuchos::RCP<const GEO::SearchTree> GetSearchtree() const final { return searchtree_; };
 
    private:
     /// Map storing the nodal positions of the fluid for the search

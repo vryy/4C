@@ -12,6 +12,7 @@
 
 #include "fsi_dirichletneumann_vel.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
+#include "../drt_binstrategy/binning_strategy.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
 
@@ -35,7 +36,7 @@
 FSI::DirichletNeumannVel::DirichletNeumannVel(const Epetra_Comm& comm)
     : DirichletNeumann(comm),
       constraint_manager_(ADAPTER::ConstraintEnforcerFactory::CreateEnforcer(
-          DRT::Problem::Instance()->FSIDynamicParams())),
+          DRT::Problem::Instance()->FSIDynamicParams(), DRT::Problem::Instance()->FBIParams())),
       vtk_output_writer_(Teuchos::null)
 {
   // empty constructor
@@ -204,3 +205,11 @@ void FSI::DirichletNeumannVel::Timeloop(
 
   FSI::Partitioned::Timeloop(interface);
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+
+void FSI::DirichletNeumannVel::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+{
+  constraint_manager_->SetBinning(binning);
+};
