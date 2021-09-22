@@ -143,6 +143,9 @@ class PostVtuWriter : public PostVtkWriter
   template <DRT::Element::DiscretizationType nurbs_type>
   void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+
+  ///! width of the proc identifier number in the processor specific file names
+  const int proc_file_padding_;
 };
 
 

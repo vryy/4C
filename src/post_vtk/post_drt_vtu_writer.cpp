@@ -32,7 +32,7 @@
 
 
 PostVtuWriter::PostVtuWriter(PostField* field, const std::string& filename)
-    : PostVtkWriter(field, filename)
+    : PostVtkWriter(field, filename), proc_file_padding_(ceil(log10(numproc_)))
 {
 }
 
@@ -61,7 +61,8 @@ const std::vector<std::string>& PostVtuWriter::WriterPPieceTags() const
   for (size_t i = 0; i < numproc_; ++i)
   {
     std::stringstream stream;
-    stream << "<Piece Source=\"" << filenamebase_ << "-" << i << ".vtu\"/>";
+    stream << "<Piece Source=\"" << filenamebase_ << "-" << std::setfill('0')
+           << std::setw(proc_file_padding_) << i << ".vtu\"/>";
     tags.push_back(std::string(stream.str()));
   }
   return tags;
