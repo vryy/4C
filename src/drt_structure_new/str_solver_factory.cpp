@@ -111,10 +111,12 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
 
   actdis.ComputeNullSpaceIfNecessary(linsolver->Params());
 
-  if ((linsolver->Params().isSublist("Aztec Parameters") or
-          linsolver->Params().isSublist("Belos Parameters")) and
-      linsolver->Params().isSublist("ML Parameters") and  // TODO what about MueLu?
-      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") != INPAR::STR::stc_none)
+  if (DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn, "STC_SCALING") !=
+          INPAR::STR::stc_none &&
+      (linsolver->Params().isSublist("Aztec Parameters") ||
+          linsolver->Params().isSublist("Belos Parameters")) &&
+      linsolver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
+  )
   {
     Teuchos::ParameterList& mllist = linsolver->Params().sublist("ML Parameters");
     Teuchos::RCP<std::vector<double>> ns =
