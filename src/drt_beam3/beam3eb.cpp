@@ -10,18 +10,13 @@
 
 #include "beam3eb.H"
 
-// Todo check for obsolete header inclusions
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_dserror.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/drt_validparameters.H"
-#include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_lib/drt_linedefinition.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_inpar/inpar_browniandyn.H"
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
+#include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_linedefinition.H"
+
+#include "../linalg/linalg_fixedsizematrix.H"
 
 DRT::ELEMENTS::Beam3ebType DRT::ELEMENTS::Beam3ebType::instance_;
 
@@ -55,17 +50,166 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const int id, cons
 void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  numdf = 6;
-  nv = 6;
-  dimns = 3;
+  numdf = 6;  // 3 translations, 3 tangent DOFs per node
+  nv = 6;     // obsolete, just needed for fluid
+  dimns = 5;  // 3 translations + 2 rotations
 }
 
-// TODO: the function ComputeNullSpace has still to be implemented
+
 void DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  dserror("Function not implemented yet.");
-  // DRT::UTILS::ComputeXFluid3DNullSpace( dis, ns, x0, numdf, dimns );
+  if (dimns != 5) dserror("Wrong nullspace dimension for this model.");
+
+  constexpr std::size_t spacedim = 3;
+  const Epetra_Map* rowmap = dis.DofRowMap();
+  const int lrows = rowmap->NumMyElements();
+
+  // looping through all nodes
+  for (int localNodeID = 0; localNodeID < dis.NumMyRowNodes(); ++localNodeID)
+  {
+    // getting pointer at current node
+    DRT::Node* actnode = dis.lRowNode(localNodeID);
+    if (actnode == nullptr) dserror("Could not grab a node.");
+
+    // getting coordinates of current node
+    const double* x = actnode->X();
+
+    // getting pointer at current element
+    DRT::Element** actele = actnode->Elements();
+    const DRT::ELEMENTS::Beam3eb* actbeamele = dynamic_cast<const DRT::ELEMENTS::Beam3eb*>(*actele);
+
+    /* Compute tangent vector with unit length from nodal coordinates.
+    Note: Tangent vector is the same at both nodes due to straight initial configuration. */
+    LINALG::Matrix<spacedim, 1> tangent(true);
+    {
+      const DRT::Node* firstnode = actbeamele->Nodes()[0];
+      const DRT::Node* secondnode = actbeamele->Nodes()[1];
+      const double* xfirst = firstnode->X();
+      const double* xsecond = secondnode->X();
+
+      for (std::size_t dim = 0; dim < spacedim; ++dim) tangent(dim) = xsecond[dim] - xfirst[dim];
+      tangent.Scale(1.0 / tangent.Norm2());
+    }
+
+    // Form a Cartesian basis
+    std::array<LINALG::Matrix<spacedim, 1>, spacedim> basis;
+    LINALG::Matrix<spacedim, 1> e1(true);
+    e1(0) = 1.0;
+    LINALG::Matrix<spacedim, 1> e2(true);
+    e2(1) = 1.0;
+    LINALG::Matrix<spacedim, 1> e3(true);
+    e3(2) = 1.0;
+    basis[0] = e1;
+    basis[1] = e2;
+    basis[2] = e3;
+
+    // Find basis vector that is the least parallel to the tangent vector
+    std::size_t baseVecIndexWithMindDotProduct = 0;
+    {
+      double dotProduct = tangent.Dot(basis[0]);
+      double minDotProduct = dotProduct;
+      // First basis vector is already done. Start looping at second basis vector.
+      for (std::size_t i = 1; i < spacedim; ++i)
+      {
+        dotProduct = tangent.Dot(basis[i]);
+        if (dotProduct < minDotProduct)
+        {
+          minDotProduct = dotProduct;
+          baseVecIndexWithMindDotProduct = i;
+        }
+      }
+    }
+
+    // Compute two vectors orthogonal to the tangent vector
+    LINALG::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
+    LINALG::Matrix<spacedim, 1> omegaOne, omegaTwo;
+    omegaOne.CrossProduct(tangent, someVector);
+    omegaTwo.CrossProduct(tangent, omegaOne);
+
+    if (std::abs(omegaOne.Dot(tangent)) > 1.0e-12)
+      dserror("omegaOne not orthogonal to tangent vector.");
+    if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
+      dserror("omegaTwo not orthogonal to tangent vector.");
+
+    LINALG::Matrix<3, 1> nodeCoords(true);
+    for (std::size_t dim = 0; dim < 3; ++dim) nodeCoords(dim) = x[dim] - x0[dim];
+
+    // Compute rotations in displacement DOFs
+    LINALG::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
+    rotOne.CrossProduct(omegaOne, nodeCoords);
+    rotTwo.CrossProduct(omegaTwo, nodeCoords);
+
+    // Compute rotations in tangent DOFs
+    LINALG::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
+    rotTangOne.CrossProduct(omegaOne, tangent);
+    rotTangTwo.CrossProduct(omegaTwo, tangent);
+
+    // Global DOF IDs of current node
+    std::vector<int> dofs = dis.Dof(actnode);
+
+    // Extract addresses of first elements of each nullspace vector from appended nullspace vector
+    double* mode[dimns];
+    for (int i = 0; i < dimns; ++i) mode[i] = &(ns[i * lrows]);
+
+    // looping through all degrees of freedom of a node
+    for (std::size_t j = 0; j < dofs.size(); ++j)
+    {
+      const int dof = dofs[j];
+      const int lid = rowmap->LID(dof);
+      if (lid < 0) dserror("Cannot find dof");
+
+      // Each case fills one line in the nodal block of the nullspace multivector.
+      switch (j)
+      {
+        case 0:
+          mode[0][lid] = 1.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = rotOne(0);
+          mode[4][lid] = rotTwo(0);
+          break;
+        case 1:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 1.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = rotOne(1);
+          mode[4][lid] = rotTwo(1);
+          break;
+        case 2:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 1.0;
+          mode[3][lid] = rotOne(2);
+          mode[4][lid] = rotTwo(2);
+          break;
+        case 3:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = rotTangOne(0);
+          mode[4][lid] = rotTangTwo(0);
+          break;
+        case 4:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = rotTangOne(1);
+          mode[4][lid] = rotTangTwo(1);
+          break;
+        case 5:
+          mode[0][lid] = 0.0;
+          mode[1][lid] = 0.0;
+          mode[2][lid] = 0.0;
+          mode[3][lid] = rotTangOne(2);
+          mode[4][lid] = rotTangTwo(2);
+          break;
+        default:
+          dserror("Only dofs 0 - 5 supported");
+          break;
+      }
+    }
+  }
 }
 
 void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(
