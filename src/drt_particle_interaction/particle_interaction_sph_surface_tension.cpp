@@ -763,11 +763,15 @@ void PARTICLEINTERACTION::SPHSurfaceTension::ComputeCurvature() const
     for (int particle_i = 0; particle_i < container_i->ParticlesStored(); ++particle_i)
     {
       // get pointer to particle states
+      const double* rad_i = container_i->GetPtrToState(PARTICLEENGINE::Radius, particle_i);
       const double* ifn_i = container_i->GetPtrToState(PARTICLEENGINE::InterfaceNormal, particle_i);
       double* curv_i = container_i->GetPtrToState(PARTICLEENGINE::Curvature, particle_i);
 
       // evaluation only for non-zero interface normal
       if (not(UTILS::vec_norm2(ifn_i) > 0.0)) continue;
+
+      // evaluation only for meaningful contributions
+      if (not(std::abs(sumj_Vj_Wij[type_i][particle_i]) > (1.0e-10 * rad_i[0]))) continue;
 
       // compute curvature
       curv_i[0] = -sumj_nij_Vj_eij_dWij[type_i][particle_i] / sumj_Vj_Wij[type_i][particle_i];
