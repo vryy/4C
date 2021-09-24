@@ -102,6 +102,9 @@ namespace PARTICLEINTERACTION
 
     //! transition value of phase change
     double transitionvalue_;
+
+    //! hysteresis gap at transition value
+    double hysteresisgap_;
   };
 
   class SPHPhaseChangeOneWayScalarBelowToAbove : public SPHPhaseChangeBase
