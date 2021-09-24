@@ -3,14 +3,11 @@
 ==================================================================
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
-RANDSEED                        1
-RESTART                         0
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      10
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            0.016
-PERIODICONOFF                   0 0 0
 DOMAINBOUNDINGBOX               -0.03 -0.03 -0.03 0.03 0.03 0.03
 ------------------------------------------------------------PARTICLE DYNAMIC
 DYNAMICTYP                      VelocityVerlet
