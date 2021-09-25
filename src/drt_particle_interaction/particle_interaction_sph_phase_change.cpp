@@ -28,7 +28,8 @@ PARTICLEINTERACTION::SPHPhaseChangeBase::SPHPhaseChangeBase(const Teuchos::Param
       belowphase_(PARTICLEENGINE::Phase1),
       abovephase_(PARTICLEENGINE::Phase2),
       transitionstate_(PARTICLEENGINE::Density),
-      transitionvalue_(0.0)
+      transitionvalue_(0.0),
+      hysteresisgap_(0.0)
 {
   // empty constructor
 }
@@ -80,6 +81,27 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::Init()
   }
   else
     dserror("expecting transition value of phase change!");
+
+  // probe for optional hysteresis gap at transition value
+  if (phasechangedefinition >> word)
+  {
+    if (not(word == "hysteresis")) dserror("expecting optional keyword 'hysteresis'!");
+
+    // get hysteresis gap at transition value
+    if (phasechangedefinition >> word)
+    {
+      try
+      {
+        hysteresisgap_ = std::stod(word);
+      }
+      catch (...)
+      {
+        dserror("invalid argument: expecting a double value for hysteresis gap!");
+      };
+    }
+    else
+      dserror("expecting hysteresis gap at transition value!");
+  }
 }
 
 void PARTICLEINTERACTION::SPHPhaseChangeBase::Setup(
@@ -150,7 +172,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromBelowToAbov
   for (int index = 0; index < particlestored; ++index)
   {
     // evaluate phase change condition of current particle
-    if (state[index] > transitionvalue_)
+    if (state[index] > (transitionvalue_ + 0.5 * hysteresisgap_))
     {
       int globalid(0);
       PARTICLEENGINE::ParticleStates particlestates;
@@ -233,7 +255,7 @@ void PARTICLEINTERACTION::SPHPhaseChangeBase::EvaluatePhaseChangeFromAboveToBelo
   for (int index = 0; index < particlestored; ++index)
   {
     // evaluate phase change condition of current particle
-    if (state[index] < transitionvalue_)
+    if (state[index] < (transitionvalue_ - 0.5 * hysteresisgap_))
     {
       int globalid(0);
       PARTICLEENGINE::ParticleStates particlestates;
