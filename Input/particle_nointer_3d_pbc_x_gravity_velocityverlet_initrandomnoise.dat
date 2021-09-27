@@ -4,7 +4,6 @@
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle
 RANDSEED                        1
-RESTART                         0
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      100
 VERBOSITY                       standard

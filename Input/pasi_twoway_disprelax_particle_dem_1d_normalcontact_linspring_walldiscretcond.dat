@@ -3,14 +3,11 @@
 ==================================================================
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Particle_Structure_Interaction
-RANDSEED                        1
-RESTART                         0
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      1
 VERBOSITY                       standard
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            1.0
-PERIODICONOFF                   0 0 0
 DOMAINBOUNDINGBOX               -1.0 -1.0 -1.0 1.0 1.0 1.0
 ----------------------------------------------------------------PASI DYNAMIC
 RESULTSEVRY                     10
