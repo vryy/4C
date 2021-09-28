@@ -150,7 +150,11 @@ src/drt_immersed_problem/          @baci/team_fsi
 src/drt_inpar/                     @baci/team_input
 src/drt_inpar/inpar_beam*          @baci/team_input @baci/team_structure
 src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
+src/drt_inpar/inpar_contact*       @baci/team_contact
+src/drt_inpar/inpar_fbi*           @baci/team_fsi
+src/drt_inpar/inpar_fluid*         @baci/team_fluid
 src/drt_inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
+src/drt_inpar/inpar_fsi*           @baci/team_fsi
 src/drt_inpar/inpar_IO_runtime_vt*_output*                 @baci/team_input @baci/team_output
 src/drt_inpar/inpar_particle*      @baci/team_particle
 src/drt_inpar/inpar_pasi*          @baci/team_particle
