@@ -10,7 +10,7 @@ interaction
 /*----------------------------------------------------------------------*/
 
 #ifndef FBI_CONSTRAINTENFORCER_FACTORY_H
-#define FSI_CONSTRAINTENFORCER_FACTORY_H
+#define FBI_CONSTRAINTENFORCER_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 
