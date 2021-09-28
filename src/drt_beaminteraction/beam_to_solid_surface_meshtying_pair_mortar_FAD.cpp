@@ -929,24 +929,7 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
 {
   using namespace GEOMETRYPAIR;
 
-  if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
-  {
-    switch (mortar_shapefunction)
-    {
-      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
-        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line2>(
-            surface_shape, rotational_coupling);
-      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
-        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line3>(
-            surface_shape, rotational_coupling);
-      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
-        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line4>(
-            surface_shape, rotational_coupling);
-      default:
-        dserror("Wrong mortar shape function.");
-    }
-  }
-  else
+  if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
   {
     switch (mortar_shapefunction)
     {
@@ -969,6 +952,25 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFADFactory(
         dserror("Wrong mortar shape function.");
     }
   }
+  else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
+  {
+    switch (mortar_shapefunction)
+    {
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line2:
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line2>(
+            surface_shape, rotational_coupling);
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line3:
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line3>(
+            surface_shape, rotational_coupling);
+      case INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions::line4:
+        return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume<t_line4>(
+            surface_shape, rotational_coupling);
+      default:
+        dserror("Wrong mortar shape function.");
+    }
+  }
+  else
+    dserror("Surface normal strategy not recognized.");
 
   return Teuchos::null;
 }

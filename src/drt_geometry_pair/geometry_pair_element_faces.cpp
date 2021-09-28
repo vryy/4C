@@ -672,27 +672,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
   }
   else
   {
-    if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
-    {
-      switch (face_element->Shape())
-      {
-        case DRT::Element::quad4:
-          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad4,
-              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hex8>(
-              face_element));
-        case DRT::Element::quad8:
-          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad8,
-              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hex20>(
-              face_element));
-        case DRT::Element::quad9:
-          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad9,
-              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>(
-              face_element));
-        default:
-          dserror("Got unexpected face type for extended volume coupling.");
-      }
-    }
-    else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
+    if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
     {
       switch (face_element->Shape())
       {
@@ -723,6 +703,28 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::FaceElementFactory(
           dserror("Wrong discretization type given.");
       }
     }
+    else if (surface_normal_strategy == INPAR::GEOMETRYPAIR::SurfaceNormals::extended_volume)
+    {
+      switch (face_element->Shape())
+      {
+        case DRT::Element::quad4:
+          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad4,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hex8>(
+              face_element));
+        case DRT::Element::quad8:
+          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad8,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hex20>(
+              face_element));
+        case DRT::Element::quad9:
+          return Teuchos::rcp(new FaceElementTemplateExtendedVolume<t_quad9,
+              line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>(
+              face_element));
+        default:
+          dserror("Got unexpected face type for extended volume coupling.");
+      }
+    }
+    else
+      dserror("Surface normal strategy not recognized.");
   }
 
   dserror("Could not create a face element.");
