@@ -180,8 +180,7 @@ namespace ADAPTER
      *\param[out] fluid_dofvec current positions and velocities of the fluid element
      */
     virtual void ExtractCurrentElementDofs(std::vector<DRT::Element const*> elements,
-        Teuchos::RCP<std::vector<double>>& beam_dofvec,
-        Teuchos::RCP<std::vector<double>>& fluid_dofvec) const;
+        std::vector<double>& beam_dofvec, std::vector<double>& fluid_dofvec) const;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.

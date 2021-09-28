@@ -59,8 +59,7 @@ void ADAPTER::FBIConstraintBridge::Setup(const Epetra_Map* beam_map, const Epetr
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FBIConstraintBridge::CreatePair(const std::vector<DRT::Element const*> elements,
-    const Teuchos::RCP<std::vector<double>> beam_centerline_dofvec,
-    const Teuchos::RCP<std::vector<double>> fluid_nodal_dofvec)
+    const std::vector<double> beam_centerline_dofvec, const std::vector<double> fluid_nodal_dofvec)
 {
   // create a new beaminteratcion pair
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newinteractionpair =
@@ -80,13 +79,12 @@ void ADAPTER::FBIConstraintBridge::CreatePair(const std::vector<DRT::Element con
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ADAPTER::FBIConstraintBridge::ResetPair(
-    const Teuchos::RCP<const std::vector<double>> beam_centerline_dofvec,
-    const Teuchos::RCP<const std::vector<double>> fluid_nodal_dofvec,
+void ADAPTER::FBIConstraintBridge::ResetPair(const std::vector<double> beam_centerline_dofvec,
+    const std::vector<double> fluid_nodal_dofvec,
     Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair)
 {
   // hand in the current position and velocities of the participating elements
-  interactionpair->ResetState(*beam_centerline_dofvec, *fluid_nodal_dofvec);
+  interactionpair->ResetState(beam_centerline_dofvec, fluid_nodal_dofvec);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -208,8 +208,8 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
 
 
   std::vector<DRT::Element const*> ele_ptrs(2);
-  Teuchos::RCP<std::vector<double>> beam_dofvec = Teuchos::rcp(new std::vector<double>);
-  Teuchos::RCP<std::vector<double>> fluid_dofvec = Teuchos::rcp(new std::vector<double>);
+  std::vector<double> beam_dofvec = std::vector<double>();
+  std::vector<double> fluid_dofvec = std::vector<double>();
 
   // loop over all (embedded) beam elements
   std::map<int, std::vector<int>>::const_iterator beamelementiterator;
@@ -256,8 +256,8 @@ void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
   std::vector<DRT::Element const*> ele_ptrs(2);
-  Teuchos::RCP<std::vector<double>> beam_dofvec = Teuchos::rcp(new std::vector<double>);
-  Teuchos::RCP<std::vector<double>> fluid_dofvec = Teuchos::rcp(new std::vector<double>);
+  std::vector<double> beam_dofvec = std::vector<double>();
+  std::vector<double> fluid_dofvec = std::vector<double>();
 
   for (auto pairiterator = bridge_->GetPairs()->begin(); pairiterator != bridge_->GetPairs()->end();
        pairiterator++)
@@ -275,33 +275,33 @@ void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
 /*----------------------------------------------------------------------*/
 
 void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
-    std::vector<DRT::Element const*> elements, Teuchos::RCP<std::vector<double>>& beam_dofvec,
-    Teuchos::RCP<std::vector<double>>& fluid_dofvec) const
+    std::vector<DRT::Element const*> elements, std::vector<double>& beam_dofvec,
+    std::vector<double>& fluid_dofvec) const
 {
   std::vector<double> vel_tmp;
 
   // extract the current position of the beam element from the displacement vector
   BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->Discretization()),
       elements[0], column_structure_displacement_,
-      *beam_dofvec);  // todo get "interface" displacements only for beam
-                      // elements
+      beam_dofvec);  // todo get "interface" displacements only for beam
+                     // elements
   ;
   // extract velocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       *(structure_->Discretization()), elements[0], column_structure_velocity_, vel_tmp);
 
-  for (double val : vel_tmp) beam_dofvec->push_back(val);
+  for (double val : vel_tmp) beam_dofvec.push_back(val);
 
   vel_tmp.clear();
   // extract the current positions and velocities of the fluid element todo only valid for fixed
   // grid, not for ALE
-  fluid_dofvec->clear();
+  fluid_dofvec.clear();
   const DRT::Node* const* fluidnodes = elements[1]->Nodes();
   for (int lid = 0; lid < elements[1]->NumNode(); ++lid)
   {
     for (int dim = 0; dim < 3; dim++)
     {
-      fluid_dofvec->push_back(fluidnodes[lid]->X()[dim]);
+      fluid_dofvec.push_back(fluidnodes[lid]->X()[dim]);
     }
   }
 
@@ -313,7 +313,7 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
   // use an extractor?
   for (unsigned int i = 0; i < vel_tmp.size(); i++)
   {
-    if ((i + 1) % 4) fluid_dofvec->push_back(vel_tmp[i]);
+    if ((i + 1) % 4) fluid_dofvec.push_back(vel_tmp[i]);
   }
 }
 
