@@ -3,7 +3,6 @@
 # ln -s /usr/lib/blitz/include/blitz/gnu /usr/include/blitz
 
 BACI_HOME=`dirname $0`
-EXTRA_ARGS=$@
 
 #default options
 BUILD_TYPE="RELEASE"
@@ -262,7 +261,6 @@ CMAKE_FULL_ARGS=(--no-warn-unused-cli \
   -D CMAKE_C_COMPILER_LAUNCHER="$CCACHE_COMMAND" \
   -D CMAKE_CXX_COMPILER_LAUNCHER="$CCACHE_COMMAND" \
   -D AMDLIBMDIR:FILEPATH="$AMDLIBMDIR_PATH" \
-  "$EXTRA_ARGS" \
   "${BACI_HOME}")
 
 $CMAKE_COMMAND "${CMAKE_FULL_ARGS[@]}"
