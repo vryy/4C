@@ -38,12 +38,14 @@
 
 /utilities/                        @baci/baci_maintainer @baci/team_infrastructure
 
+# infrastructure configuration files
+CMakeLists.txt                     @baci/team_infrastructure @baci/baci_maintainer
+do-configure                       @baci/team_infrastructure @baci/baci_maintainer
+
 # testing framework configuration files
 TestingFramework.cmake             @baci/team_testing
 TestingFrameworkListOfTests.cmake  @baci/baci_developers
 UnittestingFramework.cmake         @baci/team_testing
-
-
 
 # --- specify code owner of BACI source directories (including corresponding unit test directory) -------------------- #
 #
