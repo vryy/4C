@@ -18,6 +18,19 @@
 /**
  *
  */
+GEOMETRYPAIR::LineToSurfaceEvaluationData::LineToSurfaceEvaluationData(
+    const Teuchos::ParameterList& input_parameter_list)
+    : LineTo3DEvaluationData(input_parameter_list),
+      face_elements_(),
+      surface_normal_strategy_(INPAR::GEOMETRYPAIR::SurfaceNormals::standard)
+{
+  surface_normal_strategy_ = Teuchos::getIntegralValue<INPAR::GEOMETRYPAIR::SurfaceNormals>(
+      input_parameter_list, "GEOMETRY_PAIR_SURFACE_NORMALS");
+}
+
+/**
+ *
+ */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::Clear()
 {
   // Call reset on the base method.

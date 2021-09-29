@@ -47,6 +47,22 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
 /**
  *
  */
+void INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(Teuchos::ParameterList& list)
+{
+  // Add the input parameters for line to surface coupling.
+
+  // Add the surface normal option.
+  Teuchos::setStringToIntegralParameter<GEOMETRYPAIR::SurfaceNormals>(
+      "GEOMETRY_PAIR_SURFACE_NORMALS", "standard", "How the surface normals are evaluated",
+      Teuchos::tuple<std::string>("standard", "extended_volume"),
+      Teuchos::tuple<GEOMETRYPAIR::SurfaceNormals>(
+          GEOMETRYPAIR::SurfaceNormals::standard, GEOMETRYPAIR::SurfaceNormals::extended_volume),
+      &list);
+}
+
+/**
+ *
+ */
 DRT::UTILS::GaussRule1D INPAR::GEOMETRYPAIR::IntToGaussRule1D(const int n_gauss_points)
 {
   switch (n_gauss_points)

@@ -44,6 +44,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public CxxTest::TestSu
     // Set up the evaluation data container for the geometry pairs.
     Teuchos::ParameterList line_to_surface_params_list;
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(line_to_surface_params_list);
+    INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(line_to_surface_params_list);
     evaluation_data_ =
         Teuchos::rcp(new GEOMETRYPAIR::LineToSurfaceEvaluationData(line_to_surface_params_list));
   }

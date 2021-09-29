@@ -43,8 +43,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Constructor (derived).
      */
-    LineToSurfaceEvaluationData(const Teuchos::ParameterList& input_parameter_list)
-        : LineTo3DEvaluationData(input_parameter_list), face_elements_(){};
+    LineToSurfaceEvaluationData(const Teuchos::ParameterList& input_parameter_list);
 
     /**
      * \brief Destructor.
@@ -79,9 +78,20 @@ namespace GEOMETRYPAIR
       return face_elements_;
     }
 
+    /**
+     * \brief Return the strategy to be used for the surface normals.
+     */
+    INPAR::GEOMETRYPAIR::SurfaceNormals GetSurfaceNormalStrategy() const
+    {
+      return surface_normal_strategy_;
+    }
+
    private:
     //! A map of all face elements needed for this surface.
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_;
+
+    //! Strategy to be used for surface normals.
+    INPAR::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy_;
   };
 }  // namespace GEOMETRYPAIR
 

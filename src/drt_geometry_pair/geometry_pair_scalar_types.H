@@ -33,7 +33,7 @@ namespace GEOMETRYPAIR
 
   //! Scalar type to be used for line to surface patch pairs with nurbs discretization.
   template <typename line, typename surface>
-  using line_to_surface_patch_nurbs_scalar_type = typename FADUTILS::HigherOrderFadType<2,
+  using line_to_surface_patch_scalar_type_fixed_size = typename FADUTILS::HigherOrderFadType<2,
       Sacado::ELRFad::SLFad<double, line::n_dof_ + surface::n_dof_>>::type;
 }  // namespace GEOMETRYPAIR
 

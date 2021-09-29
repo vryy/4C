@@ -228,6 +228,9 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
     // Add the geometry pair input parameters.
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
+
+    // Add the surface options.
+    INPAR::GEOMETRYPAIR::SetValidParametersLineToSurface(beam_to_solid_surface_mestying);
   }
 
   // Beam to solid surface parameters.
