@@ -38,12 +38,14 @@
 
 /utilities/                        @baci/baci_maintainer @baci/team_infrastructure
 
+# infrastructure configuration files
+CMakeLists.txt                     @baci/team_infrastructure @baci/baci_maintainer
+do-configure                       @baci/team_infrastructure @baci/baci_maintainer
+
 # testing framework configuration files
 TestingFramework.cmake             @baci/team_testing
 TestingFrameworkListOfTests.cmake  @baci/baci_developers
 UnittestingFramework.cmake         @baci/team_testing
-
-
 
 # --- specify code owner of BACI source directories (including corresponding unit test directory) -------------------- #
 #
@@ -150,7 +152,11 @@ src/drt_immersed_problem/          @baci/team_fsi
 src/drt_inpar/                     @baci/team_input
 src/drt_inpar/inpar_beam*          @baci/team_input @baci/team_structure
 src/drt_inpar/inpar_bio*           @baci/team_reduced_fluid_models
+src/drt_inpar/inpar_contact*       @baci/team_contact
+src/drt_inpar/inpar_fbi*           @baci/team_fsi
+src/drt_inpar/inpar_fluid*         @baci/team_fluid
 src/drt_inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
+src/drt_inpar/inpar_fsi*           @baci/team_fsi
 src/drt_inpar/inpar_IO_runtime_vt*_output*                 @baci/team_input @baci/team_output
 src/drt_inpar/inpar_particle*      @baci/team_particle
 src/drt_inpar/inpar_pasi*          @baci/team_particle
