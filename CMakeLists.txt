@@ -1222,10 +1222,12 @@ set(OBJS_DRT_FBI
   src/drt_fbi/constraintenforcer_fbi_penalty.cpp
   src/drt_fbi/fluid_assembly_strategy.cpp
   src/drt_fbi/fluidblockmatrix_assembly_strategy.cpp
+  src/drt_fbi/immersed_geometry_coupler_fbi.cpp
+  src/drt_fbi/immersed_geometry_coupler_fbi_binning.cpp
+  src/drt_fbi/immersedcoupler_factory.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_direct.cpp
   src/drt_fbi/partitioned_penaltycoupling_assembly_manager_indirect.cpp
-  src/drt_fbi/immersed_geometry_coupler_fbi.cpp
 )
 set(OBJS_DRT_FSI
   src/drt_fsi/fsi_str_model_evaluator_partitioned.cpp

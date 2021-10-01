@@ -39,6 +39,14 @@ namespace INPAR
       solid,  //< Coupling on the structure partition, while the fluid is not influenced
       twoway  //< Full two-way FBI coupling
     };
+
+    /// Parallel presorting strategy to be used for the beam mesh
+    enum class BeamToFluidPreSortStrategy
+    {
+      bruteforce,  //< each processor searches for each beam if it is near one of its fluid elements
+      binning  //< each processor only searches for beam elements which lie in or around its bins
+    };
+
     /// Constraint enforcement for beam to fluid meshtying.
     enum class BeamToFluidConstraintEnforcement
     {

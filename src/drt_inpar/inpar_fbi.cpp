@@ -42,6 +42,12 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Time Step at which to begin the fluid beam coupling. Usually this will be the first step.",
       &fbi);
 
+  setStringToIntegralParameter<BeamToFluidPreSortStrategy>("PRESORT_STRATEGY", "bruteforce",
+      "Presort strategy for the beam elements", tuple<std::string>("bruteforce", "binning"),
+      tuple<BeamToFluidPreSortStrategy>(
+          BeamToFluidPreSortStrategy::bruteforce, BeamToFluidPreSortStrategy::binning),
+      &fbi);
+
   /*----------------------------------------------------------------------*/
 
   Teuchos::ParameterList& beam_to_fluid_meshtying =

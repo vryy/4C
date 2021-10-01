@@ -28,6 +28,10 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}
 namespace DRT
 {
   class Discretization;
@@ -83,6 +87,13 @@ namespace ADAPTER
     virtual void Setup(Teuchos::RCP<ADAPTER::FSIStructureWrapper> structure,
         Teuchos::RCP<ADAPTER::FluidMovingBoundary> fluid);
 
+    /** \brief Hand the binning strategy used for the distribution of the fluid mesh
+     *  to the object responsible for the element pair search in the FBI framework
+     *
+     *  \param[in] binning binning strategy object
+     */
+    void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning);
+
     /**
      * \brief Computes the coupling matrices
      *
@@ -91,6 +102,11 @@ namespace ADAPTER
      */
 
     virtual void Evaluate();
+
+    /**
+     * \brief Recomputes all coupling related quantities without performing a search
+     */
+    virtual void RecomputeCouplingWithoutPairCreation();
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -152,6 +168,11 @@ namespace ADAPTER
     void CreatePairs(Teuchos::RCP<std::map<int, std::vector<int>>> pairids);
 
     /**
+     * \brief Resets the state, i.e. the velocity of all interaction pairs
+     */
+    void ResetAllPairStates();
+
+    /**
      * \brief Extracts current element dofs that are needed for the computations on pair level
      *
      *\param[in] elements elements belonging to the pair
@@ -159,8 +180,7 @@ namespace ADAPTER
      *\param[out] fluid_dofvec current positions and velocities of the fluid element
      */
     virtual void ExtractCurrentElementDofs(std::vector<DRT::Element const*> elements,
-        Teuchos::RCP<std::vector<double>>& beam_dofvec,
-        Teuchos::RCP<std::vector<double>>& fluid_dofvec) const;
+        std::vector<double>& beam_dofvec, std::vector<double>& fluid_dofvec) const;
 
     /**
      * \brief Computes the contributions to the stiffness matrix of the fluid field.

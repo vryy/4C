@@ -101,14 +101,13 @@ namespace ADAPTER
      * Here, the current values of the single fields lie positions and velocities are handed
      * to/updated in the pair
      */
-    virtual void ResetPair(Teuchos::RCP<const std::vector<double>> beam_centerline_dofvec,
-        const Teuchos::RCP<const std::vector<double>> fluid_nodal_dofvec,
+    virtual void ResetPair(const std::vector<double> beam_centerline_dofvec,
+        const std::vector<double> fluid_nodal_dofvec,
         Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair);
 
     /// Creates a fluid_beam_meshtying pair
     virtual void CreatePair(std::vector<DRT::Element const*> elements,
-        Teuchos::RCP<std::vector<double>> beam_centerline_dofvec,
-        Teuchos::RCP<std::vector<double>> fluid_nodal_dofvec);
+        std::vector<double> beam_centerline_dofvec, std::vector<double> fluid_nodal_dofvec);
 
     // Get function for the meshtying pairs meshtying_pairs_
     virtual const Teuchos::RCP<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>>
@@ -130,8 +129,11 @@ namespace ADAPTER
       return geometry_evaluation_data_;
     };
 
-    /// Clears the pair vector and builds the pairs anew
-    virtual void ResetBridge();
+    /// Clears the pair vector and segmentation information
+    virtual void Clear();
+
+    /// Resets class members of the bridge
+    virtual void ResetBridge() = 0;
 
     /// Sets the fluid solve flag
     virtual void PrepareFluidSolve() = 0;

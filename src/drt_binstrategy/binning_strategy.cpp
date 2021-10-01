@@ -996,6 +996,28 @@ void BINSTRATEGY::BinningStrategy::DistributeRowElementsToBinsUsingEleAABB(
   }
 }
 
+void BINSTRATEGY::BinningStrategy::DistributeColElementsToBinsUsingEleAABB(
+    Teuchos::RCP<DRT::Discretization> const& discret, std::map<int, std::set<int>>& bintocolelemap,
+    Teuchos::RCP<const Epetra_Vector> disnp) const
+{
+  bintocolelemap.clear();
+
+  // exploit bounding box idea for elements in underlying discretization and bins
+  // loop over all row elements
+  for (int lid = 0; lid < discret->NumMyColElements(); ++lid)
+  {
+    DRT::Element* eleptr = discret->lColElement(lid);
+    // get corresponding bin ids in ijk range
+    std::vector<int> binIds;
+    DistributeSingleElementToBinsUsingEleAABB(discret, eleptr, binIds, disnp);
+
+    // assign element to bins
+    std::vector<int>::const_iterator biniter;
+    for (biniter = binIds.begin(); biniter != binIds.end(); ++biniter)
+      bintocolelemap[*biniter].insert(eleptr->Id());
+  }
+}
+
 void BINSTRATEGY::BinningStrategy::DistributeSingleElementToBinsUsingEleAABB(
     Teuchos::RCP<DRT::Discretization> const& discret, DRT::Element* eleptr,
     std::vector<int>& binIds, Teuchos::RCP<const Epetra_Vector> const& disnp) const
@@ -1075,7 +1097,7 @@ void BINSTRATEGY::BinningStrategy::AssignElesToBins(Teuchos::RCP<DRT::Discretiza
 
 void BINSTRATEGY::BinningStrategy::GetBinContent(std::set<DRT::Element*>& eles,
     std::vector<BINSTRATEGY::UTILS::BinContentType> bincontent, std::vector<int>& binIds,
-    bool roweles)
+    bool roweles) const
 {
   // loop over all bins
   std::vector<int>::const_iterator biniter;

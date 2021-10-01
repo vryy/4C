@@ -19,6 +19,8 @@ interaction.
 #include "../drt_adapter/ad_fld_fbi_movingboundary.H"
 #include "../drt_adapter/ad_str_fbiwrapper.H"
 #include "../drt_beaminteraction/beaminteraction_calc_utils.H"  // todo put this into bridge to keep everything beam specific in there
+#include "../drt_beaminteraction/beam_contact_pair.H"
+#include "../drt_binstrategy/binning_strategy.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_geometry_pair/geometry_pair.H"
 #include "../drt_inpar/inpar_fbi.H"
@@ -90,9 +92,6 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
 
   bridge_->Setup(structure_->Discretization()->DofRowMap(), fluid_->Discretization()->DofRowMap(),
       fluidmatrix, meshtying);
-
-  geometrycoupler_->Setup(discretizations_);
-
   if (structure_->Discretization()->Comm().NumProc() > 1)
   {
     geometrycoupler_->ExtendBeamGhosting(*(structure->Discretization()));
@@ -101,6 +100,9 @@ void ADAPTER::FBIConstraintenforcer::Setup(Teuchos::RCP<ADAPTER::FSIStructureWra
     Teuchos::rcp_dynamic_cast<ADAPTER::FBIStructureWrapper>(structure_, true)
         ->SetupMultiMapExtractor();
   }
+
+  geometrycoupler_->Setup(discretizations_,
+      DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -117,7 +119,10 @@ void ADAPTER::FBIConstraintenforcer::Evaluate()
   column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
       Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
+  geometrycoupler_->UpdateBinning(discretizations_[0], column_structure_displacement_);
+
   // Before each search we delete all pair and segment information
+  bridge_->Clear();
   bridge_->ResetBridge();
 
   // Do the search in the geometrycoupler_ and return the possible pair ids
@@ -161,7 +166,19 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::StructureToFluid(int
 };
 
 /*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintenforcer::RecomputeCouplingWithoutPairCreation()
+{
+  // Before each search we delete all pair and segment information
+  bridge_->ResetBridge();
 
+  ResetAllPairStates();
+
+  // Create all needed matrix and vector contributions based on the current state
+  bridge_->Evaluate(discretizations_[0], discretizations_[1],
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp(), structure_->Velnp());
+};
+
+/*----------------------------------------------------------------------*/
 // return the structure force
 Teuchos::RCP<Epetra_Vector> ADAPTER::FBIConstraintenforcer::FluidToStructure()
 {
@@ -191,8 +208,8 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
 
 
   std::vector<DRT::Element const*> ele_ptrs(2);
-  Teuchos::RCP<std::vector<double>> beam_dofvec = Teuchos::rcp(new std::vector<double>);
-  Teuchos::RCP<std::vector<double>> fluid_dofvec = Teuchos::rcp(new std::vector<double>);
+  std::vector<double> beam_dofvec = std::vector<double>();
+  std::vector<double> fluid_dofvec = std::vector<double>();
 
   // loop over all (embedded) beam elements
   std::map<int, std::vector<int>>::const_iterator beamelementiterator;
@@ -227,37 +244,64 @@ void ADAPTER::FBIConstraintenforcer::CreatePairs(
     }
   }
 }
+/*----------------------------------------------------------------------*/
+void ADAPTER::FBIConstraintenforcer::ResetAllPairStates()
+{
+  // Get current state
+  column_structure_displacement_ =
+      DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Dispnp());
+  column_structure_velocity_ =
+      DRT::UTILS::GetColVersionOfRowVector(structure_->Discretization(), structure_->Velnp());
+  column_fluid_velocity_ = DRT::UTILS::GetColVersionOfRowVector(fluid_->Discretization(),
+      Teuchos::rcp_dynamic_cast<ADAPTER::FBIFluidMB>(fluid_, true)->Velnp());
 
+  std::vector<DRT::Element const*> ele_ptrs(2);
+  std::vector<double> beam_dofvec = std::vector<double>();
+  std::vector<double> fluid_dofvec = std::vector<double>();
+
+  for (auto pairiterator = bridge_->GetPairs()->begin(); pairiterator != bridge_->GetPairs()->end();
+       pairiterator++)
+  {
+    ele_ptrs[0] = (*pairiterator)->Element1();
+    ele_ptrs[1] = (*pairiterator)->Element2();
+
+    // Extract current element dofs, i.e. positions and velocities
+    ExtractCurrentElementDofs(ele_ptrs, beam_dofvec, fluid_dofvec);
+
+    // Finally tell the bridge to create the pair
+    bridge_->ResetPair(beam_dofvec, fluid_dofvec, *pairiterator);
+  }
+}
 /*----------------------------------------------------------------------*/
 
 void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
-    std::vector<DRT::Element const*> elements, Teuchos::RCP<std::vector<double>>& beam_dofvec,
-    Teuchos::RCP<std::vector<double>>& fluid_dofvec) const
+    std::vector<DRT::Element const*> elements, std::vector<double>& beam_dofvec,
+    std::vector<double>& fluid_dofvec) const
 {
   std::vector<double> vel_tmp;
 
   // extract the current position of the beam element from the displacement vector
   BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(*(structure_->Discretization()),
       elements[0], column_structure_displacement_,
-      *beam_dofvec);  // todo get "interface" displacements only for beam
-                      // elements
+      beam_dofvec);  // todo get "interface" displacements only for beam
+                     // elements
   ;
   // extract velocity of the beam element
   BEAMINTERACTION::UTILS::ExtractPosDofVecValues(
       *(structure_->Discretization()), elements[0], column_structure_velocity_, vel_tmp);
 
-  for (double val : vel_tmp) beam_dofvec->push_back(val);
+  for (double val : vel_tmp) beam_dofvec.push_back(val);
 
   vel_tmp.clear();
   // extract the current positions and velocities of the fluid element todo only valid for fixed
   // grid, not for ALE
-  fluid_dofvec->clear();
+  fluid_dofvec.clear();
   const DRT::Node* const* fluidnodes = elements[1]->Nodes();
   for (int lid = 0; lid < elements[1]->NumNode(); ++lid)
   {
     for (int dim = 0; dim < 3; dim++)
     {
-      fluid_dofvec->push_back(fluidnodes[lid]->X()[dim]);
+      fluid_dofvec.push_back(fluidnodes[lid]->X()[dim]);
     }
   }
 
@@ -269,6 +313,13 @@ void ADAPTER::FBIConstraintenforcer::ExtractCurrentElementDofs(
   // use an extractor?
   for (unsigned int i = 0; i < vel_tmp.size(); i++)
   {
-    if ((i + 1) % 4) fluid_dofvec->push_back(vel_tmp[i]);
+    if ((i + 1) % 4) fluid_dofvec.push_back(vel_tmp[i]);
   }
 }
+
+/*----------------------------------------------------------------------*/
+
+void ADAPTER::FBIConstraintenforcer::SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning)
+{
+  geometrycoupler_->SetBinning(binning);
+};

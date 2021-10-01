@@ -54,6 +54,7 @@
 #include "../drt_ale/ale_utils_clonestrategy.H"
 
 #include "../drt_inpar/inpar_fsi.H"
+#include "../drt_inpar/inpar_fbi.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 
@@ -329,7 +330,7 @@ void fluid_freesurf_drt()
   }
 }
 /*----------------------------------------------------------------------*/
-// entry point for FSI using multidimensional immersed method
+// entry point for FSI using multidimensional immersed method (FBI)
 /*----------------------------------------------------------------------*/
 void fsi_immersed_drt()
 {
@@ -338,19 +339,39 @@ void fsi_immersed_drt()
   Teuchos::RCP<DRT::Discretization> structdis = problem->GetDis("structure");
   const Epetra_Comm& comm = structdis->Comm();
 
-  // make sure the discretizations are filled in the right order
-  // this creates dof numbers with
-  //
-  //       structure dof < fluid dof
-  //
-  // We rely on this ordering in certain non-intuitive places!
-
   structdis->FillComplete();
 
   problem->GetDis("fluid")->FillComplete();
 
   // get discretizations
   Teuchos::RCP<DRT::Discretization> fluiddis = problem->GetDis("fluid");
+
+  // create vector of discr.
+  std::vector<Teuchos::RCP<DRT::Discretization>> dis;
+  dis.push_back(fluiddis);
+  dis.push_back(structdis);
+
+  // binning strategy is created
+  Teuchos::RCP<BINSTRATEGY::BinningStrategy> binningstrategy =
+      Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
+
+  const Teuchos::ParameterList& fbidyn = problem->FBIParams();
+
+  INPAR::FBI::BeamToFluidPreSortStrategy presort_strategy =
+      Teuchos::getIntegralValue<INPAR::FBI::BeamToFluidPreSortStrategy>(fbidyn, "PRESORT_STRATEGY");
+
+  // redistribute discr. with help of binning strategy
+  if (presort_strategy == INPAR::FBI::BeamToFluidPreSortStrategy::binning)
+  {
+    std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
+    std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
+    binningstrategy->Init(dis);
+    Teuchos::RCP<Epetra_Map> rowbins =
+        binningstrategy->DoWeightedPartitioningOfBinsAndExtendGhostingOfDiscretToOneBinLayer(
+            dis, stdelecolmap, stdnodecolmap);
+    binningstrategy->FillBinsIntoBinDiscretization(rowbins);
+    binningstrategy->FillBinsIntoBinDiscretization(rowbins);
+  }
 
   const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
 
@@ -367,6 +388,12 @@ void fsi_immersed_drt()
   }
   else
     dserror("unsupported partitioned FSI scheme");
+
+  if (presort_strategy == INPAR::FBI::BeamToFluidPreSortStrategy::binning)
+  {
+    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVel>(fsi, true)->SetBinning(binningstrategy);
+  }
+
   const int restart = DRT::Problem::Instance()->Restart();
   if (restart)
   {

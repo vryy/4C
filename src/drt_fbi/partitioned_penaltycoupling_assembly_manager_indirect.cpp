@@ -24,7 +24,8 @@ coupling matrices M and D first.
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_sparsematrix.H"
-
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /**
  *
@@ -59,6 +60,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
         Teuchos::RCP<LINALG::SparseMatrix>& cbf, Teuchos::RCP<const Epetra_Vector> fluid_vel,
         Teuchos::RCP<const Epetra_Vector> beam_vel)
 {
+  Teuchos::RCP<Teuchos::Time> t =
+      Teuchos::TimeMonitor::getNewTimer("FBI::PartitionedAssemblyManagerIndirect");
+  Teuchos::TimeMonitor monitor(*t);
+
   for (auto& elepairptr : assembly_contact_elepairs_)
   {
     // PreEvaluate the pair

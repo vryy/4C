@@ -10,7 +10,7 @@ interaction
 /*----------------------------------------------------------------------*/
 
 #ifndef FBI_CONSTRAINTENFORCER_FACTORY_H
-#define FSI_CONSTRAINTENFORCER_FACTORY_H
+#define FBI_CONSTRAINTENFORCER_FACTORY_H
 
 #include <Teuchos_RCP.hpp>
 
@@ -43,10 +43,12 @@ namespace ADAPTER
      * It can be called directly.
      *
      * \param[in] fsidyn List of FSI Input parameters
+     * \param[in] fbidyn List of FBI Input parameters
      *
      * \return FBI constraint enforcement strategy
      */
-    static Teuchos::RCP<FBIConstraintenforcer> CreateEnforcer(const Teuchos::ParameterList &fsidyn);
+    static Teuchos::RCP<FBIConstraintenforcer> CreateEnforcer(
+        const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace ADAPTER
 

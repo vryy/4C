@@ -14,6 +14,7 @@ RESTART                               0
 SHAPEFCT                              Polynomial
 ----------------------------------FLUID BEAM INTERACTION
 COUPLING                              two-way
+PRESORT_STRATEGY                      binning
 ----------------------------------FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING
 PENALTY_PARAMETER                     10
 MESHTYING_DISCRETIZATION              gauss_point_to_segment

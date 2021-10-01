@@ -27,6 +27,11 @@ namespace BEAMINTERACTION
   class BeamToFluidMeshtyingVtkOutputWriter;
 }
 
+namespace BINSTRATEGY
+{
+  class BinningStrategy;
+}
+
 namespace FSI
 {
   /**
@@ -68,6 +73,9 @@ namespace FSI
      *
      */
     void Output() override;
+
+    /// Set the binning object for the presort strategy in the FBI constraint enforcer
+    void SetBinning(Teuchos::RCP<BINSTRATEGY::BinningStrategy> binning);
 
    protected:
     /** \brief interface fluid operator
