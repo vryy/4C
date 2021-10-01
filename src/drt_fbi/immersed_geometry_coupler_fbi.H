@@ -121,7 +121,12 @@ namespace FBI
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement){};
 
    protected:
+    /**
+     * \brief Please use FBI::GeometryCouplerFactory::CreateGeometryCoupler to create an instance of
+     * this class
+     */
     FBIGeometryCoupler();
+
     /**
      * \brief Computes the reference nodal positions needed for the search
      *

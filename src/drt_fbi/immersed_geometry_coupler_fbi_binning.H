@@ -92,6 +92,10 @@ namespace FBI
         Teuchos::RCP<const Epetra_Vector> structure_column_displacement) override;
 
    protected:
+    /**
+     * \brief Please use FBI::GeometryCouplerFactory::CreateGeometryCoupler to create an instance of
+     * this class
+     */
     FBIBinningGeometryCoupler();
 
     /**
