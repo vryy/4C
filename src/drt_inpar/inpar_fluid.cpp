@@ -1319,17 +1319,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       &fdyn_timintada);
   DoubleParameter(
       "ADAPTIVE_DT_INC", 0.8, "Increment of whole step for adaptive dt via CFL", &fdyn_timintada);
-
-
-  /*----------------------------------------------------------------------*/
-  // TODO: Is this used anywhere?
-  Teuchos::ParameterList& flucthydro = list->sublist("FLUCTUATING HYDRODYNAMICS", false, "");
-  DoubleParameter("TEMPERATURE", 300, "Temperature in K", &flucthydro);
-  DoubleParameter("BOLTZMANNCONST", 1.380650424e-23, "Boltzmann constant", &flucthydro);
-  setStringToIntegralParameter<int>("SEEDCONTROL", "No",
-      "control seeding with given unsigned integer", yesnotuple, yesnovalue, &flucthydro);
-  IntParameter("SEEDVARIABLE", 0, "seed variable", &flucthydro);
-  IntParameter("SAMPLEPERIOD", 1, "sample period", &flucthydro);
 }
 
 
