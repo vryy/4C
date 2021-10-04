@@ -352,10 +352,6 @@ namespace DRT
     {
       return getParameterList()->sublist("XCONTACT DYNAMIC");
     }
-    const Teuchos::ParameterList& FluctuatingHydrodynamicsParams() const
-    {
-      return getParameterList()->sublist("FLUCTUATING HYDRODYNAMICS");
-    }
     const Teuchos::ParameterList& BeamInteractionParams() const
     {
       return getParameterList()->sublist("BEAM INTERACTION");
