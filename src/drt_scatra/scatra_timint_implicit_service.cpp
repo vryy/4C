@@ -2929,8 +2929,10 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
   {
     for (int k = 0; k < numscal_; ++k)
     {
-      meangradients_[dummy_domain_id_][k] =
+      const double mean_gradient =
           (*scalars)[numdofpernode_ + 1 + k] / domainintegral_[dummy_domain_id_];
+
+      meangradients_[dummy_domain_id_][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
     }
   }
 }
@@ -3085,7 +3087,7 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
         runtime_csvwriter_->AppendDataVector("Mean value of gradient of scalar " +
                                                  std::to_string(k + 1) + " in domain " +
                                                  std::to_string(condid),
-            {meanscalars_[condid][k]});
+            {meangradients_[condid][k]});
       }
     }
   }
@@ -3233,7 +3235,10 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
     if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
-        meangradients_[condid][k] = (*scalars)[numdofpernode + 1 + k] / domainintegral_[condid];
+      {
+        const double mean_gradient = (*scalars)[numdofpernode + 1 + k] / domainintegral_[condid];
+        meangradients_[condid][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
+      }
     }
   }
 }
