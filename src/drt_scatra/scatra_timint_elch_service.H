@@ -153,6 +153,10 @@ namespace SCATRA
     //! or more than dstep
     bool IsStepsFromLastPhaseChange(int step);
 
+    //! return minimum amount of time steps the initial relaxation time of cccv condition has to be
+    //! discretized with
+    int MinTimeStepsDuringInitRelax() const { return min_time_steps_during_init_relax_; }
+
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
     void NextPhase(int step, double time);
@@ -190,6 +194,10 @@ namespace SCATRA
 
     //! initial relaxation time of cccv condition
     const double initrelaxtime_;
+
+    //! minimum amount of time steps the initial relaxation time of cccv condition has to be
+    //! discretized with
+    const int min_time_steps_during_init_relax_;
 
     //! total number of charge and discharge half-cycles
     const int nhalfcycles_;

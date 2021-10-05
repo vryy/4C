@@ -434,7 +434,8 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
       if (time_new >= cccv_condition_->GetInitialRelaxTime())  // check
       {
         const double timetoend = cccv_condition_->GetInitialRelaxTime() - time_;
-        const int stepstoend = std::ceil(timetoend / cycling_timestep_);
+        const int stepstoend = std::max(static_cast<int>(std::ceil(timetoend / cycling_timestep_)),
+            cccv_condition_->MinTimeStepsDuringInitRelax());
         dt_new = timetoend / stepstoend;  // adapt
       }
       break;
@@ -3052,7 +3053,8 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
     if (cccv_condition_->GetCCCVHalfCyclePhase() ==
         INPAR::ELCH::CCCVHalfCyclePhase::initital_relaxation)
     {
-      if (cccv_condition_->IsInitialRelaxation(time_, Dt()))
+      // or-case is required to be independent of the time step size
+      if (cccv_condition_->IsInitialRelaxation(time_, Dt()) or (time_ == 0.0))
       {
         // do nothing
       }
