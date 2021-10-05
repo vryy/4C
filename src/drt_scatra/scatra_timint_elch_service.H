@@ -67,9 +67,6 @@ namespace SCATRA
     //! adaptive time stepping at end of phases?
     std::vector<int> adaptivetimesteppingonoff_;
 
-    //! in constant current mode: current
-    const double current_;
-
     //! cut off c-rate during constant voltage
     const double cutoffcrate_;
 
@@ -88,8 +85,6 @@ namespace SCATRA
 
     //! duration of relaxation phase
     const double relaxtime_;
-
-
   };  // class CCCVHalfCycleCondition
 
   /*========================================================================*/

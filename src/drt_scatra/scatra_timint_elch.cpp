@@ -1731,10 +1731,10 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
             INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(*params_, "NEUMANNINFLOW")) == true)
+    if ((static_cast<bool>(DRT::INPUT::IntegralValue<int>(*params_, "NEUMANNINFLOW"))))
       dserror("Neuman inflow BC's are not supported by the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(*params_, "CONV_HEAT_TRANS")) == true)
+    if ((static_cast<bool>(DRT::INPUT::IntegralValue<int>(*params_, "CONV_HEAT_TRANS"))))
     {
       dserror(
           "Convective heat transfer BC's are not supported by the ELCH diffusion-conduction "
@@ -1745,7 +1745,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
         INPAR::SCATRA::fssugrdiff_no)
       dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "BLOCKPRECOND")) == true)
+    if ((static_cast<bool>(DRT::INPUT::IntegralValue<int>(*elchparams_, "BLOCKPRECOND"))))
       dserror("Block preconditioner is not supported so far!!");
 
     // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
@@ -1773,12 +1773,12 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
         INPAR::SCATRA::consistency_no)
       dserror("Consistence formulation is not in the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(scatrastabparams, "SUGRVEL")) == true)
-      dserror("Subgrid velocity is not incoperated in the ELCH diffusion-conduction framework!!");
+    if (static_cast<bool>(DRT::INPUT::IntegralValue<int>(scatrastabparams, "SUGRVEL")))
+      dserror("Subgrid velocity is not incorporated in the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")) == true)
+    if (static_cast<bool>(DRT::INPUT::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")))
       dserror(
-          "Subgrid diffusivity is not incoperated in the ELCH diffusion-conduction framework!!");
+          "Subgrid diffusivity is not incorporated in the ELCH diffusion-conduction framework!!");
   }
 }
 

@@ -265,7 +265,6 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
     const DRT::Condition& cccvhalfcyclecondition, bool adaptivetimestepping)
     : adaptivetimesteppingonoff_(
           *cccvhalfcyclecondition.Get<std::vector<int>>("AdaptiveTimeSteppingPhaseOnOff")),
-      current_(0.0),
       cutoffcrate_(cccvhalfcyclecondition.GetDouble("CutoffCRate")),
       cutoffvoltage_(cccvhalfcyclecondition.GetDouble("CutoffVoltage")),
       halfcycleconditionID_(cccvhalfcyclecondition.GetInt("ConditionID")),
