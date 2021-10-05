@@ -3049,6 +3049,9 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
   // this case
   else
   {
+    // only proc 0 should print out information
+    const bool do_print = discret_->Comm().MyPID() == 0;
+
     // which mode was last converged step? Is this phase over? Is the current half cycle over?
     if (cccv_condition_->GetCCCVHalfCyclePhase() ==
         INPAR::ELCH::CCCVHalfCyclePhase::initital_relaxation)
@@ -3064,12 +3067,12 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
     }
     else
       while (cccv_condition_->IsEndOfHalfCyclePhase(cellvoltage_, cellcrate_, time_))
-        cccv_condition_->NextPhase(step_, time_);
+        cccv_condition_->NextPhase(step_, time_, do_print);
 
     // all half cycles completed?
     const bool notfinished = cccv_condition_->NotFinished();
 
-    if (!notfinished and discret_->Comm().MyPID() == 0)
+    if (!notfinished and do_print)
       std::cout << "CCCV cycling is completed. Terminating simulation..." << std::endl;
 
     return (notfinished);

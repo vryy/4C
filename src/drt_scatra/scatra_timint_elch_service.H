@@ -55,7 +55,7 @@ namespace SCATRA
     bool IsAdaptiveTimeSteppingPhase() const;
 
     //! is this half cycle completed after updating the phase?
-    bool IsEndOfHalfCycleNextPhase(double time);
+    bool IsEndOfHalfCycleNextPhase(double time, bool print);
 
     //! reset phase of this half cycle to constant current
     void ResetPhase();
@@ -159,7 +159,7 @@ namespace SCATRA
 
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
-    void NextPhase(int step, double time);
+    void NextPhase(int step, double time, bool print);
 
     //! read restart
     void ReadRestart(IO::DiscretizationReader& reader);
