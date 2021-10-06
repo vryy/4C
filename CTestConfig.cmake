@@ -6,7 +6,7 @@ set(CTEST_DROP_METHOD "http")
 if (DEFINED ENV{CTEST_DROP_SITE_GITLAB})
     set(CTEST_DROP_SITE $ENV{CTEST_DROP_SITE_GITLAB})
 else()
-    set(CTEST_DROP_SITE "jacobi.lnm.mw.tum.de")
+    set(CTEST_DROP_SITE "jacobi.lnm.ed.tum.de")
 endif (DEFINED ENV{CTEST_DROP_SITE_GITLAB})
 
 if (DEFINED ENV{CTEST_DROP_LOCATION_GITLAB})

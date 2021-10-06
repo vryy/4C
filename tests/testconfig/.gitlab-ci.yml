@@ -45,7 +45,7 @@ variables:
 
     # Flags for cdash.
     CTEST_DROP_SITE_CDASH_GITLAB: "0"
-    CTEST_DROP_SITE_GITLAB: "jacobi.lnm.mw.tum.de"
+    CTEST_DROP_SITE_GITLAB: "jacobi.lnm.ed.tum.de"
     CTEST_DROP_LOCATION_GITLAB: "/cdash/submit.php?project=baci"
 
 
