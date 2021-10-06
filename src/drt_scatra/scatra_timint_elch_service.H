@@ -55,7 +55,7 @@ namespace SCATRA
     bool IsAdaptiveTimeSteppingPhase() const;
 
     //! is this half cycle completed after updating the phase?
-    bool IsEndOfHalfCycleNextPhase(double time);
+    bool IsEndOfHalfCycleNextPhase(double time, bool print);
 
     //! reset phase of this half cycle to constant current
     void ResetPhase();
@@ -66,9 +66,6 @@ namespace SCATRA
    private:
     //! adaptive time stepping at end of phases?
     std::vector<int> adaptivetimesteppingonoff_;
-
-    //! in constant current mode: current
-    const double current_;
 
     //! cut off c-rate during constant voltage
     const double cutoffcrate_;
@@ -88,8 +85,6 @@ namespace SCATRA
 
     //! duration of relaxation phase
     const double relaxtime_;
-
-
   };  // class CCCVHalfCycleCondition
 
   /*========================================================================*/
@@ -153,9 +148,13 @@ namespace SCATRA
     //! or more than dstep
     bool IsStepsFromLastPhaseChange(int step);
 
+    //! return minimum amount of time steps the initial relaxation time of cccv condition has to be
+    //! discretized with
+    int MinTimeStepsDuringInitRelax() const { return min_time_steps_during_init_relax_; }
+
     //! go to next phase. If half cycle is finished switch to other half cycle and start with
     //! constant current
-    void NextPhase(int step, double time);
+    void NextPhase(int step, double time, bool print);
 
     //! read restart
     void ReadRestart(IO::DiscretizationReader& reader);
@@ -190,6 +189,10 @@ namespace SCATRA
 
     //! initial relaxation time of cccv condition
     const double initrelaxtime_;
+
+    //! minimum amount of time steps the initial relaxation time of cccv condition has to be
+    //! discretized with
+    const int min_time_steps_during_init_relax_;
 
     //! total number of charge and discharge half-cycles
     const int nhalfcycles_;

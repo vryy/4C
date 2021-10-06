@@ -434,7 +434,8 @@ double SCATRA::ScaTraTimIntElch::ExtrapolateStateAdaptTimeStep(double dt)
       if (time_new >= cccv_condition_->GetInitialRelaxTime())  // check
       {
         const double timetoend = cccv_condition_->GetInitialRelaxTime() - time_;
-        const int stepstoend = std::ceil(timetoend / cycling_timestep_);
+        const int stepstoend = std::max(static_cast<int>(std::ceil(timetoend / cycling_timestep_)),
+            cccv_condition_->MinTimeStepsDuringInitRelax());
         dt_new = timetoend / stepstoend;  // adapt
       }
       break;
@@ -1730,10 +1731,10 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
             INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(*params_, "NEUMANNINFLOW")) == true)
+    if ((static_cast<bool>(DRT::INPUT::IntegralValue<int>(*params_, "NEUMANNINFLOW"))))
       dserror("Neuman inflow BC's are not supported by the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(*params_, "CONV_HEAT_TRANS")) == true)
+    if ((static_cast<bool>(DRT::INPUT::IntegralValue<int>(*params_, "CONV_HEAT_TRANS"))))
     {
       dserror(
           "Convective heat transfer BC's are not supported by the ELCH diffusion-conduction "
@@ -1744,7 +1745,7 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
         INPAR::SCATRA::fssugrdiff_no)
       dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(*elchparams_, "BLOCKPRECOND")) == true)
+    if ((static_cast<bool>(DRT::INPUT::IntegralValue<int>(*elchparams_, "BLOCKPRECOND"))))
       dserror("Block preconditioner is not supported so far!!");
 
     // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
@@ -1772,12 +1773,12 @@ void SCATRA::ScaTraTimIntElch::ValidParameterDiffCond()
         INPAR::SCATRA::consistency_no)
       dserror("Consistence formulation is not in the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(scatrastabparams, "SUGRVEL")) == true)
-      dserror("Subgrid velocity is not incoperated in the ELCH diffusion-conduction framework!!");
+    if (static_cast<bool>(DRT::INPUT::IntegralValue<int>(scatrastabparams, "SUGRVEL")))
+      dserror("Subgrid velocity is not incorporated in the ELCH diffusion-conduction framework!!");
 
-    if ((DRT::INPUT::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")) == true)
+    if (static_cast<bool>(DRT::INPUT::IntegralValue<int>(scatrastabparams, "ASSUGRDIFF")))
       dserror(
-          "Subgrid diffusivity is not incoperated in the ELCH diffusion-conduction framework!!");
+          "Subgrid diffusivity is not incorporated in the ELCH diffusion-conduction framework!!");
   }
 }
 
@@ -3048,11 +3049,15 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
   // this case
   else
   {
+    // only proc 0 should print out information
+    const bool do_print = discret_->Comm().MyPID() == 0;
+
     // which mode was last converged step? Is this phase over? Is the current half cycle over?
     if (cccv_condition_->GetCCCVHalfCyclePhase() ==
         INPAR::ELCH::CCCVHalfCyclePhase::initital_relaxation)
     {
-      if (cccv_condition_->IsInitialRelaxation(time_, Dt()))
+      // or-case is required to be independent of the time step size
+      if (cccv_condition_->IsInitialRelaxation(time_, Dt()) or (time_ == 0.0))
       {
         // do nothing
       }
@@ -3062,12 +3067,12 @@ bool SCATRA::ScaTraTimIntElch::NotFinished()
     }
     else
       while (cccv_condition_->IsEndOfHalfCyclePhase(cellvoltage_, cellcrate_, time_))
-        cccv_condition_->NextPhase(step_, time_);
+        cccv_condition_->NextPhase(step_, time_, do_print);
 
     // all half cycles completed?
     const bool notfinished = cccv_condition_->NotFinished();
 
-    if (!notfinished and discret_->Comm().MyPID() == 0)
+    if (!notfinished and do_print)
       std::cout << "CCCV cycling is completed. Terminating simulation..." << std::endl;
 
     return (notfinished);

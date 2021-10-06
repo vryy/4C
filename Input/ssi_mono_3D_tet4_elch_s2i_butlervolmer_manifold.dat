@@ -155,7 +155,7 @@ NDSURF  18
 NDVOL   6
 --------------------------DESIGN CCCV CELL CYCLING SURF CONDITIONS
 DSURF  1
-E 6 - NumberOfHalfCycles 1 BeginWithCharging 0 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime 2.5 AdaptiveTimeSteppingInitRelax 1 NumAddAdaptTimeSteps 0
+E 6 - NumberOfHalfCycles 1 BeginWithCharging 0 ConditionIDForCharge 1 ConditionIDForDischarge 2 InitRelaxTime 2.5 AdaptiveTimeSteppingInitRelax 1 NumAddAdaptTimeSteps 0 MinTimeStepsDuringInitRelax 0
 ----------------------------DESIGN CCCV HALF-CYCLE SURF CONDITIONS
 DSURF  2
 E 6 - ID 1 Current 5.278302597e-4 CutoffVoltage 10.0 CutoffCRate 100.0 RelaxTime -1.0 AdaptiveTimeSteppingPhaseOnOff 0 0 0

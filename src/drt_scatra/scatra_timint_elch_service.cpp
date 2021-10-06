@@ -24,6 +24,7 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
       halfcycle_discharge_(Teuchos::null),
       ihalfcycle_(-1),
       initrelaxtime_(cccvcyclingcondition.GetDouble("InitRelaxTime")),
+      min_time_steps_during_init_relax_(cccvcyclingcondition.GetInt("MinTimeStepsDuringInitRelax")),
       nhalfcycles_(cccvcyclingcondition.GetInt("NumberOfHalfCycles")),
       num_add_adapt_timesteps_(cccvcyclingcondition.GetInt("NumAddAdaptTimeSteps")),
       phasechanged_(false),
@@ -143,14 +144,24 @@ bool SCATRA::CCCVCondition::IsEndOfHalfCyclePhase(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void SCATRA::CCCVCondition::NextPhase(int step, double time)
+void SCATRA::CCCVCondition::NextPhase(int step, double time, bool print)
 {
   // store, that phase is changed now.
   SetPhaseChangeObserver(step);
 
+  // print cycling information to improve readability of the output
+  if (print)
+  {
+    std::cout << std::endl << "CCCV cycling: ";
+    if (charging_)
+      std::cout << "Charging half-cycle: ";
+    else
+      std::cout << "Discharging half-cycle: ";
+  }
+
   // update phase and check if this half cycle is over?
-  if (charging_ ? halfcycle_charge_->IsEndOfHalfCycleNextPhase(time)
-                : halfcycle_discharge_->IsEndOfHalfCycleNextPhase(time))
+  if (charging_ ? halfcycle_charge_->IsEndOfHalfCycleNextPhase(time, print)
+                : halfcycle_discharge_->IsEndOfHalfCycleNextPhase(time, print))
   {
     // if half cylce is over reset all phases to constant current, flip charge mode and increase
     // counter
@@ -254,7 +265,6 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
     const DRT::Condition& cccvhalfcyclecondition, bool adaptivetimestepping)
     : adaptivetimesteppingonoff_(
           *cccvhalfcyclecondition.Get<std::vector<int>>("AdaptiveTimeSteppingPhaseOnOff")),
-      current_(0.0),
       cutoffcrate_(cccvhalfcyclecondition.GetDouble("CutoffCRate")),
       cutoffvoltage_(cccvhalfcyclecondition.GetDouble("CutoffVoltage")),
       halfcycleconditionID_(cccvhalfcyclecondition.GetInt("ConditionID")),
@@ -276,7 +286,7 @@ SCATRA::CCCVHalfCycleCondition::CCCVHalfCycleCondition(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(double time)
+bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(double time, bool print)
 {
   bool halfcycle_finished = false;
 
@@ -286,17 +296,20 @@ bool SCATRA::CCCVHalfCycleCondition::IsEndOfHalfCycleNextPhase(double time)
     case INPAR::ELCH::CCCVHalfCyclePhase::constant_current:
     {
       phase_cccv_ = INPAR::ELCH::CCCVHalfCyclePhase::constant_voltage;
+      if (print) std::cout << "CC-phase finished!" << std::endl;
       break;
     }
     case INPAR::ELCH::CCCVHalfCyclePhase::constant_voltage:
     {
       phase_cccv_ = INPAR::ELCH::CCCVHalfCyclePhase::relaxation;
       relaxendtime_ = time + relaxtime_;
+      if (print) std::cout << "CV-phase finished!" << std::endl;
       break;
     }
     case INPAR::ELCH::CCCVHalfCyclePhase::relaxation:
     {
       halfcycle_finished = true;
+      if (print) std::cout << "Relaxation-phase finished!" << std::endl;
       break;
     }
     default:
