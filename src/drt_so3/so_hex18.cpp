@@ -16,6 +16,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 
@@ -88,6 +89,13 @@ DRT::ELEMENTS::So_hex18::So_hex18(int id, int owner) : So_base(id, owner)
   invJ_.resize(NUMGPT_SOH18, LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>(true));
   detJ_.resize(NUMGPT_SOH18, 0.0);
   InitGp();
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH18");
+  }
 
   return;
 }

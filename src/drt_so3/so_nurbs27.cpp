@@ -16,6 +16,8 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 
@@ -85,6 +87,14 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, ow
   invJ_.resize(NUMGPT_SONURBS27, LINALG::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
   SetNurbsElement() = true;
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SONURBS27");
+  }
+
   return;
 }
 

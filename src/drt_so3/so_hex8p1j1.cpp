@@ -12,6 +12,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "so_hex8.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
 
@@ -113,6 +115,13 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) : DRT::ELEMENTS::So_h
   for (int i = 3; i < 6; ++i)
   {
     I_0_(i, i) = 0.5;
+  }
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH8P1J1");
   }
 
   return;

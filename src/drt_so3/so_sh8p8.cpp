@@ -14,6 +14,8 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 
 DRT::ELEMENTS::So_sh8p8Type DRT::ELEMENTS::So_sh8p8Type::instance_;
@@ -110,7 +112,16 @@ const int DRT::ELEMENTS::So_sh8p8::PRESTODISPPRES_[NUMPRES_] = {3, 7, 11, 15, 19
  |  ctor (public)                                            bborn 03/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_sh8p8::So_sh8p8(int id, int owner) : DRT::ELEMENTS::So_sh8(id, owner) { return; }
+DRT::ELEMENTS::So_sh8p8::So_sh8p8(int id, int owner) : DRT::ELEMENTS::So_sh8(id, owner)
+{
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSH8P8");
+  }
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       bborn 03/09|

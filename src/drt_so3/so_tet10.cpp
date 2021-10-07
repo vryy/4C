@@ -119,6 +119,9 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDT10");
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
@@ -189,7 +192,7 @@ void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
   // add base class Element
   So_base::Pack(data);
   ;
-  // data
+  // data_
   AddtoPack(data, data_);
   // detJ_
   AddtoPack(data, detJ_);

@@ -13,7 +13,9 @@
 #include "so_line.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/so3_material.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
 
@@ -80,6 +82,13 @@ void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18::So_sh18(int id, int owner) : So_base(id, owner), So_hex18(id, owner)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSH18");
+  }
+
   return;
 }
 

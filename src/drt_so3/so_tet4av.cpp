@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "so_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -95,7 +96,17 @@ void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet4av::So_tet4av(int id, int owner) : So_base(id, owner) { return; }
+DRT::ELEMENTS::So_tet4av::So_tet4av(int id, int owner) : So_base(id, owner)
+{
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDT4AV");
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 04/07|

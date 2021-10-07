@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/prestress_service.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "so_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -121,6 +122,9 @@ DRT::ELEMENTS::So_tet4::So_tet4(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDT4");
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4, NUMGPT_SOTET4, true));

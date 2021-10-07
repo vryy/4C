@@ -10,7 +10,8 @@
 #include "so_weg6.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
-
+#include "so_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
@@ -86,6 +87,14 @@ DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, 
   neas_ = 0;
   optimal_parameterspace_map_ = false;
   nodes_rearranged_ = false;
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSHW6");
+  }
+
   return;
 }
 

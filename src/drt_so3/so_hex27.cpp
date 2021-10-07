@@ -20,6 +20,7 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -106,6 +107,9 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH27");
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));

@@ -24,6 +24,7 @@
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
@@ -192,6 +193,9 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "NSTET5");
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));

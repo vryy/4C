@@ -14,6 +14,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "so_hex8.H"
+#include "so_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;
@@ -97,6 +99,13 @@ DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner)
       nodes_rearranged_(false),
       thickvec_(3, 0.0)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSH8");
+  }
+
   return;
 }
 

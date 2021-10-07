@@ -28,6 +28,7 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 #include "../../linalg/linalg_serialdensematrix.H"
 #include "../../linalg/linalg_serialdensevector.H"
 #include "../../drt_lib/drt_globalproblem.H"
+#include "../so_utils.H"
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
@@ -307,6 +308,14 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
   thickdir_ = globx;
   nodes_rearranged_ = false;
   thickvec_.resize(3, 0.);
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSH8PLAST");
+  }
+
   return;
 }
 

@@ -13,10 +13,12 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "so_nstet.H"
 #include "so_surface.H"
 #include "so_line.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
@@ -92,6 +94,13 @@ void DRT::ELEMENTS::NStetType::SetupElementDefinition(
 DRT::ELEMENTS::NStet::NStet(int id, int owner)
     : DRT::Element(id, owner), material_(0), V_(-1.0), nxyz_()
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "NSTET4");
+  }
+
   return;
 }
 

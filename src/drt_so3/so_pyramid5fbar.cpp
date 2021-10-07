@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "prestress.H"
 #include "../drt_lib/prestress_service.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_pyramid5fbarType DRT::ELEMENTS::So_pyramid5fbarType::instance_;
 
@@ -94,6 +95,13 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
 DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
     : DRT::ELEMENTS::So_pyramid5(id, owner)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDP5FBAR");
+  }
+
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
