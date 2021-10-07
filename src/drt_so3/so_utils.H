@@ -158,6 +158,16 @@ namespace DRT
               DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& derivs,
           LINALG::Matrix<DRT::UTILS::DisTypeToDim<distype>::dim,
               DRT::UTILS::DisTypeToDim<distype>::dim>& inverseJacobian);
+
+      /*!
+       * \brief Checks whether maerial tangent should be computed via finite difference. If so,
+       * throws an error.
+       *
+       * \param sdyn [in] : Structural dynamics parameter list
+       * \param eletype [out] : Element type string
+       */
+      void ThrowErrorFDMaterialTangent(const Teuchos::ParameterList& sdyn, std::string eletype);
+
     }  // namespace UTILS
   }    // namespace ELEMENTS
 }  // namespace DRT

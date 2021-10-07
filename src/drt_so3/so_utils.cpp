@@ -8,7 +8,7 @@
 
 #include "so_utils.H"
 #include <algorithm>
-
+#include <utility>
 #include "../linalg/linalg_utils_densematrix_svd.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -230,6 +230,18 @@ void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
 {
   inverseJacobian.Multiply(1.0, derivs, xrefe, 0.0);
   inverseJacobian.Invert();
+}
+
+void DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+    const Teuchos::ParameterList& sdyn, std::string eletype)
+{
+  bool analyticalmaterialtangent = true;
+  if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent = false;
+  if (!analyticalmaterialtangent)
+    dserror(
+        "Approximation of material tangent by finite differences not implemented by %s elements. "
+        "Set parameter MATERIALTANGENT to analytical.",
+        eletype.c_str());
 }
 
 template void DRT::ELEMENTS::UTILS::CalcR<DRT::Element::tet10>(
