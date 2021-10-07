@@ -63,18 +63,15 @@
 #define BEAM3EB_H
 
 
-
-#include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/drt_node.H"
 
 #include "beam3_base.H"
 
-//#define PRECISION ;           // Flag to switch on arbitrary precision calculation. To use this
-// functionality two
-// slight modification in the do-configure file and in linalg_fixesizematrix.H are
-// necessary. Read the text above for more information
+/* Flag to switch on arbitrary precision calculation. To use this functionality, two
+ * slight modification in the do-configure file and in linalg_fixesizematrix.H are
+ * necessary. Read the text above for more information.
+ * */
+//#define PRECISION ;
 #ifdef PRECISION
 #include <cln/float.h>
 #include <cln/io.h>
@@ -206,7 +203,7 @@ namespace DRT
       /*!
       \brief Destructor
       */
-      virtual ~Beam3eb();
+      virtual ~Beam3eb() = default;
 
       /*!
       \brief Deep copy this instance of Beam3eb and return pointer to the copy
@@ -794,7 +791,7 @@ namespace DRT
           Epetra_SerialDenseVector* force);       //!< element internal force vector
 
       // don't want = operator
-      Beam3eb& operator=(const Beam3eb& old);
+      Beam3eb& operator=(const Beam3eb& old) = delete;
     };  // class Beam3eb
 
 

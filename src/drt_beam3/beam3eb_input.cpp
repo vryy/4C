@@ -15,9 +15,6 @@
 
 #include "../drt_lib/drt_linedefinition.H"
 
-#include "../drt_fem_general/largerotations.H"
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Beam3eb::ReadElement(

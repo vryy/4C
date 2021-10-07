@@ -12,21 +12,14 @@
 
 #include "beam_spatial_discretization_utils.H"
 
-// Todo check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
-#include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_fem_general/largerotations.H"
-#include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_inpar/inpar_structure.H"
-#include <Epetra_CrsMatrix.h>
 #include "../drt_lib/standardtypes_cpp.H"
-#include "../drt_beaminteraction/beam3contact_utils.H"
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
 #include <Sacado.hpp>
