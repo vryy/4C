@@ -233,7 +233,7 @@ void DRT::ELEMENTS::UTILS::EvaluateInverseJacobian(
 }
 
 void DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-    const Teuchos::ParameterList& sdyn, std::string eletype)
+    const Teuchos::ParameterList& sdyn, const std::string& eletype)
 {
   bool analyticalmaterialtangent = true;
   if (DRT::INPUT::IntegralValue<int>(sdyn, "MATERIALTANGENT")) analyticalmaterialtangent = false;

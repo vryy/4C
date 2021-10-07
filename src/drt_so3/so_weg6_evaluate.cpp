@@ -110,13 +110,14 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
-      for (int i = 0; i < (int)mydisp.size(); ++i) mydisp[i] = 0.0;
+      for (double& i : mydisp) i = 0.0;
       std::vector<double> myres(lm.size());
-      for (int i = 0; i < (int)myres.size(); ++i) myres[i] = 0.0;
+      for (double& myre : myres) myre = 0.0;
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      sow6_nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, &elemat1, NULL, &elevec1, NULL,
-          NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+      sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
+          nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none);
     }
     break;
 
@@ -137,11 +138,12 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
       if (::UTILS::PRESTRESS::IsInverseDesignActive(
               time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, NULL, &elevec1, NULL, NULL,
-            params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
+            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else
-        sow6_nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, &elemat1, NULL, &elevec1, NULL,
-            NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr,
+            &elevec1, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+            INPAR::STR::strain_none);
     }
     break;
 
@@ -162,8 +164,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);  // set to zero
       std::vector<double> mydispmat(lm.size(), 0.0);
 
-      sow6_nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, &myemat, NULL, &elevec1, NULL,
-          NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+      sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
+          nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none);
     }
     break;
 
@@ -200,11 +203,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
 
       if (::UTILS::PRESTRESS::IsInverseDesignActive(
               time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL,
-            NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1,
+            nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else
         sow6_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
-            &elevec1, &elevec2, &elevec3, NULL, NULL, params, INPAR::STR::stress_none,
+            &elevec1, &elevec2, &elevec3, nullptr, nullptr, params, INPAR::STR::stress_none,
             INPAR::STR::strain_none);
     }
     break;
@@ -231,20 +234,20 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         if (::UTILS::PRESTRESS::IsInverseDesignActive(
                 time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
-              params, iostress, iostrain);
+          invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr, &stress,
+              &strain, params, iostress, iostrain);
         else
-          sow6_nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, NULL, NULL, NULL, NULL, NULL,
-              &stress, &strain, params, iostress, iostrain);
+          sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
+              nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         {
           DRT::PackBuffer data;
@@ -592,9 +595,9 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
@@ -608,12 +611,12 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         {
           if (::UTILS::PRESTRESS::IsInverseDesignActive(
                   time_, pstype_, pstime_))  // inverse design analysis
-            invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress,
-                &strain, params, iostress, iostrain);
+            invdesign_->sow6_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr,
+                &stress, &strain, params, iostress, iostrain);
 
           else  // standard analysis
-            sow6_nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, NULL, NULL, NULL, NULL,
-                NULL, &stress, &strain, params, iostress, iostrain);
+            sow6_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
+                nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
         }
         // add stresses to global map
         // get EleID Id()
@@ -884,14 +887,14 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
 
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> gl;
@@ -997,13 +1000,13 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         const double detF = defgrd.Determinant();
 
         LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> pkstress;
@@ -1039,14 +1042,14 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
 
     const double detJ_w = detJ * gpweights[gp];
     // update internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -1074,9 +1077,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
           (*stiffmatrix)(NUMDIM_WEG6 * inod + 2, NUMDIM_WEG6 * jnod + 2) += bopstrbop;
         }
       }  // end of integrate `geometric' stiffness ******************************
-    }    // if (stiffmatrix != NULL)
+    }    // if (stiffmatrix != nullptr)
 
-    if (massmatrix != NULL)
+    if (massmatrix != nullptr)
     {  // evaluate mass matrix +++++++++++++++++++++++++
       // integrate consistent mass matrix
       double density = Material()->Density(gp);
@@ -1136,7 +1139,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
             for (int inod = 0; inod < NUMNOD_WEG6; ++inod)
               myacc(idim) += shapefcts[gp](inod) * (*acc)[idim + (inod * NUMDIM_WEG6)];
 
-          if (stiffmatrix != NULL)
+          if (stiffmatrix != nullptr)
           {
             // integrate linearisation of mass matrix
             //(B^T . d\rho/d disp . a) * detJ * w(gp)
@@ -1157,7 +1160,7 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(std::vector<int>& lm,  // locatio
           }
 
           // internal force vector without EAS terms
-          if (forceinert != NULL)
+          if (forceinert != nullptr)
           {
             // integrate nonlinear inertia force term
             for (int inod = 0; inod < NUMNOD_WEG6; ++inod)
@@ -1298,7 +1301,7 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 void DRT::ELEMENTS::So_weg6::sow6_lumpmass(LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -1322,7 +1325,7 @@ int DRT::ELEMENTS::So_weg6Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_weg6* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_weg6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6* failed");
     actele->InitJacobianMapping();
   }
@@ -1420,7 +1423,7 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
 void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                   // current displacements
     Teuchos::ParameterList& params,                              // algorithmic parameters e.g. time
-    Teuchos::RCP<MAT::Material> mat)                             // material
+    const Teuchos::RCP<MAT::Material>& mat)                      // material
 {
   if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
       (Material()->MaterialType() == INPAR::MAT::m_elasthyper))
@@ -1544,7 +1547,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
 
       if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
-        MAT::ConstraintMixture* comi = static_cast<MAT::ConstraintMixture*>(mat.get());
+        auto* comi = dynamic_cast<MAT::ConstraintMixture*>(mat.get());
         comi->EvaluateFiberVecs(gp, locsys, defgrd);
       }
       else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
@@ -1571,7 +1574,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(std::vector<int>& lm,  // location mat
       if (lambda(1, 1) < 0) newgamma = 0.0;
 
       // new fiber vectors
-      MAT::ElastHyper* elast = static_cast<MAT::ElastHyper*>(mat.get());
+      auto* elast = dynamic_cast<MAT::ElastHyper*>(mat.get());
       elast->EvaluateFiberVecs(newgamma, locsys, avg_defgrd);
     }
   }

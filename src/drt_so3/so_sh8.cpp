@@ -24,7 +24,7 @@ DRT::ELEMENTS::So_sh8Type& DRT::ELEMENTS::So_sh8Type::Instance() { return instan
 
 DRT::ParObject* DRT::ELEMENTS::So_sh8Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_sh8* object = new DRT::ELEMENTS::So_sh8(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_sh8(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -129,7 +129,7 @@ DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_sh8::Clone() const
 {
-  DRT::ELEMENTS::So_sh8* newelement = new DRT::ELEMENTS::So_sh8(*this);
+  auto* newelement = new DRT::ELEMENTS::So_sh8(*this);
   return newelement;
 }
 

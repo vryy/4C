@@ -161,7 +161,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      nstetnlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL, NULL,
+      nstetnlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
       if (act == calc_struct_nlnstifflmass) nstetlumpmass(&elemat2);
     }
@@ -179,9 +179,9 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<12, 12>* elemat1ptr = NULL;
+      LINALG::Matrix<12, 12>* elemat1ptr = nullptr;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
-      nstetnlnstiffmass(lm, mydisp, myres, elemat1ptr, NULL, &elevec1, NULL, NULL,
+      nstetnlnstiffmass(lm, mydisp, myres, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -199,9 +199,9 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
             params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
         if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
@@ -214,8 +214,8 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<1, 6> strain(true);
         LINALG::Matrix<1, 6> elestress(true);
         LINALG::Matrix<1, 6> elestrain(true);
-        nstetnlnstiffmass(
-            lm, mydisp, myres, NULL, NULL, NULL, &elestress, &elestrain, iostress, iostrain);
+        nstetnlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &elestress, &elestrain,
+            iostress, iostrain);
 
         //--------------------------------- interpolate nodal stress from every node
         Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
@@ -249,17 +249,16 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
 #ifndef PUSOSOLBERG
         Teuchos::RCP<Epetra_MultiVector> mis_stress = ElementType().pstab_nstress_;
         Teuchos::RCP<Epetra_MultiVector> mis_strain = ElementType().pstab_nstrain_;
-        std::map<int, std::vector<int>>::iterator ele = ElementType().pstab_cid_mis_.find(Id());
+        auto ele = ElementType().pstab_cid_mis_.find(Id());
         if (ele == ElementType().pstab_cid_mis_.end()) dserror("Cannot find this element");
-        std::map<int, std::vector<double>>::iterator elew =
-            ElementType().pstab_cid_mis_weight_.find(Id());
+        auto elew = ElementType().pstab_cid_mis_weight_.find(Id());
         if (elew == ElementType().pstab_cid_mis_weight_.end())
           dserror("Cannot find this element weight");
         std::vector<int>& mis = ele->second;
-        const int nummis = (int)mis.size();
+        const auto nummis = (int)mis.size();
         if (nummis < 1) dserror("Element not associated with any mis node");
         std::vector<double>& misw = elew->second;
-        const int nummisw = (int)misw.size();
+        const auto nummisw = (int)misw.size();
         if (nummis != nummisw) dserror("Number of patches and weight mismatch");
         double totweight = 0.0;
         for (int i = 0; i < nummis; ++i)
@@ -358,7 +357,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
-        MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
+        auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
         micro->Update();
       }
     }
@@ -384,7 +383,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<12, 12> myemat(true);
-      nstetnlnstiffmass(lm, mydisp, myres, &myemat, NULL, &elevec1, NULL, NULL,
+      nstetnlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -544,14 +543,14 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
         for (int i = 0; i < 3; ++i) (*elestrain)(0, i) = ALPHA_NSTET * glstrainbar(i);
         for (int i = 0; i < 3; ++i) (*elestrain)(0, i) = ALPHA_NSTET * 0.5 * glstrainbar(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
         LINALG::Matrix<3, 3> gl;
         gl(0, 0) = glstrainbar(0);  // divide off-diagonals by 2
         gl(0, 1) = 0.5 * glstrainbar(3);
@@ -599,14 +598,14 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         for (int i = 0; i < 6; ++i)
           (*elestress)(0, i) = stress(i);  // ALPHA_NSTET scaling is already in stress
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
 
         LINALG::Matrix<3, 3> pkstress;
         pkstress(0, 0) = stress(0);  // ALPHA_NSTET scaling is already in stress
@@ -711,10 +710,10 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
     xsi[3][1] = beta;
     xsi[3][2] = beta;
     xsi[3][3] = alpha;
-    for (int gp = 0; gp < 4; ++gp)
+    for (auto& gp : xsi)
     {
       LINALG::Matrix<4, 1> funct;
-      ShapeFunction(funct, xsi[gp][0], xsi[gp][1], xsi[gp][2], xsi[gp][3]);
+      ShapeFunction(funct, gp[0], gp[1], gp[2], gp[3]);
       const double f = density * V * weight;
       for (int i = 0; i < 4; ++i)
         for (int j = 0; j < 4; ++j)
@@ -737,7 +736,7 @@ void DRT::ELEMENTS::NStet::nstetnlnstiffmass(std::vector<int>& lm,  // location 
 void DRT::ELEMENTS::NStet::nstetlumpmass(LINALG::Matrix<12, 12>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -779,7 +778,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::
     break;
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
-      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
       neo->Evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = neo->Density();
     }
@@ -787,7 +786,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
-      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = aaa->Density();
@@ -795,7 +794,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::
     break;
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(mat.get());
+      auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = hyper->Density();

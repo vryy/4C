@@ -22,7 +22,7 @@ DRT::ELEMENTS::StructuralSurfaceType& DRT::ELEMENTS::StructuralSurfaceType::Inst
 
 DRT::ParObject* DRT::ELEMENTS::StructuralSurfaceType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::StructuralSurface* object = new DRT::ELEMENTS::StructuralSurface(-1, -1);
+  auto* object = new DRT::ELEMENTS::StructuralSurface(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -93,7 +93,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(const DRT::ELEMENTS::Structu
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::StructuralSurface::Clone() const
 {
-  DRT::ELEMENTS::StructuralSurface* newelement = new DRT::ELEMENTS::StructuralSurface(*this);
+  auto* newelement = new DRT::ELEMENTS::StructuralSurface(*this);
   return newelement;
 }
 

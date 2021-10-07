@@ -166,7 +166,8 @@ namespace DRT
        * \param sdyn [in] : Structural dynamics parameter list
        * \param eletype [out] : Element type string
        */
-      void ThrowErrorFDMaterialTangent(const Teuchos::ParameterList& sdyn, std::string eletype);
+      void ThrowErrorFDMaterialTangent(
+          const Teuchos::ParameterList& sdyn, const std::string& eletype);
 
     }  // namespace UTILS
   }    // namespace ELEMENTS

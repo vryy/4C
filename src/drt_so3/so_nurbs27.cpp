@@ -28,7 +28,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27Type& DRT::ELEMENTS::NURBS::So_nurbs27Type::Inst
 
 DRT::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::NURBS::So_nurbs27* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1, -1);
+  auto* object = new DRT::ELEMENTS::NURBS::So_nurbs27(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -120,7 +120,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(const DRT::ELEMENTS::NURBS::So_nurb
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::NURBS::So_nurbs27::Clone() const
 {
-  DRT::ELEMENTS::NURBS::So_nurbs27* newelement = new DRT::ELEMENTS::NURBS::So_nurbs27(*this);
+  auto* newelement = new DRT::ELEMENTS::NURBS::So_nurbs27(*this);
   return newelement;
 }
 
@@ -149,7 +149,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 

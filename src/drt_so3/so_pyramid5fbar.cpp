@@ -27,7 +27,7 @@ DRT::ELEMENTS::So_pyramid5fbarType& DRT::ELEMENTS::So_pyramid5fbarType::Instance
 
 DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_pyramid5fbar* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -123,7 +123,7 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(const DRT::ELEMENTS::So_pyramid5
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
 {
-  DRT::ELEMENTS::So_pyramid5fbar* newelement = new DRT::ELEMENTS::So_pyramid5fbar(*this);
+  auto* newelement = new DRT::ELEMENTS::So_pyramid5fbar(*this);
   return newelement;
 }
 

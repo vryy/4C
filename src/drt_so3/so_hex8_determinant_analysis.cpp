@@ -54,7 +54,7 @@ void DRT::ELEMENTS::So_Hex8_Determinant_Analysis::buildSubMapBezierToLagrange(
     const double* left, const double* right, LINALG::Matrix<27, 27>& sub_map_b2l) const
 {
   double scale[3] = {0.0, 0.0, 0.0};
-  const double* shift = NULL;
+  const double* shift = nullptr;
 
   for (unsigned j = 0; j < 3; ++j) scale[j] = right[j] - left[j];
 
@@ -204,7 +204,7 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::isValid(
 
   // init recursion counter
   unsigned rcount = 0;
-  unsigned* rcount_ptr = NULL;
+  unsigned* rcount_ptr = nullptr;
   if (rc)
     rcount_ptr = rc;
   else
@@ -410,9 +410,10 @@ bool DRT::ELEMENTS::So_Hex8_Determinant_Analysis::hasInvalidEntry(
  *----------------------------------------------------------------------------*/
 unsigned DRT::ELEMENTS::So_Hex8_Determinant_Analysis::computeTet4VolAtCorners(
     LINALG::Matrix<20, 1>& tet4_volumes, const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
-    std::function<unsigned(unsigned i)> f_index0, std::function<unsigned(unsigned i)> f_index1,
-    std::function<unsigned(unsigned i)> f_index2, std::function<unsigned(unsigned i)> f_index3,
-    unsigned offset) const
+    const std::function<unsigned(unsigned i)>& f_index0,
+    const std::function<unsigned(unsigned i)>& f_index1,
+    const std::function<unsigned(unsigned i)>& f_index2,
+    const std::function<unsigned(unsigned i)>& f_index3, unsigned offset) const
 {
   static LINALG::Matrix<NUMDIM_SOH8, 4> tet4_coords;
 
@@ -446,10 +447,12 @@ unsigned DRT::ELEMENTS::So_Hex8_Determinant_Analysis::computeTet4VolAtCorners(
  *----------------------------------------------------------------------------*/
 unsigned DRT::ELEMENTS::So_Hex8_Determinant_Analysis::computeTet4VolAtEdges(
     LINALG::Matrix<20, 1>& tet4_volumes, const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
-    std::function<unsigned(unsigned i)> f_index0, std::function<unsigned(unsigned i)> f_index1,
-    std::function<unsigned(unsigned i)> f_index20, std::function<unsigned(unsigned i)> f_index21,
-    std::function<unsigned(unsigned i)> f_index30, std::function<unsigned(unsigned i)> f_index31,
-    unsigned offset) const
+    const std::function<unsigned(unsigned i)>& f_index0,
+    const std::function<unsigned(unsigned i)>& f_index1,
+    const std::function<unsigned(unsigned i)>& f_index20,
+    const std::function<unsigned(unsigned i)>& f_index21,
+    const std::function<unsigned(unsigned i)>& f_index30,
+    const std::function<unsigned(unsigned i)>& f_index31, unsigned offset) const
 {
   static LINALG::Matrix<NUMDIM_SOH8, 4> tet4_coords;
 

@@ -18,27 +18,28 @@ namespace DRT
     class So_shw6Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "So_shw6Type"; }
+      std::string Name() const override { return "So_shw6Type"; }
 
       static So_shw6Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_shw6Type instance_;
@@ -92,7 +93,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -100,7 +101,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return So_shw6Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return So_shw6Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -108,7 +109,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -116,13 +117,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~So_shw6();
+      ~So_shw6() override;
 
       //@}
 
@@ -131,15 +132,15 @@ namespace DRT
       /*!
        \brief Does this element use EAS?
        */
-      virtual bool HaveEAS() const { return (eastype_ != soshw6_easnone); };
+      bool HaveEAS() const override { return (eastype_ != soshw6_easnone); };
 
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return So_shw6Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return So_shw6Type::Instance(); }
 
       //@}
 
@@ -149,7 +150,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -174,15 +175,15 @@ namespace DRT
       EASType eastype_;
 
       //! number of EAS parameters (alphas), defined by 'EASType"
-      int neas_;
+      int neas_{};
       // line search parameter (old step length)
-      double old_step_length_;
+      double old_step_length_{};
 
       //! reorder nodes to optimally align material space with parameter space
-      bool optimal_parameterspace_map_;
+      bool optimal_parameterspace_map_{};
 
       //! in case of changed nodal order this is true
-      bool nodes_rearranged_;
+      bool nodes_rearranged_{};
 
       //! don't want = operator
       So_shw6& operator=(const So_shw6& old);
@@ -213,10 +214,10 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //! Compute stiffness and mass matrix
       virtual void soshw6_nlnstiffmass(std::vector<int>& lm,      // location matrix

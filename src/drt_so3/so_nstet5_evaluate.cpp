@@ -35,7 +35,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
   {
     // compute element volume and center node coordinate
     DRT::Node** nodes = Nodes();  // outer nodes only
-    for (int i = 0; i < 3; ++i) midX_[i] = 0.0;
+    for (double& i : midX_) i = 0.0;
     for (int i = 0; i < 4; ++i)
     {
       const double* x = nodes[i]->X();
@@ -47,7 +47,7 @@ void DRT::ELEMENTS::NStet5::InitElement()
       midX_[1] += x[1];
       midX_[2] += x[2];
     }
-    for (int i = 0; i < 3; ++i) midX_[i] /= 4;
+    for (double& i : midX_) i /= 4;
 
     V_ = J.Determinant() / 6.0;
     if (V_ == 0.0)
@@ -214,7 +214,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      nstet5nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, NULL, NULL,
+      nstet5nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
       if (act == calc_struct_nlnstifflmass) nstet5lumpmass(&elemat2);
     }
@@ -229,9 +229,9 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      LINALG::Matrix<15, 15>* elemat1ptr = NULL;
+      LINALG::Matrix<15, 15>* elemat1ptr = nullptr;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
-      nstet5nlnstiffmass(lm, mydisp, elemat1ptr, NULL, &elevec1, NULL, NULL,
+      nstet5nlnstiffmass(lm, mydisp, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -246,10 +246,10 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       // LINALG::Matrix<15,15> myemat(true);
-      // nstet5nlnstiffmass(lm,mydisp,&myemat,NULL,&elevec1,
-      //                  NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
-      nstet5nlnstiffmass(lm, mydisp, NULL, NULL, &elevec1, NULL, NULL, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+      // nstet5nlnstiffmass(lm,mydisp,&myemat,nullptr,&elevec1,
+      //                  nullptr,nullptr,INPAR::STR::stress_none,INPAR::STR::strain_none);
+      nstet5nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr,
+          INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -267,9 +267,9 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
             params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
         if (stressdata == Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata == Teuchos::null) dserror("Cannot get strain 'data'");
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
         Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
@@ -280,7 +280,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<1, 6> elestress(true);
         LINALG::Matrix<1, 6> elestrain(true);
         nstet5nlnstiffmass(
-            lm, mydisp, NULL, NULL, NULL, &elestress, &elestrain, iostress, iostrain);
+            lm, mydisp, nullptr, nullptr, nullptr, &elestress, &elestrain, iostress, iostrain);
 
         //--------------------------------- interpolate nodal stress from every node
         Teuchos::RCP<Epetra_MultiVector> nodestress = ElementType().nstress_;
@@ -395,7 +395,7 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {
-        MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
+        auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
         micro->Update();
       }
     }
@@ -575,7 +575,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == NULL) dserror("no strain data available");
+          if (elestrain == nullptr) dserror("no strain data available");
           for (int i = 0; i < 3; ++i)
             (*elestrain)(0, i) += (SubV(sub) / Vol() * ALPHA_NSTET5 * glstrainbar(i));
           for (int i = 0; i < 3; ++i)
@@ -584,7 +584,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         break;
         case INPAR::STR::strain_ea:
         {
-          if (elestrain == NULL) dserror("no strain data available");
+          if (elestrain == nullptr) dserror("no strain data available");
           LINALG::Matrix<3, 3> gl;
           gl(0, 0) = glstrainbar(0);  // divide off-diagonals by 2
           gl(0, 1) = 0.5 * glstrainbar(3);
@@ -628,7 +628,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == NULL) dserror("no stress data available");
+          if (elestress == nullptr) dserror("no stress data available");
 
           for (int i = 0; i < 6; ++i)
             (*elestress)(0, i) += (SubV(sub) / Vol() * stress(i));  // ALPHA_NSTET already in stress
@@ -636,7 +636,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == NULL) dserror("no stress data available");
+          if (elestress == nullptr) dserror("no stress data available");
 
           LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = stress(0);  // ALPHA_NSTET already in stress
@@ -773,10 +773,10 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
       xsi[3][1] = beta;
       xsi[3][2] = beta;
       xsi[3][3] = alpha;
-      for (int gp = 0; gp < 4; ++gp)
+      for (auto& gp : xsi)
       {
         LINALG::Matrix<4, 1> funct;
-        ShapeFunction(funct, xsi[gp][0], xsi[gp][1], xsi[gp][2], xsi[gp][3]);
+        ShapeFunction(funct, gp[0], gp[1], gp[2], gp[3]);
         const double f = density * V * weight;
         for (int i = 0; i < 4; ++i)
           for (int j = 0; j < 4; ++j)
@@ -825,7 +825,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // locatio
 void DRT::ELEMENTS::NStet5::nstet5lumpmass(LINALG::Matrix<15, 15>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -857,14 +857,14 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG:
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = stvk->Density();
     }
     break;
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
-      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
       neo->Evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = neo->Density();
     }
@@ -872,7 +872,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG:
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
-      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = aaa->Density();
@@ -880,7 +880,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG:
     break;
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(mat.get());
+      auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
       density = hyper->Density();

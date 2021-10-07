@@ -27,8 +27,7 @@ DRT::ELEMENTS::So_hex8PlastType& DRT::ELEMENTS::So_hex8PlastType::Instance() { r
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -94,8 +93,7 @@ int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_Plast* failed");
     // initialise all quantities
     actele->InitJacobianMapping();
@@ -126,8 +124,7 @@ DRT::ELEMENTS::So_hex18PlastType& DRT::ELEMENTS::So_hex18PlastType::Instance() {
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -193,8 +190,7 @@ int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -224,8 +220,7 @@ DRT::ELEMENTS::So_hex27PlastType& DRT::ELEMENTS::So_hex27PlastType::Instance() {
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -287,8 +282,7 @@ int DRT::ELEMENTS::So_hex27PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -318,8 +312,7 @@ DRT::ELEMENTS::So_tet4PlastType& DRT::ELEMENTS::So_tet4PlastType::Instance() { r
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -381,8 +374,7 @@ int DRT::ELEMENTS::So_tet4PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -414,8 +406,7 @@ DRT::ELEMENTS::So_nurbs27PlastType& DRT::ELEMENTS::So_nurbs27PlastType::Instance
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -471,7 +462,7 @@ int DRT::ELEMENTS::So_nurbs27PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 

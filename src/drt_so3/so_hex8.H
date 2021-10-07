@@ -357,7 +357,7 @@ namespace DRT
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
@@ -499,7 +499,7 @@ namespace DRT
       //! (braeu 07/16)
       void Update_element(std::vector<double>& disp,  // current displacements
           Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
-          Teuchos::RCP<MAT::Material> mat);           // material
+          const Teuchos::RCP<MAT::Material>& mat);    // material
 
       // compute defgrd in all gp for given disp
       virtual void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
@@ -653,8 +653,8 @@ namespace DRT
        * \param glstrain_mod (in)  : modified GL strain tensor (strain-like Voigt notation)
        * \param defgrd_mod   (out) : consistent modified deformation gradient
        */
-      void CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_disp, LINALG::Matrix<6, 1> glstrain_mod,
-          LINALG::Matrix<3, 3>& defgrd_mod) const;
+      void CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
+          LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod) const;
 
 
       //! @name Multi-scale related stuff

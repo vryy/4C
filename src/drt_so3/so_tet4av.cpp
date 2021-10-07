@@ -29,7 +29,7 @@ DRT::ELEMENTS::So_tet4avType& DRT::ELEMENTS::So_tet4avType::Instance() { return 
 //------------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::So_tet4avType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_tet4av* object = new DRT::ELEMENTS::So_tet4av(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_tet4av(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -120,7 +120,7 @@ DRT::ELEMENTS::So_tet4av::So_tet4av(const DRT::ELEMENTS::So_tet4av& old) : So_ba
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet4av::Clone() const
 {
-  DRT::ELEMENTS::So_tet4av* newelement = new DRT::ELEMENTS::So_tet4av(*this);
+  auto* newelement = new DRT::ELEMENTS::So_tet4av(*this);
   return newelement;
 }
 

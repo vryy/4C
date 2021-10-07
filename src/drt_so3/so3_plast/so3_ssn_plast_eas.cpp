@@ -206,7 +206,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalcConsistentDefgrd()
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
 {
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
 
   // fill up M at each gp

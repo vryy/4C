@@ -171,7 +171,7 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup2(
 
     // return adresses of just evaluated matrices
     *deriv_sp = &df_sp;  // return adress of static object to target of pointer
-    dfsp_eval = 1;       // now all arrays are filled statically
+    dfsp_eval = true;    // now all arrays are filled statically
   }
 
   for (int sp = 0; sp < num_sp; ++sp)
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::So_sh8p8::AnsSetup3(
 
     // return adresses of just evaluated matrices
     *deriv_sp = &df_sp;  // return adress of static object to target of pointer
-    dfsp_eval = 1;       // now all arrays are filled statically
+    dfsp_eval = true;    // now all arrays are filled statically
   }
 
   for (int sp = 0; sp < num_sp; ++sp)
@@ -362,8 +362,8 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt_Inconsistent(
     LINALG::Matrix<NUMDFGR_, 1>& fvct, const LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,
     const bool transpose)
 {
-  const int* voigt9row = NULL;
-  const int* voigt9col = NULL;
+  const int* voigt9row = nullptr;
+  const int* voigt9col = nullptr;
   if (transpose)
   {
     voigt9row = &(VOIGT9COL_INCONSISTENT_[0]);
@@ -401,8 +401,8 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
 {
   // VERIFIED
 
-  const int* voigt9row = NULL;
-  const int* voigt9col = NULL;
+  const int* voigt9row = nullptr;
+  const int* voigt9col = nullptr;
   if (transpose)
   {
     voigt9row = &(VOIGT9COL_INCONSISTENT_[0]);
@@ -984,7 +984,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
     const LINALG::Matrix<NUMDIM_, NUMDIM_>& ct  // right Cauchy-Green tensor
 )
 {
-  if ((ut == NULL) and (invut == NULL))
+  if ((ut == nullptr) and (invut == nullptr))
     dserror("Senseless call: You do not want to compute anything");
 
   // set identity tensor
@@ -1065,7 +1065,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   //                + { II_U*III_U*(III_U+I_U*I_C)
   //                    + I_U^2*(II_U*II_C+III_C) }*I ]
   //            = 1/denom * [ pc2*C^2 + pc*C + pi*I ]
-  if (invut != NULL)
+  if (invut != nullptr)
   {
     const double denom = uiii * uiii * (uiii + ui * ci) + ui * ui * (ui * ciii + uiii * cii);
     const double pc2 = ui * (ui * uii - uiii);
@@ -1091,7 +1091,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   //
   // alternative:
   // U could be calculated based on R later: U = R^T . F
-  if (ut != NULL)
+  if (ut != nullptr)
   {
     const double denom = uii * (uii * (uii + ci) + cii) + ciii;
     const double pc2 = -(ui * uii - uiii);
@@ -1108,7 +1108,7 @@ void DRT::ELEMENTS::So_sh8p8::StretchTensor(
   }
 
   // determinat of right stretch tensor
-  if (detut != NULL)
+  if (detut != nullptr)
   {
     *detut = uiii;
   }
@@ -1278,7 +1278,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_
     for (int i = 0; i < NUMDISP_; ++i)
     {
       const int I = d2dp[i];
-      if (matdd != NULL)
+      if (matdd != nullptr)
         (*mat)(I, J) = (*matdd)(i, j);
       else
         (*mat)(I, J) = 0.0;
@@ -1286,7 +1286,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_
   }
 
   // k_dp
-  if (matdp != NULL)
+  if (matdp != nullptr)
   {
     for (int l = 0; l < NUMPRES_; ++l)
     {
@@ -1312,7 +1312,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_
   }
 
   // k_pd
-  if (matpd != NULL)
+  if (matpd != nullptr)
   {
     for (int j = 0; j < NUMDISP_; ++j)
     {
@@ -1324,7 +1324,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_
       }
     }
   }
-  else if (matdp != NULL)
+  else if (matdp != nullptr)
   {
     for (int j = 0; j < NUMDISP_; ++j)
     {
@@ -1350,7 +1350,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_
   }
 
   // k_pp
-  if (matpp != NULL)
+  if (matpp != nullptr)
   {
     for (int l = 0; l < NUMPRES_; ++l)
     {
@@ -1390,7 +1390,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(LINALG::Matrix<NUMDOF_, 1>* vct
   vct->Clear();
 
   // r_d
-  if (vctd != NULL)
+  if (vctd != nullptr)
   {
     for (int i = 0; i < NUMDISP_; ++i)
     {
@@ -1400,7 +1400,7 @@ void DRT::ELEMENTS::So_sh8p8::BuildElementVector(LINALG::Matrix<NUMDOF_, 1>* vct
   }
 
   // r_p
-  if (vctp != NULL)
+  if (vctp != nullptr)
   {
     for (int k = 0; k < NUMPRES_; ++k)
     {
@@ -1532,8 +1532,7 @@ void DRT::ELEMENTS::So_sh8p8::GnuplotOut(
   txtline << std::scientific << time << " " << std::scientific << oldtime;
 
   // state
-  for (std::vector<double>::iterator is = state.begin(); is != state.end(); ++is)
-    txtline << std::scientific << " " << *is;
+  for (double& is : state) txtline << std::scientific << " " << is;
 
   txtline << "  ";
 

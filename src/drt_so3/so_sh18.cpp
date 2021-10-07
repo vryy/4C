@@ -27,7 +27,7 @@ namespace
 
 DRT::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_sh18* object = new DRT::ELEMENTS::So_sh18(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_sh18(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -113,7 +113,7 @@ DRT::ELEMENTS::So_sh18::So_sh18(const DRT::ELEMENTS::So_sh18& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_sh18::Clone() const
 {
-  DRT::ELEMENTS::So_sh18* newelement = new DRT::ELEMENTS::So_sh18(*this);
+  auto* newelement = new DRT::ELEMENTS::So_sh18(*this);
   return newelement;
 }
 
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::So_sh18::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 

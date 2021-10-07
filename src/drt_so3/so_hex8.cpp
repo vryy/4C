@@ -47,7 +47,7 @@ namespace
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_hex8* object = new DRT::ELEMENTS::So_hex8(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_hex8(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -210,7 +210,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
 {
-  DRT::ELEMENTS::So_hex8* newelement = new DRT::ELEMENTS::So_hex8(*this);
+  auto* newelement = new DRT::ELEMENTS::So_hex8(*this);
   return newelement;
 }
 
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::So_hex8::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
@@ -309,7 +309,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
     {
       int numgpt = NUMGPT_SOH8;
       // see whether I am actually a So_hex8fbar element
-      DRT::ELEMENTS::So_hex8fbar* me = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(this);
+      auto* me = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, numgpt));
     }

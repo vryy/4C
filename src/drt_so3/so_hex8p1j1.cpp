@@ -21,7 +21,7 @@ DRT::ELEMENTS::So_Hex8P1J1Type& DRT::ELEMENTS::So_Hex8P1J1Type::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_Hex8P1J1* object = new DRT::ELEMENTS::So_Hex8P1J1(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_Hex8P1J1(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -143,7 +143,7 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(const DRT::ELEMENTS::So_Hex8P1J1& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
 {
-  DRT::ELEMENTS::So_Hex8P1J1* newelement = new DRT::ELEMENTS::So_Hex8P1J1(*this);
+  auto* newelement = new DRT::ELEMENTS::So_Hex8P1J1(*this);
   return newelement;
 }
 

@@ -50,27 +50,28 @@ namespace DRT
       class So_nurbs27Type : public DRT::ElementType
       {
        public:
-        std::string Name() const { return "So_nurbs27Type"; }
+        std::string Name() const override { return "So_nurbs27Type"; }
 
         static So_nurbs27Type& Instance();
 
-        virtual DRT::ParObject* Create(const std::vector<char>& data);
+        DRT::ParObject* Create(const std::vector<char>& data) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(
-            const std::string eletype, const std::string eledistype, const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+            const int id, const int owner) override;
 
-        virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+        Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-        virtual int Initialize(DRT::Discretization& dis);
+        int Initialize(DRT::Discretization& dis) override;
 
-        virtual void NodalBlockInformation(
-            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+        void NodalBlockInformation(
+            DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-            const double* x0, int numdf, int dimns);
+        void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+            int numdf, int dimns) override;
 
-        virtual void SetupElementDefinition(
-            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+        void SetupElementDefinition(
+            std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+            override;
 
        private:
         static So_nurbs27Type instance_;
@@ -118,45 +119,45 @@ namespace DRT
         where the type of the derived class is unknown and a copy-ctor is needed
 
         */
-        DRT::Element* Clone() const;
+        DRT::Element* Clone() const override;
 
         /*!
         \brief Get shape type of element
         */
-        virtual DiscretizationType Shape() const;
+        DiscretizationType Shape() const override;
 
         /*!
         \brief Return number of volumes of this element
         */
-        virtual int NumVolume() const { return 1; }
+        int NumVolume() const override { return 1; }
 
         /*!
         \brief Return number of surfaces of this element
         */
-        virtual int NumSurface() const { return 6; }
+        int NumSurface() const override { return 6; }
 
         /*!
         \brief Return number of lines of this element
         */
-        virtual int NumLine() const { return 12; }
+        int NumLine() const override { return 12; }
 
         /*!
         \brief Get vector of Teuchos::RCPs to the lines of this element
 
         */
-        virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+        std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
         /*!
         \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
         */
-        virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+        std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
         /*!
         \brief Get vector of Teuchos::RCPs to the volumes of this element
 
         */
-        virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+        std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
         /*!
         \brief Return unique ParObject id
@@ -164,7 +165,7 @@ namespace DRT
         every class implementing ParObject needs a unique id defined at the
         top of this file.
         */
-        virtual int UniqueParObjectId() const
+        int UniqueParObjectId() const override
         {
           return So_nurbs27Type::Instance().UniqueParObjectId();
         }
@@ -175,7 +176,7 @@ namespace DRT
         \ref Pack and \ref Unpack are used to communicate this element
 
         */
-        virtual void Pack(DRT::PackBuffer& data) const;
+        void Pack(DRT::PackBuffer& data) const override;
 
         /*!
         \brief Unpack data from a char vector into this class
@@ -183,13 +184,13 @@ namespace DRT
         \ref Pack and \ref Unpack are used to communicate this element
 
         */
-        virtual void Unpack(const std::vector<char>& data);
+        void Unpack(const std::vector<char>& data) override;
 
         /*!
         \brief Destructor
 
         */
-        virtual ~So_nurbs27();
+        ~So_nurbs27() override;
 
         //@}
 
@@ -205,7 +206,7 @@ namespace DRT
         number of degrees of freedom per node along the way for each of it's nodes
         separately.
         */
-        virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+        int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
         /*!
         \brief Get number of degrees of freedom per element
@@ -218,22 +219,22 @@ namespace DRT
               at the level of the total system of equations. Purely internal
               element dofs that are condensed internally should NOT be considered.
         */
-        virtual int NumDofPerElement() const { return 0; }
+        int NumDofPerElement() const override { return 0; }
 
         /*!
         \brief Print this element
         */
-        void Print(std::ostream& os) const;
+        void Print(std::ostream& os) const override;
 
-        virtual DRT::ElementType& ElementType() const { return So_nurbs27Type::Instance(); }
+        DRT::ElementType& ElementType() const override { return So_nurbs27Type::Instance(); }
 
         //! @name Input and Creation
 
         /*!
         \brief Read input for this element
         */
-        virtual bool ReadElement(const std::string& eletype, const std::string& distype,
-            DRT::INPUT::LineDefinition* linedef);
+        bool ReadElement(const std::string& eletype, const std::string& distype,
+            DRT::INPUT::LineDefinition* linedef) override;
 
         //@}
 
@@ -259,7 +260,7 @@ namespace DRT
             Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
             Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
             Epetra_SerialDenseVector& elevec3   ///< vector to be filled by element
-        );
+            ) override;
 
 
         /*!
@@ -276,9 +277,9 @@ namespace DRT
 
         \return 0 if successful, negative otherwise
         */
-        virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-            DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-            Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+        int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+            DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+            Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
         //@}
 

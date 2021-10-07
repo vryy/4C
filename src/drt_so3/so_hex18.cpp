@@ -24,7 +24,7 @@ DRT::ELEMENTS::So_hex18Type& DRT::ELEMENTS::So_hex18Type::Instance() { return in
 
 DRT::ParObject* DRT::ELEMENTS::So_hex18Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_hex18* object = new DRT::ELEMENTS::So_hex18(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_hex18(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -120,7 +120,7 @@ DRT::ELEMENTS::So_hex18::So_hex18(const DRT::ELEMENTS::So_hex18& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex18::Clone() const
 {
-  DRT::ELEMENTS::So_hex18* newelement = new DRT::ELEMENTS::So_hex18(*this);
+  auto* newelement = new DRT::ELEMENTS::So_hex18(*this);
   return newelement;
 }
 
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::So_hex18::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
@@ -384,10 +384,10 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* matptr = NULL;
+      LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      nlnstiffmass(lm, mydisp, myres, matptr, NULL, &elevec1, NULL, NULL, params,
+      nlnstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
       break;
     }
@@ -409,7 +409,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> myemat(true);
 
-      nlnstiffmass(lm, mydisp, myres, &myemat, NULL, &elevec1, NULL, NULL, params,
+      nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       break;
@@ -433,7 +433,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
-      nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL, NULL, params,
+      nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       if (act == calc_struct_nlnstifflmass) Lumpmass(&elemat2);
@@ -463,13 +463,13 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_SOH18, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
-        nlnstiffmass(
-            lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain, params, iostress, iostrain);
+        nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain, params,
+            iostress, iostrain);
 
         {
           DRT::PackBuffer data;
@@ -593,8 +593,8 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -613,7 +613,7 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SOH18, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -889,7 +889,7 @@ void DRT::ELEMENTS::So_hex18::nlnstiffmass(std::vector<int>& lm,  ///< location 
 void DRT::ELEMENTS::So_hex18::Lumpmass(LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -915,7 +915,7 @@ int DRT::ELEMENTS::So_hex18Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_hex18* actele = dynamic_cast<DRT::ELEMENTS::So_hex18*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_hex18*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) actele->FlipT();
   }
@@ -924,7 +924,7 @@ int DRT::ELEMENTS::So_hex18Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_hex18* actele = dynamic_cast<DRT::ELEMENTS::So_hex18*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_hex18*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) dserror("why");
   }
@@ -936,7 +936,7 @@ int DRT::ELEMENTS::So_hex18Type::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex18::FlipT()
 {
-  if (NodeIds() == NULL) dserror("couldn't get node ids");
+  if (NodeIds() == nullptr) dserror("couldn't get node ids");
   // reorder nodes
   int new_nodeids[NUMNOD_SOH18];
   new_nodeids[0] = NodeIds()[9];

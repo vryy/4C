@@ -87,10 +87,11 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
-      for (unsigned i = 0; i < mydisp.size(); ++i) mydisp[i] = 0.0;
+      for (double& i : mydisp) i = 0.0;
       std::vector<double> myres(lm.size());
-      for (unsigned i = 0; i < myres.size(); ++i) myres[i] = 0.0;
-      sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &elemat1, NULL, &elevec1, params);
+      for (double& myre : myres) myre = 0.0;
+      sonurbs27_nlnstiffmass(
+          lm, discretization, mydisp, myres, &elemat1, nullptr, &elevec1, params);
     }
     break;
 
@@ -106,10 +107,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<81, 81>* matptr = NULL;
+      LINALG::Matrix<81, 81>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, matptr, NULL, &elevec1, params);
+      sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, matptr, nullptr, &elevec1, params);
     }
     break;
 
@@ -127,7 +128,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<81, 81> myemat(true);
-      sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &myemat, NULL, &elevec1, params);
+      sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, &myemat, nullptr, &elevec1, params);
     }
     break;
 
@@ -176,8 +177,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix_inverse:
     {
-      const INPAR::STR::STC_Scale stc_scaling =
-          DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
       else
@@ -189,8 +189,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix:
     {
-      const INPAR::STR::STC_Scale stc_scaling =
-          DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
       else
@@ -235,10 +234,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
@@ -255,7 +253,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix(LINALG::Matrix<81, 81>& ele
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -535,8 +533,8 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   /*
    **    TIME CURVE BUSINESS
@@ -559,7 +557,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SONURBS27, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -573,10 +571,9 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(Teuchos::ParameterList& pa
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   // there is nothing to be done for zero sized elements in knotspan
   if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return (0);
@@ -678,10 +675,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
@@ -698,7 +694,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -749,10 +745,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
   }
@@ -769,7 +764,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -908,14 +903,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 
     double detJ_w = detJ * intpoints.qwgt[gp];
     // update internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -948,7 +943,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
       }  // end of integrate `geometric' stiffness
     }    // if (stiffmatrix)
 
-    if (massmatrix != NULL)  // evaluate mass matrix
+    if (massmatrix != nullptr)  // evaluate mass matrix
     {
       double density = Material()->Density(gp);
       // integrate consistent mass matrix
@@ -1053,8 +1048,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::NURBS::So_nurbs27* actele =
-        dynamic_cast<DRT::ELEMENTS::NURBS::So_nurbs27*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::NURBS::So_nurbs27*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27* failed");
     actele->InitJacobianMapping(dis);
   }
@@ -1079,9 +1073,8 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   // for isogeometric elements:
   //     o get knots
   //     o get weights
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id());
 
@@ -1092,7 +1085,7 @@ double DRT::ELEMENTS::NURBS::So_nurbs27::CalcIntEnergy(
   DRT::Node** nodes = Nodes();
   for (int inode = 0; inode < 27; inode++)
   {
-    DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
+    auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(nodes[inode]);
 
     weights(inode) = cp->W();
   }
@@ -1194,7 +1187,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::lumpmass(
     LINALG::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns

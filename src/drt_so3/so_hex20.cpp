@@ -32,7 +32,7 @@ DRT::ELEMENTS::So_hex20Type& DRT::ELEMENTS::So_hex20Type::Instance() { return in
 
 DRT::ParObject* DRT::ELEMENTS::So_hex20Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_hex20* object = new DRT::ELEMENTS::So_hex20(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_hex20(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -149,7 +149,7 @@ DRT::ELEMENTS::So_hex20::So_hex20(const DRT::ELEMENTS::So_hex20& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex20::Clone() const
 {
-  DRT::ELEMENTS::So_hex20* newelement = new DRT::ELEMENTS::So_hex20(*this);
+  auto* newelement = new DRT::ELEMENTS::So_hex20(*this);
   return newelement;
 }
 
@@ -178,7 +178,7 @@ void DRT::ELEMENTS::So_hex20::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
   // Pack prestress

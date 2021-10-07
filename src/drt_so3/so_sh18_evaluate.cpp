@@ -241,7 +241,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == NULL) dserror("strain data not available");
+          if (elestrain == nullptr) dserror("strain data not available");
           for (int i = 0; i < 3; ++i)
           {
             (*elestrain)(gp, i) = glstrain(i);
@@ -280,7 +280,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == NULL) dserror("stress data not available");
+          if (elestress == nullptr) dserror("stress data not available");
           for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
           {
             (*elestress)(gp, i) = stress(i);
@@ -289,7 +289,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == NULL) dserror("stress data not available");
+          if (elestress == nullptr) dserror("stress data not available");
           LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = stress(0);
           pkstress(0, 1) = stress(3);
@@ -325,10 +325,10 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
 
     double detJ_w = detJ * wgt_[gp];
     // update internal force vector
-    if (force != NULL) force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    if (force != nullptr) force->MultiplyTN(detJ_w, bop, stress, 1.0);
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
       // EAS technology: integrate matrices --------------------------------- EAS
     }
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
       // shape function and derivatives
       LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
@@ -402,7 +402,7 @@ void DRT::ELEMENTS::So_sh18::nlnstiffmass(std::vector<int>& lm,   ///< location 
 void DRT::ELEMENTS::So_sh18::soh18_lumpmass(LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -428,7 +428,7 @@ int DRT::ELEMENTS::So_sh18Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_sh18* actele = dynamic_cast<DRT::ELEMENTS::So_sh18*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh18*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) actele->FlipT();
   }
@@ -437,7 +437,7 @@ int DRT::ELEMENTS::So_sh18Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_sh18* actele = dynamic_cast<DRT::ELEMENTS::So_sh18*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh18*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18* failed");
     if (actele->InitJacobianMapping() == 1) dserror("why");
   }
@@ -449,7 +449,7 @@ int DRT::ELEMENTS::So_sh18Type::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh18::FlipT()
 {
-  if (NodeIds() == NULL) dserror("couldn't get node ids");
+  if (NodeIds() == nullptr) dserror("couldn't get node ids");
   // reorder nodes
   int new_nodeids[NUMNOD_SOH18];
   new_nodeids[0] = NodeIds()[9];
@@ -1076,7 +1076,7 @@ void DRT::ELEMENTS::So_sh18::CalculateGeoStiff(const LINALG::Matrix<9, 1>& shape
   // end of integrate `geometric' stiffness******************************
 }
 
-void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_disp,
+void DRT::ELEMENTS::So_sh18::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
     LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod)
 {
   LINALG::Matrix<3, 3> R;       // rotation tensor
@@ -1509,7 +1509,7 @@ LINALG::Matrix<3, 1> DRT::ELEMENTS::So_sh18::NodeParamCoord(const int node)
 void DRT::ELEMENTS::So_sh18::EasSetup(
     std::vector<LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
     LINALG::Matrix<3, 1>& G3_contra,
-    const LINALG::Matrix<NUMNOD_SOH18, 3> xrefe)  // material element coords
+    const LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe)  // material element coords
 {
   // build EAS interpolation matrix M, evaluated at the GPs
   static std::vector<LINALG::Matrix<6, num_eas>> M(NUMGPT_SOH18);

@@ -24,7 +24,7 @@ DRT::ELEMENTS::So_hex8fbarType& DRT::ELEMENTS::So_hex8fbarType::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_hex8fbar* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -120,7 +120,7 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(const DRT::ELEMENTS::So_hex8fbar& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
 {
-  DRT::ELEMENTS::So_hex8fbar* newelement = new DRT::ELEMENTS::So_hex8fbar(*this);
+  auto* newelement = new DRT::ELEMENTS::So_hex8fbar(*this);
   return newelement;
 }
 

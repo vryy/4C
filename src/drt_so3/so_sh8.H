@@ -24,27 +24,28 @@ namespace DRT
     class So_sh8Type : public So_hex8Type
     {
      public:
-      std::string Name() const { return "So_sh8Type"; }
+      std::string Name() const override { return "So_sh8Type"; }
 
       static So_sh8Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_sh8Type instance_;
@@ -96,7 +97,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -104,7 +105,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return So_sh8Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return So_sh8Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -112,7 +113,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -120,14 +121,14 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual So_sh8Type& ElementType() const { return So_sh8Type::Instance(); }
+      So_sh8Type& ElementType() const override { return So_sh8Type::Instance(); }
 
       //@}
 
@@ -137,13 +138,13 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~So_sh8();
+      ~So_sh8() override;
 
 
       //@}
@@ -179,7 +180,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //! definition of shell-thickness direction
       enum ThicknessDirection

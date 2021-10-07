@@ -35,7 +35,7 @@ DRT::ELEMENTS::So_weg6Type& DRT::ELEMENTS::So_weg6Type::Instance() { return inst
 
 DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_weg6* object = new DRT::ELEMENTS::So_weg6(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_weg6(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -161,7 +161,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
 {
-  DRT::ELEMENTS::So_weg6* newelement = new DRT::ELEMENTS::So_weg6(*this);
+  auto* newelement = new DRT::ELEMENTS::So_weg6(*this);
   return newelement;
 }
 

@@ -25,21 +25,22 @@ namespace DRT
     class So_hex8PlastType : public So_hex8Type
     {
      public:
-      std::string Name() const { return "So_hex8PlastType"; }
+      std::string Name() const override { return "So_hex8PlastType"; }
 
       static So_hex8PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex8PlastType instance_;
@@ -53,21 +54,22 @@ namespace DRT
     class So_hex18PlastType : public So_hex18Type
     {
      public:
-      std::string Name() const { return "So_hex18PlastType"; }
+      std::string Name() const override { return "So_hex18PlastType"; }
 
       static So_hex18PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex18PlastType instance_;
@@ -81,21 +83,22 @@ namespace DRT
     class So_hex27PlastType : public So_hex27Type
     {
      public:
-      std::string Name() const { return "So_hex27PlastType"; }
+      std::string Name() const override { return "So_hex27PlastType"; }
 
       static So_hex27PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex27PlastType instance_;
@@ -109,21 +112,22 @@ namespace DRT
     class So_tet4PlastType : public So_tet4Type
     {
      public:
-      std::string Name() const { return "So_tet4PlastType"; }
+      std::string Name() const override { return "So_tet4PlastType"; }
 
       static So_tet4PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_tet4PlastType instance_;
@@ -137,21 +141,22 @@ namespace DRT
     class So_nurbs27PlastType : public NURBS::So_nurbs27Type
     {
      public:
-      std::string Name() const { return "So_nurbs27PlastType"; }
+      std::string Name() const override { return "So_nurbs27PlastType"; }
 
       static So_nurbs27PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_nurbs27PlastType instance_;

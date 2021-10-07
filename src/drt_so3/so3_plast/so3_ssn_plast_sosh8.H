@@ -28,21 +28,22 @@ namespace DRT
     class So_sh8PlastType : public So_hex8PlastType
     {
      public:
-      std::string Name() const { return "So_sh8PlastType"; }
+      std::string Name() const override { return "So_sh8PlastType"; }
 
       static So_sh8PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_sh8PlastType instance_;
@@ -68,37 +69,37 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       //! Destructor
-      virtual ~So_sh8Plast();
+      ~So_sh8Plast() override;
 
       //! Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return So_sh8PlastType::Instance().UniqueParObjectId();
       }
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //! return elementtype
-      virtual So_sh8PlastType& ElementType() const { return So_sh8PlastType::Instance(); }
+      So_sh8PlastType& ElementType() const override { return So_sh8PlastType::Instance(); }
 
       //! read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //! definition of shell-thickness direction
       enum ThicknessDirection
@@ -125,7 +126,7 @@ namespace DRT
 
      private:
       // don't want = operator
-      So_sh8Plast& operator=(const So_sh8Plast& old);
+      So_sh8Plast& operator=(const So_sh8Plast& old) = delete;
 
      protected:
       static const int num_sp = 8;   ///< number of ANS sampling points, here 8
@@ -136,7 +137,7 @@ namespace DRT
       ANSType anstype_;
 
       //! in case of changed "thin" direction this is true
-      bool nodes_rearranged_;
+      bool nodes_rearranged_{};
 
       //! vector in thickness direction for compatibility with sosh8
       std::vector<double> thickvec_;
@@ -147,9 +148,9 @@ namespace DRT
       static std::pair<bool, LINALG::Matrix<numstr_, numstr_>> TinvT_;
 
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
-      virtual void nln_stiffmass(std::vector<double>& disp,  // current displacements
-          std::vector<double>& vel,                          // current velocities
-          std::vector<double>& temp,                         // current temperatures
+      void nln_stiffmass(std::vector<double>& disp,  // current displacements
+          std::vector<double>& vel,                  // current velocities
+          std::vector<double>& temp,                 // current temperatures
           LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,  // element stiffness matrix
           LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
@@ -159,12 +160,12 @@ namespace DRT
           Teuchos::ParameterList& params,                   // algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,            // stress output option
           const INPAR::STR::StrainType iostrain             // strain output option
-      );
+          ) override;
 
       //! calculate nonlinear B-operator (potentially with ANS modification)
-      virtual void CalculateBop(LINALG::Matrix<numstr_, numdofperelement_>* bop,
+      void CalculateBop(LINALG::Matrix<numstr_, numdofperelement_>* bop,
           const LINALG::Matrix<nsd_, nsd_>* defgrd, const LINALG::Matrix<nsd_, nen_>* N_XYZ,
-          const int gp);
+          const int gp) override;
 
       //! Evaluate all ANS related data at the ANS sampling points
       void Anssetup(const LINALG::Matrix<nen_, nsd_>& xrefe,  ///< material element coords

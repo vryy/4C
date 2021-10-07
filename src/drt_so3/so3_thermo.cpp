@@ -158,7 +158,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::UniqueParObjectId() const
       // cast the most specialised element
       // otherwise cast fails, because hex8fbar == hex8
       const DRT::ELEMENTS::So_hex8fbar* ele = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
-      if (ele != NULL)
+      if (ele != nullptr)
         return So_hex8fbarThermoType::Instance().UniqueParObjectId();
       else
         return So_hex8ThermoType::Instance().UniqueParObjectId();
@@ -202,7 +202,7 @@ DRT::ElementType& DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::ElementType() con
       // cast the most specialised element
       // caution: otherwise does not work, because hex8fbar == hex8
       const DRT::ELEMENTS::So_hex8fbar* ele = dynamic_cast<const DRT::ELEMENTS::So_hex8fbar*>(this);
-      if (ele != NULL)
+      if (ele != nullptr)
         return So_hex8fbarThermoType::Instance();
       else
         return So_hex8ThermoType::Instance();

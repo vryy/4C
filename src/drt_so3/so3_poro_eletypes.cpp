@@ -69,7 +69,7 @@ int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_poro* failed");
@@ -137,7 +137,7 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
@@ -204,7 +204,7 @@ int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_poro* failed");
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_poro* failed");
@@ -344,10 +344,9 @@ int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* actele =
-        dynamic_cast<
-            DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27_poro* failed");
     actele->So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>::InitElement();
   }

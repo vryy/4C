@@ -40,7 +40,7 @@ DRT::ELEMENTS::So_tet4Type& DRT::ELEMENTS::So_tet4Type::Instance() { return inst
 //------------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::So_tet4Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_tet4* object = new DRT::ELEMENTS::So_tet4(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_tet4(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -163,7 +163,7 @@ DRT::ELEMENTS::So_tet4::So_tet4(const DRT::ELEMENTS::So_tet4& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet4::Clone() const
 {
-  DRT::ELEMENTS::So_tet4* newelement = new DRT::ELEMENTS::So_tet4(*this);
+  auto* newelement = new DRT::ELEMENTS::So_tet4(*this);
   return newelement;
 }
 

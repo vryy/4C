@@ -25,27 +25,28 @@ namespace DRT
     class So_Hex8P1J1Type : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "So_Hex8P1J1Type"; }
+      std::string Name() const override { return "So_Hex8P1J1Type"; }
 
       static So_Hex8P1J1Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_Hex8P1J1Type instance_;
@@ -106,7 +107,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -114,7 +115,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return So_Hex8P1J1Type::Instance().UniqueParObjectId();
       }
@@ -125,7 +126,7 @@ namespace DRT
      \ref Pack and \ref Unpack are used to communicate this element
 
      */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -133,12 +134,12 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       /*!
       \brief Calculate current from reference configuration moduli
@@ -152,7 +153,7 @@ namespace DRT
           const LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& F,
           LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& D_T_bar, const double t);
 
-      virtual So_Hex8P1J1Type& ElementType() const { return So_Hex8P1J1Type::Instance(); }
+      So_Hex8P1J1Type& ElementType() const override { return So_Hex8P1J1Type::Instance(); }
 
       //@}
 
@@ -162,7 +163,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       void InitKpt()
       {
@@ -182,7 +183,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~So_Hex8P1J1();
+      ~So_Hex8P1J1() override;
 
 
       //@}
@@ -218,7 +219,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
       //! Compute internal force, its stiffness and mass matrix
       void ForceStiffMass(const std::vector<int>& lm,             ///< location matrix
@@ -303,8 +304,8 @@ namespace DRT
       LINALG::Matrix<1, 1> dt_;  ///< jacobian increment
       //@}
 
-      double K_pt_;
-      double K_tt_;
+      double K_pt_{};
+      double K_tt_{};
       LINALG::Matrix<1, 1> p_temp_;
       LINALG::Matrix<1, 1> t_temp_;
 

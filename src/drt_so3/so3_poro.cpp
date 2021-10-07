@@ -90,8 +90,7 @@ DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Clone() const
 {
-  DRT::ELEMENTS::So3_Poro<so3_ele, distype>* newelement =
-      new DRT::ELEMENTS::So3_Poro<so3_ele, distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3_Poro<so3_ele, distype>(*this);
   return newelement;
 }
 
@@ -116,7 +115,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::Pack(DRT::PackBuffer& data) cons
   so3_ele::AddtoPack(data, detJ_);
 
   // invJ_
-  int size = (int)invJ_.size();
+  auto size = (int)invJ_.size();
   so3_ele::AddtoPack(data, size);
   for (int i = 0; i < size; ++i) so3_ele::AddtoPack(data, invJ_[i]);
 
