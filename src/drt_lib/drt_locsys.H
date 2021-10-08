@@ -44,25 +44,35 @@ namespace DRT
     be:
 
          1) Transform the system into local coordinates by means of
-            \f$ K \cdot D = F \rightarrow \tilde{K} \cdot \tilde{D} = \tilde{F}\f$
-            \f$ \text{with} \quad  \tilde{K} = Q \cdot K \cdot Q^T, \quad \tilde{F} = Q \cdot F,
-    \quad \tilde{D} = Q \cdot D \f$
+            \f[
+              K \cdot D = F \rightarrow \tilde{K} \cdot \tilde{D} = \tilde{F}
+            \f]
+            with
+            \f[
+              \tilde{K} = Q \cdot K \cdot Q^T, \quad \tilde{F} = Q \cdot F, \quad \tilde{D} = Q
+    \cdot D \f]
 
          2) Apply Dirichlet conditions in the rotated system in the standard way (Dirichlet Line: 1
     at diagonal, zeros else)
 
          3) Transform the system back into global coordinates, i.e.
-            \f$ \tilde{K} \cdot \tilde{D} = \tilde{F} \rightarrow K \cdot D = F \f$
-            \f$ \text{with} \quad K = Q^T \cdot \tilde{K} \cdot Q, \quad F = Q^T \cdot \tilde{F},
-    \quad D = Q^T \cdot \tilde{D}\f$
+            \f[
+              \tilde{K} \cdot \tilde{D} = \tilde{F} \rightarrow K \cdot D = F
+            \f]
+            with
+            \f[
+              K = Q^T \cdot \tilde{K} \cdot Q, \quad F = Q^T \cdot \tilde{F}, \quad D = Q^T \cdot
+    \tilde{D} \f]
 
-            Here the transformation matrix #trafo_ is denoted \f$Q \f$.
+            Here the transformation matrix #trafo_ is denoted \f$Q\f$.
 
          Nevertheless, we apply a more efficient algorithm which can be shown,to deliver an
     equivalent system of equations:
 
          1) Therefore we only apply one left transformation to our system of equations according
-            \f$ K \cdot D = F \rightarrow Q \cdot K \cdot D = Q \cdot F \f$
+            \f[
+              K \cdot D = F \rightarrow Q \cdot K \cdot D = Q \cdot F
+            \f]
 
          2) Afterwards we apply the rotated Dirichlet conditions in an appropriate manner
 
