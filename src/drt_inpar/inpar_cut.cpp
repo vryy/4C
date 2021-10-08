@@ -21,10 +21,6 @@ void INPAR::CUT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  //  Teuchos::Array<std::string> yesnotuple =
-  //      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  //  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& cut_general = list->sublist("CUT GENERAL", false, "");
 
   // Intersection precision (double or cln)

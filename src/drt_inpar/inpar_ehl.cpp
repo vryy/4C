@@ -22,10 +22,6 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& ehldyn = list->sublist("ELASTO HYDRO DYNAMIC", false,
       "Elastohydrodynamic paramters for elastohydrodynamic lubrication (lubrication structure "
       "interaction)");
@@ -100,16 +96,14 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "LINEAR_SOLVER", -1, "number of linear solver used for monolithic EHL problems", &ehldynmono);
 
   // convergence criteria adaptivity of monolithic EHL solver
-  setStringToIntegralParameter<int>("ADAPTCONV", "No",
-      "Switch on adaptive control of linear solver tolerance for nonlinear solution", yesnotuple,
-      yesnovalue, &ehldynmono);
+  BoolParameter("ADAPTCONV", "No",
+      "Switch on adaptive control of linear solver tolerance for nonlinear solution", &ehldynmono);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &ehldynmono);
 
-  setStringToIntegralParameter<int>("INFNORMSCALING", "yes",
-      "Scale blocks of matrix with row infnorm?", yesnotuple, yesnovalue, &ehldynmono);
+  BoolParameter("INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &ehldynmono);
 
   // merge EHL block matrix to enable use of direct solver in monolithic EHL
   // default: "No", i.e. use block matrix
@@ -132,14 +126,12 @@ void INPAR::EHL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "tolerance for convergence check of outer iteration within partitioned EHL", &ehldynpart);
 
   // set unprojectable nodes to zero pressure via Dirichlet condition
-  setStringToIntegralParameter<int>("UNPROJ_ZERO_DBC", "No",
-      "set unprojectable nodes to zero pressure via Dirichlet condition", yesnotuple, yesnovalue,
-      &ehldyn);
+  BoolParameter("UNPROJ_ZERO_DBC", "No",
+      "set unprojectable nodes to zero pressure via Dirichlet condition", &ehldyn);
 
   // use dry contact model
-  setStringToIntegralParameter<int>("DRY_CONTACT_MODEL", "No",
-      "set unprojectable nodes to zero pressure via Dirichlet condition", yesnotuple, yesnovalue,
-      &ehldyn);
+  BoolParameter("DRY_CONTACT_MODEL", "No",
+      "set unprojectable nodes to zero pressure via Dirichlet condition", &ehldyn);
 }
 
 

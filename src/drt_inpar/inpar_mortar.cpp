@@ -22,10 +22,6 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   /* parameters for mortar coupling */
   Teuchos::ParameterList& mortar = list->sublist("MORTAR COUPLING", false, "");
 
@@ -52,8 +48,8 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   DoubleParameter(
       "SEARCH_PARAM", 0.3, "Radius / Bounding volume inflation for contact search", &mortar);
 
-  setStringToIntegralParameter<int>("SEARCH_USE_AUX_POS", "Yes",
-      "If chosen auxiliary position is used for computing dops", yesnotuple, yesnovalue, &mortar);
+  BoolParameter("SEARCH_USE_AUX_POS", "Yes",
+      "If chosen auxiliary position is used for computing dops", &mortar);
 
   setStringToIntegralParameter<int>("LM_QUAD", "undefined",
       "Type of LM interpolation for quadratic FE",
@@ -63,9 +59,8 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           lagmult_lin, lagmult_lin, lagmult_const),
       &mortar);
 
-  setStringToIntegralParameter<int>("CROSSPOINTS", "No",
-      "If chosen, multipliers are removed from crosspoints / edge nodes", yesnotuple, yesnovalue,
-      &mortar);
+  BoolParameter("CROSSPOINTS", "No",
+      "If chosen, multipliers are removed from crosspoints / edge nodes", &mortar);
 
   setStringToIntegralParameter<int>("LM_DUAL_CONSISTENT", "boundary",
       "For which elements should the dual basis be calculated on EXACTLY the same GPs as the "
@@ -103,9 +98,8 @@ void INPAR::MORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
           triangulation_center),
       &mortar);
 
-  setStringToIntegralParameter<int>("RESTART_WITH_MESHTYING", "No",
-      "Must be chosen if a non-meshtying simulation is to be restarted with meshtying", yesnotuple,
-      yesnovalue, &mortar);
+  BoolParameter("RESTART_WITH_MESHTYING", "No",
+      "Must be chosen if a non-meshtying simulation is to be restarted with meshtying", &mortar);
 
   BoolParameter("OUTPUT_INTERFACES", "No",
       "Write output for each mortar interface separately.\nThis is an additional feature, purely "

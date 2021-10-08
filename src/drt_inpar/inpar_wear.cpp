@@ -22,10 +22,6 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   /* parameters for wear */
   Teuchos::ParameterList& wear = list->sublist("WEAR", false, "");
 
@@ -58,11 +54,10 @@ void INPAR::WEAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "WEAR_TIMERATIO", 1.0, "Time step ratio between wear and spatial time scale", &wear);
   DoubleParameter("SSSLIP", 1.0, "Fixed slip for steady state wear", &wear);
 
-  setStringToIntegralParameter<int>(
-      "SSWEAR", "No", "flag for steady state wear", yesnotuple, yesnovalue, &wear);
+  BoolParameter("SSWEAR", "No", "flag for steady state wear", &wear);
 
-  setStringToIntegralParameter<int>("VOLMASS_OUTPUT", "No",
-      "flag for output of mass/volume in ref,mat and cur. conf.", yesnotuple, yesnovalue, &wear);
+  BoolParameter(
+      "VOLMASS_OUTPUT", "No", "flag for output of mass/volume in ref,mat and cur. conf.", &wear);
 
   setStringToIntegralParameter<int>("WEAR_SIDE", "slave", "Definition of wear side",
       tuple<std::string>("s", "slave", "Slave", "both", "slave_master", "sm"),

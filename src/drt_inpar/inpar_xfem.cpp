@@ -25,39 +25,26 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL", false, "");
 
   // OUTPUT options
-  setStringToIntegralParameter<int>("GMSH_DEBUG_OUT", "No",
-      "Do you want to write extended Gmsh output for each timestep?", yesnotuple, yesnovalue,
-      &xfem_general);
-  setStringToIntegralParameter<int>("GMSH_DEBUG_OUT_SCREEN", "No",
-      "Do you want to be informed, if Gmsh output is written?", yesnotuple, yesnovalue,
-      &xfem_general);
-  setStringToIntegralParameter<int>("GMSH_SOL_OUT", "No",
-      "Do you want to write extended Gmsh output for each timestep?", yesnotuple, yesnovalue,
-      &xfem_general);
-  setStringToIntegralParameter<int>("GMSH_TIMINT_OUT", "No",
-      "Do you want to write extended Gmsh output for each timestep?", yesnotuple, yesnovalue,
-      &xfem_general);
-  setStringToIntegralParameter<int>("GMSH_EOS_OUT", "No",
-      "Do you want to write extended Gmsh output for each timestep?", yesnotuple, yesnovalue,
-      &xfem_general);
-  setStringToIntegralParameter<int>("GMSH_DISCRET_OUT", "No",
-      "Do you want to write extended Gmsh output for each timestep?", yesnotuple, yesnovalue,
-      &xfem_general);
-  setStringToIntegralParameter<int>("GMSH_CUT_OUT", "No",
-      "Do you want to write extended Gmsh output for each timestep?", yesnotuple, yesnovalue,
-      &xfem_general);
-
+  BoolParameter("GMSH_DEBUG_OUT", "No",
+      "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
+  BoolParameter("GMSH_DEBUG_OUT_SCREEN", "No",
+      "Do you want to be informed, if Gmsh output is written?", &xfem_general);
+  BoolParameter("GMSH_SOL_OUT", "No",
+      "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
+  BoolParameter("GMSH_TIMINT_OUT", "No",
+      "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
+  BoolParameter("GMSH_EOS_OUT", "No",
+      "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
+  BoolParameter("GMSH_DISCRET_OUT", "No",
+      "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
+  BoolParameter("GMSH_CUT_OUT", "No",
+      "Do you want to write extended Gmsh output for each timestep?", &xfem_general);
 
   IntParameter(
       "MAX_NUM_DOFSETS", 3, "Maximum number of volumecells in the XFEM element", &xfem_general);
-
 
   setStringToIntegralParameter<int>("NODAL_DOFSET_STRATEGY", "full",
       "which strategy used for the nodal dofset management per node?",
@@ -67,7 +54,6 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::CUT::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition,
           INPAR::CUT::NDS_Strategy_full),
       &xfem_general);
-
 
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY", "Tessellation",
@@ -166,13 +152,11 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           ),
       &xfluid_general);
 
-  setStringToIntegralParameter<int>("XFLUID_TIMEINT_CHECK_INTERFACETIPS", "Yes",
-      "Xfluid TimeIntegration Special Check if node has changed the side!", yesnotuple, yesnovalue,
-      &xfluid_general);
+  BoolParameter("XFLUID_TIMEINT_CHECK_INTERFACETIPS", "Yes",
+      "Xfluid TimeIntegration Special Check if node has changed the side!", &xfluid_general);
 
-  setStringToIntegralParameter<int>("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE", "Yes",
-      "Xfluid TimeIntegration Special Check if node is sliding on surface!", yesnotuple, yesnovalue,
-      &xfluid_general);
+  BoolParameter("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE", "Yes",
+      "Xfluid TimeIntegration Special Check if node is sliding on surface!", &xfluid_general);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_stab = xfluid_dyn.sublist("STABILIZATION", false, "");

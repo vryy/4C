@@ -23,36 +23,26 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& io = list->sublist("IO", false, "");
 
-  setStringToIntegralParameter<int>("OUTPUT_GMSH", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("OUTPUT_ROT", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("OUTPUT_SPRING", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "OUTPUT_BIN", "yes", "Do you want to have binary output?", yesnotuple, yesnovalue, &io);
+  BoolParameter("OUTPUT_GMSH", "No", "", &io);
+  BoolParameter("OUTPUT_ROT", "No", "", &io);
+  BoolParameter("OUTPUT_SPRING", "No", "", &io);
+  BoolParameter("OUTPUT_BIN", "yes", "Do you want to have binary output?", &io);
 
   // Output every iteration (for debugging purposes)
-  setStringToIntegralParameter<int>("OUTPUT_EVERY_ITER", "no",
-      "Do you desire structural displ. output every Newton iteration", yesnotuple, yesnovalue, &io);
+  BoolParameter("OUTPUT_EVERY_ITER", "no",
+      "Do you desire structural displ. output every Newton iteration", &io);
   IntParameter(
       "OEI_FILE_COUNTER", 0, "Add an output name affix by introducing a additional number", &io);
 
   // Structural output
-  setStringToIntegralParameter<int>(
-      "STRUCT_ELE", "Yes", "Output of element properties", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "STRUCT_DISP", "Yes", "Output of displacements", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "STRUCT_SE", "No", "Output of strain energy", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("STRUCT_CURRENT_VOLUME", "No",
-      "Output of current element volume as scalar value for each structural element", yesnotuple,
-      yesnovalue, &io);
+  BoolParameter("STRUCT_ELE", "Yes", "Output of element properties", &io);
+  BoolParameter("STRUCT_DISP", "Yes", "Output of displacements", &io);
+  BoolParameter("STRUCT_VEL_ACC", "No", "Output of velocity and acceleration", &io);
+  BoolParameter("STRUCT_SE", "No", "Output of strain energy", &io);
+  BoolParameter("STRUCT_CURRENT_VOLUME", "No",
+      "Output of current element volume as scalar value for each structural element", &io);
   setStringToIntegralParameter<int>("STRUCT_STRESS", "No", "Output of stress",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
       tuple<int>(INPAR::STR::stress_none, INPAR::STR::stress_none, INPAR::STR::stress_none,
@@ -89,9 +79,8 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(INPAR::STR::optquantity_none, INPAR::STR::optquantity_none,
           INPAR::STR::optquantity_none, INPAR::STR::optquantity_membranethickness),
       &io);
-  setStringToIntegralParameter<int>("STRUCT_SURFACTANT", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "STRUCT_JACOBIAN_MATLAB", "No", "", yesnotuple, yesnovalue, &io);
+  BoolParameter("STRUCT_SURFACTANT", "No", "", &io);
+  BoolParameter("STRUCT_JACOBIAN_MATLAB", "No", "", &io);
   setStringToIntegralParameter<INPAR::STR::ConditionNumber>("STRUCT_CONDITION_NUMBER", "none",
       "Compute the condition number of the structural system matrix and write it to a text file.",
       tuple<std::string>("gmres_estimate", "max_min_ev_ratio", "one-norm", "inf-norm", "none"),
@@ -99,16 +88,13 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::STR::ConditionNumber::max_min_ev_ratio, INPAR::STR::ConditionNumber::one_norm,
           INPAR::STR::ConditionNumber::inf_norm, INPAR::STR::ConditionNumber::none),
       &io);
-  setStringToIntegralParameter<int>("FLUID_SOL", "Yes", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("FLUID_STRESS", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "FLUID_WALL_SHEAR_STRESS", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "FLUID_ELEDATA_EVRY_STEP", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>(
-      "FLUID_NODEDATA_FIRST_STEP", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("FLUID_VIS", "No", "", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("THERM_TEMPERATURE", "No", "", yesnotuple, yesnovalue, &io);
+  BoolParameter("FLUID_SOL", "Yes", "", &io);
+  BoolParameter("FLUID_STRESS", "No", "", &io);
+  BoolParameter("FLUID_WALL_SHEAR_STRESS", "No", "", &io);
+  BoolParameter("FLUID_ELEDATA_EVRY_STEP", "No", "", &io);
+  BoolParameter("FLUID_NODEDATA_FIRST_STEP", "No", "", &io);
+  BoolParameter("FLUID_VIS", "No", "", &io);
+  BoolParameter("THERM_TEMPERATURE", "No", "", &io);
   setStringToIntegralParameter<int>("THERM_HEATFLUX", "None", "",
       tuple<std::string>("None", "No", "NO", "no", "Current", "Initial"),
       tuple<int>(INPAR::THR::heatflux_none, INPAR::THR::heatflux_none, INPAR::THR::heatflux_none,
@@ -132,12 +118,12 @@ void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   BoolParameter("WRITE_TO_SCREEN", "Yes", "Write screen output", &io);
   BoolParameter("WRITE_TO_FILE", "No", "Write the output into a file", &io);
 
-  setStringToIntegralParameter<int>("WRITE_INITIAL_STATE", "yes",
-      "Do you want to write output for initial state ?", yesnotuple, yesnovalue, &io);
-  setStringToIntegralParameter<int>("WRITE_FINAL_STATE", "no",
+  BoolParameter(
+      "WRITE_INITIAL_STATE", "yes", "Do you want to write output for initial state ?", &io);
+  BoolParameter("WRITE_FINAL_STATE", "no",
       "Enforce to write output/restart data at the final state regardless of the other "
       "output/restart intervals",
-      yesnotuple, yesnovalue, &io);
+      &io);
 
   BoolParameter("PREFIX_GROUP_ID", "No", "Put a <GroupID>: in front of every line", &io);
   IntParameter("LIMIT_OUTP_TO_PROC", -1, "Only the specified procs will write output", &io);

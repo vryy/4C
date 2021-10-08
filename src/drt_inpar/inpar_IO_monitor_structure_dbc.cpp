@@ -27,10 +27,6 @@ namespace INPAR
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      Teuchos::Array<std::string> yesnotuple =
-          tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-      Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
       // related sublist
       Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
       Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
@@ -56,13 +52,10 @@ namespace INPAR
               INPAR::IO_MONITOR_STRUCTURE_DBC::data, INPAR::IO_MONITOR_STRUCTURE_DBC::data),
           &sublist_IO_monitor_structure_dbc);
 
-
       // whether to write output in every iteration of the nonlinear solver
-      setStringToIntegralParameter<int>("WRITE_HEADER", "No",
-          "write information about monitored boundary condition to output file", yesnotuple,
-          yesnovalue, &sublist_IO_monitor_structure_dbc);
+      BoolParameter("WRITE_HEADER", "No",
+          "write information about monitored boundary condition to output file",
+          &sublist_IO_monitor_structure_dbc);
     }
-
-
   }  // namespace IO_MONITOR_STRUCTURE_DBC
 }  // namespace INPAR

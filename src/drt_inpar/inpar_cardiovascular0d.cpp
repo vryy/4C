@@ -24,10 +24,6 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& cardvasc0dstruct =
       list->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING", false, "");
 
@@ -38,13 +34,12 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
       &cardvasc0dstruct);
   DoubleParameter("TIMINT_THETA", 0.5,
       "theta for one-step-theta time-integration scheme of Cardiovascular0D", &cardvasc0dstruct);
-  setStringToIntegralParameter<int>("RESTART_WITH_CARDVASC0D", "No",
+  BoolParameter("RESTART_WITH_CARDVASC0D", "No",
       "Must be chosen if a non-cardiovascular0d simulation is to be restarted as "
       "cardiovascular0d-structural coupled problem.",
-      yesnotuple, yesnovalue, &cardvasc0dstruct);
-  setStringToIntegralParameter<int>("ENHANCED_OUTPUT", "No",
-      "Set to yes for enhanced output (like e.g. derivative information)", yesnotuple, yesnovalue,
       &cardvasc0dstruct);
+  BoolParameter("ENHANCED_OUTPUT", "No",
+      "Set to yes for enhanced output (like e.g. derivative information)", &cardvasc0dstruct);
 
   // linear solver id used for monolithic 0D cardiovascular-structural problems
   IntParameter("LINEAR_COUPLED_SOLVER", -1,
@@ -60,8 +55,7 @@ void INPAR::CARDIOVASCULAR0D::SetValidParameters(Teuchos::RCP<Teuchos::Parameter
   DoubleParameter("T_PERIOD", -1.0, "periodic time", &cardvasc0dstruct);
   DoubleParameter("EPS_PERIODIC", 1.0e-16, "tolerance for periodic state", &cardvasc0dstruct);
 
-  setStringToIntegralParameter<int>("PTC_3D0D", "No", "Set to yes for doing PTC 2x2 block system.",
-      yesnotuple, yesnovalue, &cardvasc0dstruct);
+  BoolParameter("PTC_3D0D", "No", "Set to yes for doing PTC 2x2 block system.", &cardvasc0dstruct);
 
   DoubleParameter("K_PTC", 0.0, "PTC parameter: 0 means normal Newton, ->infty means steepest desc",
       &cardvasc0dstruct);

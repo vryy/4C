@@ -24,10 +24,6 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC", false, "");
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation,
@@ -244,20 +240,18 @@ void INPAR::FLUID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   DoubleParameter("REFMACH", 1.0, "Reference Mach number", &fdyn);
 
-  setStringToIntegralParameter<int>("SIMPLER", "no",
+  BoolParameter("SIMPLER", "no",
       "Switch on SIMPLE family of solvers, only works with block preconditioners like CheapSIMPLE!",
-      yesnotuple, yesnovalue, &fdyn);
+      &fdyn);
 
-  setStringToIntegralParameter<int>("ADAPTCONV", "yes",
-      "Switch on adaptive control of linear solver tolerance for nonlinear solution", yesnotuple,
-      yesnovalue, &fdyn);
+  BoolParameter("ADAPTCONV", "yes",
+      "Switch on adaptive control of linear solver tolerance for nonlinear solution", &fdyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &fdyn);
 
-  setStringToIntegralParameter<int>("INFNORMSCALING", "no",
-      "Scale blocks of matrix with row infnorm?", yesnotuple, yesnovalue, &fdyn);
+  BoolParameter("INFNORMSCALING", "no", "Scale blocks of matrix with row infnorm?", &fdyn);
 
   BoolParameter("GMSH_OUTPUT", "No", "write output to gmsh files", &fdyn);
   BoolParameter(

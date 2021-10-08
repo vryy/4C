@@ -24,10 +24,6 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   /* parameters for potential-based beam interaction */
   Teuchos::ParameterList& beampotential = list->sublist("BEAM POTENTIAL", false, "");
 
@@ -76,8 +72,8 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   IntParameter(
       "NUM_GAUSSPOINTS", 10, "Number of Gauss points used per integration segment", &beampotential);
 
-  setStringToIntegralParameter<int>("AUTOMATIC_DIFFERENTIATION", "No",
-      "apply automatic differentiation via FAD?", yesnotuple, yesnovalue, &beampotential);
+  BoolParameter("AUTOMATIC_DIFFERENTIATION", "No", "apply automatic differentiation via FAD?",
+      &beampotential);
 
   setStringToIntegralParameter<MasterSlaveChoice>("CHOICE_MASTER_SLAVE", "smaller_eleGID_is_slave",
       "According to which rule shall the role of master and slave be assigned to beam elements?",
@@ -86,13 +82,13 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
           MasterSlaveChoice::smaller_eleGID_is_slave, MasterSlaveChoice::higher_eleGID_is_slave),
       &beampotential);
 
-  setStringToIntegralParameter<int>("BEAMPOT_BTSOL", "No",
+  BoolParameter("BEAMPOT_BTSOL", "No",
       "decide, whether potential-based interaction between beams and solids is considered",
-      yesnotuple, yesnovalue, &beampotential);
+      &beampotential);
 
-  setStringToIntegralParameter<int>("BEAMPOT_BTSPH", "No",
+  BoolParameter("BEAMPOT_BTSPH", "No",
       "decide, whether potential-based interaction between beams and spheres is considered",
-      yesnotuple, yesnovalue, &beampotential);
+      &beampotential);
 
   // enable octree search and determine type of bounding box (aabb = axis aligned, spbb = spherical)
   setStringToIntegralParameter<int>("BEAMPOT_OCTREE", "None",
@@ -116,9 +112,8 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
 
 
   // whether to write vtk output for beam contact
-  setStringToIntegralParameter<int>("VTK_OUTPUT_BEAM_POTENTIAL", "No",
-      "write vtk output for potential-based beam interactions", yesnotuple, yesnovalue,
-      &beampotential_vtk_sublist);
+  BoolParameter("VTK_OUTPUT_BEAM_POTENTIAL", "No",
+      "write vtk output for potential-based beam interactions", &beampotential_vtk_sublist);
 
   // output interval regarding steps: write output every INTERVAL_STEPS steps
   IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
@@ -133,22 +128,19 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
       &beampotential_vtk_sublist);
 
   // whether to write output in every iteration of the nonlinear solver
-  setStringToIntegralParameter<int>("EVERY_ITERATION", "No",
-      "write output in every iteration of the nonlinear solver", yesnotuple, yesnovalue,
+  BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
       &beampotential_vtk_sublist);
 
   // whether to write vtp output for forces
-  setStringToIntegralParameter<int>("FORCES", "No", "write vtp output for forces", yesnotuple,
-      yesnovalue, &beampotential_vtk_sublist);
+  BoolParameter("FORCES", "No", "write vtp output for forces", &beampotential_vtk_sublist);
 
   // whether to write vtp output for moments
-  setStringToIntegralParameter<int>("MOMENTS", "No", "write vtp output for moments", yesnotuple,
-      yesnovalue, &beampotential_vtk_sublist);
+  BoolParameter("MOMENTS", "No", "write vtp output for moments", &beampotential_vtk_sublist);
 
   // whether to write vtp output for forces/moments separately for each element pair
-  setStringToIntegralParameter<int>("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR", "No",
-      "write vtp output for forces/moments separately for each element pair", yesnotuple,
-      yesnovalue, &beampotential_vtk_sublist);
+  BoolParameter("WRITE_FORCE_MOMENT_PER_ELEMENTPAIR", "No",
+      "write vtp output for forces/moments separately for each element pair",
+      &beampotential_vtk_sublist);
 }
 
 void INPAR::BEAMPOTENTIAL::SetValidConditions(

@@ -51,10 +51,6 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION", false, "");
 
   // Beam to solid volume mesh tying parameters.
@@ -98,8 +94,8 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     //        coupled.
     // - Yes: The beam and solid states at the restart configuration are coupled. This allows to
     //        pre-deform the structures and then couple them.
-    setStringToIntegralParameter<int>("COUPLE_RESTART_STATE", "No",
-        "Enable / disable the coupling of the restart configuration.", yesnotuple, yesnovalue,
+    BoolParameter("COUPLE_RESTART_STATE", "No",
+        "Enable / disable the coupling of the restart configuration.",
         &beam_to_solid_volume_mestying);
 
     setStringToIntegralParameter<BeamToSolidRotationCoupling>("ROTATION_COUPLING", "none",
@@ -143,38 +139,36 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       beam_to_solid_volume_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
   {
     // Whether to write vtp output at all for btsvmt.
-    setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
-        "Enable / disable beam-to-solid volume mesh tying output.", yesnotuple, yesnovalue,
+    BoolParameter("WRITE_OUTPUT", "No", "Enable / disable beam-to-solid volume mesh tying output.",
         &beam_to_solid_volume_mestying_vtk);
 
-    setStringToIntegralParameter<int>("NODAL_FORCES", "No",
+    BoolParameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
-        yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_vtk);
 
-    setStringToIntegralParameter<int>("MORTAR_LAMBDA_DISCRET", "No",
+    BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
-        yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_vtk);
 
-    setStringToIntegralParameter<int>("MORTAR_LAMBDA_CONTINUOUS", "No",
+    BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
-        yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_vtk);
 
     DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_vtk);
 
-    setStringToIntegralParameter<int>("SEGMENTATION", "No",
-        "Enable / disable output of segmentation points.", yesnotuple, yesnovalue,
+    BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
         &beam_to_solid_volume_mestying_vtk);
 
-    setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
+    BoolParameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
-        yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_vtk);
 
-    setStringToIntegralParameter<int>("UNIQUE_IDS", "No",
+    BoolParameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
-        yesnotuple, yesnovalue, &beam_to_solid_volume_mestying_vtk);
+        &beam_to_solid_volume_mestying_vtk);
   }
 
   // Beam to solid surface mesh tying parameters.
@@ -219,8 +213,7 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
         "Penalty parameter for beam-to-solid surface meshtying", &beam_to_solid_surface_mestying);
 
     // Parameters for rotational coupling.
-    setStringToIntegralParameter<int>("ROTATIONAL_COUPLING", "No",
-        "Enable / disable rotational coupling", yesnotuple, yesnovalue,
+    BoolParameter("ROTATIONAL_COUPLING", "No", "Enable / disable rotational coupling",
         &beam_to_solid_surface_mestying);
     DoubleParameter("ROTATIONAL_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface rotational meshtying",
@@ -242,42 +235,40 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       beam_to_solid_surface.sublist("RUNTIME VTK OUTPUT", false, "");
   {
     // Whether to write vtp output at all.
-    setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
-        "Enable / disable beam-to-solid volume mesh tying output.", yesnotuple, yesnovalue,
+    BoolParameter("WRITE_OUTPUT", "No", "Enable / disable beam-to-solid volume mesh tying output.",
         &beam_to_solid_surface_vtk);
 
-    setStringToIntegralParameter<int>("NODAL_FORCES", "No",
+    BoolParameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
-        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
-
-    setStringToIntegralParameter<int>("AVERAGED_NORMALS", "No",
-        "Enable / disable output of averaged nodal normals on the surface.", yesnotuple, yesnovalue,
         &beam_to_solid_surface_vtk);
 
-    setStringToIntegralParameter<int>("MORTAR_LAMBDA_DISCRET", "No",
+    BoolParameter("AVERAGED_NORMALS", "No",
+        "Enable / disable output of averaged nodal normals on the surface.",
+        &beam_to_solid_surface_vtk);
+
+    BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
-        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_vtk);
 
-    setStringToIntegralParameter<int>("MORTAR_LAMBDA_CONTINUOUS", "No",
+    BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
-        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_vtk);
 
     DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_surface_vtk);
 
-    setStringToIntegralParameter<int>("SEGMENTATION", "No",
-        "Enable / disable output of segmentation points.", yesnotuple, yesnovalue,
+    BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
         &beam_to_solid_surface_vtk);
 
-    setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
+    BoolParameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
-        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_vtk);
 
-    setStringToIntegralParameter<int>("UNIQUE_IDS", "No",
+    BoolParameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
-        yesnotuple, yesnovalue, &beam_to_solid_surface_vtk);
+        &beam_to_solid_surface_vtk);
   }
 }
 

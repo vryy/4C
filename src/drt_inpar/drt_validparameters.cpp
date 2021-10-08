@@ -362,14 +362,6 @@ void DRT::INPUT::StringParameter(std::string const& paramName, std::string const
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 {
-  using Teuchos::setStringToIntegralParameter;
-  using Teuchos::tuple;
-
-  // define some tuples that are often used to account for different writing of certain key words
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
 
   /*----------------------------------------------------------------------*/

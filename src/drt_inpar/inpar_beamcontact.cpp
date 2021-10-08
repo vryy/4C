@@ -21,10 +21,6 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& beamcontact = list->sublist("BEAM CONTACT", false, "");
 
   setStringToIntegralParameter<int>("BEAMS_STRATEGY", "None", "Type of employed solving strategy",
@@ -36,38 +32,33 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       tuple<std::string>("Old", "old", "Standard", "standard"),
       tuple<int>(bstr_old, bstr_old, bstr_standard, bstr_standard), &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_NEWGAP", "No",
-      "choose between original or enhanced gapfunction", yesnotuple, yesnovalue, &beamcontact);
+  BoolParameter(
+      "BEAMS_NEWGAP", "No", "choose between original or enhanced gapfunction", &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_SEGCON", "No",
-      "choose between beam contact with and without subsegment generation", yesnotuple, yesnovalue,
-      &beamcontact);
+  BoolParameter("BEAMS_SEGCON", "No",
+      "choose between beam contact with and without subsegment generation", &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_DEBUG", "No",
+  BoolParameter("BEAMS_DEBUG", "No",
       "This flag can be used for testing purposes. When it is switched on, some sanity checks are "
       "not performed!",
-      yesnotuple, yesnovalue, &beamcontact);
+      &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_INACTIVESTIFF", "No",
+  BoolParameter("BEAMS_INACTIVESTIFF", "No",
       "Always apply contact stiffness in first Newton step for pairs which have active in last "
       "time step",
-      yesnotuple, yesnovalue, &beamcontact);
-
-  setStringToIntegralParameter<int>("BEAMS_BTSOLMT", "No",
-      "decide, if also meshtying between beams and solids is possible", yesnotuple, yesnovalue,
       &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_BTSOL", "No",
-      "decide, if also the contact between beams and solids is possible", yesnotuple, yesnovalue,
-      &beamcontact);
+  BoolParameter("BEAMS_BTSOLMT", "No",
+      "decide, if also meshtying between beams and solids is possible", &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_BTSPH", "No",
-      "decide, if also the contact between beams and spheres is possible", yesnotuple, yesnovalue,
-      &beamcontact);
+  BoolParameter("BEAMS_BTSOL", "No",
+      "decide, if also the contact between beams and solids is possible", &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_ENDPOINTPENALTY", "No",
-      "Additional consideration of endpoint-line and endpoint-endpoint contacts", yesnotuple,
-      yesnovalue, &beamcontact);
+  BoolParameter("BEAMS_BTSPH", "No",
+      "decide, if also the contact between beams and spheres is possible", &beamcontact);
+
+  BoolParameter("BEAMS_ENDPOINTPENALTY", "No",
+      "Additional consideration of endpoint-line and endpoint-endpoint contacts", &beamcontact);
 
   setStringToIntegralParameter<int>("BEAMS_SMOOTHING", "None",
       "Application of smoothed tangent field", tuple<std::string>("None", "none", "Cpp", "cpp"),
@@ -144,9 +135,9 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
           "None", "none", "octree_axisaligned", "octree_cylorient", "octree_spherical"),
       tuple<int>(boct_none, boct_none, boct_aabb, boct_cobb, boct_spbb), &beamcontact);
 
-  setStringToIntegralParameter<int>("BEAMS_ADDITEXT", "Yes",
+  BoolParameter("BEAMS_ADDITEXT", "Yes",
       "Switch between No==multiplicative extrusion factor and Yes==additive extrusion factor",
-      yesnotuple, yesnovalue, &beamcontact);
+      &beamcontact);
   setNumericStringParameter("BEAMS_EXTVAL", "-1.0",
       "extrusion value(s) of the bounding box, Depending on BEAMS_ADDITIVEEXTFAC is either "
       "additive or multiplicative. Give one or two values.",
@@ -164,8 +155,8 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
 
   // whether to write vtk output for beam contact
-  setStringToIntegralParameter<int>("VTK_OUTPUT_BEAM_CONTACT", "No",
-      "write vtp output for beam contact", yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
+  BoolParameter("VTK_OUTPUT_BEAM_CONTACT", "No", "write vtp output for beam contact",
+      &beamcontact_vtk_sublist);
 
   // output interval regarding steps: write output every INTERVAL_STEPS steps
   IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
@@ -180,15 +171,14 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       &beamcontact_vtk_sublist);
 
   // whether to write output in every iteration of the nonlinear solver
-  setStringToIntegralParameter<int>("EVERY_ITERATION", "No",
-      "write output in every iteration of the nonlinear solver", yesnotuple, yesnovalue,
+  BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
       &beamcontact_vtk_sublist);
 
   // whether to write vtp output for contact forces
-  setStringToIntegralParameter<int>("CONTACT_FORCES", "No", "write vtp output for contact forces",
-      yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
+  BoolParameter(
+      "CONTACT_FORCES", "No", "write vtp output for contact forces", &beamcontact_vtk_sublist);
 
   // whether to write vtp output for gaps
-  setStringToIntegralParameter<int>("GAPS", "No", "write vtp output for gap, i.e. penetration",
-      yesnotuple, yesnovalue, &beamcontact_vtk_sublist);
+  BoolParameter(
+      "GAPS", "No", "write vtp output for gap, i.e. penetration", &beamcontact_vtk_sublist);
 }

@@ -24,10 +24,6 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& poroelastdyn =
       list->sublist("POROELASTICITY DYNAMIC", false, "Poroelasticity");
 
@@ -114,16 +110,14 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
       tuple<int>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &poroelastdyn);
 
-  setStringToIntegralParameter<int>("SECONDORDER", "Yes", "Second order coupling at the interface.",
-      yesnotuple, yesnovalue, &poroelastdyn);
+  BoolParameter("SECONDORDER", "Yes", "Second order coupling at the interface.", &poroelastdyn);
 
-  setStringToIntegralParameter<int>("CONTIPARTINT", "No",
-      "Partial integration of porosity gradient in continuity equation", yesnotuple, yesnovalue,
-      &poroelastdyn);
+  BoolParameter("CONTIPARTINT", "No",
+      "Partial integration of porosity gradient in continuity equation", &poroelastdyn);
 
-  setStringToIntegralParameter<int>("CONTACTNOPEN", "No",
+  BoolParameter("CONTACTNOPEN", "No",
       "No-Penetration Condition on active contact surface in case of poro contact problem!",
-      yesnotuple, yesnovalue, &poroelastdyn);
+      &poroelastdyn);
 
   BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroelastdyn);
 
