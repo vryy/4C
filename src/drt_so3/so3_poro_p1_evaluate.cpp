@@ -333,8 +333,7 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::MyEvaluate(Teuchos::ParameterL
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
         coupling_poroelast(lm, mydisp, myvel, &myporosity, myfluidvel, myepreaf,
-            matptr,  // nullptr,
-            nullptr, nullptr, params);
+            matptr, nullptr, nullptr, params);
       }
     }
     break;

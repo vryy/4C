@@ -103,15 +103,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::PreEvaluate(Teuchos::ParameterLi
       double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0, coordgpref, time);
       params.set<double>("scalar", functfac);
     }
-  }
-  else
-  {
-    /*
-    std::vector<double> center = DRT::UTILS::ElementCenterRefeCoords(this);
-    Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(center));
-    params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
-    */
-    // do nothing
   }  // if(scatracoupling_)
   return;
 }
@@ -273,10 +264,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
                 discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
           // calculate tangent stiffness matrix
-          nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr, matptr2,
-              &elevec1,  // nullptr,
-                         // nullptr,nullptr,
-              params);
+          nlnstiff_poroelast(
+              lm, mydisp, myvel, myfluidvel, myepreaf, matptr, matptr2, &elevec1, params);
         }
         else if (la.Size() > 2)
           if (discretization.HasState(1, "porofluid"))
@@ -352,10 +341,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
           // calculate tangent stiffness matrix
-          nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr,
-              &elevec1,  // nullptr,
-                         // nullptr,nullptr,
-              params);
+          nlnstiff_poroelast(
+              lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, &elevec1, params);
         }
         else if (la.Size() > 2)
           if (discretization.HasState(1, "porofluid"))
@@ -417,8 +404,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
           ExtractValuesFromGlobalVector(
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
-        coupling_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr,  // nullptr,
-            nullptr, nullptr, params);
+        coupling_poroelast(
+            lm, mydisp, myvel, myfluidvel, myepreaf, matptr, nullptr, nullptr, params);
       }
       else if (la.Size() > 2)
       {
@@ -475,10 +462,8 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
         ExtractValuesFromGlobalVector(discretization, 0, la[0].lm_, &myvel, nullptr, "velocity");
 
         // calculate tangent stiffness matrix
-        nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, nullptr, nullptr,
-            &elevec1,  // nullptr,
-                       // nullptr,nullptr,
-            params);
+        nlnstiff_poroelast(
+            lm, mydisp, myvel, myfluidvel, myepreaf, nullptr, nullptr, &elevec1, params);
       }
       else if (la.Size() > 2)
         if (discretization.HasState(1, "porofluid"))
@@ -1332,7 +1317,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
   detJ_.resize(numgpt_);
   xsi_.resize(numgpt_);
 
-  // if(not isNurbs_)
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     const double* gpcoord = intpoints_.Point(gp);
@@ -2254,10 +2238,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectors(const int& 
 {
   const double detJ_w = detJ_[gp] * intpoints_.Weight(gp);
 
-  // if (force != nullptr or stiffmatrix != nullptr or reamatrix != nullptr )
   {
-    // const double reacoeff = fluidmat_->ComputeReactionCoeff();
-
     static LINALG::Matrix<numdim_, numdim_> matreatensor(true);
     static LINALG::Matrix<numdim_, numdim_> reatensor(true);
     static LINALG::Matrix<numdim_, numdim_> linreac_dphi(true);
@@ -2631,11 +2612,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::FillMatrixAndVectorsBrinkman(con
   static LINALG::Matrix<numdof_, 1> fstressb(true);
   fstressb.MultiplyTN(bop, fstress);
 
-  // if (force != nullptr )
   force->Update(1.0, fstressb, 1.0);
 
   // evaluate viscous terms (for darcy-brinkman flow only)
-  // if (stiffmatrix != nullptr)
   {
     static LINALG::Matrix<numdim_, numdim_> tmp;
     tmp.MultiplyNT(fvelder, defgrd_inv);
