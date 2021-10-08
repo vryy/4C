@@ -1,7 +1,7 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
 ControlledRotationFunction and AccelerationProfileFunction in src/drt_lib
-- removed in 26d7a10c4d3c844d6a21045ed2c7d7d7a177f5fe
+- removed in b1788c78144a47b90ba42b53a424092f5ebdd58f
 - reasons: unused and untested
 - removed by Carolin Geitner
 
