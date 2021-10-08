@@ -68,6 +68,8 @@ namespace DRT
 
      private:
       static So_tet10Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT10"; }
     };
 
     /*!
@@ -469,6 +471,9 @@ namespace DRT
        * @param params ParameterList to be passed to the materials
        */
       void MaterialPostSetup(Teuchos::ParameterList& params) override;
+
+     private:
+      std::string GetElementTypeString() const { return "SOLIDT10"; }
     };  // class So_tet10
 
 

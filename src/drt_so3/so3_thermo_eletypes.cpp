@@ -80,7 +80,7 @@ void DRT::ELEMENTS::So_hex8ThermoType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8THERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 
@@ -186,7 +186,7 @@ void DRT::ELEMENTS::So_hex8fbarThermoType::SetupElementDefinition(
       definitions_hex8fbar["SOLIDH8FBAR"];
 
   // templated definition
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8FBARTHERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8fbar["HEX8"];
 
@@ -284,7 +284,7 @@ void DRT::ELEMENTS::So_tet4ThermoType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4THERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 
@@ -383,7 +383,7 @@ void DRT::ELEMENTS::So_tet10ThermoType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT10THERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] = defs_tet10["TET10"];
 
@@ -482,7 +482,7 @@ void DRT::ELEMENTS::So_hex27ThermoType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH27THERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
 
@@ -581,7 +581,7 @@ void DRT::ELEMENTS::So_hex20ThermoType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex20 = definitions_hex20["SOLIDH20"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH20THERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX20"] = defs_hex20["HEX20"];
 
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::So_nurbs27ThermoType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_nurbs27 =
       definitions_nurbs27["SONURBS27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SONURBS27THERMO"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"] = defs_nurbs27["NURBS27"];
 

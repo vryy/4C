@@ -62,6 +62,8 @@ namespace DRT
 
      private:
       static So_pyramid5Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDP5"; }
     };
 
 
@@ -469,7 +471,8 @@ namespace DRT
         return std::vector<double>(3);
       };
 
-
+     private:
+      std::string GetElementTypeString() const { return "SOLIDP5"; }
     };  // class So_pyramid5
 
 

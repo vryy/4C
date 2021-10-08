@@ -39,7 +39,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4avType::Create(const std::vector<char>& da
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4avType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT4AV")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet4av(id, owner));
     return ele;
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
 void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4AV"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"]
       .AddIntVector("TET4", 4)
@@ -102,7 +102,7 @@ DRT::ELEMENTS::So_tet4av::So_tet4av(int id, int owner) : So_base(id, owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDT4AV");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

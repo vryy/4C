@@ -48,6 +48,8 @@ namespace DRT
 
      private:
       static So_sh18Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSH18"; }
     };
 
     /*!
@@ -266,16 +268,9 @@ namespace DRT
 
       //@}
 
+     private:
+      std::string GetElementTypeString() const { return "SOLIDSH18"; }
     };  // class So_sh18
-
-
-
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
 
   }  // namespace ELEMENTS
 }  // namespace DRT

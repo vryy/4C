@@ -49,6 +49,8 @@ namespace DRT
 
      private:
       static So_hex8ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8SCATRA"; }
     };
 
 
@@ -76,6 +78,8 @@ namespace DRT
 
      private:
       static So_hex8fbarScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8FBARSCATRA"; }
     };
 
 
@@ -103,6 +107,8 @@ namespace DRT
 
      private:
       static So_hex27ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH27SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -129,6 +135,8 @@ namespace DRT
 
      private:
       static So_tet4ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -155,6 +163,8 @@ namespace DRT
 
      private:
       static So_tet10ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT10SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -181,6 +191,8 @@ namespace DRT
 
      private:
       static So_weg6ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDW6SCATRA"; }
     };
 
 

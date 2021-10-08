@@ -81,6 +81,8 @@ namespace DRT
      private:
       static NStet5Type instance_;
 
+      std::string GetElementTypeString() const { return "NSTET5"; }
+
       //! map of row nodes adjacent to NStet5 elements
       std::map<int, DRT::Node*> noderids_;
 
@@ -537,6 +539,8 @@ namespace DRT
 
       //@}
 
+     private:
+      std::string GetElementTypeString() const { return "NSTET5"; }
     };  // class NStet5
 
 

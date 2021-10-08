@@ -88,6 +88,8 @@ namespace DRT
 
      private:
       static So_hex8Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8"; }
     };
 
     /*!

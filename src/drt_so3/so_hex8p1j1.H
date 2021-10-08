@@ -50,6 +50,8 @@ namespace DRT
 
      private:
       static So_Hex8P1J1Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8P1J1"; }
     };
 
     /// The so-called 'Q1P0' element in 8-node hexahedron shape
@@ -276,6 +278,8 @@ namespace DRT
 
 
      private:
+      std::string GetElementTypeString() const { return "SOLIDH8P1J1"; }
+
       /** recover elementwise stored stuff */
       void soh8P1J1_recover(const std::vector<double>& residual);
 

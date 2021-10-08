@@ -30,7 +30,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
@@ -54,7 +54,7 @@ void DRT::ELEMENTS::So_hex8ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 
@@ -104,7 +104,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8FBARSCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>(id, owner));
@@ -129,7 +129,7 @@ void DRT::ELEMENTS::So_hex8fbarScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8FBAR"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8FBARSCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 
@@ -178,7 +178,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex27ScatraType::Create(const std::vector<char
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH27SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(id, owner));
@@ -202,7 +202,7 @@ void DRT::ELEMENTS::So_hex27ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH27SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
 
@@ -250,7 +250,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT4SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
@@ -274,7 +274,7 @@ void DRT::ELEMENTS::So_tet4ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 
@@ -325,7 +325,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create(const std::vector<char
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT10SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(id, owner));
@@ -349,7 +349,7 @@ void DRT::ELEMENTS::So_tet10ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT10SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] = defs_tet10["TET10"];
 
@@ -397,7 +397,7 @@ DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDW6SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>(id, owner));
@@ -421,7 +421,7 @@ void DRT::ELEMENTS::So_weg6ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_weg6 = definitions_weg6["SOLIDW6"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDW6SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["WEDGE6"] = defs_weg6["WEDGE6"];
 

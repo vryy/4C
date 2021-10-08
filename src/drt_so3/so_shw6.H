@@ -43,6 +43,8 @@ namespace DRT
 
      private:
       static So_shw6Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSHW6"; }
     };
 
     /*!
@@ -275,6 +277,8 @@ namespace DRT
       //! recover condensed EAS variables
       void soshw6_recover(const std::vector<double>& residual);
 
+     private:
+      std::string GetElementTypeString() const { return "SOLIDSHW6"; }
     };  // class So_shw6
 
 

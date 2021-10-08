@@ -42,6 +42,8 @@ namespace DRT
 
      private:
       static So_hex8PoroP1ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8POROP1SCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -66,6 +68,8 @@ namespace DRT
 
      private:
       static So_tet4PoroP1ScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4POROP1SCATRA"; }
     };
 
   }  // namespace ELEMENTS

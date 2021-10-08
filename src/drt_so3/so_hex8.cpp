@@ -56,7 +56,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8Type::Create(const std::vector<char>& data
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8(id, owner));
     return ele;
@@ -90,7 +90,7 @@ void DRT::ELEMENTS::So_hex8Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"]
       .AddIntVector("HEX8", 8)

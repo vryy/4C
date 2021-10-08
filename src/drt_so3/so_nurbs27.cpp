@@ -37,7 +37,7 @@ DRT::ParObject* DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NURBS::So_nurbs27Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SONURBS27")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NURBS::So_nurbs27(id, owner));
     return ele;
@@ -71,7 +71,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::ComputeNullSpace(
 void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SONURBS27"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"].AddIntVector("NURBS27", 27).AddNamedInt("MAT").AddNamedIntVector("GP", 3);
 }
@@ -92,7 +92,7 @@ DRT::ELEMENTS::NURBS::So_nurbs27::So_nurbs27(int id, int owner) : So_base(id, ow
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SONURBS27");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

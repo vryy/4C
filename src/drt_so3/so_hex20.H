@@ -63,6 +63,8 @@ namespace DRT
 
      private:
       static So_hex20Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH20"; }
     };
 
     /*!
@@ -483,7 +485,8 @@ namespace DRT
         return std::vector<double>(3);
       };
 
-
+     private:
+      std::string GetElementTypeString() const { return "SOLIDH20"; }
     };  // class So_hex20
 
 

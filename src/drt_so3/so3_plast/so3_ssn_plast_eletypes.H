@@ -45,6 +45,7 @@ namespace DRT
      private:
       static So_hex8PlastType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH8PLAST"; }
     };  // class So_hex8PlastType
 
 
@@ -74,6 +75,7 @@ namespace DRT
      private:
       static So_hex18PlastType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH18PLAST"; }
     };  // class So_hex18PlastType
 
 
@@ -103,6 +105,7 @@ namespace DRT
      private:
       static So_hex27PlastType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH27PLAST"; }
     };  // class So_hex27PlastType
 
 
@@ -132,6 +135,7 @@ namespace DRT
      private:
       static So_tet4PlastType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDT4PLAST"; }
     };  // class So_tet4PlastType
 
 
@@ -161,6 +165,7 @@ namespace DRT
      private:
       static So_nurbs27PlastType instance_;
 
+      std::string GetElementTypeString() const { return "SONURBS27PLAST"; }
     };  // class So_nurbs27PlastType
 
 

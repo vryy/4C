@@ -50,7 +50,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet10Type::Create(const std::vector<char>& dat
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT10")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet10(id, owner));
     return ele;
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::So_tet10Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT10"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"]
       .AddIntVector("TET10", 10)
@@ -121,7 +121,7 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDT10");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));

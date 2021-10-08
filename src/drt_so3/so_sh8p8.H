@@ -62,6 +62,8 @@ namespace DRT
 
      private:
       static So_sh8p8Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
     };
 
     /// An incompressible 8-node solid shell element inherited from #DRT::ELEMENTS::so_sh8
@@ -870,6 +872,10 @@ namespace DRT
       virtual void CalcSTCMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
           const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
           DRT::Discretization& discretization, bool calcinverse);
+
+
+     private:
+      std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
     };  // class So_sh8p8
 
 

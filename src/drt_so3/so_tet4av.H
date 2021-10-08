@@ -64,6 +64,8 @@ namespace DRT
 
      private:
       static So_tet4avType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4AV"; }
     };
 
     /*!
@@ -385,6 +387,8 @@ namespace DRT
 
       //@}
 
+     private:
+      std::string GetElementTypeString() const { return "SOLIDT4AV"; }
     };  // class So_tet4
 
 

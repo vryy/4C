@@ -75,6 +75,8 @@ namespace DRT
 
        private:
         static So_nurbs27Type instance_;
+
+        std::string GetElementTypeString() const { return "SONURBS27"; }
       };
 
 
@@ -360,6 +362,8 @@ namespace DRT
         //! Lump mass matrix (bborn 07/08)
         void lumpmass(LINALG::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass);
 
+       private:
+        std::string GetElementTypeString() const { return "SONURBS27"; }
       };  // class So_nurbs27
 
 

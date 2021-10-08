@@ -44,7 +44,7 @@ DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDW6")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_weg6(id, owner));
     return ele;
@@ -77,7 +77,7 @@ void DRT::ELEMENTS::So_weg6Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDW6"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["WEDGE6"]
       .AddIntVector("WEDGE6", 6)
@@ -117,7 +117,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDW6");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));

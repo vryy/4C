@@ -45,6 +45,8 @@ namespace DRT
 
      private:
       static So_sh18PlastType instance_;
+
+      std::string GetElementTypeString() const { return "SOSH18PLAST"; }
     };  // class So_sh18PlastType
 
     class So_sh18Plast : public virtual So3_Plast<DRT::Element::hex18>, public virtual So_sh18
@@ -158,6 +160,8 @@ namespace DRT
      private:
       // don't want = operator
       So_sh18Plast& operator=(const So_sh18Plast& old) = delete;
+
+      std::string GetElementTypeString() const { return "SOSH18PLAST"; }
 
      protected:
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices

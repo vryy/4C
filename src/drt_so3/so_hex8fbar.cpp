@@ -33,7 +33,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8FBAR")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8fbar(id, owner));
     return ele;
@@ -67,7 +67,7 @@ void DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
 void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8FBAR"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"]
       .AddIntVector("HEX8", 8)
@@ -98,7 +98,7 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_h
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH8FBAR");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

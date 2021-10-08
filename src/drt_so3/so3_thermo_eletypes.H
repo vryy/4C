@@ -47,6 +47,7 @@ namespace DRT
      private:
       static So_hex8ThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH8THERMO"; }
     };  // class So_hex8ThermoType
 
 
@@ -75,6 +76,7 @@ namespace DRT
      private:
       static So_hex8fbarThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH8FBARTHERMO"; }
     };  // class So_hex8fbarThermoType
 
 
@@ -103,6 +105,7 @@ namespace DRT
      private:
       static So_tet4ThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDT4THERMO"; }
     };  // class So_tet4ThermoType
 
     /*----------------------------------------------------------------------------*
@@ -130,6 +133,7 @@ namespace DRT
      private:
       static So_tet10ThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDT10THERMO"; }
     };  // class So_tet10ThermoType
 
     /*----------------------------------------------------------------------*
@@ -157,6 +161,7 @@ namespace DRT
      private:
       static So_hex27ThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH27THERMO"; }
     };  // class So_hex27ThermoType
 
     /*----------------------------------------------------------------------*
@@ -184,6 +189,7 @@ namespace DRT
      private:
       static So_hex20ThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SOLIDH20THERMO"; }
     };  // class So_hex20ThermoType
 
     /*----------------------------------------------------------------------*
@@ -211,6 +217,7 @@ namespace DRT
      private:
       static So_nurbs27ThermoType instance_;
 
+      std::string GetElementTypeString() const { return "SONURBS27THERMO"; }
     };  // class So_hex20ThermoType
 
   }  // namespace ELEMENTS

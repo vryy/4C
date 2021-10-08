@@ -49,6 +49,8 @@ namespace DRT
 
      private:
       static So_sh8Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSH8"; }
     };
 
     /*!
@@ -323,6 +325,9 @@ namespace DRT
       double sosh8_calc_energy(const std::vector<double>& disp, Teuchos::ParameterList& params);
 
       double sosh8_third_invariant(const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain) const;
+
+     private:
+      std::string GetElementTypeString() const { return "SOLIDSH8"; }
     };  // class So_sh8
 
 

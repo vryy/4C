@@ -40,7 +40,7 @@ DRT::ParObject* DRT::ELEMENTS::NStetType::Create(const std::vector<char>& data)
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "NSTET4")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet(id, owner));
     return ele;
@@ -82,7 +82,7 @@ void DRT::ELEMENTS::NStetType::ComputeNullSpace(
 void DRT::ELEMENTS::NStetType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["NSTET4"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"].AddIntVector("TET4", 4).AddNamedInt("MAT").AddNamedString("KINEM");
 }
@@ -98,7 +98,7 @@ DRT::ELEMENTS::NStet::NStet(int id, int owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "NSTET4");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

@@ -50,6 +50,8 @@ namespace DRT
 
      private:
       static So_hex8fbarType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8FBAR"; }
     };
 
     /*!
@@ -234,6 +236,8 @@ namespace DRT
       //! init the inverse of the jacobian and its determinant in the material configuration
       void InitJacobianMapping() override;
 
+     private:
+      std::string GetElementTypeString() const { return "SOLIDH8FBAR"; }
     };  // class So_hex8fbar
 
     //=======================================================================

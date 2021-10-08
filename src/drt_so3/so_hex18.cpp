@@ -32,7 +32,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex18Type::Create(const std::vector<char>& dat
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH18")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex18(id, owner));
     return ele;
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH18"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"]
       .AddIntVector("HEX18", 18)
@@ -94,7 +94,7 @@ DRT::ELEMENTS::So_hex18::So_hex18(int id, int owner) : So_base(id, owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH18");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

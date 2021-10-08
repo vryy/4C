@@ -41,6 +41,8 @@ namespace DRT
 
      private:
       static So_hex8PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -65,6 +67,8 @@ namespace DRT
 
      private:
       static So_tet4PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4POROSCATRA"; }
     };
 
 
@@ -90,6 +94,8 @@ namespace DRT
 
      private:
       static So_hex27PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH27POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -114,6 +120,8 @@ namespace DRT
 
      private:
       static So_tet10PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT10POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -138,6 +146,8 @@ namespace DRT
 
      private:
       static So_nurbs27PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SONURBS27POROSCATRA"; }
     };
 
 

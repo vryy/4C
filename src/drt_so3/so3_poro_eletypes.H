@@ -48,6 +48,8 @@ namespace DRT
 
      private:
       static So_hex8PoroType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8PORO"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -75,6 +77,8 @@ namespace DRT
 
      private:
       static So_tet4PoroType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4PORO"; }
     };
 
 
@@ -103,6 +107,8 @@ namespace DRT
 
      private:
       static So_hex27PoroType instance_;
+
+      std::string GetElementTypeString() const { return "SOLID27PORO"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -130,6 +136,8 @@ namespace DRT
 
      private:
       static So_tet10PoroType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT10PORO"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -157,6 +165,8 @@ namespace DRT
 
      private:
       static So_nurbs27PoroType instance_;
+
+      std::string GetElementTypeString() const { return "SONURBS27PORO"; }
     };
 
 

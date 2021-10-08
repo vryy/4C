@@ -59,6 +59,8 @@ namespace DRT
 
      private:
       static So_hex18Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH18"; }
     };  // class So_hex18Type
 
     class So_hex18 : public virtual So_base
@@ -408,6 +410,7 @@ namespace DRT
       virtual void Recover(const std::vector<double>& residual) { return; }
 
      private:
+      std::string GetElementTypeString() const { return "SOLIDH18"; }
     };  // class So_hex18
 
   }  // namespace ELEMENTS

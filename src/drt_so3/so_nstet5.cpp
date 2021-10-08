@@ -46,7 +46,7 @@ DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "NSTET5")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
     return ele;
@@ -142,7 +142,7 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
 void DRT::ELEMENTS::NStet5Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["NSTET5"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"]
       .AddIntVector("TET4", 4)
@@ -195,7 +195,7 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "NSTET5");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));

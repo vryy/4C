@@ -282,7 +282,7 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
 void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH8PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"]
       .AddIntVector("HEX8", 8)
@@ -311,7 +311,7 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSH8PLAST");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

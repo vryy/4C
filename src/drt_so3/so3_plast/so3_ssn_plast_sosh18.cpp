@@ -82,7 +82,7 @@ void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_sh18 = definitions_sh18["SOLIDSH18"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH18PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"] = defs_sh18["HEX18"];
 }
@@ -100,7 +100,7 @@ DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner)
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSH18PLAST");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

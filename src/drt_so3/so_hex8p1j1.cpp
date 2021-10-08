@@ -30,7 +30,7 @@ DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8P1J1")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_Hex8P1J1(id, owner));
     return ele;
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8P1J1"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT").AddNamedString("KINEM");
 }
@@ -121,7 +121,7 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) : DRT::ELEMENTS::So_h
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH8P1J1");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;

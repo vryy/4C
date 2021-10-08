@@ -43,7 +43,7 @@ DRT::ParObject* DRT::ELEMENTS::So_pyramid5Type::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDP5")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5(id, owner));
     return ele;
@@ -76,7 +76,7 @@ void DRT::ELEMENTS::So_pyramid5Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDP5"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["PYRAMID5"]
       .AddIntVector("PYRAMID5", 5)
@@ -113,7 +113,7 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDP5");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5));

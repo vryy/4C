@@ -48,6 +48,8 @@ namespace DRT
 
      private:
       static So_pyramid5fbarType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDP5FBAR"; }
     };
 
 
@@ -220,6 +222,8 @@ namespace DRT
       //! init the inverse of the jacobian and its determinant in the material configuration
       void InitJacobianMapping() override;
 
+     private:
+      std::string GetElementTypeString() const { return "SOLIDP5FBAR"; }
     };  // class So_pyramid5fbar
 
     //=======================================================================

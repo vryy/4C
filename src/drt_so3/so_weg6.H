@@ -64,6 +64,8 @@ namespace DRT
 
      private:
       static So_weg6Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDW6"; }
     };
 
     /*!
@@ -437,7 +439,8 @@ namespace DRT
           Epetra_MultiVector& expolstresses  ///< nodal stresses
       );
 
-
+     private:
+      std::string GetElementTypeString() const { return "SOLIDW6"; }
     };  // class So_weg6
 
 

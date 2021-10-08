@@ -41,7 +41,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex27Type::Create(const std::vector<char>& dat
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH27")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex27(id, owner));
     return ele;
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So_hex27Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH27"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"]
       .AddIntVector("HEX27", 27)
@@ -109,7 +109,7 @@ DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner)
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
 
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDH27");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27, NUMGPT_SOH27));

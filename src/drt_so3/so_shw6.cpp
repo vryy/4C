@@ -30,7 +30,7 @@ DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSHW6")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id, owner));
     return ele;
@@ -63,7 +63,7 @@ void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSHW6"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["WEDGE6"]
       .AddIntVector("WEDGE6", 6)
@@ -92,7 +92,7 @@ DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, 
   if (params != Teuchos::null)
   {
     DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
-        DRT::Problem::Instance()->StructuralDynamicParams(), "SOLIDSHW6");
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
 
   return;
