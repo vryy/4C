@@ -16,7 +16,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-#include "../drt_fem_general/largerotations.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_integration.H"
@@ -75,8 +74,6 @@ void DRT::ELEMENTS::Beam3ebType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3EB"];
 
   defs["LINE2"].AddIntVector("LINE2", 2).AddNamedInt("MAT");
-
-  defs["LINE3"].AddIntVector("LINE3", 3).AddNamedInt("MAT");
 }
 
 /*----------------------------------------------------------------------*
@@ -87,7 +84,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
   // setting up geometric variables for beam3eb elements
   for (int num = 0; num < dis.NumMyColElements(); ++num)
   {
-    // in case that current element is not a Truss3CL element there is nothing to do and we go back
+    // in case that current element is not a beam3eb element there is nothing to do and we go back
     // to the head of the loop
     if (dis.lColElement(num)->ElementType() != *this) continue;
 
@@ -98,10 +95,10 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
     // reference node position
     std::vector<double> xrefe;
 
-    const int nnode = currele->NumNode();
+    const int numNnodes = currele->NumNode();
 
     // resize xrefe for the number of coordinates we need to store
-    xrefe.resize(3 * nnode);
+    xrefe.resize(3 * numNnodes);
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
@@ -111,7 +108,7 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 
     std::vector<double> disp_shift;
     int numdof = currele->NumDofPerNode(*(currele->Nodes()[0]));
-    disp_shift.resize(numdof * nnode);
+    disp_shift.resize(numdof * numNnodes);
     for (unsigned int i = 0; i < disp_shift.size(); ++i) disp_shift[i] = 0.0;
     if (periodic_boundingbox->HavePBC())
       currele->UnShiftNodePosition(disp_shift, *periodic_boundingbox);
@@ -121,17 +118,20 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
     {
-      for (int node = 0; node < nnode; ++node)  // element has k nodes
-        for (int dof = 0; dof < 3; ++dof)       // element node has three coordinates x1, x2 and x3
+      constexpr int numDim = 3;
+      for (int node = 0; node < numNnodes; ++node)
+      {
+        for (int dof = 0; dof < numDim; ++dof)
         {
           xrefe[node * 3 + dof] =
               currele->Nodes()[node]->X()[dof] + disp_shift[node * numdof + dof];
         }
+      }
     }
 
     currele->SetUpReferenceGeometry(xrefe);
+  }
 
-  }  // for (int num=0; num<dis_.NumMyColElements(); ++num)
   return 0;
 }
 
@@ -197,11 +197,6 @@ DRT::Element* DRT::ELEMENTS::Beam3eb::Clone() const
   DRT::ELEMENTS::Beam3eb* newelement = new DRT::ELEMENTS::Beam3eb(*this);
   return newelement;
 }
-
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            meier 05/12 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Beam3eb::~Beam3eb() { return; }
 
 
 /*----------------------------------------------------------------------*
@@ -478,13 +473,6 @@ std::vector<LINALG::Matrix<3, 1>> DRT::ELEMENTS::Beam3eb::Tref() const { return 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Beam3eb::jacobi() const { return jacobi_; }
-
-///*-----------------------------------------------------------------------------------------------*
-// *-----------------------------------------------------------------------------------------------*/
-// double DRT::ELEMENTS::Beam3eb::MomentOfInertiaY() const
-//{
-//  return Iyy_;
-//}
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
