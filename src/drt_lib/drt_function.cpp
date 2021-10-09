@@ -233,15 +233,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   DRT::INPUT::LineDefinition cylinder3d;
   cylinder3d.AddNamedDouble("CYLINDER_3D");
 
-  DRT::INPUT::LineDefinition controlledrotation;
-  controlledrotation.AddTag("CONTROLLEDROTATION")
-      .AddNamedString("FILE")
-      .AddNamedString("TYPE")
-      .AddNamedDoubleVector("ORIGIN", 3);
-
-  DRT::INPUT::LineDefinition accelerationprofile;
-  accelerationprofile.AddTag("ACCELERATIONPROFILE").AddNamedString("FILE");
-
   DRT::INPUT::LineDefinition ramptovalue;
   ramptovalue.AddTag("RAMPTOVALUE")
       .AddNamedDouble("VALUE")
@@ -312,8 +303,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(womersley);
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
-  lines->Add(controlledrotation);
-  lines->Add(accelerationprofile);
   lines->Add(ramptovalue);
   lines->Add(nodenormal);
   lines->Add(poromultiphasescatra_funct);
@@ -801,27 +790,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         functions_.push_back(
             Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
                 sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity)));
-      }
-      else if (function->HaveNamed("CONTROLLEDROTATION"))
-      {
-        std::string fileName;
-        function->ExtractString("FILE", fileName);
-
-        std::string type;
-        function->ExtractString("TYPE", type);
-
-        std::vector<double> origin;
-        function->ExtractDoubleVector("ORIGIN", origin);
-
-        functions_.push_back(Teuchos::rcp(
-            new ControlledRotationFunction(fileName, type, origin[0], origin[1], origin[2])));
-      }
-      else if (function->HaveNamed("ACCELERATIONPROFILE"))
-      {
-        std::string fileName;
-        function->ExtractString("FILE", fileName);
-
-        functions_.push_back(Teuchos::rcp(new AccelerationProfileFunction(fileName)));
       }
       else if (function->HaveNamed("FASTPOLYNOMIAL"))
       {
