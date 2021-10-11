@@ -49,7 +49,7 @@ void GEO::CUT::Options::Init_for_Cuttests()
   geomintersect_floattype_ = INPAR::CUT::floattype_cln;
   geomdistance_floattype_ = INPAR::CUT::floattype_cln;
   general_position_dist_floattype_ = INPAR::CUT::floattype_cln;
-  general_position_pos_floattype_ = INPAR::CUT::floattype_double;
+  general_position_pos_floattype_ = INPAR::CUT::floattype_cln;
   direct_divergence_refplane_ = INPAR::CUT::DirDiv_refplane_all;
   GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(general_position_dist_floattype_);
   GEO::CUT::PositionFactory::SpecifyGeneralPosFloattype(general_position_pos_floattype_);
