@@ -108,7 +108,7 @@ namespace DRT
      private:
       static So_hex27PoroType instance_;
 
-      std::string GetElementTypeString() const { return "SOLID27PORO"; }
+      std::string GetElementTypeString() const { return "SOLIDH27PORO"; }
     };
 
     /*----------------------------------------------------------------------*
