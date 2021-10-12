@@ -453,13 +453,10 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
 
   int ncomponents = numdf;
   if (numdf > 1 && numdf == field_->problem()->num_dim()) ncomponents = 3;
-
-  // count number of nodes and number of elements for each processor
-  int nnodes = 0;
-  for (int e = 0; e < dis->NumMyRowElements(); ++e) nnodes += dis->lRowElement(e)->NumNode();
+  int neles = dis->NumMyRowElements();
 
   std::vector<double> solution;
-  solution.reserve(ncomponents * nnodes);
+  solution.reserve(ncomponents * neles);
 
   const int numcol = data->NumVectors();
   if (numdf + from > numcol) dserror("violated column range of Epetra_MultiVector: %d", numcol);
@@ -476,18 +473,14 @@ void PostVtuWriter::WriteElementResultStep(std::ofstream& file,
 
   for (int e = 0; e < dis->NumMyRowElements(); ++e)
   {
-    const DRT::Element* ele = dis->lRowElement(e);
-    for (int n = 0; n < ele->NumNode(); ++n)
+    for (int d = 0; d < numdf; ++d)
     {
-      for (int d = 0; d < numdf; ++d)
-      {
-        Epetra_Vector* column = (*importedData)(d + from);
-        solution.push_back((*column)[e]);
-      }
-      for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);
+      Epetra_Vector* column = (*importedData)(d + from);
+      solution.push_back((*column)[e]);
     }
+    for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.0);
   }
-  dsassert((int)solution.size() == ncomponents * nnodes, "internal error");
+  dsassert((int)solution.size() == ncomponents * neles, "internal error");
 
   // start the scalar fields that will later be written
   if (currentPhase_ == POINTS)
