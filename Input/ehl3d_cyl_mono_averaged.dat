@@ -2940,8 +2940,6 @@ NODE      1106 COORD -4.0000000000000000e+00  0.0000000000000000e+00  5.00000000
    299 SOLIDH8 HEX8  716 715 717 718 728 727 729 730    MAT 1 KINEM nonlinear EAS none
    300 SOLIDH8 HEX8  718 717 719 720 730 729 731 732    MAT 1 KINEM nonlinear EAS none
    301 SOLIDH8 HEX8  733 734 735 736 737 738 739 740    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
    302 LUBRICATION QUAD4  741 742 743 744    MAT 3
    303 LUBRICATION QUAD4  742 745 746 743    MAT 3
@@ -3243,11 +3241,6 @@ NODE      1106 COORD -4.0000000000000000e+00  0.0000000000000000e+00  5.00000000
    599 LUBRICATION QUAD4  1097 1098 1104 1103    MAT 3
    600 LUBRICATION QUAD4  1098 1099 1105 1104    MAT 3
    601 LUBRICATION QUAD4  1099 1100 1106 1105    MAT 3
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 500 QUANTITY dispx VALUE -7.87664541689197112e-02 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 500 QUANTITY dispy VALUE -5.87885135925685365e-01 TOLERANCE 1e-10

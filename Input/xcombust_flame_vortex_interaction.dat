@@ -292,7 +292,6 @@ SIDE fluid z- DSURFACE 6
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
 -----------------------------------------------------------------NODE COORDS
-----------------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------------------FLUID DOMAIN
 LOWER_BOUND                     0.0 0.0 0.0
  //UPPER_BOUND                     100.0 200.0 1.0
@@ -301,9 +300,6 @@ ELEMENTS                        FLUID HEX8 MAT 1 NA Euler
 PARTITION                       auto
 UPPER_BOUND                     100.0 200.0 4.0//100.0 200.0 1.0
 INTERVALS                       25 51 1 // 65 129 1
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // Add +1 for the node
 // node 2468+1 and 12974+1: in unburned phase at front plane and back plane

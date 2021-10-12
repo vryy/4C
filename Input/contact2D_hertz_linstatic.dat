@@ -4599,8 +4599,6 @@ NODE 1376 COORD -8.000000000000000e+00 -9.000000000000000e+00 0.000000000000000e
 1254 WALL QUAD4 59 67 76 65 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1255 WALL QUAD4 51 61 67 59 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1256 WALL QUAD4 47 57 61 51 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.3 DENS 7.8e-7 THEXPANS 0.0

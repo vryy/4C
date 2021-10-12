@@ -2067,9 +2067,6 @@ NODE 630 COORD 0.47125 -0.25 -0.05
 254 FLUID HEX8 443 445 463 461 444 446 464 462 MAT 1 NA Ale
 255 FLUID HEX8 445 447 465 463 446 448 466 464 MAT 1 NA Ale
 256 FLUID HEX8 447 449 467 465 448 450 468 466 MAT 1 NA Ale
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS xfluid NODE 18 QUANTITY velx VALUE 1.00018600583657236e+00 TOLERANCE 1e-6
 XFLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 2.81177383931308995e+01 TOLERANCE 1e-6

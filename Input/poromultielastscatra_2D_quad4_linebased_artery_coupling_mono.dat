@@ -464,12 +464,6 @@ NODE 76 COORD 0.75 -0.05 0
 9 ART LINE2 73 74 MAT 3 GP 3 TYPE PressureBased DIAM 0.9
 10 ART LINE2 74 75 MAT 3 GP 3 TYPE PressureBased DIAM 0.9
 11 ART LINE2 75 76 MAT 3 GP 3 TYPE PressureBased DIAM 0.9
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // note: restart does not fulfil tolerances up to machine precision --> has to do with
 // recomputation of eta and xi in deformed configuration

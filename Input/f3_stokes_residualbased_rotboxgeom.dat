@@ -75,7 +75,6 @@ SIDE fluid y+ DSURFACE 4
 SIDE fluid z- DSURFACE 5
 SIDE fluid z+ DSURFACE 6
 -----------------------------------------------------------------NODE COORDS
-----------------------------------------------------------FLUID ELEMENTS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND  -1 -1 -1
 UPPER_BOUND  1 1 1

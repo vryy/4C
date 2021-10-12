@@ -455,7 +455,6 @@ NODE 144 DLINE 4
 98 FLUID NURBS9 116 117 118 128 129 130 140 141 142 MAT 1 NA Euler 
 99 FLUID NURBS9 117 118 119 129 130 131 141 142 143 MAT 1 NA Euler 
 100 FLUID NURBS9 118 119 120 130 131 132 142 143 144 MAT 1 NA Euler 
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0
 MAT 2 MAT_scatra DIFFUSIVITY 0.05

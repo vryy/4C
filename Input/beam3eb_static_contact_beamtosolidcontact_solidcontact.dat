@@ -258,10 +258,6 @@ NODE 62     COORD   1.2400000000000000e+00  3.0000000000000000e+00  2.0000000000
    20 BEAM3EB LINE2  58 59    MAT 2
    21 BEAM3EB LINE2  60 61    MAT 2
    22 BEAM3EB LINE2  61 62    MAT 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // reactivate these results again as soon as the segment based integration and the basic Lagrange contact
 // formulation are running in the new structural time integration                   -- hiermeier 01.03.18

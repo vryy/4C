@@ -861,8 +861,6 @@ NODE 202 COORD 1.000000000000000e+01 9.999999999999998e-02 0.000000000000000e+00
 98 WALL QUAD4 195 197 198 196 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 99 WALL QUAD4 197 199 200 198 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 100 WALL QUAD4 199 201 202 200 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 4000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0

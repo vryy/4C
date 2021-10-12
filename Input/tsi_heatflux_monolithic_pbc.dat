@@ -406,10 +406,6 @@ NODE 42    COORD  1.5500000000000000e+00  5.5000000000000000e+00  0.000000000000
    10 SOLIDH8THERMO HEX8  20 24 37 35 22 26 38 36    MAT 1 KINEM nonlinear EAS full
    11 SOLIDH8THERMO HEX8  24 28 39 37 26 30 40 38    MAT 1 KINEM nonlinear EAS full
    12 SOLIDH8THERMO HEX8  28 32 41 39 30 34 42 40    MAT 1 KINEM nonlinear EAS full
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 32 QUANTITY temp VALUE 6.07486003078999374e+02 TOLERANCE 2.0e-11
 THERMAL DIS thermo NODE 34 QUANTITY temp VALUE 6.07486003078999374e+02 TOLERANCE 2.0e-11

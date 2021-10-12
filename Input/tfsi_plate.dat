@@ -7620,13 +7620,6 @@ NODE      2912 COORD  5.0000000000000000e-01  2.0000000000000001e-01 -2.00000000
    2098 FLUID HEX8  2260 2259 2285 2286 1974 1973 1999 2000    MAT 1 NA ALE
    2099 FLUID HEX8  2261 2260 2286 2287 1975 1974 2000 2001    MAT 1 NA ALE
    2100 FLUID HEX8  2262 2261 2287 2288 1976 1975 2001 2002    MAT 1 NA ALE
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra2 NODE 2602 QUANTITY phi VALUE 2.94504363872015062e+02 TOLERANCE 4.44e-6
 STRUCTURE DIS structure NODE 2627 QUANTITY dispy VALUE -5.98911737547906117e-05 TOLERANCE 1e-6

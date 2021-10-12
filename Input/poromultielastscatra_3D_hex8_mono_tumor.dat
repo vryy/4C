@@ -7041,13 +7041,5 @@ NODE      1604 COORD  9.9386300131718095e-03 -7.8218714553505292e-04 -7.82187145
    398 SOLIDH8POROSCATRA HEX8  1590 1589 1593 1594 1592 1591 1595 1596    MAT 4 KINEM nonlinear EAS none TYPE PoroMultiReac
    399 SOLIDH8POROSCATRA HEX8  1594 1593 1597 1598 1596 1595 1599 1600    MAT 4 KINEM nonlinear EAS none TYPE PoroMultiReac
    400 SOLIDH8POROSCATRA HEX8  1598 1597 1601 1602 1600 1599 1603 1604    MAT 4 KINEM nonlinear EAS none TYPE PoroMultiReac
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

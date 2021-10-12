@@ -17894,9 +17894,6 @@ NODE 7982 COORD 0.00E+000 0.00E+000 5.00E+001
    6398 FLUID HEX8  5432 5433 5396 5400 5388 5389 5352 5356    MAT 1 NA ALE
    6399 FLUID HEX8  5433 5434 5392 5396 5389 5390 5348 5352    MAT 1 NA ALE
    6400 FLUID HEX8  5434 4275 4274 5392 5390 4223 4222 5348    MAT 1 NA ALE
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------REDUCED D AIRWAYS ELEMENTS
 6401 RED_AIRWAY LINE2 7931 7932 MAT 1 ElemSolvingType Linear TYPE ComplientResistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 1.00E+006 PoissonsRatio 0 ViscousTs 0 ViscousPhaseShift 0 WallThickness 1 Area 78.5398163397 Generation -1
 6402 RED_AIRWAY LINE2 7932 7933 MAT 1 ElemSolvingType Linear TYPE ComplientResistive Resistance Poiseuille PowerOfVelocityProfile 2 WallElasticity 1.00E+006 PoissonsRatio 0 ViscousTs 0 ViscousPhaseShift 0 WallThickness 1 Area 78.5398163397 Generation -1

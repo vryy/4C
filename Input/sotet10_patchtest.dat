@@ -189,8 +189,6 @@ NODE 35 COORD 5.0000000000000e-01 5.0000000000000e-01 0.0000000000000e+00
 10 SOLIDT10 TET10 3 2 11 28 6 14 13 30 34 29 MAT 1 KINEM nonlinear
 11 SOLIDT10 TET10 28 2 16 3 34 33 35 30 6 19 MAT 1 KINEM nonlinear
 12 SOLIDT10 TET10 28 15 3 16 31 18 30 35 20 19 MAT 1 KINEM nonlinear
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // input parameters
 // - discretization number

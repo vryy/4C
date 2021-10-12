@@ -2528,6 +2528,5 @@ NODE 797    COORD  -1.5000000000000000e+01  -5.0000000000000000e+00  0.000000000
 723 WALLQ4PORO QUAD4  768 769 795 794    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 724 WALLQ4PORO QUAD4  769 770 796 795    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 725 WALLQ4PORO QUAD4  770 771 797 796    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
 ---------------------------------------------------------------END
 // END

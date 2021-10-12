@@ -190,8 +190,6 @@ NODE 11 COORD 40.0 1.0 -10.0
 6 ART LINE2 7 8 MAT 2 GP 5 TYPE LinExp DIAM 16.4
 7 ART LINE2 9 10 MAT 3 GP 5 TYPE LinExp DIAM 12.4
 8 ART LINE2 10 11 MAT 3 GP 5 TYPE LinExp DIAM 12.4
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
 MAT 2 MAT_CNST_ART VISCOSITY 0.04 DENS 0.001 YOUNG 300000.0 NUE 0.5 TH 0.80 PEXT1 0.0 PEXT2 0.0

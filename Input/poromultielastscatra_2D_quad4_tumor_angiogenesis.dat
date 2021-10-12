@@ -1727,13 +1727,5 @@ NODE       402 COORD -5.0000000000000000e-01 -1.0000000000000000e-02  0.00000000
    198 WALLQ4POROSCATRA QUAD4  395 397 398 396    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
    199 WALLQ4POROSCATRA QUAD4  397 399 400 398    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
    200 WALLQ4POROSCATRA QUAD4  399 401 402 400    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

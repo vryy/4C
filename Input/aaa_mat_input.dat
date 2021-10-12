@@ -4058,14 +4058,6 @@ NODE 787 COORD 2.2996044102413551e+00 9.3518135410137599e+00 4.4444444444444446e
 1377 SOLIDP5FBAR PYRAMID5 17 555 553 13 562 MAT 2 KINEM nonlinear lambda 1.0 HU 0.0
 1378 SOLIDP5FBAR PYRAMID5 21 557 555 17 728 MAT 2 KINEM nonlinear lambda 1.0 HU 0.0
 1379 SOLIDP5FBAR PYRAMID5 25 559 557 21 728 MAT 2 KINEM nonlinear lambda 1.0 HU 0.0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
---------------------------------------------------------LUBRICATION ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------------TRANSPORT2 ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
----------------------------------------------------------------CELL ELEMENTS
----------------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 50 QUANTITY dispx VALUE 2.02177113234763596e-02 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE -1.04281435047077087e-02 TOLERANCE 1e-5

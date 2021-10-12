@@ -467,10 +467,6 @@ NODE 162   COORD 1.2700000000000000e+02 1.2700000000000000e+02 1.270000000000000
    62 SOLIDSH8PLAST HEX8  138 137 139 140 156 155 157 158    MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR zdir
    63 SOLIDSH8PLAST HEX8  140 139 141 142 158 157 159 160    MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR zdir
    64 SOLIDSH8PLAST HEX8  142 141 143 144 160 159 161 162    MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR zdir
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE 2.30377021735861014e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 20 QUANTITY dispy VALUE -1.03831631669232416e+00 TOLERANCE 1e-8

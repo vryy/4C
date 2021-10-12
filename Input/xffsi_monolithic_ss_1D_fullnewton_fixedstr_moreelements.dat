@@ -273,9 +273,6 @@ NODE 52 COORD 1.3999999999999999e+00 2.9999999999999999e-01 2.9999999999999999e-
 8 FLUID HEX8 21 22 23 24 25 26 27 28 MAT 1 NA Ale
 9 FLUID HEX8 25 26 27 28 29 30 31 32 MAT 1 NA Ale
 10 FLUID HEX8 29 30 31 32 33 34 35 36 MAT 1 NA Ale
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS xfluid NODE 8 QUANTITY velx VALUE 2.56000000000018602e-01 TOLERANCE 1e-6
 XFLUID DIS xfluid NODE 8 QUANTITY pressure VALUE 1.39787076137591573e+01 TOLERANCE 1e-6

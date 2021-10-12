@@ -3546,10 +3546,6 @@ NODE 1687 COORD 3.00000000e+00 0.00000000e+00 0.00000000e+00
 1534 WALL QUAD4 1681 1680 1684 1685 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1535 WALL QUAD4 1680 1682 1686 1684 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1536 WALL QUAD4 1682 1683 1687 1686 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 47 QUANTITY dispx VALUE -1.1903916125792011e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 47 QUANTITY dispy VALUE 7.9263584177359792e-01 TOLERANCE 1e-8

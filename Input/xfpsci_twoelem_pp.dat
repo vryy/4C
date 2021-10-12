@@ -403,10 +403,6 @@ NODE 38    COORD  1.9000000000000000e+00  1.9000000000000000e+00  2.100000000000
 6 SOLIDH8PORO HEX8  22 29 30 23 26 31 32 27 MAT 1 KINEM nonlinear EAS none
 7 SOLIDH8PORO HEX8  24 23 34 33 28 27 36 35 MAT 1 KINEM nonlinear EAS none
 8 SOLIDH8PORO HEX8  23 30 37 34 27 32 38 36 MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 //These tolerance are specified not very strict due to the critical problem setup 
 // (physic is not really resolved and a low number of integration points on the interface)

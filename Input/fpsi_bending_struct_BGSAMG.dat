@@ -19520,9 +19520,6 @@ NODE 4430    COORD  -1.7500000000000000e+00  2.5000000000000000e+00  -5.00000000
 3038  FLUID  HEX8    4416  4417  4428  4427  3061  3063  3105  3103        MAT  5  NA  ALE
 3039  FLUID  HEX8    4417  4418  4429  4428  3063  3065  3107  3105        MAT  5  NA  ALE
 3040  FLUID  HEX8    4418  4419  4430  4429  3065  3067  3109  3107        MAT  5  NA  ALE
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE  60 QUANTITY dispx VALUE 1.23229122238999439e-05 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE 1.17011631329565047e-05 TOLERANCE 1e-10

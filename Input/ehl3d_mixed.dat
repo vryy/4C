@@ -376,8 +376,6 @@ NODE       116 COORD  5.0000000000000000e-01 -4.1421356237309515e-01  5.00000000
    31 SOLIDH8 HEX8  68 67 69 70 86 85 87 88    MAT 1 KINEM nonlinear EAS none
    32 SOLIDH8 HEX8  70 69 71 72 88 87 89 90    MAT 1 KINEM nonlinear EAS none
    33 SOLIDH8 HEX8  91 92 93 94 95 96 97 98    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
    34 LUBRICATION QUAD4  99 100 101 102    MAT 3
    35 LUBRICATION QUAD4  100 103 104 101    MAT 3

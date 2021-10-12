@@ -921,9 +921,5 @@ NODE 216 COORD 1.00000000e+00 1.00000000e+00 0.00000000e+00
 123 SOLIDH8FBARSCATRA HEX8 171 172 178 177 207 208 214 213 MAT 1 KINEM nonlinear TYPE AdvReac
 124 SOLIDH8FBARSCATRA HEX8 172 173 179 178 208 209 215 214 MAT 1 KINEM nonlinear TYPE AdvReac
 125 SOLIDH8FBARSCATRA HEX8 173 174 180 179 209 210 216 215 MAT 1 KINEM nonlinear TYPE AdvReac
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

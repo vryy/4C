@@ -1480,7 +1480,5 @@ NODE 404 COORD 1.000000000000000e+02 0.000000000000000e+00 1.000000000000000e+01
 298 SHELL8 QUAD4 395 396 392 391 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0
 299 SHELL8 QUAD4 399 400 396 395 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0
 300 SHELL8 QUAD4 403 404 400 399 MAT 1 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

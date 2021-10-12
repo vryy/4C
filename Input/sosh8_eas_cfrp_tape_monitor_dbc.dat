@@ -1892,13 +1892,5 @@ NODE      1122 COORD  3.1750000000000000e+01  7.4999999999999997e-02 -6.34999999
    498 SOLIDSH8 HEX8  1093 1095 1096 1094 1115 1117 1118 1116    MAT 3 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto FIBER1 1.0 0.0 0.0
    499 SOLIDSH8 HEX8  1095 1097 1098 1096 1117 1119 1120 1118    MAT 3 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto FIBER1 1.0 0.0 0.0
    500 SOLIDSH8 HEX8  1097 1099 1100 1098 1119 1121 1122 1120    MAT 3 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto FIBER1 1.0 0.0 0.0
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

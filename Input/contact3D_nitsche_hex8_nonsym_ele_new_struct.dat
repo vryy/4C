@@ -409,13 +409,6 @@ NODE       150 COORD  5.0000000000000000e+00  5.0000000000000000e+00 -1.40000000
 62 SOLIDH8 HEX8  127 129 132 130 142 144 147 145    MAT 1 KINEM nonlinear EAS none
 63 SOLIDH8 HEX8  131 130 133 134 146 145 148 149    MAT 1 KINEM nonlinear EAS none
 64 SOLIDH8 HEX8  130 132 135 133 145 147 150 148    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE 1.28206200161507869e-02  TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 124 QUANTITY dispy VALUE -1.29504697584843891e-02 TOLERANCE 1e-10

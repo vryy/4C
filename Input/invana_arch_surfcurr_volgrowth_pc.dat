@@ -798,10 +798,6 @@ NODE 204      COORD    1.8500000000000000e+01    0.0000000000000000e+00    5.000
    48 SOLIDH8 HEX8  190 189 193 194 192 191 195 196    MAT 2 KINEM nonlinear EAS none
    49 SOLIDH8 HEX8  194 193 197 198 196 195 199 200    MAT 2 KINEM nonlinear EAS none
    50 SOLIDH8 HEX8  198 197 201 202 200 199 203 204    MAT 2 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
 INVANA SPECIAL QUANTITY gradient VALUE 4.72900030470345864e-07 TOLERANCE 1e-9
 INVANA SPECIAL QUANTITY error VALUE 9.74388095801789061e-03 TOLERANCE 1e-10

@@ -290,7 +290,5 @@ NODE 50 COORD 4.8000000000000e+01 6.0000000000000e+01 1.0000000000000e+00
 14 SOLIDSH8P8 HEX8 31 35 45 41 33 36 46 43 MAT 1 KINEM nonlinear STAB NonAff ANS Later LIN One THICKDIR auto EAS none ISO Mat RAD 0. -1.0 0. CIR 1. 0. 0. AXI 0. 0. 1.
 15 SOLIDSH8P8 HEX8 35 37 47 45 36 38 48 46 MAT 1 KINEM nonlinear STAB NonAff ANS Later LIN One THICKDIR auto EAS none ISO Mat RAD 0. -1.0 0. CIR 1. 0. 0. AXI 0. 0. 1.
 16 SOLIDSH8P8 HEX8 37 39 49 47 38 40 50 48 MAT 1 KINEM nonlinear STAB NonAff ANS Later LIN One THICKDIR auto EAS none ISO Mat RAD 0. -1.0 0. CIR 1. 0. 0. AXI 0. 0. 1.
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

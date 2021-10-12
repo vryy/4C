@@ -579,10 +579,5 @@ NODE       117 COORD -5.0000000000000000e+00 -1.0000000000000000e+01  0.00000000
 87 WALLQ4PORO QUAD4  105 106 115 114    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 88 WALLQ4PORO QUAD4  106 107 116 115    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 89 WALLQ4PORO QUAD4  107 108 117 116    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------------------END
 // END

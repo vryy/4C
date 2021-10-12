@@ -285,8 +285,6 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 6 SOLIDH8 HEX8 2 6 16 10 5 8 18 13 MAT 1 KINEM nonlinear EAS none
 7 SOLIDH8 HEX8 4 11 17 6 7 15 20 8 MAT 1 KINEM nonlinear EAS none
 8 SOLIDH8 HEX8 1 4 6 2 3 7 8 5 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0

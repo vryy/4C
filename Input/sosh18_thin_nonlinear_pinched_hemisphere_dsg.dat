@@ -162,9 +162,6 @@ NODE 50 COORD 3.5967915361083542e+00 8.7075149734493351e+00 3.3380081834733271e+
 2 SOLIDSH18 HEX18 2 9 10 3 30 29 28 21 31 6 11 12 7 48 49 44 42 50 MAT 1 KINEM nonlinear TSL dsg MEL dsg CTL dsg VOL eas9
 3 SOLIDSH18 HEX18 4 3 13 14 20 26 25 24 27 8 7 15 16 36 37 38 35 39 MAT 1 KINEM nonlinear TSL dsg MEL dsg CTL dsg VOL eas9
 4 SOLIDSH18 HEX18 3 10 17 13 28 33 32 26 34 7 12 18 15 44 45 46 37 47 MAT 1 KINEM nonlinear TSL dsg MEL dsg CTL dsg VOL eas9
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 
 ----------------------------------------------------------RESULT DESCRIPTION

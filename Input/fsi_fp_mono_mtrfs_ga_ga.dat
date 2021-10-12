@@ -491,9 +491,6 @@ NODE 108 COORD 1.5000000000000000e+00 1.0000000000000000e+00 5.0000000000000000e
 40 FLUID HEX8 20 19 27 28 42 41 45 46 MAT 2 NA ALE
 41 FLUID HEX8 19 22 30 27 41 43 47 45 MAT 2 NA ALE
 42 FLUID HEX8 22 24 32 30 43 44 48 47 MAT 2 NA ALE
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 1 QUANTITY dispx VALUE -9.99998895e-01 TOLERANCE 1e-9
 ALE DIS ale NODE 43 QUANTITY dispx VALUE -3.3333296500e-01 TOLERANCE 1e-9

@@ -910,9 +910,6 @@ NODE 153 COORD 15.384277327635500 -3.538764756847727 1.992206690338861
 62 SOLIDH8 HEX8 135 126 124 133 134 125 121 130 MAT 1 KINEM nonlinear EAS none
 63 SOLIDH8 HEX8 144 135 133 142 143 134 130 139 MAT 1 KINEM nonlinear EAS none
 64 SOLIDH8 HEX8 153 144 142 152 151 143 139 148 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_NeoHooke
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.00000001
