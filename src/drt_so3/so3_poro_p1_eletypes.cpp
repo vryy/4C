@@ -22,8 +22,7 @@ DRT::ELEMENTS::So_hex8PoroP1Type& DRT::ELEMENTS::So_hex8PoroP1Type::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8PoroP1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* object =
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -88,7 +87,7 @@ int DRT::ELEMENTS::So_hex8PoroP1Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So3_Poro_P1* failed");
@@ -108,8 +107,7 @@ DRT::ELEMENTS::So_tet4PoroP1Type& DRT::ELEMENTS::So_tet4PoroP1Type::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4PoroP1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* object =
-      new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -155,7 +153,7 @@ int DRT::ELEMENTS::So_tet4PoroP1Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");

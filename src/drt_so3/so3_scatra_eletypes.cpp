@@ -21,8 +21,7 @@ DRT::ELEMENTS::So_hex8ScatraType& DRT::ELEMENTS::So_hex8ScatraType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* object =
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -72,7 +71,7 @@ int DRT::ELEMENTS::So_hex8ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_scatra* failed");
@@ -95,7 +94,7 @@ DRT::ELEMENTS::So_hex8fbarScatraType& DRT::ELEMENTS::So_hex8fbarScatraType::Inst
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* object =
+  auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>(-1, -1);
   object->Unpack(data);
   return object;
@@ -147,7 +146,7 @@ int DRT::ELEMENTS::So_hex8fbarScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8fbar_scatra* failed");
@@ -169,7 +168,7 @@ DRT::ELEMENTS::So_hex27ScatraType& DRT::ELEMENTS::So_hex27ScatraType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27ScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* object =
+  auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1, -1);
   object->Unpack(data);
   return object;
@@ -220,7 +219,7 @@ int DRT::ELEMENTS::So_hex27ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_scatra* failed");
@@ -241,8 +240,7 @@ DRT::ELEMENTS::So_tet4ScatraType& DRT::ELEMENTS::So_tet4ScatraType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* object =
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -292,7 +290,7 @@ int DRT::ELEMENTS::So_tet4ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_scatra* failed");
@@ -316,7 +314,7 @@ DRT::ELEMENTS::So_tet10ScatraType& DRT::ELEMENTS::So_tet10ScatraType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* object =
+  auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1, -1);
   object->Unpack(data);
   return object;
@@ -367,7 +365,7 @@ int DRT::ELEMENTS::So_tet10ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_scatra* failed");
@@ -388,7 +386,7 @@ DRT::ELEMENTS::So_weg6ScatraType& DRT::ELEMENTS::So_weg6ScatraType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>* object =
+  auto* object =
       new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>(-1, -1);
   object->Unpack(data);
   return object;
@@ -440,7 +438,7 @@ int DRT::ELEMENTS::So_weg6ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>*>(
             dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6_scatra* failed");

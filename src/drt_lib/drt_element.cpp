@@ -20,14 +20,14 @@
 #include "../drt_mat/material.H"
 
 #include <Shards_BasicTopologies.hpp>
-
+#include <utility>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::StringToDistype(std::string name)
+DRT::Element::DiscretizationType DRT::StringToDistype(const std::string& name)
 {
   static std::map<std::string, DRT::Element::DiscretizationType> gid2distype;
-  if (gid2distype.size() == 0)
+  if (gid2distype.empty())
   {
     gid2distype["HEX8"] = DRT::Element::hex8;
     gid2distype["HEX20"] = DRT::Element::hex20;
@@ -184,7 +184,7 @@ DRT::Element::Element(const DRT::Element& old)
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
     SetCondition(fool->first, fool->second);
 
-  if (old.mat_.size())
+  if (!old.mat_.empty())
   {
     mat_.resize(old.mat_.size());
     for (unsigned iter = 0; iter < old.mat_.size(); ++iter)
@@ -199,7 +199,7 @@ DRT::Element::Element(const DRT::Element& old)
 /*----------------------------------------------------------------------*
  |  dtor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
-DRT::Element::~Element() {}
+DRT::Element::~Element() = default;
 
 
 /*----------------------------------------------------------------------*
@@ -270,7 +270,7 @@ void DRT::Element::SetNodeIds(const int nnode, const int* nodes)
 void DRT::Element::SetNodeIds(const std::string& distype, DRT::INPUT::LineDefinition* linedef)
 {
   linedef->ExtractIntVector(distype, nodeid_);
-  for (unsigned i = 0; i < nodeid_.size(); ++i) nodeid_[i] -= 1;
+  for (int& i : nodeid_) i -= 1;
   node_.resize(0);
 }
 
@@ -306,7 +306,7 @@ void DRT::Element::SetMaterial(int index, Teuchos::RCP<MAT::Material> mat)
 /*----------------------------------------------------------------------*
  |  add material to element (public)                          vuong 02/14|
  *----------------------------------------------------------------------*/
-int DRT::Element::AddMaterial(Teuchos::RCP<MAT::Material> mat)
+int DRT::Element::AddMaterial(const Teuchos::RCP<MAT::Material>& mat)
 {
   mat_.push_back(mat);
 
@@ -368,11 +368,11 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   // mat_
   std::vector<char> tmp;
   ExtractfromPack(position, data, tmp);
-  if (tmp.size() > 0)
+  if (!tmp.empty())
   {
     DRT::ParObject* o = DRT::UTILS::Factory(tmp);
-    MAT::Material* mat = dynamic_cast<MAT::Material*>(o);
-    if (mat == NULL) dserror("failed to unpack material");
+    auto* mat = dynamic_cast<MAT::Material*>(o);
+    if (mat == nullptr) dserror("failed to unpack material");
     // unpack only first material
     mat_[0] = Teuchos::rcp(mat);
   }
@@ -458,21 +458,21 @@ void DRT::Element::NodalConnectivity(
   size_t nodesperline = lines[0].size();
   if (nodesperline == 2)
   {
-    for (size_t l = 0; l < lines.size(); ++l)
+    for (auto& line : lines)
     {
-      edgeweights(lines[l][0], lines[l][1]) = weight;
-      edgeweights(lines[l][1], lines[l][0]) = weight;
+      edgeweights(line[0], line[1]) = weight;
+      edgeweights(line[1], line[0]) = weight;
     }
   }
   else if (nodesperline == 3)
   {
-    for (size_t l = 0; l < lines.size(); ++l)
+    for (auto& line : lines)
     {
-      edgeweights(lines[l][0], lines[l][1]) = weight;
-      edgeweights(lines[l][1], lines[l][0]) = weight;
+      edgeweights(line[0], line[1]) = weight;
+      edgeweights(line[1], line[0]) = weight;
 
-      edgeweights(lines[l][1], lines[l][2]) = weight;
-      edgeweights(lines[l][2], lines[l][1]) = weight;
+      edgeweights(line[1], line[2]) = weight;
+      edgeweights(line[2], line[1]) = weight;
     }
   }
   else
@@ -489,10 +489,8 @@ void DRT::Element::GetCondition(const std::string& name, std::vector<DRT::Condit
 {
   const int num = condition_.count(name);
   out.resize(num);
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator startit =
-      condition_.lower_bound(name);
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator endit =
-      condition_.upper_bound(name);
+  auto startit = condition_.lower_bound(name);
+  auto endit = condition_.upper_bound(name);
   int count = 0;
   std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
@@ -506,8 +504,8 @@ void DRT::Element::GetCondition(const std::string& name, std::vector<DRT::Condit
  *----------------------------------------------------------------------*/
 DRT::Condition* DRT::Element::GetCondition(const std::string& name) const
 {
-  std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr = condition_.find(name);
-  if (curr == condition_.end()) return NULL;
+  auto curr = condition_.find(name);
+  if (curr == condition_.end()) return nullptr;
   curr = condition_.lower_bound(name);
   return curr->second.get();
 }
@@ -558,7 +556,7 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
 
         if (doDirichlet)
         {
-          const std::vector<int>* flag = NULL;
+          const std::vector<int>* flag = nullptr;
           DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
@@ -583,11 +581,11 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
     // fill the vector with element dofs
     const int owner = Owner();
     std::vector<int> dof = dis.Dof(dofset, this);
-    if (dof.size()) lmstride.push_back(dof.size());
-    for (unsigned j = 0; j < dof.size(); ++j)
+    if (!dof.empty()) lmstride.push_back(dof.size());
+    for (int j : dof)
     {
       lmowner.push_back(owner);
-      lm.push_back(dof[j]);
+      lm.push_back(j);
     }
 
     // fill the vector with face dofs
@@ -597,18 +595,18 @@ void DRT::Element::LocationVector(const DRT::Discretization& dis, const std::vec
       {
         const int owner = face_[i]->Owner();
         std::vector<int> dof = dis.Dof(dofset, face_[i].getRawPtr());
-        if (dof.size()) lmstride.push_back(dof.size());
-        for (unsigned j = 0; j < dof.size(); ++j)
+        if (!dof.empty()) lmstride.push_back(dof.size());
+        for (int j : dof)
         {
           lmowner.push_back(owner);
-          lm.push_back(dof[j]);
+          lm.push_back(j);
         }
       }
     }
 
     if (doDirichlet)
     {
-      const std::vector<int>* flag = NULL;
+      const std::vector<int>* flag = nullptr;
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
@@ -677,7 +675,7 @@ void DRT::Element::LocationVector(
 
         if (doDirichlet)
         {
-          const std::vector<int>* flag = NULL;
+          const std::vector<int>* flag = nullptr;
           DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
@@ -702,11 +700,11 @@ void DRT::Element::LocationVector(
     // fill the vector with element dofs
     const int owner = Owner();
     std::vector<int> dof = dis.Dof(dofset, this);
-    if (dof.size()) lmstride.push_back(dof.size());
-    for (unsigned j = 0; j < dof.size(); ++j)
+    if (!dof.empty()) lmstride.push_back(dof.size());
+    for (int j : dof)
     {
       lmowner.push_back(owner);
-      lm.push_back(dof[j]);
+      lm.push_back(j);
     }
 
     // fill the vector with face dofs
@@ -716,11 +714,11 @@ void DRT::Element::LocationVector(
       {
         const int owner = face_[i]->Owner();
         std::vector<int> dof = dis.Dof(dofset, face_[i].getRawPtr());
-        if (dof.size()) lmstride.push_back(dof.size());
-        for (unsigned j = 0; j < dof.size(); ++j)
+        if (!dof.empty()) lmstride.push_back(dof.size());
+        for (int j : dof)
         {
           lmowner.push_back(owner);
-          lm.push_back(dof[j]);
+          lm.push_back(j);
         }
 
         if (doDirichlet)
@@ -730,17 +728,16 @@ void DRT::Element::LocationVector(
           DRT::Condition* dirich;
           bool dirichRelevant = false;
           // Check if there exist a dirichlet condition
-          if (dirich_vec.size())
+          if (!dirich_vec.empty())
           {
             // do only faces where all nodes are present in the node list
             const int nummynodes = face_[i]->NumNode();
             const int* mynodes = face_[i]->NodeIds();
             // Check if the face belongs to any condition
-            for (std::vector<DRT::Condition*>::iterator iter = dirich_vec.begin();
-                 iter != dirich_vec.end(); ++iter)
+            for (auto& iter : dirich_vec)
             {
               bool faceRelevant = true;
-              dirich = *iter;
+              dirich = iter;
               for (int j = 0; j < nummynodes; ++j)
               {
                 if (!dirich->ContainsNode(mynodes[j]))
@@ -767,7 +764,7 @@ void DRT::Element::LocationVector(
               continue;
             }
 
-            const std::vector<int>* flag = NULL;
+            const std::vector<int>* flag = nullptr;
             if (dirich->Type() != DRT::Condition::PointDirichlet &&
                 dirich->Type() != DRT::Condition::LineDirichlet &&
                 dirich->Type() != DRT::Condition::SurfaceDirichlet &&
@@ -791,7 +788,7 @@ void DRT::Element::LocationVector(
 
     if (doDirichlet)
     {
-      const std::vector<int>* flag = NULL;
+      const std::vector<int>* flag = nullptr;
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
@@ -853,7 +850,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
     for (int i = 0; i < numnode; ++i)
     {
       DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
-      const std::vector<int>* flag = NULL;
+      const std::vector<int>* flag = nullptr;
       if (dirich)
       {
         if (dirich->Type() != DRT::Condition::PointDirichlet &&
@@ -894,17 +891,17 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
     {
       const int owner = face_[i]->Owner();
       std::vector<int> dof = dis.Dof(0, face_[i].getRawPtr());
-      if (dof.size()) lmstride.push_back(dof.size());
-      for (unsigned j = 0; j < dof.size(); ++j)
+      if (!dof.empty()) lmstride.push_back(dof.size());
+      for (int j : dof)
       {
         lmowner.push_back(owner);
-        lm.push_back(dof[j]);
+        lm.push_back(j);
       }
     }
   }
 
   // do dirichlet BCs
-  const std::vector<int>* flag = NULL;
+  const std::vector<int>* flag = nullptr;
   DRT::Condition* dirich = GetCondition("Dirichlet");
   if (dirich)
   {
@@ -917,7 +914,7 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
   }
   const int owner = Owner();
   std::vector<int> dof = dis.Dof(this);
-  if (dof.size()) lmstride.push_back((int)dof.size());
+  if (!dof.empty()) lmstride.push_back((int)dof.size());
   for (unsigned j = 0; j < dof.size(); ++j)
   {
     if (flag && (*flag)[j])
@@ -974,11 +971,11 @@ void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& l
     {
       const int owner = face_[i]->Owner();
       std::vector<int> dof = dis.Dof(0, face_[i].getRawPtr());
-      if (dof.size()) lmstride.push_back(dof.size());
-      for (unsigned j = 0; j < dof.size(); ++j)
+      if (!dof.empty()) lmstride.push_back(dof.size());
+      for (int j : dof)
       {
         lmowner.push_back(owner);
-        lm.push_back(dof[j]);
+        lm.push_back(j);
       }
     }
   }
@@ -1009,14 +1006,14 @@ int DRT::Element::NumFace() const
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::Element::Neighbor(const int face) const
 {
-  if (face_.empty()) return NULL;
+  if (face_.empty()) return nullptr;
   dsassert(face < NumFace(), "there is no face with the given index");
   DRT::FaceElement* faceelement = face_[face].getRawPtr();
   if (faceelement->ParentMasterElement() == this)
     return faceelement->ParentSlaveElement();
   else if (faceelement->ParentSlaveElement() == this)
     return faceelement->ParentMasterElement();
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -1038,7 +1035,7 @@ void DRT::Element::SetFace(const int faceindex, Teuchos::RCP<DRT::FaceElement> f
   const int nface = NumFace();
   if (face_.empty()) face_.resize(nface, Teuchos::null);
   dsassert(faceindex < NumFace(), "there is no face with the given index");
-  face_[faceindex] = faceelement;
+  face_[faceindex] = std::move(faceelement);
 }
 
 
@@ -1117,8 +1114,8 @@ bool DRT::Element::HasOnlyGhostNodes(const int mypid) const
  *----------------------------------------------------------------------*/
 DRT::FaceElement::FaceElement(const int id, const int owner)
     : DRT::Element(id, owner),
-      parent_master_(NULL),
-      parent_slave_(NULL),
+      parent_master_(nullptr),
+      parent_slave_(nullptr),
       lface_master_(-1),
       lface_slave_(-1),
       parent_id_(-1)
@@ -1140,7 +1137,6 @@ DRT::FaceElement::FaceElement(const DRT::FaceElement& old)
       parent_id_(old.parent_id_)
 {
 }
-
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           ager 06/15 |

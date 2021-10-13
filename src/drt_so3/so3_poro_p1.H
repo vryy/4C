@@ -58,7 +58,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~So3_Poro_P1(){};
+      ~So3_Poro_P1() override = default;
 
       //@}
 
@@ -77,7 +77,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -85,7 +85,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -93,7 +93,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -101,25 +101,25 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volumes of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //! @name Access methods
 
@@ -132,14 +132,14 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 4; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 4; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
       //! @name Evaluation
 
@@ -153,7 +153,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(
+      int Evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
@@ -163,19 +163,19 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
           Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
-      );
+          ) override;
 
       //@}
 
       //! initialize the inverse of the jacobian and its determinant in the material configuration
-      virtual void InitElement();
+      void InitElement() override;
 
-      virtual void PreEvaluate(
+      void PreEvaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la       ///< location array for de-assembly
-      );
+          ) override;
 
      protected:
       //! don't want = operator
@@ -192,7 +192,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int MyEvaluate(
+      int MyEvaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
@@ -202,7 +202,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
           Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
-      );
+          ) override;
 
       //! Calculate nonlinear stiffness and internal force for poroelasticity problems
       void nlnstiff_poroelast(std::vector<int>& lm,        ///< location matrix
@@ -235,18 +235,17 @@ namespace DRT
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. structural
       //! displacements
-      virtual void ComputePorosityAndLinearization(Teuchos::ParameterList& params,
-          const double& press, const double& J, const int& gp,
-          const LINALG::Matrix<my::numnod_, 1>& shapfct,
+      void ComputePorosityAndLinearization(Teuchos::ParameterList& params, const double& press,
+          const double& J, const int& gp, const LINALG::Matrix<my::numnod_, 1>& shapfct,
           const LINALG::Matrix<my::numnod_, 1>* myporosity,
           const LINALG::Matrix<1, my::numdof_>& dJ_dus, double& porosity,
-          LINALG::Matrix<1, my::numdof_>& dphi_dus);
+          LINALG::Matrix<1, my::numdof_>& dphi_dus) override;
 
       //! compute porosity at gausspoint and linearization of porosity w.r.t. fluid pressure
-      virtual void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params,
-          const double& press, const double& J, const int& gp,
-          const LINALG::Matrix<my::numnod_, 1>& shapfct,
-          const LINALG::Matrix<my::numnod_, 1>* myporosity, double& porosity, double& dphi_dp);
+      void ComputePorosityAndLinearizationOD(Teuchos::ParameterList& params, const double& press,
+          const double& J, const int& gp, const LINALG::Matrix<my::numnod_, 1>& shapfct,
+          const LINALG::Matrix<my::numnod_, 1>* myporosity, double& porosity,
+          double& dphi_dp) override;
 
       //! gauss point loop for evaluation of stiffness and rhs vector
       void GaussPointLoopP1(Teuchos::ParameterList& params,

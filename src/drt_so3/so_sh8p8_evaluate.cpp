@@ -2698,7 +2698,7 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
           MAT::ViscoAnisotropic* visco =
               dynamic_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
           visco->Setup(DRT::ELEMENTS::So_sh8p8::NUMGPT_, actele->thickvec_);
-          if (actele->thickvec_.size() == 0)
+          if (actele->thickvec_.empty())
             dserror("zero size thickness vector for element %d", actele->Id());
         }
       }

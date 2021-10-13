@@ -93,7 +93,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -101,7 +101,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         switch (distype)
         {
@@ -140,7 +140,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -148,7 +148,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -157,10 +157,10 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //! returns a reference to the element type
-      DRT::ElementType& ElementType() const
+      DRT::ElementType& ElementType() const override
       {
         switch (distype)
         {
@@ -204,7 +204,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //! initialize the elements
       void InitElement();
@@ -241,7 +241,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
           Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
-      );
+          ) override;
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       // virtual void InitJacobianMapping();
@@ -259,7 +259,7 @@ namespace DRT
 
         \param matnum : material number from input file
        */
-      void SetMaterial(int matnum);
+      void SetMaterial(int matnum) override;
 
       /*!
        * @brief Evaluate Cauchy stress at given point in parameter space and calculate
@@ -349,7 +349,7 @@ namespace DRT
       //! \vec{r}} ]) at each gauss point
       std::vector<double> detJ_;
 
-      DRT::Node** Nodes();
+      DRT::Node** Nodes() override;
 
       Teuchos::RCP<MAT::Material> Material() const;
 

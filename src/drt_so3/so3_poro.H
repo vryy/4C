@@ -67,7 +67,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~So3_Poro(){};
+      ~So3_Poro() override = default;
 
       //@}
 
@@ -505,7 +505,7 @@ namespace DRT
           const std::vector<int>& lm,                      ///< location vector
           LINALG::Matrix<numdim_, numnod_>* matrixtofill,  ///< vector field
           LINALG::Matrix<numnod_, 1>* vectortofill,        ///< scalar field
-          const std::string state                          ///< state of the global vector
+          const std::string& state                         ///< state of the global vector
       );
 
       // private:

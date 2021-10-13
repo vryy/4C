@@ -816,7 +816,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoop_presbased(
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
 
       weights_(inode) = cp->W();
     }
@@ -1497,7 +1497,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ExtractValuesFromGlobalVector(
     const std::vector<int>& lm,                      ///< location vetor
     LINALG::Matrix<numdim_, numnod_>* matrixtofill,  ///< vector field
     LINALG::Matrix<numnod_, 1>* vectortofill,        ///< scalar field
-    const std::string state                          ///< state of the global vector
+    const std::string& state                         ///< state of the global vector
 )
 {
   // get state of the global vector

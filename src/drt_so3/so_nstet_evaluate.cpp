@@ -771,7 +771,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(LINALG::Matrix<6, 1>& stress, LINALG::
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       stvk->Evaluate(&glstrain_e, &cmat_e, &stress_e);
       density = stvk->Density();
     }

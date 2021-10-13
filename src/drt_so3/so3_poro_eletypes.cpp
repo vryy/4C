@@ -224,8 +224,7 @@ DRT::ELEMENTS::So_tet10PoroType& DRT::ELEMENTS::So_tet10PoroType::Instance() { r
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -294,7 +293,7 @@ DRT::ELEMENTS::So_nurbs27PoroType& DRT::ELEMENTS::So_nurbs27PoroType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* object =
+  auto* object =
       new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;

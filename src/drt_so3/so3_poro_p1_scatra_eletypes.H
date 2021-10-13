@@ -26,19 +26,20 @@ namespace DRT
     class So_hex8PoroP1ScatraType : public So_hex8PoroP1Type
     {
      public:
-      std::string Name() const { return "So_hex8PoroP1ScatraType"; }
+      std::string Name() const override { return "So_hex8PoroP1ScatraType"; }
 
       static So_hex8PoroP1ScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex8PoroP1ScatraType instance_;
@@ -52,19 +53,20 @@ namespace DRT
     class So_tet4PoroP1ScatraType : public So_tet4PoroP1Type
     {
      public:
-      std::string Name() const { return "So_tet4PoroP1ScatraType"; }
+      std::string Name() const override { return "So_tet4PoroP1ScatraType"; }
 
       static So_tet4PoroP1ScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_tet4PoroP1ScatraType instance_;
