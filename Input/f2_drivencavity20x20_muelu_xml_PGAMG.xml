@@ -54,8 +54,8 @@
     </ParameterList>
 
     <ParameterList name="myRestrictorFact">
-      <!-- <Parameter name="factory"                             type="string" value="TransPFactory"/> -->
-      <Parameter name="factory"                             type="string" value="GenericRFactory"/>
+      <Parameter name="factory"                             type="string" value="TransPFactory"/>
+      <!-- <Parameter name="factory"                             type="string" value="GenericRFactory"/> -->
       <Parameter name="P"                                   type="string" value="myProlongatorFact"/>
     </ParameterList>
 
