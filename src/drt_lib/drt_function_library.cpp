@@ -23,7 +23,6 @@ DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double>* 
 }
 
 /*---------------------------------------------------------------------*
- | Evaluate                                                proell 01/19 |
  *---------------------------------------------------------------------*/
 double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
 {
@@ -31,7 +30,6 @@ double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
 }
 
 /*---------------------------------------------------------------------*
- | Evaluate derivative                                    proell 01/19 |
  *---------------------------------------------------------------------*/
 double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
 {
@@ -52,15 +50,15 @@ DRT::UTILS::TranslatedFunction::TranslatedFunction(
 
 double DRT::UTILS::TranslatedFunction::Evaluate(const int index, const double* x, double t)
 {
-  if (index < 0 or index >= localFunction_->NumberComponents())
+  if (index < 0 or index >= static_cast<int>(localFunction_->NumberComponents()))
     dserror("Index must be between 0 and %d but is %d.", localFunction_->NumberComponents(), index);
 
-  double new_coord[3];
+  std::array<double, 3> new_coord;
   for (int i = 0; i < nsd_originTranslation; i++)
   {
     new_coord[i] = x[i] - originFunction_->Evaluate(i, x, t);
   }
-  return localFunction_->Evaluate(index, new_coord, t);
+  return localFunction_->Evaluate(index, new_coord.data(), t);
 }
 
 std::vector<double> DRT::UTILS::TranslatedFunction::EvaluateTimeDerivative(
@@ -70,14 +68,14 @@ std::vector<double> DRT::UTILS::TranslatedFunction::EvaluateTimeDerivative(
 
   if (deg != 1) dserror("Time derivative only implemented for degree <= 1");
 
-  if (index < 0 or index >= localFunction_->NumberComponents())
+  if (index < 0 or index >= static_cast<int>(localFunction_->NumberComponents()))
     dserror("Index must be between 0 and %d but is %d.", localFunction_->NumberComponents(), index);
 
   std::vector<double> result(deg + 1);
   result[0] = Evaluate(index, x, t);
 
-  double translatedCoord[3];
-  double translatedDeriv[3];
+  std::array<double, 3> translatedCoord;
+  std::array<double, 3> translatedDeriv;
   for (int i = 0; i < nsd_originTranslation; i++)
   {
     auto evalResult = originFunction_->EvaluateTimeDerivative(i, x, t, 1);
@@ -85,8 +83,9 @@ std::vector<double> DRT::UTILS::TranslatedFunction::EvaluateTimeDerivative(
     translatedDeriv[i] = -evalResult[1];
   }
 
-  auto localSpatialDeriv = localFunction_->EvaluateSpatialDerivative(index, translatedCoord, t);
-  auto localValues = localFunction_->EvaluateTimeDerivative(index, translatedCoord, t, 1);
+  auto localSpatialDeriv =
+      localFunction_->EvaluateSpatialDerivative(index, translatedCoord.data(), t);
+  auto localValues = localFunction_->EvaluateTimeDerivative(index, translatedCoord.data(), t, 1);
   // total time derivative according to chain rule
   // dh/dt = -df/dx*dg/dt + df/dt
   result[1] = localSpatialDeriv[0] * translatedDeriv[0] +

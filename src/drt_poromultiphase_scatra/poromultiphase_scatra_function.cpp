@@ -36,9 +36,11 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeaviside::TumorGrowthLawHeaviside(
 {
   // Check size
   if (funct_params.size() != 5)
+  {
     dserror(
         "Wrong size of funct_params for TUMOR_GROWTH_LAW_HEAVISIDE, it should have exactly\n"
         "5 funct_params (in this order) gamma_T_growth, w_nl_crit, w_nl_env, lambda and p_t_crit");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "gamma_T_growth")
@@ -192,9 +194,11 @@ POROMULTIPHASESCATRA::NecrosisLawHeaviside::NecrosisLawHeaviside(
 {
   // Check size
   if (funct_params.size() != 5)
+  {
     dserror(
         "Wrong size of funct_params for NECROSIS_LAW_HEAVISIDE, it should have exactly\n"
         "5 funct_params (in this order) gamma_t_necr, w_nl_crit, w_nl_env, delta_a_t and p_t_crit");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "gamma_t_necr")
@@ -368,10 +372,12 @@ POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside::OxygenConsumptionLawHeavisi
 {
   // Check size
   if (funct_params.size() != 5)
+  {
     dserror(
         "Wrong size of funct_params for NECROSIS_LAW_HEAVISIDE, it should have exactly\n"
         "5 funct_params (in this order) gamma_nl_growth, gamma_0_nl, w_nl_crit, w_nl_env and "
         "p_t_crit");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "gamma_nl_growth")
@@ -552,9 +558,11 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy::TumorGrowthLawHeavisideOxy(
 {
   // Check size
   if (funct_params.size() != 5)
+  {
     dserror(
         "Wrong size of funct_params for TUMOR_GROWTH_LAW_HEAVISIDE_OXY, it should have exactly\n"
         "5 funct_params (in this order) gamma_T_growth, w_nl_crit, w_nl_env, lambda and p_t_crit");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "gamma_T_growth")
@@ -732,9 +740,11 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro::TumorGrowthLawHeavisideNecro
 {
   // Check size
   if (funct_params.size() != 5)
+  {
     dserror(
         "Wrong size of funct_params for TUMOR_GROWTH_LAW_HEAVISIDE_OXY, it should have exactly\n"
         "5 funct_params (in this order) gamma_T_growth, w_nl_crit, w_nl_env, lambda and p_t_crit");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "gamma_T_growth")
@@ -912,11 +922,13 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::OxygenTransvascularExc
 {
   // Check size
   if (funct_params.size() != 9)
+  {
     dserror(
         "Wrong size of funct_params for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT, it should have "
         "exactly\n"
         "9 funct_params (in this order) n, Pb50, CaO2_max, alpha_bl_eff, gamma*rho*S/V, rho_oxy, "
         "rho_IF, rho_bl, alpha_IF");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "n")
@@ -1048,6 +1060,9 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont::Ev
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
   double VF1, oxy_mass_frac_if;
+
+  // define Fad object for evaluation
+  using FAD = Sacado::Fad::DFad<double>;
   FAD oxy_mass_frac_nv = 0.0;
   oxy_mass_frac_nv.diff(0, 1);       // independent variable 0 out of a total of 1
   if (variables[0].first == "phi1")  // maindiag-derivative
@@ -1105,11 +1120,13 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::OxygenTransvascularExc
 {
   // Check size
   if (funct_params.size() != 10)
+  {
     dserror(
         "Wrong size of funct_params for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC, it should have "
         "exactly\n"
         "10 funct_params (in this order) n, Pb50, CaO2_max, alpha_bl_eff, gamma*rho,rho_oxy, "
         "rho_IF, rho_bl, S2_max, alpha_IF");
+  }
 
   // Check correct naming and order of funct_params
   if (funct_params[0].first != "n")
@@ -1261,6 +1278,8 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc::Ev
 
   const double fac_if = rho_oxy / rho_if * alpha_IF;
 
+  // define Fad object for evaluation
+  using FAD = Sacado::Fad::DFad<double>;
   FAD oxy_mass_frac_nv = 0.0;
   oxy_mass_frac_nv.diff(0, 1);  // independent variable 0 out of a total of 1
 

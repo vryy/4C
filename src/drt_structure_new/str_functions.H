@@ -41,7 +41,7 @@ namespace STR
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -56,10 +56,8 @@ namespace STR
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -69,12 +67,10 @@ namespace STR
     \return number of components
 
     */
-    virtual int NumberComponents() { return (2); };
+    std::size_t NumberComponents() override { return (2); };
 
    private:
-    double youngmodulus_;
     double poissonratio_;
-    double strucdensity_;
   };
 
 
@@ -93,7 +89,7 @@ namespace STR
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -108,10 +104,8 @@ namespace STR
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -121,7 +115,7 @@ namespace STR
     \return number of components
 
     */
-    virtual int NumberComponents() { return (2); };
+    std::size_t NumberComponents() override { return (2); };
 
    private:
     double youngmodulus_;

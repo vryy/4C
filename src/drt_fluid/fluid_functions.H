@@ -45,7 +45,7 @@ namespace FLD
                        evaluated
 
      */
-    virtual double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -60,10 +60,8 @@ namespace FLD
       \param deg   (i) The degree of the time derivative
 
       */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -73,7 +71,7 @@ namespace FLD
       \return number of components (u,v,w,p)
 
      */
-    virtual int NumberComponents() { return (4); };
+    std::size_t NumberComponents() override { return (4); };
 
    private:
     double density_;
@@ -101,7 +99,7 @@ namespace FLD
                        evaluated
 
      */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -116,10 +114,8 @@ namespace FLD
       \param deg   (i) The degree of the time derivative
 
       */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -129,7 +125,7 @@ namespace FLD
       \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
 
      */
-    virtual int NumberComponents() { return (9); };
+    std::size_t NumberComponents() override { return (9); };
 
    private:
     double kinviscosity_;
@@ -157,7 +153,7 @@ namespace FLD
                        evaluated
 
      */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -172,10 +168,8 @@ namespace FLD
       \param deg   (i) The degree of the time derivative
 
      */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -185,7 +179,7 @@ namespace FLD
       \return number of components (u,v,w,p)
 
      */
-    virtual int NumberComponents() { return (4); };
+    std::size_t NumberComponents() override { return (4); };
 
    private:
     double density_;
@@ -217,7 +211,7 @@ namespace FLD
                        evaluated
 
      */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -232,10 +226,8 @@ namespace FLD
       \param deg   (i) The degree of the time derivative
 
      */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -245,7 +237,7 @@ namespace FLD
       \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
 
      */
-    virtual int NumberComponents() { return (9); };
+    std::size_t NumberComponents() override { return (9); };
 
    private:
     double kinviscosity_;
@@ -268,7 +260,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -283,10 +275,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -296,7 +286,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (4); };
+    std::size_t NumberComponents() override { return (4); };
 
    private:
     double c1_;
@@ -316,7 +306,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -331,10 +321,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -344,7 +332,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
   };
 
   /// correction term for weakly compressible flow in a channel
@@ -361,7 +349,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -376,10 +364,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -389,7 +375,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (1); };
+    std::size_t NumberComponents() override { return (1); };
   };
 
   /// special implementation for weakly compressible flow in a channel with Fourier expansion up to
@@ -407,7 +393,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -422,10 +408,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -435,7 +419,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
   };
 
   /// body force for weakly compressible flow in a channel with Fourier expansion up to 3rd order
@@ -452,7 +436,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -467,10 +451,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -480,7 +462,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (1); };
+    std::size_t NumberComponents() override { return (1); };
   };
 
   /// correction term for weakly compressible flow in a channel with Fourier expansion up to 3rd
@@ -498,7 +480,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -513,10 +495,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -526,7 +506,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (1); };
+    std::size_t NumberComponents() override { return (1); };
   };
 
   /// special implementation for weakly compressible Poiseuille flow
@@ -544,7 +524,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -559,10 +539,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -572,7 +550,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (6); };
+    std::size_t NumberComponents() override { return (6); };
 
    private:
     double length_;
@@ -600,7 +578,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -615,10 +593,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -628,7 +604,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
 
    private:
     double length_;
@@ -656,7 +632,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -671,10 +647,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -684,7 +658,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (6); };
+    std::size_t NumberComponents() override { return (6); };
 
    private:
     double viscosity_;
@@ -709,7 +683,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -724,10 +698,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -737,7 +709,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
 
    private:
     double viscosity_;
@@ -762,7 +734,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -777,10 +749,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -790,7 +760,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (6); };
+    std::size_t NumberComponents() override { return (6); };
 
    private:
     double refdensity_;
@@ -814,7 +784,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -829,10 +799,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -842,7 +810,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
 
    private:
     double refdensity_;
@@ -866,7 +834,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -881,10 +849,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -894,7 +860,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (1); };
+    std::size_t NumberComponents() override { return (1); };
 
    private:
     double refdensity_;
@@ -918,7 +884,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -933,10 +899,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -946,7 +910,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (6); };
+    std::size_t NumberComponents() override { return (6); };
 
    private:
     double refdensity_;
@@ -973,7 +937,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -988,10 +952,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -1001,7 +963,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
 
    private:
     double refdensity_;
@@ -1028,7 +990,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1043,10 +1005,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -1056,7 +1016,7 @@ namespace FLD
     \return number of components
 
     */
-    virtual int NumberComponents() { return (1); };
+    std::size_t NumberComponents() override { return (1); };
 
    private:
     double refdensity_;
@@ -1084,7 +1044,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1099,10 +1059,8 @@ namespace FLD
       \param deg   (i) The degree of the time derivative
 
      */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -1112,7 +1070,7 @@ namespace FLD
     \return number of components (u,v,p)
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
   };
 
 
@@ -1132,7 +1090,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1142,7 +1100,7 @@ namespace FLD
     \return number of components (u,v,p)
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
   };
 
 
@@ -1162,7 +1120,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1172,7 +1130,7 @@ namespace FLD
     \return number of components (f1,f2)
 
     */
-    virtual int NumberComponents() { return (2); };
+    std::size_t NumberComponents() override { return (2); };
   };
 
 
@@ -1195,7 +1153,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1210,10 +1168,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
     */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -1223,7 +1179,7 @@ namespace FLD
     \return number of components (u,v,w)
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
 
    private:
     double kinviscosity_;
@@ -1250,7 +1206,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1265,10 +1221,8 @@ namespace FLD
     \param deg   (i) The degree of the time derivative
 
      */
-    virtual std::vector<double> EvaluateTimeDerivative(const int index,  //< component of function
-        const double* x,                                                 //< coordinates
-        const double t,                                                  //< time
-        const unsigned deg);  //< degree of maximal derivative
+    std::vector<double> EvaluateTimeDerivative(
+        const int index, const double* x, const double t, const unsigned deg) override;
 
     /*!
 
@@ -1278,7 +1232,7 @@ namespace FLD
     \return number of components (u,v,w)
 
     */
-    virtual int NumberComponents() { return (3); };
+    std::size_t NumberComponents() override { return (3); };
 
    private:
     double kinviscosity_;
@@ -1306,7 +1260,7 @@ namespace FLD
                        evaluated
 
      */
-    double Evaluate(int index, const double* x, double t);
+    double Evaluate(int index, const double* x, double t) override;
 
     /*!
 
@@ -1316,7 +1270,7 @@ namespace FLD
       \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
 
      */
-    virtual int NumberComponents() { return (6); };
+    std::size_t NumberComponents() override { return (6); };
 
    private:
     double kinviscosity_;
@@ -1345,7 +1299,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1355,7 +1309,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (4); };
+    std::size_t NumberComponents() override { return (4); };
   };
 
 
@@ -1378,7 +1332,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1388,7 +1342,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (4); };
+    std::size_t NumberComponents() override { return (4); };
   };
 
 
@@ -1409,7 +1363,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
   };
 
 
@@ -1429,7 +1383,7 @@ namespace FLD
                      evaluated
 
     */
-    double Evaluate(const int index, const double* x, double t);
+    double Evaluate(const int index, const double* x, double t) override;
 
     /*!
 
@@ -1439,7 +1393,7 @@ namespace FLD
     \return number of components (u,v,w,p)
 
     */
-    virtual int NumberComponents() { return (4); };
+    std::size_t NumberComponents() override { return (4); };
 
     /*!
 

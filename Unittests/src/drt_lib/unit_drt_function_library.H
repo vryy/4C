@@ -30,30 +30,30 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public BACICxxTestWrapper
  private:
   constexpr static double A_CONSTANT = 1.0;
 
-  Teuchos::RCP<Function> constant;
-  Teuchos::RCP<Function> scalarField;
-  Teuchos::RCP<Function> linearTime;
+  Teuchos::RCP<Function> constant_;
+  Teuchos::RCP<Function> scalarField_;
+  Teuchos::RCP<Function> linearTime_;
 
-  const double at000[3] = {0, 0, 0};
-  const double at111[3] = {1, 1, 1};
-  const double at123[3] = {1, 2, 3};
+  const std::array<double, 3> at000_ = {0.0, 0.0, 0.0};
+  const std::array<double, 3> at111_ = {1.0, 1.0, 1.0};
+  const std::array<double, 3> at123_ = {1.0, 2.0, 3.0};
 
   /// a time- and space-independent constant vector function
   class ConstantVectorFunctionStub : public DRT::UTILS::Function
   {
    public:
-    double Evaluate(const int index, const double* x, double t) override { return A_CONSTANT; };
+    double Evaluate(const int index, const double* x, double t) override { return A_CONSTANT; }
     std::vector<double> EvaluateTimeDerivative(
         const int index, const double* x, double t, const unsigned int deg) override
     {
-      return std::vector<double>(2, 0.0);
-    };
+      return {0.0, 0.0};
+    }
     std::vector<double> EvaluateSpatialDerivative(
         const int index, const double* x, const double t) override
     {
-      return std::vector<double>(3, 0);
+      return {0.0, 0.0, 0.0};
     }
-    int NumberComponents() override { return 3; };
+    std::size_t NumberComponents() override { return 3; }
   };
 
   /// a scalar field f(x) = x_1^2+2*x_2^2+4*x_3^2
@@ -62,28 +62,28 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public BACICxxTestWrapper
    public:
     double Evaluate(const int index, const double* x, double t) override
     {
-      return (x[0] * x[0] + 2 * x[1] * x[1] + 4 * x[2] * x[2]);
-    };
+      return x[0] * x[0] + 2 * x[1] * x[1] + 4 * x[2] * x[2];
+    }
     std::vector<double> EvaluateTimeDerivative(
         const int index, const double* x, double t, const unsigned int deg) override
     {
       auto result = std::vector<double>(2, 0.0);
       result[0] = Evaluate(index, x, t);
       return result;
-    };
+    }
     std::vector<double> EvaluateSpatialDerivative(
         const int index, const double* x, const double t) override
     {
-      return std::vector<double>{2 * x[0], 4 * x[1], 8 * x[2]};
+      return {2 * x[0], 4 * x[1], 8 * x[2]};
     }
-    int NumberComponents() override { return 1; };
+    std::size_t NumberComponents() override { return 1; }
   };
 
   /// a time dependent vector function f(t) = [t, t, t]
   class LinearTimeVectorFunctionStub : public DRT::UTILS::Function
   {
    public:
-    double Evaluate(const int index, const double* x, double t) override { return t; };
+    double Evaluate(const int index, const double* x, double t) override { return t; }
 
     std::vector<double> EvaluateTimeDerivative(
         const int index, const double* x, double t, const unsigned int deg) override
@@ -92,139 +92,145 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public BACICxxTestWrapper
       result[0] = Evaluate(index, x, t);
       result[1] = 1;
       return result;
-    };
+    }
     std::vector<double> EvaluateSpatialDerivative(
         const int index, const double* x, const double t) override
     {
-      return std::vector<double>(3, 0);
+      return {0.0, 0.0, 0.0};
     }
-    int NumberComponents() override { return 3; };
+    std::size_t NumberComponents() override { return 3; }
   };
 
 
  public:
   void Setup() override
   {
-    constant = Teuchos::rcp(new ConstantVectorFunctionStub());
-    scalarField = Teuchos::rcp(new ScalarFieldFunctionStub());
-    linearTime = Teuchos::rcp(new LinearTimeVectorFunctionStub());
-  };
+    constant_ = Teuchos::rcp(new ConstantVectorFunctionStub());
+    scalarField_ = Teuchos::rcp(new ScalarFieldFunctionStub());
+    linearTime_ = Teuchos::rcp(new LinearTimeVectorFunctionStub());
+  }
 
   void TearDown() override
   {
-    constant = Teuchos::null;
-    linearTime = Teuchos::null;
-    scalarField = Teuchos::null;
-  };
+    constant_ = Teuchos::null;
+    linearTime_ = Teuchos::null;
+    scalarField_ = Teuchos::null;
+  }
 
   void TestEvaluateConstantOriginConstantLocal()
   {
-    Teuchos::RCP<Function> testFunction = Teuchos::rcp(new TranslatedFunction(constant, constant));
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(constant_, constant_));
     // the whole function is a constant in all components
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111, 0), A_CONSTANT, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(1, at123, 0), A_CONSTANT, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(2, at111, 0), A_CONSTANT, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1000), A_CONSTANT, 1e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111_.data(), 0), A_CONSTANT, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(1, at123_.data(), 0), A_CONSTANT, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(2, at111_.data(), 0), A_CONSTANT, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123_.data(), 1000), A_CONSTANT, 1.0e-15);
   }
 
   void TestEvaluateConstantOriginSpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(constant, scalarField));
+        Teuchos::rcp(new TranslatedFunction(constant_, scalarField_));
     // the local origin is fixed at 1,1,1 and does not move
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111, 0), 0, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111, 1), 0, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 0), Expected(at123, WithOrigin(at111)), 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), Expected(at123, WithOrigin(at111)), 1e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111_.data(), 0), 0, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111_.data(), 1), 0, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123_.data(), 0),
+        Expected(at123_.data(), WithOrigin(at111_.data())), 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123_.data(), 1),
+        Expected(at123_.data(), WithOrigin(at111_.data())), 1.0e-15);
   }
 
   void TestEvaluateMovingOriginConstantLocal()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, constant));
+        Teuchos::rcp(new TranslatedFunction(linearTime_, constant_));
     // local function is a constant and origin does not matter
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111, 0), A_CONSTANT, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111, 1), A_CONSTANT, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 0), A_CONSTANT, 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), A_CONSTANT, 1e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111_.data(), 0), A_CONSTANT, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111_.data(), 1), A_CONSTANT, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123_.data(), 0), A_CONSTANT, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123_.data(), 1), A_CONSTANT, 1.0e-15);
   }
 
   void TestEvaluateMovingOriginSpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111, 0), Expected(at111, WithOrigin(at000)), 1e-15);
-    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), Expected(at123, WithOrigin(at111)), 1e-15);
+        Teuchos::rcp(new TranslatedFunction(linearTime_, scalarField_));
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at111_.data(), 0),
+        Expected(at111_.data(), WithOrigin(at000_.data())), 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->Evaluate(0, at123_.data(), 1),
+        Expected(at123_.data(), WithOrigin(at111_.data())), 1.0e-15);
   }
 
   void TestEvaluateTimeDerivativeConstantOriginConstantLocal()
   {
-    Teuchos::RCP<Function> testFunction = Teuchos::rcp(new TranslatedFunction(constant, constant));
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
+    Teuchos::RCP<Function> testFunction =
+        Teuchos::rcp(new TranslatedFunction(constant_, constant_));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1], 0, 1.0e-15);
   }
 
   void TestEvaluateTimeDerivativeConstantOriginSpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(constant, scalarField));
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 0, 1)[1], 0, 1e-15);
+        Teuchos::rcp(new TranslatedFunction(constant_, scalarField_));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1], 0, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123_.data(), 0, 1)[1], 0, 1.0e-15);
   }
 
   void TestEvaluateTimeDerivativeMovingOriginConstantLocal()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, constant));
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 1)[1], 0, 1e-15);
+        Teuchos::rcp(new TranslatedFunction(linearTime_, constant_));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1], 0, 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123_.data(), 1, 1)[1], 0, 1.0e-15);
   }
 
   void TestEvaluateTimeDerivativeMovingOriginSpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1],
-        ExpectedTimeDerivative(at111, 0), 1e-15);
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 1, 1)[1],
-        ExpectedTimeDerivative(at111, 1), 1e-15);
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 0, 1)[1],
-        ExpectedTimeDerivative(at123, 0), 1e-15);
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 1)[1],
-        ExpectedTimeDerivative(at123, 1), 1e-15);
+        Teuchos::rcp(new TranslatedFunction(linearTime_, scalarField_));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 1)[1],
+        ExpectedTimeDerivative(at111_.data(), 0), 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111_.data(), 1, 1)[1],
+        ExpectedTimeDerivative(at111_.data(), 1), 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123_.data(), 0, 1)[1],
+        ExpectedTimeDerivative(at123_.data(), 0), 1.0e-15);
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123_.data(), 1, 1)[1],
+        ExpectedTimeDerivative(at123_.data(), 1), 1.0e-15);
   }
 
   void TestEvaluateTimeDerivativeDegree0()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
-    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 0)[0],
-        Expected(at123, WithOrigin(at111)), 1e-15);
+        Teuchos::rcp(new TranslatedFunction(linearTime_, scalarField_));
+    TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123_.data(), 1, 0)[0],
+        Expected(at123_.data(), WithOrigin(at111_.data())), 1.0e-15);
   }
 
   void TestShouldThrowWhenEvaluateTimeDerivativeDegreeGreater1()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
-    TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111, 0, 2));
+        Teuchos::rcp(new TranslatedFunction(linearTime_, scalarField_));
+    TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111_.data(), 0, 2));
   }
 
   void TestShouldThrowWhenEvaluatedComponentNegative()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
-    TS_ASSERT_THROWS_ANYTHING(testFunction->Evaluate(-1, at111, 0));
+        Teuchos::rcp(new TranslatedFunction(linearTime_, scalarField_));
+    TS_ASSERT_THROWS_ANYTHING(testFunction->Evaluate(-1, at111_.data(), 0));
   }
 
   void TestShouldThrowWhenEvaluatedComponentTooLarge()
   {
     Teuchos::RCP<Function> testFunction =
-        Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
-    TS_ASSERT_THROWS_ANYTHING(testFunction->Evaluate(2, at111, 0));
+        Teuchos::rcp(new TranslatedFunction(linearTime_, scalarField_));
+    TS_ASSERT_THROWS_ANYTHING(testFunction->Evaluate(2, at111_.data(), 0));
   }
 
-  void TestShouldThrow_When_OriginHasOnlyOneComponent()
+  void TestShouldThrowWhenOriginHasOnlyOneComponent()
   {
-    TS_ASSERT_THROWS_ANYTHING(new TranslatedFunction(scalarField, constant));
+    TS_ASSERT_THROWS_ANYTHING(new TranslatedFunction(scalarField_, constant_));
   }
 
  private:

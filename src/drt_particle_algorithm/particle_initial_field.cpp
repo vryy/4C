@@ -102,7 +102,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       int statedim = container->GetStateDim(particleState);
 
       // safety check
-      if (statedim != function.NumberComponents())
+      if (static_cast<std::size_t>(statedim) != function.NumberComponents())
         dserror("dimensions of function defining initial field and of state '%s' not matching!",
             PARTICLEENGINE::EnumToStateName(particleState).c_str());
 
