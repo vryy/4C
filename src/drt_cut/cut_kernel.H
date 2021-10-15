@@ -1353,9 +1353,6 @@ namespace GEO
         ComputePositionAdaptivePrecision(LINALG::Matrix<dim, 1>& xsi)
             : Strategy(clnxsi_, true), xsi_(xsi), clnxsi_(true), cond_infinity_(false)
         {
-          dserror(
-              "ComputePositionAdaptivePrecision: This function is not tested! Most probably it "
-              "will work, but be careful");
         }
 
         bool operator()(const LINALG::Matrix<probDim, numNodesElement>& xyze,
@@ -1651,7 +1648,6 @@ namespace GEO
           if (computeCln)  // this is not used up to now!
           {
             {
-              dserror("Position Strategy with CLN not tested!");
               ComputePositionAdaptivePrecision<
                   NewtonSolve<ComputePositionStrategy<false, probDim, elementType, numNodesElement,
                                   dim, ClnWrapper, ComputePositionNoStaticMembers>,
