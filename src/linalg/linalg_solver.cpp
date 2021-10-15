@@ -1558,9 +1558,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
     case INPAR::SOLVER::stratimikos_belos:   //===================================== Stratimikos
     {
       outparams.set("solver", "stratimikos");
-      std::string xmlfile = inparams.get<std::string>("STRATIMIKOS_XMLFILE");
-      if (xmlfile != "none") outparams.set("xml file", xmlfile);
-      outparams.set("xml file", inparams.get<std::string>("STRATIMIKOS_XMLFILE"));
       Teuchos::ParameterList& stratimikoslist = outparams.sublist("Stratimikos Parameters");
       stratimikoslist = LINALG::Solver::TranslateToStratimikos(inparams);
     }
@@ -1768,7 +1765,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
       {
         Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
         tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
-        // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans
+        // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans -> No?!
       }
       //------------------------------------- set parameters for CheapSIMPLE if used
       if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
