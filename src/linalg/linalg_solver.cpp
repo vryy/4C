@@ -1765,7 +1765,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
       {
         Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
         tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
-        // TODO: Teko preconditioners -> Stratimikos interface? -> ask Eric about his plans -> No?!
       }
       //------------------------------------- set parameters for CheapSIMPLE if used
       if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
