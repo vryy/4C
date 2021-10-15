@@ -57,7 +57,6 @@ AZOUTPUT                        1                               // output every 
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MueLu_sym //MLFLUID2            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
 MUELU_XML_ENFORCE               No
-//MUELU_XML_FILE                  f2_drivencavity20x20_muelu_xml_PGAMG.xml
 AZREUSE                         8                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
