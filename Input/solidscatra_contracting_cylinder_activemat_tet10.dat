@@ -46,7 +46,7 @@ ML_SMOOTHERMED                  Chebychev
 ML_SMOTIMES                     9 9 9 9 1
 SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR
-STRATIMIKOS_XMLFILE             None
+MUELU_XML_ENFORCE               No
 --------------------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC

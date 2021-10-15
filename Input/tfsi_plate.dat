@@ -461,7 +461,6 @@ BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
 VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
 SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
@@ -518,7 +517,7 @@ BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
 VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
+MUELU_XML_ENFORCE               No
 SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none

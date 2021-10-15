@@ -133,7 +133,7 @@ BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
 VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
+MUELU_XML_ENFORCE               No
 NAME                            ScaTraSolver
 SIMPLE_DAMPING                  1
 --------------------------------------------------------------UMFPACK SOLVER
@@ -186,7 +186,7 @@ BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
 VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
+MUELU_XML_ENFORCE               No
 NAME                            No_name
 SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
