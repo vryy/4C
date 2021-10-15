@@ -957,9 +957,6 @@ SIMPLE_DAMPING                  1
 //                              undefined
 SOLVER                          UMFPACK
 //
-// xml file for stratimikos parameters
-STRATIMIKOS_XMLFILE             none
-//
 // sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
 SUB_SOLVER1                     -1
 //
@@ -1205,9 +1202,6 @@ SIMPLE_DAMPING                  1
 //                              undefined
 SOLVER                          Aztec_MSR
 //
-// xml file for stratimikos parameters
-STRATIMIKOS_XMLFILE             none
-//
 // sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
 SUB_SOLVER1                     -1
 //
@@ -1452,9 +1446,6 @@ SIMPLE_DAMPING                  1
 //                              Stratimikos_Belos
 //                              undefined
 SOLVER                          UMFPACK
-//
-// xml file for stratimikos parameters
-STRATIMIKOS_XMLFILE             none
 //
 // sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
 SUB_SOLVER1                     -1
