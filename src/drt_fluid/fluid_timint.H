@@ -42,6 +42,8 @@ namespace IO
   class DiscretizationWriter;
 }
 
+class DiscretizationRuntimeVtuWriter;
+
 namespace FLD
 {
   class TurbulenceStatisticManager;
@@ -718,6 +720,10 @@ namespace FLD
 
     //! output writer
     Teuchos::RCP<IO::DiscretizationWriter> output_;
+
+
+    //! runtime output writer
+    Teuchos::RCP<DiscretizationRuntimeVtuWriter> runtime_output_writer_;
 
     //! @name Time loop stuff
     //@{

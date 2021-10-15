@@ -16,6 +16,8 @@
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 
+#include "../drt_io/discretization_runtime_vtu_writer.H"
+
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -27,6 +29,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       solver_(solver),
       params_(params),
       output_(output),
+      runtime_output_writer_(Teuchos::rcp(new DiscretizationRuntimeVtuWriter())),
       time_(0.0),
       step_(0),
       dta_(params_->get<double>("time step size")),

@@ -44,6 +44,7 @@
 #include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include "../drt_io/io.H"
+#include "../drt_io/discretization_runtime_vtu_writer.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 #include "../drt_lib/drt_globalproblem.H"
@@ -387,6 +388,10 @@ void FLD::FluidImplicitTimeInt::Init()
     CreateFacesExtension();
   }
   reconstructder_ = DRT::INPUT::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
+
+  unsigned int num_timesteps_in_simulation_upper_bound = 1000000000;
+  runtime_output_writer_->Initialize(
+      Discretization(), num_timesteps_in_simulation_upper_bound, Time(), false);
 }  // FluidImplicitTimeInt::Init()
 
 /*----------------------------------------------------------------------*
@@ -3299,7 +3304,50 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
   if (params_->get<bool>("GMSH_OUTPUT")) OutputToGmsh(step_, time_, true);
 }  // FluidImplicitTimeInt::StatisticsOutput
 
+void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
+{
+  Teuchos::RCP<Epetra_Vector> col_version =
+      Teuchos::rcp(new Epetra_Vector(*(Discretization()->DofColMap()), true));
 
+  runtime_output_writer_->ResetTimeAndTimeStep(time_, step_);
+  LINALG::Export(*velnp_, *col_version);
+  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "velocity");
+
+  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
+  LINALG::Export(*pressure, *col_version);
+  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 1, 3, "pressure");
+
+  if (alefluid_)
+  {
+    LINALG::Export(*dispnp_, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "displacement");
+
+    LINALG::Export(*dispn_, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "dispn");
+    LINALG::Export(*dispnm_, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "dispnm");
+    LINALG::Export(*gridvn_, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "gridvn");
+  }
+
+  LINALG::Export(*accnp_, *col_version);
+  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "accnp");
+  LINALG::Export(*accn_, *col_version);
+  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "accn");
+  LINALG::Export(*veln_, *col_version);
+  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "veln");
+  LINALG::Export(*velnm_, *col_version);
+  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "velnm");
+
+  runtime_output_writer_->AppendElementOwner("element_owner");
+  runtime_output_writer_->AppendElementGID("element_gid");
+  runtime_output_writer_->AppendElementGhostingInformation();
+  runtime_output_writer_->AppendNodeGID("node_gid");
+
+  // finalize everything and write all required files to filesystem
+  runtime_output_writer_->WriteFiles();
+  runtime_output_writer_->WriteCollectionFileOfAllWrittenFiles();
+}
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        gammi 04/07|
  | overloaded in TimIntPoro                                             |
@@ -3310,6 +3358,7 @@ void FLD::FluidImplicitTimeInt::Output()
   // output of solution
   if (upres_ > 0 and step_ % upres_ == 0)
   {
+    WriteRuntimeOutput();
     // step number and time
     output_->NewStep(step_, time_);
 
@@ -3318,6 +3367,7 @@ void FLD::FluidImplicitTimeInt::Output()
 
     // velocity/pressure vector
     output_->WriteVector("velnp", velnp_);
+
     // (hydrodynamic) pressure
     Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
     output_->WriteVector("pressure", pressure);
@@ -3330,7 +3380,6 @@ void FLD::FluidImplicitTimeInt::Output()
 
     if (params_->get<bool>("GMSH_OUTPUT")) OutputToGmsh(step_, time_, false);
 
-    // output_->WriteVector("residual", trueresidual_);
     if (alefluid_) output_->WriteVector("dispnp", dispnp_);
 
     if (physicaltype_ == INPAR::FLUID::varying_density or
@@ -3403,6 +3452,7 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("dispnm", dispnm_);
         output_->WriteVector("gridvn", gridvn_);
       }
+
       if (xwall_ != Teuchos::null)
         output_->WriteVector("wss",
             stressmanager_->GetPreCalcWallShearStresses(xwall_->FixDirichletInflow(trueresidual_)));
