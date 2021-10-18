@@ -1,20 +1,4 @@
 <ParameterList name="MueLu">
-    <ParameterList name="Hierarchy">
-        <Parameter name="max levels" type="int" value="2"/>
-        <Parameter name="coarse: max size" type="int" value="1"/>
-        <Parameter name="verbosity" type="string" value="None"/>
-        <ParameterList name="All">
-            <Parameter name="startLevel" type="int" value="0"/>
-            <Parameter name="Smoother" type="string" value="ILU_List"/>
-            <Parameter name="CoarseSolver" type="string" value="DirectSolver_List"/>
-            <Parameter name="Aggregates" type="string" value="UncoupledAggregationFactory_List"/>
-            <Parameter name="Graph" type="string" value="CoalesceDropFactory_List"/>
-            <Parameter name="A" type="string" value="RAPFactory_List"/>
-            <Parameter name="P" type="string" value="ProlongatorFactory_List"/>
-            <Parameter name="R" type="string" value="RestrictorFactory_List"/>
-            <Parameter name="Nullspace" type="string" value="TentativePFactory_List"/>
-        </ParameterList>
-    </ParameterList>
 
     <ParameterList name="Matrix">
         <Parameter name="PDE equations" type="int" value="1"/>
@@ -72,4 +56,22 @@
             </ParameterList>
         </ParameterList>
     </ParameterList>
+
+    <ParameterList name="Hierarchy">
+        <Parameter name="max levels" type="int" value="2"/>
+        <Parameter name="coarse: max size" type="int" value="1"/>
+        <Parameter name="verbosity" type="string" value="None"/>
+        <ParameterList name="All">
+            <Parameter name="startLevel" type="int" value="0"/>
+            <Parameter name="Smoother" type="string" value="ILU_List"/>
+            <Parameter name="CoarseSolver" type="string" value="DirectSolver_List"/>
+            <Parameter name="Aggregates" type="string" value="UncoupledAggregationFactory_List"/>
+            <Parameter name="Graph" type="string" value="CoalesceDropFactory_List"/>
+            <Parameter name="A" type="string" value="RAPFactory_List"/>
+            <Parameter name="P" type="string" value="ProlongatorFactory_List"/>
+            <Parameter name="R" type="string" value="RestrictorFactory_List"/>
+            <Parameter name="Nullspace" type="string" value="TentativePFactory_List"/>
+        </ParameterList>
+    </ParameterList>
+
 </ParameterList>

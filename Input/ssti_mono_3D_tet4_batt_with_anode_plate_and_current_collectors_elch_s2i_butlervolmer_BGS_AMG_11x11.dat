@@ -92,7 +92,7 @@ AZSUB                           20
 ----------------------------------------------------------SOLVER 3
 SOLVER                          Aztec_MSR
 AZPREC                          MueLu_sym
-STRATIMIKOS_XMLFILE             ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11_structure.xml
+MUELU_XML_FILE                  ssti_mono_3D_tet4_batt_with_anode_plate_and_current_collectors_elch_s2i_butlervolmer_BGS_AMG_11x11_structure.xml
 AZSUB                           20
 ----------------------------------------------------------SOLVER 4
 SOLVER                          Aztec_MSR

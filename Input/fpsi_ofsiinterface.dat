@@ -211,7 +211,7 @@ LINEAR_SOLVER                   1
 ITEMAX                          100
 ITEMIN                          1
 NUMSTEP                         2
-RESULTSEVRY                           1
+RESULTSEVRY                     1
 RESTARTEVRY                     1
 FDCheck_row                     -1
 FDCheck_column                  -1
@@ -282,7 +282,7 @@ BGS2X2_BLOCK2_DAMPING           1
 PERMUTE_SYSTEM                  none
 NON_DIAGDOMINANCE_RATIO         1
 VERBOSITY                       0
-STRATIMIKOS_XMLFILE             none
+MUELU_XML_ENFORCE               No
 NAME                            FPSI_Solver
 SIMPLE_DAMPING                  1
 ----------------------------------------------------------MATERIALS

@@ -53,7 +53,6 @@ namespace INPAR
       solver_name[11] = "undefined";
       solver_number[11] = undefined;
 
-
       setStringToIntegralParameter<int>("SOLVER", "undefined",
           "The solver to attack the system of linear equations arising of FE approach with.",
           solver_name, solver_number, &list);
@@ -285,6 +284,8 @@ namespace INPAR
       StringParameter(
           "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
 
+      BoolParameter("MUELU_XML_ENFORCE", "Yes", "option defining xml file usage", &list);
+
       //  // parameters for AMG(BS)
       //  setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
       //                            "Relaxation factor for Braess-Sarazin smoother within AMGBS
@@ -378,9 +379,6 @@ namespace INPAR
       // verbosity flag (for Belos)
       IntParameter(
           "VERBOSITY", 0, "verbosity level (0=no output,... 10=extreme), for Belos only", &list);
-
-      // the only one stratimikos specific parameter
-      StringParameter("STRATIMIKOS_XMLFILE", "none", "xml file for stratimikos parameters", &list);
 
       // user-given name of solver block (just for beauty)
       StringParameter("NAME", "No_name", "User specified name for solver block", &list);

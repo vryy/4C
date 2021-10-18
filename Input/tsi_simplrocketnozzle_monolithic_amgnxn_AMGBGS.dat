@@ -121,10 +121,12 @@ TOLINC                          1e-06
 --------------------------------------------------------------------SOLVER 1
 NAME                            Thermal_Solver
 AZPREC                          MueLu_sym
+MUELU_XML_ENFORCE               No
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
 AZPREC                          MueLu_sym
+MUELU_XML_ENFORCE               No
 SOLVER                          Aztec_MSR
 --------------------------------------------------------------------SOLVER 3
 NAME                            Thermo_Structure_Interaction_Solver

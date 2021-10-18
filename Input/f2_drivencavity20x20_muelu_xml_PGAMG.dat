@@ -1,7 +1,6 @@
 //
 //
 // needs Trilinos Q2/2013 or newer
-// depends on f2_drivencavity20x20_muelu_xml_PGAMG.xml
 ==================================================================
 General Data File C_CARAT
 ==================================================================
@@ -55,7 +54,8 @@ NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        1                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC                          MueLu_sym //MLFLUID2                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC                          MueLu_sym //MLFLUID2            // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
+MUELU_XML_ENFORCE               No
 AZREUSE                         8                               // how often to recompute some preconditioners
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
@@ -83,7 +83,6 @@ ML_SMOTIMES 2 3 1 // no. smoothing steps or polynomial order on each level (at l
 ML_DAMPFINE                     0.89                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
-STRATIMIKOS_XMLFILE             f2_drivencavity20x20_muelu_xml_PGAMG.xml
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4

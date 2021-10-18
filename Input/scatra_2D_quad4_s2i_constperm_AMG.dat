@@ -34,7 +34,7 @@ COUPLINGTYPE                    MatchingNodes
 -----------------------------------------------------------SOLVER 1
 SOLVER                          Aztec_MSR
 AZPREC                          MueLu_nonsym
-STRATIMIKOS_XMLFILE             scatra_2D_quad4_s2i_constperm_AMG.xml
+MUELU_XML_FILE                  scatra_2D_quad4_s2i_constperm_AMG.xml
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_scatra   DIFFUSIVITY 0.1
 MAT 2   MAT_scatra   DIFFUSIVITY 0.5 // this scalar cannot pass the membrane --> remains at initial state
