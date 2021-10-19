@@ -33,7 +33,9 @@
 // Xpetra
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
+#ifndef TRILINOS_Q1_2015
 #include <Xpetra_IO.hpp>
+#endif
 #include <Xpetra_Map.hpp>
 
 //----------------------------------------------------------------------------------
