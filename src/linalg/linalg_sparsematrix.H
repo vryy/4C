@@ -202,6 +202,19 @@ namespace LINALG
     /// single value assemble used by BlockSparseMatrix
     void Assemble(double val, int rgid, int cgid);
 
+
+    /*
+     * \brief Replace a single value in a Epetra_FECrsMatrix
+     *
+     * This method inserts a new entry in a EpetraFECrsMatrix if it does not yet exist. If the entry
+     * already exists, it is overwritten.
+     *
+     * \params[in] val Value to insert
+     * \params[in] rgid row position
+     * \params[in] cgid column position
+     */
+    void ReplaceValue(double val, int rgid, int cgid);
+
     /*!
       Assemble method for an Epetra_FECrsMatrix.
       This method is also able to handle the assembly of nonlocal values.
