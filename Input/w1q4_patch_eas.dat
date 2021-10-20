@@ -225,9 +225,6 @@ NODE 9 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 2 WALL QUAD4 1 2 4 3 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 3 WALL QUAD4 4 7 9 8 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 4 WALL QUAD4 2 5 7 4 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100 NUE 0 DENS 1 THEXPANS 0.0

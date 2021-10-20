@@ -692,8 +692,6 @@ NODE 192 COORD 3.0318622589111e+00 -1.5655069351196e+00 0.0000000000000e+00
 94 WALL QUAD4 186 185 189 190 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 95 WALL QUAD4 191 188 187 192 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 96 WALL QUAD4 192 190 189 191 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.26878628880489064e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 6.79965433913899131e-02 TOLERANCE 1e-8

@@ -22203,10 +22203,5 @@ NODE      7223 COORD  1.8000000000000000e+01 -1.1000000000000000e+01  0.00000000
    7024 WALLQ4POROP1SCATRA QUAD4  7221 7112 7111 7220    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroReacECM
    7025 WALLQ4POROP1SCATRA QUAD4  7222 7113 7112 7221    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroReacECM
    7026 WALLQ4POROP1SCATRA QUAD4  7223 7114 7113 7222    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroReacECM
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------------------END
 // END

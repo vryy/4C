@@ -7036,15 +7036,5 @@ NODE      1078 COORD -1.0659258260000001e-03  0.0000000000000000e+00  9.65925826
    3210 SOLIDT4SCATRA TET4  960 934 959 936    MAT 28 KINEM nonlinear TYPE ElchElectrode
    3211 SOLIDT4SCATRA TET4  915 907 937 938    MAT 28 KINEM nonlinear TYPE ElchElectrode
    3212 SOLIDT4SCATRA TET4  915 907 911 937    MAT 28 KINEM nonlinear TYPE ElchElectrode
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
----------------------------------------------------ELECTROMAGNETIC ELEMENTS
--------------------------------------------------------ARTERY ELEMENTS
 ---------------------------------------------------------------END
 // END

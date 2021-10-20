@@ -4754,9 +4754,6 @@ NODE 1331 COORD 2.000000000000000e+00 2.000000000000000e+00 3.000000000000000e+0
 998 SOLIDH8 HEX8 1298 1281 1249 1279 1286 1261 1227 1251 MAT 1 KINEM nonlinear EAS mild
 999 SOLIDH8 HEX8 1310 1298 1279 1294 1306 1286 1251 1285 MAT 1 KINEM nonlinear EAS mild
 1000 SOLIDH8 HEX8 1322 1310 1294 1311 1318 1306 1285 1307 MAT 1 KINEM nonlinear EAS mild
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0 THEXPANS 0.0

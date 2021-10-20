@@ -1052,7 +1052,5 @@ NODE 578 COORD 0.0 3.093260113693223 9.520075728114486
 254 SOLIDSH8 HEX8 537 539 573 571 538 540 574 572 MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto
 255 SOLIDSH8 HEX8 539 541 575 573 540 542 576 574 MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto
 256 SOLIDSH8 HEX8 541 543 577 575 542 544 578 576 MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

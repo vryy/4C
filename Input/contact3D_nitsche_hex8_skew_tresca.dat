@@ -711,11 +711,6 @@ NODE       350 COORD  4.0000000000000000e+00  4.0000000000000000e+00  0.00000000
    190 SOLIDH8 HEX8  316 318 323 321 341 343 348 346    MAT 2 KINEM nonlinear EAS none
    191 SOLIDH8 HEX8  318 319 324 323 343 344 349 348    MAT 2 KINEM nonlinear EAS none
    192 SOLIDH8 HEX8  319 320 325 324 344 345 350 349    MAT 2 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 335 QUANTITY dispx VALUE 1.27851396675219808e+00 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 335 QUANTITY dispy VALUE -5.20134529729690750e-02 TOLERANCE 1e-10

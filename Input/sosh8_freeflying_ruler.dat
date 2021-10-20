@@ -295,7 +295,5 @@ NODE 96 COORD 1.5000000596046e-01 2.9999999329448e-02 1.0000000474975e-03
 28 SOLIDSH8 HEX8 82 81 83 84 88 87 89 90 MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto
 29 SOLIDSH8 HEX8 85 86 87 88 91 92 93 94 MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto
 30 SOLIDSH8 HEX8 88 87 89 90 94 93 95 96 MAT 1 KINEM nonlinear EAS sosh8 ANS sosh8 THICKDIR auto
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

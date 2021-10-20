@@ -848,9 +848,5 @@ NODE 154 COORD -5.0000000000000000e+00 4.5000000000000000e+00 0.0000000000000000
 128 WALLQ4POROSCATRA QUAD4 143 142 23 21 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2 TYPE Poro
 129 WALLQ4POROSCATRA QUAD4 142 153 25 23 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2 TYPE Poro
 130 WALLQ4POROSCATRA QUAD4 153 154 27 25 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2 TYPE Poro
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

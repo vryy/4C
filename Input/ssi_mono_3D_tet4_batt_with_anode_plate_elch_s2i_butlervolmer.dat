@@ -7273,13 +7273,5 @@ NODE      1139 COORD  4.8342306053141722e-03 -1.7040651299889625e-04  1.70406512
    3491 SOLIDT4SCATRA TET4  1135 1066 1137 1068    MAT 2 KINEM nonlinear TYPE ElchElectrode
    3492 SOLIDT4SCATRA TET4  1135 1066 1139 1137    MAT 2 KINEM nonlinear TYPE ElchElectrode
    3493 SOLIDT4SCATRA TET4  620 672 588 619    MAT 2 KINEM nonlinear TYPE ElchElectrode
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

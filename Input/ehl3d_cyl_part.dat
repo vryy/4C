@@ -2938,8 +2938,6 @@ NODE      1106 COORD -4.0000000000000000e+00  0.0000000000000000e+00  5.00000000
    299 SOLIDH8 HEX8  716 715 717 718 728 727 729 730    MAT 1 KINEM nonlinear EAS none
    300 SOLIDH8 HEX8  718 717 719 720 730 729 731 732    MAT 1 KINEM nonlinear EAS none
    301 SOLIDH8 HEX8  733 734 735 736 737 738 739 740    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
    302 LUBRICATION QUAD4  741 742 743 744    MAT 3
    303 LUBRICATION QUAD4  742 745 746 743    MAT 3

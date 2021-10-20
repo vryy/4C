@@ -5749,10 +5749,6 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 4151 SOLIDT4SCATRA TET4 360 141 364 361 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 4152 SOLIDT4SCATRA TET4 121 627 626 373 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 4153 SOLIDT4SCATRA TET4 633 705 287 570 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of a points on top of the cylinder
 STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE 8.95018341995645780e-05 TOLERANCE 1e-7

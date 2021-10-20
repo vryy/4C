@@ -330,12 +330,6 @@ NODE 45 COORD -0.021213203435596 0.021213203435596 0
 14 ART LINE2 39 43 MAT 3 GP 3 TYPE PressureBased DIAM 1.0
 15 ART LINE2 43 44 MAT 3 GP 3 TYPE PressureBased DIAM 1.0
 16 ART LINE2 44 45 MAT 3 GP 3 TYPE PressureBased DIAM 1.0
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery ELEMENT 1 QUANTITY volflow VALUE  1.0e-4 TOLERANCE 1e-15
 ARTNET DIS artery ELEMENT 8 QUANTITY volflow VALUE  2.05965519424645118e-05 TOLERANCE 1e-15

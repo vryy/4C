@@ -176,10 +176,6 @@ NODE 16 COORD 0.0 -5.0 0.0
 3 RED_AIRWAY LINE2 13 14 MAT 3 ElemSolvingType NonLinear TYPE Resistive Resistance Generation_Dependent_Pedley PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 2.0 Generation 0
 4 RED_AIRWAY LINE2 14 15 MAT 3 ElemSolvingType NonLinear TYPE Resistive Resistance Generation_Dependent_Pedley PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 1.0 Generation 1
 5 RED_AIRWAY LINE2 14 16 MAT 3 ElemSolvingType NonLinear TYPE Resistive Resistance Generation_Dependent_Pedley PowerOfVelocityProfile 2 WallElasticity 0.0 PoissonsRatio 0.0 ViscousTs 0.0 ViscousPhaseShift 0.0 WallThickness 0.0 Area 1.0 Generation 1
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS red_airway NODE 14 QUANTITY pressure VALUE 5.00051271284095583e+03 TOLERANCE 1e-10
 RED_AIRWAY DIS red_airway NODE 15 QUANTITY pressure VALUE 5.00196288374756477e+03 TOLERANCE 1e-10

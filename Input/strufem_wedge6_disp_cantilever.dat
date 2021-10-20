@@ -4119,6 +4119,5 @@ NODE 1056 COORD 5.11197128013 -1.0 4.8299866628
 590 FLUID TRI3 320 323 327 MAT 1 NA ALE GP_TRI 1 GP_ALT standard TURBULENCE No CA No
 591 FLUID TRI3 337 344 339 MAT 1 NA ALE GP_TRI 1 GP_ALT standard TURBULENCE No CA No
 592 FLUID TRI3 17 10 8 MAT 1 NA ALE GP_TRI 1 GP_ALT standard TURBULENCE No CA No
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

@@ -3101,9 +3101,5 @@ NODE 850 COORD -7.02173901e+00 -8.50000000e+00 0.00000000e+00
 718 WALL TRI3 699 761 700 MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 3 0
 719 WALL TRI3 698 700 697 MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 3 0
 720 WALL TRI3 693 696 762 MAT 2 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 3 0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

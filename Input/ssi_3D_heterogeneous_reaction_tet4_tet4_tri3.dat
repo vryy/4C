@@ -887,9 +887,6 @@ NODE       200 COORD -5.5366214557492044e-01  7.3357972936235283e-01 -3.94105327
    227 SOLIDT4 TET4  127 122 120 119    MAT 2 KINEM nonlinear
    228 SOLIDT4 TET4  126 120 91 119    MAT 2 KINEM nonlinear
    229 SOLIDT4 TET4  96 127 113 125    MAT 2 KINEM nonlinear
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
    230 TRANSP TRI3  1 2 3    MAT 1 TYPE AdvReac
    231 TRANSP TRI3  3 4 5    MAT 1 TYPE AdvReac

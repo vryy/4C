@@ -803,9 +803,6 @@ NODE 266 COORD 6.6061079342461937e-01 4.1824352444022467e-01 0.0000000000000000e
 101 SOLIDH8 HEX8 234 238 257 259 236 240 258 260 MAT 2 KINEM nonlinear EAS mild
 102 SOLIDH8 HEX8 238 242 246 257 240 244 248 258 MAT 2 KINEM nonlinear EAS mild
 103 SOLIDH8 HEX8 259 261 263 265 260 262 264 266 MAT 2 KINEM nonlinear EAS mild
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 55 QUANTITY velx VALUE 6.000000000e-01 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 55 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-12

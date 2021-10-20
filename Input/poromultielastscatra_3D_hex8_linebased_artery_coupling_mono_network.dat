@@ -7858,14 +7858,6 @@ NODE      2874 COORD  5.5000000000000004e-01  5.2000000000000002e-01  2.49999999
    1834 SOLIDH8POROSCATRA HEX8  2738 2739 2746 2745 2864 2865 2872 2871    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
    1835 SOLIDH8POROSCATRA HEX8  2739 2740 2747 2746 2865 2866 2873 2872    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
    1836 SOLIDH8POROSCATRA HEX8  2740 2741 2748 2747 2866 2867 2874 2873    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 -------------------------------------------------------ARTERY ELEMENTS
    1837 ART LINE2  1 2    MAT 3 GP 3 TYPE PressureBased DIAM 0.9
    1838 ART LINE2  2 3    MAT 3 GP 3 TYPE PressureBased DIAM 0.9

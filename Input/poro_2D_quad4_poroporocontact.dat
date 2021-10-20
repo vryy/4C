@@ -4973,10 +4973,5 @@ NODE      1503 COORD -5.0000000000000000e+00 -2.5000000000000000e+00  0.00000000
 1381 WALLQ4PORO QUAD4  1435 1436 1501 1500    MAT 3 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1382 WALLQ4PORO QUAD4  1436 1437 1502 1501    MAT 3 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 1383 WALLQ4PORO QUAD4  1437 1438 1503 1502    MAT 3 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
 ---------------------------------------------------------------END
 // END

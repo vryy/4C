@@ -193,12 +193,6 @@ NODE 8 COORD -0.5 0.5 0.0
 2 WALLQ4PORO QUAD4  4 3 5 6 MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
 -------------------------------------------------------------ARTERY ELEMENTS
 1 ART LINE2 7 8 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery NODE 7 QUANTITY pressure VALUE 0.25 TOLERANCE 1e-12 // DIRICH VALUE
 POROFLUIDMULTIPHASE DIS porofluid NODE 1 QUANTITY pressure1 VALUE -7.73620856768246057e+00 TOLERANCE 1e-10

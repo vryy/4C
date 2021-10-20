@@ -714,8 +714,6 @@ NODE       188 COORD  2.5000000000000000e+00  6.0000000000000053e-02  3.90625000
    63 SOLIDH8 HEX8  146 145 147 148 164 163 165 166    MAT 1 KINEM nonlinear EAS none
    64 SOLIDH8 HEX8  148 147 149 150 166 165 167 168    MAT 1 KINEM nonlinear EAS none
    65 SOLIDH8 HEX8  150 149 151 152 168 167 169 170    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
    66 LUBRICATION QUAD4  171 172 173 174    MAT 3
    67 LUBRICATION QUAD4  174 173 175 176    MAT 3

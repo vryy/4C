@@ -527,8 +527,6 @@ NODE 243 COORD 5.0000000000000e-01 5.0000000000000e-01 -5.0000000745058e-02
 126 SOLIDH8 HEX8 208 210 213 211 235 237 240 238 MAT 1 KINEM nonlinear EAS mild
 127 SOLIDH8 HEX8 212 211 214 215 239 238 241 242 MAT 1 KINEM nonlinear EAS mild
 128 SOLIDH8 HEX8 211 213 216 214 238 240 243 241 MAT 1 KINEM nonlinear EAS mild
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -1.0e-02 TOLERANCE 1e-5
 -------------------------------------------------------------------------END

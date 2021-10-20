@@ -751,10 +751,6 @@ NODE 204 COORD 18.5 0.0 0.5
 48 SOLIDH8 HEX8 190 189 193 194 192 191 195 196 MAT 2 KINEM nonlinear EAS none
 49 SOLIDH8 HEX8 194 193 197 198 196 195 199 200 MAT 2 KINEM nonlinear EAS none
 50 SOLIDH8 HEX8 198 197 201 202 200 199 203 204 MAT 2 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 99 QUANTITY dispx VALUE 5.11451716058617167e-01 TOLERANCE 1e-09
 STRUCTURE DIS structure NODE 99 QUANTITY dispy VALUE  5.72872913672954098e+00 TOLERANCE 1e-09

@@ -879,14 +879,6 @@ NODE 227 COORD 0.1 -0.3 1.07
    123 SOLIDH8POROSCATRA HEX8  171 172 178 177 207 208 214 213    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
    124 SOLIDH8POROSCATRA HEX8  172 173 179 178 208 209 215 214    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
    125 SOLIDH8POROSCATRA HEX8  173 174 180 179 209 210 216 215    MAT 2 KINEM nonlinear EAS none TYPE PoroMultiReac
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery NODE 219 QUANTITY pressure VALUE  4.20933708421225485e-03 TOLERANCE 1e-10
 ARTNET DIS artery NODE 221 QUANTITY pressure VALUE  3.78561849198178315e-03 TOLERANCE 1e-10

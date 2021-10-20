@@ -189,8 +189,5 @@ NODE 16 COORD 0.00000000e+00 1.19999997e-01 -5.00000024e-04
 3 SOLIDSH8P8 HEX8 13 9 1 4 14 11 5 8 MAT 1 KINEM nonlinear STAB Aff ANS Later LIN One THICKDIR auto EAS none ISO Enf
 4 SOLIDSH8P8 HEX8 3 15 13 4 7 16 14 8 MAT 1 KINEM nonlinear STAB Aff ANS Later LIN One THICKDIR auto EAS none ISO Enf
 5 SOLIDSH8P8 HEX8 2 10 15 3 6 12 16 7 MAT 1 KINEM nonlinear STAB Aff ANS Later LIN One THICKDIR auto EAS none ISO Enf
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

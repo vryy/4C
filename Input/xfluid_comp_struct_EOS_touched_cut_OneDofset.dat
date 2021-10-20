@@ -70498,8 +70498,5 @@ XFLUID DIS fluid NODE 7899 QUANTITY velx VALUE 0.0e00 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 7899 QUANTITY vely VALUE -7.20787864004055983e-07 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 7899 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 7899 QUANTITY pressure VALUE 6.64709503396476720e-02 TOLERANCE 1e-12
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

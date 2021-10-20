@@ -238,9 +238,5 @@ NODE 25 COORD -2.5000000000000000e+00 -2.5000000000000000e+00 0.0000000000000000
 2 WALLQ9POROP1 QUAD9 2 10 11 3 12 13 14 6 15 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 3 WALLQ9POROP1 QUAD9 4 3 16 17 7 18 19 20 21 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 4 WALLQ9POROP1 QUAD9 3 11 22 16 14 23 24 18 25 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 -------------------------------------------------------------------------END
 //                              END

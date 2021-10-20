@@ -1695,14 +1695,6 @@ NODE 553 COORD -0.500000000000000 0.000000000000000 0.000000000000000
 148 ART LINE2 550 551 MAT 3 GP 1 TYPE PressureBased DIAM 0.01
 149 ART LINE2 551 552 MAT 3 GP 1 TYPE PressureBased DIAM 0.01
 150 ART LINE2 552 553 MAT 3 GP 1 TYPE PressureBased DIAM 0.01
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
-------------------------------------------------TRANSPORT2 ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery ELEMENT 77 QUANTITY radius VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-14 // collapsed
 ARTNET DIS artery ELEMENT 83 QUANTITY radius VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-14 // collapsed

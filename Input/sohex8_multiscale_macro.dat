@@ -308,8 +308,6 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
 6 SOLIDH8 HEX8 24 20 16 22 19 8 6 14 MAT 1 KINEM nonlinear EAS none
 7 SOLIDH8 HEX8 26 21 12 20 18 13 7 8 MAT 1 KINEM nonlinear EAS none
 8 SOLIDH8 HEX8 27 26 20 24 25 18 8 19 MAT 1 KINEM nonlinear EAS none
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro.mat MICRODIS_NUM 1
 -------------------------------------------------------------FUNCT1

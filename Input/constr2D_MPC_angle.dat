@@ -332,9 +332,6 @@ NODE 123 COORD 1.00000000e+00 5.00000007e-02 0.00000000e+00
 78 WALL QUAD4 76 78 121 120 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 79 WALL QUAD4 78 80 122 121 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 80 WALL QUAD4 80 82 123 122 MAT 1 KINEM nonlinear EAS full THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 81 QUANTITY dispy VALUE -3.278302636809e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END

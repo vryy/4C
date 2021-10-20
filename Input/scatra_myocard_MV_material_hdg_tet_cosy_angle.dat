@@ -93,10 +93,6 @@ FNODE         9 COORD  2.0000000000000001e-01  1.0000000000000001e-01  0.0000000
 FNODE        10 COORD  2.0000000000000001e-01  0.0000000000000000e+00  1.0000000000000001e-01  CIR 1.0 0.0 0.0 TAN 0.0 1.0 0.0 HELIX 0.0 TRANS 0.0
 FNODE        11 COORD  2.0000000000000001e-01  0.0000000000000000e+00  0.0000000000000000e+00  CIR 1.0 0.0 0.0 TAN 0.0 1.0 0.0 HELIX 90.0 TRANS 3.0
 FNODE        12 COORD  2.0000000000000001e-01  1.0000000000000001e-01  1.0000000000000001e-01  CIR 1.0 0.0 0.0 TAN 0.0 1.0 0.0 HELIX 0.0 TRANS 0.0
-------------------------------------------------STRUCTURE ELEMENTS
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
 ------------------------------------------------TRANSPORT ELEMENTS
    1 TRANSPHDG   TET4  1 2 3 4      MAT 1 TYPE HdgCardMono DEG 0
    2 TRANSPHDG   TET4  1 2 4 5      MAT 1 TYPE HdgCardMono DEG 0
@@ -110,9 +106,6 @@ FNODE        12 COORD  2.0000000000000001e-01  1.0000000000000001e-01  1.0000000
    10 TRANSPHDG  TET4  9 12 5 10   MAT 1 TYPE HdgCardMono  DEG 0
    11 TRANSPHDG  TET4  9 8 4 5     MAT 1 TYPE HdgCardMono  DEG 0
    12 TRANSPHDG  TET4  9 8 5 7     MAT 1 TYPE HdgCardMono  DEG 0
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 1.54496077096426454e+00  TOLERANCE 1E-7
 ---------------------------------------------------------------END

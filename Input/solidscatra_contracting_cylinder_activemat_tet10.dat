@@ -12472,10 +12472,6 @@ NODE 6434 COORD -1.70002351856 1.04177575203 4.18716651965
 4151 SOLIDT10SCATRA TET10 360 141 364 361 2065 3805 2069 2062 2066 6298 MAT 1 KINEM nonlinear TYPE Undefined FIBER1 0.0 0.0 1.0
 4152 SOLIDT10SCATRA TET10 121 627 626 373 3352 3354 3351 3521 4370 3523 MAT 1 KINEM nonlinear TYPE Undefined FIBER1 0.0 0.0 1.0
 4153 SOLIDT10SCATRA TET10 633 705 287 570 3856 4769 3891 3853 3857 3095 MAT 1 KINEM nonlinear TYPE Undefined FIBER1 0.0 0.0 1.0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
 STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -2.52056825952130970e-01 TOLERANCE 1e-9

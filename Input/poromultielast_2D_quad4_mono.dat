@@ -1761,12 +1761,5 @@ NODE       561 COORD -2.5000000000000000e+00 -5.0000000000000000e-01  0.00000000
    498 WALLQ4PORO QUAD4  507 508 559 558    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
    499 WALLQ4PORO QUAD4  508 509 560 559    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
    500 WALLQ4PORO QUAD4  509 510 561 560    MAT 2 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ---------------------------------------------------------------END
 // END

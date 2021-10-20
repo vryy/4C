@@ -1546,8 +1546,6 @@ NODE       494 COORD  2.0000000000000000e+00  6.9999999999999951e-02 -2.00000000
    255 SOLIDH8 HEX8  356 357 366 365 401 402 411 410    MAT 1 KINEM nonlinear EAS none
    256 SOLIDH8 HEX8  357 358 367 366 402 403 412 411    MAT 1 KINEM nonlinear EAS none
    257 SOLIDH8 HEX8  358 359 368 367 403 404 413 412    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
 ------------------------------------------------LUBRICATION ELEMENTS
    258 LUBRICATION QUAD4  414 415 416 417    MAT 3
    259 LUBRICATION QUAD4  415 418 419 416    MAT 3

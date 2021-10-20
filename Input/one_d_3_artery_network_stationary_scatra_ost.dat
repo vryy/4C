@@ -111,8 +111,6 @@ NODE 11 COORD 5.77350269189626e-01  5.77350269189626e-01  5.77350269189626e-01
 8 ART LINE2 8 9 MAT 1 GP 2 TYPE PressureBased DIAM 24.0
 9 ART LINE2 9 10 MAT 1 GP 2 TYPE PressureBased DIAM 24.0
 10 ART LINE2 10 11 MAT 1 GP 2 TYPE PressureBased DIAM 24.0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_CNST_ART VISCOSITY 0.04 DENS 1.0 YOUNG 400000.0 NUE 0.5 TH 1.630 PEXT1 0.0 PEXT2 0.0
 MAT 2 MAT_scatra DIFFUSIVITY 2.0

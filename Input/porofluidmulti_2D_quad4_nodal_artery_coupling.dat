@@ -216,7 +216,6 @@ NODE 12 COORD 150.0 10.0 0.0
 NODE 13 COORD 0.0 -10.0 0.0
 NODE 14 COORD 75.0 -10.0 0.0
 NODE 15 COORD 150.0 -10.0 0.0
-------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------FLUID ELEMENTS
 1 POROFLUIDMULTIPHASE QUAD4  1 2 3 4    MAT 1
 2 POROFLUIDMULTIPHASE QUAD4  4 3 5 6    MAT 1
@@ -227,12 +226,6 @@ NODE 15 COORD 150.0 -10.0 0.0
 4 ART LINE2 11 12 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
 5 ART LINE2 13 14 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
 6 ART LINE2 14 15 MAT 3 GP 3 TYPE PressureBased DIAM 24.0
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------LUBRICATION ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
----------------------------------------------------CELL ELEMENTS
----------------------------------------------------CELLSCATRA ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 ARTNET DIS artery NODE 7 QUANTITY pressure VALUE 3.33333333333333204e-01 TOLERANCE 1e-12
 ARTNET DIS artery NODE 10 QUANTITY pressure VALUE 3.33333333333333204e-01 TOLERANCE 1e-12

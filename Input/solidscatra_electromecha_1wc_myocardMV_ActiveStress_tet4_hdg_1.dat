@@ -5728,9 +5728,6 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 4151 TRANSPHDG TET4 360 141 364 361 MAT 101 TYPE HdgCardMono DEG 0 SPC 0 FIBER1 0.0 0.0 1.0
 4152 TRANSPHDG TET4 121 627 626 373 MAT 101 TYPE HdgCardMono DEG 0 SPC 0 FIBER1 0.0 0.0 1.0
 4153 TRANSPHDG TET4 633 705 287 570 MAT 101 TYPE HdgCardMono DEG 0 SPC 0 FIBER1 0.0 0.0 1.0
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 1.97964958567154703e+00 TOLERANCE 1e-7
 -------------------------------------------------------------------------END

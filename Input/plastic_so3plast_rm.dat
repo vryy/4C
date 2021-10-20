@@ -280,10 +280,6 @@ NODE 45    COORD  0.0000000000000000e+00  5.6568542494923797e+00  -1.33335000000
    14 SOLIDH8PLAST HEX8  15 18 24 21 37 39 42 40    MAT 1 KINEM nonlinear EAS none FBAR yes
    15 SOLIDH8PLAST HEX8  22 21 27 28 41 40 43 44    MAT 1 KINEM nonlinear EAS none FBAR yes
    16 SOLIDH8PLAST HEX8  21 24 30 27 40 42 45 43    MAT 1 KINEM nonlinear EAS none FBAR yes
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 29 QUANTITY dispx VALUE -3.30009767672049303e+00 TOLERANCE 1.0e-8
 STRUCTURE DIS structure NODE 29 QUANTITY dispy VALUE -3.30009767672053922e+00 TOLERANCE 1.0e-8

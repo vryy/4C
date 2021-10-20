@@ -238,16 +238,12 @@ SIDE fluid x+ DSURFACE 7
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
 -----------------------------------------------------------------NODE COORDS
-----------------------------------------------------------STRUCTURE ELEMENTS
 ----------------------------------------------------------------FLUID DOMAIN
 LOWER_BOUND                     -0.5 -0.5 -0.025
 UPPER_BOUND                     0.5 0.5 0.025
 INTERVALS                       50 50 1
 ELEMENTS                        FLUID HEX8 MAT 1 NA Euler
 PARTITION                       auto
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // Gives more or less same result as non-geo generated.
 // Differences can be explained with discrepencies in CUBIT mesh generation.

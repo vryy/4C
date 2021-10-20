@@ -203,11 +203,6 @@ NODE 50 COORD -8.4666666666666657e+01 -4.2333333333333314e+01 -1.270000000000000
 2 SOLIDSH18PLAST HEX18 8 4 10 12 28 33 32 26 34 7 3 9 11 44 45 46 37 47 MAT 1 KINEM nonlinear  TSL dsg MEL dsg CTL dsg VOL eas9
 3 SOLIDSH18PLAST HEX18 13 5 8 16 22 21 20 19 23 14 6 7 15 41 42 36 40 43 MAT 1 KINEM nonlinear  TSL dsg MEL dsg CTL dsg VOL eas9
 4 SOLIDSH18PLAST HEX18 16 8 12 18 20 26 25 24 27 15 7 11 17 36 37 38 35 39 MAT 1 KINEM nonlinear  TSL dsg MEL dsg CTL dsg VOL eas9
---------------------------------------------------------------FLUID ELEMENTS
-----------------------------------------------------------------ALE ELEMENTS
-----------------------------------------------------------TRANSPORT ELEMENTS
--------------------------------------------------------------THERMO ELEMENTS
-
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 13 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 13 QUANTITY dispy VALUE 0.00000000000000000e+00 TOLERANCE 1e-12

@@ -1924,9 +1924,5 @@ NODE       602 COORD -5.8369434700555156e-01 -8.0031056861003413e-01 -1.37127324
    598 SHELL8SCATRA QUAD4  600 601 548 553    MAT 2 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0 TYPE Std
    599 SHELL8SCATRA QUAD4  601 602 543 548    MAT 2 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0 TYPE Std
    600 SHELL8SCATRA QUAD4  602 522 521 543    MAT 2 THICK 1.0 GP 2 2 2 GP_TRI 1 FORCES XYZ EAS N4_4 N4_4 N_4 none none ANS Q SDC 1.0 TYPE Std
-----------------------------------------------------FLUID ELEMENTS
-------------------------------------------------------ALE ELEMENTS
-------------------------------------------------TRANSPORT ELEMENTS
----------------------------------------------------THERMO ELEMENTS
 ---------------------------------------------------------------END
 // END
