@@ -251,16 +251,18 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
                                ? container_j->GetPtrToState(PARTICLEENGINE::Density, particle_j)
                                : &(material_j->initDensity_);
 
-    const double fac =
-        (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0])) /
-        (dens_i[0] + dens_j[0]);
+    // (current) volume of particle i and j
+    const double V_i = mass_i[0] / dens_i[0];
+    const double V_j = mass_j[0] / dens_j[0];
+
+    const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (dens_i[0] + dens_j[0]);
 
     // evaluate contribution of neighboring particle j
     if (absorbingtypes_.count(type_i))
     {
       // sum contribution of neighboring particle j
       UTILS::vec_addscale(&cfg_i[type_i][particle_i][0],
-          fac * UTILS::pow<2>(dens_i[0]) / mass_i[0] * particlepair.dWdrij_, particlepair.e_ij_);
+          dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
     // evaluate contribution of neighboring particle i
@@ -268,7 +270,7 @@ void PARTICLEINTERACTION::SPHHeatSourceSurface::EvaluateHeatSource(const double&
     {
       // sum contribution of neighboring particle i
       UTILS::vec_addscale(&cfg_i[type_j][particle_j][0],
-          -fac * UTILS::pow<2>(dens_j[0]) / mass_j[0] * particlepair.dWdrji_, particlepair.e_ij_);
+          -dens_j[0] / V_j * fac * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
 
