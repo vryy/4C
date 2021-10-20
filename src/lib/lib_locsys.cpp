@@ -17,6 +17,7 @@ vectors and matrices.
 #include "linalg_multiply.H"
 #include "lib_globalproblem.H"
 #include "fem_general_largerotations.H"
+#include "beaminteraction_calc_utils.H"
 
 
 
@@ -298,7 +299,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
     // unity matrix for non-locsys node
     if (locsysindex < 0)
     {
-      for (int r = 0; r < numdof; ++r) trafo_->Assemble(1.0, dofs[r], dofs[r]);
+      for (int r = 0; r < numdof; ++r) trafo_->ReplaceValue(1.0, dofs[r], dofs[r]);
     }
     // trafo matrix for locsys node
     else
@@ -328,7 +329,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       // Check for zero-diagonal elements
       if (fabs(vec1(0)) < 1e-9 || fabs(vec2(1)) < 1e-9 || fabs(vec3(2)) < 1e-9) sanity_check = true;
 
-      if (numdof < 6)  // for solid elements
+      if (!BEAMINTERACTION::UTILS::IsBeamNode(*node))  // for solid elements
       {
         // trafo for 2D case
         if (Dim() == 2)
@@ -350,8 +351,9 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
           }
         }
       }
-      else  // for Kirchhoff beam elements
+      else  // for beam elements
       {
+        dserror("The locsys condition is not implemented for beam elements!");
         for (int dim = 0; dim < 3; dim++)
         {
           nodetrafo(3, 3 + dim) =
@@ -365,7 +367,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
 
       // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
       for (int r = 0; r < numdof; ++r)
-        for (int c = 0; c < numdof; ++c) trafo_->Assemble(nodetrafo(r, c), dofs[r], dofs[c]);
+        for (int c = 0; c < numdof; ++c) trafo_->ReplaceValue(nodetrafo(r, c), dofs[r], dofs[c]);
 
       // store the DOF with locsys
       for (int r = 0; r < numdof; ++r) locsysdofset.insert(dofs[r]);
@@ -571,44 +573,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseM
 /*----------------------------------------------------------------------*
  |  Add displacement offset value                            meier 06/13|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse) const
-{
-  // get dof row map of discretization
-  const Epetra_Map* dofrowmap = discret_.DofRowMap();
-  for (int i = 0; i < discret_.NumMyRowNodes(); i++)
-  {
-    int GID;
-    unsigned numdofpn = (discret_.Dof(0, discret_.lRowNode(i))).size();
-
-    // nothing to do for 2D/3D solid elements
-    if (numdofpn < 6) continue;
-
-    DRT::Node* currnode = discret_.lRowNode(i);
-    if (!currnode->IsCosserat())
-    {
-      dserror(
-          "No rotational DoFs for node %i initialized! Did you set ROTANGLE  for the nodes in your "
-          "input file?",
-          (i + 1));
-    }
-
-    LINALG::Matrix<3, 1> rot_angle;
-    LINALG::Matrix<3, 3> mat_sys;
-
-    for (int j = 0; j < 3; j++) rot_angle(j) = currnode->X()[3 + j];
-
-    LARGEROTATIONS::angletotriad(rot_angle, mat_sys);
-
-    for (int k = 0; k < 3; k++)
-    {
-      GID = (discret_.Dof(0, discret_.lRowNode(i)))[3 + k];
-      if (!inverse)
-        (*vec)[dofrowmap->LID(GID)] += mat_sys(k, 0);
-      else
-        (*vec)[dofrowmap->LID(GID)] -= mat_sys(k, 0);
-    }
-  }
-}
+void DRT::UTILS::LocsysManager::AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse) const {}
 
 
 /*----------------------------------------------------------------------*
