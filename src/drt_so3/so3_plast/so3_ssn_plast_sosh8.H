@@ -48,7 +48,7 @@ namespace DRT
      private:
       static So_sh8PlastType instance_;
 
-      std::string GetElementTypeString() const { return "SOSH8PLAST"; }
+      std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
     };  // class So_sh8PlastType
 
     class So_sh8Plast : public virtual So3_Plast<DRT::Element::hex8>
@@ -130,7 +130,7 @@ namespace DRT
       // don't want = operator
       So_sh8Plast& operator=(const So_sh8Plast& old) = delete;
 
-      std::string GetElementTypeString() const { return "SOSH8PLAST"; }
+      std::string GetElementTypeString() const { return "SOLIDSH8PLAST"; }
 
      protected:
       static const int num_sp = 8;   ///< number of ANS sampling points, here 8

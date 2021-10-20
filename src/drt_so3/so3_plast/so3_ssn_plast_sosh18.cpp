@@ -44,7 +44,7 @@ DRT::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>&
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSH18PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18Plast(id, owner));
     return ele;
