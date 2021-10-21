@@ -16,6 +16,10 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      yes
+-----------------------------------------------------IO/RUNTIME VTK OUTPUT/FLUID
+OUTPUT_FLUID                          Yes
+DISPLACEMENT                          Yes
+GRIDVELOCITY                          Yes
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
