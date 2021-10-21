@@ -389,9 +389,12 @@ void FLD::FluidImplicitTimeInt::Init()
   }
   reconstructder_ = DRT::INPUT::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
 
-  unsigned int num_timesteps_in_simulation_upper_bound = 1000000000;
-  runtime_output_writer_->Initialize(
-      Discretization(), num_timesteps_in_simulation_upper_bound, Time(), false);
+  if (runtime_output_writer_ != Teuchos::null)
+  {
+    unsigned int num_timesteps_in_simulation_upper_bound = stepmax_;
+    runtime_output_writer_->Initialize(
+        Discretization(), num_timesteps_in_simulation_upper_bound, Time(), false);
+  }
 }  // FluidImplicitTimeInt::Init()
 
 /*----------------------------------------------------------------------*
@@ -3310,39 +3313,48 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
       Teuchos::rcp(new Epetra_Vector(*(Discretization()->DofColMap()), true));
 
   runtime_output_writer_->ResetTimeAndTimeStep(time_, step_);
-  LINALG::Export(*velnp_, *col_version);
-  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "velocity");
 
-  Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
-  LINALG::Export(*pressure, *col_version);
-  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 1, 3, "pressure");
+  if (runtime_output_params_.OutputVelocityState())
+  {
+    LINALG::Export(*velnp_, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "velocity");
+  }
+
+  if (runtime_output_params_.OutputPressureState())
+  {
+    Teuchos::RCP<Epetra_Vector> pressure = velpressplitter_->ExtractCondVector(velnp_);
+    LINALG::Export(*pressure, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 1, 3, "pressure");
+  }
+
+  if (runtime_output_params_.OutputAccelerationState())
+  {
+    LINALG::Export(*accnp_, *col_version);
+    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "acceleration");
+  }
 
   if (alefluid_)
   {
-    LINALG::Export(*dispnp_, *col_version);
-    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "displacement");
+    if (runtime_output_params_.OutputDisplacementState())
+    {
+      LINALG::Export(*dispnp_, *col_version);
+      runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "displacement");
+    }
 
-    LINALG::Export(*dispn_, *col_version);
-    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "dispn");
-    LINALG::Export(*dispnm_, *col_version);
-    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "dispnm");
-    LINALG::Export(*gridvn_, *col_version);
-    runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "gridvn");
+    if (runtime_output_params_.OutputGridVelocityState())
+    {
+      LINALG::Export(*gridvn_, *col_version);
+      runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "grid-velocity");
+    }
   }
 
-  LINALG::Export(*accnp_, *col_version);
-  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "accnp");
-  LINALG::Export(*accn_, *col_version);
-  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "accn");
-  LINALG::Export(*veln_, *col_version);
-  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "veln");
-  LINALG::Export(*velnm_, *col_version);
-  runtime_output_writer_->AppendDofBasedResultDataVector(col_version, 3, 0, "velnm");
+  if (runtime_output_params_.OutputElementOwner())
+    runtime_output_writer_->AppendElementOwner("element_owner");
 
-  runtime_output_writer_->AppendElementOwner("element_owner");
-  runtime_output_writer_->AppendElementGID("element_gid");
-  runtime_output_writer_->AppendElementGhostingInformation();
-  runtime_output_writer_->AppendNodeGID("node_gid");
+  if (runtime_output_params_.OutputElementGID())
+    runtime_output_writer_->AppendElementGID("element_gid");
+
+  if (runtime_output_params_.OutputNodeGID()) runtime_output_writer_->AppendNodeGID("node_gid");
 
   // finalize everything and write all required files to filesystem
   runtime_output_writer_->WriteFiles();
@@ -3358,7 +3370,7 @@ void FLD::FluidImplicitTimeInt::Output()
   // output of solution
   if (upres_ > 0 and step_ % upres_ == 0)
   {
-    WriteRuntimeOutput();
+    if (runtime_output_writer_ != Teuchos::null) WriteRuntimeOutput();
     // step number and time
     output_->NewStep(step_, time_);
 

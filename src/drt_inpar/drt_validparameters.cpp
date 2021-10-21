@@ -75,6 +75,7 @@
 #include "inpar_io.H"
 #include "inpar_IO_monitor_structure_dbc.H"
 #include "inpar_IO_runtime_vtk_output.H"
+#include "inpar_IO_runtime_vtk_output_fluid.H"
 #include "inpar_IO_runtime_vtk_output_structure.H"
 #include "inpar_IO_runtime_vtk_output_structure_beams.H"
 #include "inpar_IO_runtime_vtp_output_structure.H"
@@ -431,6 +432,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::XCONTACT::SetValidParameters(list);
   INPAR::VOLMORTAR::SetValidParameters(list);
   INPAR::WEAR::SetValidParameters(list);
+  INPAR::IO_RUNTIME_VTK::FLUID::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTK::STRUCTURE::SetValidParameters(list);
   INPAR::IO_RUNTIME_VTK::BEAMS::SetValidParameters(list);
   INPAR::BEAMCONTACT::SetValidParameters(list);

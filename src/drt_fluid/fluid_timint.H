@@ -13,6 +13,7 @@
 #define FLUID_TIMINT_H
 
 #include "../drt_adapter/ad_fld_fluid.H"
+#include "fluid_discretization_runtime_vtu_output_params.H"
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -722,8 +723,11 @@ namespace FLD
     Teuchos::RCP<IO::DiscretizationWriter> output_;
 
 
-    //! runtime output writer
+    /// runtime output writer
     Teuchos::RCP<DiscretizationRuntimeVtuWriter> runtime_output_writer_;
+
+    /// runtime output parameter
+    DRT::ELEMENTS::FluidRuntimeVtuOutputParams runtime_output_params_;
 
     //! @name Time loop stuff
     //@{
