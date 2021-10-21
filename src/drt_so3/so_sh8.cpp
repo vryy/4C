@@ -14,6 +14,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "so_hex8.H"
+#include "so_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 DRT::ELEMENTS::So_sh8Type DRT::ELEMENTS::So_sh8Type::instance_;
@@ -22,7 +24,7 @@ DRT::ELEMENTS::So_sh8Type& DRT::ELEMENTS::So_sh8Type::Instance() { return instan
 
 DRT::ParObject* DRT::ELEMENTS::So_sh8Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_sh8* object = new DRT::ELEMENTS::So_sh8(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_sh8(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -31,7 +33,7 @@ DRT::ParObject* DRT::ELEMENTS::So_sh8Type::Create(const std::vector<char>& data)
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSH8")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh8(id, owner));
     return ele;
@@ -64,7 +66,7 @@ void DRT::ELEMENTS::So_sh8Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_sh8Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH8"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"]
       .AddIntVector("HEX8", 8)
@@ -97,6 +99,13 @@ DRT::ELEMENTS::So_sh8::So_sh8(int id, int owner)
       nodes_rearranged_(false),
       thickvec_(3, 0.0)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -120,7 +129,7 @@ DRT::ELEMENTS::So_sh8::So_sh8(const DRT::ELEMENTS::So_sh8& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_sh8::Clone() const
 {
-  DRT::ELEMENTS::So_sh8* newelement = new DRT::ELEMENTS::So_sh8(*this);
+  auto* newelement = new DRT::ELEMENTS::So_sh8(*this);
   return newelement;
 }
 

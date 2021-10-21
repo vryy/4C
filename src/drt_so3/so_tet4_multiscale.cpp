@@ -48,7 +48,7 @@ void DRT::ELEMENTS::So_tet4::sotet4_read_restart_multi()
 
   if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
   {
-    MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
+    auto* micro = dynamic_cast<MAT::MicroMaterial*>(mat.get());
     int eleID = Id();
     bool eleowner = false;
     if (DRT::Problem::Instance()->GetDis("structure")->Comm().MyPID() == Owner()) eleowner = true;

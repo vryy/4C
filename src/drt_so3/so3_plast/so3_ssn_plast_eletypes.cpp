@@ -27,8 +27,7 @@ DRT::ELEMENTS::So_hex8PlastType& DRT::ELEMENTS::So_hex8PlastType::Instance() { r
  *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -41,7 +40,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8PlastType::Create(const std::vector<char>&
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id, owner));
@@ -76,7 +75,7 @@ void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
   defs["HEX8"].AddNamedString("FBAR");
@@ -94,8 +93,7 @@ int DRT::ELEMENTS::So_hex8PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_Plast* failed");
     // initialise all quantities
     actele->InitJacobianMapping();
@@ -126,8 +124,7 @@ DRT::ELEMENTS::So_hex18PlastType& DRT::ELEMENTS::So_hex18PlastType::Instance() {
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -140,7 +137,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex18PlastType::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH18PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>(id, owner));
@@ -168,7 +165,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex18PlastType::Create(const int id
 void DRT::ELEMENTS::So_hex18PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH18PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"]
       .AddIntVector("HEX18", 18)
@@ -193,8 +190,7 @@ int DRT::ELEMENTS::So_hex18PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex18_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -224,8 +220,7 @@ DRT::ELEMENTS::So_hex27PlastType& DRT::ELEMENTS::So_hex27PlastType::Instance() {
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -238,7 +233,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex27PlastType::Create(const std::vector<char>
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH27PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>(id, owner));
@@ -271,7 +266,7 @@ void DRT::ELEMENTS::So_hex27PlastType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH27PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
 
@@ -287,8 +282,7 @@ int DRT::ELEMENTS::So_hex27PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -318,8 +312,7 @@ DRT::ELEMENTS::So_tet4PlastType& DRT::ELEMENTS::So_tet4PlastType::Instance() { r
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -332,7 +325,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4PlastType::Create(const std::vector<char>&
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT4PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>(id, owner));
@@ -365,7 +358,7 @@ void DRT::ELEMENTS::So_tet4PlastType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 
@@ -381,8 +374,7 @@ int DRT::ELEMENTS::So_tet4PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 
     actele->InitJacobianMapping();
@@ -414,8 +406,7 @@ DRT::ELEMENTS::So_nurbs27PlastType& DRT::ELEMENTS::So_nurbs27PlastType::Instance
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>* object =
-      new DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;
 }  // Create()
@@ -428,7 +419,7 @@ DRT::ParObject* DRT::ELEMENTS::So_nurbs27PlastType::Create(const std::vector<cha
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SONURBS27PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele =
         Teuchos::rcp(new DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>(id, owner));
@@ -456,7 +447,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PlastType::Create(const int 
 void DRT::ELEMENTS::So_nurbs27PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SONURBS27PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"].AddIntVector("NURBS27", 27).AddNamedInt("MAT").AddNamedString("KINEM");
 }  // SetupElementDefinition()
@@ -471,7 +462,7 @@ int DRT::ELEMENTS::So_nurbs27PlastType::Initialize(DRT::Discretization& dis)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
 
-    DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>* actele =
+    auto* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::nurbs27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_Plast* failed");
 

@@ -104,7 +104,7 @@ namespace DRT
       //! number of strains/stresses
       static const int numstr_ = 6;
       //! number of Gauss points per element (value is added in so3_thermo.cpp)
-      int numgpt_;
+      int numgpt_{};
       //! static const is required for fixedsizematrices
       //! TODO maybe more beauty is possible
       static const int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
@@ -270,7 +270,7 @@ namespace DRT
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
@@ -424,19 +424,20 @@ namespace DRT
           const double detJ_w, const int gp, const double temp, Teuchos::ParameterList& params,
           LINALG::Matrix<numdofperelement_, 1>* force,
           LINALG::Matrix<numdofperelement_, numdofperelement_>* stiffmatrix,
-          const Epetra_SerialDenseMatrix* M = NULL, Epetra_SerialDenseMatrix* Kda = NULL,
-          std::vector<Epetra_SerialDenseVector>* dHda = NULL, const double* f_bar_factor = NULL,
-          const LINALG::Matrix<numdofperelement_, 1>* htensor = NULL);
+          const Epetra_SerialDenseMatrix* M = nullptr, Epetra_SerialDenseMatrix* Kda = nullptr,
+          std::vector<Epetra_SerialDenseVector>* dHda = nullptr,
+          const double* f_bar_factor = nullptr,
+          const LINALG::Matrix<numdofperelement_, 1>* htensor = nullptr);
 
       void RecoverPlasticityAndEAS(const LINALG::Matrix<numdofperelement_, 1>* res_d,
-          const LINALG::Matrix<nen_, 1>* res_t = NULL);
+          const LINALG::Matrix<nen_, 1>* res_t = nullptr);
 
       void RecoverEAS(const LINALG::Matrix<numdofperelement_, 1>* res_d,
-          const LINALG::Matrix<nen_, 1>* temp = NULL);
+          const LINALG::Matrix<nen_, 1>* temp = nullptr);
 
       template <int spintype>
       void RecoverPlasticity(const LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp,
-          const double* temp = NULL);
+          const double* temp = nullptr);
 
       void ReduceEasStep(const double new_step_length, const double old_step_length);
       void ReducePlasticityStep(
@@ -600,7 +601,7 @@ namespace DRT
 
 
       // algoirthmic parameters
-      bool fbar_;
+      bool fbar_{};
 
       // plasticity ********************************************
       // Kbb^-1 at each Gauss point for recovery of inner variables
@@ -621,7 +622,7 @@ namespace DRT
       PlSpinType plspintype_;
 
       // line search parameter (old step length)
-      double old_step_length_;
+      double old_step_length_{};
 
       // EAS element technology ************************************
       Teuchos::RCP<LINALG::SerialDenseMatrix> KaaInv_;
@@ -635,10 +636,10 @@ namespace DRT
       Teuchos::RCP<LINALG::SerialDenseVector> alpha_eas_delta_over_last_timestep_;
       Teuchos::RCP<LINALG::SerialDenseVector> alpha_eas_inc_;
       DRT::ELEMENTS::So3Plast_EASType eastype_;
-      int neas_;
+      int neas_{};
 
       // TSI ******************************************************
-      bool tsi_;
+      bool tsi_{};
 
       /// derivative of the internal force vector w.r.t. temperature at this GP
       /// derivative w.r.t. gp temperature is sufficient as the gp temperature depends linearily
@@ -655,7 +656,7 @@ namespace DRT
       Teuchos::RCP<std::vector<double>> temp_last_;
 
       // Cauchy stress for Nitsche contact **************************
-      bool is_nitsche_contact_;
+      bool is_nitsche_contact_{};
       std::vector<LINALG::Matrix<numstr_, 1>> cauchy_;
       std::vector<LINALG::Matrix<numstr_, numdofperelement_>> cauchy_deriv_;
       std::vector<LINALG::Matrix<numstr_, nen_>> cauchy_deriv_T_;
@@ -778,14 +779,14 @@ namespace DRT
           {
             xrefe_.second(i, d) = Nodes()[i]->X()[d];
             xcurr_.second(i, d) = Nodes()[i]->X()[d] + disp[i * numdofpernode_ + d];
-            if (vel.size()) xcurr_rate_.second(i, d) = vel[i * numdofpernode_ + d];
+            if (!vel.empty()) xcurr_rate_.second(i, d) = vel[i * numdofpernode_ + d];
           }
-          if (temp.size()) etemp_.second(i) = temp[i];
+          if (!temp.empty()) etemp_.second(i) = temp[i];
         }
         xrefe_.first = true;
         xcurr_.first = true;
-        if (vel.size()) xcurr_rate_.first = true;
-        if (temp.size()) etemp_.first = true;
+        if (!vel.empty()) xcurr_rate_.first = true;
+        if (!temp.empty()) etemp_.first = true;
       }
 
       inline const LINALG::Matrix<nen_, nsd_>& Xrefe()
@@ -1126,7 +1127,7 @@ namespace DRT
           DRT::UTILS::shape_function_deriv1<distype>(xi, SetDerivShapeFunction());
       }
 
-      void GetNurbsEleInfo(DRT::Discretization* dis = NULL);
+      void GetNurbsEleInfo(DRT::Discretization* dis = nullptr);
 
 
     };  // class So3_Plast

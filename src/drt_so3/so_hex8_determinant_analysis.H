@@ -50,7 +50,7 @@ namespace DRT
        *
        *  \return TRUE if the element is valid, otherwise return FALSE. */
       bool isValid(
-          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr, unsigned* rc = NULL) const;
+          const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr, unsigned* rc = nullptr) const;
 
      private:
       /** \brief constructor (private)
@@ -203,10 +203,10 @@ namespace DRT
        *  \author hiermeier \date 09/18 */
       unsigned computeTet4VolAtCorners(LINALG::Matrix<20, 1>& tet4_volumes,
           const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
-          std::function<unsigned(unsigned i)> f_index0,
-          std::function<unsigned(unsigned i)> f_index1,
-          std::function<unsigned(unsigned i)> f_index2,
-          std::function<unsigned(unsigned i)> f_index3, unsigned offset) const;
+          const std::function<unsigned(unsigned i)>& f_index0,
+          const std::function<unsigned(unsigned i)>& f_index1,
+          const std::function<unsigned(unsigned i)>& f_index2,
+          const std::function<unsigned(unsigned i)>& f_index3, unsigned offset) const;
 
       /** \brief Compute scaled TET4 volume at the edges of the HEX8
        *
@@ -231,12 +231,12 @@ namespace DRT
        *  \author hiermeier \date 09/18 */
       unsigned computeTet4VolAtEdges(LINALG::Matrix<20, 1>& tet4_volumes,
           const LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& x_curr,
-          std::function<unsigned(unsigned i)> f_index0,
-          std::function<unsigned(unsigned i)> f_index1,
-          std::function<unsigned(unsigned i)> f_index20,
-          std::function<unsigned(unsigned i)> f_index21,
-          std::function<unsigned(unsigned i)> f_index30,
-          std::function<unsigned(unsigned i)> f_index31, unsigned offset) const;
+          const std::function<unsigned(unsigned i)>& f_index0,
+          const std::function<unsigned(unsigned i)>& f_index1,
+          const std::function<unsigned(unsigned i)>& f_index20,
+          const std::function<unsigned(unsigned i)>& f_index21,
+          const std::function<unsigned(unsigned i)>& f_index30,
+          const std::function<unsigned(unsigned i)>& f_index31, unsigned offset) const;
 
       double computeTet4Volume(const LINALG::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const;
 

@@ -16,6 +16,7 @@
 #include "../../drt_structure_new/str_elements_paramsinterface.H"
 #include "../../linalg/linalg_serialdensematrix.H"
 #include "../../drt_lib/drt_globalproblem.H"
+#include "../so_utils.H"
 
 
 /*----------------------------------------------------------------------*
@@ -31,7 +32,7 @@ DRT::ELEMENTS::So_sh18PlastType& DRT::ELEMENTS::So_sh18PlastType::Instance() { r
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_sh18Plast* object = new DRT::ELEMENTS::So_sh18Plast(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_sh18Plast(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -43,7 +44,7 @@ DRT::ParObject* DRT::ELEMENTS::So_sh18PlastType::Create(const std::vector<char>&
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSH18PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18Plast(id, owner));
     return ele;
@@ -81,7 +82,7 @@ void DRT::ELEMENTS::So_sh18PlastType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_sh18 = definitions_sh18["SOLIDSH18"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH18PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"] = defs_sh18["HEX18"];
 }
@@ -95,6 +96,13 @@ DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(int id, int owner)
       DRT::ELEMENTS::So_hex18(id, owner),
       DRT::ELEMENTS::So_sh18(id, owner)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -116,7 +124,7 @@ DRT::ELEMENTS::So_sh18Plast::So_sh18Plast(const DRT::ELEMENTS::So_sh18Plast& old
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_sh18Plast::Clone() const
 {
-  DRT::ELEMENTS::So_sh18Plast* newelement = new DRT::ELEMENTS::So_sh18Plast(*this);
+  auto* newelement = new DRT::ELEMENTS::So_sh18Plast(*this);
   return newelement;
 }
 
@@ -252,7 +260,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   InvalidEleData();
 
   // do the evaluation of tsi terms
-  const bool eval_tsi = (temp.size() != 0);
+  const bool eval_tsi = (!temp.empty());
   if (tsi_) dserror("no TSI for sosh18Plast (yet)");
   const double gp_temp = -1.e12;
 
@@ -274,14 +282,14 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   }
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
-    plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
+    plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
 
   // get time integration data
   double theta = StrParamsInterface().GetTimIntFactorDisp();
   double dt = StrParamsInterface().GetDeltaTime();
-  if (eval_tsi && (stiffmatrix != NULL || force != NULL))
+  if (eval_tsi && (stiffmatrix != nullptr || force != nullptr))
     if (theta == 0 || dt == 0)
       dserror("time integration parameters not provided in element for TSI problem");
 
@@ -408,7 +416,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
     // material call *********************************************
     LINALG::Matrix<numstr_, 1> pk2;
     LINALG::Matrix<numstr_, numstr_> cmat;
-    if (plmat != NULL)
+    if (plmat != nullptr)
       plmat->EvaluateElast(&defgrd, &DeltaLp(), &pk2, &cmat, gp, Id());
     else
     {
@@ -424,7 +432,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == NULL) dserror("strain data not available");
+          if (elestrain == nullptr) dserror("strain data not available");
           for (int i = 0; i < 3; ++i)
           {
             (*elestrain)(gp, i) = glstrain(i);
@@ -463,7 +471,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == NULL) dserror("stress data not available");
+          if (elestress == nullptr) dserror("stress data not available");
           for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
           {
             (*elestress)(gp, i) = pk2(i);
@@ -472,7 +480,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == NULL) dserror("stress data not available");
+          if (elestress == nullptr) dserror("stress data not available");
           LINALG::Matrix<3, 3> pkstress;
           pkstress(0, 0) = pk2(0);
           pkstress(0, 1) = pk2(3);
@@ -509,10 +517,10 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
     double detJ_w = detJ * So_sh18::wgt_[gp];
 
     // update internal force vector
-    if (force != NULL) force->MultiplyTN(detJ_w, bop, pk2, 1.0);
+    if (force != nullptr) force->MultiplyTN(detJ_w, bop, pk2, 1.0);
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -536,7 +544,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
       // EAS technology: integrate matrices --------------------------------- EAS
     }
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
       // shape function and derivatives
       LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
@@ -562,25 +570,25 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
 
     // plastic modifications
-    if ((stiffmatrix != NULL || force != NULL) && plmat != NULL)
+    if ((stiffmatrix != nullptr || force != nullptr) && plmat != nullptr)
     {
       if (HavePlasticSpin())
       {
         if (eas_)
-          CondensePlasticity<plspin>(defgrd, DeltaLp(), bop, NULL, NULL, detJ_w, gp, gp_temp,
+          CondensePlasticity<plspin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp, gp_temp,
               params, force, stiffmatrix, &M_ep, &Kda);
         else
-          CondensePlasticity<plspin>(
-              defgrd, DeltaLp(), bop, NULL, NULL, detJ_w, gp, gp_temp, params, force, stiffmatrix);
+          CondensePlasticity<plspin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp, gp_temp,
+              params, force, stiffmatrix);
       }
       else
       {
         if (eas_)
-          CondensePlasticity<zerospin>(defgrd, DeltaLp(), bop, NULL, NULL, detJ_w, gp, gp_temp,
-              params, force, stiffmatrix, &M_ep, &Kda);
+          CondensePlasticity<zerospin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp,
+              gp_temp, params, force, stiffmatrix, &M_ep, &Kda);
         else
-          CondensePlasticity<zerospin>(
-              defgrd, DeltaLp(), bop, NULL, NULL, detJ_w, gp, gp_temp, params, force, stiffmatrix);
+          CondensePlasticity<zerospin>(defgrd, DeltaLp(), bop, nullptr, nullptr, detJ_w, gp,
+              gp_temp, params, force, stiffmatrix);
       }
     }  // plastic modifications
        /* =========================================================================*/

@@ -83,7 +83,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      nlnstiffmass(lm, mydisp, &elemat1, NULL, &elevec1, NULL, NULL, params,
+      nlnstiffmass(lm, mydisp, &elemat1, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -97,8 +97,8 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      nlnstiffmass(lm, mydisp, NULL, NULL, &elevec1, NULL, NULL, params, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
+          INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -112,7 +112,7 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, NULL, NULL, params,
+      nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -136,12 +136,13 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> stress(true);  // set to zero
         LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D> strain(true);
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
-        nlnstiffmass(lm, mydisp, NULL, NULL, NULL, &stress, &strain, params, iostress, iostrain);
+        nlnstiffmass(
+            lm, mydisp, nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         {
           DRT::PackBuffer data;
@@ -253,8 +254,8 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -274,7 +275,7 @@ int DRT::ELEMENTS::So_tet4av::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // (SPATIAL) FUNCTION BUSINESS
   BOOST_STATIC_ASSERT((NUMGPT_SOTET4av == 1)) BACI_ATTRIBUTE_UNUSED;
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SOTET4av, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -472,13 +473,13 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = pk2(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         const double detF_bar = defgrd_bar.Determinant();
 
         LINALG::Matrix<3, 3> pkstress_bar;
@@ -531,7 +532,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
 
     const double detJ_w = detJ * wgt_[gp];
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       force->MultiplyTN(detJ_w / fbar_fac, bop, pk2, 1.0);
 
@@ -540,7 +541,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
           (*force)(i * NODDOF_SOTET4av + 3) += nodalVol(i) - detF;
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -608,7 +609,7 @@ void DRT::ELEMENTS::So_tet4av::nlnstiffmass(std::vector<int>& lm,   // location 
     }
   }  // end gp loop
 
-  if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+  if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
   {
     double density = Material()->Density(0);  // density at the only Gauss point the material has!
     // integrate consistent mass matrix
@@ -649,7 +650,7 @@ int DRT::ELEMENTS::So_tet4avType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_tet4av* actele = dynamic_cast<DRT::ELEMENTS::So_tet4av*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_tet4av*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4av* failed");
     actele->InitJacobianMapping();
   }

@@ -12,6 +12,8 @@
 #include "../drt_lib/drt_dserror.H"
 #include "so_hex8.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_Hex8P1J1Type DRT::ELEMENTS::So_Hex8P1J1Type::instance_;
 
@@ -19,7 +21,7 @@ DRT::ELEMENTS::So_Hex8P1J1Type& DRT::ELEMENTS::So_Hex8P1J1Type::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_Hex8P1J1* object = new DRT::ELEMENTS::So_Hex8P1J1(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_Hex8P1J1(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -28,7 +30,7 @@ DRT::ParObject* DRT::ELEMENTS::So_Hex8P1J1Type::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_Hex8P1J1Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8P1J1")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_Hex8P1J1(id, owner));
     return ele;
@@ -61,7 +63,7 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8P1J1"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT").AddNamedString("KINEM");
 }
@@ -115,6 +117,13 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(int id, int owner) : DRT::ELEMENTS::So_h
     I_0_(i, i) = 0.5;
   }
 
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -134,7 +143,7 @@ DRT::ELEMENTS::So_Hex8P1J1::So_Hex8P1J1(const DRT::ELEMENTS::So_Hex8P1J1& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_Hex8P1J1::Clone() const
 {
-  DRT::ELEMENTS::So_Hex8P1J1* newelement = new DRT::ELEMENTS::So_Hex8P1J1(*this);
+  auto* newelement = new DRT::ELEMENTS::So_Hex8P1J1(*this);
   return newelement;
 }
 

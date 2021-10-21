@@ -64,8 +64,8 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(Epetra_SerialDenseMatrix*& 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int NUMEAS_T>
-void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(Teuchos::RCP<Epetra_SerialDenseMatrix> M,
-    const double& detJ0, const double& detJ,
+void DRT::ELEMENTS::So_sh8p8::EasMaterialiseShapeFcts(
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& M, const double& detJ0, const double& detJ,
     const LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
     const Epetra_SerialDenseMatrix& Mloc)
 {
@@ -286,28 +286,28 @@ void DRT::ELEMENTS::So_sh8p8::EasCondensation(
 #endif
 
   // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
-  if (stiffmatrix != NULL)
+  if (stiffmatrix != nullptr)
     LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMDISP_>(
         1.0, stiffmatrix->A(), -1.0, KdaKaa.A(), Kad->A());
   // EAS stiffness matrix is: Kdp - Kda . Kaa^-1 . Kap
-  if (gradmatrix != NULL)
+  if (gradmatrix != nullptr)
     LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMPRES_>(
         1.0, gradmatrix->A(), -1.0, KdaKaa.A(), Kap->A());
   // EAS stiffness matrix is: Kpd - Kpa . Kaa^-1 . Kad
-  if (dargmatrix != NULL)
+  if (dargmatrix != nullptr)
     LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMDISP_>(
         1.0, dargmatrix->A(), -1.0, KpaKaa.A(), Kad->A());
   // EAS stiffness matrix is: Kpp - Kpa . Kaa^-1 . Kap
-  if (stabmatrix != NULL)
+  if (stabmatrix != nullptr)
     LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMPRES_>(
         1.0, stabmatrix->A(), -1.0, KpaKaa.A(), Kap->A());
 
   // EAS internal force is: fint - Kda^T . Kaa^-1 . feas
-  if (force != NULL)
+  if (force != nullptr)
     LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMDISP_, NUMEAS_T, 1>(
         1.0, force->A(), -1.0, KdaKaa.A(), feas->A());
   // EAS incompressibility is: fint - Kpa^T . Kaa^-1 . feas
-  if (incomp != NULL)
+  if (incomp != nullptr)
     LINALG::DENSEFUNCTIONS::multiplyNN<double, NUMPRES_, NUMEAS_T, 1>(
         1.0, incomp->A(), -1.0, KpaKaa.A(), feas->A());
 

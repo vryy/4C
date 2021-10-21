@@ -65,6 +65,8 @@ namespace DRT
 
      private:
       static So_tet4Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4"; }
     };
 
     /*!
@@ -319,7 +321,7 @@ namespace DRT
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Return value how expensive it is to evaluate this element
@@ -450,10 +452,10 @@ namespace DRT
       );
 
       //! remodeling for fibers at the end of time step (st 01/10)
-      void so_tet4_remodel(std::vector<int>& lm,  // location matrix
-          std::vector<double>& disp,              // current displacements
-          Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-          Teuchos::RCP<MAT::Material> mat);       // material
+      void so_tet4_remodel(std::vector<int>& lm,    // location matrix
+          std::vector<double>& disp,                // current displacements
+          Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+          const Teuchos::RCP<MAT::Material>& mat);  // material
 
       //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
       const std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> so_tet4_1gp_shapefcts();
@@ -487,6 +489,9 @@ namespace DRT
        * @param params ParameterList to be passed to the materials
        */
       void MaterialPostSetup(Teuchos::ParameterList& params) override;
+
+     private:
+      std::string GetElementTypeString() const { return "SOLIDT4"; }
     };  // class So_tet4
 
 

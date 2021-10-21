@@ -20,6 +20,7 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -31,7 +32,7 @@ DRT::ELEMENTS::So_hex20Type& DRT::ELEMENTS::So_hex20Type::Instance() { return in
 
 DRT::ParObject* DRT::ELEMENTS::So_hex20Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_hex20* object = new DRT::ELEMENTS::So_hex20(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_hex20(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -40,7 +41,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex20Type::Create(const std::vector<char>& dat
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex20Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH20")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex20(id, owner));
     return ele;
@@ -73,7 +74,7 @@ void DRT::ELEMENTS::So_hex20Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_hex20Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH20"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX20"]
       .AddIntVector("HEX20", 20)
@@ -107,6 +108,9 @@ DRT::ELEMENTS::So_hex20::So_hex20(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
@@ -145,7 +149,7 @@ DRT::ELEMENTS::So_hex20::So_hex20(const DRT::ELEMENTS::So_hex20& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex20::Clone() const
 {
-  DRT::ELEMENTS::So_hex20* newelement = new DRT::ELEMENTS::So_hex20(*this);
+  auto* newelement = new DRT::ELEMENTS::So_hex20(*this);
   return newelement;
 }
 
@@ -174,7 +178,7 @@ void DRT::ELEMENTS::So_hex20::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
   // Pack prestress

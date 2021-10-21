@@ -28,7 +28,7 @@ namespace DRT
     class InvDesignType : public DRT::ParObjectType
     {
      public:
-      std::string Name() const { return "InvDesignType"; }
+      std::string Name() const override { return "InvDesignType"; }
 
       static InvDesignType& Instance() { return instance_; };
 
@@ -57,7 +57,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~InvDesign() {}
+      ~InvDesign() override = default;
 
       /*!
       \brief Return unique ParObject id
@@ -66,7 +66,7 @@ namespace DRT
       top of this file.
 
       */
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -74,7 +74,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this node
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -82,7 +82,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this node
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       // M could be a FixedSize<3,3> or a FixedSize<4,3>, for tet4.
       /// put a matrix to storage

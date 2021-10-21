@@ -29,24 +29,27 @@ namespace DRT
       //! @name Friends
       friend class So_sh18PlastType;
 
-      std::string Name() const { return "So_sh18Type"; }
+      std::string Name() const override { return "So_sh18Type"; }
 
       static So_sh18Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_sh18Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSH18"; }
     };
 
     /*!
@@ -88,7 +91,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
 
       /*!
@@ -97,7 +100,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return So_sh18Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return So_sh18Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -105,7 +108,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -113,13 +116,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~So_sh18();
+      ~So_sh18() override;
 
       //@}
 
@@ -128,16 +131,16 @@ namespace DRT
       /*!
        \brief Does this element use EAS?
        */
-      virtual bool HaveEAS() const { return eas_; };
+      bool HaveEAS() const override { return eas_; };
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
 
 
-      virtual DRT::ElementType& ElementType() const { return So_sh18Type::Instance(); }
+      DRT::ElementType& ElementType() const override { return So_sh18Type::Instance(); }
 
       //@}
 
@@ -150,21 +153,21 @@ namespace DRT
       /*!
       \brief Read input for this element
       */
-      virtual bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+      bool ReadElement(const std::string& eletype, const std::string& distype,
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
 
      protected:
       //! use DSG for transverse shear locking
-      bool dsg_shear_;
+      bool dsg_shear_{};
       //! use DSG for membrane locking
-      bool dsg_membrane_;
+      bool dsg_membrane_{};
       //! use DSG for curvature thickness locking
-      bool dsg_ctl_;
+      bool dsg_ctl_{};
       //! use EAS
-      bool eas_;
+      bool eas_{};
 
       // EAS stuff *****************************************************
       LINALG::Matrix<num_eas, num_eas> KaaInv_;
@@ -174,7 +177,7 @@ namespace DRT
       LINALG::Matrix<num_eas, 1> alpha_eas_last_timestep_;
       LINALG::Matrix<num_eas, 1> alpha_eas_delta_over_last_timestep_;
       LINALG::Matrix<num_eas, 1> alpha_eas_inc_;
-      double old_step_length_;
+      double old_step_length_{};
       // EAS stuff *****************************************************
 
       // DSG factors ***************************************************
@@ -197,10 +200,10 @@ namespace DRT
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       //! return the number of negative eigenvalues
-      virtual int InitJacobianMapping();
+      int InitJacobianMapping() override;
 
       //! Calculate nonlinear stiffness and mass matrix
-      virtual void nlnstiffmass(std::vector<int>& lm,               ///< location matrix
+      void nlnstiffmass(std::vector<int>& lm,                       ///< location matrix
           std::vector<double>& disp,                                ///< current displacements
           std::vector<double>& residual,                            ///< current residual displ
           LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,  ///< element stiffness matrix
@@ -211,7 +214,7 @@ namespace DRT
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,  ///< stress output option
           const INPAR::STR::StrainType iostrain   ///< strain output option
-      );
+          ) override;
 
       // parameter space coords of one node
       LINALG::Matrix<3, 1> NodeParamCoord(const int node);
@@ -228,7 +231,7 @@ namespace DRT
 
       void EasSetup(std::vector<LINALG::Matrix<6, num_eas>>& M_gp,  // M-matrix evaluated at GPs
           LINALG::Matrix<3, 1>& G3_contra,  // contravariant basis vector G3 at element center
-          const LINALG::Matrix<NUMNOD_SOH18, 3> xrefe);  // material element coords
+          const LINALG::Matrix<NUMNOD_SOH18, 3>& xrefe);  // material element coords
 
       void SetupDSG();
       void Integrate_dsg_shear_r(const int gp, LINALG::Matrix<9, 9>& dsg_shear_r);
@@ -238,8 +241,8 @@ namespace DRT
       void Integrate_dsg_membrane_rs(const int gp, LINALG::Matrix<9, 9>& dsg_membrane_rs);
       void Integrate_dsg_transverse_t(const int gp, LINALG::Matrix<9, 9>& dsg_transverse_t);
 
-      void CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_disp, LINALG::Matrix<6, 1> glstrain_mod,
-          LINALG::Matrix<3, 3>& defgrd_mod);
+      void CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
+          LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod);
 
       void CalculateBopLoc(const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xcurr,
           const LINALG::Matrix<NUMNOD_SOH18, NUMDIM_SOH18>& xrefe,
@@ -261,20 +264,13 @@ namespace DRT
 
 
       /** recover elementwise stored stuff */
-      virtual void Recover(const std::vector<double>& residual);
+      void Recover(const std::vector<double>& residual) override;
 
       //@}
 
+     private:
+      std::string GetElementTypeString() const { return "SOLIDSH18"; }
     };  // class So_sh18
-
-
-
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-    //=======================================================================
-
-
 
   }  // namespace ELEMENTS
 }  // namespace DRT

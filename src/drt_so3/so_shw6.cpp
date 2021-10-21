@@ -10,7 +10,8 @@
 #include "so_weg6.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_linedefinition.H"
-
+#include "so_utils.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 
 DRT::ELEMENTS::So_shw6Type DRT::ELEMENTS::So_shw6Type::instance_;
@@ -20,7 +21,7 @@ DRT::ELEMENTS::So_shw6Type& DRT::ELEMENTS::So_shw6Type::Instance() { return inst
 
 DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_shw6* object = new DRT::ELEMENTS::So_shw6(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_shw6(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -29,7 +30,7 @@ DRT::ParObject* DRT::ELEMENTS::So_shw6Type::Create(const std::vector<char>& data
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_shw6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSHW6")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_shw6(id, owner));
     return ele;
@@ -62,7 +63,7 @@ void DRT::ELEMENTS::So_shw6Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSHW6"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["WEDGE6"]
       .AddIntVector("WEDGE6", 6)
@@ -86,6 +87,14 @@ DRT::ELEMENTS::So_shw6::So_shw6(int id, int owner) : DRT::ELEMENTS::So_weg6(id, 
   neas_ = 0;
   optimal_parameterspace_map_ = false;
   nodes_rearranged_ = false;
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -104,7 +113,7 @@ DRT::ELEMENTS::So_shw6::So_shw6(const DRT::ELEMENTS::So_shw6& old) : DRT::ELEMEN
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_shw6::Clone() const
 {
-  DRT::ELEMENTS::So_shw6* newelement = new DRT::ELEMENTS::So_shw6(*this);
+  auto* newelement = new DRT::ELEMENTS::So_shw6(*this);
   return newelement;
 }
 

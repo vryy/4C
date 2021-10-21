@@ -23,21 +23,21 @@ namespace DRT
     class StructuralSurfaceType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "StructuralSurfaceType"; }
+      std::string Name() const override { return "StructuralSurfaceType"; }
 
       static StructuralSurfaceType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual void ComputeNullSpace(
-          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override
       {
       }
 
@@ -87,12 +87,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -100,7 +100,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the drt_parobject.H file.
       */
-      virtual inline int UniqueParObjectId() const
+      inline int UniqueParObjectId() const override
       {
         return StructuralSurfaceType::Instance().UniqueParObjectId();
       }
@@ -111,7 +111,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -119,13 +119,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~StructuralSurface() {}
+      ~StructuralSurface() override = default;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -136,7 +136,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      inline virtual int NumDofPerNode(const DRT::Node& node) const { return numdofpernode_; }
+      inline int NumDofPerNode(const DRT::Node& node) const override { return numdofpernode_; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -149,18 +149,18 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      inline virtual int NumDofPerElement() const { return 0; }
+      inline int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return StructuralSurfaceType::Instance(); }
+      DRT::ElementType& ElementType() const override { return StructuralSurfaceType::Instance(); }
 
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
-      virtual int NumLine() const;
+      int NumLine() const override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -176,21 +176,21 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! Evaluate method for StructuralSurface-Elements
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elematrix1,
           Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3);
+          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3) override;
 
       //! Evaluate method for StructuralSurface-Elements
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           LocationArray& la, Epetra_SerialDenseMatrix& elematrix1,
           Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3);
+          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3) override;
 
       //! Evaluate trace inequality and return the maximal eigenvalue
       virtual double EstimateNitscheTraceMaxEigenvalueCombined(std::vector<double>& parent_disp);
@@ -315,7 +315,7 @@ namespace DRT
       \param disp  (int)  : displacements
       */
       inline void SpatialConfiguration(
-          LINALG::SerialDenseMatrix& x, const std::vector<double> disp) const
+          LINALG::SerialDenseMatrix& x, const std::vector<double>& disp) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
@@ -335,7 +335,7 @@ namespace DRT
       \param disp  (int)  : displacements
       */
       inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x,
-          LINALG::SerialDenseMatrix& xrefe, const std::vector<double> disp) const
+          LINALG::SerialDenseMatrix& xrefe, const std::vector<double>& disp) const
       {
         const int numnode = NumNode();
         for (int i = 0; i < numnode; ++i)
@@ -361,18 +361,18 @@ namespace DRT
           const int numnode,                                     ///< number of nodes
           const int ndof,                                        ///< number of degrees of freedom
           double& A,                                             ///< area
-          Teuchos::RCP<Epetra_SerialDenseVector> Adiff,          ///< first derivative
-          Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2          ///< second derivative
+          const Teuchos::RCP<Epetra_SerialDenseVector>& Adiff,   ///< first derivative
+          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Adiff2   ///< second derivative
       );
 
       //! Submethod to compute constraint volume and its first and second derivatives w.r.t. the
       //! displacements
-      void ComputeVolDeriv(const LINALG::SerialDenseMatrix& x,  ///< spatial configuration
-          const int numnode,                                    ///< number of nodes
-          const int ndof,                                       ///< number of degrees of freedom
-          double& V,                                            ///< volume
-          Teuchos::RCP<Epetra_SerialDenseVector> Vdiff,         ///< first derivative
-          Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2,        ///< second derivative
+      void ComputeVolDeriv(const LINALG::SerialDenseMatrix& x,   ///< spatial configuration
+          const int numnode,                                     ///< number of nodes
+          const int ndof,                                        ///< number of degrees of freedom
+          double& V,                                             ///< volume
+          const Teuchos::RCP<Epetra_SerialDenseVector>& Vdiff,   ///< first derivative
+          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with
       );
@@ -380,7 +380,7 @@ namespace DRT
       /// Submethod to compute normal vectors at nodes (for reference configuration) which can be
       /// assembled (i.e., added) to obtain averaged nodal normal vectors
       void BuildNormalsAtNodes(
-          Epetra_SerialDenseVector& nodenormals, std::vector<double> mydisp, bool refconfig);
+          Epetra_SerialDenseVector& nodenormals, const std::vector<double>& mydisp, bool refconfig);
 
       //! Submethod to compute surface porosity
       void CalculateSurfacePorosity(

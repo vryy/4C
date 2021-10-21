@@ -304,10 +304,8 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
           // calculate tangent stiffness matrix
-          nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr, matptr2,
-              &elevec1,  // NULL,
-                         // NULL,NULL,
-              params);
+          nlnstiff_poroelast(
+              lm, mydisp, myvel, myfluidvel, myepreaf, matptr, matptr2, &elevec1, params);
         }
         else if (la.Size() > 2)
           if (discretization.HasState(1, "porofluid"))
@@ -373,10 +371,8 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
           ExtractValuesFromGlobalVector(
               discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
-          nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr, NULL,
-              &elevec1,  // NULL,
-                         // NULL,NULL,
-              params);
+          nlnstiff_poroelast(
+              lm, mydisp, myvel, myfluidvel, myepreaf, matptr, NULL, &elevec1, params);
         }
         else if (la.Size() > 2)
           if (discretization.HasState(1, "porofluid"))
@@ -433,8 +429,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
         ExtractValuesFromGlobalVector(
             discretization, 1, la[1].lm_, &myfluidvel, &myepreaf, "fluidvel");
 
-        coupling_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr,  // NULL,
-            NULL, NULL, params);
+        coupling_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, matptr, NULL, NULL, params);
       }
       else if (la.Size() > 2)
       {
@@ -491,10 +486,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
         ExtractValuesFromGlobalVector(discretization, 0, la[0].lm_, &myvel, NULL, "velocity");
 
         // calculate tangent stiffness matrix
-        nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, NULL, NULL,
-            &elevec1,  // NULL,
-                       // NULL,NULL,
-            params);
+        nlnstiff_poroelast(lm, mydisp, myvel, myfluidvel, myepreaf, NULL, NULL, &elevec1, params);
       }
       else if (la.Size() > 2)
         if (discretization.HasState(1, "porofluid"))

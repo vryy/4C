@@ -13,8 +13,10 @@
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "prestress.H"
 #include "../drt_lib/prestress_service.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_hex8fbarType DRT::ELEMENTS::So_hex8fbarType::instance_;
 
@@ -22,7 +24,7 @@ DRT::ELEMENTS::So_hex8fbarType& DRT::ELEMENTS::So_hex8fbarType::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_hex8fbar* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_hex8fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -31,7 +33,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8fbarType::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8FBAR")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_hex8fbar(id, owner));
     return ele;
@@ -65,7 +67,7 @@ void DRT::ELEMENTS::So_hex8fbarType::ComputeNullSpace(
 void DRT::ELEMENTS::So_hex8fbarType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8FBAR"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"]
       .AddIntVector("HEX8", 8)
@@ -91,6 +93,14 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(int id, int owner) : DRT::ELEMENTS::So_h
 {
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -110,7 +120,7 @@ DRT::ELEMENTS::So_hex8fbar::So_hex8fbar(const DRT::ELEMENTS::So_hex8fbar& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_hex8fbar::Clone() const
 {
-  DRT::ELEMENTS::So_hex8fbar* newelement = new DRT::ELEMENTS::So_hex8fbar(*this);
+  auto* newelement = new DRT::ELEMENTS::So_hex8fbar(*this);
   return newelement;
 }
 

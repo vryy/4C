@@ -13,7 +13,9 @@
 #include "so_line.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/so3_material.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;
 
@@ -25,7 +27,7 @@ namespace
 
 DRT::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_sh18* object = new DRT::ELEMENTS::So_sh18(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_sh18(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -34,7 +36,7 @@ DRT::ParObject* DRT::ELEMENTS::So_sh18Type::Create(const std::vector<char>& data
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSH18")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh18(id, owner));
     return ele;
@@ -53,7 +55,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh18Type::Create(const int id, cons
 void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH18"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX18"]
       .AddIntVector("HEX18", 18)
@@ -80,6 +82,13 @@ void DRT::ELEMENTS::So_sh18Type::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh18::So_sh18(int id, int owner) : So_base(id, owner), So_hex18(id, owner)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -104,7 +113,7 @@ DRT::ELEMENTS::So_sh18::So_sh18(const DRT::ELEMENTS::So_sh18& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_sh18::Clone() const
 {
-  DRT::ELEMENTS::So_sh18* newelement = new DRT::ELEMENTS::So_sh18(*this);
+  auto* newelement = new DRT::ELEMENTS::So_sh18(*this);
   return newelement;
 }
 
@@ -127,7 +136,7 @@ void DRT::ELEMENTS::So_sh18::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 

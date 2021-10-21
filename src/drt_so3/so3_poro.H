@@ -67,7 +67,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~So3_Poro(){};
+      ~So3_Poro() override = default;
 
       //@}
 
@@ -108,7 +108,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -116,7 +116,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
       /*!
       \brief Pack this class so it can be communicated
@@ -124,7 +124,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -132,34 +132,34 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volumes of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //! @name Access methods
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
       //@}
 
@@ -168,7 +168,7 @@ namespace DRT
 
       \param double (out): cost to evaluate this element
       */
-      virtual double EvaluationCost() { return 10000.0; }
+      double EvaluationCost() override { return 10000.0; }
 
       //! @name Evaluation
 
@@ -182,7 +182,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(
+      int Evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
@@ -192,7 +192,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1,    ///< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2,    ///< vector to be filled by element
           Epetra_SerialDenseVector& elevec3     ///< vector to be filled by element
-      );
+          ) override;
 
       virtual void PreEvaluate(
           Teuchos::ParameterList&
@@ -233,7 +233,7 @@ namespace DRT
                           key names of data it wants to visualize and with int dimensions
                           of that data.
       */
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /*!
       \brief Query data to be visualized using BINIO of a given name
@@ -249,13 +249,13 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if element recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       /*!
       \brief Read input for this element
       */
-      virtual bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef);
+      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -505,7 +505,7 @@ namespace DRT
           const std::vector<int>& lm,                      ///< location vector
           LINALG::Matrix<numdim_, numnod_>* matrixtofill,  ///< vector field
           LINALG::Matrix<numnod_, 1>* vectortofill,        ///< scalar field
-          const std::string state                          ///< state of the global vector
+          const std::string& state                         ///< state of the global vector
       );
 
       // private:
@@ -646,7 +646,7 @@ namespace DRT
       // int numscal_;
 
       //! get nodes of element
-      DRT::Node** Nodes();
+      DRT::Node** Nodes() override;
 
       //! get material of element
       Teuchos::RCP<MAT::Material> Material() const;

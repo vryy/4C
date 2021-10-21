@@ -42,8 +42,7 @@ DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::So3_Poro_P1_Scatra(
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::Clone() const
 {
-  DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>* newelement =
-      new DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>(*this);
   return newelement;
 }
 

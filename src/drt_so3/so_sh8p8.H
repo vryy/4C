@@ -37,30 +37,33 @@ namespace DRT
     class So_sh8p8Type : public So_sh8Type
     {
      public:
-      std::string Name() const { return "So_sh8p8Type"; }
+      std::string Name() const override { return "So_sh8p8Type"; }
 
       static So_sh8p8Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_sh8p8Type instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
     };
 
     /// An incompressible 8-node solid shell element inherited from #DRT::ELEMENTS::so_sh8
@@ -207,28 +210,31 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      virtual int UniqueParObjectId() const { return So_sh8p8Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override
+      {
+        return So_sh8p8Type::Instance().UniqueParObjectId();
+      }
 
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /// Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual So_sh8p8Type& ElementType() const { return So_sh8p8Type::Instance(); }
+      So_sh8p8Type& ElementType() const override { return So_sh8p8Type::Instance(); }
 
       //@}
 
@@ -237,11 +243,11 @@ namespace DRT
 
       /// Read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
 
       /// Destructor
-      virtual ~So_sh8p8();
+      ~So_sh8p8() override;
 
       //@}
 
@@ -255,7 +261,7 @@ namespace DRT
       /// As this may vary along a simulation, the element can redecide the
       /// number of degrees of freedom per node along the way for each of it's nodes
       /// separately.
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 4; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 4; }
 
       /// Get number of degrees of freedom per element
       /// (implements pure virtual DRT::Element)
@@ -266,7 +272,7 @@ namespace DRT
       /// \note Element degrees of freedom mentioned here are dofs that are visible
       /// at the level of the total system of equations. Purely internal
       /// element dofs that are condensed internally should NOT be considered.
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /// Set ANS type
       void SetANS(const AnsType& newans  ///< ANS to set
@@ -304,7 +310,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec3   ///< (out) vector to be filled by element. If NULL on
                                               ///< input, the controlling method does not expect the
                                               ///< element to fill this vector
-      );
+          ) override;
 
 
       /// \brief Evaluate a Neumann boundary condition
@@ -319,9 +325,9 @@ namespace DRT
       /// \param elevec1 (out)      : vector to be filled by element. If NULL on input,
       ///
       /// \return 0 if successful, negative otherwise
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
      private:
       /// don't want = operator
@@ -492,7 +498,7 @@ namespace DRT
 
       /// push parametric EAS GL strain to material/reference configuration
       template <int NUMEAS_T>
-      static void EasMaterialiseShapeFcts(Teuchos::RCP<Epetra_SerialDenseMatrix>
+      static void EasMaterialiseShapeFcts(const Teuchos::RCP<Epetra_SerialDenseMatrix>&
                                               M,  ///< EAS shape functions in material configuration
           const double& detJ0,  ///< material-to-parameter Jacobian determinant at origin
           const double& detJ,   ///< material-to-parameter Jacobian determinant at GP
@@ -866,6 +872,10 @@ namespace DRT
       virtual void CalcSTCMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_>& elemat1,
           const INPAR::STR::STC_Scale stc_scaling, const int stc_layer, std::vector<int>& lm,
           DRT::Discretization& discretization, bool calcinverse);
+
+
+     private:
+      std::string GetElementTypeString() const { return "SOLIDSH8P8"; }
     };  // class So_sh8p8
 
 

@@ -109,8 +109,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
-      ForceStiffMass(lm, mydisp, myres, &elemat1, NULL, &elevec1, &elevec3, NULL, NULL, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+      ForceStiffMass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr, nullptr,
+          params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -129,8 +129,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
 
-      ForceStiffMass(lm, mydisp, myres, &myemat, NULL, &elevec1, NULL, NULL, NULL, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+      ForceStiffMass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
+          params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -148,8 +148,8 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
 
-      ForceStiffMass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, NULL, NULL, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+      ForceStiffMass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr, nullptr,
+          params, INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       // lump mass
       if (act == calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -180,12 +180,12 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        ForceStiffMass(lm, mydisp, myres, NULL, NULL, NULL, NULL, &stress, &strain, params,
-            iostress, iostrain);
+        ForceStiffMass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
+            params, iostress, iostrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -591,7 +591,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
     const double detJ_w_J = detJ_w * J;
 
     // update of internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * Theta * detJ * w(gp)
       force->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
@@ -599,7 +599,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
     if (split_res) force_str->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
 
     // update of stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       R_p_(0, 0) += (J - t_(0, 0)) * detJ_w;
       R_t_(0, 0) += (p_bar - p_(0, 0)) * detJ_w;
@@ -683,7 +683,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
 
     }  // end of stiffness matrix ++++++++++++++++++++++++++++++++++++++++++++++
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
       double density = Material()->Density(gp);
       // integrate consistent mass matrix
@@ -826,7 +826,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Stress(LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STR
   {
     case INPAR::STR::stress_2pk:  // 2nd Piola-Kirchhoff stress
     {
-      if (elestress == NULL) dserror("stress data not available");
+      if (elestress == nullptr) dserror("stress data not available");
 
       // inverse deformation gradient
       LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
@@ -846,7 +846,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Stress(LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STR
     break;
     case INPAR::STR::stress_cauchy:  // true/Cauchy stress
     {
-      if (elestress == NULL) dserror("stress data not available");
+      if (elestress == nullptr) dserror("stress data not available");
 
       // store stress
       for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
@@ -876,7 +876,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Strain(
   {
     case INPAR::STR::strain_gl:  // Green-Lagrange strain
     {
-      if (elestrain == NULL) dserror("strain data not available");
+      if (elestrain == nullptr) dserror("strain data not available");
       // store
       for (int i = 0; i < NUMDIM_SOH8; ++i) (*elestrain)(gp, i) = glstrain(i);
       for (int i = NUMDIM_SOH8; i < MAT::NUM_STRESS_3D; ++i)
@@ -885,7 +885,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::Strain(
     break;
     case INPAR::STR::strain_ea:  // Euler-Almansi strain
     {
-      if (elestrain == NULL) dserror("strain data not available");
+      if (elestrain == nullptr) dserror("strain data not available");
 
       // inverse deformation gradient
       LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
@@ -1316,8 +1316,7 @@ int DRT::ELEMENTS::So_Hex8P1J1Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_Hex8P1J1* actele =
-        dynamic_cast<DRT::ELEMENTS::So_Hex8P1J1*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_Hex8P1J1*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_Hex8P1J1* failed");
     actele->InitJacobianMapping();
     actele->InitKpt();

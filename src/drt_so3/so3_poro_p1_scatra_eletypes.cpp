@@ -34,7 +34,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8PoroP1ScatraType::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroP1ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8POROP1SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::So_hex8PoroP1ScatraType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 =
       definitions_hex8poro["SOLIDH8POROP1"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8POROP1SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 
@@ -90,7 +90,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4PoroP1ScatraType::Create(const std::vector
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroP1ScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT4POROP1SCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::So_tet4PoroP1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4POROP1"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4POROP1SCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 

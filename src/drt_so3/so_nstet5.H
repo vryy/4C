@@ -49,36 +49,39 @@ namespace DRT
       friend class DRT::ELEMENTS::NStet5;
 
      public:
-      std::string Name() const { return "NStet5Type"; }
+      std::string Name() const override { return "NStet5Type"; }
 
       static NStet5Type& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
+      void PreEvaluate(DRT::Discretization& dis, Teuchos::ParameterList& p,
           Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
           Teuchos::RCP<LINALG::SparseOperator> systemmatrix2,
           Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-          Teuchos::RCP<Epetra_Vector> systemvector3);
+          Teuchos::RCP<Epetra_Vector> systemvector3) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
-          const double* x0, int numdf, int dimns);
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static NStet5Type instance_;
+
+      std::string GetElementTypeString() const { return "NSTET5"; }
 
       //! map of row nodes adjacent to NStet5 elements
       std::map<int, DRT::Node*> noderids_;
@@ -133,7 +136,7 @@ namespace DRT
           const INPAR::STR::StrainType iostrain);
 
 
-      void SelectMaterial(Teuchos::RCP<MAT::Material> mat, LINALG::Matrix<6, 1>& stress,
+      void SelectMaterial(const Teuchos::RCP<MAT::Material>& mat, LINALG::Matrix<6, 1>& stress,
           LINALG::Matrix<6, 6>& cmat, double& density, LINALG::Matrix<6, 1>& glstrain,
           LINALG::Matrix<3, 3>& defgrd, int gp, const int eleGID);
 
@@ -223,45 +226,45 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      inline DRT::Element* Clone() const { return new DRT::ELEMENTS::NStet5(*this); }
+      inline DRT::Element* Clone() const override { return new DRT::ELEMENTS::NStet5(*this); }
 
       /*!
       \brief Get shape type of element
       */
-      inline virtual DiscretizationType Shape() const { return tet4; }
+      inline DiscretizationType Shape() const override { return tet4; }
 
       /*!
       \brief Return number of volumes of this element
       */
-      virtual int NumVolume() const { return 1; }
+      int NumVolume() const override { return 1; }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const { return 4; }
+      int NumSurface() const override { return 4; }
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return 6; }
+      int NumLine() const override { return 6; }
 
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volumes of this element
 
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       /*!
       \brief Return unique ParObject id
@@ -269,7 +272,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return NStet5Type::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return NStet5Type::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -277,7 +280,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -285,13 +288,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~NStet5();
+      ~NStet5() override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -302,25 +305,25 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual inline int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      inline int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief The 3 degrees of freedom of the center node
       */
-      virtual inline int NumDofPerElement() const { return 3; }
+      inline int NumDofPerElement() const override { return 3; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual NStet5Type& ElementType() const { return NStet5Type::Instance(); }
+      NStet5Type& ElementType() const override { return NStet5Type::Instance(); }
 
       /*!
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       /*!
       \brief Evaluate an element
@@ -349,7 +352,7 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
           Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -366,9 +369,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
 
      protected:
@@ -441,11 +444,11 @@ namespace DRT
 
       //---------------------------------------------- quantities related to subtets
       //! nodal connectivity  of subelements
-      int sublm_[16];
+      int sublm_[16]{};
       inline const int* SubLM(int i) const { return &(sublm_[i * 4]); }
 
       //! coordinates of middle node
-      double midX_[3];
+      double midX_[3]{};
       inline const double* MidX() const { return midX_; }
 
       //! derivatives of shape functions for subtets
@@ -453,7 +456,7 @@ namespace DRT
       inline const LINALG::Matrix<4, 3>& SubNxyz(int i) const { return subnxyz_[i]; }
 
       //! reference volume of subelements
-      double subV_[4];
+      double subV_[4]{};
       inline const double& SubV(int i) const { return subV_[i]; }
 
       LINALG::Matrix<3, 3> subF_[4];
@@ -536,6 +539,8 @@ namespace DRT
 
       //@}
 
+     private:
+      std::string GetElementTypeString() const { return "NSTET5"; }
     };  // class NStet5
 
 

@@ -84,7 +84,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(const DRT::ELEMENTS::So3_Plast<dist
 template <DRT::Element::DiscretizationType distype>
 DRT::Element* DRT::ELEMENTS::So3_Plast<distype>::Clone() const
 {
-  DRT::ELEMENTS::So3_Plast<distype>* newelement = new DRT::ELEMENTS::So3_Plast<distype>(*this);
+  auto* newelement = new DRT::ELEMENTS::So3_Plast<distype>(*this);
 
   return newelement;
 }
@@ -327,7 +327,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::Pack(DRT::PackBuffer& data) const
   So_base::Pack(data);
 
   // Gauss points and weights
-  const int size2 = (int)xsi_.size();
+  const auto size2 = (int)xsi_.size();
   AddtoPack(data, size2);
   for (int i = 0; i < size2; ++i) AddtoPack(data, xsi_[i]);
   AddtoPack(data, wgt_);
@@ -804,14 +804,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::ReadParameterList(
   if (tsi_)
   {
     // get plastic hyperelastic material
-    MAT::PlasticElastHyper* plmat = NULL;
+    MAT::PlasticElastHyper* plmat = nullptr;
     if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
       plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
     else
       dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
     // get dissipation mode
-    INPAR::TSI::DissipationMode mode =
+    auto mode =
         DRT::INPUT::IntegralValue<INPAR::TSI::DissipationMode>(*plparams, "DISSIPATION_MODE");
 
     // prepare material for tsi
@@ -928,11 +928,11 @@ template <DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Plast<distype>::HavePlasticSpin()
 {
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
 
-  if (plmat != NULL) return plmat->HavePlasticSpin();
+  if (plmat != nullptr) return plmat->HavePlasticSpin();
 
   return false;
 }

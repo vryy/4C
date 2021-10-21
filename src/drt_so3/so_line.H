@@ -24,19 +24,19 @@ namespace DRT
     class StructuralLineType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "StructuralLineType"; }
+      std::string Name() const override { return "StructuralLineType"; }
 
       static StructuralLineType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual void ComputeNullSpace(
-          DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
+      void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns, const double* x0,
+          int numdf, int dimns) override
       {
       }
 
@@ -83,7 +83,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -91,7 +91,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the drt_parobject.H file.
       */
-      virtual inline int UniqueParObjectId() const
+      inline int UniqueParObjectId() const override
       {
         return StructuralLineType::Instance().UniqueParObjectId();
       }
@@ -102,7 +102,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -110,13 +110,13 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~StructuralLine() {}
+      ~StructuralLine() override = default;
 
       //@}
 
@@ -125,7 +125,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -136,7 +136,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual inline int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      inline int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*!
       \brief Get number of degrees of freedom per element
@@ -149,14 +149,14 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual inline int NumDofPerElement() const { return 0; }
+      inline int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return StructuralLineType::Instance(); }
+      DRT::ElementType& ElementType() const override { return StructuralLineType::Instance(); }
 
       //@}
 
@@ -176,9 +176,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
 
       //@}
 

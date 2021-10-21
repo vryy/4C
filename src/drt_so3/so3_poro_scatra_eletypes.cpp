@@ -33,7 +33,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8PoroScatraType::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH8POROSCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
@@ -58,7 +58,7 @@ void DRT::ELEMENTS::So_hex8PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH8POROSCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"] = defs_hex8["HEX8"];
 
@@ -89,7 +89,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4PoroScatraType::Create(const std::vector<c
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT4POROSCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::So_tet4PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4POROSCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"] = defs_tet4["TET4"];
 
@@ -145,7 +145,7 @@ DRT::ParObject* DRT::ELEMENTS::So_hex27PoroScatraType::Create(const std::vector<
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDH27POROSCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::So_hex27PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDH27POROSCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX27"] = defs_hex27["HEX27"];
 
@@ -203,7 +203,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet10PoroScatraType::Create(const std::vector<
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT10POROSCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(
@@ -229,7 +229,7 @@ void DRT::ELEMENTS::So_tet10PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT10POROSCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"] = defs_tet10["TET10"];
 
@@ -261,7 +261,7 @@ DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroScatraType::Create(const std::vecto
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroScatraType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SONURBS27POROSCATRA")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
         new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
@@ -289,7 +289,7 @@ void DRT::ELEMENTS::So_nurbs27PoroScatraType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_nurbs27 =
       definitions_nurbs27["SONURBS27PORO"];
 
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SONURBS27POROSCATRA"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["NURBS27"] = defs_nurbs27["NURBS27"];
 

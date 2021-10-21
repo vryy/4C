@@ -25,22 +25,25 @@ namespace DRT
     class So_hex8PoroScatraType : public So_hex8PoroType
     {
      public:
-      std::string Name() const { return "So_hex8PoroScatraType"; }
+      std::string Name() const override { return "So_hex8PoroScatraType"; }
 
       static So_hex8PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex8PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH8POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -49,22 +52,25 @@ namespace DRT
     class So_tet4PoroScatraType : public So_tet4PoroType
     {
      public:
-      std::string Name() const { return "So_tet4PoroScatraType"; }
+      std::string Name() const override { return "So_tet4PoroScatraType"; }
 
       static So_tet4PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_tet4PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT4POROSCATRA"; }
     };
 
 
@@ -74,22 +80,25 @@ namespace DRT
     class So_hex27PoroScatraType : public So_hex27PoroType
     {
      public:
-      std::string Name() const { return "So_hex27PoroScatraType"; }
+      std::string Name() const override { return "So_hex27PoroScatraType"; }
 
       static So_hex27PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_hex27PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDH27POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -98,22 +107,25 @@ namespace DRT
     class So_tet10PoroScatraType : public So_tet10PoroType
     {
      public:
-      std::string Name() const { return "So_tet10PoroScatraType"; }
+      std::string Name() const override { return "So_tet10PoroScatraType"; }
 
       static So_tet10PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_tet10PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDT10POROSCATRA"; }
     };
 
     /*----------------------------------------------------------------------*
@@ -122,22 +134,25 @@ namespace DRT
     class So_nurbs27PoroScatraType : public So_nurbs27PoroType
     {
      public:
-      std::string Name() const { return "So_nurbs27PoroScatraType"; }
+      std::string Name() const override { return "So_nurbs27PoroScatraType"; }
 
       static So_nurbs27PoroScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_nurbs27PoroScatraType instance_;
+
+      std::string GetElementTypeString() const { return "SONURBS27POROSCATRA"; }
     };
 
 

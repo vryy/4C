@@ -19,7 +19,7 @@ namespace DRT
     class PreStressType : public DRT::ParObjectType
     {
      public:
-      std::string Name() const { return "PreStressType"; }
+      std::string Name() const override { return "PreStressType"; }
 
       static PreStressType& Instance() { return instance_; };
 
@@ -48,7 +48,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~PreStress() {}
+      ~PreStress() override = default;
 
       /*!
       \brief Return unique ParObject id
@@ -56,14 +56,14 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
       /*!
       \brief Pack this class so it can be communicated
 
       \ref Pack and \ref Unpack are used to communicate this node
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -71,7 +71,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this node
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /// get history of deformation gradient
       inline Epetra_SerialDenseMatrix& FHistory() const { return *Fhist_; }

@@ -24,6 +24,7 @@
 // inverse design object
 #include "inversedesign.H"
 #include "prestress.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
@@ -34,7 +35,7 @@ DRT::ELEMENTS::NStet5Type& DRT::ELEMENTS::NStet5Type::Instance() { return instan
 //-----------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::NStet5* object = new DRT::ELEMENTS::NStet5(-1, -1);
+  auto* object = new DRT::ELEMENTS::NStet5(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -45,7 +46,7 @@ DRT::ParObject* DRT::ELEMENTS::NStet5Type::Create(const std::vector<char>& data)
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "NSTET5")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::NStet5(id, owner));
     return ele;
@@ -90,7 +91,7 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
   for (int i = 0; i < dis.NumMyRowElements(); ++i)
   {
     DRT::Element* ele = dis.lRowElement(i);
-    DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(ele);
+    auto* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(ele);
     if (!nstet) continue;
     const double* x = nstet->MidX();
     std::vector<int> dofs = dis.Dof(0, ele);
@@ -141,7 +142,7 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
 void DRT::ELEMENTS::NStet5Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["NSTET5"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"]
       .AddIntVector("TET4", 4)
@@ -192,6 +193,9 @@ DRT::ELEMENTS::NStet5::NStet5(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4, 4, true));
@@ -436,7 +440,7 @@ void DRT::ELEMENTS::NStet5Type::InitElementsandMaps(std::map<int, DRT::ELEMENTS:
   for (int i = 0; i < numele; ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::NStet5* actele = dynamic_cast<DRT::ELEMENTS::NStet5*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::NStet5*>(dis.lColElement(i));
     if (!actele) dserror("cast to NStet5* failed");
 
     // init the element
@@ -478,7 +482,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     for (int j = 0; j < nodeL->NumElement(); ++j)
     {
       const int eleid = node->second->Elements()[j]->Id();
-      std::map<int, DRT::ELEMENTS::NStet5*>::iterator ele = elecids_.find(eleid);
+      auto ele = elecids_.find(eleid);
       if (ele == elecids_.end()) continue;
       myadjele.push_back(ele->second);
     }
@@ -487,10 +491,10 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     //-----------------------------------------------------------------
     // patch of all nodes adjacent to adjacent elements
     std::map<int, DRT::Node*> nodepatch;
-    for (unsigned j = 0; j < myadjele.size(); ++j)
+    for (auto& j : myadjele)
     {
-      DRT::Node** nodes = myadjele[j]->Nodes();
-      for (int k = 0; k < myadjele[j]->NumNode(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
+      DRT::Node** nodes = j->Nodes();
+      for (int k = 0; k < j->NumNode(); ++k) nodepatch[nodes[k]->Id()] = nodes[k];
     }
     adjnode[nodeidL] = nodepatch;
 
@@ -506,7 +510,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     for (pnode = nodepatch.begin(); pnode != nodepatch.end(); ++pnode)
     {
       const std::vector<int>& dofs = dis.Dof(pnode->second);
-      for (unsigned j = 0; j < dofs.size(); ++j) lm[count++] = dofs[j];
+      for (int dof : dofs) lm[count++] = dof;
     }
 
 #if 0
@@ -517,10 +521,10 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
 #endif
 
     // add dofs of center nodes from elements. These appear as element dofs
-    for (unsigned j = 0; j < myadjele.size(); ++j)
+    for (auto& j : myadjele)
     {
-      const std::vector<int>& dofs = dis.Dof(myadjele[j]);
-      for (unsigned j = 0; j < dofs.size(); ++j) lm[count++] = dofs[j];
+      const std::vector<int>& dofs = dis.Dof(j);
+      for (int dof : dofs) lm[count++] = dof;
     }
 
 #if 0
@@ -534,9 +538,8 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
     //-----------------------------------------------------------------
     // for each adjele, find out which subelements I participate in
     std::map<int, std::vector<int>> masterele;
-    for (unsigned j = 0; j < myadjele.size(); ++j)
+    for (auto ele : myadjele)
     {
-      DRT::ELEMENTS::NStet5* ele = myadjele[j];
       bool foundit = false;
       for (int i = 0; i < ele->NumNode(); ++i)
       {
@@ -599,19 +602,19 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(std::map<int, DRT::ELEMENTS::NStet
           if (sublm[l] != 4)  // node 4 is center node owned by the element
           {
             std::vector<int> dofs = dis.Dof(ele->Nodes()[sublm[l]]);
-            for (unsigned n = 0; n < dofs.size(); ++n) elelm.push_back(dofs[n]);
+            for (int dof : dofs) elelm.push_back(dof);
           }
           else
           {
             std::vector<int> dofs = dis.Dof(ele);
-            for (unsigned n = 0; n < dofs.size(); ++n) elelm.push_back(dofs[n]);
+            for (int dof : dofs) elelm.push_back(dof);
           }
         }
         if ((int)elelm.size() != 12) dserror("Subelement does not have 12 dofs");
         lmlm[j][k].resize(12);
         for (int l = 0; l < 12; ++l)
         {
-          std::vector<int>::iterator fool = find(lm.begin(), lm.end(), elelm[l]);
+          auto fool = find(lm.begin(), lm.end(), elelm[l]);
           lmlm[j][k][l] = fool - lm.begin();
         }
       }

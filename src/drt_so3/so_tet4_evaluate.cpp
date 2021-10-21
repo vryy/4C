@@ -168,19 +168,19 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      //      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* matptr = NULL;
+      //      LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* matptr = nullptr;
       //      if (elemat1.IsInitialized()) matptr = &elemat1;
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       if (::UTILS::PRESTRESS::IsInverseDesignActive(
               time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, &elemat1, NULL, &elevec1,
-            NULL, NULL, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, &elemat1, nullptr,
+            &elevec1, nullptr, nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else
-        nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, &elemat1, NULL, &elevec1, NULL,
-            &elevec3, NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
-            INPAR::STR::strain_none);
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
+            nullptr, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+            INPAR::STR::strain_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -201,9 +201,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> myemat(true);  // to zero
 
-      nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, &myemat, NULL, &elevec1, NULL, NULL,
-          NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
-          INPAR::STR::strain_none);
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -237,10 +237,10 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       if (::UTILS::PRESTRESS::IsInverseDesignActive(
               time_, pstype_, pstime_))  // inverse design analysis
         invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, &elemat1, &elemat2,
-            &elevec1, NULL, NULL, INPAR::STR::stress_none, INPAR::STR::strain_none);
+            &elevec1, nullptr, nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else
         nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-            &elevec2, &elevec3, NULL, NULL, NULL, params, INPAR::STR::stress_none,
+            &elevec2, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
             INPAR::STR::strain_none, INPAR::STR::strain_none);
 
       if (act == calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
@@ -269,20 +269,21 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> stress(true);  // set to zero
         LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> strain(true);
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         if (::UTILS::PRESTRESS::IsInverseDesignActive(
                 time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, NULL, NULL, NULL,
-              &stress, &strain, iostress, iostrain);
+          invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, nullptr, nullptr,
+              nullptr, &stress, &strain, iostress, iostrain);
         else
-          nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, NULL, NULL, NULL, NULL, NULL,
-              &stress, &strain, NULL, params, iostress, iostrain, INPAR::STR::strain_none);
+          nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+              nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain,
+              INPAR::STR::strain_none);
 
         {
           DRT::PackBuffer data;
@@ -586,7 +587,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       // check length of elevec1
       if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
       MAT::Material* rawmat = mat.get();
-      MAT::StVenantKirchhoff* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(rawmat);
+      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(rawmat);
       if (!stvk) dserror("dynamic cast to stvenant failed");
       double E = stvk->Youngs();
       elevec1_epetra(0) = E;
@@ -972,9 +973,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_SOTET4, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
@@ -989,11 +990,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         {
           if (::UTILS::PRESTRESS::IsInverseDesignActive(
                   time_, pstype_, pstime_))  // inverse design analysis
-            invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, NULL, NULL, NULL,
-                &stress, &strain, iostress, iostrain);
+            invdesign_->so_tet4_nlnstiffmass(params, this, lm, mydisp, myres, nullptr, nullptr,
+                nullptr, &stress, &strain, iostress, iostrain);
           else
-            nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, NULL, NULL, NULL, NULL, NULL,
-                &stress, &strain, NULL, params, iostress, iostrain, INPAR::STR::strain_none);
+            nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+                nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain,
+                INPAR::STR::strain_none);
         }
         // add stresses to global map
         // get EleID Id()
@@ -1065,8 +1067,8 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -1086,7 +1088,7 @@ int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // (SPATIAL) FUNCTION BUSINESS
   BOOST_STATIC_ASSERT((NUMGPT_SOTET4 == 1)) BACI_ATTRIBUTE_UNUSED;
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SOTET4, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -1473,14 +1475,14 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
 
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> gl;
@@ -1513,7 +1515,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       break;
       case INPAR::STR::strain_log:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
 
         /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch
         /// tensor [1,2]: \f[
@@ -1643,13 +1645,13 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         double detF = defgrd.Determinant();
 
         LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> pkstress;
@@ -1686,14 +1688,14 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
     double detJ_w = detJ * (gpweights)[gp];
 
     // update of internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
 
     // update of stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -1740,7 +1742,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
   const static std::vector<LINALG::Matrix<NUMNOD_SOTET4, 1>> shapefcts4gp = so_tet4_4gp_shapefcts();
   const static std::vector<double> gpweights4gp = so_tet4_4gp_weights();
   // evaluate mass matrix
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     double density = Material()->Density(0);  // density at the only Gauss point the material has!
     // consistent mass matrix evaluated using a 4-point rule
@@ -1886,7 +1888,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
           for (int inod = 0; inod < NUMNOD_SOTET4; ++inod)
             myacc(idim) += shapefcts4gp[gp](inod) * (*acc)[idim + (inod * NUMDIM_SOTET4)];
 
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
         {
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
@@ -1907,7 +1909,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
         }
 
         // internal force vector
-        if (forceinert != NULL)
+        if (forceinert != nullptr)
         {
           // integrate nonlinear inertia force term
           for (int inod = 0; inod < NUMNOD_SOTET4; ++inod)
@@ -1934,7 +1936,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
 void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -1958,7 +1960,7 @@ int DRT::ELEMENTS::So_tet4Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_tet4* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_tet4*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4* failed");
     actele->InitJacobianMapping();
   }
@@ -2237,8 +2239,8 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
   *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                      // current displacements
-    Teuchos::ParameterList& params,   // algorithmic parameters e.g. time
-    Teuchos::RCP<MAT::Material> mat)  // material
+    Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
+    const Teuchos::RCP<MAT::Material>& mat)  // material
 {
   if ((Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
       (Material()->MaterialType() == INPAR::MAT::m_elasthyper))
@@ -2364,7 +2366,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
 
       if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
       {
-        MAT::ConstraintMixture* comi = static_cast<MAT::ConstraintMixture*>(mat.get());
+        auto* comi = dynamic_cast<MAT::ConstraintMixture*>(mat.get());
         comi->EvaluateFiberVecs(gp, locsys, defgrd);
       }
       else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
@@ -2389,7 +2391,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
         if (lambda(1, 1) < 0) newgamma = 0.0;
 
         // new fiber vectors
-        MAT::ElastHyper* elast = static_cast<MAT::ElastHyper*>(mat.get());
+        auto* elast = dynamic_cast<MAT::ElastHyper*>(mat.get());
         elast->EvaluateFiberVecs(newgamma, locsys, avg_defgrd);
       }
     }  // end loop over gauss points

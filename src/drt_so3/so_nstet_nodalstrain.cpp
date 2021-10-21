@@ -77,7 +77,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
-  std::string& action = p.get<std::string>("action", "none");
+  auto& action = p.get<std::string>("action", "none");
   if (action != "calc_struct_nlnstiffmass" && action != "calc_struct_nlnstifflmass" &&
       action != "calc_struct_nlnstiff" && action != "calc_struct_internalforce" &&
       action != "calc_struct_stress")
@@ -121,8 +121,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
   // (across-parallel-interface assembly)
-  const Epetra_Map* rmap = NULL;
-  const Epetra_Map* dmap = NULL;
+  const Epetra_Map* rmap = nullptr;
+  const Epetra_Map* dmap = nullptr;
 
   Teuchos::RCP<Epetra_FECrsMatrix> stifftmp;
   Teuchos::RCP<LINALG::SparseMatrix> systemmatrix;
@@ -166,14 +166,14 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
     std::vector<DRT::ELEMENTS::NStet*>& adjele = adjele_[nodeLid];
     std::map<int, DRT::Node*>& adjnode = adjnode_[nodeLid];
     std::vector<int>& lm = adjlm_[nodeLid];
-    const int ndofperpatch = (int)lm.size();
+    const auto ndofperpatch = (int)lm.size();
 
     // quantities for mis nodes
     int mis_ndofperpatch = 0;
-    std::vector<DRT::ELEMENTS::NStet*>* mis_adjele = NULL;
-    std::map<int, DRT::Node*>* mis_adjnode = NULL;
-    std::vector<double>* mis_weight = NULL;
-    std::vector<int>* mis_lm = NULL;
+    std::vector<DRT::ELEMENTS::NStet*>* mis_adjele = nullptr;
+    std::map<int, DRT::Node*>* mis_adjnode = nullptr;
+    std::vector<double>* mis_weight = nullptr;
+    std::vector<int>* mis_lm = nullptr;
     if (mis)
     {
       mis_adjele = &pstab_adjele_[nodeLid];
@@ -191,7 +191,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
       force.LightSize(ndofperpatch);
       {
         TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::NodalIntegration");
-        NodalIntegration(&stiff, &force, adjnode, adjele, lm, *disp, dis, NULL, NULL,
+        NodalIntegration(&stiff, &force, adjnode, adjele, lm, *disp, dis, nullptr, nullptr,
             INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
 
@@ -203,20 +203,20 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
             mis_ndofperpatch, mis_ndofperpatch);  // put in Light once values are present
         mis_force.LightSize(mis_ndofperpatch);    // put in Light once values are present
         MISNodalIntegration(&mis_stiff, &mis_force, *mis_adjnode, *mis_adjele, *mis_weight, *mis_lm,
-            *disp, dis, NULL, NULL, INPAR::STR::stress_none, INPAR::STR::strain_none);
+            *disp, dis, nullptr, nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }  // mis
 #endif
     }
     else if (action == "calc_struct_stress")
     {
-      INPAR::STR::StressType iostress =
+      auto iostress =
           DRT::INPUT::get<INPAR::STR::StressType>(p, "iostress", INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain =
+      auto iostrain =
           DRT::INPUT::get<INPAR::STR::StrainType>(p, "iostrain", INPAR::STR::strain_none);
       std::vector<double> nodalstress(6);
       std::vector<double> nodalstrain(6);
-      NodalIntegration(NULL, NULL, adjnode, adjele, lm, *disp, dis, &nodalstress, &nodalstrain,
-          iostress, iostrain);
+      NodalIntegration(nullptr, nullptr, adjnode, adjele, lm, *disp, dis, &nodalstress,
+          &nodalstrain, iostress, iostrain);
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
       if (lid == -1) dserror("Cannot find local id for row node");
@@ -231,8 +231,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
       {
         std::vector<double> mis_nodalstress(6);
         std::vector<double> mis_nodalstrain(6);
-        MISNodalIntegration(NULL, NULL, *mis_adjnode, *mis_adjele, *mis_weight, *mis_lm, *disp, dis,
-            &mis_nodalstress, &mis_nodalstrain, iostress, iostrain);
+        MISNodalIntegration(nullptr, nullptr, *mis_adjnode, *mis_adjele, *mis_weight, *mis_lm,
+            *disp, dis, &mis_nodalstress, &mis_nodalstrain, iostress, iostrain);
 
         for (int i = 0; i < 6; ++i)
         {
@@ -544,13 +544,13 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
     const INPAR::STR::StressType iostress, const INPAR::STR::StrainType iostrain)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::NodalIntegration");
-  typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
+  using FAD = Sacado::Fad::DFad<double>;  // for first derivs
   // typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD; // for second derivs
 
   //-------------------------------------------------- standard quantities
-  const int nnodeinpatch = (int)adjnode.size();
+  const auto nnodeinpatch = (int)adjnode.size();
   const int ndofinpatch = nnodeinpatch * 3;
-  const int neleinpatch = (int)adjele.size();
+  const auto neleinpatch = (int)adjele.size();
 
   //------------------------------ see whether materials in patch are equal
   bool matequal = true;
@@ -596,7 +596,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
     lmlm[i].resize(12);
     for (int j = 0; j < 12; ++j)
     {
-      std::vector<int>::iterator k = find(lm.begin(), lm.end(), elelm[j]);
+      auto k = find(lm.begin(), lm.end(), elelm[j]);
       lmlm[i][j] = k - lm.begin();  // the position of elelm[j] in lm
     }
 
@@ -924,12 +924,12 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
     const INPAR::STR::StrainType iostrain)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::MISNodalIntegration");
-  typedef Sacado::Fad::DFad<double> FAD;  // for first derivs
+  using FAD = Sacado::Fad::DFad<double>;  // for first derivs
 
   //-------------------------------------------------- standard quantities
-  const int nnodeinpatch = (int)adjnode.size();
+  const auto nnodeinpatch = (int)adjnode.size();
   const int ndofinpatch = nnodeinpatch * 3;
-  const int neleinpatch = (int)adjele.size();
+  const auto neleinpatch = (int)adjele.size();
 
   //------------------------------ see whether materials in patch are equal
   bool matequal = true;
@@ -974,7 +974,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
     lmlm[i].resize(12);
     for (int j = 0; j < 12; ++j)
     {
-      std::vector<int>::iterator k = find(lm.begin(), lm.end(), elelm[j]);
+      auto k = find(lm.begin(), lm.end(), elelm[j]);
       lmlm[i][j] = k - lm.begin();  // the position of elelm[j] in lm
     }
 
@@ -1310,7 +1310,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(Epetra_SerialDenseMatrix* sti
 /*----------------------------------------------------------------------*
  | material laws for NStet (protected)                          gee 10/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
+void DRT::ELEMENTS::NStetType::SelectMaterial(const Teuchos::RCP<MAT::Material>& mat,
     LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, double& density,
     LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<3, 3>& defgrd, int gp, const int eleGID)
 {
@@ -1318,7 +1318,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
       LINALG::Matrix<3, 3> defgrd(true);
       stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
@@ -1327,7 +1327,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     break;
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
-      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
       neo->Evaluate(glstrain, cmat, stress);
       density = neo->Density();
     }
@@ -1335,7 +1335,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
-      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = aaa->Density();
@@ -1343,7 +1343,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     break;
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(mat.get());
+      auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = hyper->Density();

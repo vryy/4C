@@ -41,7 +41,7 @@ DRT::ELEMENTS::So_tet10Type& DRT::ELEMENTS::So_tet10Type::Instance() { return in
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_tet10* object = new DRT::ELEMENTS::So_tet10(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_tet10(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -50,7 +50,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet10Type::Create(const std::vector<char>& dat
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT10")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet10(id, owner));
     return ele;
@@ -83,7 +83,7 @@ void DRT::ELEMENTS::So_tet10Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT10"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET10"]
       .AddIntVector("TET10", 10)
@@ -119,6 +119,9 @@ DRT::ELEMENTS::So_tet10::So_tet10(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
@@ -164,7 +167,7 @@ DRT::ELEMENTS::So_tet10::So_tet10(const DRT::ELEMENTS::So_tet10& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet10::Clone() const
 {
-  DRT::ELEMENTS::So_tet10* newelement = new DRT::ELEMENTS::So_tet10(*this);
+  auto* newelement = new DRT::ELEMENTS::So_tet10(*this);
   return newelement;
 }
 
@@ -189,18 +192,18 @@ void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
   // add base class Element
   So_base::Pack(data);
   ;
-  // data
+  // data_
   AddtoPack(data, data_);
   // detJ_
   AddtoPack(data, detJ_);
   AddtoPack(data, detJ_mass_);
 
   // invJ
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
-  const int size_mass = (int)invJ_mass_.size();
+  const auto size_mass = (int)invJ_mass_.size();
   AddtoPack(data, size_mass);
   for (int i = 0; i < size_mass; ++i) AddtoPack(data, invJ_mass_[i]);
 

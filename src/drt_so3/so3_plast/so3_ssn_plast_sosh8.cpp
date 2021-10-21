@@ -28,6 +28,7 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 #include "../../linalg/linalg_serialdensematrix.H"
 #include "../../linalg/linalg_serialdensevector.H"
 #include "../../drt_lib/drt_globalproblem.H"
+#include "../so_utils.H"
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
@@ -57,7 +58,7 @@ DRT::ELEMENTS::So_sh8PlastType& DRT::ELEMENTS::So_sh8PlastType::Instance() { ret
 *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::So_sh8PlastType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_sh8Plast* object = new DRT::ELEMENTS::So_sh8Plast(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_sh8Plast(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -69,7 +70,7 @@ DRT::ParObject* DRT::ELEMENTS::So_sh8PlastType::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_sh8PlastType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDSH8PLAST")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_sh8Plast(id, owner));
     return ele;
@@ -102,8 +103,7 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
   {
     // get the actual element
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_sh8Plast* actele =
-        dynamic_cast<DRT::ELEMENTS::So_sh8Plast*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh8Plast*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -268,8 +268,7 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_sh8Plast* actele =
-        dynamic_cast<DRT::ELEMENTS::So_sh8Plast*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh8Plast*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8* failed");
     actele->InitJacobianMapping();
   }
@@ -283,7 +282,7 @@ int DRT::ELEMENTS::So_sh8PlastType::Initialize(DRT::Discretization& dis)
 void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDSH8PLAST"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["HEX8"]
       .AddIntVector("HEX8", 8)
@@ -307,6 +306,14 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
   thickdir_ = globx;
   nodes_rearranged_ = false;
   thickvec_.resize(3, 0.);
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   return;
 }
 
@@ -325,7 +332,7 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(const DRT::ELEMENTS::So_sh8Plast& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_sh8Plast::Clone() const
 {
-  DRT::ELEMENTS::So_sh8Plast* newelement = new DRT::ELEMENTS::So_sh8Plast(*this);
+  auto* newelement = new DRT::ELEMENTS::So_sh8Plast(*this);
   return newelement;
 }
 
@@ -885,7 +892,7 @@ void DRT::ELEMENTS::So_sh8Plast::Anssetup(
 
     // return adresses of just evaluated matrices
     *deriv_sp = &df_sp;  // return adress of static object to target of pointer
-    dfsp_eval = 1;       // now all arrays are filled statically
+    dfsp_eval = true;    // now all arrays are filled statically
   }
 
   for (int sp = 0; sp < num_sp; ++sp)
@@ -979,9 +986,9 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   FillPositionArrays(disp, vel, temp);
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
-    plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
+    plmat = dynamic_cast<MAT::PlasticElastHyper*>(Material().get());
   else
     dserror("so3_ssn_plast elements only with PlasticElastHyper material");
 
@@ -1001,7 +1008,8 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   // CURRENT Jacobian evaluated at all ANS sampling points
   std::vector<LINALG::Matrix<nsd_, nsd_>> jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  std::vector<LINALG::Matrix<nsd_, nen_>>* deriv_sp = NULL;  // derivs eval. at all sampling points
+  std::vector<LINALG::Matrix<nsd_, nen_>>* deriv_sp =
+      nullptr;  // derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   Anssetup(Xrefe(), Xcurr(), &deriv_sp, jac_sps, jac_cur_sps, SetB_ans_loc());
 
@@ -1047,10 +1055,10 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
     double detJ_w = DetJ() * wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
-    if (force != NULL) IntegrateForce(gp, *force);
+    if (force != nullptr) IntegrateForce(gp, *force);
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -1170,35 +1178,35 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
       }  // ---------------------------------------------------------------- EAS
     }    // end of stiffness matrix
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
       IntegrateMassMatrix(gp, *massmatrix);
 
     // plastic modifications
-    if ((stiffmatrix != NULL || force != NULL))
+    if ((stiffmatrix != nullptr || force != nullptr))
     {
       if (HavePlasticSpin())
       {
         if (eastype_ != soh8p_easnone)
-          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(), NULL,
-              detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
+          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+              nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
         else
-          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(), NULL,
-              detJ_w, gp, 0, params, force, stiffmatrix);
+          CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
+              nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
       }
       else
       {
         if (eastype_ != soh8p_easnone)
           CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-              NULL, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
+              nullptr, detJ_w, gp, 0, params, force, stiffmatrix, &M_eas(), &Kda);
         else
           CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-              NULL, detJ_w, gp, 0, params, force, stiffmatrix);
+              nullptr, detJ_w, gp, 0, params, force, stiffmatrix);
       }
     }  // plastic modifications
   }    // gp loop
 
   // Static condensation EAS --> stiff ********************************
-  if (stiffmatrix != NULL && !is_tangDis && eastype_ != soh8p_easnone)
+  if (stiffmatrix != nullptr && !is_tangDis && eastype_ != soh8p_easnone)
   {
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(*KaaInv_);
@@ -1212,11 +1220,11 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
             0., kdakaai.A(), 1., Kda.A(), KaaInv_->A());
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_>(
               1., stiffmatrix->A(), -1., kdakaai.A(), Kad_->A());
-        if (force != NULL)
+        if (force != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, 1>(
               1., force->A(), -1., kdakaai.A(), feas_->A());
@@ -1226,11 +1234,11 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
             0., kdakaai.A(), 1., Kda.A(), KaaInv_->A());
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
               1., stiffmatrix->A(), -1., kdakaai.A(), Kad_->A());
-        if (force != NULL)
+        if (force != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
               1., force->A(), -1., kdakaai.A(), feas_->A());

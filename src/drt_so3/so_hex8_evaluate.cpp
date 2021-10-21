@@ -116,7 +116,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = NULL;
+      LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
       std::vector<double> mydispmat(lm.size(), 0.0);
@@ -129,13 +129,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       if (::UTILS::PRESTRESS::IsInverseDesignActive(
               time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, matptr, NULL, &elevec1, NULL, NULL,
-            params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr,
+            nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       else  // standard analysis
-        nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, matptr, NULL, &elevec1, NULL,
-            &elevec3, NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
-            INPAR::STR::strain_none);
+        nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
+            nullptr, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+            INPAR::STR::strain_none, INPAR::STR::strain_none);
 
       break;
     }
@@ -163,9 +163,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
-      nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, &myemat, NULL, &elevec1, NULL, NULL,
-          NULL, NULL, NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
-          INPAR::STR::strain_none);
+      nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
+          INPAR::STR::strain_none, INPAR::STR::strain_none);
 
       break;
     }
@@ -206,11 +206,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       if (::UTILS::PRESTRESS::IsInverseDesignActive(
               time_, pstype_, pstime_))  // inverse design analysis
-        invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1, NULL,
-            NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, &elemat1, &elemat2, &elevec1,
+            nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       else  // standard analysis
         nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-            &elevec2, &elevec3, NULL, NULL, NULL, params, INPAR::STR::stress_none,
+            &elevec2, &elevec3, nullptr, nullptr, nullptr, params, INPAR::STR::stress_none,
             INPAR::STR::strain_none, INPAR::STR::strain_none);
 
       if (act == ELEMENTS::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -427,8 +427,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       // default: geometrically non-linear analysis with Total Lagrangean approach
       if (kintype_ == INPAR::STR::kinem_nonlinearTotLag)
       {
-        soh8_nlnstiffmass_gemm(lm, mydispo, mydisp, myres, &elemat1, NULL, &elevec1, NULL, NULL,
-            NULL, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
+        soh8_nlnstiffmass_gemm(lm, mydispo, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
+            nullptr, nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none,
             INPAR::STR::strain_none);
       }
       // special case: geometric linear
@@ -522,12 +522,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
         if (::UTILS::PRESTRESS::IsInverseDesignActive(
                 time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
-              params, iostress, iostrain);
+          invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr, &stress,
+              &strain, params, iostress, iostrain);
 
         else  // standard analysis
-          nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, NULL, NULL, NULL, NULL, NULL,
-              &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
+          nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+              nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
+              ioplstrain);
 
         {
           DRT::PackBuffer data;
@@ -704,10 +705,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         switch (eastype_)
         {
           case DRT::ELEMENTS::So_hex8::soh8_easfull:
@@ -824,8 +823,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       }
 
       // prepare EAS data
-      Epetra_SerialDenseMatrix* alpha = NULL;                         // EAS alphas
-      std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;             // EAS matrix M at all GPs
+      Epetra_SerialDenseMatrix* alpha = nullptr;                      // EAS alphas
+      std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;          // EAS matrix M at all GPs
       LINALG::SerialDenseMatrix M;                                    // EAS matrix M at current GP
       double detJ0;                                                   // detJ(origin)
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
@@ -1484,21 +1483,22 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> strain;
         LINALG::Matrix<NUMGPT_SOH8, MAT::NUM_STRESS_3D> plstrain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        INPAR::STR::StrainType ioplstrain =
+        auto ioplstrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "ioplstrain", INPAR::STR::strain_none);
 
         if (::UTILS::PRESTRESS::IsInverseDesignActive(
                 time_, pstype_, pstime_))  // inverse design analysis
-          invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, NULL, NULL, NULL, &stress, &strain,
-              params, iostress, iostrain);
+          invdesign_->soh8_nlnstiffmass(this, lm, mydisp, myres, nullptr, nullptr, nullptr, &stress,
+              &strain, params, iostress, iostrain);
 
         else  // standard analysis
-          nlnstiffmass(lm, mydisp, NULL, NULL, myres, mydispmat, NULL, NULL, NULL, NULL, NULL,
-              &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
+          nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
+              nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
+              ioplstrain);
 
         // add stresses to global map
         // get EleID Id()
@@ -1607,8 +1607,8 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -1631,7 +1631,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList& params,
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<NUMDIM_SOH8, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -1841,9 +1841,9 @@ void DRT::ELEMENTS::So_hex8::soh8_error_handling(const double& det_curr,
 void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
     const std::vector<double>& residual, Epetra_SerialDenseMatrix* const eas_inc)
 {
-  Epetra_SerialDenseMatrix* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-  Epetra_SerialDenseMatrix* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+  auto* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  auto* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+  auto* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
   if (!oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history data");
 
   // we need the (residual) displacement at the previous step
@@ -1866,8 +1866,8 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
     const std::vector<int>& lm, const std::vector<double>& residual)
 {
   // for eas
-  Epetra_SerialDenseMatrix* alpha = NULL;
-  Epetra_SerialDenseMatrix* eas_inc = NULL;
+  Epetra_SerialDenseMatrix* alpha = nullptr;
+  Epetra_SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
   const double step_length = StrParamsInterface().GetStepLength();
   const bool iseas = (eastype_ != soh8_easnone);
@@ -2008,17 +2008,17 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = NULL;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
-  LINALG::SerialDenseMatrix M;                         // EAS matrix M at current GP
-  Epetra_SerialDenseVector feas;                       // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                        // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;                        // EAS matrix Kda
-  double detJ0;                                        // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = NULL;            // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = NULL;          // EAS history
-  Epetra_SerialDenseMatrix* oldKda = NULL;             // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = NULL;            // EAS increment
+  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  LINALG::SerialDenseMatrix M;                            // EAS matrix M at current GP
+  Epetra_SerialDenseVector feas;                          // EAS portion of internal forces
+  Epetra_SerialDenseMatrix Kaa;                           // EAS matrix Kaa
+  Epetra_SerialDenseMatrix Kda;                           // EAS matrix Kda
+  double detJ0;                                           // detJ(origin)
+  Epetra_SerialDenseMatrix* oldfeas = nullptr;            // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = nullptr;          // EAS history
+  Epetra_SerialDenseMatrix* oldKda = nullptr;             // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = nullptr;            // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -2348,14 +2348,14 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> gl;
         gl(0, 0) = glstrain(0);
@@ -2387,7 +2387,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       break;
       case INPAR::STR::strain_log:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
 
         /// the Eularian logarithmic strain is defined as the natural logarithm of the left stretch
         /// tensor [1,2]: \f[
@@ -2535,7 +2535,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     {
       case INPAR::STR::strain_gl:
       {
-        if (eleplstrain == NULL) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) dserror("plastic strain data not available");
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         for (int i = 0; i < 3; ++i) (*eleplstrain)(gp, i) = plglstrain(i);
@@ -2544,7 +2544,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       }
       case INPAR::STR::strain_ea:
       {
-        if (eleplstrain == NULL) dserror("plastic strain data not available");
+        if (eleplstrain == nullptr) dserror("plastic strain data not available");
         LINALG::Matrix<MAT::NUM_STRESS_3D, 1> plglstrain =
             params.get<LINALG::Matrix<MAT::NUM_STRESS_3D, 1>>("plglstrain");
         // rewriting Green-Lagrange strains in matrix format
@@ -2588,13 +2588,13 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress(false);
         PK2toCauchy(&stress, &defgrd, &cauchystress);
 
@@ -2615,17 +2615,17 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
 
     const double detJ_w = detJ * gpweights[gp];
     // update internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
     }
 
     // structural force vector
-    if (split_res && force_str != NULL) force_str->MultiplyTN(detJ_w, bop, stress, 1.);
+    if (split_res && force_str != nullptr) force_str->MultiplyTN(detJ_w, bop, stress, 1.);
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -2714,7 +2714,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
       }  // ---------------------------------------------------------------- EAS
     }
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
       const double density = Material()->Density(gp);
 
@@ -2775,7 +2775,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
           for (int inod = 0; inod < NUMNOD_SOH8; ++inod)
             myacc(idim) += shapefcts[gp](inod) * (*acc)[idim + (inod * NUMDIM_SOH8)];
 
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
         {
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
@@ -2796,7 +2796,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
         }
 
         // internal force vector without EAS terms
-        if (forceinert != NULL)
+        if (forceinert != nullptr)
         {
           // integrate nonlinear inertia force term
           for (int inod = 0; inod < NUMNOD_SOH8; ++inod)
@@ -2814,12 +2814,12 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,  // location mat
        /* =========================================================================*/
 
   // rhs norm of eas equations
-  if (eastype_ != soh8_easnone && split_res && force != NULL)
+  if (eastype_ != soh8_easnone && split_res && force != nullptr)
     // only add for row-map elements
     if (params.get<int>("MyPID") == Owner())
       params.get<double>("cond_rhs_norm") += pow(feas.Norm2(), 2.);
 
-  if (force != NULL && stiffmatrix != NULL)
+  if (force != nullptr && stiffmatrix != nullptr)
   {
     // EAS technology: ------------------------------------------------------ EAS
     // subtract EAS matrices from disp-based Kdd to "soften" element
@@ -2991,14 +2991,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> gl;
         gl(0, 0) = glstrain(0);
@@ -3128,13 +3128,13 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         const double detF = defgrd.Determinant();
 
         LINALG::Matrix<3, 3> pkstress;
@@ -3170,14 +3170,14 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
 
     double detJ_w = detJ * gpweights[gp];
     // update internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bopm, stress, 1.0);
     }
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -3209,7 +3209,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
       }  // end of integrate `geometric' stiffness******************************
     }
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
     {
       double density = Material()->Density(gp);
 
@@ -3243,7 +3243,7 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
 void DRT::ELEMENTS::So_hex8::soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns
@@ -3320,11 +3320,10 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
 
   // --- create EAS state backup ----------------------------------------------
   {
-    const Epetra_SerialDenseMatrix* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");
+    const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");
     if (not alpha) dserror("Can't access the current enhanced strain state.");
 
-    Epetra_SerialDenseMatrix* alpha_backup_ptr =
-        data_.GetMutable<Epetra_SerialDenseMatrix>("alpha_backup");
+    auto* alpha_backup_ptr = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha_backup");
     if (alpha_backup_ptr)
       *alpha_backup_ptr = *alpha;
     else
@@ -3337,8 +3336,7 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
     Epetra_SerialDenseMatrix eas_inc(neas_, 1);
     soh8_computeEASInc(displ_incr, &eas_inc);
 
-    Epetra_SerialDenseMatrix* eas_inc_backup_ptr =
-        data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc_backup");
+    auto* eas_inc_backup_ptr = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc_backup");
     if (eas_inc_backup_ptr)
       *eas_inc_backup_ptr = eas_inc;
     else
@@ -3352,13 +3350,12 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
 {
   if (eastype_ == soh8_easnone) return;
 
-  Epetra_SerialDenseMatrix* alpha = NULL;
-  Epetra_SerialDenseMatrix* eas_inc = NULL;
+  Epetra_SerialDenseMatrix* alpha = nullptr;
+  Epetra_SerialDenseMatrix* eas_inc = nullptr;
 
   // --- recover state from EAS backup ----------------------------------------
   {
-    const Epetra_SerialDenseMatrix* alpha_backup =
-        data_.Get<Epetra_SerialDenseMatrix>("alpha_backup");
+    const auto* alpha_backup = data_.Get<Epetra_SerialDenseMatrix>("alpha_backup");
     if (not alpha_backup)
       dserror(
           "Can't access the enhanced strain backup state. Did you "
@@ -3372,8 +3369,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
 
   // --- recover increment from EAS backup ------------------------------------
   {
-    const Epetra_SerialDenseMatrix* eas_inc_backup =
-        data_.Get<Epetra_SerialDenseMatrix>("eas_inc_backup");
+    const auto* eas_inc_backup = data_.Get<Epetra_SerialDenseMatrix>("eas_inc_backup");
     if (not eas_inc_backup)
       dserror(
           "Can't access the enhanced strain increment backup. Did you "
@@ -3400,7 +3396,7 @@ int DRT::ELEMENTS::So_hex8Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     actele->InitJacobianMapping();
   }
@@ -3488,8 +3484,8 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Update_element(
-    std::vector<double>& disp, Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material> mat)
+void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
+    Teuchos::ParameterList& params, const Teuchos::RCP<MAT::Material>& mat)
 {
   bool remodel;
   const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
@@ -3596,7 +3592,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
 
         if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
         {
-          MAT::ConstraintMixture* comi = static_cast<MAT::ConstraintMixture*>(mat.get());
+          auto* comi = dynamic_cast<MAT::ConstraintMixture*>(mat.get());
           comi->EvaluateFiberVecs(gp, locsys, defgrd);
         }
         else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
@@ -3626,7 +3622,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(
         if (lambda(1, 1) < 0) newgamma = 0.0;
 
         // new fiber vectors
-        MAT::ElastHyper* elast = static_cast<MAT::ElastHyper*>(mat.get());
+        auto* elast = dynamic_cast<MAT::ElastHyper*>(mat.get());
         elast->EvaluateFiberVecs(newgamma, locsys, avg_defgrd);
       }
     }
@@ -3635,10 +3631,8 @@ void DRT::ELEMENTS::So_hex8::Update_element(
   // do something with internal EAS, etc parameters
   if (eastype_ != soh8_easnone)
   {
-    Epetra_SerialDenseMatrix* alpha =
-        data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-    Epetra_SerialDenseMatrix* alphao =
-        data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+    auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+    auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
     // alphao := alpha
     switch (eastype_)
     {
@@ -3728,7 +3722,7 @@ void DRT::ELEMENTS::So_hex8::PK2toCauchy(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* 
 /*----------------------------------------------------------------------*
  |  Calculate consistent deformation gradient               seitz 04/14 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(LINALG::Matrix<3, 3> defgrd_disp,
+void DRT::ELEMENTS::So_hex8::CalcConsistentDefgrd(const LINALG::Matrix<3, 3>& defgrd_disp,
     LINALG::Matrix<6, 1> glstrain_mod, LINALG::Matrix<3, 3>& defgrd_mod) const
 {
   LINALG::Matrix<3, 3> R;       // rotation tensor

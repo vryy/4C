@@ -119,7 +119,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       }
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      nln_stiffmass(mydisp, myvel, mytempnp, &myemat, NULL, &elevec1, NULL, NULL, params,
+      nln_stiffmass(mydisp, myvel, mytempnp, &myemat, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
 
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
     {
       // stiffness
       LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(elemat1_epetra.A(), true);
-      LINALG::Matrix<numdofperelement_, numdofperelement_>* matptr = NULL;
+      LINALG::Matrix<numdofperelement_, numdofperelement_>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
       LINALG::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.A(), true);
 
@@ -179,7 +179,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       }
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      nln_stiffmass(mydisp, myvel, mytempnp, matptr, NULL, &elevec1, NULL, NULL, params,
+      nln_stiffmass(mydisp, myvel, mytempnp, matptr, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       break;
@@ -238,7 +238,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       }
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      nln_stiffmass(mydisp, myvel, mytempnp, &elemat1, &elemat2, &elevec1, NULL, NULL, params,
+      nln_stiffmass(mydisp, myvel, mytempnp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
 
       if (act == DRT::ELEMENTS::struct_calc_nlnstifflmass)
@@ -314,14 +314,14 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
         LINALG::Matrix<numgpt_post, numstr_> stress;
         LINALG::Matrix<numgpt_post, numstr_> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        nln_stiffmass(mydisp, myvel, mytempnp, NULL, NULL, NULL, &stress, &strain, params, iostress,
-            iostrain);
+        nln_stiffmass(mydisp, myvel, mytempnp, nullptr, nullptr, nullptr, &stress, &strain, params,
+            iostress, iostrain);
         {
           DRT::PackBuffer data;
           this->AddtoPack(data, stress);
@@ -463,7 +463,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
       std::vector<double> mytempres(0);
       LINALG::Matrix<nen_, 1> res_t;
-      LINALG::Matrix<nen_, 1>* res_t_ptr = NULL;
+      LINALG::Matrix<nen_, 1>* res_t_ptr = nullptr;
       if (discretization.NumDofSets() > 1)
         if (discretization.HasState(1, "residual temperature"))
         {
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalculateBop(
     const LINALG::Matrix<nsd_, nen_>* N_XYZ, const int gp)
 {
   // lump mass matrix
-  if (bop != NULL)
+  if (bop != nullptr)
   {
     /* non-linear B-operator (may so be called, meaning of B-operator is not so
     **  sharp in the non-linear realm) *
@@ -600,8 +600,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
     Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
 
   /*
   **    TIME CURVE BUSINESS
@@ -620,7 +620,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::EvaluateNeumann(Teuchos::ParameterList& p
   }
 
   // (SPATIAL) FUNCTION BUSINESS
-  const std::vector<int>* funct = condition.Get<std::vector<int>>("funct");
+  const auto* funct = condition.Get<std::vector<int>>("funct");
   LINALG::Matrix<nsd_, 1> xrefegp(false);
   bool havefunct = false;
   if (funct)
@@ -737,7 +737,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
   if (eastype_ != soh8p_easnone) EasSetup();
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
@@ -784,7 +784,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     if (eval_tsi) gp_temp = Temp().Dot(ShapeFunction());
 
     // material call *********************************************
-    if (plmat != NULL)
+    if (plmat != nullptr)
     {
       plmat->EvaluateElast(&DefgrdMod(), &DeltaLp(), &SetPK2(), &SetCmat(), gp, Id());
       if (eval_tsi)
@@ -811,54 +811,54 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
     double detJ_w = DetJ() * wgt_[gp];
     // integrate elastic internal force vector **************************
     // update internal force vector
-    if (force != NULL) IntegrateForce(gp, *force);
+    if (force != nullptr) IntegrateForce(gp, *force);
 
     // update stiffness matrix
-    if (stiffmatrix != NULL) IntegrateStiffMatrix(gp, *stiffmatrix, Kda);
+    if (stiffmatrix != nullptr) IntegrateStiffMatrix(gp, *stiffmatrix, Kda);
 
-    if (massmatrix != NULL)  // evaluate mass matrix +++++++++++++++++++++++++
+    if (massmatrix != nullptr)  // evaluate mass matrix +++++++++++++++++++++++++
       IntegrateMassMatrix(gp, *massmatrix);
 
-    if (eval_tsi && (stiffmatrix != NULL || force != NULL) && plmat != NULL)
+    if (eval_tsi && (stiffmatrix != nullptr || force != nullptr) && plmat != nullptr)
       IntegrateThermoGp(gp, dHda[gp]);
 
     // plastic modifications
-    if (plmat != NULL)
+    if (plmat != nullptr)
       if (!plmat->AllElastic())
-        if ((stiffmatrix != NULL || force != NULL) && !is_tangDis)
+        if ((stiffmatrix != nullptr || force != nullptr) && !is_tangDis)
         {
           if (HavePlasticSpin())
           {
             if (fbar_)
               CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, NULL, NULL, NULL,
-                  &FbarFac(), &Htensor());
+                  &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, nullptr, nullptr,
+                  nullptr, &FbarFac(), &Htensor());
             else if (eastype_ != soh8p_easnone)
               CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  NULL, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
+                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
             else
               CondensePlasticity<plspin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  NULL, detJ_w, gp, gp_temp, params, force, stiffmatrix);
+                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix);
           }
           else
           {
             if (fbar_)
               CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, NULL, NULL, NULL,
-                  &FbarFac(), &Htensor());
+                  &RCGvec(), detJ_w, gp, gp_temp, params, force, stiffmatrix, nullptr, nullptr,
+                  nullptr, &FbarFac(), &Htensor());
             else if (eastype_ != soh8p_easnone)
               CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  NULL, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
+                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix, &M_eas(), &Kda, &dHda);
             else
               CondensePlasticity<zerospin>(DefgrdMod(), DeltaLp(), Bop(), &DerivShapeFunctionXYZ(),
-                  NULL, detJ_w, gp, gp_temp, params, force, stiffmatrix);
+                  nullptr, detJ_w, gp, gp_temp, params, force, stiffmatrix);
           }
         }  // plastic modifications
   }        // gp loop
   InvalidGpData();
 
   // Static condensation EAS --> stiff ********************************
-  if (stiffmatrix != NULL && !is_tangDis && eastype_ != soh8p_easnone)
+  if (stiffmatrix != nullptr && !is_tangDis && eastype_ != soh8p_easnone)
   {
     Epetra_SerialDenseSolver solve_for_inverseKaa;
     solve_for_inverseKaa.SetMatrix(*KaaInv_);
@@ -872,11 +872,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
             0., kdakaai.A(), 1., Kda.A(), KaaInv_->A());
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numdofperelement_>(
               1., stiffmatrix->A(), -1., kdakaai.A(), Kad_->A());
-        if (force != NULL)
+        if (force != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, 1>(
               1., force->A(), -1., kdakaai.A(), feas_->A());
@@ -886,11 +886,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::nln_stiffmass(
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
             0., kdakaai.A(), 1., Kda.A(), KaaInv_->A());
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
               1., stiffmatrix->A(), -1., kdakaai.A(), Kad_->A());
-        if (force != NULL)
+        if (force != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
               1., force->A(), -1., kdakaai.A(), feas_->A());
@@ -970,7 +970,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::nln_kdT_tsi(
     LINALG::Matrix<numdofperelement_, nen_>* k_dT, Teuchos::ParameterList& params)
 {
-  if (k_dT == NULL) return;
+  if (k_dT == nullptr) return;
 
   // shape functions
   LINALG::Matrix<nen_, 1> shapefunct(false);
@@ -1010,7 +1010,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   bool eval_tsi = tsi_ && (temp != -1.e12);
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
@@ -1020,17 +1020,17 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   Epetra_SerialDenseMatrix tmp;
 
   // Nitsche contact
-  LINALG::Matrix<numstr_, 1>* cauchy_ptr = NULL;
+  LINALG::Matrix<numstr_, 1>* cauchy_ptr = nullptr;
   LINALG::Matrix<numstr_, spintype + 1> d_cauchy_ddp;
-  LINALG::Matrix<numstr_, spintype + 1>* d_cauchy_ddp_ptr = NULL;
+  LINALG::Matrix<numstr_, spintype + 1>* d_cauchy_ddp_ptr = nullptr;
   LINALG::Matrix<numstr_, numstr_> d_cauchy_dC;
-  LINALG::Matrix<numstr_, numstr_>* d_cauchy_dC_ptr = NULL;
+  LINALG::Matrix<numstr_, numstr_>* d_cauchy_dC_ptr = nullptr;
   LINALG::Matrix<numstr_, 9> d_cauchy_dF;
-  LINALG::Matrix<numstr_, 9>* d_cauchy_dF_ptr = NULL;
+  LINALG::Matrix<numstr_, 9>* d_cauchy_dF_ptr = nullptr;
   LINALG::Matrix<numstr_, 1>
       d_cauchy_dT;  // todo: continue with this one; plmat->EvaluatePlast(...) should give you this;
                     // however not tested yet
-  LINALG::Matrix<numstr_, 1>* d_cauchy_dT_ptr = NULL;
+  LINALG::Matrix<numstr_, 1>* d_cauchy_dT_ptr = nullptr;
   if (is_nitsche_contact_)
   {
     cauchy_ptr = &(cauchy_.at(gp));
@@ -1052,9 +1052,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   bool elast = false;
   bool as_converged = true;
   if (!eval_tsi)
-    plmat->EvaluatePlast(&defgrd, &deltaLp, NULL, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
-        &active, &elast, &as_converged, gp, NULL, NULL, NULL, StrParamsInterface().GetDeltaTime(),
-        Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr, d_cauchy_dF_ptr, d_cauchy_dT_ptr);
+    plmat->EvaluatePlast(&defgrd, &deltaLp, nullptr, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
+        &active, &elast, &as_converged, gp, nullptr, nullptr, nullptr,
+        StrParamsInterface().GetDeltaTime(), Id(), cauchy_ptr, d_cauchy_ddp_ptr, d_cauchy_dC_ptr,
+        d_cauchy_dF_ptr, d_cauchy_dT_ptr);
   else
     plmat->EvaluatePlast(&defgrd, &deltaLp, &temp, params, &dpk2ddp, &ncp, &dncpdc, &dncpddp,
         &active, &elast, &as_converged, gp, &dncpdT, &dHdC, &dHdLp,
@@ -1123,7 +1124,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   LINALG::Matrix<numstr_, spintype> d_cauchy_db;
   if (is_nitsche_contact_)
   {
-    if (N_XYZ == NULL) dserror("shape derivative not provided");
+    if (N_XYZ == nullptr) dserror("shape derivative not provided");
 
     LINALG::Matrix<9, numdofperelement_> dFdd;
     for (int k = 0; k < nen_; ++k)
@@ -1140,7 +1141,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
     cauchy_deriv_.at(gp).Clear();
     if (fbar_)
     {
-      if (RCG == NULL) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+      if (RCG == nullptr) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
       LINALG::Matrix<6, 1> tmp61;
       tmp61.Multiply(.5, d_cauchy_dC, (*RCG));
       cauchy_deriv_.at(gp).MultiplyNT(
@@ -1219,7 +1220,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
     LINALG::Matrix<spintype + 1, numdofperelement_> dNCPdd;
     if (fbar_)
     {
-      if (RCG == NULL) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+      if (RCG == nullptr) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
       LINALG::Matrix<spintype + 1, 1> tmp61;
       tmp61.Multiply(.5, dncpdc, (*RCG));
       dNCPdd.MultiplyNT((*f_bar_factor) * (*f_bar_factor) * 2. / 3., tmp61, *htensor, 0.);
@@ -1308,13 +1309,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
 
     // "plastic displacement stiffness"
     // plstiff = [k_d beta] * [k_beta beta]^-1 * [k_beta d]
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
       LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_, spintype, numdofperelement_>(
           1., stiffmatrix->A(), -1., KdbKbb.A(), Kbd_[gp].A());
 
     // "plastic internal force"
     // plFint = [K_db.K_bb^-1].f_b
-    if (force != NULL)
+    if (force != nullptr)
       LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_, spintype, 1>(
           1., force->A(), -1., KdbKbb.A(), fbeta_[gp].A());
 
@@ -1334,7 +1335,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
       LINALG::Matrix<numdofperelement_, 1> dHepDissDd;
       if (fbar_)
       {
-        if (RCG == NULL) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
+        if (RCG == nullptr) dserror("CondensePlasticity(...) requires RCG in case of FBAR");
         LINALG::Matrix<1, 1> tmp11;
         tmp11.MultiplyTN(.5, dHdC, (*RCG));
         dHepDissDd.Multiply((*f_bar_factor) * (*f_bar_factor) * 2. / 3., *htensor, tmp11, 0.);
@@ -1370,8 +1371,8 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
       if (eastype_ != soh8p_easnone)
       {
         // error checks
-        if (dHda == NULL)
-          dserror("dHda is NULL pointer");
+        if (dHda == nullptr)
+          dserror("dHda is nullptr pointer");
         else if ((int)dHda->size() != numgpt_)
           dserror("dHda has wrong size");
 
@@ -1569,7 +1570,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::CondensePlasticity(const LINALG::Matrix<
   {
     if (dDp_last_iter_[gp].NormInf() > 0.)
     {
-      if (force != NULL)
+      if (force != nullptr)
         LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_, spintype, 1>(
             1., force->A(), -1., kdbeta.A(), dDp_last_iter_[gp].A());
 
@@ -1668,7 +1669,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverPlasticityAndEAS(
           res_t_ptr = &res_t;
         }
         else
-          res_t_ptr = NULL;
+          res_t_ptr = nullptr;
 
         // recover plastic variables
         if (HavePlasticSpin())
@@ -1714,7 +1715,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
         LINALG::DENSEFUNCTIONS::multiply<double,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numdofperelement_, 1>(
             1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
-        if (KaT_ != Teuchos::null && res_T != NULL)
+        if (KaT_ != Teuchos::null && res_T != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, nen_, 1>(
               1., feas_->A(), 1., KaT_->A(), res_T->A());
@@ -1730,7 +1731,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
         LINALG::DENSEFUNCTIONS::multiply<double,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, numdofperelement_, 1>(
             1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
-        if (KaT_ != Teuchos::null && res_T != NULL)
+        if (KaT_ != Teuchos::null && res_T != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, nen_, 1>(
               1., feas_->A(), 1., KaT_->A(), res_T->A());
@@ -1746,7 +1747,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
         LINALG::DENSEFUNCTIONS::multiply<double,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_, 1>(
             1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
-        if (KaT_ != Teuchos::null && res_T != NULL)
+        if (KaT_ != Teuchos::null && res_T != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, nen_, 1>(
               1., feas_->A(), 1., KaT_->A(), res_T->A());
@@ -1762,7 +1763,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::RecoverEAS(
         LINALG::DENSEFUNCTIONS::multiply<double,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh18p_eassosh18>::neas, numdofperelement_, 1>(
             1.0, feas_->A(), 1.0, Kad_->A(), res_d->A());
-        if (KaT_ != Teuchos::null && res_T != NULL)
+        if (KaT_ != Teuchos::null && res_T != nullptr)
           LINALG::DENSEFUNCTIONS::multiply<double,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh18p_eassosh18>::neas, nen_, 1>(
               1., feas_->A(), 1., KaT_->A(), res_T->A());
@@ -1969,7 +1970,7 @@ double DRT::ELEMENTS::So3_Plast<distype>::CalcIntEnergy(
   if (eastype_ != soh8p_easnone) EasSetup();
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
@@ -2059,7 +2060,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetCauchyNDirAndDerivativesAtXiElast(
       xcurr(i, d) = xrefe(i, d) + disp[i * nsd_ + d];
     }
     if (temp)
-      if (temp->size()) ele_temp(i) = temp->at(i);
+      if (!temp->empty()) ele_temp(i) = temp->at(i);
   }
 
   EvaluateShape(xi);
@@ -2441,14 +2442,14 @@ void DRT::ELEMENTS::So3_Plast<distype>::OutputStrains(const int gp,
         total_glstrain(4) = RCG()(1, 2);
         total_glstrain(5) = RCG()(2, 0);
 
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = total_glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * total_glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
 
         // inverse of deformation gradient
         LINALG::Matrix<3, 3> invdefgrd;
@@ -2492,13 +2493,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::OutputStress(const int gp,
   {
     case INPAR::STR::stress_2pk:
     {
-      if (elestress == NULL) dserror("stress data not available");
+      if (elestress == nullptr) dserror("stress data not available");
       for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = PK2()(i);
     }
     break;
     case INPAR::STR::stress_cauchy:
     {
-      if (elestress == NULL) dserror("stress data not available");
+      if (elestress == nullptr) dserror("stress data not available");
 
       static LINALG::Matrix<3, 3> pkstress;
       pkstress(0, 0) = PK2()(0);
@@ -2749,7 +2750,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::IntegrateThermoGp(
   const double detJ_w = DetJ() * wgt_[gp];
 
   // get plastic hyperelastic material
-  MAT::PlasticElastHyper* plmat = NULL;
+  MAT::PlasticElastHyper* plmat = nullptr;
   if (Material()->MaterialType() == INPAR::MAT::m_plelasthyper)
     plmat = static_cast<MAT::PlasticElastHyper*>(Material().get());
   else
@@ -3176,7 +3177,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::GetNurbsEleInfo(DRT::Discretization* dis
 {
   if (!IsNurbsElement()) return;
 
-  if (dis == NULL) dis = DRT::Problem::Instance()->GetDis("structure").get();
+  if (dis == nullptr) dis = DRT::Problem::Instance()->GetDis("structure").get();
 
   dynamic_cast<DRT::NURBS::NurbsDiscretization*>(dis)->GetKnotVector()->GetEleKnots(
       SetKnots(), Id());

@@ -26,24 +26,27 @@ namespace DRT
     class So_sh18PlastType : public So_sh18Type
     {
      public:
-      std::string Name() const { return "So_sh18PlastType"; }
+      std::string Name() const override { return "So_sh18PlastType"; }
 
       static So_sh18PlastType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static So_sh18PlastType instance_;
+
+      std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
     };  // class So_sh18PlastType
 
     class So_sh18Plast : public virtual So3_Plast<DRT::Element::hex18>, public virtual So_sh18
@@ -62,29 +65,29 @@ namespace DRT
       //! Makes a deep copy of a Element
       So_sh18Plast(const So_sh18Plast& old);
 
-      bool HaveEAS() const { return (eastype_ != soh8p_easnone); };
+      bool HaveEAS() const override { return (eastype_ != soh8p_easnone); };
 
       //! resolve "no unique final overrider"
-      virtual int NumVolume() const { return So_sh18::NumVolume(); }
-      virtual DiscretizationType Shape() const { return hex18; };
-      virtual int NumSurface() const { return So_sh18::NumSurface(); }
-      virtual int NumLine() const { return So_sh18::NumLine(); }
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines() { return So_sh18::Lines(); }
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces() { return So_sh18::Surfaces(); }
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes() { return So_sh18::Volumes(); }
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumVolume() const override { return So_sh18::NumVolume(); }
+      DiscretizationType Shape() const override { return hex18; };
+      int NumSurface() const override { return So_sh18::NumSurface(); }
+      int NumLine() const override { return So_sh18::NumLine(); }
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return So_sh18::Lines(); }
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override { return So_sh18::Surfaces(); }
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override { return So_sh18::Volumes(); }
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         return So_sh18::NumDofPerNode(node);
       }
-      virtual int NumDofPerElement() const { return So_sh18::NumDofPerElement(); }
-      virtual void VisNames(std::map<std::string, int>& names) { return So_sh18::VisNames(names); }
-      virtual bool VisData(const std::string& name, std::vector<double>& data)
+      int NumDofPerElement() const override { return So_sh18::NumDofPerElement(); }
+      void VisNames(std::map<std::string, int>& names) override { return So_sh18::VisNames(names); }
+      bool VisData(const std::string& name, std::vector<double>& data) override
       {
         return So_sh18::VisData(name, data);
       }
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL)
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          Epetra_SerialDenseMatrix* elemat1 = nullptr) override
       {
         return So_sh18::EvaluateNeumann(params, discretization, condition, lm, elevec1, elemat1);
       }
@@ -93,37 +96,37 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       //! Destructor
-      virtual ~So_sh18Plast();
+      ~So_sh18Plast() override;
 
       //! Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return So_sh18PlastType::Instance().UniqueParObjectId();
       }
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //! return elementtype
-      virtual So_sh18PlastType& ElementType() const { return So_sh18PlastType::Instance(); }
+      So_sh18PlastType& ElementType() const override { return So_sh18PlastType::Instance(); }
 
       //! read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //! synchronize the eas variables in the two base-classes
       void SyncEAS();
@@ -147,7 +150,7 @@ namespace DRT
               elevec1_epetra,  //!< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2_epetra,  //!< vector to be filled by element
           Epetra_SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
-      )
+          ) override
       {
         return DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::Evaluate(params, discretization, la,
             elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
@@ -156,13 +159,15 @@ namespace DRT
 
      private:
       // don't want = operator
-      So_sh18Plast& operator=(const So_sh18Plast& old);
+      So_sh18Plast& operator=(const So_sh18Plast& old) = delete;
+
+      std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
 
      protected:
       //! Calculate nonlinear stiffness and mass matrix with condensed plastic matrices
-      virtual void nln_stiffmass(std::vector<double>& disp,  // current displacements
-          std::vector<double>& vel,                          // current velocities
-          std::vector<double>& temp,                         // current temperatures
+      void nln_stiffmass(std::vector<double>& disp,  // current displacements
+          std::vector<double>& vel,                  // current velocities
+          std::vector<double>& temp,                 // current temperatures
           LINALG::Matrix<numdofperelement_, numdofperelement_>*
               stiffmatrix,  // element stiffness matrix
           LINALG::Matrix<numdofperelement_, numdofperelement_>* massmatrix,  // element mass matrix
@@ -172,10 +177,10 @@ namespace DRT
           Teuchos::ParameterList& params,                   // algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,            // stress output option
           const INPAR::STR::StrainType iostrain             // strain output option
-      );
+          ) override;
 
       //! don't want sosh18 nlnstiffmass
-      virtual void nlnstiffmass(std::vector<int>& lm,               ///< location matrix
+      void nlnstiffmass(std::vector<int>& lm,                       ///< location matrix
           std::vector<double>& disp,                                ///< current displacements
           std::vector<double>& residual,                            ///< current residual displ
           LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,  ///< element stiffness matrix
@@ -186,7 +191,7 @@ namespace DRT
           Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
           const INPAR::STR::StressType iostress,  ///< stress output option
           const INPAR::STR::StrainType iostrain   ///< strain output option
-      )
+          ) override
       {
         dserror("don't want this");
       }

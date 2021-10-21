@@ -64,7 +64,7 @@ DRT::ELEMENTS::StructuralLine::StructuralLine(const DRT::ELEMENTS::StructuralLin
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::StructuralLine::Clone() const
 {
-  DRT::ELEMENTS::StructuralLine* newelement = new DRT::ELEMENTS::StructuralLine(*this);
+  auto* newelement = new DRT::ELEMENTS::StructuralLine(*this);
   return newelement;
 }
 

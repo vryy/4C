@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "prestress.H"
 #include "../drt_lib/prestress_service.H"
+#include "so_utils.H"
 
 DRT::ELEMENTS::So_pyramid5fbarType DRT::ELEMENTS::So_pyramid5fbarType::instance_;
 
@@ -26,7 +27,7 @@ DRT::ELEMENTS::So_pyramid5fbarType& DRT::ELEMENTS::So_pyramid5fbarType::Instance
 
 DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_pyramid5fbar* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_pyramid5fbar(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -35,7 +36,7 @@ DRT::ParObject* DRT::ELEMENTS::So_pyramid5fbarType::Create(const std::vector<cha
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5fbarType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDP5FBAR")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5fbar(id, owner));
     return ele;
@@ -69,7 +70,7 @@ void DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace(
 void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDP5FBAR"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["PYRAMID5"]
       .AddIntVector("PYRAMID5", 5)
@@ -94,6 +95,13 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
 DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(int id, int owner)
     : DRT::ELEMENTS::So_pyramid5(id, owner)
 {
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5 + 1));
   return;
@@ -115,7 +123,7 @@ DRT::ELEMENTS::So_pyramid5fbar::So_pyramid5fbar(const DRT::ELEMENTS::So_pyramid5
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_pyramid5fbar::Clone() const
 {
-  DRT::ELEMENTS::So_pyramid5fbar* newelement = new DRT::ELEMENTS::So_pyramid5fbar(*this);
+  auto* newelement = new DRT::ELEMENTS::So_pyramid5fbar(*this);
   return newelement;
 }
 

@@ -795,14 +795,14 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(DRT::ELEMENTS::So_hex8* ele,  /
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> gl;
         gl(0, 0) = glstrain(0);
@@ -838,13 +838,13 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(DRT::ELEMENTS::So_hex8* ele,  /
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < 6; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < 6; ++i) (*elestress)(gp, i) = cstress(i);
       }
       break;
@@ -1154,14 +1154,14 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(DRT::ELEMENTS::So_weg6* ele,  /
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> gl;
         gl(0, 0) = glstrain(0);
@@ -1197,13 +1197,13 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(DRT::ELEMENTS::So_weg6* ele,  /
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < 6; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < 6; ++i) (*elestress)(gp, i) = cstress(i);
       }
       break;
@@ -1516,14 +1516,14 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(Teuchos::ParameterList& para
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
         LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> gl;
         gl(0, 0) = glstrain(0);
@@ -1559,13 +1559,13 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(Teuchos::ParameterList& para
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = cstress(i);
       }
       break;
@@ -1633,7 +1633,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(Teuchos::ParameterList& para
       ele->so_tet4_4gp_shapefcts();
   const static std::vector<double> gpweights4gp = ele->so_tet4_4gp_weights();
   // evaluate mass matrix
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     double density =
         ele->Material()->Density(0);  // density at the only Gauss point the material has!

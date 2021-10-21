@@ -62,7 +62,7 @@ namespace DRT
       So3_Thermo(const So3_Thermo& old);
 
       //! Destructor
-      virtual ~So3_Thermo(){};
+      ~So3_Thermo() override = default;
 
       //@}
 
@@ -88,31 +88,31 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       //! Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the top of
       //! this file.
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
       //! Pack this class so it can be communicated
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       //! Unpack data from a char vector into this class
       //! Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
       //! @name Access methods
 
       //! Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //! return elementtype thermo element
-      virtual DRT::ElementType& ElementType() const;
+      DRT::ElementType& ElementType() const override;
 
       //@}
 
@@ -137,7 +137,7 @@ namespace DRT
       //!  names (out): On return, the derived class has filled names with key
       //!               names of data it wants to visualize and with int dimensions
       //!               of that data.
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       //!  Query data to be visualized using BINIO of a given name
       //!
@@ -151,13 +151,13 @@ namespace DRT
       //!
       //!  name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       //! read input for this element
       bool ReadElement(const std::string& eletype,  //!< so3thermo
           const std::string& eledistype,            //!< hex8,tet4,...
           DRT::INPUT::LineDefinition* linedef       //!< what parameters have to be read
-      );
+          ) override;
 
       //@}
 
@@ -180,7 +180,7 @@ namespace DRT
           Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
           Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
           Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
-      );
+          ) override;
 
       // PreEvaluate undertakes the task to calculate coupling term of matrix
       //! evaluation
@@ -375,7 +375,7 @@ namespace DRT
       //@}
 
      private:
-      DRT::Node** Nodes();
+      DRT::Node** Nodes() override;
 
       Teuchos::RCP<MAT::Material> Material() const;
 

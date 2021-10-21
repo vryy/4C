@@ -88,11 +88,11 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
     {
       // need current displacement and residual forces
       std::vector<double> mydisp(lm.size());
-      for (int i = 0; i < (int)mydisp.size(); ++i) mydisp[i] = 0.0;
+      for (double& i : mydisp) i = 0.0;
       std::vector<double> myres(lm.size());
-      for (int i = 0; i < (int)myres.size(); ++i) myres[i] = 0.0;
-      soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, NULL, &elevec1, NULL, NULL, NULL, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+      for (double& myre : myres) myre = 0.0;
+      soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr, nullptr,
+          params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -108,8 +108,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, NULL, &elevec1, &elevec3, NULL, NULL, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+      soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
+          nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -127,8 +127,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);
-      soshw6_nlnstiffmass(lm, mydisp, myres, &myemat, NULL, &elevec1, NULL, NULL, NULL, params,
-          INPAR::STR::stress_none, INPAR::STR::strain_none);
+      soshw6_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
+          params, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
 
@@ -150,8 +150,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, NULL, NULL,
-          params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+      soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
+          nullptr, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       if (act == calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
     }
     break;
@@ -177,12 +177,12 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*res, myres, lm);
         LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_WEG6, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        soshw6_nlnstiffmass(lm, mydisp, myres, NULL, NULL, NULL, NULL, &stress, &strain, params,
-            iostress, iostrain);
+        soshw6_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
+            params, iostress, iostrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -265,10 +265,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
@@ -281,10 +279,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
@@ -352,18 +348,18 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = NULL;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   LINALG::Matrix<MAT::NUM_STRESS_3D, soshw6_easpoisthick>
-      M;                                       // EAS matrix M at current GP, fixed for sosh8
-  Epetra_SerialDenseVector feas;               // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;                // EAS matrix Kda
-  double detJ0;                                // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = NULL;    // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = NULL;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda = NULL;     // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = NULL;    // EAS increment
+      M;                                          // EAS matrix M at current GP, fixed for sosh8
+  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
+  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
+  Epetra_SerialDenseMatrix Kda;                   // EAS matrix Kda
+  double detJ0;                                   // detJ(origin)
+  Epetra_SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  Epetra_SerialDenseMatrix* oldKda = nullptr;     // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -460,7 +456,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>> jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
   std::vector<LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>* deriv_sp =
-      NULL;  // derivs eval. at all sampling points
+      nullptr;  // derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   soshw6_anssetup(xrefe, xcurr, &deriv_sp, jac_sps, jac_cur_sps, B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 6-node wedge
@@ -646,7 +642,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestress == NULL) dserror("no strain data available");
+        if (elestress == nullptr) dserror("no strain data available");
         for (int i = 0; i < 3; ++i)
         {
           (*elestrain)(gp, i) = glstrain(i);
@@ -691,7 +687,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         {
           (*elestress)(gp, i) = stress(i);
@@ -700,7 +696,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         soshw6_Cauchy(elestress, gp, defgrd, glstrain, stress);
       }
       break;
@@ -712,7 +708,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
 
     double detJ_w = detJ * gpweights[gp];
     // update internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
       force->MultiplyTN(detJ_w, bop, stress, 1.0);
@@ -720,7 +716,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     if (split_res) force_str->MultiplyTN(detJ_w, bop, stress, 1.0);
 
     // update stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -790,7 +786,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
       }  // ------------------------------------------------------------------ EAS
     }
 
-    if (massmatrix != NULL)
+    if (massmatrix != nullptr)
     {  // evaluate mass matrix +++++++++++++++++++++++++
       double density = Material()->Density(gp);
       // integrate consistent mass matrix
@@ -818,7 +814,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     if (params.get<int>("MyPID") == Owner())
       params.get<double>("cond_rhs_norm") += pow(feas.Norm2(), 2.);
 
-  if (force != NULL && stiffmatrix != NULL)
+  if (force != nullptr && stiffmatrix != nullptr)
   {
     // EAS technology: ------------------------------------------------------ EAS
     // subtract EAS matrices from disp-based Kdd to "soften" element
@@ -918,7 +914,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
 
     // return adresses of just evaluated matrices
     *deriv_sp = &df_sp;  // return adress of static object to target of pointer
-    dfsp_eval = 1;       // now all arrays are filled statically
+    dfsp_eval = true;    // now all arrays are filled statically
   }
 
   for (int sp = 0; sp < num_sp; ++sp)
@@ -1267,7 +1263,7 @@ int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_shw6* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_shw6* failed");
 
     // check whether we should align the material space optimally with the parameter space.
@@ -1327,7 +1323,7 @@ int DRT::ELEMENTS::So_shw6Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_shw6* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_shw6*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_shw6* failed");
     actele->InitJacobianMapping();
   }
@@ -1343,11 +1339,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
   const double step_length = StrParamsInterface().GetStepLength();
 
-  Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-  Epetra_SerialDenseMatrix* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
-  Epetra_SerialDenseMatrix* eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
-  Epetra_SerialDenseMatrix* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  auto* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
+  auto* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
+  auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
+  auto* eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+  auto* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
   if (StrParamsInterface().IsDefaultStep())

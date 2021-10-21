@@ -73,12 +73,12 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   }
   eastype_ = EASType;
   if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone) return;
-  Epetra_SerialDenseMatrix* alpha = NULL;                         // EAS alphas
-  Epetra_SerialDenseMatrix* alphao = NULL;                        // EAS alphas
-  Epetra_SerialDenseMatrix* feas = NULL;                          // EAS history
-  Epetra_SerialDenseMatrix* Kaainv = NULL;                        // EAS history
-  Epetra_SerialDenseMatrix* Kda = NULL;                           // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = NULL;                       // EAS history
+  Epetra_SerialDenseMatrix* alpha = nullptr;                      // EAS alphas
+  Epetra_SerialDenseMatrix* alphao = nullptr;                     // EAS alphas
+  Epetra_SerialDenseMatrix* feas = nullptr;                       // EAS history
+  Epetra_SerialDenseMatrix* Kaainv = nullptr;                     // EAS history
+  Epetra_SerialDenseMatrix* Kda = nullptr;                        // EAS history
+  Epetra_SerialDenseMatrix* eas_inc = nullptr;                    // EAS history
   alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // get alpha of previous iteration
   alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // get alpha of previous iteration
   feas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");

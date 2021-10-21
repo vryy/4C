@@ -21,6 +21,7 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "so_utils.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -33,7 +34,7 @@ DRT::ELEMENTS::So_pyramid5Type& DRT::ELEMENTS::So_pyramid5Type::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_pyramid5Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_pyramid5* object = new DRT::ELEMENTS::So_pyramid5(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_pyramid5(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -42,7 +43,7 @@ DRT::ParObject* DRT::ELEMENTS::So_pyramid5Type::Create(const std::vector<char>& 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_pyramid5Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDP5")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_pyramid5(id, owner));
     return ele;
@@ -75,7 +76,7 @@ void DRT::ELEMENTS::So_pyramid5Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_pyramid5Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDP5"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["PYRAMID5"]
       .AddIntVector("PYRAMID5", 5)
@@ -110,6 +111,9 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, NUMGPT_SOP5));
@@ -148,7 +152,7 @@ DRT::ELEMENTS::So_pyramid5::So_pyramid5(const DRT::ELEMENTS::So_pyramid5& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_pyramid5::Clone() const
 {
-  DRT::ELEMENTS::So_pyramid5* newelement = new DRT::ELEMENTS::So_pyramid5(*this);
+  auto* newelement = new DRT::ELEMENTS::So_pyramid5(*this);
   return newelement;
 }
 
@@ -179,7 +183,7 @@ void DRT::ELEMENTS::So_pyramid5::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  const auto size = (int)invJ_.size();
   AddtoPack(data, size);
   for (int i = 0; i < size; ++i) AddtoPack(data, invJ_[i]);
 
@@ -236,7 +240,7 @@ void DRT::ELEMENTS::So_pyramid5::Unpack(const std::vector<char>& data)
     {
       int numgpt = NUMGPT_SOP5;
       // see whether I am actually a So_pyramid5fbar element
-      DRT::ELEMENTS::So_pyramid5fbar* me = dynamic_cast<DRT::ELEMENTS::So_pyramid5fbar*>(this);
+      auto* me = dynamic_cast<DRT::ELEMENTS::So_pyramid5fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in pyramid5fbar
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOP5, numgpt));
     }

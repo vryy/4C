@@ -84,7 +84,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
-  std::string& action = p.get<std::string>("action", "none");
+  auto& action = p.get<std::string>("action", "none");
   if (action != "calc_struct_nlnstiffmass" && action != "calc_struct_nlnstifflmass" &&
       action != "calc_struct_nlnstiff" && action != "calc_struct_stress" &&
       action != "calc_struct_internalforce")
@@ -120,8 +120,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
   //-----------------------------------------------------------------
   // create a temporary matrix to assemble to in a baci-unusual way
   // (across-parallel-interface assembly)
-  const Epetra_Map* rmap = NULL;
-  const Epetra_Map* dmap = NULL;
+  const Epetra_Map* rmap = nullptr;
+  const Epetra_Map* dmap = nullptr;
 
   Teuchos::RCP<Epetra_FECrsMatrix> stifftmp;
   Teuchos::RCP<LINALG::SparseMatrix> systemmatrix;
@@ -166,7 +166,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
     std::map<int, DRT::Node*>& adjnode = adjnode_[nodeLid];
     std::vector<int>& lm = adjlm_[nodeLid];
     std::vector<std::vector<std::vector<int>>>& lmlm = lmlm_[nodeLid];
-    const int ndofperpatch = (int)lm.size();
+    const auto ndofperpatch = (int)lm.size();
 
     if (action == "calc_struct_nlnstiffmass" || action == "calc_struct_nlnstifflmass" ||
         action == "calc_struct_nlnstiff" || action == "calc_struct_internalforce")
@@ -175,21 +175,21 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
       stiff.LightShape(ndofperpatch, ndofperpatch);
       force.LightSize(ndofperpatch);
       LINALG::SerialDenseMatrix* stiffptr = &stiff;
-      if (action == "calc_struct_internalforce") stiffptr = NULL;
+      if (action == "calc_struct_internalforce") stiffptr = nullptr;
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
-      NodalIntegration(stiffptr, &force, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, NULL,
-          NULL, INPAR::STR::stress_none, INPAR::STR::strain_none);
+      NodalIntegration(stiffptr, &force, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, nullptr,
+          nullptr, INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     else if (action == "calc_struct_stress")
     {
-      INPAR::STR::StressType iostress =
+      auto iostress =
           DRT::INPUT::get<INPAR::STR::StressType>(p, "iostress", INPAR::STR::stress_none);
-      INPAR::STR::StrainType iostrain =
+      auto iostrain =
           DRT::INPUT::get<INPAR::STR::StrainType>(p, "iostrain", INPAR::STR::strain_none);
       std::vector<double> nodalstress(6);
       std::vector<double> nodalstrain(6);
-      NodalIntegration(NULL, NULL, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, &nodalstress,
-          &nodalstrain, iostress, iostrain);
+      NodalIntegration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,
+          &nodalstress, &nodalstrain, iostress, iostrain);
 
       const int lid = dis.NodeRowMap()->LID(nodeLid);
       if (lid == -1) dserror("Cannot find local id for row node");
@@ -399,8 +399,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   //  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD; // for second derivs
 
   //-------------------------------------------------- standard quantities
-  const int ndofinpatch = (int)lm.size();
-  const int neleinpatch = (int)adjele.size();
+  const auto ndofinpatch = (int)lm.size();
+  const auto neleinpatch = (int)adjele.size();
 
   //------------------------------ see whether materials in patch are equal
   bool matequal = true;
@@ -439,10 +439,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
     DRT::ELEMENTS::NStet5* ele = adjele[i];
     std::vector<int>& subele = adjsubele[ele->Id()];
 
-    for (unsigned j = 0; j < subele.size(); ++j)
+    for (int subeleid : subele)
     {
-      const int subeleid = subele[j];
-
       // copy subelement displacements to 4x3 format
       //      LINALG::Matrix<4,3> eledispmat(false);
       //      LINALG::Matrix<4,3,FADFAD> teledispmat(false);
@@ -741,7 +739,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
 /*----------------------------------------------------------------------*
  | material laws for NStet5 (protected)                        gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
+void DRT::ELEMENTS::NStet5Type::SelectMaterial(const Teuchos::RCP<MAT::Material>& mat,
     LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat, double& density,
     LINALG::Matrix<6, 1>& glstrain, LINALG::Matrix<3, 3>& defgrd, const int gp, const int eleGID)
 {
@@ -749,7 +747,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
-      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       Teuchos::ParameterList params;
       LINALG::Matrix<3, 3> defgrd(true);
       stvk->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
@@ -758,7 +756,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     break;
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
-      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
       neo->Evaluate(glstrain, cmat, stress);
       density = neo->Density();
     }
@@ -766,7 +764,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see
                                        Raghavan, Vorp */
     {
-      MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaa = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       Teuchos::ParameterList params;
       aaa->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = aaa->Density();
@@ -774,7 +772,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(Teuchos::RCP<MAT::Material> mat,
     break;
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(mat.get());
+      auto* hyper = dynamic_cast<MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
       hyper->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, eleGID);
       density = hyper->Density();

@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "so_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -28,7 +29,7 @@ DRT::ELEMENTS::So_tet4avType& DRT::ELEMENTS::So_tet4avType::Instance() { return 
 //------------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::So_tet4avType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_tet4av* object = new DRT::ELEMENTS::So_tet4av(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_tet4av(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -38,7 +39,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4avType::Create(const std::vector<char>& da
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4avType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDT4AV")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet4av(id, owner));
     return ele;
@@ -76,7 +77,7 @@ void DRT::ELEMENTS::So_tet4avType::ComputeNullSpace(
 void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4AV"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["TET4"]
       .AddIntVector("TET4", 4)
@@ -95,7 +96,17 @@ void DRT::ELEMENTS::So_tet4avType::SetupElementDefinition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet4av::So_tet4av(int id, int owner) : So_base(id, owner) { return; }
+DRT::ELEMENTS::So_tet4av::So_tet4av(int id, int owner) : So_base(id, owner)
+{
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params != Teuchos::null)
+  {
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 04/07|
@@ -109,7 +120,7 @@ DRT::ELEMENTS::So_tet4av::So_tet4av(const DRT::ELEMENTS::So_tet4av& old) : So_ba
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_tet4av::Clone() const
 {
-  DRT::ELEMENTS::So_tet4av* newelement = new DRT::ELEMENTS::So_tet4av(*this);
+  auto* newelement = new DRT::ELEMENTS::So_tet4av(*this);
   return newelement;
 }
 

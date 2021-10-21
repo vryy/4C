@@ -128,17 +128,17 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       if ((stab_ == stab_spatial) or (stab_ == stab_spatialaffine))
       {
         LINALG::Matrix<NUMPRES_, NUMDISP_> dargmatrix;
-        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, NULL, &stiffmatrix, &gradmatrix, NULL,
-            &stabmatrix, &force, &incomp, NULL, NULL, NULL, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none);
+        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
+            nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, nullptr, params,
+            INPAR::STR::stress_none, INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, &dargmatrix, &stabmatrix);
       }
       else
       {
-        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, NULL, &stiffmatrix, NULL, NULL,
-            &stabmatrix, &force, &incomp, NULL, NULL, NULL, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none);
-        BuildElementMatrix(&elemat1, &stiffmatrix, NULL, NULL, &stabmatrix);
+        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, nullptr,
+            nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, nullptr, params,
+            INPAR::STR::stress_none, INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1, &stiffmatrix, nullptr, nullptr, &stabmatrix);
       }
       BuildElementVector(&elevec1, &force, &incomp);
     }
@@ -173,17 +173,17 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       if ((stab_ == stab_spatial) or (stab_ == stab_spatialaffine))
       {
         LINALG::Matrix<NUMPRES_, NUMDISP_> dargmatrix;
-        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, NULL, &stiffmatrix, &gradmatrix,
-            &dargmatrix, &stabmatrix, &force, &incomp, NULL, NULL, &volume, params,
+        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
+            &dargmatrix, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
             INPAR::STR::stress_none, INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, &dargmatrix, &stabmatrix);
       }
       else
       {
-        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, NULL, &stiffmatrix, &gradmatrix, NULL,
-            &stabmatrix, &force, &incomp, NULL, NULL, &volume, params, INPAR::STR::stress_none,
-            INPAR::STR::strain_none);
-        BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, NULL, &stabmatrix);
+        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
+            nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
+            INPAR::STR::stress_none, INPAR::STR::strain_none);
+        BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, nullptr, &stabmatrix);
       }
       BuildElementVector(&elevec1, &force, &incomp);
       //      AssembleVolume(params,volume);
@@ -218,9 +218,9 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       LINALG::Matrix<NUMDISP_, 1> force(true);
       LINALG::Matrix<NUMPRES_, 1> incomp(true);
       double volume = 0.0;
-      ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, NULL, &stiffmatrix, &gradmatrix, NULL,
-          &stabmatrix, &force, &incomp, NULL, NULL, &volume, params, INPAR::STR::stress_none,
-          INPAR::STR::strain_none);
+      ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
+          nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
+          INPAR::STR::stress_none, INPAR::STR::strain_none);
       BuildElementVector(&elevec1, &force, &incomp);
       //      AssembleVolume(params,volume);
     }
@@ -263,21 +263,21 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       {
         LINALG::Matrix<NUMPRES_, NUMDISP_> dargmatrix;
         ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, &massmatrix, &stiffmatrix, &gradmatrix,
-            &dargmatrix, &stabmatrix, &force, &incomp, NULL, NULL, &volume, params,
+            &dargmatrix, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
             INPAR::STR::stress_none, INPAR::STR::strain_none);
         BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, &dargmatrix, &stabmatrix);
       }
       else
       {
         ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, &massmatrix, &stiffmatrix, &gradmatrix,
-            NULL, &stabmatrix, &force, &incomp, NULL, NULL, &volume, params,
+            nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
             INPAR::STR::stress_none, INPAR::STR::strain_none);
-        BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, NULL, &stabmatrix);
+        BuildElementMatrix(&elemat1, &stiffmatrix, &gradmatrix, nullptr, &stabmatrix);
       }
       // lump mass
       if (act == calc_struct_nlnstifflmass) soh8_lumpmass(&massmatrix);
       // assemble displacement pressure parts
-      BuildElementMatrix(&elemat2, &massmatrix, NULL, NULL, NULL);
+      BuildElementMatrix(&elemat2, &massmatrix, nullptr, nullptr, nullptr);
       BuildElementVector(&elevec1, &force, &incomp);
       //      AssembleVolume(params,volume);
     }
@@ -315,12 +315,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
         // types
         LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D> stress;
         LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D> strain;
-        INPAR::STR::StressType iostress =
+        auto iostress =
             DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
-        INPAR::STR::StrainType iostrain =
+        auto iostrain =
             DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
-        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, NULL, NULL, NULL, NULL, NULL, NULL,
-            NULL, &stress, &strain, NULL, params, iostress, iostrain);
+        ForceStiffMass(lm, mydisp, mypres, mydispi, mypresi, nullptr, nullptr, nullptr, nullptr,
+            nullptr, nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain);
         {
           DRT::PackBuffer data;
           AddtoPack(data, stress);
@@ -402,10 +402,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         if (eastype_ == soh8_eassosh8)
         {
@@ -429,10 +427,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ != soh8_easnone)
       {
-        Epetra_SerialDenseMatrix* alpha =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1}
-        Epetra_SerialDenseMatrix* alphao =
-            data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         if (eastype_ == soh8_eassosh8)
         {
@@ -497,8 +493,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix:
     {
-      const INPAR::STR::STC_Scale stc_scaling =
-          DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the querry!");
       else
@@ -510,8 +505,7 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(Teuchos::ParameterList& params,
     break;
     case calc_stc_matrix_inverse:
     {
-      const INPAR::STR::STC_Scale stc_scaling =
-          DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
+      const auto stc_scaling = DRT::INPUT::get<INPAR::STR::STC_Scale>(params, "stc_scaling");
       if (stc_scaling == INPAR::STR::stc_none)
         dserror("To scale or not to scale, that's the query!");
       else
@@ -545,21 +539,21 @@ int DRT::ELEMENTS::So_sh8p8::EvaluateNeumann(Teuchos::ParameterList& params,
   // 24x1 load vector
   Epetra_SerialDenseVector elevec1_d(NUMDISP_);
   // 24x24 tangent
-  Epetra_SerialDenseMatrix* elemat1_dd = NULL;
-  if (elemat1 != NULL) elemat1_dd = new Epetra_SerialDenseMatrix(NUMDISP_, NUMDISP_);
+  Epetra_SerialDenseMatrix* elemat1_dd = nullptr;
+  if (elemat1 != nullptr) elemat1_dd = new Epetra_SerialDenseMatrix(NUMDISP_, NUMDISP_);
   // determine (displacement) load vector (and tangent)
   const int rv =
       So_hex8::EvaluateNeumann(params, discretization, condition, lm_d, elevec1_d, elemat1_dd);
   // copy vector
   LINALG::Matrix<NUMDOF_, 1> ev1(elevec1, true);       // only view
   LINALG::Matrix<NUMDISP_, 1> ev1_d(elevec1_d, true);  // only view
-  BuildElementVector(&ev1, &ev1_d, NULL);
+  BuildElementVector(&ev1, &ev1_d, nullptr);
   // copy matrix
-  if ((elemat1_dd != NULL) and (elemat1 != NULL))
+  if ((elemat1_dd != nullptr) and (elemat1 != nullptr))
   {
     LINALG::Matrix<NUMDOF_, NUMDOF_> em1(*elemat1, true);          // only view
     LINALG::Matrix<NUMDISP_, NUMDISP_> em1_dd(*elemat1_dd, true);  // only view
-    BuildElementMatrix(&em1, &em1_dd, NULL, NULL, NULL);
+    BuildElementMatrix(&em1, &em1_dd, nullptr, nullptr, nullptr);
     delete elemat1_dd;
   }
 
@@ -621,15 +615,15 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   // in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
   //
   // in any case declare variables, sizes etc. only in EAS case
-  Epetra_SerialDenseMatrix* oldfeas = NULL;                     // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = NULL;                   // EAS history
-  Epetra_SerialDenseMatrix* oldKad = NULL;                      // EAS history
-  Epetra_SerialDenseMatrix* oldKap = NULL;                      // EAS history
+  Epetra_SerialDenseMatrix* oldfeas = nullptr;                  // EAS history
+  Epetra_SerialDenseMatrix* oldKaainv = nullptr;                // EAS history
+  Epetra_SerialDenseMatrix* oldKad = nullptr;                   // EAS history
+  Epetra_SerialDenseMatrix* oldKap = nullptr;                   // EAS history
   Teuchos::RCP<Epetra_SerialDenseVector> feas = Teuchos::null;  // EAS portion of internal forces
   Teuchos::RCP<Epetra_SerialDenseMatrix> Kaa = Teuchos::null;   // EAS matrix Kaa
   Teuchos::RCP<Epetra_SerialDenseMatrix> Kap = Teuchos::null;   // EAS matrix Kpa
   Teuchos::RCP<Epetra_SerialDenseMatrix> Kad = Teuchos::null;   // EAS matrix Kda
-  Epetra_SerialDenseMatrix* alpha = NULL;                       // EAS alphas
+  Epetra_SerialDenseMatrix* alpha = nullptr;                    // EAS alphas
   Teuchos::RCP<Epetra_SerialDenseMatrix> M =
       Teuchos::null;  // EAS matrix M at current GP, fixed for sosh8
   // make update
@@ -656,7 +650,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   // -> M defining interpolation of enhanced strains alpha, evaluated at GPs
   // -> determinant of Jacobi matrix at element origin (r=s=t=0.0)
   // -> T0^{-T}
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;             // EAS matrix M at all GPs
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;          // EAS matrix M at all GPs
   double detJ0;                                                   // detJ(origin)
   LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
   if (eastype_ != soh8_easnone)
@@ -679,7 +673,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   // CURRENT Jacobian evaluated at all ANS sampling points
   std::vector<LINALG::Matrix<NUMDIM_, NUMDIM_>> jac_cur_sps(NUMSP_);
   // pointer to derivs evaluated at all sampling points
-  std::vector<LINALG::Matrix<NUMDIM_, NUMNOD_>>* deriv_sp = NULL;
+  std::vector<LINALG::Matrix<NUMDIM_, NUMNOD_>>* deriv_sp = nullptr;
   // evaluate all necessary variables for ANS
   sosh8_anssetup(xrefe, xcurr, &deriv_sp, jac_sps, jac_cur_sps, B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
@@ -751,7 +745,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   }
 
   // stabilisation matrix
-  if (stabmatrix != NULL)
+  if (stabmatrix != nullptr)
   {
     // shear modulus
     const double shearmod = ShearMod();
@@ -1164,7 +1158,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
           stress);  // may contain non-isochoric material response
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cgen(
           cmat);  // may contain non-isochoric material response
-      MAT::VolumetrifyAndIsochorify(NULL, NULL, &stress, &cmat, glstrain, pk2gen, cgen);
+      MAT::VolumetrifyAndIsochorify(nullptr, nullptr, &stress, &cmat, glstrain, pk2gen, cgen);
     }
     // end of call material law
 
@@ -1185,7 +1179,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
       dserror("Cannot handle requested stabilisation type %d", stab_);
 
     // update of internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector
       // fint := fint
@@ -1195,7 +1189,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
     }
 
     // incompressiblity equation
-    if (incomp != NULL)
+    if (incomp != nullptr)
     {
       // pint := pint
       //       - He . (Fdet - 1.0) * detJ * wp(gp)
@@ -1204,7 +1198,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
     }
 
     // update of stiffness matrix
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
@@ -1847,12 +1841,12 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
         // double contracted with transposed inverted deformation gradient
         // (dFv'*fvT) = dFv'*fvT
         LINALG::Matrix<NUMDISP_, 1> defgradbydisptimestinvdefgrad;
-        if ((gradmatrix != NULL) or (dargmatrix != NULL))
+        if ((gradmatrix != nullptr) or (dargmatrix != nullptr))
           defgradbydisptimestinvdefgrad.MultiplyTN(defgradbydisp, tinvdefgrad_vct);
 
         // derivative of pressure contribution in internal force with respect to pressure
         // (-G) = -(dFv'*fvT)*pN * Fdet*detJ*wp(i);
-        if (gradmatrix != NULL)
+        if (gradmatrix != nullptr)
         {
           // contribute to G-op
           gradmatrix->MultiplyNT(-vol_w, defgradbydisptimestinvdefgrad, prshfct, 1.0);
@@ -1878,10 +1872,10 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
         }
 
       }  // end block
-    }    // if (stiffmatrix != NULL)
+    }    // if (stiffmatrix != nullptr)
 
     // mass matrix
-    if (massmatrix != NULL)
+    if (massmatrix != nullptr)
     {
       double density = Material()->Density(gp);
       // integrate consistent mass matrix
@@ -1900,7 +1894,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
     }  // end of mass matrix
 
     // store volume
-    if (volume != NULL) *volume += vol_w;
+    if (volume != nullptr) *volume += vol_w;
 
     /* =========================================================================*/
   } /* ==================================================== end of Loop over GP */
@@ -1908,7 +1902,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
 
   // finish with internal force etc
   // internal force
-  if ((force != NULL) and (stabmatrix != NULL))
+  if ((force != nullptr) and (stabmatrix != nullptr))
   {
     // integrate internal force vector
     // fint := fint
@@ -1917,7 +1911,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
     if (stab_ != stab_puredisp) force->MultiplyNN(1.0, *gradmatrix, pres, 1.0);
   }
   // incompressiblity equation
-  if ((incomp != NULL) and (stabmatrix != NULL))
+  if ((incomp != nullptr) and (stabmatrix != nullptr))
   {
     // pint := pint
     //       - H . (Fdet - 1.0) * detJ * wp(gp)  // already done
@@ -1930,7 +1924,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
 
   // copy grad-matrix onto drag-matrix
   // (-G^T) = -pN * fvT'*dFv * Fdet*detJ*wp(i)
-  if ((dargmatrix != NULL) and (gradmatrix != NULL))
+  if ((dargmatrix != nullptr) and (gradmatrix != nullptr))
   {
     // copy ordinary part from gradmatrix by transposing
     dargmatrix->UpdateT(*gradmatrix);
@@ -1943,7 +1937,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   if ((stab_ == stab_spatial) or (stab_ == stab_spatialaffine))
   {
     // displacement derivative of spatially described stabilisation matrix (k_ss)
-    if (dargmatrix != NULL)
+    if (dargmatrix != nullptr)
     {
       // shear modulus
       const double shearmod = ShearMod();
@@ -1973,7 +1967,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
       //
       if (stab_ == stab_spatial)
       {
-        if (stiffmatrix != NULL)
+        if (stiffmatrix != nullptr)
         {
           // -(w.p) * (-a^{-2}) * J_,d . a_,d
           stiffmatrix->MultiplyTN(
@@ -1988,7 +1982,7 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   // displacement derivative of projected pressure shape functions (k_s)
   if (stab_ == stab_spatial)
   {
-    if (dargmatrix != NULL)
+    if (dargmatrix != nullptr)
     {
       // int((1-J)*A) * ( -a^{-2} * w^T . a_,d )
       dargmatrix->MultiplyNN(-voldev / (stabAA(0, 0) * stabAA(0, 0)), stabHA, *stabAAbydisp, 1.0);
@@ -2021,9 +2015,9 @@ void DRT::ELEMENTS::So_sh8p8::ForceStiffMass(const std::vector<int>& lm,  // loc
   // fake pure-disp based approach (ANS might be active)
   if (stab_ == stab_puredisp)
   {
-    if (gradmatrix != NULL) gradmatrix->Clear();
-    if (dargmatrix != NULL) dargmatrix->Clear();
-    if (stabmatrix != NULL)
+    if (gradmatrix != nullptr) gradmatrix->Clear();
+    if (dargmatrix != nullptr) dargmatrix->Clear();
+    if (stabmatrix != nullptr)
     {
       stabmatrix->Clear();
       for (int i = 0; i < NUMPRES_; ++i) (*stabmatrix)(i, i) = 1.0;
@@ -2047,7 +2041,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>
   {
     case INPAR::STR::stress_2pk:  // 2nd Piola-Kirchhoff stress
     {
-      if (elestress == NULL) dserror("stress data not available");
+      if (elestress == nullptr) dserror("stress data not available");
       // determine stress
       if (stab_ == stab_puredisp)
       {
@@ -2072,7 +2066,7 @@ void DRT::ELEMENTS::So_sh8p8::Stress(LINALG::Matrix<NUMGPT_, MAT::NUM_STRESS_3D>
     break;
     case INPAR::STR::stress_cauchy:  // true/Cauchy stress
     {
-      if (elestress == NULL) dserror("stress data not available");
+      if (elestress == nullptr) dserror("stress data not available");
       // push forward
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> defgraddefgradT;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(defgraddefgradT, defgrd, true,
@@ -2122,7 +2116,7 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
   {
     case INPAR::STR::strain_gl:  // Green-Lagrange strain
     {
-      if (elestrain == NULL) dserror("strain data not available");
+      if (elestrain == nullptr) dserror("strain data not available");
       // store
       for (int i = 0; i < NUMDIM_; ++i) (*elestrain)(gp, i) = glstrain(i);
       for (int i = NUMDIM_; i < MAT::NUM_STRESS_3D; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
@@ -2130,7 +2124,7 @@ void DRT::ELEMENTS::So_sh8p8::Strain(
     break;
     case INPAR::STR::strain_ea:  // Euler-Almansi strain
     {
-      if (elestrain == NULL) dserror("strain data not available");
+      if (elestrain == nullptr) dserror("strain data not available");
       // create push forward 6x6 matrix
       LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> invdefgradTdefgrad;
       Matrix2TensorToLeftRightProductMatrix6x6Voigt(invdefgradTdefgrad, invdefgrd, false,
@@ -2180,7 +2174,7 @@ void DRT::ELEMENTS::So_sh8p8::AssDefGrad(double& detdefgrad,
   LINALG::Matrix<NUMDIM_, NUMDIM_> rot;
   {
 #if 0
-    StretchTensor(NULL,&rgtstrD,&invrgtstrD,cgD);
+    StretchTensor(nullptr,&rgtstrD,&invrgtstrD,cgD);
     // rotation matrix
     rot.MultiplyNN(defgradD,invrgtstrD);
 #else
@@ -2357,49 +2351,49 @@ double DRT::ELEMENTS::So_sh8p8::ShearMod() const
   {
     case INPAR::MAT::m_stvenant: /*-------- st.venant-kirchhoff-material */
     {
-      MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
+      auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(mat.get());
       return stvk->ShearMod();
       break;
     }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
-      MAT::NeoHooke* neo = static_cast<MAT::NeoHooke*>(mat.get());
+      auto* neo = dynamic_cast<MAT::NeoHooke*>(mat.get());
       return neo->ShearMod();
       break;
     }
     case INPAR::MAT::m_aaaneohooke: /*-----------AAA NeoHookean Material */
     {
-      MAT::AAAneohooke* aaaneo = static_cast<MAT::AAAneohooke*>(mat.get());
+      auto* aaaneo = dynamic_cast<MAT::AAAneohooke*>(mat.get());
       return aaaneo->ShearMod();
       break;
     }
     case INPAR::MAT::m_aaaraghavanvorp_damage: /*-AAA RaghavanVorp Material with damage*/
     {
-      MAT::AAAraghavanvorp_damage* aaadam = static_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
+      auto* aaadam = dynamic_cast<MAT::AAAraghavanvorp_damage*>(mat.get());
       return aaadam->ShearMod();
       break;
     }
     case INPAR::MAT::m_viscoanisotropic: /*-----------Anisotropic Viscous Material */
     {
-      MAT::ViscoAnisotropic* visco = static_cast<MAT::ViscoAnisotropic*>(Material().get());
+      MAT::ViscoAnisotropic* visco = dynamic_cast<MAT::ViscoAnisotropic*>(Material().get());
       return visco->ShearMod();
       break;
     }
     case INPAR::MAT::m_visconeohooke: /*-----------Viscous NeoHookean Material */
     {
-      MAT::ViscoNeoHooke* visconeo = static_cast<MAT::ViscoNeoHooke*>(Material().get());
+      MAT::ViscoNeoHooke* visconeo = dynamic_cast<MAT::ViscoNeoHooke*>(Material().get());
       return visconeo->ShearMod();
       break;
     }
     case INPAR::MAT::m_viscoelasthyper: /*-----------general visco-hyperelastic material */
     {
-      MAT::ViscoElastHyper* viscoelasthyper = static_cast<MAT::ViscoElastHyper*>(Material().get());
+      MAT::ViscoElastHyper* viscoelasthyper = dynamic_cast<MAT::ViscoElastHyper*>(Material().get());
       return viscoelasthyper->ShearMod();
       break;
     }
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
-      MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(Material().get());
+      MAT::ElastHyper* hyper = dynamic_cast<MAT::ElastHyper*>(Material().get());
       return hyper->ShearMod();
       break;
     }
@@ -2447,17 +2441,17 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix(LINALG::Matrix<NUMDOF_, NUMDOF_>& el
     bool current1 = false;  // minimun STCid of layer with nodes 4..7
     (nodes[NUMNOD_ / 2])->GetCondition("STC Layer", cond1);
 
-    for (unsigned int conu = 0; conu < cond0.size(); ++conu)
+    for (auto& conu : cond0)
     {
-      int tmp = cond0[conu]->GetInt("ConditionID");
+      int tmp = conu->GetInt("ConditionID");
       if (tmp < condnum0) condnum0 = tmp;
     }
     if (condnum0 == stc_layer) current0 = true;
 
 
-    for (unsigned int conu = 0; conu < cond1.size(); ++conu)
+    for (auto& conu : cond1)
     {
-      int tmp = cond1[conu]->GetInt("ConditionID");
+      int tmp = conu->GetInt("ConditionID");
       if (tmp < condnum1) condnum1 = tmp;
     }
     if (condnum1 == stc_layer) current1 = true;
@@ -2652,7 +2646,7 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
     // get the actual element
     if (dis.lColElement(i)->ElementType() != *this) continue;
     // go on for So_sh8p elements
-    DRT::ELEMENTS::So_sh8p8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8p8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -2702,9 +2696,9 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
         if (actele->Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic)
         {
           MAT::ViscoAnisotropic* visco =
-              static_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
+              dynamic_cast<MAT::ViscoAnisotropic*>(actele->Material().get());
           visco->Setup(DRT::ELEMENTS::So_sh8p8::NUMGPT_, actele->thickvec_);
-          if (actele->thickvec_.size() == 0)
+          if (actele->thickvec_.empty())
             dserror("zero size thickness vector for element %d", actele->Id());
         }
       }
@@ -2801,7 +2795,7 @@ int DRT::ELEMENTS::So_sh8p8Type::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So_sh8p8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So_sh8p8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_sh8p8* failed");
     actele->InitJacobianMapping();  // this sets #invJ_ in So_hex8
   }

@@ -842,7 +842,7 @@ namespace DRT
       \param mat: material to be added
       \param nummat (out):  number of materials the element holds
      */
-    int AddMaterial(Teuchos::RCP<MAT::Material> mat);
+    int AddMaterial(const Teuchos::RCP<MAT::Material>& mat);
 
     /// Number of materials of the element
     /*!
@@ -1583,7 +1583,7 @@ namespace DRT
   DRT::Element::DiscretizationType ShardsKeyToDisType(const unsigned& key);
 
   /// translate distype string to enum
-  DRT::Element::DiscretizationType StringToDistype(std::string name);
+  DRT::Element::DiscretizationType StringToDistype(const std::string& name);
 
 
 }  // namespace DRT

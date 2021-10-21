@@ -49,7 +49,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   // modeling of an orthopressure load without the need to do any linearization. However,
   // this can only be achieved by referring the 'neum_pseudo_orthopressure' load to the last
   // converged configuration, which introduces an error as compared with 'neum_orthopressure'.
-  bool loadlin = (elemat1 != NULL);
+  bool loadlin = (elemat1 != nullptr);
 
   // type of Neumann conditions
   enum LoadType
@@ -75,7 +75,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   Configuration config = config_none;
 
   // get type of condition
-  const std::string* type = condition.Get<std::string>("type");
+  const auto* type = condition.Get<std::string>("type");
   if (*type == "neum_live")
   {
     ltype = neum_live;
@@ -102,9 +102,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   }
 
   // get values and switches from the condition
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
-  const std::vector<int>* spa_func = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* spa_func = condition.Get<std::vector<int>>("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -212,10 +212,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
   // Now do the nurbs specific stuff
   bool nurbsele = false;
 
-  DRT::NURBS::NurbsDiscretization* nurbsdis =
-      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-  if (nurbsdis != NULL) nurbsele = true;
+  if (nurbsdis != nullptr) nurbsele = true;
 
   // factor for surface orientation
   double normalfac = 1.0;
@@ -246,7 +245,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
     // get node weights for nurbs elements
     for (int inode = 0; inode < numnode; inode++)
     {
-      DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
+      auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
       weights(inode) = cp->W();
     }
   }
@@ -977,9 +976,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // get projection method
       Teuchos::RCP<DRT::Condition> condition =
           params.get<Teuchos::RCP<DRT::Condition>>("condition");
-      const std::string* projtype = condition->Get<std::string>("projection");
+      const auto* projtype = condition->Get<std::string>("projection");
 
-      if (projtype != NULL)
+      if (projtype != nullptr)
       {
         // call submethod to compute volume and its derivatives w.r.t. to current displ.
         if (*projtype == "yz")
@@ -1185,7 +1184,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
         Teuchos::RCP<DRT::Condition> condition =
             params.get<Teuchos::RCP<DRT::Condition>>("condition");
-        const std::string* projtype = condition->Get<std::string>("projection");
+        const auto* projtype = condition->Get<std::string>("projection");
 
         // To compute monitored area consider required projection method
         // and set according coordinates to zero
@@ -1488,7 +1487,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         bdryxi[1] = intpoints.IP().qxg[gp][1];
 
         std::vector<double> interpolationresult(7);
-        int action = (int)FLD::interpolate_velgrad_to_given_point;
+        auto action = (int)FLD::interpolate_velgrad_to_given_point;
 
         IMMERSED::InterpolateToImmersedIntPoint<DRT::Element::hex8,  // source
             DRT::Element::quad4>                                     // target
@@ -1767,10 +1766,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       // Now do the nurbs specific stuff
       bool nurbsele = false;
 
-      DRT::NURBS::NurbsDiscretization* nurbsdis =
-          dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+      auto* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-      if (nurbsdis != NULL) nurbsele = true;
+      if (nurbsdis != nullptr) nurbsele = true;
 
       // knot vectors for parent volume and this surface
       std::vector<Epetra_SerialDenseVector> mypknots(3);
@@ -1785,7 +1783,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         // get node weights for nurbs elements
         for (int inode = 0; inode < numnode; inode++)
         {
-          DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
+          auto* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
           weights(inode) = cp->W();
         }
       }
@@ -2183,8 +2181,9 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDenseMatrix& xc,
-    const int numnode, const int ndof, double& V, Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
+    const int numnode, const int ndof, double& V,
+    const Teuchos::RCP<Epetra_SerialDenseVector>& Vdiff1,
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Vdiff2, const int minindex, const int maxindex)
 {
   // necessary constants
   const int numdim = 3;
@@ -2303,8 +2302,9 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const LINALG::SerialDense
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDenseMatrix& x,
-    const int numnode, const int ndof, double& A, Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2)
+    const int numnode, const int ndof, double& A,
+    const Teuchos::RCP<Epetra_SerialDenseVector>& Adiff,
+    const Teuchos::RCP<Epetra_SerialDenseMatrix>& Adiff2)
 {
   // initialization
   A = 0.;
@@ -2438,7 +2438,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
 
 
 void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(
-    Epetra_SerialDenseVector& nodenormals, std::vector<double> mydisp, bool refconfig)
+    Epetra_SerialDenseVector& nodenormals, const std::vector<double>& mydisp, bool refconfig)
 {
   const int numnode = NumNode();
   const int numdim = 3;
@@ -2587,7 +2587,7 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
 
     double porosity = 0.0;
 
-    structmat->ComputeSurfPorosity(
-        params, press, J, LSurfNumber(), gp, porosity, NULL, NULL, NULL, NULL, NULL, true);
+    structmat->ComputeSurfPorosity(params, press, J, LSurfNumber(), gp, porosity, nullptr, nullptr,
+        nullptr, nullptr, nullptr, true);
   }
 }

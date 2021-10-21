@@ -21,6 +21,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/prestress_service.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "so_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -34,7 +35,7 @@ DRT::ELEMENTS::So_weg6Type& DRT::ELEMENTS::So_weg6Type::Instance() { return inst
 
 DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So_weg6* object = new DRT::ELEMENTS::So_weg6(-1, -1);
+  auto* object = new DRT::ELEMENTS::So_weg6(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -43,7 +44,7 @@ DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create(const std::vector<char>& data
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  if (eletype == "SOLIDW6")
+  if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_weg6(id, owner));
     return ele;
@@ -76,7 +77,7 @@ void DRT::ELEMENTS::So_weg6Type::ComputeNullSpace(
 void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
     std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
 {
-  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SOLIDW6"];
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
   defs["WEDGE6"]
       .AddIntVector("WEDGE6", 6)
@@ -114,6 +115,9 @@ DRT::ELEMENTS::So_weg6::So_weg6(int id, int owner)
   {
     pstype_ = ::UTILS::PRESTRESS::GetType();
     pstime_ = ::UTILS::PRESTRESS::GetPrestressTime();
+
+    DRT::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(
+        DRT::Problem::Instance()->StructuralDynamicParams(), GetElementTypeString());
   }
   if (::UTILS::PRESTRESS::IsMulf(pstype_))
     prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
@@ -157,7 +161,7 @@ DRT::ELEMENTS::So_weg6::So_weg6(const DRT::ELEMENTS::So_weg6& old)
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
 {
-  DRT::ELEMENTS::So_weg6* newelement = new DRT::ELEMENTS::So_weg6(*this);
+  auto* newelement = new DRT::ELEMENTS::So_weg6(*this);
   return newelement;
 }
 
