@@ -158,23 +158,6 @@ namespace SSI
     virtual void InitDiscretizations(const Epetra_Comm& comm, const std::string& struct_disname,
         const std::string& scatra_disname);
 
-    //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
-    //! slave-side degrees of freedom, 2: master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
-
-    //! Interior dofs of structure mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
-
-    //! Master side dofs of structure mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
-
-    //! Slave side dofs of structure mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
-
-    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
-    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
-
     /// setup
     virtual void SetupSystem();
 
@@ -235,9 +218,6 @@ namespace SSI
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
     bool SSIInterfaceMeshtying() const { return ssiinterfacemeshtying_; }
-
-    //! indicates, if meshtying includes triple points
-    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
 
     //! return the scatra-scatra interface meshtying strategy
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyS2I() const
@@ -365,9 +345,6 @@ namespace SSI
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
     int iter_;
-
-    //! indicates, if meshtying includes three entities
-    const bool meshtying_3_domain_intersection_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;

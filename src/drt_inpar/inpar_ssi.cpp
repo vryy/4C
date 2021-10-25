@@ -339,24 +339,6 @@ void INPAR::SSI::SetValidConditions(
   condlist.push_back(linessiinterfacemeshtying);
   condlist.push_back(surfssiinterfacemeshtying);
 
-  // -------------------------------------------------------------------------------
-  Teuchos::RCP<ConditionDefinition> ssiinterfacemeshtying3domainintersection =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS",
-          "SSIMeshtying3DomainIntersection", "SSI line where 3 domains intersect",
-          DRT::Condition::SSIMeshtying3DomainIntersection, true, DRT::Condition::Line));
-
-  std::vector<Teuchos::RCP<ConditionComponent>> ssitriplepointmeshtying;
-  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  ssitriplepointmeshtying.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
-      "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
-      Teuchos::tuple<int>(
-          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
-
-  for (auto& conditioncomponent : ssitriplepointmeshtying)
-    ssiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
-
-  condlist.push_back(ssiinterfacemeshtying3domainintersection);
-
   /*--------------------------------------------------------------------*/
   // condition, where additional scatra field on manifold is created
   auto ssisurfacemanifold = Teuchos::rcp(new ConditionDefinition(

@@ -7,6 +7,8 @@
 
  *------------------------------------------------------------------------------------------------*/
 
+#include <utility>
+
 #include "ssi_utils.H"
 
 #include "ssi_monolithic.H"
@@ -155,220 +157,6 @@ void SSI::UTILS::ChangeTimeParameter(const Epetra_Comm& comm, Teuchos::Parameter
               << "================================================================================="
                  "=======\n \n";
   }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>>
-SSI::UTILS::BuildSlaveMasterPairing(const std::vector<DRT::Condition*>& conditions)
-{
-  // sort conditions by condition ID and slave/master using a map
-  std::map<const int, DRT::Condition* const> slave_conditions;
-  std::map<const int, DRT::Condition* const> master_conditions;
-  for (auto* condition : conditions)
-  {
-    const auto pair =
-        std::pair<const int, DRT::Condition* const>(condition->GetInt("ConditionID"), condition);
-    switch (condition->GetInt("interface side"))
-    {
-      case INPAR::S2I::side_slave:
-        slave_conditions.insert(pair);
-        break;
-      case INPAR::S2I::side_master:
-        master_conditions.insert(pair);
-        break;
-      default:
-        dserror("Coupling side must either be slave or master");
-    }
-  }
-
-  // safety check
-  if (master_conditions.size() != slave_conditions.size())
-    dserror("must provide both, master and slave side conditions");
-
-  // create slave-master pair for matching condition IDs
-  std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>> condition_pairs;
-  for (const auto& slave_condition : slave_conditions)
-  {
-    for (const auto master_condition : master_conditions)
-    {
-      if (slave_condition.first == master_condition.first)
-      {
-        condition_pairs.emplace_back(
-            std::make_pair(slave_condition.second, master_condition.second));
-        break;
-      }
-    }
-  }
-
-  return condition_pairs;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::Coupling> SSI::UTILS::SetupInterfaceCouplingAdapterStructure(
-    Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_3_domain_intersection,
-    const std::string& conditionname_coupling,
-    const std::string& conditionname_3_domain_intersection)
-{
-  auto interfacecouplingadapter = Teuchos::rcp(new ADAPTER::Coupling());
-
-  // extract ssi coupling conditions from discretization and assign to slave/master side maps
-  std::vector<DRT::Condition*> conditions(0, nullptr);
-  structdis->GetCondition(conditionname_coupling, conditions);
-  auto condition_pairs = BuildSlaveMasterPairing(conditions);
-
-  // Setup coupling adapter from ssi conditions
-  if (meshtying_3_domain_intersection)
-  {
-    // strategy:
-    // - remove all nodes in conditionname_3_domain_intersection from conditions except for one
-    // arbitrary condition
-    // - setup coupling adapter with modified nodes
-
-    // get 3 domain intersection conditions
-    std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
-    structdis->GetCondition(conditionname_3_domain_intersection, conditions_3_domain_intersection);
-    auto condition_3_domain_pairs = BuildSlaveMasterPairing(conditions_3_domain_intersection);
-
-    // safety check
-    if (condition_3_domain_pairs.size() != 2)
-      dserror("Currently, exactly 2 coupling pairs with 3-domain-meshtying supported");
-    // both master conditions must be the same
-    DRT::UTILS::HaveSameNodes(
-        condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second, true);
-
-    // select an arbitrary 3 domain meshtying condition (0) and find other conditions
-    // (arbitrary_coupling_id) with same nodes
-    const auto& condition_3_domain_pair = condition_3_domain_pairs[0];
-    int arbitrary_coupling_id = -1;
-    for (const auto& condition_pair : condition_pairs)
-    {
-      // do all nodes match on this proc?
-      int my_match_slave_nodes = 1;
-      int my_match_master_nodes = 1;
-
-      for (int gid_line_slave : *condition_3_domain_pair.first->Nodes())
-        if (!condition_pair.first->ContainsNode(gid_line_slave)) my_match_slave_nodes = 0;
-
-      for (int gid_line_master : *condition_3_domain_pair.second->Nodes())
-        if (!condition_pair.second->ContainsNode(gid_line_master)) my_match_master_nodes = 0;
-
-      // do all nodes match on all procs? -> other condition with matching nodes is found
-      int match_slave_nodes;
-      int match_master_nodes;
-      structdis->Comm().SumAll(&my_match_slave_nodes, &match_slave_nodes, 1);
-      structdis->Comm().SumAll(&my_match_master_nodes, &match_master_nodes, 1);
-      const int numproc = structdis->Comm().NumProc();
-      if (match_slave_nodes == numproc and match_master_nodes == numproc)
-      {
-        arbitrary_coupling_id = condition_pair.first->GetInt("ConditionID");
-        break;
-      }
-    }
-
-    // safety check
-    if (arbitrary_coupling_id == -1)
-      dserror("cannot find surface condition with nodes from line condition");
-
-    // vectors for global ids of slave and master interface nodes for each condition
-    std::vector<std::vector<int>> islavenodegidvec_cond;
-    std::vector<std::vector<int>> imasternodegidvec_cond;
-
-    // loop over slave conditions and build vector of nodes for slave and master condition with same
-    // coupling ID
-    for (const auto& condition_pair : condition_pairs)
-    {
-      std::vector<int> islavenodegidvec;
-      std::vector<int> imasternodegidvec;
-
-      // Build GID vector of nodes on this proc, sort, and remove duplicates
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *condition_pair.first->Nodes(), islavenodegidvec);
-
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *condition_pair.second->Nodes(), imasternodegidvec);
-
-      // remove all nodes from line conditions except on conditions with arbitrary_coupling_id
-      if (condition_pair.first->GetInt("ConditionID") != arbitrary_coupling_id)
-      {
-        for (const auto& condition_3_domain_intersection : conditions_3_domain_intersection)
-        {
-          DRT::UTILS::RemoveNodeGIDsFromVector(
-              structdis, *condition_3_domain_intersection->Nodes(), islavenodegidvec);
-          DRT::UTILS::RemoveNodeGIDsFromVector(
-              structdis, *condition_3_domain_intersection->Nodes(), imasternodegidvec);
-        }
-      }
-
-      imasternodegidvec_cond.push_back(imasternodegidvec);
-      islavenodegidvec_cond.push_back(islavenodegidvec);
-    }
-
-    interfacecouplingadapter->SetupCoupling(*structdis, *structdis, imasternodegidvec_cond,
-        islavenodegidvec_cond, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
-  }
-  else
-  {
-    // vectors for global ids of slave and master interface nodes for all conditions
-    std::vector<int> inodegidvec_master;
-    std::vector<int> inodegidvec_slave;
-
-    // Build GID vector of nodes on this proc, sort, and remove duplicates
-    for (const auto& condition_pair : condition_pairs)
-    {
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *condition_pair.first->Nodes(), inodegidvec_slave);
-      DRT::UTILS::AddOwnedNodeGIDVector(
-          structdis, *condition_pair.second->Nodes(), inodegidvec_master);
-    }
-
-    interfacecouplingadapter->SetupCoupling(*structdis, *structdis, inodegidvec_master,
-        inodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
-  }
-
-  return interfacecouplingadapter;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<ADAPTER::Coupling>
-SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
-    Teuchos::RCP<DRT::Discretization> structdis,
-    const std::string& conditionname_3_domain_intersection)
-{
-  // strategy:
-  // - setup coupling adapter with all nodes from conditions_3_domain_intersection except for nodes
-  // from arbitrary condition (see SetupInterfaceCouplingAdapterStructure)
-
-  std::vector<int> ilinenodegidvec_master;
-  std::vector<int> ilinenodegidvec_slave;
-
-  // Build slave-master pairs
-  std::vector<DRT::Condition*> conditions_3_domain_intersection(0, nullptr);
-  structdis->GetCondition(conditionname_3_domain_intersection, conditions_3_domain_intersection);
-  auto condition_3_domain_pairs = BuildSlaveMasterPairing(conditions_3_domain_intersection);
-
-  // safety check
-  if (condition_3_domain_pairs.size() != 2)
-    dserror("Currently, exactly 2 coupling pairs with 3-domain-meshtying supported");
-  // both master conditions must be the same
-  DRT::UTILS::HaveSameNodes(
-      condition_3_domain_pairs[0].second, condition_3_domain_pairs[1].second, true);
-
-  // Build GID vector of nodes for master and slave side except for arbitrary condition (0)
-  const auto& condition_3_domain_pair = condition_3_domain_pairs[1];
-  DRT::UTILS::AddOwnedNodeGIDVector(
-      structdis, *condition_3_domain_pair.first->Nodes(), ilinenodegidvec_slave);
-  DRT::UTILS::AddOwnedNodeGIDVector(
-      structdis, *condition_3_domain_pair.second->Nodes(), ilinenodegidvec_master);
-
-  // setup coupling adapter based on master and slave side GID node vectors
-  auto coupling_line_structure = Teuchos::rcp(new ADAPTER::Coupling());
-  coupling_line_structure->SetupCoupling(*structdis, *structdis, ilinenodegidvec_master,
-      ilinenodegidvec_slave, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
-
-  return coupling_line_structure;
 }
 
 /*----------------------------------------------------------------------*/
@@ -870,99 +658,6 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
   map_system_matrix_ = maps_sub_problems_->FullMap();
 }
 
-/* ----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-SSI::UTILS::SSIMeshTyingMaps::SSIMeshTyingMaps(
-    Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure,
-    Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
-    const bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis)
-    : maps_coup_struct_(Teuchos::null), maps_coup_struct_3_domain_intersection_(Teuchos::null)
-{
-  // setup map with interior and master side structural dofs
-  Teuchos::RCP<Epetra_Map> map_structure_interior_master(Teuchos::null);
-  if (meshtying_3_domain_intersection)
-  {
-    auto combined_slave_dof_maps =
-        LINALG::MultiMapExtractor::MergeMaps({interface_coupling_adapter_structure->SlaveDofMap(),
-            interface_coupling_adapter_structure_3domain_intersection->SlaveDofMap()});
-
-    // set up map for interior and master-side structural degrees of freedom
-    map_structure_interior_master =
-        LINALG::SplitMap(*structure_dis->DofRowMap(), *combined_slave_dof_maps);
-  }
-  else
-  {
-    // set up map for interior and master-side structural degrees of freedom
-    map_structure_interior_master = LINALG::SplitMap(
-        *structure_dis->DofRowMap(), *interface_coupling_adapter_structure->SlaveDofMap());
-  }
-
-  // setup map extractor with interior, master, and slave side structural dofs
-  {
-    // set up structural map extractor holding interior and interface maps of degrees of freedom
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps_surf(0, Teuchos::null);
-    maps_surf.emplace_back(LINALG::SplitMap(
-        *map_structure_interior_master, *interface_coupling_adapter_structure->MasterDofMap()));
-    maps_surf.emplace_back(interface_coupling_adapter_structure->SlaveDofMap());
-    maps_surf.emplace_back(interface_coupling_adapter_structure->MasterDofMap());
-    maps_coup_struct_ =
-        Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_dis->DofRowMap(), maps_surf));
-    maps_coup_struct_->CheckForValidMapExtractor();
-
-    if (meshtying_3_domain_intersection)
-    {
-      std::vector<Teuchos::RCP<const Epetra_Map>> maps_line(0, Teuchos::null);
-      maps_line.emplace_back(LINALG::SplitMap(
-          *interface_coupling_adapter_structure_3domain_intersection->MasterDofMap(),
-          *interface_coupling_adapter_structure_3domain_intersection->MasterDofMap()));
-      maps_line.emplace_back(
-          interface_coupling_adapter_structure_3domain_intersection->SlaveDofMap());
-      maps_line.emplace_back(
-          interface_coupling_adapter_structure_3domain_intersection->MasterDofMap());
-      maps_coup_struct_3_domain_intersection_ =
-          Teuchos::rcp(new LINALG::MultiMapExtractor(*structure_dis->DofRowMap(), maps_line));
-      maps_coup_struct_3_domain_intersection_->CheckForValidMapExtractor();
-    }
-  }
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureInterior() const
-{
-  return maps_coup_struct_->Map(0);
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureMaster() const
-{
-  return maps_coup_struct_->Map(2);
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureSlave() const
-{
-  return maps_coup_struct_->Map(1);
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureMaster3DomainIntersection()
-    const
-{
-  return maps_coup_struct_3_domain_intersection_->Map(2);
-}
-
-/*--------------------------------------------------------------------------------------*
- *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMeshTyingMaps::MapStructureSlave3DomainIntersection()
-    const
-{
-  return maps_coup_struct_3_domain_intersection_->Map(1);
-}
-
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) const
@@ -1128,21 +823,6 @@ Teuchos::RCP<const Epetra_Map> SSI::UTILS::SSIMaps::StructureDofRowMap() const
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSI::UTILS::SSISlaveSideConverter::SSISlaveSideConverter(
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
-    Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-    bool meshtying_3_domain_intersection)
-    : icoup_structure_slave_converter_(
-          Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(*icoup_structure))),
-      icoup_structure_slave_converter_3_domain_intersection_(
-          meshtying_3_domain_intersection ? Teuchos::rcp(new ADAPTER::CouplingSlaveConverter(
-                                                *icoup_structure_3_domain_intersection))
-                                          : Teuchos::null)
-{
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
 void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
     const std::vector<DRT::Condition*>& conditionsToBeTested,
     Teuchos::RCP<DRT::Discretization>& structdis)
@@ -1227,31 +907,543 @@ void SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(const std::string& conditionname_coupling,
-    const std::string& conditionname_3_domain_intersection,
-    const bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> struct_dis)
-    : icoup_structure_(Teuchos::null),
-      icoup_structure_3_domain_intersection_(Teuchos::null),
-      meshtying_3_domain_intersection_(meshtying_3_domain_intersection),
-      slave_side_converter_(Teuchos::null),
-      ssi_meshtyingmaps_(Teuchos::null),
-      meshtying_handler_()
+SSI::UTILS::SSIStructureMeshTying::SSIStructureMeshTying(
+    const std::string& conditionname_coupling, Teuchos::RCP<DRT::Discretization> struct_dis)
+    : comm_(struct_dis->Comm()),
+      do_print_(struct_dis->Comm().MyPID() == 0),
+      full_master_side_map_(Teuchos::null),
+      full_slave_side_map_(Teuchos::null),
+      interior_map_(Teuchos::null),
+      meshtying_handlers_(),
+      my_rank_(struct_dis->Comm().MyPID()),
+      num_proc_(struct_dis->Comm().NumProc())
 {
-  icoup_structure_ = SSI::UTILS::SetupInterfaceCouplingAdapterStructure(struct_dis,
-      meshtying_3_domain_intersection, conditionname_coupling, conditionname_3_domain_intersection);
+  SetupMeshTyingHandlers(struct_dis, conditionname_coupling);
 
-  if (meshtying_3_domain_intersection)
+  // construct full slave, master, and interior maps
+  std::vector<Teuchos::RCP<const Epetra_Map>> slave_maps;
+  std::vector<Teuchos::RCP<const Epetra_Map>> master_maps;
+  for (const auto& meshtying : meshtying_handlers_)
   {
-    icoup_structure_3_domain_intersection_ =
-        SSI::UTILS::SetupInterfaceCouplingAdapterStructure3DomainIntersection(
-            struct_dis, conditionname_3_domain_intersection);
+    slave_maps.emplace_back(meshtying->SlaveMasterCoupling()->SlaveDofMap());
+    master_maps.emplace_back(meshtying->SlaveMasterCoupling()->MasterDofMap());
   }
 
-  slave_side_converter_ = Teuchos::rcp(new SSI::UTILS::SSISlaveSideConverter(
-      icoup_structure_, icoup_structure_3_domain_intersection_, meshtying_3_domain_intersection));
+  full_master_side_map_ = LINALG::MultiMapExtractor::MergeMaps(master_maps);
+  full_slave_side_map_ = LINALG::MultiMapExtractor::MergeMaps(slave_maps);
+  auto interface_map = LINALG::MergeMap(full_master_side_map_, full_slave_side_map_);
 
-  ssi_meshtyingmaps_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTyingMaps(icoup_structure_,
-      icoup_structure_3_domain_intersection_, meshtying_3_domain_intersection, struct_dis));
+  interior_map_ = LINALG::SplitMap(*struct_dis->DofRowMap(), *interface_map);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
+    Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition)
+{
+  auto timer = Teuchos::rcp(new Epetra_Time(comm_));
+  const double t0 = timer->WallTime();
+
+  if (do_print_)
+  {
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+    std::cout << "| Starting to setup mesh tying   |" << std::endl;
+  }
+
+  // find pairwise matching nodes
+  std::vector<std::pair<int, int>> coupling_pairs;
+  FindMatchingNodePairs(struct_dis, name_meshtying_condition, coupling_pairs);
+
+  // all nodes on one geometrical point: outer vector defines geometric position, and inner vector
+  // all nodes there
+  std::vector<std::vector<int>> grouped_matching_nodes;
+  GroupMatchingNodes(coupling_pairs, grouped_matching_nodes);
+
+  if (do_print_) std::cout << "| Finished: group nodes          |" << std::endl;
+
+  // define master gids and pair them with the remaining (slave) nodes
+  std::vector<int> master_gids;
+  std::map<int, int> slave_master_pair;
+  DefineMasterSlavePairing(struct_dis, grouped_matching_nodes, master_gids, slave_master_pair);
+
+  if (do_print_) std::cout << "| Finished: master-slave pairing |" << std::endl;
+
+  // get number of slave nodes per master node -> max. number gives number of needed adapters
+  std::map<int, int> num_assigned_slave_to_master_nodes;
+  int glob_max_adapters = 0;
+  GetNumAssignedSlaveToMasterNodes(
+      slave_master_pair, num_assigned_slave_to_master_nodes, glob_max_adapters);
+
+  // setup meshtying:
+  // - coupling adapter
+  // - map extractor
+  // - slave_slave_transformation
+  std::map<int, int> created_adapters;  // numbers of created coupling adapters per master node
+  for (const auto& item : num_assigned_slave_to_master_nodes)
+    created_adapters.insert(std::make_pair(item.first, 0));
+
+  for (int iadapter = 0; iadapter < glob_max_adapters; ++iadapter)
+  {
+    // create vectors of master and slave nodes for this coupling adapter
+    std::vector<int> inodegidvec_master;
+    std::vector<int> inodegidvec_slave;
+    if (!num_assigned_slave_to_master_nodes.empty())
+    {
+      for (auto& pair : slave_master_pair)
+      {
+        const int master_gid = pair.second;
+        if (master_gid != -1)
+        {
+          const int num_created_adapters = created_adapters[master_gid];
+          if (num_assigned_slave_to_master_nodes[master_gid] >= iadapter + 1 and
+              num_created_adapters == iadapter)
+          {
+            const int slave_gid = pair.first;
+            DRT::UTILS::AddOwnedNodeGID(struct_dis, master_gid, inodegidvec_master);
+            DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, inodegidvec_slave);
+
+            pair.second = -1;  // do not consider this pair in next interation
+            created_adapters[master_gid] = num_created_adapters + 1;
+          }
+        }
+      }
+    }
+
+    // setup coupling adapter
+    auto coupling_adapter = Teuchos::rcp(new ADAPTER::Coupling());
+    coupling_adapter->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_master, inodegidvec_slave,
+        DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+
+    // setup multimap extractor for each coupling adapter
+    auto slave_map = coupling_adapter->SlaveDofMap();
+    auto master_map = coupling_adapter->MasterDofMap();
+    auto interior_map =
+        LINALG::SplitMap(*struct_dis->DofRowMap(), *LINALG::MergeMap(slave_map, master_map));
+
+    std::vector<Teuchos::RCP<const Epetra_Map>> maps(0, Teuchos::null);
+    maps.emplace_back(interior_map);
+    maps.emplace_back(slave_map);
+    maps.emplace_back(master_map);
+
+    auto coupling_map_extractor =
+        Teuchos::rcp(new LINALG::MultiMapExtractor(*struct_dis->DofRowMap(), maps));
+    coupling_map_extractor->CheckForValidMapExtractor();
+
+    // coupling adapter between new slave nodes (master) and old slave nodes from input file
+    // (slave). Needed, to map the lineariaztion dphi/du at the interface to the correct dofs
+    std::vector<int> all_coupled_original_slave_gids;
+    FindSlaveSlaveTransformationNodes(
+        struct_dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
+
+    std::vector<int> global_coupled_original_slave_gids;
+    for (const int& slave_gid : all_coupled_original_slave_gids)
+      DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, global_coupled_original_slave_gids);
+
+    auto slave_slave_transformation = Teuchos::rcp(new ADAPTER::Coupling());
+    slave_slave_transformation->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_slave,
+        global_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+
+    // combine coupling adapters and multimap extractor to mesh tying object
+    meshtying_handlers_.emplace_back(Teuchos::rcp(new SSIStructureMeshTyingHandler(
+        coupling_adapter, coupling_map_extractor, slave_slave_transformation)));
+  }
+
+  const double total_time = timer->WallTime() - t0;
+  if (do_print_)
+  {
+    std::cout << "|--------------------------------|" << std::endl;
+    std::cout << "|  Mesh tying setup successful   |" << std::endl;
+    std::cout << std::scientific << std::setprecision(3);
+    std::cout << "|        (" << total_time << " sec.)        |" << std::endl;
+    std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl << std::endl;
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+int SSI::UTILS::SSIStructureMeshTying::HasGID(
+    const int gid, const std::vector<std::vector<int>>& matching_nodes) const
+{
+  const int size = static_cast<int>(matching_nodes.size());
+  const int load_per_proc = std::floor(static_cast<double>(size) / static_cast<double>(num_proc_));
+
+  // define load of this proc
+  const int upper_bound = my_rank_ == num_proc_ - 1 ? size : load_per_proc * (my_rank_ + 1);
+  const int lower_bound = load_per_proc * my_rank_;
+
+  int my_return_value = HasGIDPartial(gid, lower_bound, upper_bound, matching_nodes);
+  int glob_return_value;
+
+  comm_.MaxAll(&my_return_value, &glob_return_value, 1);
+
+  return glob_return_value;
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+int SSI::UTILS::SSIStructureMeshTying::HasGIDPartial(const int gid, const int start, const int end,
+    const std::vector<std::vector<int>>& matching_nodes) const
+{
+  for (int i = start; i < end; ++i)
+  {
+    for (const int& j : matching_nodes[i])
+      if (gid == j) return i;
+  }
+  return -1;
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::BroadcastVector(
+    const std::vector<int>& vec_in, std::vector<int>& vec_out) const
+{
+  for (int iproc = 0; iproc < num_proc_; ++iproc)
+  {
+    // communicate size of vector
+    int size = static_cast<int>(vec_in.size());
+    comm_.Broadcast(&size, 1, iproc);
+
+    // new vectors to be filled (by this proc, if MyPID == iproc or other procs by communication)
+    std::vector<int> vec_broadcast;
+    if (iproc == my_rank_) vec_broadcast = vec_in;
+
+    // communicate vector
+    vec_broadcast.resize(size);
+    comm_.Broadcast(&vec_broadcast[0], size, iproc);
+
+    // append communicated vector to vec_out
+    for (const int& item : vec_broadcast) vec_out.emplace_back(item);
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::BroadcastPairVector(
+    const std::vector<std::pair<int, int>>& pairs_in,
+    std::vector<std::pair<int, int>>& pairs_out) const
+{
+  // split pair vector into two vectors
+  std::vector<int> my_gid_vec1, my_gid_vec2;
+  for (const auto& pair : pairs_in)
+  {
+    my_gid_vec1.emplace_back(pair.first);
+    my_gid_vec2.emplace_back(pair.second);
+  }
+
+  // communicate vectors
+  std::vector<int> vec1, vec2;
+  BroadcastVector(my_gid_vec1, vec1);
+  BroadcastVector(my_gid_vec2, vec2);
+
+#ifdef DEBUG
+  if (vec1.size() != vec2.size()) dserror("Vectors must have the same length.");
+#endif
+
+  // reconstruct pair vector
+  for (unsigned i = 0; i < vec1.size(); ++i)
+    pairs_out.emplace_back(std::make_pair(vec1[i], vec2[i]));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::BroadcastMap(
+    const std::map<int, int>& map_in, std::map<int, int>& map_out) const
+{
+  // split map into two vectors
+  std::vector<int> my_gid_vec1, my_gid_vec2;
+  for (const auto& pair : map_in)
+  {
+    my_gid_vec1.emplace_back(pair.first);
+    my_gid_vec2.emplace_back(pair.second);
+  }
+  std::vector<int> vec1, vec2;
+  BroadcastVector(my_gid_vec1, vec1);
+  BroadcastVector(my_gid_vec2, vec2);
+
+#ifdef DEBUG
+  if (vec1.size() != vec2.size()) dserror("Vectors must have the same length.");
+#endif
+
+  // reconstruct map
+  for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
+    Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition,
+    std::vector<std::pair<int, int>>& coupling_pairs) const
+{
+  // coupled nodes on this proc from input
+  std::vector<std::pair<int, int>> my_coupling_pairs;
+
+  // get all mesh tying conditions
+  std::vector<DRT::Condition*> meshtying_condtions(0, nullptr);
+  struct_dis->GetCondition(name_meshtying_condition, meshtying_condtions);
+
+  // match nodes between all mesh tying conditons (named with "a" and "b")
+  for (int a = 0; a < static_cast<int>(meshtying_condtions.size()); ++a)
+  {
+    auto* meshtying_condition_a = meshtying_condtions.at(a);
+
+    // nodes of meshtying_condition_a owned by this proc
+    std::vector<int> inodegidvec_a;
+    DRT::UTILS::AddOwnedNodeGIDVector(struct_dis, *meshtying_condition_a->Nodes(), inodegidvec_a);
+
+    // init node matching octree with nodes from condition a
+    DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+    tree.Init(*struct_dis, inodegidvec_a, 150, 1.0e-8);
+    tree.Setup();
+
+    // find nodes from condition b that match nodes from condition a
+    for (int b = a + 1; b < static_cast<int>(meshtying_condtions.size()); ++b)
+    {
+      auto* meshtying_condition_b = meshtying_condtions.at(b);
+
+      // nodes of meshtying_condition_b owned by this proc
+      std::vector<int> inodegidvec_b;
+      DRT::UTILS::AddOwnedNodeGIDVector(struct_dis, *meshtying_condition_b->Nodes(), inodegidvec_b);
+
+      // key: master node gid, value: slave node gid and distance
+      std::map<int, std::pair<int, double>> coupled_gid_nodes;
+      tree.FindMatch(*struct_dis, inodegidvec_b, coupled_gid_nodes);
+
+      // loop over all nodal couplings and find coupled nodes
+      for (const auto& pair : coupled_gid_nodes)
+      {
+        const double distance = pair.second.second;
+        if (distance < 1.0e-16)
+        {
+          const int gid1 = pair.first;
+          const int gid2 = pair.second.first;
+
+          my_coupling_pairs.emplace_back(std::make_pair(gid1, gid2));
+        }
+      }
+    }
+  }
+
+  // communicate to all other procs
+  std::vector<std::pair<int, int>> all_coupling_pairs;
+  BroadcastPairVector(my_coupling_pairs, all_coupling_pairs);
+
+  // remove duplicates (slave node = master node)
+  for (const auto& pair : all_coupling_pairs)
+    if (pair.first != pair.second) coupling_pairs.emplace_back(pair);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::GroupMatchingNodes(
+    const std::vector<std::pair<int, int>>& coupling_pairs,
+    std::vector<std::vector<int>>& grouped_matching_nodes) const
+{
+  // all nodes on one geometrical point: outer vector defines geometric position, and inner vector
+  // all nodes there
+  for (const auto& pair : coupling_pairs)
+  {
+    const int gid1 = pair.first;
+    const int gid2 = pair.second;
+
+    std::vector<int> nodes_at_same_point;
+
+    // initial fill of grouped_matching_nodes
+    if (grouped_matching_nodes.empty())
+    {
+      nodes_at_same_point.resize(2);
+      nodes_at_same_point[0] = gid1;
+      nodes_at_same_point[1] = gid2;
+      grouped_matching_nodes.emplace_back(nodes_at_same_point);
+    }
+    else
+    {
+      // check if gid1 or gid2 is already part of the matching_nodes vector
+      const int index1 = HasGID(gid1, grouped_matching_nodes);
+      const int index2 = HasGID(gid2, grouped_matching_nodes);
+
+      // do not add, if both indices are equal
+      if (index1 == index2 and index1 != -1)
+      {
+        continue;
+      }
+      // if both gids are not part of matching_nodes -> create new entry
+      else if (index1 == -1 and index2 == -1)
+      {
+        nodes_at_same_point.resize(2);
+        nodes_at_same_point[0] = gid1;
+        nodes_at_same_point[1] = gid2;
+        grouped_matching_nodes.emplace_back(nodes_at_same_point);
+      }
+      // if gid1 is part of matching_nodes and gid2 is not -> add gid2 to entry of gid1
+      else if (index1 != -1 and index2 == -1)
+      {
+        grouped_matching_nodes[index1].emplace_back(gid2);
+      }
+      // if gid2 is part of matching_nodes and gid1 is not -> add gid1 to entry of gid2
+      else if (index1 == -1 and index2 != -1)
+      {
+        grouped_matching_nodes[index2].emplace_back(gid1);
+      }
+      // if gid1 and gid2 are part of matching_nodes -> remove nodes from entry of gid1 and move
+      // them to entry of gid2
+      else if (index1 != -1 and index2 != -1 and index1 != index2)
+      {
+        for (const int& node : grouped_matching_nodes[index1])
+          grouped_matching_nodes[index2].emplace_back(node);
+
+        grouped_matching_nodes.erase(std::next(grouped_matching_nodes.begin(), index1));
+      }
+      else
+        dserror("This should not be the case");
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::GetNumAssignedSlaveToMasterNodes(
+    const std::map<int, int>& slave_master_pair,
+    std::map<int, int>& num_assigned_slave_to_master_nodes, int& max_assigned_slave_nodes) const
+{
+  for (const auto& pair : slave_master_pair)
+  {
+    const int master_node_gid = pair.second;
+
+    // initial fill
+    if (num_assigned_slave_to_master_nodes.empty())
+    {
+      num_assigned_slave_to_master_nodes.insert(std::make_pair(master_node_gid, 1));
+      max_assigned_slave_nodes = 1;
+    }
+    else
+    {
+      // master node not in map so far -> increase counter by one
+      if (num_assigned_slave_to_master_nodes.find(master_node_gid) !=
+          num_assigned_slave_to_master_nodes.end())
+      {
+        num_assigned_slave_to_master_nodes[master_node_gid]++;
+        if (max_assigned_slave_nodes < num_assigned_slave_to_master_nodes[master_node_gid])
+          max_assigned_slave_nodes = num_assigned_slave_to_master_nodes[master_node_gid];
+      }
+      // master node already in map
+      else
+        num_assigned_slave_to_master_nodes.insert(std::make_pair(master_node_gid, 1));
+    }
+  }
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
+    Teuchos::RCP<DRT::Discretization> struct_dis,
+    const std::vector<std::vector<int>>& grouped_matching_nodes, std::vector<int>& master_gids,
+    std::map<int, int>& slave_master_pair) const
+{
+  // get Dirichlet nodes -> they define the master side
+  std::vector<DRT::Condition*> dbc_conds;
+  struct_dis->GetCondition("Dirichlet", dbc_conds);
+  std::set<int> dbc_nodes;
+  for (auto* dbc_cond : dbc_conds)
+    for (const int& dbc_node : *dbc_cond->Nodes()) dbc_nodes.insert(dbc_node);
+
+  std::vector<int> my_master_gids;
+  std::map<int, int> my_slave_master_pair;
+
+  const int size = static_cast<int>(grouped_matching_nodes.size());
+  const int load_per_proc = std::ceil(static_cast<double>(size) / static_cast<double>(num_proc_));
+
+  // define load for this proc in for loop
+  const int upper_bound = my_rank_ == num_proc_ - 1 ? size : load_per_proc * (my_rank_ + 1);
+  const int lower_bound = load_per_proc * my_rank_;
+
+  for (int i = lower_bound; i < upper_bound; ++i)
+  {
+    const auto& nodes_at_same_point = grouped_matching_nodes[i];
+
+    // define which of the nodes from nodes_at_same_point is master node
+    // in case one node is a Dirichlet node -> use this one
+    bool found_dbc_node = false;
+    int new_master_gid = -1;
+    for (const int& node : nodes_at_same_point)
+    {
+      for (const int& dbc_node : dbc_nodes)
+      {
+        if (dbc_node == node)
+        {
+          if (found_dbc_node)
+            dserror("Mesh tying and DBCs are over constrained.");
+          else
+          {
+            found_dbc_node = true;
+            new_master_gid = dbc_node;
+            break;
+          }
+#ifndef DEBUG
+          break;
+#endif
+        }
+      }
+    }
+    // otherwise -> use the first (random) node
+    if (!found_dbc_node) new_master_gid = nodes_at_same_point[0];
+
+    // insert new master node to list of master nodes
+    my_master_gids.emplace_back(new_master_gid);
+
+    // build slave-master pairs with defined master node
+    for (const int& node : nodes_at_same_point)
+      if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
+  }
+
+  BroadcastVector(my_master_gids, master_gids);
+  BroadcastMap(my_slave_master_pair, slave_master_pair);
+
+#ifdef DEBUG
+  // check if everything worked fine
+  std::set<int> unique_master_gids;
+  for (const int& master_gid : master_gids) unique_master_gids.insert(master_gid);
+  if (unique_master_gids.size() != master_gids.size()) dserror("Master gids not unique");
+#endif
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
+    Teuchos::RCP<DRT::Discretization> struct_dis, const std::string& name_meshtying_condition,
+    const std::vector<int>& inodegidvec_slave,
+    std::vector<int>& all_coupled_original_slave_gids) const
+{
+  // store nodes that are slave nodes from the input
+  std::vector<DRT::Condition*> meshtying_condtions(0, nullptr);
+  struct_dis->GetCondition(name_meshtying_condition, meshtying_condtions);
+
+  std::vector<int> original_slave_gids;
+  for (auto* meshtying_condtion : meshtying_condtions)
+  {
+    if (meshtying_condtion->GetInt("interface side") == INPAR::S2I::side_slave)
+    {
+      DRT::UTILS::AddOwnedNodeGIDVector(
+          struct_dis, *meshtying_condtion->Nodes(), original_slave_gids);
+    }
+  }
+
+  DRT::UTILS::NodeMatchingOctree tree = DRT::UTILS::NodeMatchingOctree();
+  tree.Init(*struct_dis, inodegidvec_slave, 150, 1.0e-8);
+  tree.Setup();
+  std::map<int, std::pair<int, double>> coupled_gid_nodes;
+  tree.FindMatch(*struct_dis, original_slave_gids, coupled_gid_nodes);
+
+  // find matches if distance < 1.0e-16
+  std::vector<int> my_coupled_original_slave_gids;
+  for (const auto& pair : coupled_gid_nodes)
+  {
+    const double distance = pair.second.second;
+    const int gid = pair.second.first;
+    if (distance < 1.0e-16) my_coupled_original_slave_gids.emplace_back(gid);
+  }
+
+  // distribute gids from original slave nodes to all procs (matching might be on different proc)
+  BroadcastVector(my_coupled_original_slave_gids, all_coupled_original_slave_gids);
 }
 
 /*---------------------------------------------------------------------------------*
@@ -1261,10 +1453,13 @@ void SSI::UTILS::SSIStructureMeshTying::CheckSlaveSideHasDirichletConditions(
 {
   // check if slave side dofs are part of DBC maps
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2, Teuchos::null);
-  maps[0] = ssi_meshtyingmaps_->MapsCoupStruct()->Map(1);
-  maps[1] = struct_dbc_map;
-  if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
-    dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
+  maps[0] = struct_dbc_map;
+  for (const auto& meshtying : meshtying_handlers_)
+  {
+    maps[1] = meshtying->SlaveMasterCoupling()->SlaveDofMap();
+    if (LINALG::MultiMapExtractor::IntersectMaps(maps)->NumGlobalElements() > 0)
+      dserror("Must not apply Dirichlet conditions to slave-side structural displacements!");
+  }
 }
 
 /*---------------------------------------------------------------------------------*

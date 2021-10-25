@@ -27,6 +27,7 @@
 #include "../linalg/linalg_matrixtransform.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -261,40 +262,29 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
       // assemble into auxiliary system matrix
       for (int iblock = 0; iblock < numberthermoblocks; ++iblock)
       {
-        LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
-            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-            InterfaceCouplingAdapterStructureSlaveConverter(), mastermatrixsparse, true, true);
-
-        if (ssti_structure_meshtying_->MeshTying3DomainIntersection())
+        for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
         {
-          LINALG::MatrixRowColTransform()(blockslavematrix->Matrix(iblock, 0), -1.0,
-              ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-              InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-              mastermatrixsparse, true, true);
+          auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
+          auto slave_side_converter_struct = meshtying->SlaveSideConverter();
+
+          auto slave_side_converter_thermo =
+              ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
+
+          LINALG::MatrixLogicalSplitAndTransform()(blockslavematrix->Matrix(iblock, 0),
+              *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
+              &slave_side_converter_thermo, &(*slave_side_converter_struct), mastermatrixsparse,
+              true, true);
         }
       }
 
       // finalize auxiliary system matrix
-      if (ssti_structure_meshtying_->MeshTying3DomainIntersection())
-      {
-        mastermatrixsparse.Complete(
-            *LINALG::MultiMapExtractor::MergeMaps(
-                {ssti_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster(),
-                    ssti_structure_meshtying_->SSIMeshTyingMaps()
-                        ->MapStructureMaster3DomainIntersection()}),
-            *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
-      }
-      else
-      {
-        mastermatrixsparse.Complete(
-            *ssti_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster(),
-            *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
-      }
-
+      mastermatrixsparse.Complete(*full_map_structure_, *full_map_thermo_);
 
       // split sparse matrix to block matrix
-      blockmastermatrix = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
+      auto mastermatrix_split = mastermatrixsparse.Split<LINALG::DefaultBlockMatrixStrategy>(
           *blockmapstructure_, *blockmapthermo_);
+      mastermatrix_split->Complete();
+      blockmastermatrix->Add(*mastermatrix_split, false, 1.0, 1.0);
 
       mastermatrix->Complete();
 
@@ -307,18 +297,18 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
       // assemble into auxiliary system matrix
-      LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
-          ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-          InterfaceCouplingAdapterStructureSlaveConverter(), *sparsemastermatrix, true, true);
-
-      if (ssti_structure_meshtying_->MeshTying3DomainIntersection())
+      for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
       {
-        LINALG::MatrixRowColTransform()(*sparseslavematrix, -1.0,
-            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter()),
-            InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-            *sparsemastermatrix, true, true);
-      }
+        auto slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
+        auto slave_side_converter_struct = meshtying->SlaveSideConverter();
+        auto slave_side_converter_thermo =
+            ADAPTER::CouplingSlaveConverter(*meshtying_strategy_thermo_->CouplingAdapter());
 
+        LINALG::MatrixLogicalSplitAndTransform()(*sparseslavematrix,
+            *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_dof_map, -1.0,
+            &slave_side_converter_thermo, &(*slave_side_converter_struct), *sparsemastermatrix,
+            true, true);
+      }
 
       mastermatrix->Complete(
           *full_map_structure_, *meshtying_strategy_thermo_->CouplingAdapter()->MasterDofMap());
@@ -350,24 +340,39 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
 
   thermo_->ScaTraField()->AddTimeIntegrationSpecificVectors();
 
+  Teuchos::RCP<LINALG::SparseOperator> evaluate_matrix;
+  if (thermo_->ScaTraField()->MatrixType() == LINALG::MatrixType::sparse)
+  {
+    evaluate_matrix = Teuchos::rcp(new LINALG::SparseMatrix(
+        *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), 27, false, true));
+  }
+  else
+  {
+    evaluate_matrix =
+        Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+            *blockmapstructure_, meshtying_strategy_thermo_->BlockMapsSlave(), 81, false, true));
+  }
+
   // create strategy for assembly of auxiliary system matrix
   DRT::AssembleStrategy strategyscatrastructures2i(
       0,  // row assembly based on number of dofset associated with thermo dofs on
           // thermo discretization
       1,  // column assembly based on number of dofset associated with structural dofs on
           // thermo discretization
-      slavematrix, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      evaluate_matrix, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   // evaluate interface coupling
-  std::vector<DRT::Condition*> conditions;
-  thermo_->ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
-  for (auto const& condition : conditions)
+  for (auto kinetics_slave_cond :
+      meshtying_strategy_thermo_->KineticsConditionsMeshtyingSlaveSide())
   {
-    if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
+    if (kinetics_slave_cond.second->GetInt("kinetic model") !=
+        static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
-      meshtying_strategy_thermo_->SetConditionSpecificScaTraParameters(*condition);
+      // collect condition specific data and store to scatra boundary parameter class
+      meshtying_strategy_thermo_->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
+      // evaluate the condition
       thermo_->ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrastructures2i, "S2IKinetics", condition->GetInt("ConditionID"));
+          condparams, strategyscatrastructures2i, "S2IKinetics", kinetics_slave_cond.first);
     }
   }
 
@@ -376,14 +381,93 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
   {
     case LINALG::MatrixType::block_condition:
     {
-      slavematrix->Complete();
+      evaluate_matrix->Complete();
+
+      auto evaluate_matrix_block =
+          LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(evaluate_matrix);
+      auto slavematrix_block = LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(slavematrix);
+
+      // "slave side" from thermo and from structure do not need to be the same nodes.
+      // Linearization is evaluated on scatra slave side node --> Transformation needed
+      for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
+      {
+        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+
+        auto slave_map = slave_slave_transformation->SlaveDofMap();
+        auto master_map = slave_slave_transformation->MasterDofMap();
+
+        auto interface_map = LINALG::MergeMap(slave_map, master_map);
+
+        auto remaining_map = LINALG::SplitMap(*full_map_structure_, *interface_map);
+        slavematrix->UnComplete();
+        slavematrix->Zero();
+
+        for (int iblock = 0; iblock < thermo_->ScaTraField()->BlockMaps().NumMaps(); ++iblock)
+        {
+          auto evaluate_iblock = evaluate_matrix_block->Matrix(iblock, 0);
+          auto slave_iblock = slavematrix_block->Matrix(iblock, 0);
+
+          auto slave_block_mapi =
+              LINALG::IntersectMap(*thermo_->ScaTraField()->BlockMaps().Map(iblock),
+                  *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
+
+          LINALG::MatrixLogicalSplitAndTransform()(evaluate_iblock, *slave_block_mapi,
+              *remaining_map, 1.0, nullptr, nullptr, slave_iblock, true, true);
+        }
+        slavematrix->Complete();
+        evaluate_matrix->UnComplete();
+        evaluate_matrix->Zero();
+        evaluate_matrix->Add(*slavematrix, false, 1.0, 0.0);
+        evaluate_matrix->Complete();
+      }
       break;
     }
 
     case LINALG::MatrixType::sparse:
     {
-      slavematrix->Complete(
+      evaluate_matrix->Complete(
           *full_map_structure_, *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
+
+      // "slave side" from thermo and from structure do not need to be the same nodes.
+      // Linearization is evaluated on scatra slave side node --> Transformation needed
+      for (const auto& meshtying : ssti_structure_meshtying_->MeshtyingHandlers())
+      {
+        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto orig_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+
+        auto evaluate_matrix_sparse =
+            LINALG::CastToConstSparseMatrixAndCheckSuccess(evaluate_matrix);
+
+        auto slavematrix_sparse = LINALG::CastToSparseMatrixAndCheckSuccess(slavematrix);
+
+        auto master_map = Teuchos::rcp(new Epetra_Map(*slave_slave_transformation->MasterDofMap()));
+        auto slave_map = slave_slave_transformation->MasterToSlaveMap(master_map);
+
+        auto remaining_map = LINALG::SplitMap(*full_map_structure_, *slave_map);
+        slavematrix->UnComplete();
+        slavematrix->Zero();
+
+        LINALG::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
+            *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *remaining_map, 1.0,
+            nullptr, nullptr, *slavematrix_sparse, true, true);
+
+        if (LINALG::IntersectMap(evaluate_matrix_sparse->ColMap(), *slave_map)
+                ->NumGlobalElements() == 0)
+        {
+          LINALG::MatrixLogicalSplitAndTransform()(*evaluate_matrix_sparse,
+              *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap(), *slave_map, 1.0,
+              nullptr, &orig_converter, *slavematrix_sparse, false, true);
+        }
+
+        slavematrix->Complete(
+            *full_map_structure_, *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
+
+        evaluate_matrix->Add(*slavematrix, false, 1.0, 1.0);
+
+        evaluate_matrix->Complete(
+            *full_map_structure_, *meshtying_strategy_thermo_->CouplingAdapter()->SlaveDofMap());
+      }
+
       break;
     }
     default:
@@ -392,22 +476,4 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateThermoStructureInterfaceSlave
       break;
     }
   }
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-ADAPTER::CouplingSlaveConverter&
-SSTI::ThermoStructureOffDiagCoupling::InterfaceCouplingAdapterStructureSlaveConverter() const
-{
-  return ssti_structure_meshtying_->SlaveSideConverter()
-      ->InterfaceCouplingAdapterStructureSlaveConverter();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-ADAPTER::CouplingSlaveConverter& SSTI::ThermoStructureOffDiagCoupling::
-    InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const
-{
-  return ssti_structure_meshtying_->SlaveSideConverter()
-      ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection();
 }

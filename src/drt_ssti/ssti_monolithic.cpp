@@ -471,36 +471,21 @@ Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::ExtractSubIncrement(Subproblem sub)
       // Second, copy master side displacements and increments to slave side for meshtying
       if (InterfaceMeshtying())
       {
-        // displacements
-        MapsCoupStruct()->InsertVector(
-            SSTIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-                MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
-            1, StructureField()->WriteAccessDispnp());
-
-        // increments
-        StructureField()->SetState(StructureField()->WriteAccessDispnp());
-        MapsCoupStruct()->InsertVector(
-            SSTIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-                MapsCoupStruct()->ExtractVector(subincrement, 2)),
-            1, subincrement);
-
-        if (SSTIStructureMeshTying()->MeshTying3DomainIntersection())
+        for (const auto& meshtying : SSTIStructureMeshTying()->MeshtyingHandlers())
         {
+          auto coupling_adapter = meshtying->SlaveMasterCoupling();
+          auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+
           // displacements
-          MapsCoupStruct3DomainIntersection()->InsertVector(
-              SSTIStructureMeshTying()
-                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
-                  ->MasterToSlave(MapsCoupStruct3DomainIntersection()->ExtractVector(
-                      StructureField()->Dispnp(), 2)),
+          coupling_map_extractor->InsertVector(
+              coupling_adapter->MasterToSlave(
+                  coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
               1, StructureField()->WriteAccessDispnp());
           StructureField()->SetState(StructureField()->WriteAccessDispnp());
-
           // increments
-          MapsCoupStruct3DomainIntersection()->InsertVector(
-              SSTIStructureMeshTying()
-                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
-                  ->MasterToSlave(
-                      MapsCoupStruct3DomainIntersection()->ExtractVector(subincrement, 2)),
+          coupling_map_extractor->InsertVector(
+              coupling_adapter->MasterToSlave(
+                  coupling_map_extractor->ExtractVector(subincrement, 2)),
               1, subincrement);
         }
       }

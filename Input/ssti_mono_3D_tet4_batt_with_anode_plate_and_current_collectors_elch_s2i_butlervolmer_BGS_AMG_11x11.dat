@@ -310,16 +310,6 @@ E 9 - 3 Slave S2IKineticsID 3
 E 10 - 4 Master S2IKineticsID 4
 // cc-side_(sl)_of_sol-el-comp_cat-
 E 11 - 4 Slave S2IKineticsID 4
--------------DESIGN SSTI THREE DOMAIN INTERSECTION LINE CONDITIONS
-DLINE  4
-// line_triple_point_cc_side
-E 4 - 1 Slave
-// line_triple_point_el_side
-E 5 - 1 Master
-// line_triple_point_cath_side
-E 6 - 0 Slave
-// line_triple_point_el_side
-E 5 - 0 Master
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    791 DNODE 1
 NODE    794 DNODE 1

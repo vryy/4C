@@ -44,7 +44,7 @@ namespace SSI
 {
   namespace UTILS
   {
-    class SSIManifoldMeshTying;
+    class SSIStructureMeshTying;
     class SSIMaps;
   }  // namespace UTILS
 
@@ -113,7 +113,7 @@ namespace SSI
     //! manifold condition
     DRT::Condition* condition_manifold_;
 
-    //! coupling adapter between manifold (master) and scatra (slave)
+    //! coupling adapter between manifold (slave) and scatra (master)
     Teuchos::RCP<ADAPTER::Coupling> coupling_adapter_;
 
     //! Evaluate coupling on slave side of scatra-scatra interface (false) or on master side (true)
@@ -247,9 +247,6 @@ namespace SSI
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
-    //! scatra-scatra interface coupling adapter for structure field
-    Teuchos::RCP<const ADAPTER::Coupling> icoup_structure_;
-
     //! integrated flux for each scalar into manifold
     std::map<int, std::vector<double>> inflow_;
 
@@ -284,6 +281,9 @@ namespace SSI
 
     //! all scatra-scatra manifold coupling operators
     std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>> scatra_manifold_couplings_;
+
+    //! SSI structure mesh tying object containing coupling adapters, converters and maps
+    Teuchos::RCP<SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
 
     //! system matrices of scatra and manifold
     //@{

@@ -68,9 +68,9 @@ namespace SSTI
         Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface);
 
    private:
-    ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const;
+    /*bADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const;
     ADAPTER::CouplingSlaveConverter&
-    InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const;
+    InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const;*/
 
     void CopySlaveToMasterThermoStructureInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);

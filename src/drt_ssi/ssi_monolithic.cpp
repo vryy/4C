@@ -803,8 +803,8 @@ void SSI::SSIMono::SetupSystem()
       SSI::BuildContactStrategy(CoNitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
 
   // instantiate appropriate mesh tying class
-  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(IsScaTraManifold(), ScaTraField()->MatrixType(),
-      Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
+  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(
+      IsScaTraManifold(), ScaTraField()->MatrixType(), ssi_maps_, SSIStructureMeshTying());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
@@ -1032,30 +1032,22 @@ void SSI::SSIMono::UpdateIterStructure()
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    MapsCoupStruct()->InsertVector(
-        SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-            MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
-        1, StructureField()->WriteAccessDispnp());
-    StructureField()->SetState(StructureField()->WriteAccessDispnp());
-    MapsCoupStruct()->InsertVector(
-        SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-            MapsCoupStruct()->ExtractVector(increment_structure, 2)),
-        1, increment_structure);
-
-    if (Meshtying3DomainIntersection())
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
     {
-      MapsCoupStruct3DomainIntersection()->InsertVector(
-          SSIStructureMeshTying()
-              ->InterfaceCouplingAdapterStructure3DomainIntersection()
-              ->MasterToSlave(MapsCoupStruct3DomainIntersection()->ExtractVector(
-                  StructureField()->Dispnp(), 2)),
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+
+      // displacements
+      coupling_map_extractor->InsertVector(
+          coupling_adapter->MasterToSlave(
+              coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
           1, StructureField()->WriteAccessDispnp());
       StructureField()->SetState(StructureField()->WriteAccessDispnp());
-      MapsCoupStruct3DomainIntersection()->InsertVector(
-          SSIStructureMeshTying()
-              ->InterfaceCouplingAdapterStructure3DomainIntersection()
-              ->MasterToSlave(
-                  MapsCoupStruct3DomainIntersection()->ExtractVector(increment_structure, 2)),
+
+      // increment
+      coupling_map_extractor->InsertVector(
+          coupling_adapter->MasterToSlave(
+              coupling_map_extractor->ExtractVector(increment_structure, 2)),
           1, increment_structure);
     }
   }

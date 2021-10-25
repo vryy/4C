@@ -165,22 +165,4 @@ void INPAR::SSTI::SetValidConditions(
 
   condlist.emplace_back(linesstiinterfacemeshtying);
   condlist.emplace_back(surfsstiinterfacemeshtying);
-
-  // -------------------------------------------------------------------------------
-  Teuchos::RCP<ConditionDefinition> sstiinterfacemeshtying3domainintersection =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSTI THREE DOMAIN INTERSECTION LINE CONDITIONS",
-          "SSTIMeshtying3DomainIntersection", "SSTI line where 3 domains intersect",
-          DRT::Condition::SSTIMeshtying3DomainIntersection, true, DRT::Condition::Line));
-
-  std::vector<Teuchos::RCP<ConditionComponent>> sstitriplepointmeshtying;
-  sstitriplepointmeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  sstitriplepointmeshtying.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
-      "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
-      Teuchos::tuple<int>(
-          INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
-
-  for (auto& conditioncomponent : sstitriplepointmeshtying)
-    sstiinterfacemeshtying3domainintersection->AddComponent(conditioncomponent);
-
-  condlist.push_back(sstiinterfacemeshtying3domainintersection);
 }

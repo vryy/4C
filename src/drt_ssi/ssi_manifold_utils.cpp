@@ -106,7 +106,6 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))),
       full_map_structure_(ssi_mono.MapsSubProblems()->Map(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))),
-      icoup_structure_(ssi_mono.SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()),
       matrix_manifold_scatra_(Teuchos::null),
       matrix_manifold_structure_(Teuchos::null),
       matrix_scatra_manifold_(Teuchos::null),
@@ -117,6 +116,7 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
       scatra_(ssi_mono.ScaTraBaseAlgorithm()),
       scatra_manifold_(ssi_mono.ScaTraManifoldBaseAlgorithm()),
       scatra_manifold_couplings_(Teuchos::null),
+      ssi_structure_meshtying_(ssi_mono.SSIStructureMeshTying()),
       systemmatrix_manifold_(Teuchos::null),
       systemmatrix_scatra_(Teuchos::null)
 {
@@ -449,23 +449,46 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
       scatra_manifold_->ScaTraField()->Discretization()->EvaluateCondition(condparams,
           strategymanifold, "SSISurfaceManifold", scatra_manifold_coupling->ManifoldConditionID());
 
+      scatra_manifold_->ScaTraField()->Discretization()->ClearState();
+
       flux_manifold_scatra_md_cond_slave_side_disp->Complete(
           *full_map_structure_, *full_map_manifold_);
 
-      // Add slave side disp. contributions
-      matrix_manifold_structure_cond_->Add(
-          *flux_manifold_scatra_md_cond_slave_side_disp, false, 1.0, 1.0);
+      // "slave side" from manifold and from structure do not need to be the same nodes.
+      // Linearization is evaluated on scatra slave side node --> Transformation needed
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      {
+        auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
+        auto orig_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
-      // Add master side disp. contributions
-      ADAPTER::CouplingSlaveConverter converter(*icoup_structure_);
-      LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
-          *full_map_manifold_, *full_map_structure_, 1.0, nullptr, &converter,
-          *matrix_manifold_structure_cond_, true, true);
+        auto slave_map = slave_slave_transformation->SlaveDofMap();
+        auto master_map = slave_slave_transformation->MasterDofMap();
 
-      matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
+        auto interface_map = LINALG::MergeMap(slave_map, master_map);
+
+        auto remaining_map = LINALG::SplitMap(*full_map_structure_, *interface_map);
+        matrix_manifold_structure_cond_->Zero();
+        matrix_manifold_structure_cond_->UnComplete();
+        // Add slave side disp. contributions
+        LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
+            *full_map_manifold_, *remaining_map, 1.0, nullptr, nullptr,
+            *matrix_manifold_structure_cond_, true, true);
+
+        // Add master side disp. contributions
+        LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
+            *full_map_manifold_, *slave_map, 1.0, nullptr, &orig_slave_converter,
+            *matrix_manifold_structure_cond_, true, true);
+
+        matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
+
+        flux_manifold_scatra_md_cond_slave_side_disp->Zero();
+        flux_manifold_scatra_md_cond_slave_side_disp->Add(
+            *matrix_manifold_structure_cond_, false, 1.0, 0.0);
+
+        flux_manifold_scatra_md_cond_slave_side_disp->Complete(
+            *full_map_structure_, *full_map_manifold_);
+      }
     }
-
-    scatra_manifold_->ScaTraField()->Discretization()->ClearState();
   }
 }
 
@@ -487,12 +510,12 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraManifoldScaTraMasterSide(
     rhs_scatra_cond_->Scale(-1.0);
   }
 
-  // djscatra_dmanifold: manifold rows are transformed to scatra side (flux is scaled by -1.0)
+  // dscatra_dmanifold: manifold rows are transformed to scatra side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*systemmatrix_manifold_cond_, *full_map_scatra_,
       *full_map_manifold_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *matrix_scatra_manifold_cond_, true, true);
 
-  // djscatra_dscatra: manifold rows are transformed to scatra side (flux is scaled by -1.0)
+  // dscatra_dscatra: manifold rows are transformed to scatra side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_scatra_cond_, *full_map_scatra_,
       *full_map_scatra_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *systemmatrix_scatra_cond_, true, true);
@@ -500,7 +523,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::CopyScaTraManifoldScaTraMasterSide(
   matrix_scatra_manifold_cond_->Complete(*full_map_manifold_, *full_map_scatra_);
   systemmatrix_scatra_cond_->Complete();
 
-  // djscatra_dstructure: manifold rows are transformed to scatra side (flux is scaled by -1.0)
+  // dscatra_dstructure: manifold rows are transformed to scatra side (flux is scaled by -1.0)
   LINALG::MatrixLogicalSplitAndTransform()(*matrix_manifold_structure_cond_, *full_map_scatra_,
       *full_map_structure_, -1.0, &*scatra_manifold_coupling->SlaveConverter(), nullptr,
       *matrix_scatra_structure_cond_, true, true);

@@ -13,6 +13,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Epetra_Time.h>
+#include <set>
 
 namespace ADAPTER
 {
@@ -60,21 +62,6 @@ namespace SSI
     /// Function for checking that the different time steps are a
     /// multiplicative of each other
     int CheckTimeStepping(double dt1, double dt2);
-
-    //! setup coupling adapter for structure interfaces from ssi condition for line coupling
-    Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure3DomainIntersection(
-        Teuchos::RCP<DRT::Discretization> structdis,
-        const std::string& conditionname_3_domain_intersection);
-
-    //! setup coupling adapter for structure interfaces from ssi condition for surface coupling
-    Teuchos::RCP<ADAPTER::Coupling> SetupInterfaceCouplingAdapterStructure(
-        Teuchos::RCP<DRT::Discretization> structdis, bool meshtying_3_domain_intersection,
-        const std::string& conditionname_coupling,
-        const std::string& conditionname_3_domain_intersection);
-
-    //! Build a vector of condition with slave-master pairs ordered by coupling ID
-    std::vector<std::pair<DRT::Condition* const, DRT::Condition* const>> BuildSlaveMasterPairing(
-        const std::vector<DRT::Condition*>& conditions);
 
     //! clone scatra specific parameters for solver of manifold. Add manifold specific parameters
     Teuchos::ParameterList CloneScaTraManifoldParams(const Teuchos::ParameterList& scatraparams,
@@ -356,140 +343,180 @@ namespace SSI
       const LINALG::MatrixType ssi_matrixtype_;
     };
 
-    class SSIMeshTyingMaps
+    class SSIStructureMeshTyingHandler
     {
      public:
-      explicit SSIMeshTyingMaps(
-          Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure,
-          Teuchos::RCP<ADAPTER::Coupling> interface_coupling_adapter_structure_3domain_intersection,
-          bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> structure_dis);
+      explicit SSIStructureMeshTyingHandler(Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling,
+          Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor,
+          Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation);
 
-      //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
-      //! slave-side degrees of freedom, 2: master-side degrees of freedom)
-      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const
+      //! coupling adapter between master and slave coupling
+      Teuchos::RCP<ADAPTER::Coupling> SlaveMasterCoupling() const { return slave_master_coupling_; }
+
+      //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
+      Teuchos::RCP<LINALG::MultiMapExtractor> SlaveMasterExtractor() const
       {
-        return maps_coup_struct_;
+        return slave_master_extractor_;
       }
 
-      //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
-      //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-      Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const
+      //! converter to convert slave dofs to master side
+      Teuchos::RCP<ADAPTER::CouplingSlaveConverter> SlaveSideConverter() const
       {
-        return maps_coup_struct_3_domain_intersection_;
+        return slave_side_converter_;
       }
 
-      //! Interior dofs of structure mesh tying
-      Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
-
-      //! Slave and master side dofs of structure mesh tying
-      Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
-      Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
-      Teuchos::RCP<const Epetra_Map> MapStructureMaster3DomainIntersection() const;
-      Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
+      //! coupling adapter between new slave nodes and slave nodes from input file
+      Teuchos::RCP<ADAPTER::Coupling> SlaveSlaveTransformation() const
+      {
+        return slave_slave_transformation_;
+      }
 
      private:
-      //! structural map extractor (0: other degrees of freedom, 1: slave-side degrees  of freedom,
-      //! 2: master-side degrees of freedom)
-      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_;
+      //! coupling adapter between master and slave coupling
+      Teuchos::RCP<ADAPTER::Coupling> slave_master_coupling_;
 
-      //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
-      //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-      Teuchos::RCP<const LINALG::MultiMapExtractor> maps_coup_struct_3_domain_intersection_;
+      //! map extractor for coupling adapter: 0: interior, 1: slave, 2: master
+      Teuchos::RCP<LINALG::MultiMapExtractor> slave_master_extractor_;
+
+      //! converter to convert slave dofs to master side
+      Teuchos::RCP<ADAPTER::CouplingSlaveConverter> slave_side_converter_;
+
+      //! coupling adapter between new slave nodes and slave nodes from input file
+      Teuchos::RCP<ADAPTER::Coupling> slave_slave_transformation_;
     };
-
-    //! data types for mesh tying handlers for standard and block case
-    using meshtying_handler_type =
-        std::pair<Teuchos::RCP<ADAPTER::Coupling>, Teuchos::RCP<LINALG::MultiMapExtractor>>;
 
     class SSIStructureMeshTying
     {
      public:
-      explicit SSIStructureMeshTying(const std::string& conditionname_coupling,
-          const std::string& conditionname_3_domain_intersection,
-          bool meshtying_3_domain_intersection, Teuchos::RCP<DRT::Discretization> struct_dis);
+      explicit SSIStructureMeshTying(
+          const std::string& conditionname_coupling, Teuchos::RCP<DRT::Discretization> struct_dis);
 
       //! check if one dof has slave side conditions and Dirichlet conditions
       void CheckSlaveSideHasDirichletConditions(
           Teuchos::RCP<const Epetra_Map> struct_dbc_map) const;
 
-      //! structure interface coupling adapter between two geometric entities
-      Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure() const
-      {
-        return icoup_structure_;
-      }
+      //! all master side dofs
+      Teuchos::RCP<const Epetra_Map> FullMasterSideMap() const { return full_master_side_map_; }
 
-      //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
-      //! intersection domains
-      Teuchos::RCP<ADAPTER::Coupling> InterfaceCouplingAdapterStructure3DomainIntersection() const
-      {
-        return icoup_structure_3_domain_intersection_;
-      }
+      //! all slave side dofs
+      Teuchos::RCP<const Epetra_Map> FullSlaveSideMap() const { return full_slave_side_map_; }
 
-      //! indicates, if meshtying includes triple points
-      bool MeshTying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
+      //! all interior dofs
+      Teuchos::RCP<const Epetra_Map> InteriorMap() const { return interior_map_; }
 
-      //! holds slave side converter of multiple coupling adapters
-      Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> SlaveSideConverter() const
+      //! vector of all mesh tying handlers
+      std::vector<Teuchos::RCP<SSIStructureMeshTyingHandler>> MeshtyingHandlers() const
       {
-        return slave_side_converter_;
-      }
-
-      //! this object holds all maps relevant to mesh tying for scalar transport - structure
-      //! interaction
-      Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> SSIMeshTyingMaps() const
-      {
-        return ssi_meshtyingmaps_;
+        return meshtying_handlers_;
       }
 
      private:
-      //! structure interface coupling adapter between two geometric entities
-      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_;
+      //! Communicate map to all procs
+      //! \param map_in       [in] map to be communicated
+      //! \param map_out      [out] global map
+      void BroadcastMap(const std::map<int, int>& map_in, std::map<int, int>& map_out) const;
 
-      //! in case of meshtying_triple_point_: structure interface coupling adapter between 3
-      //! intersection domains
-      Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection_;
+      //! Communicate pair vector to all procs
+      //! \param pairs_in     [in] pair vector to be communicated
+      //! \param pairs_out    [out] global pair vector
+      void BroadcastPairVector(const std::vector<std::pair<int, int>>& pairs_in,
+          std::vector<std::pair<int, int>>& pairs_out) const;
 
-      //! indicates, if meshtying includes triple points
-      const bool meshtying_3_domain_intersection_;
+      //! Communicate vector to all procs
+      //! \param vec_in      [in] vector to be communicated
+      //! \param vec_out     [out] global vector
+      void BroadcastVector(const std::vector<int>& vec_in, std::vector<int>& vec_out) const;
 
-      //! slave side converter
-      Teuchos::RCP<SSI::UTILS::SSISlaveSideConverter> slave_side_converter_;
+      //! Define master nodes and subsequently master slave pairs
+      //! \param dbc_nodes                [in] nodes with Dirichlet boundary condition
+      //! \param grouped_matching_nodes   [in] vector of vector of nodes at same position
+      //! \param master_gids              [out] vector of all defined master nodes
+      //! \param slave_master_pair        [out] map between slave nodes (key) and master nodes
+      //!                                 (value)
+      void DefineMasterSlavePairing(Teuchos::RCP<DRT::Discretization> struct_dis,
+          const std::vector<std::vector<int>>& grouped_matching_nodes,
+          std::vector<int>& master_gids, std::map<int, int>& slave_master_pair) const;
 
-      //! this object holds all maps relevant to mesh tying for scalar transport - structure
-      //! interaction
-      Teuchos::RCP<SSI::UTILS::SSIMeshTyingMaps> ssi_meshtyingmaps_;
+      //! Construct global pairs between matching nodes
+      //! \param struct_dis                 [in] structural discretization
+      //! \param name_meshtying_condition   [in] name of meshtying condition
+      //! \param all_coupling_pairs         [out] vector of pairs of matching nodes
+      void FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> struct_dis,
+          const std::string& name_meshtying_condition,
+          std::vector<std::pair<int, int>>& coupling_pairs) const;
 
-      //! handles all coupling adapters and multimap extractors
-      std::vector<meshtying_handler_type> meshtying_handler_;
-    };
+      //! Find match between new slave nodes and slave nodes from input file
+      //! \param struct_dis                        [in] structural discretization
+      //! \param name_meshtying_condition          [in] name of meshtying condition
+      //! \param inodegidvec_slave                 [in] new slave nodes on this proc
+      //! \param all_coupled_original_slave_gids   [out] old slave nodes that match new slave nodes
+      void FindSlaveSlaveTransformationNodes(Teuchos::RCP<DRT::Discretization> struct_dis,
+          const std::string& name_meshtying_condition, const std::vector<int>& inodegidvec_slave,
+          std::vector<int>& all_coupled_original_slave_gids) const;
 
-    class SSISlaveSideConverter
-    {
-     public:
-      SSISlaveSideConverter(Teuchos::RCP<ADAPTER::Coupling> icoup_structure,
-          Teuchos::RCP<ADAPTER::Coupling> icoup_structure_3_domain_intersection,
-          bool meshtying_3_domain_intersection);
+      //! Get number of slave nodes that are assigned to a master node
+      //! \param slave_master_pair                   [in] map between slave nodes (key) and master
+      //!                                             nodes
+      //!                                            (value)
+      //! \param num_assigned_slave_to_master_nodes  [out] map between master nodes (master) and
+      //!                                            number of assigned slave nodes
+      //! \param max_assigned_slave_nodes            [out] max. number of slave nodes assigned to a
+      //!                                            master node
+      void GetNumAssignedSlaveToMasterNodes(const std::map<int, int>& slave_master_pair,
+          std::map<int, int>& num_assigned_slave_to_master_nodes,
+          int& max_assigned_slave_nodes) const;
 
-      //! Slave structure converter for structure coupling
-      ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const
-      {
-        return *icoup_structure_slave_converter_;
-      }
+      //! Group nodes that are at the geometrically same position
+      //! \param coupling_pairs           [in] vector of pairs of matching nodes
+      //! \param grouped_matching_nodes   [out] vector of vector of nodes at same position
+      void GroupMatchingNodes(const std::vector<std::pair<int, int>>& coupling_pairs,
+          std::vector<std::vector<int>>& grouped_matching_nodes) const;
 
-      //! Slave structure converter for structure coupling with 3 domain intersection
-      ADAPTER::CouplingSlaveConverter&
-      InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const
-      {
-        return *icoup_structure_slave_converter_3_domain_intersection_;
-      }
+      //! Check if matching_nodes has this gid.
+      //! \param gid             [in] gid to be checked
+      //! \param matching_nodes  [in] grouped node gids
+      //! \return                index in matching_nodes (outer vector) where gid is, otherwise -1
+      int HasGID(int gid, const std::vector<std::vector<int>>& matching_nodes) const;
 
-     private:
-      //! Slave structure converter for structure coupling
-      Teuchos::RCP<ADAPTER::CouplingSlaveConverter> icoup_structure_slave_converter_;
+      //! Check if subset of matching_nodes has this gid.
+      //! \param gid             [in] gid to be checked
+      //! \param start           [in] first index in matching_nodes
+      //! \param end             [in] last index in matching_nodes
+      //! \param matching_nodes  [in] grouped node gids
+      //! \return                index in matching_nodes (outer vector) between start and end where
+      //!                        gid is, otherwise -1
+      int HasGIDPartial(
+          int gid, int start, int end, const std::vector<std::vector<int>>& matching_nodes) const;
 
-      //! Slave structure converter for structure coupling with 3 domain intersection
-      Teuchos::RCP<ADAPTER::CouplingSlaveConverter>
-          icoup_structure_slave_converter_3_domain_intersection_;
+      //! Construct mesh tying handlers based on conditions with name conditionname_coupling
+      //! \param struct_dis                  [in] structural discretization
+      //! \param name_meshtying_condition    [in] name of meshtying condition
+      void SetupMeshTyingHandlers(Teuchos::RCP<DRT::Discretization> struct_dis,
+          const std::string& name_meshtying_condition);
+
+      //! communicator
+      const Epetra_Comm& comm_;
+
+      //! should this proc write screen output
+      const bool do_print_;
+
+      //! all master side dofs
+      Teuchos::RCP<const Epetra_Map> full_master_side_map_;
+
+      //! all slave side dofs
+      Teuchos::RCP<const Epetra_Map> full_slave_side_map_;
+
+      //! all interior dofs
+      Teuchos::RCP<const Epetra_Map> interior_map_;
+
+      //! all mesh tying handlers
+      std::vector<Teuchos::RCP<SSIStructureMeshTyingHandler>> meshtying_handlers_;
+
+      //! number of proc ID
+      const int my_rank_;
+
+      //! number of procs
+      const int num_proc_;
     };
 
   }  // namespace UTILS

@@ -280,30 +280,6 @@ has 61 Nodes
 sectionname="DESIGN LINE DIRICH CONDITIONS"
 description="NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none"
 
-Node Set, named: cat-side_(sl)_line_triple_point
-Property Name: none
-has 6 Nodes
-*ns20="CONDITION"
-sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
-description="0 Slave"
-
-Node Set, named: cc-side_(sl)_line_triple_point
-Property Name: none
-has 6 Nodes
-*ns21="CONDITION"
-sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
-description="1 Slave"
-
-Node Set, named: el-side_(ma)_line_triple_point
-Property Name: none
-has 6 Nodes
-*ns22="CONDITION"
-sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
-description="0 Master"
-*ns22="CONDITION"
-sectionname="DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS"
-description="1 Master"
-
 Node Set, named: vertices_an-side_cc
 Property Name: none
 has 3 Nodes
