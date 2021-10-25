@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Shell8Type::NodalBlockInformation(
 void DRT::ELEMENTS::Shell8Type::ComputeNullSpace(
     DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
-  DRT::UTILS::ComputeStructure3DNullSpace(dis, ns, x0, numdf, dimns);
+  DRT::UTILS::ComputeShell3DNullSpace(dis, ns, x0, numdf, dimns);
 }
 
 void DRT::ELEMENTS::Shell8Type::SetupElementDefinition(
