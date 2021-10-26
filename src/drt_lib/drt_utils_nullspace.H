@@ -37,5 +37,4 @@ namespace DRT
   }  // namespace UTILS
 }  // namespace DRT
 
-
 #endif  // #ifndef UTILS_NULLSPACE_H
