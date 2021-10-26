@@ -28,13 +28,13 @@ namespace DRT
         DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
     void ComputeBeam3DNullSpace(
         DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
+    void ComputeShell3DNullSpace(
+        DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
     void ComputeXFluidDNullSpace(
         DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
     void ComputeFluidDNullSpace(
         DRT::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns);
-
   }  // namespace UTILS
 }  // namespace DRT
-
 
 #endif  // #ifndef UTILS_NULLSPACE_H
