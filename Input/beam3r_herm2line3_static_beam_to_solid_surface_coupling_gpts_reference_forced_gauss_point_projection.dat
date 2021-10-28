@@ -76,7 +76,7 @@ CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     50
 GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_to_segment
-GEOMETRY_PAIR_STRATEGY                gauss_point_projection
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
 GEOMETRY_PAIR_SEARCH_POINTS           2
 COUPLING_TYPE                         reference_configuration_forced_to_zero
 --------------------------------------------------------------RESULT DESCRIPTION

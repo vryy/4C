@@ -214,6 +214,18 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
     const LINALG::Matrix<other::n_dof_, 1, scalar_type>& q_other,
     std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args)
 {
+  // We only check for boundary segmentation if it is needed.
+  switch (pair->GetEvaluationData()->GetStrategy())
+  {
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::
+        gauss_point_projection_without_boundary_segmentation:
+      return;
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
+      break;
+    default:
+      dserror("Wrong LineTo3DStrategy in Evaluate of Gauss point projection pairs.");
+  }
+
   // Only zero one segments are expected.
   if (segments.size() > 1)
     dserror(

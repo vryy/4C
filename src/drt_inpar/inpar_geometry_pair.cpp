@@ -21,10 +21,12 @@ void INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(Teuchos::ParameterList& lis
   // Segmentation strategy.
   Teuchos::setStringToIntegralParameter<LineTo3DStrategy>("GEOMETRY_PAIR_STRATEGY", "segmentation",
       "Type of employed segmentation strategy",
-      Teuchos::tuple<std::string>(
-          "none", "segmentation", "gauss_point_projection", "gauss_point_projection_cross_section"),
+      Teuchos::tuple<std::string>("none", "segmentation",
+          "gauss_point_projection_without_boundary_segmentation",
+          "gauss_point_projection_boundary_segmentation", "gauss_point_projection_cross_section"),
       Teuchos::tuple<LineTo3DStrategy>(LineTo3DStrategy::none, LineTo3DStrategy::segmentation,
-          LineTo3DStrategy::gauss_point_projection,
+          LineTo3DStrategy::gauss_point_projection_without_boundary_segmentation,
+          LineTo3DStrategy::gauss_point_projection_boundary_segmentation,
           LineTo3DStrategy::gauss_point_projection_cross_section),
       &list);
 

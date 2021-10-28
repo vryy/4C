@@ -31,9 +31,10 @@ namespace INPAR
      */
     enum class LineTo3DStrategy
     {
-      none,                    ///< Default value.
-      gauss_point_projection,  ///< Project the Gauss points, segment lines that poke out of the
-                               ///< volume.
+      none,                                                  ///< Default value.
+      gauss_point_projection_without_boundary_segmentation,  ///< Project the Gauss points.
+      gauss_point_projection_boundary_segmentation,  ///< Project the Gauss points, segment lines
+                                                     ///< that poke out of the volume.
       gauss_point_projection_cross_section,  ///< Project the Gauss points on the cross section
                                              ///< surface.
       segmentation                           ///< Segment the line with the volume.

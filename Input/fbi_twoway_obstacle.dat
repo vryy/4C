@@ -19,7 +19,7 @@ PRESORT_STRATEGY                      binning
 PENALTY_PARAMETER                     10
 MESHTYING_DISCRETIZATION              gauss_point_to_segment
 CONSTRAINT_STRATEGY                   penalty
-GEOMETRY_PAIR_STRATEGY                gauss_point_projection
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
 GEOMETRY_PAIR_SEARCH_POINTS           5
 SEARCH_RADIUS                         0.2
 ---------------------------------------------------------------------FSI DYNAMIC
