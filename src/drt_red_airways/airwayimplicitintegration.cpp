@@ -18,7 +18,6 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_lib/drt_utils_parallel.H"
-#include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_create.H"

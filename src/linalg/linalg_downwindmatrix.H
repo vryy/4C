@@ -22,8 +22,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "linalg_mapextractor.H"
 #include "linalg_sparsematrix.H"
-#include "linalg_ana.H"
-
 
 namespace LINALG
 {
