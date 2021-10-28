@@ -226,6 +226,11 @@ namespace SSI
      */
     void SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const;
 
+    //! set states to evaluate scatra-manifold field
+    //!
+    //! \param[in] phi  scatra state to be set
+    void SetSSIManifoldStates(Teuchos::RCP<const Epetra_Vector> phi) const;
+
     //! evaluate time step using Newton-Raphson iteration
     void NewtonLoop();
 

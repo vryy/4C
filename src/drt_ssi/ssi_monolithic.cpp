@@ -819,34 +819,37 @@ void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   SSIBase::SetScatraSolution(phi);
 
   // set state for contact evaluation
-  SetSSIContactStates(phi);
+  if (contact_strategy_nitsche_ != Teuchos::null) SetSSIContactStates(phi);
 
-  if (IsScaTraManifold())
-  {
-    // scatra values on master side copied to manifold
-    auto imasterphinp_on_manifold =
-        LINALG::CreateVector(*ScaTraManifold()->Discretization()->DofRowMap(), true);
-
-    for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
-    {
-      if (coup->EvaluateMasterSide())
-      {
-        auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
-        auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
-        coup->ManifoldMapExtractor()->AddCondVector(
-            imasterphinp_manifold, imasterphinp_on_manifold);
-      }
-    }
-    ScaTraManifold()->Discretization()->SetState(3, "imasterscatra", imasterphinp_on_manifold);
-  }
+  // set state for evaluation of manifold field
+  if (IsScaTraManifold()) SetSSIManifoldStates(phi);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const
 {
-  if (contact_strategy_nitsche_ != Teuchos::null)
-    contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
+  contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSIMono::SetSSIManifoldStates(Teuchos::RCP<const Epetra_Vector> phi) const
+{
+  // scatra values on master side copied to manifold
+  auto imasterphinp_on_manifold =
+      LINALG::CreateVector(*ScaTraManifold()->Discretization()->DofRowMap(), true);
+
+  for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
+  {
+    if (coup->EvaluateMasterSide())
+    {
+      auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
+      auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
+      coup->ManifoldMapExtractor()->AddCondVector(imasterphinp_manifold, imasterphinp_on_manifold);
+    }
+  }
+  ScaTraManifold()->Discretization()->SetState(3, "imasterscatra", imasterphinp_on_manifold);
 }
 
 /*---------------------------------------------------------------------------------*
