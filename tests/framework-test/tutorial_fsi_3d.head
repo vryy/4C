@@ -1238,14 +1238,6 @@ MueLu_REBALANCE_NONZEROIMBALANCE 1.2
 // minimum numbers of rows per processor before rebalancing is necessary
 MueLu_REBALANCE_MINROWS         1000
 //
-// Reuse strategy in MueLu contact preconditioner 2.
-// The options are 'none', 'Ptent' and 'full'.
-// 'full' means: reuse the full multigrid hierarchy.
-// 'Ptent': reuse aggregates and nonsmoothed transfer operator.
-// The MueLu_Reuse parameter only makes sense together with AZREUSE.
-//     nothing,Ptent,full
-MueLu_REUSE                     nothing
-//
 // BGS2x2 flip order parameter
 //     block0_block1_order,block1_block0_order
 BGS2X2_FLIPORDER                block0_block1_order

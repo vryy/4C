@@ -276,27 +276,6 @@ namespace INPAR
         IntParameter("MueLu_REBALANCE_MINROWS", 1000,
             "minimum numbers of rows per processor before rebalancing is necessary", &list);
 
-        // MueLu_Reuse
-        {
-          Teuchos::Tuple<std::string, 3> name;
-          Teuchos::Tuple<int, 3> number;
-
-          name[0] = "nothing";
-          number[0] = Reuse_nothing;
-          name[1] = "Ptent";
-          number[1] = Reuse_Ptent;
-          name[2] = "full";
-          number[2] = Reuse_full;
-
-          setStringToIntegralParameter<int>("MueLu_REUSE", "nothing",
-              "Reuse strategy in MueLu contact preconditioner 2.\n"
-              "The options are 'none', 'Ptent' and 'full'.\n"
-              "'full' means: reuse the full multigrid hierarchy.\n"
-              "'Ptent': reuse aggregates and nonsmoothed transfer operator.\n"
-              "The MueLu_Reuse parameter only makes sense together with AZREUSE.\n",
-              name, number, &list);
-        }
-
         StringParameter(
             "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
 

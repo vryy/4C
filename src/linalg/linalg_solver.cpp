@@ -772,8 +772,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set<bool>(
           "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
       mllist.set<bool>("LINALG::MueLu_Preconditioner", true);
-
-      mllist.set("muelu reuse: strategy", inparams.get<std::string>("MueLu_REUSE"));
     }
     break;
     case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
@@ -799,8 +797,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("muelu repartition: max min ratio",
           inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
       mllist.set("muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-
-      mllist.set("muelu reuse: strategy", inparams.get<std::string>("MueLu_REUSE"));
     }
     break;
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:  // MueLu operator (Petrov-Galerkin)
@@ -815,8 +811,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("energy minimization: type",
           3);  // TODO: different energy minimization modes not available for MueLu, yet
       mllist.set("aggregation: block scaling", false);
-
-      mllist.set("muelu reuse: strategy", inparams.get<std::string>("MueLu_REUSE"));
     }
     break;
     case INPAR::SOLVER::azprec_MLfluid:  // unsymmetric, unsmoothed restriction

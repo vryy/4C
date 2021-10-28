@@ -453,7 +453,6 @@ MueLu_MIN_AGG_SIZE              6
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_NONZEROIMBALANCE 1.2
 MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
 BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 BGS2X2_BLOCK1_DAMPING           1
@@ -509,7 +508,6 @@ MueLu_MIN_AGG_SIZE              6
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_NONZEROIMBALANCE 1.2
 MueLu_REBALANCE_MINROWS         1000
-MueLu_REUSE                     nothing
 BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 BGS2X2_BLOCK1_DAMPING           1
