@@ -13,8 +13,8 @@
 
 #include <Ifpack.h>  // for condest
 
-#include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_inpar/inpar_solver.H"
@@ -83,14 +83,12 @@ namespace LINALG
     \param comm     (in): a reference to a Epetra communicator object
     \param outfile  (in): pointer to an error file
 
-    \date 11/08
     */
     Solver(const Teuchos::ParameterList& inparams, const Epetra_Comm& comm, FILE* outfile);
 
     /*!
     \brief Set-up of stuff common to all constructors
 
-    \date 11/08
     */
     void Setup();
 
@@ -250,7 +248,7 @@ namespace LINALG
         const Teuchos::ParameterList& inparams);
 
     /*!
-     \brief Translate BACI dat file parameters to Stratimikos (Amesos)
+     \brief Translate Trilinos parameters to Stratimikos
      */
     static const Teuchos::ParameterList TranslateAmesosToStratimikos(
         const Teuchos::ParameterList& inparams);
@@ -267,6 +265,10 @@ namespace LINALG
     static const Teuchos::ParameterList TranslateMLToStratimikos(
         const Teuchos::ParameterList& inparams);
 
+    /*!
+    \brief Translate BACI dat file parameters to Stratimikos (Amesos)
+
+    */
     static const Teuchos::ParameterList TranslateBACIToML(
         const Teuchos::ParameterList& inparams, Teuchos::ParameterList* azlist = NULL);
 
@@ -352,8 +354,9 @@ namespace LINALG
     //@}
 
     /*!
-    \brief //! Returns the solver name that has been set in the corresponding block in the BACI dat
-    file used for debugging purposes only. has no meaning
+    \brief Return the solver name from the solver block in the input file
+
+    \note This name is purely descriptive and does not affect any computations.
     */
     inline std::string Name() const { return params_->get<std::string>("name"); }
 
@@ -385,10 +388,11 @@ namespace LINALG
     Teuchos::RCP<SOLVER::SolverType> solver_;
 
    private:
-    // don't want = operator
-    Solver operator=(const Solver& old);
-    // don't want cctor
-    Solver(const LINALG::Solver& old);
+    //! don't want = operator
+    Solver operator=(const Solver& old) = delete;
+
+    //! don't want cctor
+    Solver(const LINALG::Solver& old) = delete;
 
   };  // class Solver
 
@@ -413,7 +417,7 @@ namespace LINALG
 }  // namespace LINALG
 
 
-// << operator
+//! << operator
 std::ostream& operator<<(std::ostream& os, const LINALG::Solver& solver);
 
 #endif  // #ifndef LINALG_SOLVER_H
