@@ -332,25 +332,6 @@ namespace LINALG
     */
     inline Teuchos::ParameterList& Params() const { return *params_; }
 
-    /*!
-    \brief Get number of solver calls done on this solver
-
-    */
-    //   inline int Ncall() const { return ncall_; }
-
-    /*!
-    \brief Get the factored_ flag indicating whether system has been factorized before
-
-    */
-    //   inline bool IsFactored() const { return factored_; }
-
-    /*!
-    \brief //! Returns the condition number estimate for the current preconditioner, if one exists,
-    returns -1.0 if no estimate.
-
-    */
-    //   inline double Condest() const { return aztec_->Condest(); }
-
     //@}
 
     /*!
