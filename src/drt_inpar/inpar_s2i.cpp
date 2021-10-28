@@ -86,7 +86,7 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "growth",
       &s2icoupling);
 
-  BoolParameter("SEPARATE_CONDITIONS", "No",
+  BoolParameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
       "mesh tying for different conditions should be setup independently", &s2icoupling);
 }
 

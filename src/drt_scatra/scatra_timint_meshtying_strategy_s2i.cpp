@@ -120,8 +120,8 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       equilibration_(Teuchos::null),
       kinetics_conditions_meshtying_slaveside_(),
       slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
-      separate_contions_(DRT::INPUT::IntegralValue<bool>(
-          parameters.sublist("S2I COUPLING"), "SEPARATE_CONDITIONS"))
+      indepedent_setup_of_conditions_(DRT::INPUT::IntegralValue<bool>(
+          parameters.sublist("S2I COUPLING"), "MESHTYING_CONDITIONS_INDEPENDENT_SETUP"))
 {
   // empty constructor
 }  // SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I
@@ -1840,7 +1840,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
 
       // initialize int vectors for global ids of slave and master interface nodes
-      if (separate_contions_)
+      if (indepedent_setup_of_conditions_)
       {
         std::vector<std::vector<int>> islavenodegidvec_cond;
         std::vector<std::vector<int>> imasternodegidvec_cond;

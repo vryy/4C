@@ -675,7 +675,7 @@ namespace SCATRA
     bool slaveonly_;
 
     //! flag indicating that mesh tying for different conditions should be setup independently
-    const bool separate_contions_;
+    const bool indepedent_setup_of_conditions_;
 
   };  // class MeshtyingStrategyS2I
 
