@@ -648,7 +648,6 @@ E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 FUNCT 0 0
 DSURF  1
 // fluid_fsi_all
 E 5 -
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    5 DLINE 1
 NODE    6 DLINE 1

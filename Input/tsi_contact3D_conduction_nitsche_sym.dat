@@ -159,8 +159,6 @@ E 4 - 1 Master Inactive
 -------------------------------DESIGN VOL THERMO DIRICH CONDITIONS
 DVOL 1
 E 1 - NUMDOF 1 ONOFF 0 VAL 20 FUNCT 0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    65 DSURFACE 1
 NODE    68 DSURFACE 1

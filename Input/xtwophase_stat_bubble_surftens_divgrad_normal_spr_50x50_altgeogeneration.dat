@@ -100,8 +100,6 @@ GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -161,8 +159,6 @@ FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // Initial Level Set function
 FUNCTION sqrt(x*x+y*y)-0.4
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -237,7 +233,6 @@ SIDE fluid x- DSURFACE 7
 SIDE fluid x+ DSURFACE 7
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
------------------------------------------------------------------NODE COORDS
 ----------------------------------------------------------------FLUID DOMAIN
 LOWER_BOUND                     -0.5 -0.5 -0.025
 UPPER_BOUND                     0.5 0.5 0.025

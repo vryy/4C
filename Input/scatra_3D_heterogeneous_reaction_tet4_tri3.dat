@@ -115,7 +115,6 @@ E 1 - ScaTra 2
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    73 DNODE 1
 NODE    84 DNODE 2
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    129 DSURFACE 1
 NODE    130 DSURFACE 1

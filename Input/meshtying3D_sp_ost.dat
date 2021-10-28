@@ -85,8 +85,6 @@ E 4 - 1 Master Inactive
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   1
 E 1 - Velocity 2
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 65 DSURFACE 1
 NODE 68 DSURFACE 1

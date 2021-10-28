@@ -237,8 +237,6 @@ COMPONENT 10  FUNCTION 1.0
 COMPONENT 11  FUNCTION 1.0
 -------------------------------------------------------------FUNCT2
 VARFUNCTION phi8
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  4.06004767026417412e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 4.58368896619377875e+00 TOLERANCE 1e-9
@@ -288,9 +286,6 @@ NDVOL   1
 // E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff 2.0 coupling simple_multiplicative
 // E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 0 reaccoeff -1.0 coupling simple_multiplicative reacstart 3.0
 // E 1 - numscal 9 stoich 0 0 0 0 0 0 0 -1 1 reaccoeff 1.0 coupling simple_multiplicative reacstart 3.0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE    1 DVOL 1
 NODE    2 DVOL 1

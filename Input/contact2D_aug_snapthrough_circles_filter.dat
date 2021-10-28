@@ -168,7 +168,6 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 101 DENS 0.001
 MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 1000.0  C2 0.25                    // C1 = E, C2 = nu
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 201 DENS 0.001
 MAT 201 ELAST_CoupLogNeoHooke MODE YN C1 1000.0  C2 0.25
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION -2.0*t
 -------------------------------------------------RESULT DESCRIPTION
@@ -204,7 +203,6 @@ E 5 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
 E 6 - 1 Slave Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
 // contact_circle_ilow
 E 7 - 1 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    244 DLINE 1
 NODE    247 DLINE 1
@@ -419,8 +417,6 @@ NODE    417 DLINE 7
 NODE    420 DLINE 7
 NODE    423 DLINE 7
 NODE    426 DLINE 7
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.4142135619999999e+01  1.4142135627461901e+01  0.0000000000000000e+00
 NODE         2 COORD -1.4142135619999999e+01  1.3783928606744746e+01  0.0000000000000000e+00

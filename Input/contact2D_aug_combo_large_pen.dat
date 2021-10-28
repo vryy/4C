@@ -248,13 +248,9 @@ MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.1
 MAT 3   ELAST_CoupNeoHooke YOUNG 2500 NUE 0.25
 MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 0.1
 MAT 4   ELAST_CoupNeoHooke YOUNG 25000 NUE 0.25
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 1.0 5.0 VALUES 0 -7.0 -7.0
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 932 QUANTITY dispx VALUE 6.11248889091607461e-01 TOLERANCE 1.0e-08
 STRUCTURE DIS structure NODE 932 QUANTITY dispy VALUE 3.44648943704649380e+00 TOLERANCE 1.0e-08
@@ -280,7 +276,6 @@ DLINE  2
 E 3 - 1 Slave Inactive FrCoeffOrBound 0.0
 // inclined_edge_2
 E 6 - 1 Master Inactive FrCoeffOrBound 0.0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    2 DLINE 1
@@ -453,8 +448,6 @@ NODE    1016 DLINE 6
 NODE    1018 DLINE 6
 NODE    1020 DLINE 6
 NODE    1022 DLINE 6
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1    COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
 NODE 2    COORD  0.0000000000000000e+00  3.3333333333333393e-01  0.0000000000000000e+00

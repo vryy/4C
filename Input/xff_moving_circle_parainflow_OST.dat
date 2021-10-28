@@ -265,7 +265,6 @@ NODE 181 DNODE 2
 NODE 182 DNODE 2
 NODE 191 DNODE 2
 NODE 192 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 181 DSURFACE 1
 NODE 182 DSURFACE 1

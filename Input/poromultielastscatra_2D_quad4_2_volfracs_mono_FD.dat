@@ -201,7 +201,6 @@ E 2 - NUMDOF 8 ONOFF 1 1 1 1 1 1 1 1 VAL 0.1 0.0 0.0 0.0 0.0 0.0 0.1 0.3 FUNCT 0
 DSURF  1
 // curve_right
 E 1 - NUMDOF 8 ONOFF 0 0 0 0 0 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.1 0.3 FUNCT 0 0 0 0 0 0 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    5 DLINE 1
 NODE    6 DLINE 1
@@ -219,7 +218,6 @@ NODE    6 DSURFACE 1
 NODE    7 DSURFACE 1
 NODE    8 DSURFACE 1
 NODE    9 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  5.0000000000000000e-01  5.0000000000000000e-01  0.0000000000000000e+00
 NODE         2 COORD  0.0000000000000000e+00  5.0000000000000000e-01  0.0000000000000000e+00

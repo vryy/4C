@@ -31,7 +31,6 @@ FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 INITIALFIELD                    zero_field
@@ -1396,7 +1395,6 @@ NODE 1072 DSURFACE 1
 NODE 1077 DSURFACE 1
 NODE 1080 DSURFACE 1
 NODE 1084 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 1.000000000000000e+00 9.687500000000000e-01 0.000000000000000e+00

@@ -83,7 +83,6 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_viscous_stress
 HYBRID_LM_L2_PROJ               part_ele_proj                 //full_ele_proj // part_ele_proj
@@ -129,11 +128,6 @@ COMPONENT 0 FUNCTION 4.0*y*(1.0-y) // -1.0 //101.0 //0.01*(-y) // 0.0100051*(-y)
 COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0 // pressure
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 1103 QUANTITY velx VALUE 6.26618408312429209e-01 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 1103 QUANTITY vely VALUE 1.45619503879748490e-02 TOLERANCE 1e-8

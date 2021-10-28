@@ -78,8 +78,6 @@ E 2 - 1 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNoth
 E 3 - 0 Slave Active FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 0 RefConfCheckNonSmoothSelfContactSurface 0.0 ConstitutiveLawID 1
 // slave_right
 E 4 - 1 Slave Active FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact DoNothing TwoHalfPass 0 RefConfCheckNonSmoothSelfContactSurface 0.0 ConstitutiveLawID 2
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    157 DSURFACE 1
 NODE    158 DSURFACE 1
@@ -234,7 +232,6 @@ NODE    81 DSURFACE 6
 NODE    82 DSURFACE 6
 NODE    85 DSURFACE 6
 NODE    87 DSURFACE 6
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  7.5000000000000000e+02 -2.5000000000000000e+02  2.0000000000000000e+02
 NODE         2 COORD  7.5000000000000000e+02 -2.5000000000000000e+02  6.6666666666666657e+01

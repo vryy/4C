@@ -1,7 +1,6 @@
 //
 //
 // XFluid LS Neumann with Inflow Stabilization test
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -80,7 +79,6 @@ MASS_CONSERVATION_COMBO         sum
 MASS_CONSERVATION_SCALING       full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY .10 DENSITY 10 GAMMA 1.0
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 1
 ----------------------------------------------------------------------FUNCT2
@@ -96,12 +94,8 @@ E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0 0 0 0  FUNCT 0 0 0 0
 ---------------------------------DESIGN XFEM LEVELSET NEUMANN VOL CONDITIONS
 DVOL 1
 E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL -5 -5 0 0 0 0  FUNCT  0 0 0 0 0 0  Live Mid INFLOW_STAB 1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
------------------------------------------------------------------NODE COORDS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND  -0.5 -0.5 -.03
 UPPER_BOUND  0.5 0.5 .03

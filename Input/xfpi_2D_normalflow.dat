@@ -214,7 +214,6 @@ DSURF                        2
 // poro_bottom
 E 8 - COUPLINGID 1 BJ_COEFF 17.3205080756888
 E 7 - COUPLINGID 1 BJ_COEFF 17.3205080756888
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    21 DLINE 1
 NODE    22 DLINE 1

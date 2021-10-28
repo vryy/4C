@@ -64,9 +64,6 @@ NDVOL   1
 DVOL 1
 // left end
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.3 FUNCT 1 Live Mid
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE  1  DVOL 1
 NODE  2  DVOL 1

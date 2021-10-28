@@ -19,7 +19,6 @@ NUMDF                           3
 PROBLEMTYP                      Structure
 SHAPEFCT                        Nurbs
 RESTART                         0
---------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

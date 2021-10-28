@@ -103,8 +103,6 @@ GMSH_CUT_OUT                    no
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes

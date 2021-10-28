@@ -104,8 +104,6 @@ GMSH_CUT_OUT                    yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -156,14 +154,11 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 FUNCTION sqrt(2*x*x+y*y)-0.4 // test ellipse -> oscillatory
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          5
 NDSURF                          6
 NDVOL                           1
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // surface front

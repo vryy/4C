@@ -100,7 +100,6 @@ XI                              0
 THETA                           0.5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0e3 NUE 0.3 DENS 2.0e-6
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.7 1.2 100000 VALUES 0 50 60 60
@@ -119,8 +118,6 @@ DSURF                           3
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -1394,7 +1391,6 @@ NODE 2005 DSURFACE 4
 NODE 2008 DSURFACE 4
 NODE 2012 DSURFACE 4
 NODE 2015 DSURFACE 4
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 3.0000000000000000e+01 0.0000000000000000e+00 5.0000000000000000e+00
 NODE 2 COORD 2.9743345841214307e+01 3.9157857666015472e+00 5.0000000000000000e+00

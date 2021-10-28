@@ -99,8 +99,6 @@ DSURF  0
 //E 1 -
 // left right
 //E 2 -
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -5926,7 +5924,6 @@ NODE    5401 DSURFACE 4
 NODE    5403 DSURFACE 4
 NODE    5405 DSURFACE 4
 NODE    5407 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1   COORD -5.00000000e-01 -5.00000000e-01 9.80392192e-03
 NODE 2   COORD -5.00000000e-01 -5.00000000e-01 -9.80392192e-03

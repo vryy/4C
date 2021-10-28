@@ -121,7 +121,6 @@ E 4 - NUMDOF 2 ONOFF 1 1 VAL 1.0 1.0 FUNCT 0 7
 DVOL   1
 // designvol
 E 1 - NUMDOF 2 ONOFF 1 0 VAL 1.0 0.0 FUNCT 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    163 DLINE 1
 NODE    164 DLINE 1

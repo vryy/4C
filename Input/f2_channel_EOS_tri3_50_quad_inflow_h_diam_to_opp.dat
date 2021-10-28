@@ -130,8 +130,6 @@ COMPONENT 2 FUNCTION 10.0 //0.0
 COMPONENT 3 FUNCTION 0.0 //(-10.0*0.1*x) //+5.0*z // 0.0 // pressure
 ------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION -10.0*y*1.0
-------------------------------------------------------------FUNCT5
-------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1207 QUANTITY velx VALUE 3.95374885302609280e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1207 QUANTITY vely VALUE -8.34166106617907728e-06 TOLERANCE 1e-12
@@ -3363,7 +3361,6 @@ NODE    2983 DSURFACE 1
 NODE    2984 DSURFACE 1
 NODE    2985 DSURFACE 1
 NODE    2986 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1   COORD 4.8359182159729591e-01 -4.7090447890932757e-01 0.0000000000000000e+00
 NODE 2   COORD 4.8681473427183930e-01 -4.8697885719791606e-01 0.0000000000000000e+00

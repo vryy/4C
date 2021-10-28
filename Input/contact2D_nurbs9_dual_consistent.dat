@@ -72,7 +72,6 @@ DSURF                           0
 DLINE                           2
 E 7 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT none none
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 1.0 -1.0 FUNCT 2 1
-------------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 -------------------------DESIGN LINE MORTAR CONTACT CONDITIONS 2D
 DLINE  2
 // mrtr_1
@@ -84,7 +83,6 @@ NDPOINT                           0
 NDLINE                            8
 NDSURF                            0
 NDVOL                             0
--------------------------------------------------------DNODE-NODE TOPOLOGY
 -------------------------------------------------------DLINE-NODE TOPOLOGY
 //patch coupling BC 1 (begin)
 NODE       1 DLINE   1
@@ -136,8 +134,6 @@ NODE      52 DLINE   8
 NODE      56 DLINE   8
 NODE      60 DLINE   8
 NODE      64 DLINE   8
--------------------------------------------------------DSURF-NODE TOPOLOGY
---------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------STRUCTURE KNOTVECTORS
 BEGIN NURBSPATCH
 ID        1

@@ -106,7 +106,6 @@ E 4 - 1 Master Inactive FrCoeffOrBound 0.2
 DLINE  1
 // line
 E 1 -
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    199 DLINE 1
 NODE    200 DLINE 1
@@ -282,7 +281,6 @@ NODE    161 DSURFACE 4
 NODE    164 DSURFACE 4
 NODE    170 DSURFACE 4
 NODE    174 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -8.0000000000000004e-01
 NODE         2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -1.1333333333333333e+00

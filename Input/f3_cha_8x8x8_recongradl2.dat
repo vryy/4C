@@ -140,7 +140,6 @@ ML_DAMPMED        0.67      // damping med grids
 ML_DAMPCOARSE     1.0       // damping coarse grid
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 0.5 DENSITY 1.0
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (1-y*y)
 COMPONENT 1 FUNCTION 0
@@ -151,8 +150,6 @@ COMPONENT 0 FUNCTION 1+0.01*sin(x/2)*sin(x/2)
 COMPONENT 1 FUNCTION 0
 COMPONENT 2 FUNCTION 0
 COMPONENT 3 FUNCTION 0
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 100 QUANTITY velx VALUE 9.39896395590536948e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 450 QUANTITY velx VALUE 1.00248303187441135e+00 TOLERANCE 1e-9
@@ -189,8 +186,6 @@ E 7 -
 DVOL   1
 // volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    145 DSURFACE 1
 NODE    146 DSURFACE 1

@@ -176,9 +176,6 @@ COMPONENT 2 FUNCTION 0.0 //initial pres. field (for Boussinesq approx)
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 500000.0 DESCRIPTION 0.5*(sin((t*pi/5)-(pi/2)))+0.5 0.5*(sin((5*pi/5)-(pi/2)))+0.5
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 737 QUANTITY flux_boundary_1_x VALUE -2.0e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 737 QUANTITY flux_boundary_1_y VALUE 0.0e+00 TOLERANCE 1e-09
@@ -1814,7 +1811,6 @@ NODE 1432 DSURFACE 1
 NODE 1433 DSURFACE 1
 NODE 1434 DSURFACE 1
 NODE 1435 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.00000007e-02 -1.00000001e-01 0.00000000e+00
 NODE 2 COORD -4.84999977e-02 -1.00000001e-01 0.00000000e+00

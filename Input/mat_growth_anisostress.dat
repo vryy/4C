@@ -101,7 +101,6 @@ MAT 21 ELAST_IsoNeoHooke MUE 50.0
 MAT 22 ELAST_VolSussmanBathe KAPPA 50.0
 
 MAT 3 MAT_GrowthAnisoStress TAU 1.0 TAU_REV 1.0 THETA_MIN 1.0 THETA_MAX 1.5 GAMMA 1.72 GAMMA_REV 1.0 P_CRIT 0.5 TOL 1.0e-10
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 2.0 VALUES 0.0 0.0 150.0
@@ -149,7 +148,6 @@ NODE    5 DSURFACE 2
 NODE    6 DSURFACE 2
 NODE    7 DSURFACE 2
 NODE    8 DSURFACE 2
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e-01
 NODE         2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01

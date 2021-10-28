@@ -78,8 +78,6 @@ GMSH_DISCRET_OUT                yes
 GMSH_CUT_OUT                    yes
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //MomentFitting //Tessellation
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
-------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR //Aztec_MSR //Aztec_MSR    // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -115,9 +113,6 @@ FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
 KIMMOIN-UP MAT 1 ISSTAT 1
 ----------------------------------------------------------------------FUNCT3
 FUNCTION -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 231 QUANTITY velx VALUE 1.10222969010104088e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 231 QUANTITY vely VALUE -8.28298336621413833e-01 TOLERANCE 1e-12
@@ -185,7 +180,6 @@ SIDE fluid z- DSURFACE 5
 SIDE fluid x+ DSURFACE 6
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
--------------------------------------------------------NODE COORDS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND -0.5 -0.5 -0.01
 UPPER_BOUND  0.5  0.5  0.01

@@ -24,7 +24,6 @@ RESTART                         0
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
---------------------------------------------------------------------------IO
 ----------------------------------------------------------TWO PHASE FLOW
 CONVTOL                         1e-06
 ITEMAX                          1
@@ -201,7 +200,6 @@ SIDE fluid z+ DSURFACE 5
 SIDE fluid z- DSURFACE 6
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
--------------------------------------------------------NODE COORDS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND -1.0 -1.0 -1.0
 UPPER_BOUND  1.0  1.0  1.0

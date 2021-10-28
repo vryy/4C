@@ -82,7 +82,6 @@ NAME                            THERMAL_SOLVER
 SOLVER                          UMFPACK  // Aztec_MSR,Superlu
 ----------------------------------------------------------MATERIALS
 MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTION t/4 1
@@ -110,7 +109,6 @@ NODE    1 DSURFACE 2
 NODE    2 DSURFACE 2
 NODE    3 DSURFACE 2
 NODE    4 DSURFACE 2
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1   COORD 1.0000000000000000e+01 0.0000000000000000e+00 5.0000000000000000e-01
 NODE 2   COORD 1.0000000000000000e+01 1.0000000000000000e+00 5.0000000000000000e-01

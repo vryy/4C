@@ -178,9 +178,6 @@ COMPONENT 5  FUNCTION 1.0
 COMPONENT 6 FUNCTION 3.0
 COMPONENT 7 FUNCTION 10.0
 COMPONENT 8  FUNCTION 1.0
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  4.08039279297055246e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 4.58306588105868862e+00 TOLERANCE 1e-9
@@ -236,8 +233,6 @@ E 1 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 ----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURF 1
 NODE    2 DSURF 1

@@ -54,8 +54,6 @@ E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT none none none
 DSURF                           1
 //                              side_x_free
 E 2 - NUMDOF 3 ONOFF 1 0 0 STIFF 0 0.0 0.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 2 0 0 DIRECTION xyz COUPLING none
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

@@ -135,9 +135,6 @@ MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1000 C2 0.27       // C1 = Young, C2 = nu
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 -0.4 -0.4
--------------------------------------------------------------FUNCT2
--------------------------------------------------RESULT DESCRIPTION
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  4
@@ -155,7 +152,6 @@ DLINE  2
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.0
 // contact_plate
 E 4 - 1 Master Inactive FrCoeffOrBound 0.0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    2 DLINE 1
@@ -183,8 +179,6 @@ NODE    123 DLINE 3
 NODE    124 DLINE 3
 NODE    122 DLINE 4
 NODE    125 DLINE 4
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.9270509831000000e+00  2.1468304510000000e+00  0.0000000000000000e+00
 NODE         2 COORD  2.7416407864799996e+00  2.1468304510000000e+00  0.0000000000000000e+00

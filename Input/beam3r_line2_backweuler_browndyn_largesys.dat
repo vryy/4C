@@ -190,7 +190,6 @@ E 101 - ID 100 TYPE arbitrary
 E 102 - ID 101 TYPE arbitrary
 E 103 - ID 102 TYPE arbitrary
 E 104 - ID 103 TYPE arbitrary
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1

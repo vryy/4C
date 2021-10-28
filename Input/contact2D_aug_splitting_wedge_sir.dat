@@ -158,7 +158,6 @@ MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 101 DENS 0.001
 MAT 101 ELAST_CoupLogNeoHooke MODE YN C1 250.0  C2 0.25                    // C1 = E, C2 = nu
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 201 DENS 0.001
 MAT 201 ELAST_CoupLogNeoHooke MODE YN C1 2500.0  C2 0.25
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION  -6.7*t // 1*(1.5-y)
 -------------------------------------------------RESULT DESCRIPTION
@@ -338,8 +337,6 @@ NODE    958 DLINE 5
 NODE    959 DLINE 5
 NODE    960 DLINE 5
 NODE    961 DLINE 5
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  7.0000000000000000e+00  5.7999999999999998e+00  0.0000000000000000e+00
 NODE         2 COORD  6.7999999999999998e+00  5.7999999999999989e+00  0.0000000000000000e+00

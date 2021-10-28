@@ -33,9 +33,6 @@ LOADLIN                         Yes
 RESEVRYERGY                     1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA 1.0 //implicit backward Euler
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            CheapSIMPLEPredict
 SOLVER Aztec_MSR //Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -91,17 +88,12 @@ NDVOL                           2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 orthopressure Mid
-
 ---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
 E 2 - NUMDOF 3 ONOFF 1 1 1 STIFF 1.0e-6 1.0e-6 1.0e-6 TIMEFUNCTSTIFF 0 0 0 VISCO 0.0 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION xyz COUPLING none
-
-
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.00000 0.20000 5.00000 VALUES 0 0.0000107 0.0000107
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 561 DSURFACE 1
 NODE 562 DSURFACE 1

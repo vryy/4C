@@ -175,8 +175,6 @@ COMPONENT 3 FUNCTION 0
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.0000001 1000.0 DESCRIPTION sin((t)/0.0000001*pi/2.0) 1.0
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 // inflow node
 FLUID DIS fluid NODE 4804 QUANTITY velx VALUE 1.90500919224671994e-01 TOLERANCE 1e-10 //7.500000000000e-01
@@ -257,7 +255,6 @@ E 3 -
 E 4 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 4298 DNODE 1
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    4843 DSURFACE 1
 NODE    4844 DSURFACE 1

@@ -239,7 +239,6 @@ COMPONENT 8  FUNCTION 2.0
 VARFUNCTION phi7*phi8/(1+phi8)*phi9/(7+phi9)
 -------------------------------------------------------------FUNCT3
 VARFUNCTION phi4/(1+phi4)*phi6/(2+phi6)
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2 QUANTITY phi VALUE  1.12076462536474697e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 2 QUANTITY phi2 VALUE 2.41529250729523831e-01 TOLERANCE 1e-9
@@ -265,9 +264,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  0
 NDVOL   1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE    1 DVOL 1
 NODE    2 DVOL 1

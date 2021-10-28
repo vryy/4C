@@ -127,8 +127,6 @@ DSURF  2
 E 2 - 1 Slave KineticModel ConstantPermeability numscal 1 permeabilities 5.0e-2
 // right_block_side_of_interface
 E 3 - 1 Master
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

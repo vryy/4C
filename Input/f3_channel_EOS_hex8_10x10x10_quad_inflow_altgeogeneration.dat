@@ -134,7 +134,6 @@ COMPONENT 3 FUNCTION 0.0 //(-10.0*0.1*x) //+5.0*z // 0.0 // pressure
 COMPONENT 0 FUNCTION 20.0*2.0*y*(z*z-0.25)*1.0
 ------------------------------------------------------------FUNCT5
 COMPONENT 0 FUNCTION 20.0*2.0*z*(y*y-0.25)*1.0
-------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 7101 QUANTITY velx VALUE 3.00065075610373211e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 7101 QUANTITY vely VALUE -7.21132380700347311e-03 TOLERANCE 1e-12
@@ -247,7 +246,6 @@ SIDE fluid x+ DSURFACE 6
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
 VOLUME fluid DVOL 2
--------------------------------------------------------NODE COORDS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND -0.5 -0.5 -0.5
 UPPER_BOUND  0.5  0.5  0.5

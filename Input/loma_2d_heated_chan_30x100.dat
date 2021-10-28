@@ -3609,7 +3609,6 @@ NODE 380 DSURFACE 1
 NODE 406 DSURFACE 1
 NODE 436 DSURFACE 1
 NODE 467 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 5.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 5.000000000000000e+00 9.666666666666667e-01 0.000000000000000e+00
@@ -9764,7 +9763,6 @@ COMPONENT 0 FUNCTION 1.0-y
 ----------------------------------------------------------------------FUNCT5
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 15.0 500000.0 DESCRIPTION ((1-0.666666666667)/15)*t+0.666666666667 1
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 3026 QUANTITY velx VALUE 1.667578776e-01 TOLERANCE 1e-4
 FLUID DIS fluid NODE 3026 QUANTITY vely VALUE -1.225813614e-01 TOLERANCE 1e-4

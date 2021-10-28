@@ -11,7 +11,6 @@ NUMDF                           2
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ArterialNetwork
 RESTART                         0
---------------------------------------------------------------------------IO
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      ExpTaylorGalerkin
@@ -168,7 +167,6 @@ NODE 8 DSURFACE 1
 NODE 9 DSURFACE 1
 NODE 10 DSURFACE 1
 NODE 11 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00 1.0 0.0
 NODE 2 COORD 10.0 1.0 0.0

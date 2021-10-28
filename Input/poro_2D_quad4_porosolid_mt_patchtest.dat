@@ -97,11 +97,6 @@ SRC_FIELD structure SRC_MAT 3 TAR_FIELD porofluid TAR_MAT 5
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.0 500000.0 DESCRIPTION 0.5*(1-cos((t*pi/2.0))) 1
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
--------------------------------------------------------------FUNCT5
--------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 38 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 89 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-8
@@ -370,7 +365,6 @@ NODE    114 DSURFACE 2
 NODE    115 DSURFACE 2
 NODE    116 DSURFACE 2
 NODE    117 DSURFACE 2
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -5.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
 NODE         2 COORD -3.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00

@@ -261,7 +261,6 @@ E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1 0 0 FUNCT 1 0 0
 DSURF  2
 E 1 - 1 Slave
 E 2 - 1 Master
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    741 DLINE 1
 NODE    742 DLINE 1

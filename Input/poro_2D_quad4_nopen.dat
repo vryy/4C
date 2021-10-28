@@ -77,7 +77,6 @@ TOLRES_PRES                     1e-10
 TOLRES_PORO                     1e-10
 VECTORNORM_RESF                 L2
 VECTORNORM_INC                  L2
--------------------------------------------------------------MORTAR COUPLING
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 no
 ---------------------------------------------------------------FLUID DYNAMIC
@@ -117,11 +116,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 5
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION -1.0/0.225*(y-0.7)*(y-1.0)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.5 500000.0 DESCRIPTION 0.5*(1-cos((t*2*pi/5.0))) 1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 2 QUANTITY velx VALUE -1.06789078497480528e-02 TOLERANCE 1e-9
 FLUID DIS porofluid NODE 2 QUANTITY vely VALUE 1.67820617026857833e-03 TOLERANCE 1e-9
@@ -256,7 +250,6 @@ NODE 30 DSURFACE 1
 NODE 31 DSURFACE 1
 NODE 32 DSURFACE 1
 NODE 33 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000000e+00 1.0000000000000000e+00 0.0000000000000000e+00
 NODE 2 COORD 1.5643446504023084e-01 9.8768834059513777e-01 0.0000000000000000e+00

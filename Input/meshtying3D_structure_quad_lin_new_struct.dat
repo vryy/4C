@@ -78,8 +78,6 @@ DSURF  2
 E 3 - 1 Slave Active
 // bottom_contact
 E 4 - 1 Master Inactive
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    344 DSURFACE 1
 NODE    347 DSURFACE 1

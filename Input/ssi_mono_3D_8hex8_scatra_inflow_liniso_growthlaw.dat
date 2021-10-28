@@ -78,8 +78,6 @@ E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 2
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 1
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT none none none
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURF 1
 NODE    2 DSURF 1
@@ -90,7 +88,6 @@ NODE    10 DSURF 1
 NODE    13 DSURF 1
 NODE    14 DSURF 1
 NODE    17 DSURF 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.0000000000000000e+00 -1.0000000000000000e+00  1.0000000000000000e+00
 NODE         2 COORD -1.0000000000000000e+00 -1.0000000000000000e+00  0.0000000000000000e+00

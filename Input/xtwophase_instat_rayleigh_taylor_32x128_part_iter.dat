@@ -101,7 +101,6 @@ GMSH_CUT_OUT                    no //yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -177,9 +176,6 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 // initial G-function field
 FUNCTION y-0.05*cos(2*pi*x)
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12

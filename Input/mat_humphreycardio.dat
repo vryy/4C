@@ -2,7 +2,6 @@
 //
 // necessary defines: D_SOLID3 BINIO
 //
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        343
 NODES                           512
@@ -48,9 +47,6 @@ MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000000.0 DESCRIPTION sin(t/4.0*pi/2.0) 1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 8.420912416e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE 4.313806907e-03 TOLERANCE 1e-6
@@ -374,7 +370,6 @@ NODE 488 DSURFACE 3
 NODE 496 DSURFACE 3
 NODE 504 DSURFACE 3
 NODE 512 DSURFACE 3
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -1.00000000e+00 -1.00000000e+00 5.00000000e-01
 NODE 2 COORD -1.00000000e+00 -1.00000000e+00 3.57142866e-01

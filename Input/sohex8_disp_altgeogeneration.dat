@@ -147,12 +147,9 @@ DSURF                           0
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 CORNER structure x- y- z- DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 SIDE structure x- DSURFACE 1
 SIDE structure x+ DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
------------------------------------------------------------------NODE COORDS
 ----------------------------------------------------------STRUCTURE DOMAIN
 LOWER_BOUND 0.0 0.0 0.0
 UPPER_BOUND 4.0 4.0 4.0

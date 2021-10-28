@@ -519,7 +519,6 @@ NODE    1889 DNODE 1
 NODE    1890 DNODE 1
 NODE    1891 DNODE 1
 NODE    1892 DNODE 1
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -2125,7 +2124,6 @@ NODE    1601 DSURFACE 1
 NODE    1602 DSURFACE 1
 NODE    1603 DSURFACE 1
 NODE    1604 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -2.0000000000000000e+00 -2.0000000000000000e+00  1.0000000000000000e+00
 NODE         2 COORD -2.0000000000000000e+00 -2.0000000000000000e+00  3.3333333333333337e-01

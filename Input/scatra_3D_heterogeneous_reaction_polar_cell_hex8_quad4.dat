@@ -228,8 +228,6 @@ E 1 -
 DSURF  1
 // scatra_membrane
 E 2 -
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    95 DSURFACE 1
 NODE    96 DSURFACE 1

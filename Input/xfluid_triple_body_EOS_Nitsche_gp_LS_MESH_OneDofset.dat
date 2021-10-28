@@ -85,7 +85,6 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence//Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 NODAL_DOFSET_STRATEGY           ConnectGhostDofsets_PerNodeAndPosition
 MAX_NUM_DOFSETS                 2
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 IS_PSEUDO_2D                    yes
@@ -111,9 +110,6 @@ COMPONENT 3 FUNCTION 0.0 // pressure
 //FUNCTION sqrt((x-0.45)*(x-0.45)+(y+0.45)*(y+0.45))-0.04 // outside bb
 //FUNCTION sqrt((x-0.25)*(x-0.25)+(y+0.25)*(y+0.25))-0.04 // inside bb
 COMPONENT 0 FUNCTION sqrt((x-0.35)*(x-0.35)+(y+0.35)*(y+0.35))-0.04 // boarder of bb
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 1103 QUANTITY velx VALUE 1.21435312241221793e+00 TOLERANCE 1e-10
 XFLUID DIS fluid NODE 1103 QUANTITY vely VALUE -6.03368466146468663e-01 TOLERANCE 1e-10
@@ -167,7 +163,6 @@ E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 O
 DVOL 0
 // fluid_volume
 //E 1 - LEVELSETFIELDNO 2
----------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1

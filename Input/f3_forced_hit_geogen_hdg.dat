@@ -158,7 +158,6 @@ SIDE fluid z+ DSURFACE 5
 SIDE fluid z- DSURFACE 6
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
--------------------------------------------------------NODE COORDS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND  0.0  0.0  0.0
 UPPER_BOUND  6.283185307  6.283185307  6.283185307

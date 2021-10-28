@@ -100,7 +100,6 @@ GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT                                               //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -162,8 +161,6 @@ FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
 FUNCTION sqrt(x*x+y*y)-0.4 //0.39 //0.4
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -230,7 +227,6 @@ SIDE fluid z+ DSURFACE 5
 SIDE fluid z- DSURFACE 6
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
------------------------------------------------------------------NODE COORDS
 ----------------------------------------------------------------FLUID DOMAIN
 LOWER_BOUND                     -0.5 -0.5 -0.025
 UPPER_BOUND                     0.5 0.5 0.025

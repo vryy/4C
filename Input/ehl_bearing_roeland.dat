@@ -121,7 +121,6 @@ E 3 - 1 Master
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    413 DNODE 1
 NODE    414 DNODE 1
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

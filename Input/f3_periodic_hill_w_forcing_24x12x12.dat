@@ -126,9 +126,6 @@ COMPONENT 0 FUNCTION -5.5149*y*y+530.799*y-5269.3354
 COMPONENT 1 FUNCTION 0
 COMPONENT 2 FUNCTION 0
 COMPONENT 3 FUNCTION 0
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE 5.06374956902555459e+03 TOLERANCE 1e-9
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE 3.85565322520528753e+01 TOLERANCE 1e-9
@@ -181,8 +178,6 @@ E 6 -
 DVOL   1
 // volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    625 DSURFACE 1
 NODE    626 DSURFACE 1

@@ -100,8 +100,6 @@ DSURF                           2
 E 1 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 0
 //                              cathode
 E 2 - NUMDOF 1 ONOFF 1 VAL -1.0 FUNCT 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 241 DSURFACE 1
 NODE 242 DSURFACE 1
@@ -187,7 +185,6 @@ NODE 639 DSURFACE 2
 NODE 640 DSURFACE 2
 NODE 661 DSURFACE 2
 NODE 662 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 -2.50000000e-01 2.50000004e-02
 NODE 2 COORD 0.00000000e+00 -2.50000000e-01 -2.50000004e-02

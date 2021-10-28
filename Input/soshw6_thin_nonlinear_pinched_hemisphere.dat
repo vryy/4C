@@ -149,7 +149,6 @@ NODE 972 DNODE 1
 NODE 1109 DNODE 2
 NODE 1110 DNODE 2
 NODE 1047 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 371 DSURFACE 1
 NODE 372 DSURFACE 1
@@ -219,7 +218,6 @@ NODE 1095 DSURFACE 2
 NODE 1096 DSURFACE 2
 NODE 1109 DSURFACE 2
 NODE 1110 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000e+00 3.0917150974274e+00 9.5153207778931e+00
 NODE 2 COORD 3.0304107069969e-01 3.0768275260925e+00 9.5153207778931e+00

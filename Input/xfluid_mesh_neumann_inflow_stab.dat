@@ -1,7 +1,6 @@
 //
 //
 // XFluid Mesh Neumann with Inflow Stabilization test
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
@@ -83,7 +82,6 @@ MASS_CONSERVATION_SCALING       full
 MAT 1 MAT_fluid DYNVISCOSITY .10 DENSITY 10 GAMMA 1.0
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 13 DENS 1 //Seal_EH
 MAT 13 ELAST_CoupNeoHooke YOUNG 100000 NUE 0.3 //Seal_EH
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.707106781186547
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -110,8 +108,6 @@ E 1 - COUPLINGID 1 NUMDOF 3 ONOFF 1 1 0 VAL -5.0 5.0 0.0 FUNCT 1 1 1 Live Mid IN
 E 2 - COUPLINGID 1 NUMDOF 3 ONOFF 1 1 0 VAL 5.0 5.0 0.0 FUNCT 1 1 1 Live Mid INFLOW_STAB 1
 E 3 - COUPLINGID 1 NUMDOF 3 ONOFF 1 1 0 VAL 5.0 -5.0 0.0 FUNCT 1 1 1 Live Mid INFLOW_STAB 1
 E 4 - COUPLINGID 1 NUMDOF 3 ONOFF 1 1 0 VAL -5.0 -5.0 0.0 FUNCT 1 1 1 Live Mid INFLOW_STAB 1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 SIDE structure x- DSURFACE 1
 SIDE structure y+ DSURFACE 2
@@ -124,7 +120,6 @@ SIDE structure y- DSURFACE 4
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
 VOLUME structure DVOL 2
------------------------------------------------------------------NODE COORDS
 ----------------------------------------------------STRUCTURE DOMAIN
 LOWER_BOUND  -0.25 -0.25 -.03
 UPPER_BOUND  0.25 0.25 .03

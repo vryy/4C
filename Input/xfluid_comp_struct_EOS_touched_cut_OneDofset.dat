@@ -110,7 +110,6 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 NODAL_DOFSET_STRATEGY           OneDofset_PerNodeAndPosition
 MAX_NUM_DOFSETS                 1
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -140,7 +139,6 @@ COMPONENT 3 FUNCTION 0
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION 0.5*(1.0+sin(pi/1.0*t-pi/2.0)) 0.5*(1.0+sin(pi/1.0*1-pi/2.0))
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0
@@ -176,8 +174,6 @@ E 6 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 
 DSURF 1
 // FSI
 E 6 - COUPLINGID 1 EVALTYPE zero NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

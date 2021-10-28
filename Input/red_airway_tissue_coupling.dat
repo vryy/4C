@@ -113,7 +113,6 @@ E 2 - 2
 NODE 13 DNODE 1
 NODE 15 DNODE 2
 NODE 16 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

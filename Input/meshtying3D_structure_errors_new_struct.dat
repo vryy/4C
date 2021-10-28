@@ -157,7 +157,6 @@ E 2 - 1 Master Inactive
 NODE 1316 DNODE 1
 NODE 274 DNODE 2
 NODE 1332 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 157 DSURFACE 1
 NODE 158 DSURFACE 1
@@ -567,7 +566,6 @@ NODE 1567 DSURFACE 4
 NODE 1568 DSURFACE 4
 NODE 1569 DSURFACE 4
 NODE 1570 DSURFACE 4
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 1.00000000e+00 5.00000000e-01
 NODE 2 COORD 1.66666672e-01 1.00000000e+00 5.00000000e-01

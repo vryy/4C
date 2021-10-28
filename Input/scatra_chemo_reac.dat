@@ -219,8 +219,6 @@ COMPONENT 3 FUNCTION 10.0*exp(-0.2*(x+10)*(x+10))
 //COMPONENT 0 FUNCTION 50.0
 //COMPONENT 1 FUNCTION 0.0
 //COMPONENT 2  FUNCTION 0.0
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE    4.99999999999996447e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE   5.04467671571287897e-15 TOLERANCE 1e-9
@@ -239,10 +237,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  0
 NDVOL   0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.9500000000000000e+01 -2.5000000000000000e-01  2.5000000000000000e-01
 NODE         2 COORD -1.9500000000000000e+01 -2.5000000000000000e-01 -2.5000000000000000e-01

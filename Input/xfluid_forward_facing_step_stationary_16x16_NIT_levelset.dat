@@ -123,7 +123,6 @@ GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

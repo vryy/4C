@@ -128,7 +128,6 @@ NODE 21 DNODE 3
 NODE 22 DNODE 3
 NODE 23 DNODE 3
 NODE 24 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 13 DSURFACE 1
 NODE 14 DSURFACE 1

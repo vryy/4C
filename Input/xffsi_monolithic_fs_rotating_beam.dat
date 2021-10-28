@@ -15,7 +15,6 @@ NUMALEDIS                       0
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
@@ -390,7 +389,6 @@ NODE 4607 DNODE 2
 NODE 4608 DNODE 2
 NODE 4705 DNODE 2
 NODE 4706 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

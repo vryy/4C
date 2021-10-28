@@ -22,8 +22,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       yes
@@ -150,7 +148,6 @@ E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 649 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 145 DSURFACE 1
 NODE 146 DSURFACE 1

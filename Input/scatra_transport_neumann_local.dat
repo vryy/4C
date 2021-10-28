@@ -6,7 +6,6 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -128,7 +127,6 @@ MAT 27 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 28 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 29 MAT_scatra DIFFUSIVITY 0.0000001
 MAT 31 MAT_scatra_reaction NUMSCAL 8 STOICH -1 1 0 0 0 0 0 0 REACCOEFF 1.0 COUPLING simple_multiplicative ROLE 1 0 0 0 0 0 0 0
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION    1.0
 COMPONENT 1 FUNCTION    1.0

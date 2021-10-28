@@ -60,7 +60,6 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 MAXITER                         50
 UZAWAPARAM                      1.0
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -93,7 +92,6 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -1955,7 +1953,6 @@ NODE 803 DSURFACE 8
 NODE 804 DSURFACE 8
 NODE 805 DSURFACE 8
 NODE 806 DSURFACE 8
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 1.999999999999999e+00 0.000000000000000e+00 0.000000000000000e+00

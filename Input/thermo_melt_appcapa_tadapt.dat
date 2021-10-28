@@ -97,7 +97,6 @@ SOLVER                          UMFPACK                       //Aztec_MSR
 -------------------------------------------------------------------MATERIALS
 MAT 1 THERM_FourierVar CAPAFUNCT 2 3 2 CONDUCTFUNCT 5 4 5 CONSOLMAT 2
 MAT 2 MAT_Consolidation SOLIDUS 17 LIQUIDUS 23 LATENTHEAT 338e6
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 10
 ----------------------------------------------------------------------FUNCT2
@@ -124,9 +123,6 @@ NDVOL                           1
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 E 1 - NUMDOF 1 ONOFF 1 VAL 1 FUNCT 6
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
----------------------------------------------------------DSURF-NODE TOPOLOGY
 ----------------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1

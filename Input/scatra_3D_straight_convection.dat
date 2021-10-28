@@ -32,9 +32,6 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
--------------------------------------------------------------CONTACT DYNAMIC
----------------------------------------------------------------FLUID DYNAMIC
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      linear_full
@@ -4662,11 +4659,6 @@ MAT 1 MAT_scatra DIFFUSIVITY 0.01
 COMPONENT 0 FUNCTION 0.0
 COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 5.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 922 QUANTITY phi VALUE 9.803921569e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 784 QUANTITY phi VALUE 9.996155325e-01 TOLERANCE 1e-10

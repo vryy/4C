@@ -84,7 +84,6 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //MomentFitting //Tessellation
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 NIT_STAB_FAC                    24.40282794                   // = 35.0/CT(2D) with former 35 in [10;100]
@@ -160,7 +159,6 @@ E 1 - COUPLINGID 1 LEVELSETFIELDNO 3 BOOLEANTYPE none COMPLEMENTARY 0 NUMDOF 3 O
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1141 DNODE 1
 NODE 1142 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

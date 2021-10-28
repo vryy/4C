@@ -114,8 +114,6 @@ NDVOL   0
 DSURF  1
 // surface
 E 1 - NUMDOF 6 ONOFF 1 1 1 1 1 1 VAL 1.0 1.0 1.0 0.0 0.0 0.0 FUNCT 3 4 5 0 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -719,7 +717,6 @@ NODE    599 DSURFACE 1
 NODE    600 DSURFACE 1
 NODE    601 DSURFACE 1
 NODE    602 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  7.0710678118654746e-01  7.0710678118654746e-01  0.0000000000000000e+00
 NODE         2 COORD  8.0901699437494745e-01  5.8778525229247314e-01  0.0000000000000000e+00

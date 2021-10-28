@@ -143,7 +143,6 @@ DLINE  2
 E 3 - 1 Slave Inactive FrCoeffOrBound 0.0
 // inclined_edge_2
 E 6 - 1 Master Inactive FrCoeffOrBound 0.0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    2 DLINE 1
@@ -316,8 +315,6 @@ NODE    1016 DLINE 6
 NODE    1018 DLINE 6
 NODE    1020 DLINE 6
 NODE    1022 DLINE 6
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1    COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
 NODE 2    COORD  0.0000000000000000e+00  3.3333333333333393e-01  0.0000000000000000e+00

@@ -110,7 +110,6 @@ GMSH_CUT_OUT                    Yes //Yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation              //DirectDivergence //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //DirectDivergence //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT                                               //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -172,8 +171,6 @@ FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
 FUNCTION sqrt(x*x+y*y+z*z)-0.5
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 12 QUANTITY velx VALUE  0.0 TOLERANCE 1e-16
 XFLUID DIS fluid NODE 12 QUANTITY vely VALUE  0.0 TOLERANCE 1e-16
@@ -264,7 +261,6 @@ DVOL                            1
 E 1 - COUPLINGID 1 LEVELSETFIELDNO 2 BOOLEANTYPE none COMPLEMENTARY 0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 649 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 145 DSURFACE 1
 NODE 146 DSURFACE 1

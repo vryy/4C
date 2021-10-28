@@ -111,7 +111,6 @@ GMSH_CUT_OUT                    no
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT                                               //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -177,8 +176,6 @@ FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 // initial G-function field
 FUNCTION sqrt(x*x+y*y)-0.4 //0.39 //0.4
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          5

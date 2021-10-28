@@ -87,7 +87,6 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 NIT_STAB_FAC                    21.97015825                   // = 35/1.59307 = 35/CT(3D)
@@ -156,8 +155,6 @@ XFLUID DIS fluid NODE 7496 QUANTITY velx VALUE 1.0 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 7496 QUANTITY vely VALUE 1.0 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 7496 QUANTITY velz VALUE 1.0 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 7496 QUANTITY pressure VALUE 4.08333333333333333e+00 TOLERANCE 1e-12
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 7394 DSURFACE 1
 NODE 7395 DSURFACE 1

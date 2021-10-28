@@ -32,7 +32,6 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
-----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1

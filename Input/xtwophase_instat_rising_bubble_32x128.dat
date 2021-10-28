@@ -102,7 +102,6 @@ GMSH_CUT_OUT                    yes //yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -167,10 +166,6 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 // initial G-function field
 FUNCTION sqrt((x-0.0)*(x-0.0)+(y+1.0)*(y+1.0))-0.3 //y-0.05*cos(2*pi*x)
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-
 ----------------------------------------------------------RESULT DESCRIPTION
 //AT INTEGRATION POINT
 //node: 4213 is top of bubble

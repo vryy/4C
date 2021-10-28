@@ -156,8 +156,6 @@ DSURF 0
 DVOL 1
 // Fluid volume
 E 1 - 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 21 DSURFACE 1
 NODE 22 DSURFACE 1

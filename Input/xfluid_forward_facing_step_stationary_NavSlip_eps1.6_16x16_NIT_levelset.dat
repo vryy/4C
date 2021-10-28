@@ -113,7 +113,6 @@ GMSH_CUT_OUT                    Yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -145,9 +144,6 @@ MAT 2 MAT_scatra DIFFUSIVITY 0.0
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 FORWARDFACINGSTEP
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 //Same as for Mesh! Difference in (Tessellation) integration create discrepencies
 XFLUID DIS fluid NODE 255 QUANTITY velx VALUE 2.68975085267970648e-02 TOLERANCE 1e-12

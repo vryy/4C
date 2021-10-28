@@ -122,7 +122,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
 E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0  FUNCT 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 179 DLINE 1
 NODE 180 DLINE 1
@@ -269,7 +268,6 @@ NODE 209 DSURFACE 3
 NODE 218 DSURFACE 3
 NODE 227 DSURFACE 3
 NODE 236 DSURFACE 3
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.80000000e+01 4.40000000e+01 4.00000000e+00
 NODE 2 COORD 4.20000000e+01 3.85000000e+01 4.00000000e+00

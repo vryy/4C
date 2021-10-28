@@ -14,7 +14,6 @@ NUMAIRWAYSDIS                   1
 PROBLEMTYP                      Fluid_Structure_Interaction_RedModels
 RESTART                         0
 SHAPEFCT                        Polynomial
------------------------------------------------------------------IO
 --------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   4
 DYNAMICTYP                      OneStepTheta
@@ -199,9 +198,6 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 100.0 DESCRIPTION  0.5*(1.0-cos(2.0*t*pi/2.0)) -1.0*cos(2.0*t*pi/2.0)
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE  6
@@ -3508,7 +3504,6 @@ NODE    7919 DSURFACE 7
 NODE    7922 DSURFACE 7
 NODE    7925 DSURFACE 7
 NODE    7928 DSURFACE 7
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1   COORD 0.0000000000000000e+00 -2.5000000000000000e+00 -2.3000000000000000e+01
 NODE 2   COORD 0.0000000000000000e+00 -1.8750000000000000e+00 -2.3000000000000000e+01

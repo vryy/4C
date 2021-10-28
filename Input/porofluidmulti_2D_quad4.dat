@@ -137,7 +137,6 @@ E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.2 0.3 0.7 FUNCT 4 4 4 4
 DLINE  1
 // curve_right
 E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.0 0.0 0.0 FUNCT 0 0 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    101 DLINE 1
 NODE    102 DLINE 1
@@ -161,8 +160,6 @@ NODE    359 DLINE 2
 NODE    410 DLINE 2
 NODE    461 DLINE 2
 NODE    512 DLINE 2
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.5000000000000000e+00  5.0000000000000000e-01  0.0000000000000000e+00
 NODE         2 COORD  2.3999999999999999e+00  5.0000000000000000e-01  0.0000000000000000e+00

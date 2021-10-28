@@ -185,7 +185,6 @@ E 101 - ID 100 TYPE Actin// arbitrary
 E 102 - ID 101 TYPE Actin// arbitrary
 E 103 - ID 102 TYPE Actin// arbitrary
 E 104 - ID 103 TYPE Actin// arbitrary
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE       1 DLINE 1
 NODE       2 DLINE 1

@@ -138,8 +138,6 @@ DSURF  2
 E 2 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
 // contact_surf_small
 E 4 - 0 Slave Active FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -2641,7 +2639,6 @@ NODE    6868 DSURFACE 4
 NODE    6870 DSURFACE 4
 NODE    6872 DSURFACE 4
 NODE    6874 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00 -5.0000000000000000e-01  5.0000000000000000e-01
 NODE         2 COORD  0.0000000000000000e+00 -5.0000000000000000e-01  4.5833333333333331e-01

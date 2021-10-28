@@ -95,11 +95,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.25 1000.0 DESCRIPTION 1-cos(pi/2/0.25*t) 1.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 397 QUANTITY pressure VALUE 1.00171352667516416e+02 TOLERANCE 1e-9
 FLUID DIS fluid NODE 397 QUANTITY velx VALUE 0.0 TOLERANCE 1e-9
@@ -130,7 +125,6 @@ E 1 - 1 WOMERSLEY NOTPREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonic
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
@@ -823,7 +817,6 @@ NODE 504 DSURFACE 3
 NODE 506 DSURFACE 3
 NODE 508 DSURFACE 3
 NODE 510 DSURFACE 3
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 6.00000000e+00 -1.00000000e+00 2.50000000e-01
 NODE 2 COORD 6.00000000e+00 -6.00000024e-01 2.50000000e-01

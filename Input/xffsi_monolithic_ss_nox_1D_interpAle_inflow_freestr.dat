@@ -69,7 +69,6 @@ PRECONDREUSE                    0
 SHAPEDERIVATIVES                Yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 RELAXING_ALE                    yes
@@ -144,7 +143,6 @@ NODE 33 DNODE 3
 NODE 34 DNODE 3
 NODE 35 DNODE 3
 NODE 36 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 25 DSURFACE 1
 NODE 26 DSURFACE 1

@@ -151,7 +151,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1 0 0 FUNCT 1 0 0
 DSURF  2
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.3
 E 3 - 1 Master Inactive FrCoeffOrBound 0.3
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    99 DLINE 1
 NODE    102 DLINE 1

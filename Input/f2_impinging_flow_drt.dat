@@ -1004,7 +1004,6 @@ NODE 296 DSURFACE 1
 NODE 270 DSURFACE 1
 NODE 236 DSURFACE 1
 NODE 308 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 9.615384615384616e-01 1.000000000000000e+00 0.000000000000000e+00
@@ -2139,8 +2138,6 @@ COMPONENT 0 FUNCTION-5.0*(y^4)
 COMPONENT 0 FUNCTION(y^5)-0.5
 ----------------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION(5.0*x*(y^8))+(10.0*x*(y^3))+(60.0*10.0*x*y*y)
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 5.0811477001e+01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 583 QUANTITY pressure VALUE 4.842131474e+01 TOLERANCE 1e-8

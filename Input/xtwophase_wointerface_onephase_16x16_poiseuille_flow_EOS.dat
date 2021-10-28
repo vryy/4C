@@ -153,8 +153,6 @@ GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -190,7 +188,6 @@ COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 4.5-2.0*x/(0.8*0.8)*0.1 // pressure
 ----------------------------------------------------------------------FUNCT3
 FUNCTION (-2.0*y+1.6)/(0.8*0.8)*0.1
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 // nodes 255, 256 : element containing edge in fluid
 // nodes 287, 288 : element containing edge in solid

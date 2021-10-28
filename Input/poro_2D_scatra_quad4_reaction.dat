@@ -146,8 +146,6 @@ MAT 5 MAT_scatra DIFFUSIVITY 0.02
 COMPONENT 0 FUNCTION 10.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION 1.0
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 4.89940739490115859e-05 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 34 QUANTITY vely VALUE 1.63651725134690218e-05 TOLERANCE 1e-8

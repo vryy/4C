@@ -3,7 +3,6 @@
 ==================================================================
 General Data File BACI
 ==================================================================
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      81
 //NODES                         200
@@ -91,7 +90,6 @@ GMSH_CUT_OUT                    no
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT                //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION

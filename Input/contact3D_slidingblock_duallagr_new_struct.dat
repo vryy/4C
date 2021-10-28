@@ -91,8 +91,6 @@ DSURF                           2
 E 3 - 1 Slave Inactive
 //                              bottom_contact
 E 4 - 1 Master Inactive
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 65 DSURFACE 1
 NODE 68 DSURFACE 1
@@ -144,7 +142,6 @@ NODE 49 DSURFACE 4
 NODE 52 DSURFACE 4
 NODE 58 DSURFACE 4
 NODE 62 DSURFACE 4
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 5.0000000000000000e-01
 NODE 2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 1.6666666666666669e-01

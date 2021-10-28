@@ -107,8 +107,6 @@ GMSH_CUT_OUT                    yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -161,9 +159,6 @@ MAT 4 MAT_fluid DYNVISCOSITY 0.02 DENSITY 1.0
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
 ----------------------------------FUNCT1// dbc phi, initial G-function field
 FUNCTION y
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 //node 129: plane x=0, second node from the top
 //x=[0.00000000e+00 6.00000024e-01]

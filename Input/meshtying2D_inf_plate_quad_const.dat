@@ -89,7 +89,6 @@ DLINE  2
 E 5 - 1 Slave Active
 // mrtr_2
 E 6 - 1 Master Inactive
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    24 DLINE 1
 NODE    25 DLINE 1
@@ -147,8 +146,6 @@ NODE    61 DLINE 6
 NODE    63 DLINE 6
 NODE    66 DLINE 6
 NODE    68 DLINE 6
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  4.0000000000000000e+00  4.0000000000000000e+00  0.0000000000000000e+00
 NODE         2 COORD  3.1767766952966374e+00  3.1767766952966383e+00  0.0000000000000000e+00

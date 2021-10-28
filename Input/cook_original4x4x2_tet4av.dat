@@ -66,8 +66,6 @@ E 2 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0625 0.0 0.0 FUNCT 0 1 0 0
 DSURF  2
 E 1 - NUMDOF 4 ONOFF 0 0 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -168,7 +166,6 @@ NODE    66 DSURFACE 3
 NODE    67 DSURFACE 3
 NODE    68 DSURFACE 3
 NODE    69 DSURFACE 3
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00  1.0999999999999996e+01  0.0000000000000000e+00
 NODE         2 COORD  1.1999999999999996e+01  2.0249999999999993e+01  0.0000000000000000e+00

@@ -6,8 +6,6 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
-
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -122,7 +120,6 @@ SOLVER                          UMFPACK
 MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 21 22 END
 MAT 21 MAT_scatra DIFFUSIVITY 1.0000001
 MAT 22 MAT_scatra DIFFUSIVITY 1.0000001
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION    0.0
 COMPONENT 1 FUNCTION    0.0
@@ -130,8 +127,6 @@ COMPONENT 1 FUNCTION    0.0
 COMPONENT 0 FUNCTION    0.0
 COMPONENT 1 FUNCTION    0.0
 COMPONENT 2 FUNCTION    0.0
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 100 QUANTITY phi VALUE 8.50156319517213044e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE 4.25078159758606522e-01 TOLERANCE 1e-7

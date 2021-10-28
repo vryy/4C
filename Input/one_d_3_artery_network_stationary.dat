@@ -16,7 +16,6 @@ DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ArterialNetwork
 RESTART                         0
---------------------------------------------------------------------------IO
 ------------------------------------------------------------ARTERIAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Stationary
@@ -61,7 +60,6 @@ NODE 5 DSURFACE 1
 NODE 6 DSURFACE 1
 NODE 7 DSURFACE 1
 NODE 8 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0 30.0 0.0
 NODE 2 COORD 0.0 20.0 0.0

@@ -126,7 +126,6 @@ DSURF  2
 E 1 - 1
 // surface_structure
 E 2 - 1
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    4 DLINE 1
@@ -1631,7 +1630,6 @@ NODE    1769 DSURFACE 4
 NODE    1771 DSURFACE 4
 NODE    1773 DSURFACE 4
 NODE    1775 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.0000000000000000e+00  0.0000000000000000e+00 -2.5000000000000000e+00
 NODE         2 COORD  2.0000000000000000e+00  0.0000000000000000e+00 -1.7857142857142856e+00

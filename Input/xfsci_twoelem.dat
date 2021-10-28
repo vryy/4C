@@ -5,7 +5,6 @@
 //Nitsche Based Contact
 //3D-Contact Testcase! +
 //This basic testcase 1Element Structure / 1Element Structure
--------------------------------------------------------------TITLE
 ------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------DISCRETISATION
@@ -167,9 +166,6 @@ PARTITION   structured
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 2 TIMES 0.0 5 DESCRIPTION t/5*0.2
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -193,8 +189,6 @@ DSURF  2
 E 6 - COUPLINGID 1 COUPSTRATEGY xfluid INTLAW navslip_contact SLIPCOEFFICIENT 0.1
 // all poro red
 E 7 - COUPLINGID 1 COUPSTRATEGY xfluid INTLAW navslip_contact SLIPCOEFFICIENT 0.1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

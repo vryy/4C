@@ -133,13 +133,10 @@ AZOUTPUT                        50
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.8e-04 DENSITY 1.3e-03 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1500.0 NUE 0.3 DENS 1.001
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION ((-(y-1.0)*(y-1.0))+1.0)
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION -1.0*sin(2.0*pi*t)
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 // nodes 11917 and 11918 are at the obstacle upstream tip and should yield same results
 STRUCTURE DIS structure NODE 11917 QUANTITY dispx VALUE 5.02723098491431909e-03 TOLERANCE 1e-10
@@ -217,7 +214,6 @@ NODE       2    DNODE    3
 // channel lower right points
 NODE   11121    DNODE    4
 NODE   11122    DNODE    5
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
