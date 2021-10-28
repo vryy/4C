@@ -53,8 +53,6 @@ namespace SSI
 
 namespace SSTI
 {
-  class SSTIStructuralMeshtying;
-
   //! Base class of all solid-scatra algorithms
   class SSTIAlgorithm : public ADAPTER::AlgorithmBase
   {
@@ -81,14 +79,6 @@ namespace SSTI
 
     //! reset the counter for Newton-Raphson iterations (monolithic algorithm)
     void ResetIter() { iter_ = 0; }
-
-    //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
-    //! slave-side degrees of freedom, 2: master-side degrees of freedom)
-    /* Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
-
-     //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
-     //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-     Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;*/
 
     //! return coupling
     //@{

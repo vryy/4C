@@ -428,7 +428,7 @@ namespace SSI
       void BroadcastVector(const std::vector<int>& vec_in, std::vector<int>& vec_out) const;
 
       //! Define master nodes and subsequently master slave pairs
-      //! \param dbc_nodes                [in] nodes with Dirichlet boundary condition
+      //! \param struct_dis               [in] structural discretization
       //! \param grouped_matching_nodes   [in] vector of vector of nodes at same position
       //! \param master_gids              [out] vector of all defined master nodes
       //! \param slave_master_pair        [out] map between slave nodes (key) and master nodes
@@ -440,7 +440,7 @@ namespace SSI
       //! Construct global pairs between matching nodes
       //! \param struct_dis                 [in] structural discretization
       //! \param name_meshtying_condition   [in] name of meshtying condition
-      //! \param all_coupling_pairs         [out] vector of pairs of matching nodes
+      //! \param coupling_pairs         [out] vector of pairs of matching nodes
       void FindMatchingNodePairs(Teuchos::RCP<DRT::Discretization> struct_dis,
           const std::string& name_meshtying_condition,
           std::vector<std::pair<int, int>>& coupling_pairs) const;

@@ -974,7 +974,7 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
   GetNumAssignedSlaveToMasterNodes(
       slave_master_pair, num_assigned_slave_to_master_nodes, glob_max_adapters);
 
-  // setup meshtying:
+  // setup mesh tying:
   // - coupling adapter
   // - map extractor
   // - slave_slave_transformation
@@ -987,24 +987,22 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     // create vectors of master and slave nodes for this coupling adapter
     std::vector<int> inodegidvec_master;
     std::vector<int> inodegidvec_slave;
-    if (!num_assigned_slave_to_master_nodes.empty())
-    {
-      for (auto& pair : slave_master_pair)
-      {
-        const int master_gid = pair.second;
-        if (master_gid != -1)
-        {
-          const int num_created_adapters = created_adapters[master_gid];
-          if (num_assigned_slave_to_master_nodes[master_gid] >= iadapter + 1 and
-              num_created_adapters == iadapter)
-          {
-            const int slave_gid = pair.first;
-            DRT::UTILS::AddOwnedNodeGID(struct_dis, master_gid, inodegidvec_master);
-            DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, inodegidvec_slave);
 
-            pair.second = -1;  // do not consider this pair in next interation
-            created_adapters[master_gid] = num_created_adapters + 1;
-          }
+    for (auto& pair : slave_master_pair)
+    {
+      const int master_gid = pair.second;
+      if (master_gid != -1)  // this pair is already considered
+      {
+        const int num_created_adapters = created_adapters[master_gid];
+        if (num_assigned_slave_to_master_nodes[master_gid] >= iadapter + 1 and
+            num_created_adapters == iadapter)
+        {
+          const int slave_gid = pair.first;
+          DRT::UTILS::AddOwnedNodeGID(struct_dis, master_gid, inodegidvec_master);
+          DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, inodegidvec_slave);
+
+          pair.second = -1;  // do not consider this pair in next iteration
+          created_adapters[master_gid] = num_created_adapters + 1;
         }
       }
     }
@@ -1035,13 +1033,13 @@ void SSI::UTILS::SSIStructureMeshTying::SetupMeshTyingHandlers(
     FindSlaveSlaveTransformationNodes(
         struct_dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
 
-    std::vector<int> global_coupled_original_slave_gids;
+    std::vector<int> my_coupled_original_slave_gids;
     for (const int& slave_gid : all_coupled_original_slave_gids)
-      DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, global_coupled_original_slave_gids);
+      DRT::UTILS::AddOwnedNodeGID(struct_dis, slave_gid, my_coupled_original_slave_gids);
 
     auto slave_slave_transformation = Teuchos::rcp(new ADAPTER::Coupling());
     slave_slave_transformation->SetupCoupling(*struct_dis, *struct_dis, inodegidvec_slave,
-        global_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
+        my_coupled_original_slave_gids, DRT::Problem::Instance()->NDim(), true, 1.0e-8);
 
     // combine coupling adapters and multimap extractor to mesh tying object
     meshtying_handlers_.emplace_back(Teuchos::rcp(new SSIStructureMeshTyingHandler(
@@ -1178,13 +1176,13 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
   std::vector<std::pair<int, int>> my_coupling_pairs;
 
   // get all mesh tying conditions
-  std::vector<DRT::Condition*> meshtying_condtions(0, nullptr);
-  struct_dis->GetCondition(name_meshtying_condition, meshtying_condtions);
+  std::vector<DRT::Condition*> meshtying_conditons(0, nullptr);
+  struct_dis->GetCondition(name_meshtying_condition, meshtying_conditons);
 
   // match nodes between all mesh tying conditons (named with "a" and "b")
-  for (int a = 0; a < static_cast<int>(meshtying_condtions.size()); ++a)
+  for (int a = 0; a < static_cast<int>(meshtying_conditons.size()); ++a)
   {
-    auto* meshtying_condition_a = meshtying_condtions.at(a);
+    auto* meshtying_condition_a = meshtying_conditons.at(a);
 
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
@@ -1196,9 +1194,9 @@ void SSI::UTILS::SSIStructureMeshTying::FindMatchingNodePairs(
     tree.Setup();
 
     // find nodes from condition b that match nodes from condition a
-    for (int b = a + 1; b < static_cast<int>(meshtying_condtions.size()); ++b)
+    for (int b = a + 1; b < static_cast<int>(meshtying_conditons.size()); ++b)
     {
-      auto* meshtying_condition_b = meshtying_condtions.at(b);
+      auto* meshtying_condition_b = meshtying_conditons.at(b);
 
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
@@ -1261,7 +1259,8 @@ void SSI::UTILS::SSIStructureMeshTying::GroupMatchingNodes(
       const int index1 = HasGID(gid1, grouped_matching_nodes);
       const int index2 = HasGID(gid2, grouped_matching_nodes);
 
-      // do not add, if both indices are equal
+      // do not add, if both indices are equal, meaning that the different gids are already in the
+      // same group
       if (index1 == index2 and index1 != -1)
       {
         continue;
@@ -1317,7 +1316,7 @@ void SSI::UTILS::SSIStructureMeshTying::GetNumAssignedSlaveToMasterNodes(
     }
     else
     {
-      // master node not in map so far -> increase counter by one
+      // master node not in map so far -> create entry
       if (num_assigned_slave_to_master_nodes.find(master_node_gid) !=
           num_assigned_slave_to_master_nodes.end())
       {
@@ -1325,7 +1324,7 @@ void SSI::UTILS::SSIStructureMeshTying::GetNumAssignedSlaveToMasterNodes(
         if (max_assigned_slave_nodes < num_assigned_slave_to_master_nodes[master_node_gid])
           max_assigned_slave_nodes = num_assigned_slave_to_master_nodes[master_node_gid];
       }
-      // master node already in map
+      // master node already in map-> increase counter by one
       else
         num_assigned_slave_to_master_nodes.insert(std::make_pair(master_node_gid, 1));
     }
@@ -1379,7 +1378,7 @@ void SSI::UTILS::SSIStructureMeshTying::DefineMasterSlavePairing(
             break;
           }
 #ifndef DEBUG
-          break;
+          break;  // in release version, we can break here and subsequently skip the safety check
 #endif
         }
       }
@@ -1414,16 +1413,16 @@ void SSI::UTILS::SSIStructureMeshTying::FindSlaveSlaveTransformationNodes(
     std::vector<int>& all_coupled_original_slave_gids) const
 {
   // store nodes that are slave nodes from the input
-  std::vector<DRT::Condition*> meshtying_condtions(0, nullptr);
-  struct_dis->GetCondition(name_meshtying_condition, meshtying_condtions);
+  std::vector<DRT::Condition*> meshtying_conditons(0, nullptr);
+  struct_dis->GetCondition(name_meshtying_condition, meshtying_conditons);
 
   std::vector<int> original_slave_gids;
-  for (auto* meshtying_condtion : meshtying_condtions)
+  for (auto* meshtying_conditon : meshtying_conditons)
   {
-    if (meshtying_condtion->GetInt("interface side") == INPAR::S2I::side_slave)
+    if (meshtying_conditon->GetInt("interface side") == INPAR::S2I::side_slave)
     {
       DRT::UTILS::AddOwnedNodeGIDVector(
-          struct_dis, *meshtying_condtion->Nodes(), original_slave_gids);
+          struct_dis, *meshtying_conditon->Nodes(), original_slave_gids);
     }
   }
 

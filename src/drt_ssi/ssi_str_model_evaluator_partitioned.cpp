@@ -100,21 +100,14 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
       LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
           *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
-      // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map, *cond_slave_dof_map,
-          1.0, &(*converter), &(*converter), jac_new, true, true);
-
       for (const auto& meshtying2 : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
       {
-        if (meshtying2 != meshtying)
-        {
-          auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
-          auto converter2 = meshtying2->SlaveSideConverter();
+        auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
+        auto converter2 = meshtying2->SlaveSideConverter();
 
-          // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
-          LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
-              *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), jac_new, true, true);
-        }
+        // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
+        LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+            *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), jac_new, true, true);
       }
     }
 

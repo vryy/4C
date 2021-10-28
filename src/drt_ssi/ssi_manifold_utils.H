@@ -189,7 +189,7 @@ namespace SSI
     void Output();
 
     //! return all scatra-scatra manifold coupling operators
-    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>> ScaTraManifoldCouplings()
+    std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>>& ScaTraManifoldCouplings()
     {
       return scatra_manifold_couplings_;
     }
