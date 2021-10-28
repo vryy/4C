@@ -440,54 +440,59 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::EvaluateManifoldSide(
       condparams.set<int>(
           "differentiationtype", static_cast<int>(SCATRA::DifferentiationType::disp));
 
-      auto flux_manifold_scatra_md_cond_slave_side_disp =
+      auto flux_manifold_scatra_md_cond_slave_side_disp_evaluate =
           Teuchos::rcp(new LINALG::SparseMatrix(*full_map_manifold_, 27, false, true));
 
-      DRT::AssembleStrategy strategymanifold(0, 1, flux_manifold_scatra_md_cond_slave_side_disp,
-          Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      DRT::AssembleStrategy strategymanifold(0, 1,
+          flux_manifold_scatra_md_cond_slave_side_disp_evaluate, Teuchos::null, Teuchos::null,
+          Teuchos::null, Teuchos::null);
 
       scatra_manifold_->ScaTraField()->Discretization()->EvaluateCondition(condparams,
           strategymanifold, "SSISurfaceManifold", scatra_manifold_coupling->ManifoldConditionID());
 
       scatra_manifold_->ScaTraField()->Discretization()->ClearState();
 
-      flux_manifold_scatra_md_cond_slave_side_disp->Complete(
+      flux_manifold_scatra_md_cond_slave_side_disp_evaluate->Complete(
           *full_map_structure_, *full_map_manifold_);
 
       // "slave side" from manifold and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
+      auto flux_manifold_scatra_md_cond_slave_side_disp =
+          Teuchos::rcp(new LINALG::SparseMatrix(*full_map_manifold_, 27, false, true));
       for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
       {
         auto slave_slave_transformation = meshtying->SlaveSlaveTransformation();
-        auto orig_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
+        // converter between old slave dofs from input and actual slave dofs from current mesh tying
+        // adapter
+        auto slave_slave_converter = ADAPTER::CouplingSlaveConverter(*slave_slave_transformation);
 
+        // old slave dofs from input
         auto slave_map = slave_slave_transformation->SlaveDofMap();
-        auto master_map = slave_slave_transformation->MasterDofMap();
 
-        auto interface_map = LINALG::MergeMap(slave_map, master_map);
-
-        auto remaining_map = LINALG::SplitMap(*full_map_structure_, *interface_map);
-        matrix_manifold_structure_cond_->Zero();
-        matrix_manifold_structure_cond_->UnComplete();
-        // Add slave side disp. contributions
-        LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
-            *full_map_manifold_, *remaining_map, 1.0, nullptr, nullptr,
-            *matrix_manifold_structure_cond_, true, true);
-
-        // Add master side disp. contributions
-        LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
-            *full_map_manifold_, *slave_map, 1.0, nullptr, &orig_slave_converter,
-            *matrix_manifold_structure_cond_, true, true);
-
-        matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
-
-        flux_manifold_scatra_md_cond_slave_side_disp->Zero();
-        flux_manifold_scatra_md_cond_slave_side_disp->Add(
-            *matrix_manifold_structure_cond_, false, 1.0, 0.0);
-
-        flux_manifold_scatra_md_cond_slave_side_disp->Complete(
-            *full_map_structure_, *full_map_manifold_);
+        LINALG::MatrixLogicalSplitAndTransform()(
+            *flux_manifold_scatra_md_cond_slave_side_disp_evaluate, *full_map_manifold_, *slave_map,
+            1.0, nullptr, &slave_slave_converter, *flux_manifold_scatra_md_cond_slave_side_disp,
+            true, true);
       }
+      flux_manifold_scatra_md_cond_slave_side_disp->Complete(
+          *full_map_structure_, *full_map_manifold_);
+
+      // Add slave side disp. contributions
+      matrix_manifold_structure_cond_->Add(
+          *flux_manifold_scatra_md_cond_slave_side_disp, false, 1.0, 0.0);
+
+      // Add master side disp. contributions
+      for (const auto& meshtying : ssi_structure_meshtying_->MeshtyingHandlers())
+      {
+        auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
+        auto converter = meshtying->SlaveSideConverter();
+
+        // assemble derivatives of x w.r.t. structure slave dofs
+        LINALG::MatrixLogicalSplitAndTransform()(*flux_manifold_scatra_md_cond_slave_side_disp,
+            flux_manifold_scatra_md_cond_slave_side_disp->RangeMap(), *cond_slave_dof_map, 1.0,
+            nullptr, &(*converter), *matrix_manifold_structure_cond_, true, true);
+      }
+      matrix_manifold_structure_cond_->Complete(*full_map_structure_, *full_map_manifold_);
     }
   }
 }
