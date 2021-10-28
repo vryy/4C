@@ -1227,50 +1227,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   mllist.set("null space: add default vectors", false);
   mllist.set<double*>("null space: vectors", NULL);
 
-  // set init smoother list
-  // only needed for MueLu::AdaptiveSaMLParameterListInterpreter
-  // currently used in MueLuContactPreconditioner3
-  Teuchos::ParameterList& initList = mllist.sublist("init smoother");
-  switch (DRT::INPUT::IntegralValue<int>(inparams, "MueLu_INITSMOOTHER"))
-  {
-    case 0:
-      initList.set("smoother: type", "symmetric Gauss-Seidel");
-      initList.set("relaxation: sweeps", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      initList.set("relaxation: damping factor", inparams.get<double>("MueLu_INITSMOO_DAMPING"));
-      break;
-    case 7:
-    case 8:
-      initList.set("smoother: type", "Gauss-Seidel");
-      initList.set("relaxation: sweeps", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      initList.set("relaxation: damping factor", inparams.get<double>("MueLu_INITSMOO_DAMPING"));
-      break;
-    case 1:
-      initList.set("smoother: type", "Jacobi");
-      initList.set("relaxation: sweeps", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      initList.set("relaxation: damping factor", inparams.get<double>("MueLu_INITSMOO_DAMPING"));
-      break;
-    case 2:  // Chebychev
-      mllist.set("smoother: type", "Chebyshev");
-      mllist.set("chebyshev: degree", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      mllist.set(
-          "chebyshev: alpha", Teuchos::as<int>(inparams.get<double>("MueLu_INITSMOO_DAMPING")));
-      break;
-    case 4:
-    {
-      mllist.set("smoother: type", "IFPACK");
-      mllist.set("smoother: ifpack type", "ILU");
-      mllist.set("smoother: ifpack overlap", 0);
-      Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-      ifpacklist.set<int>("fact: level-of-fill", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      ifpacklist.set("schwarz: reordering type", "rcm");
-      ifpacklist.set("partitioner: overlap", 0);
-    }
-    break;
-    default:
-      dserror("Unknown type of smoother for adaptive SA initialization phase in MueLu");
-      break;
-  }  // init smoother
-
   return mllist;
 }
 

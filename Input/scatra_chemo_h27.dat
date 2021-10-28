@@ -118,11 +118,8 @@ ML_COARSEN                      UC
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
 SUB_SOLVER1                     -1
 SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_NONZEROIMBALANCE  1.2
 MueLu_REBALANCE_MINROWS         1000
@@ -171,11 +168,8 @@ ML_COARSEN                      UC
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               Umfpack
-MueLu_INITSMOOTHER              SGS
 SUB_SOLVER1                     -1
 SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_NONZEROIMBALANCE  1.2
 MueLu_REBALANCE_MINROWS         1000

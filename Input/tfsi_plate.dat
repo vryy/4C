@@ -444,11 +444,8 @@ ML_COARSEN                      UC
 ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
 ML_SMOOTHERCOARSE               KLU
-MueLu_INITSMOOTHER              SGS
 SUB_SOLVER1                     -1
 SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
 MueLu_MIN_AGG_SIZE              6
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_NONZEROIMBALANCE 1.2
@@ -499,11 +496,8 @@ ML_COARSEN                      UC
 ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
 ML_SMOOTHERCOARSE               KLU
-MueLu_INITSMOOTHER              SGS
 SUB_SOLVER1                     -1
 SUB_SOLVER2                     -1
-MueLu_INITSMOO_SWEEPS           1
-MueLu_INITSMOO_DAMPING          1
 MueLu_MIN_AGG_SIZE              6
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_NONZEROIMBALANCE 1.2
