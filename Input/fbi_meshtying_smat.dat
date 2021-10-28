@@ -18,7 +18,7 @@ COUPLING                              fluid
 PENALTY_PARAMETER                     10
 MESHTYING_DISCRETIZATION              gauss_point_to_segment
 CONSTRAINT_STRATEGY                   penalty
-GEOMETRY_PAIR_STRATEGY                gauss_point_projection
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
 SEARCH_RADIUS                         0.1
 MORTAR_SHAPE_FUNCTION                 line2
 GAUSS_POINTS                          6

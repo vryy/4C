@@ -18,7 +18,7 @@ COUPLING                              two-way
 PENALTY_PARAMETER                     10
 MESHTYING_DISCRETIZATION              mortar
 CONSTRAINT_STRATEGY                   penalty
-GEOMETRY_PAIR_STRATEGY                gauss_point_projection
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
 GEOMETRY_PAIR_SEARCH_POINTS           5
 MORTAR_SHAPE_FUNCTION                 line3
 SEARCH_RADIUS                         0.2

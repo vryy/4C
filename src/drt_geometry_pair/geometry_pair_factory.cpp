@@ -35,7 +35,9 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
   // Create the class depending on the strategy.
   switch (strategy)
   {
-    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection:
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::
+        gauss_point_projection_without_boundary_segmentation:
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       return Teuchos::rcp(
           new GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>(
               line_to_3d_evaluation_data));
@@ -94,7 +96,9 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
   // Create the class depending on the strategy.
   switch (strategy)
   {
-    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection:
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::
+        gauss_point_projection_without_boundary_segmentation:
+    case INPAR::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       return Teuchos::rcp(
           new GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>(
               line_to_surface_evaluation_data));

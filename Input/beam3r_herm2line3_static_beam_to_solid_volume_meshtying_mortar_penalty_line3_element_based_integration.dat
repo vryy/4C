@@ -59,7 +59,7 @@ MORTAR_SHAPE_FUNCTION                 line3
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     10
 GAUSS_POINTS                          6
-GEOMETRY_PAIR_STRATEGY                gauss_point_projection
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
 --------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
 WRITE_OUTPUT                          yes
 NODAL_FORCES                          yes

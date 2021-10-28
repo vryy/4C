@@ -92,7 +92,7 @@ PENALTY_PARAMETER                     100
 GAUSS_POINTS                          6
 CONTACT_DISCRETIZATION                gauss_point_to_segment
 MORTAR_SHAPE_FUNCTION                 line2
-GEOMETRY_PAIR_STRATEGY                gauss_point_projection
+GEOMETRY_PAIR_STRATEGY                gauss_point_projection_boundary_segmentation
 INTEGRATION_POINTS_CIRCUMFERENCE      128
 ROTATION_COUPLING                     deformation_gradient_3d_local_2
 ROTATION_COUPLING_PENALTY_PARAMETER   0.1
