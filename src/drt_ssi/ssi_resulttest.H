@@ -46,20 +46,9 @@ namespace SSI
      */
     explicit SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base);
 
-    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
-
     void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
-    /*!
-     * @brief get nodal result to be tested
-     *
-     * @param[in] quantity  name of quantity to be tested
-     * @param[in] node      node carrying the result to be tested
-     * @return nodal result
-     */
-    double ResultNode(const std::string& quantity, DRT::Node* node) const;
-
     /*!
      * @brief get special result to be tested
      *

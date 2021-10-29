@@ -86,9 +86,8 @@ void INPAR::S2I::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "growth",
       &s2icoupling);
 
-  // meshtying including 3 entities
-  BoolParameter(
-      "MESHTYING_3_DOMAIN_INTERSECTION", "No", "Meshtying including three domains", &s2icoupling);
+  BoolParameter("MESHTYING_CONDITIONS_INDEPENDENT_SETUP", "No",
+      "mesh tying for different conditions should be setup independently", &s2icoupling);
 }
 
 

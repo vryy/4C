@@ -31,7 +31,7 @@ FARADAY_CONSTANT                9.64853328959e4
 GAS_CONSTANT                    8.314459848e0
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-MESHTYING_3_DOMAIN_INTERSECTION         Yes
+MESHTYING_CONDITIONS_INDEPENDENT_SETUP             Yes
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         2
 MAXTIME                         20000000

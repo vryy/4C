@@ -273,20 +273,6 @@ nodeset 19 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+
 nodeset 19 node in surface with x_max <= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+tol} in volume 1 remove
 nodeset 19 Name "battery curves in x-direction"
 
-# cathode side triple point line
-nodeset 20 curve with (x_max <= {-r*cos(theta/360*PI) + tol} && ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && y_min < {-r*sin(theta/360*PI)*cos(45/180*PI)-tol} ) in volume 3
-nodeset 20 curve with (x_max <= {-r*cos(theta/360*PI) + tol} && ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && z_max < {r*cos(theta/360*PI)-r_non_conn*cos(45/180*PI)+tol} ) in volume 4
-nodeset 20 Name "cat-side (sl) line triple point"
-
-# cathode current-collector side triple point line
-nodeset 21 curve with ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && (z_max - z_min) < {r_non_conn*(1-cos(45/180*PI))+tol} in volume 6
-nodeset 21 curve with ((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && (y_max - y_min) < {r*sin(theta/360*PI)*(1-cos(45/180*PI))+tol} in volume 6
-nodeset 21 Name "cc-side (sl) line triple point"
-
-# solid electrolyte side triple point line
-nodeset 22 curve with (((y_max - y_min) > {tol}) && ((z_max - z_min) > {tol}) && ((y_max - y_min) < {r*sin(theta/360*PI)})) in surface with x_max <= {-r*cos(theta/360*PI) + tol} in volume 2
-nodeset 22 Name "el-side (ma) line triple point"
-
 # all vertices at anode-side current collector
 nodeset 23 vertex in surface with x_min >= {(2*n_c-3)*r*cos(theta/360*PI)+2*r+sep+an+cc_an-tol} in volume 5
 nodeset 23 Name "vertices an-side cc

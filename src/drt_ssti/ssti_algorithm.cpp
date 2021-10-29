@@ -196,12 +196,8 @@ void SSTI::SSTIAlgorithm::Setup()
       dserror("SSTI only implemented for interface coupling with matching interface nodes!");
 
     // setup everything for SSTI structure meshtying
-    const bool meshtying_3_domain_intersection = DRT::INPUT::IntegralValue<bool>(
-        DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
-        "MESHTYING_3_DOMAIN_INTERSECTION");
     ssti_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
-        "SSTIInterfaceMeshtying", "SSTIMeshtying3DomainIntersection",
-        meshtying_3_domain_intersection, StructureField()->Discretization()));
+        "SSTIInterfaceMeshtying", structure_->Discretization()));
   }
 
   issetup_ = true;
@@ -454,22 +450,6 @@ Teuchos::ParameterList SSTI::SSTIAlgorithm::CloneThermoParams(
 
   return *thermoparams_copy;
 }
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSTI::SSTIAlgorithm::MapsCoupStruct() const
-{
-  return ssti_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor>
-SSTI::SSTIAlgorithm::MapsCoupStruct3DomainIntersection() const
-{
-  return ssti_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
-}
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

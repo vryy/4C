@@ -68,11 +68,8 @@ namespace SSTI
         Teuchos::RCP<LINALG::SparseOperator> thermostructureinterface);
 
    private:
-    ADAPTER::CouplingSlaveConverter& InterfaceCouplingAdapterStructureSlaveConverter() const;
-    ADAPTER::CouplingSlaveConverter&
-    InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection() const;
-
-    void CopySlaveToMasterThermoStructureInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    void CopySlaveToMasterThermoStructureInterface(
+        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
     void EvaluateThermoStructureInterfaceSlaveSide(
@@ -84,10 +81,10 @@ namespace SSTI
     Teuchos::RCP<const LINALG::MultiMapExtractor> blockmapthermo_;
 
     //! map extractor associated with all degrees of freedom inside structural field
-    const Teuchos::RCP<const Epetra_Map> full_map_structure_;
+    Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
     //! map extractor associated with all degrees of freedom inside thermo field
-    const Teuchos::RCP<const Epetra_Map> full_map_thermo_;
+    Teuchos::RCP<const Epetra_Map> full_map_thermo_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;

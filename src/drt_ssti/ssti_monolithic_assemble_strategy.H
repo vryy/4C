@@ -141,28 +141,8 @@ namespace SSTI
       return ssti_mono_->StructureField();
     }
 
-    //! Interior dofs of structure mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
-
-    //! Master side dofs of structure mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
-
-    //! Slave side dofs of structure mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
-    //@}
-
-    //! Slave structure converter for structure coupling
-    //@{
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const;
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter3DomainIntersection() const;
-    //@}
-
-    //! flags indicating meshtying
-    //@{
+    //! flag indicating meshtying
     bool InterfaceMeshtying() const { return ssti_mono_->InterfaceMeshtying(); }
-    bool Meshtying3DomainIntersection() const;
-    //@}
 
    private:
     //! monolithic algorithm for scalar-structure-thermo interaction
@@ -384,7 +364,6 @@ namespace SSTI
   Teuchos::RCP<SSTI::AssembleStrategyBase> BuildAssembleStrategy(
       Teuchos::RCP<const SSTI::SSTIMono> ssti_mono, LINALG::MatrixType matrixtype_ssti,
       LINALG::MatrixType matrixtype_scatra);
-
 
 }  // namespace SSTI
 #endif  // #ifndef SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H

@@ -48,7 +48,6 @@ FARADAY_CONSTANT                9.64853328959e+4
 GAS_CONSTANT                    8.314459848e+0
 -----------------------------SCALAR TRANSPORT DYNAMIC/S2I COUPLING
 COUPLINGTYPE                    MatchingNodes
-MESHTYING_3_DOMAIN_INTERSECTION         Yes
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         5
 MAXTIME                         1000000000
@@ -224,16 +223,6 @@ E 4 - 1 Master S2IKineticsID 1
 E 5 - 2 Master S2IKineticsID 2
 // slave-side_el-cath
 E 6 - 2 Slave S2IKineticsID 2
---------------DESIGN SSI THREE DOMAIN INTERSECTION LINE CONDITIONS
-DLINE  4
-// master-line_el
-E 1 - 3 Master
-// master-line_el
-E 1 - 4 Master
-// slave-line_cc
-E 2 - 3 Slave
-// slave-line_cath
-E 8 - 4 Slave
 -------------------------------DESIGN SSI MANIFOLD SURF CONDITIONS
 DSURF  3
 // master-side_cc-el

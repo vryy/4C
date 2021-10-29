@@ -674,8 +674,9 @@ namespace SCATRA
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;
 
-    //! meshtying with three coupled entities
-    bool meshtying_3_domain_intersection_;
+    //! flag indicating that mesh tying for different conditions should be setup independently
+    const bool indepedent_setup_of_conditions_;
+
   };  // class MeshtyingStrategyS2I
 
 

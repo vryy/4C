@@ -337,7 +337,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
   // get states from this field and respective coupled field
   auto manifoldfield = discretization.GetState("phinp");
   auto coupledfield = elchmanifoldparams_->EvaluateMasterSide()
-                          ? discretization.GetState(2, "imasterscatra")
+                          ? discretization.GetState(3, "imasterscatra")
                           : discretization.GetState(2, "scalarfield");
 
 #ifdef DEBUG
@@ -352,7 +352,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcScaTraScaT
   std::vector<LINALG::Matrix<nen, 1>> ecoupledfield(
       my::numdofpernode_, LINALG::Matrix<nen, 1>(true));
   DRT::UTILS::ExtractMyValues(*manifoldfield, my::ephinp_, la[0].lm_);
-  DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[2].lm_);
+
+  const int nds_coupled_field = elchmanifoldparams_->EvaluateMasterSide() ? 3 : 2;
+  DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[nds_coupled_field].lm_);
 
   const int kinetic_model = elchmanifoldparams_->KineticModel();
 
@@ -498,7 +500,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcManifoldIn
   // get states from this field and respective coupled field
   auto manifoldfield = discretization.GetState("phinp");
   auto coupledfield = elchmanifoldparams_->EvaluateMasterSide()
-                          ? discretization.GetState(2, "imasterscatra")
+                          ? discretization.GetState(3, "imasterscatra")
                           : discretization.GetState(2, "scalarfield");
 
 #ifdef DEBUG
@@ -510,7 +512,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcManifoldIn
   std::vector<LINALG::Matrix<nen, 1>> ecoupledfield(
       my::numdofpernode_, LINALG::Matrix<nen, 1>(true));
   DRT::UTILS::ExtractMyValues(*manifoldfield, my::ephinp_, la[0].lm_);
-  DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[2].lm_);
+  if (elchmanifoldparams_->EvaluateMasterSide())
+    DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[3].lm_);
+  else
+    DRT::UTILS::ExtractMyValues(*coupledfield, ecoupledfield, la[2].lm_);
 
   const int kinetic_model = elchmanifoldparams_->KineticModel();
 

@@ -50,156 +50,73 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleJacobian(
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying())
   {
-    const bool meshtying_3_domain_intersection = ssi_part_->Meshtying3DomainIntersection();
-
     // cast old Jacobian
     auto& jac_sparse = dynamic_cast<LINALG::SparseMatrix&>(jac);
+
+    auto map_structure_interior = ssi_part_->SSIStructureMeshTying()->InteriorMap();
+    auto cond_master_dof_map = ssi_part_->SSIStructureMeshTying()->FullMasterSideMap();
 
     // initialize new Jacobian
     LINALG::SparseMatrix jac_new(*GState().DofRowMap(), 81, true, true);
 
     // assemble interior rows and columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
-        *ssi_part_->MapStructureInterior(), 1.0, nullptr, nullptr, jac_new, true, true);
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
+        *map_structure_interior, 1.0, nullptr, nullptr, jac_new, true, true);
 
     // assemble interior rows and master-side columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
-        *ssi_part_->MapStructureMaster(), 1.0, nullptr, nullptr, jac_new, true, true);
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
+        *cond_master_dof_map, 1.0, nullptr, nullptr, jac_new, true, true);
 
     // assemble master-side rows and interior columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureMaster(),
-        *ssi_part_->MapStructureInterior(), 1.0, nullptr, nullptr, jac_new, true, true);
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
+        *map_structure_interior, 1.0, nullptr, nullptr, jac_new, true, true);
 
     // assemble master-side rows and columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureMaster(),
-        *ssi_part_->MapStructureMaster(), 1.0, nullptr, nullptr, jac_new, true, true);
+    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map, *cond_master_dof_map,
+        1.0, nullptr, nullptr, jac_new, true, true);
 
-    // transform and assemble slave-side rows of original Jacobian into new Jacobian (interior
-    // columns)
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureSlave(),
-        *ssi_part_->MapStructureInterior(), 1.0,
-        &ssi_part_->SSIStructureMeshTying()
-             ->SlaveSideConverter()
-             ->InterfaceCouplingAdapterStructureSlaveConverter(),
-        nullptr, jac_new, true, true);
-
-    // transform and assemble slave-side rows of original Jacobian into new Jacobian (master-side
-    // columns)
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureSlave(),
-        *ssi_part_->MapStructureMaster(), 1.0,
-        &ssi_part_->SSIStructureMeshTying()
-             ->SlaveSideConverter()
-             ->InterfaceCouplingAdapterStructureSlaveConverter(),
-        nullptr, jac_new, true, true);
-
-    // transform and assemble slave-side columns of original Jacobian into new Jacobian (interior
-    // rows)
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
-        *ssi_part_->MapStructureSlave(), 1.0, nullptr,
-        &ssi_part_->SSIStructureMeshTying()
-             ->SlaveSideConverter()
-             ->InterfaceCouplingAdapterStructureSlaveConverter(),
-        jac_new, true, true);
-
-    // transform and assemble slave-side columns of original Jacobian into new Jacobian (master-side
-    // rows)
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureMaster(),
-        *ssi_part_->MapStructureSlave(), 1.0, nullptr,
-        &ssi_part_->SSIStructureMeshTying()
-             ->SlaveSideConverter()
-             ->InterfaceCouplingAdapterStructureSlaveConverter(),
-        jac_new, true, true);
-
-    // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
-    LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-        1.0,
-        &ssi_part_->SSIStructureMeshTying()
-             ->SlaveSideConverter()
-             ->InterfaceCouplingAdapterStructureSlaveConverter(),
-        &ssi_part_->SSIStructureMeshTying()
-             ->SlaveSideConverter()
-             ->InterfaceCouplingAdapterStructureSlaveConverter(),
-        jac_new, true, true);
-
-    if (meshtying_3_domain_intersection)
+    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
     {
+      auto cond_slave_dof_map = meshtying->SlaveMasterCoupling()->SlaveDofMap();
+      auto converter = meshtying->SlaveSideConverter();
+
       // transform and assemble slave-side rows of original Jacobian into new Jacobian (interior
       // columns)
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureSlave(),
-          *ssi_part_->MapStructureInterior(), 1.0,
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          nullptr, jac_new, true, true);
+      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+          *map_structure_interior, 1.0, &(*converter), nullptr, jac_new, true, true);
+
+      // transform and assemble slave-side rows of original Jacobian into new Jacobian (master-side
+      // columns)
+      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+          *cond_master_dof_map, 1.0, &(*converter), nullptr, jac_new, true, true);
 
       // transform and assemble slave-side columns of original Jacobian into new Jacobian (interior
       // rows)
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *ssi_part_->MapStructureInterior(),
-          *ssi_part_->MapStructureSlave(), 1.0, nullptr,
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          jac_new, true, true);
+      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *map_structure_interior,
+          *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
-      // transform and assemble slave-side rows and columns of original Jacobian into new Jacobian
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveDofMap(),
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveDofMap(),
-          1.0,
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          jac_new, true, true);
+      // transform and assemble slave-side columns of original Jacobian into new Jacobian
+      // (master-side rows)
+      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_master_dof_map,
+          *cond_slave_dof_map, 1.0, nullptr, &(*converter), jac_new, true, true);
 
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveDofMap(),
-          1.0,
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter(),
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          jac_new, true, true);
+      for (const auto& meshtying2 : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
+      {
+        auto cond_slave_dof_map2 = meshtying2->SlaveMasterCoupling()->SlaveDofMap();
+        auto converter2 = meshtying2->SlaveSideConverter();
 
-      LINALG::MatrixLogicalSplitAndTransform()(jac_sparse,
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveDofMap(),
-          *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap(),
-          1.0,
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter3DomainIntersection(),
-          &ssi_part_->SSIStructureMeshTying()
-               ->SlaveSideConverter()
-               ->InterfaceCouplingAdapterStructureSlaveConverter(),
-          jac_new, true, true);
+        // assemble derivatives of surface slave dofs w.r.t. line slave dofs (block l)
+        LINALG::MatrixLogicalSplitAndTransform()(jac_sparse, *cond_slave_dof_map,
+            *cond_slave_dof_map2, 1.0, &(*converter), &(*converter2), jac_new, true, true);
+      }
     }
 
-    // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize structural
-    // meshtying
+    auto slavemaps = ssi_part_->SSIStructureMeshTying()->FullSlaveSideMap();
+
+    // subject slave-side rows of new Jacobian to pseudo Dirichlet conditions to finalize
+    // structural meshtying
     jac_new.Complete();
-    jac_new.ApplyDirichlet(
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveDofMap());
-    if (meshtying_3_domain_intersection)
-    {
-      jac_new.ApplyDirichlet(*ssi_part_->SSIStructureMeshTying()
-                                  ->InterfaceCouplingAdapterStructure3DomainIntersection()
-                                  ->SlaveDofMap());
-    }
+    jac_new.ApplyDirichlet(*slavemaps);
 
     // replace old Jacobian by new one
     jac_sparse.Assign(LINALG::View, jac_new);
@@ -217,19 +134,14 @@ void STR::MODELEVALUATOR::PartitionedSSI::RunPreComputeX(
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying())
   {
-    // transform and assemble master-side part of structural increment vector to slave side
-    ssi_part_->MapsCoupStruct()->InsertVector(
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-            ssi_part_->MapsCoupStruct()->ExtractVector(dir_mutable, 2)),
-        1, dir_mutable);
-
-    if (ssi_part_->Meshtying3DomainIntersection())
+    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
     {
-      ssi_part_->MapsCoupStruct3DomainIntersection()->InsertVector(
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->MasterToSlave(
-                   ssi_part_->MapsCoupStruct3DomainIntersection()->ExtractVector(dir_mutable, 2)),
+      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+
+      // transform and assemble master-side part of structural increment vector to slave side
+      coupling_map_extractor->InsertVector(
+          *meshtying->SlaveMasterCoupling()->MasterToSlave(
+              coupling_map_extractor->ExtractVector(dir_mutable, 2)),
           1, dir_mutable);
     }
   }
@@ -278,26 +190,16 @@ bool STR::MODELEVALUATOR::PartitionedSSI::AssembleForce(
   // perform structural meshtying
   if (ssi_part_->SSIInterfaceMeshtying() and ssi_part_->IsSetup())
   {
-    // transform and assemble slave-side part of structural right-hand side vector to master side
-    ssi_part_->MapsCoupStruct()->AddVector(
-        *ssi_part_->SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->SlaveToMaster(
-            ssi_part_->MapsCoupStruct()->ExtractVector(f, 1)),
-        2, f);
-
-    // zero out slave-side part of structural right-hand side vector
-    ssi_part_->MapsCoupStruct()->PutScalar(f, 1, 0.0);
-
-    if (ssi_part_->Meshtying3DomainIntersection())
+    for (const auto& meshtying : ssi_part_->SSIStructureMeshTying()->MeshtyingHandlers())
     {
+      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
       // transform and assemble slave-side part of structural right-hand side vector to master side
-      ssi_part_->MapsCoupStruct3DomainIntersection()->AddVector(
-          *ssi_part_->SSIStructureMeshTying()
-               ->InterfaceCouplingAdapterStructure3DomainIntersection()
-               ->SlaveToMaster(ssi_part_->MapsCoupStruct3DomainIntersection()->ExtractVector(f, 1)),
+      coupling_map_extractor->AddVector(*meshtying->SlaveMasterCoupling()->SlaveToMaster(
+                                            coupling_map_extractor->ExtractVector(f, 1)),
           2, f);
 
       // zero out slave-side part of structural right-hand side vector
-      ssi_part_->MapsCoupStruct3DomainIntersection()->PutScalar(f, 1, 0.0);
+      coupling_map_extractor->PutScalar(f, 1, 0.0);
     }
   }
 

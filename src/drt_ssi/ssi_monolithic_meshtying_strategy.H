@@ -42,7 +42,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBase(bool is_scatra_manifold, bool meshtying_3_domain_intersection,
+    explicit MeshtyingStrategyBase(bool is_scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
         Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
@@ -119,30 +119,6 @@ namespace SSI
     //! solve additional scatra field on manifolds
     bool IsScaTraManifold() const { return is_scatra_manifold_; }
 
-    //! structural map extractor for coupling of two entities (0: other degrees of freedom, 1:
-    //! slave-side degrees of freedom, 2: master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct() const;
-
-    //! Interior dofs of structural mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureInterior() const;
-
-    //! Master side dofs of structural mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureMaster() const;
-
-    //! Slave side dofs of structural mesh tying
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave() const;
-    Teuchos::RCP<const Epetra_Map> MapStructureSlave3DomainIntersection() const;
-
-    //! structural map extractor for 3 domains intersecting (0: other degrees of freedom, 1:
-    //! slave-side degrees  of freedom, 2: master-side degrees of freedom)
-    Teuchos::RCP<const LINALG::MultiMapExtractor> MapsCoupStruct3DomainIntersection() const;
-
-    //! return the slave structure converter for structure coupling
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter() const;
-
-    //! return the slave structure converter for structure coupling with 3 domain intersection
-    ADAPTER::CouplingSlaveConverter& StructureSlaveConverter3DomainIntersection() const;
-
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     Teuchos::RCP<const SSI::UTILS::SSIMaps> SSIMaps() const { return ssi_maps_; }
 
@@ -162,10 +138,6 @@ namespace SSI
     Teuchos::RCP<LINALG::SparseOperator> temp_struct_scatra_mat_;
 
    private:
-    //! indicates, if meshtying includes three entities
-    bool Meshtying3DomainIntersection() const { return meshtying_3_domain_intersection_; }
-
-   private:
     /*!
      * @brief finalize mesh tying by applying pseudo dirichlet conditions to the slave side, i.e.
      * write 1.0 on main diagonal of slave side dofs
@@ -176,9 +148,6 @@ namespace SSI
 
     //! solve additional scatra field on manifolds
     const bool is_scatra_manifold_;
-
-    //! indicates, if meshtying includes three entities
-    const bool meshtying_3_domain_intersection_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
@@ -192,7 +161,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategySparse(bool is_scatra_manifold, bool meshtying_3_domain_intersection,
+    explicit MeshtyingStrategySparse(bool is_scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
         Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
@@ -212,7 +181,7 @@ namespace SSI
   {
    public:
     //! constructor
-    explicit MeshtyingStrategyBlock(bool is_scatra_manifold, bool meshtying_3_domain_intersection,
+    explicit MeshtyingStrategyBlock(bool is_scatra_manifold,
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
         Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 
@@ -252,8 +221,7 @@ namespace SSI
 
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::MeshtyingStrategyBase> BuildMeshtyingStrategy(bool is_scatra_manifold,
-      LINALG::MatrixType matrixtype_scatra, bool meshtying_3_domain_intersection,
-      Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+      LINALG::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
       Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_MESHTYING_STRATEGY_H

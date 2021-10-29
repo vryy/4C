@@ -55,9 +55,6 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       is_manifold_meshtying_(DRT::INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       iter_(0),
-      meshtying_3_domain_intersection_(DRT::INPUT::IntegralValue<bool>(
-          DRT::Problem::Instance()->ScalarTransportDynamicParams().sublist("S2I COUPLING"),
-          "MESHTYING_3_DOMAIN_INTERSECTION")),
       meshtying_strategy_s2i_(Teuchos::null),
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
@@ -196,8 +193,7 @@ void SSI::SSIBase::Setup()
   if (SSIInterfaceMeshtying())
   {
     ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIStructureMeshTying(
-        "SSIInterfaceMeshtying", "SSIMeshtying3DomainIntersection", Meshtying3DomainIntersection(),
-        structure_->Discretization()));
+        "SSIInterfaceMeshtying", structure_->Discretization()));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
     meshtying_strategy_s2i_ =
@@ -547,24 +543,7 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   CheckIsSetup();
 
   ssicoupling_->SetScalarField(*StructureField()->Discretization(), phi, 1);
-  if (IsScaTraManifold())
-  {
-    ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
-
-    // pass master-side scatra to scatra manifold discretization
-    auto imasterphinp_on_manifold =
-        LINALG::CreateVector(*ScaTraField()->Discretization()->DofRowMap(), true);
-
-    auto imasterphinp = MeshtyingStrategyS2I()->InterfaceMaps()->ExtractVector(*phi, 2);
-
-    auto imasterphinp_on_slave_side =
-        MeshtyingStrategyS2I()->CouplingAdapter()->MasterToSlave(imasterphinp);
-
-    MeshtyingStrategyS2I()->InterfaceMaps()->InsertVector(
-        imasterphinp_on_slave_side, 1, imasterphinp_on_manifold);
-
-    ScaTraManifold()->Discretization()->SetState(2, "imasterscatra", imasterphinp_on_manifold);
-  }
+  if (IsScaTraManifold()) ssicoupling_->SetScalarField(*ScaTraManifold()->Discretization(), phi, 2);
 }
 
 /*----------------------------------------------------------------------*/
@@ -915,42 +894,6 @@ void SSI::SSIBase::CheckSSIInterfaceConditions(const std::string& struct_disname
     structdis->GetCondition("SSIInterfaceContact", ssiconditions);
     SSI::UTILS::CheckConsistencyOfSSIInterfaceContactCondition(ssiconditions, structdis);
   }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct() const
-{
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureInterior() const
-{
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureInterior();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureMaster() const
-{
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureMaster();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> SSI::SSIBase::MapStructureSlave() const
-{
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapStructureSlave();
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<const LINALG::MultiMapExtractor> SSI::SSIBase::MapsCoupStruct3DomainIntersection()
-    const
-{
-  return ssi_structure_meshtying_->SSIMeshTyingMaps()->MapsCoupStruct3DomainIntersection();
 }
 
 /*----------------------------------------------------------------------*/

@@ -17,7 +17,6 @@
 #include "ssi_monolithic_evaluate_OffDiag.H"
 #include "ssi_monolithic_meshtying_strategy.H"
 #include "ssi_resulttest.H"
-#include "ssi_str_model_evaluator_monolithic.H"
 #include "ssi_utils.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
@@ -45,6 +44,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils_sparse_algebra_assemble.H"
 #include "../linalg/linalg_utils_sparse_algebra_manipulation.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_Time.h>
 
@@ -803,39 +803,12 @@ void SSI::SSIMono::SetupSystem()
       SSI::BuildContactStrategy(CoNitscheStrategySsi(), ssi_maps_, ScaTraField()->MatrixType());
 
   // instantiate appropriate mesh tying class
-  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(IsScaTraManifold(), ScaTraField()->MatrixType(),
-      Meshtying3DomainIntersection(), ssi_maps_, SSIStructureMeshTying());
+  strategy_meshtying_ = SSI::BuildMeshtyingStrategy(
+      IsScaTraManifold(), ScaTraField()->MatrixType(), ssi_maps_, SSIStructureMeshTying());
 
   // instantiate Dirichlet boundary condition handler class
   dbc_handler_ = SSI::BuildDBCHandler(IsScaTraManifold(), matrixtype_, ScaTraField(),
       IsScaTraManifold() ? ScaTraManifold() : Teuchos::null, ssi_maps_, StructureField());
-}
-
-/*---------------------------------------------------------------------------------*
- *---------------------------------------------------------------------------------*/
-void SSI::SSIMono::SetupModelEvaluator() const
-{
-  // construct and register structural model evaluator if necessary
-
-  const bool do_output_stress =
-      DRT::INPUT::IntegralValue<INPAR::STR::StressType>(
-          DRT::Problem::Instance()->IOParams(), "STRUCT_STRESS") != INPAR::STR::stress_none;
-  const bool smooth_output_interface_stress = DRT::INPUT::IntegralValue<bool>(
-      DRT::Problem::Instance()->SSIControlParams().sublist("MONOLITHIC"),
-      "SMOOTH_OUTPUT_INTERFACE_STRESS");
-
-  if (Meshtying3DomainIntersection() and smooth_output_interface_stress)
-    dserror("Smoothing of interface stresses not implemented for triple meshtying.");
-
-  if (smooth_output_interface_stress and !do_output_stress)
-    dserror("Smoothing of interface stresses only when stress output is written.");
-
-  if (do_output_stress and SSIInterfaceMeshtying())
-  {
-    StructureBaseAlgorithm()->RegisterModelEvaluator("Monolithic Coupling Model",
-        Teuchos::rcp(new STR::MODELEVALUATOR::MonolithicSSI(
-            Teuchos::rcp(this, false), smooth_output_interface_stress)));
-  }
 }
 
 /*---------------------------------------------------------------------------------*
@@ -846,15 +819,37 @@ void SSI::SSIMono::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
   SSIBase::SetScatraSolution(phi);
 
   // set state for contact evaluation
-  SetSSIContactStates(phi);
+  if (contact_strategy_nitsche_ != Teuchos::null) SetSSIContactStates(phi);
+
+  // set state for evaluation of manifold field
+  if (IsScaTraManifold()) SetSSIManifoldStates(phi);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::SSIMono::SetSSIContactStates(Teuchos::RCP<const Epetra_Vector> phi) const
 {
-  if (contact_strategy_nitsche_ != Teuchos::null)
-    contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
+  contact_strategy_nitsche_->SetState(MORTAR::state_scalar, *phi);
+}
+
+/*---------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------*/
+void SSI::SSIMono::SetSSIManifoldStates(Teuchos::RCP<const Epetra_Vector> phi) const
+{
+  // scatra values on master side copied to manifold
+  auto imasterphinp_on_manifold =
+      LINALG::CreateVector(*ScaTraManifold()->Discretization()->DofRowMap(), true);
+
+  for (const auto& coup : manifoldscatraflux_->ScaTraManifoldCouplings())
+  {
+    if (coup->EvaluateMasterSide())
+    {
+      auto imasterphinp_scatra = coup->ScaTraMapExtractor()->ExtractCondVector(*phi);
+      auto imasterphinp_manifold = coup->CouplingAdapter()->MasterToSlave(imasterphinp_scatra);
+      coup->ManifoldMapExtractor()->AddCondVector(imasterphinp_manifold, imasterphinp_on_manifold);
+    }
+  }
+  ScaTraManifold()->Discretization()->SetState(3, "imasterscatra", imasterphinp_on_manifold);
 }
 
 /*---------------------------------------------------------------------------------*
@@ -1040,30 +1035,22 @@ void SSI::SSIMono::UpdateIterStructure()
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (SSIInterfaceMeshtying())
   {
-    MapsCoupStruct()->InsertVector(
-        SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-            MapsCoupStruct()->ExtractVector(StructureField()->Dispnp(), 2)),
-        1, StructureField()->WriteAccessDispnp());
-    StructureField()->SetState(StructureField()->WriteAccessDispnp());
-    MapsCoupStruct()->InsertVector(
-        SSIStructureMeshTying()->InterfaceCouplingAdapterStructure()->MasterToSlave(
-            MapsCoupStruct()->ExtractVector(increment_structure, 2)),
-        1, increment_structure);
-
-    if (Meshtying3DomainIntersection())
+    for (const auto& meshtying : SSIStructureMeshTying()->MeshtyingHandlers())
     {
-      MapsCoupStruct3DomainIntersection()->InsertVector(
-          SSIStructureMeshTying()
-              ->InterfaceCouplingAdapterStructure3DomainIntersection()
-              ->MasterToSlave(MapsCoupStruct3DomainIntersection()->ExtractVector(
-                  StructureField()->Dispnp(), 2)),
+      auto coupling_adapter = meshtying->SlaveMasterCoupling();
+      auto coupling_map_extractor = meshtying->SlaveMasterExtractor();
+
+      // displacements
+      coupling_map_extractor->InsertVector(
+          coupling_adapter->MasterToSlave(
+              coupling_map_extractor->ExtractVector(StructureField()->Dispnp(), 2)),
           1, StructureField()->WriteAccessDispnp());
       StructureField()->SetState(StructureField()->WriteAccessDispnp());
-      MapsCoupStruct3DomainIntersection()->InsertVector(
-          SSIStructureMeshTying()
-              ->InterfaceCouplingAdapterStructure3DomainIntersection()
-              ->MasterToSlave(
-                  MapsCoupStruct3DomainIntersection()->ExtractVector(increment_structure, 2)),
+
+      // increment
+      coupling_map_extractor->InsertVector(
+          coupling_adapter->MasterToSlave(
+              coupling_map_extractor->ExtractVector(increment_structure, 2)),
           1, increment_structure);
     }
   }

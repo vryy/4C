@@ -10,7 +10,6 @@
 #include "ssi_resulttest.H"
 
 #include "ssi_monolithic.H"
-#include "ssi_str_model_evaluator_monolithic.H"
 
 #include "../drt_adapter/ad_str_ssiwrapper.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
@@ -26,49 +25,6 @@
 SSI::SSIResultTest::SSIResultTest(const Teuchos::RCP<const SSI::SSIBase> ssi_base)
     : DRT::ResultTest("SSI"), ssi_base_(ssi_base)
 {
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double SSI::SSIResultTest::ResultNode(const std::string& quantity, DRT::Node* node) const
-{
-  // initialize variable for result
-  double result(0.0);
-
-  // extract result
-  if (!quantity.compare(0, 6, "stress"))
-  {
-    // extract nodal stresses
-    const Epetra_MultiVector& stresses = dynamic_cast<const STR::MODELEVALUATOR::MonolithicSSI&>(
-        ssi_base_->StructureField()->ModelEvaluator(INPAR::STR::model_monolithic_coupling))
-                                             .Stresses();
-
-    // extract local node ID
-    const int lid = stresses.Map().LID(node->Id());
-    if (lid < 0) dserror("Invalid node ID!");
-
-    // extract desired value
-    if (quantity == "stress_xx")
-      result = (*stresses(0))[lid];
-    else if (quantity == "stress_yy")
-      result = (*stresses(1))[lid];
-    else if (quantity == "stress_zz")
-      result = (*stresses(2))[lid];
-    else if (quantity == "stress_xy")
-      result = (*stresses(3))[lid];
-    else if (quantity == "stress_yz")
-      result = (*stresses(4))[lid];
-    else if (quantity == "stress_xz")
-      result = (*stresses(5))[lid];
-    else
-      dserror("Invalid stress specification!");
-  }
-
-  // catch unknown quantity strings
-  else
-    dserror("Quantity '%s' not supported in result test!", quantity.c_str());
-
-  return result;
 }
 
 /*----------------------------------------------------------------------*
@@ -124,46 +80,6 @@ const SSI::SSIMono& SSI::SSIResultTest::SSIMono() const
   if (ssi_mono == nullptr)
     dserror("Couldn't access time integrator for monolithic scalar-structure interaction!");
   return *ssi_mono;
-}
-
-/*-------------------------------------------------------------------------------------*
- *-------------------------------------------------------------------------------------*/
-void SSI::SSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)
-{
-  // determine discretization
-  std::string dis;
-  res.ExtractString("DIS", dis);
-  const DRT::Discretization* discretization(nullptr);
-  if (dis == ssi_base_->ScaTraField()->Discretization()->Name())
-    discretization = ssi_base_->ScaTraField()->Discretization().get();
-  else if (dis == ssi_base_->StructureField()->Discretization()->Name())
-    discretization = ssi_base_->StructureField()->Discretization().get();
-  else
-    dserror("Invalid discretization name!");
-
-  // extract global node ID
-  int node(-1);
-  res.ExtractInt("NODE", node);
-  --node;
-
-  // check global node ID
-  int isowner(discretization->HaveGlobalNode(node) and
-              discretization->gNode(node)->Owner() == discretization->Comm().MyPID());
-  int hasowner(-1);
-  discretization->Comm().SumAll(&isowner, &hasowner, 1);
-  if (hasowner != 1) dserror("Node must have exactly one owner!");
-
-  // result test performed by node owner
-  if (isowner)
-  {
-    // extract name of quantity to be tested
-    std::string quantity;
-    res.ExtractString("QUANTITY", quantity);
-
-    // perform result test
-    nerr += CompareValues(ResultNode(quantity, discretization->gNode(node)), "NODE", res);
-    ++test_count;
-  }
 }
 
 /*-------------------------------------------------------------------------------------*

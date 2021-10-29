@@ -313,16 +313,17 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
 
   // evaluate scatra-scatra interface kinetics
   std::vector<DRT::Condition*> conditions;
-  ScaTraField()->Discretization()->GetCondition("S2IKinetics", conditions);
-  for (const auto& condition : conditions)
+  for (const auto& kinetics_slave_cond :
+      MeshtyingStrategyScaTra()->KineticsConditionsMeshtyingSlaveSide())
   {
-    if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
+    if (kinetics_slave_cond.second->GetInt("kinetic model") !=
+        static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      MeshtyingStrategyScaTra()->SetConditionSpecificScaTraParameters(*condition);
+      MeshtyingStrategyScaTra()->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
       // evaluate the condition
-      ScaTraField()->Discretization()->EvaluateCondition(
-          condparams, strategyscatrathermos2i, "S2IKinetics", condition->GetInt("ConditionID"));
+      ScaTraField()->Discretization()->EvaluateCondition(condparams, strategyscatrathermos2i,
+          "S2IKinetics", kinetics_slave_cond.second->GetInt("ConditionID"));
     }
   }
 
@@ -351,7 +352,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
     Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
 {
   // zero out master matrix
@@ -363,7 +364,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
     {
       // cast master and slave matrix
       const auto blockslavematrix =
-          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(slavematrix);
+          Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
           Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(mastermatrix);
 
@@ -397,7 +398,8 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
     case LINALG::MatrixType::sparse:
     {
       // cast master and slave matrix
-      const auto sparseslavematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(slavematrix);
+      const auto sparseslavematrix =
+          Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(slavematrix);
       auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mastermatrix);
 
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs
@@ -488,17 +490,17 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateOffDiagBlockThermoSc
       Teuchos::null, Teuchos::null);
 
   // evaluate scatra-scatra interface kinetics
-  std::vector<DRT::Condition*> conditions;
-  ThermoField()->Discretization()->GetCondition("S2IKinetics", conditions);
-  for (const auto& condition : conditions)
+  for (const auto& kinetics_slave_cond :
+      MeshtyingStrategyThermo()->KineticsConditionsMeshtyingSlaveSide())
   {
-    if (condition->GetInt("interface side") == INPAR::S2I::side_slave)
+    if (kinetics_slave_cond.second->GetInt("kinetic model") !=
+        static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
     {
       // collect condition specific data and store to scatra boundary parameter class
-      MeshtyingStrategyThermo()->SetConditionSpecificScaTraParameters(*condition);
+      MeshtyingStrategyThermo()->SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
       // evaluate the condition
-      ThermoField()->Discretization()->EvaluateCondition(
-          condparams, strategythermoscatras2i, "S2IKinetics", condition->GetInt("ConditionID"));
+      ThermoField()->Discretization()->EvaluateCondition(condparams, strategythermoscatras2i,
+          "S2IKinetics", kinetics_slave_cond.second->GetInt("ConditionID"));
     }
   }
 
