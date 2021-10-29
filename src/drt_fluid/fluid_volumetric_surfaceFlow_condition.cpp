@@ -16,9 +16,6 @@
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../linalg/linalg_ana.H"
-
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

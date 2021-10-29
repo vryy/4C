@@ -41,8 +41,8 @@
 #include "../drt_fluid_turbulence/drt_transfer_turb_inflow.H"
 #include "fluid_utils_infnormscaling.H"
 #include "../drt_fluid_ele/fluid_ele.H"
-#include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_krylov_projector.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI

@@ -14,7 +14,6 @@
 #include <math.h>
 
 #include "fluid_coupling_red_models.H"
-#include "../linalg/linalg_ana.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
