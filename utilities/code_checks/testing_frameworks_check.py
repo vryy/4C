@@ -251,34 +251,21 @@ def check_inputtests(look_cmd, allerrors):
 
   for input_test in input_tests:
     with open(input_test, "r") as dat:
-      lines = dat.readlines()
-      
-      empty_sections = ''
-      i = 0
-      while i < len(lines): # check line by line
-        if lines[i][0:2] == "--":
-          if "END" in lines[i]: 
-            # continue normally, since this is the end of the input test
-            i = i + 1
-          
+      num_current_section_non_empty_lines = None
+      for line in f:
+        if line.startswith("--"):
+          if num_current_section_non_empty_lines == 0:
+            tests_empty_sections.append(input_test)
+            break
           else:
-            for j in range (1,len(lines)-i):
-              # if it is a line with information different than "\n", the section is not empty
-              # break the loop and continue till next "--"
-              if lines[i+j][0:2] != "\n" and lines[i+j][0:2] != "--":
-                i = i+j
-                break
-              # empty section, since the next line is "--" or section is full of "\n"
-              elif lines[i+j][0:2] == "--":
-                empty_sections += str(i+1) + ', '
-                i = i+j
-                break
-          
-        else:
-          i = i + 1
-    
-    if len(empty_sections) > 0:
-      tests_empty_sections.append(input_test + ' in lines: ' + empty_sections)
+            num_current_section_non_empty_lines = 0
+
+        elif num_current_section_non_empty_lines is None:
+          # No section title until now
+          continue
+
+        elif line.strip() != "":
+          num_current_section_non_empty_lines += 1
   
   if len(tests_empty_sections) > 0:
     errors += 1
