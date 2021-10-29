@@ -1210,20 +1210,11 @@ ML_SMOOTHERMED                  ILU
 //     Uzawa
 ML_SMOOTHERCOARSE               Umfpack
 //
-//     SGS,Jacobi,Chebychev,ILU,GS
-MueLu_INITSMOOTHER              SGS
-//
 // sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
 SUB_SOLVER1                     -1
 //
 // sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
 SUB_SOLVER2                     -1
-//
-// number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree
-MueLu_INITSMOO_SWEEPS           1
-//
-// damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter
-MueLu_INITSMOO_DAMPING          1
 //
 // Minimal objective size of an aggregate (to influence the coarsening rate)
 MueLu_MIN_AGG_SIZE              6
@@ -1237,14 +1228,6 @@ MueLu_REBALANCE_NONZEROIMBALANCE 1.2
 //
 // minimum numbers of rows per processor before rebalancing is necessary
 MueLu_REBALANCE_MINROWS         1000
-//
-// Reuse strategy in MueLu contact preconditioner 2.
-// The options are 'none', 'Ptent' and 'full'.
-// 'full' means: reuse the full multigrid hierarchy.
-// 'Ptent': reuse aggregates and nonsmoothed transfer operator.
-// The MueLu_Reuse parameter only makes sense together with AZREUSE.
-//     nothing,Ptent,full
-MueLu_REUSE                     nothing
 //
 // BGS2x2 flip order parameter
 //     block0_block1_order,block1_block0_order

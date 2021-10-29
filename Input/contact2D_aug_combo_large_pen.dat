@@ -233,9 +233,6 @@ ML_SMOOTHERCOARSE               KLU
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     6 6 6 6 1
-MueLu_INITSMOOTHER              Jacobi
-MueLu_INITSMOO_SWEEPS           3
-MueLu_INITSMOO_DAMPING          1.0
 SIMPLE_DAMPING                  1
 MUELU_XML_ENFORCE               No
 SOLVER                          Aztec_MSR

@@ -919,15 +919,6 @@ ML_SMOOTHERMED                  ILU
 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_SMOTIMES 1 1 1 1 1
 //
-//                              SGS,Jacobi,Chebychev,ILU,GS
-MueLu_INITSMOOTHER              SGS
-//
-// damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter
-MueLu_INITSMOO_DAMPING          1
-//
-// number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree
-MueLu_INITSMOO_SWEEPS           1
-//
 // User specified name for solver block
 NAME ALE solver
 //
@@ -1164,15 +1155,6 @@ ML_SMOOTHERMED                  ILU
 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_SMOTIMES 1 1 1 1 1
 //
-//                              SGS,Jacobi,Chebychev,ILU,GS
-MueLu_INITSMOOTHER              SGS
-//
-// damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter
-MueLu_INITSMOO_DAMPING          1
-//
-// number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree
-MueLu_INITSMOO_SWEEPS           1
-//
 // User specified name for solver block
 NAME Fluid solver
 //
@@ -1408,15 +1390,6 @@ ML_SMOOTHERMED                  ILU
 //
 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_SMOTIMES 1 1 1 1 1
-//
-//                              SGS,Jacobi,Chebychev,ILU,GS
-MueLu_INITSMOOTHER              SGS
-//
-// damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter
-MueLu_INITSMOO_DAMPING          1
-//
-// number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree
-MueLu_INITSMOO_SWEEPS           1
 //
 // User specified name for solver block
 NAME Structure solver

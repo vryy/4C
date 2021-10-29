@@ -182,9 +182,6 @@ ML_SMOOTHERCOARSE               Umfpack
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
-MueLu_INITSMOOTHER              SGS
-MueLu_INITSMOO_DAMPING          1
-MueLu_INITSMOO_SWEEPS           1
 MueLu_REBALANCE                 No
 MueLu_REBALANCE_MINROWS         1000
 MueLu_REBALANCE_NONZEROIMBALANCE 1.2

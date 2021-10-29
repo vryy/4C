@@ -772,8 +772,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set<bool>(
           "MUELU_XML_ENFORCE", DRT::INPUT::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
       mllist.set<bool>("LINALG::MueLu_Preconditioner", true);
-
-      mllist.set("muelu reuse: strategy", inparams.get<std::string>("MueLu_REUSE"));
     }
     break;
     case INPAR::SOLVER::azprec_MueLuAMG_contactSP:  // MueLu operator (contact)
@@ -799,8 +797,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("muelu repartition: max min ratio",
           inparams.get<double>("MueLu_REBALANCE_NONZEROIMBALANCE"));
       mllist.set("muelu repartition: min per proc", inparams.get<int>("MueLu_REBALANCE_MINROWS"));
-
-      mllist.set("muelu reuse: strategy", inparams.get<std::string>("MueLu_REUSE"));
     }
     break;
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:  // MueLu operator (Petrov-Galerkin)
@@ -815,8 +811,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
       mllist.set("energy minimization: type",
           3);  // TODO: different energy minimization modes not available for MueLu, yet
       mllist.set("aggregation: block scaling", false);
-
-      mllist.set("muelu reuse: strategy", inparams.get<std::string>("MueLu_REUSE"));
     }
     break;
     case INPAR::SOLVER::azprec_MLfluid:  // unsymmetric, unsmoothed restriction
@@ -1232,50 +1226,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   mllist.set("null space: type", "pre-computed");
   mllist.set("null space: add default vectors", false);
   mllist.set<double*>("null space: vectors", NULL);
-
-  // set init smoother list
-  // only needed for MueLu::AdaptiveSaMLParameterListInterpreter
-  // currently used in MueLuContactPreconditioner3
-  Teuchos::ParameterList& initList = mllist.sublist("init smoother");
-  switch (DRT::INPUT::IntegralValue<int>(inparams, "MueLu_INITSMOOTHER"))
-  {
-    case 0:
-      initList.set("smoother: type", "symmetric Gauss-Seidel");
-      initList.set("relaxation: sweeps", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      initList.set("relaxation: damping factor", inparams.get<double>("MueLu_INITSMOO_DAMPING"));
-      break;
-    case 7:
-    case 8:
-      initList.set("smoother: type", "Gauss-Seidel");
-      initList.set("relaxation: sweeps", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      initList.set("relaxation: damping factor", inparams.get<double>("MueLu_INITSMOO_DAMPING"));
-      break;
-    case 1:
-      initList.set("smoother: type", "Jacobi");
-      initList.set("relaxation: sweeps", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      initList.set("relaxation: damping factor", inparams.get<double>("MueLu_INITSMOO_DAMPING"));
-      break;
-    case 2:  // Chebychev
-      mllist.set("smoother: type", "Chebyshev");
-      mllist.set("chebyshev: degree", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      mllist.set(
-          "chebyshev: alpha", Teuchos::as<int>(inparams.get<double>("MueLu_INITSMOO_DAMPING")));
-      break;
-    case 4:
-    {
-      mllist.set("smoother: type", "IFPACK");
-      mllist.set("smoother: ifpack type", "ILU");
-      mllist.set("smoother: ifpack overlap", 0);
-      Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
-      ifpacklist.set<int>("fact: level-of-fill", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
-      ifpacklist.set("schwarz: reordering type", "rcm");
-      ifpacklist.set("partitioner: overlap", 0);
-    }
-    break;
-    default:
-      dserror("Unknown type of smoother for adaptive SA initialization phase in MueLu");
-      break;
-  }  // init smoother
 
   return mllist;
 }

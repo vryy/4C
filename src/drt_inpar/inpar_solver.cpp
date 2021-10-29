@@ -236,11 +236,6 @@ namespace INPAR
                 "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
             tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
 
-        // TODO remove this
-        setStringToIntegralParameter<int>("MueLu_INITSMOOTHER", "SGS", "",
-            tuple<std::string>("SGS", "Jacobi", "Chebychev", "ILU", "GS"),
-            tuple<int>(0, 1, 2, 4, 7), &list);
-
         IntParameter("SUB_SOLVER1", -1,
             "sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable "
             "on "
@@ -250,18 +245,6 @@ namespace INPAR
             "sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all "
             "levels, "
             "BS: used for coarse BraessSarazin (BS) level smoother)",
-            &list);
-
-        // TODO remove this
-        IntParameter("MueLu_INITSMOO_SWEEPS", 1,
-            "number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is "
-            "used as polynomial degree",
-            &list);
-
-        DoubleParameter("MueLu_INITSMOO_DAMPING", 1.,
-            "damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it "
-            "is "
-            "used as alpha parameter",
             &list);
 
         IntParameter("MueLu_MIN_AGG_SIZE", 6,
@@ -275,27 +258,6 @@ namespace INPAR
             "maximum allowed nonzero imbalance factor", &list);
         IntParameter("MueLu_REBALANCE_MINROWS", 1000,
             "minimum numbers of rows per processor before rebalancing is necessary", &list);
-
-        // MueLu_Reuse
-        {
-          Teuchos::Tuple<std::string, 3> name;
-          Teuchos::Tuple<int, 3> number;
-
-          name[0] = "nothing";
-          number[0] = Reuse_nothing;
-          name[1] = "Ptent";
-          number[1] = Reuse_Ptent;
-          name[2] = "full";
-          number[2] = Reuse_full;
-
-          setStringToIntegralParameter<int>("MueLu_REUSE", "nothing",
-              "Reuse strategy in MueLu contact preconditioner 2.\n"
-              "The options are 'none', 'Ptent' and 'full'.\n"
-              "'full' means: reuse the full multigrid hierarchy.\n"
-              "'Ptent': reuse aggregates and nonsmoothed transfer operator.\n"
-              "The MueLu_Reuse parameter only makes sense together with AZREUSE.\n",
-              name, number, &list);
-        }
 
         StringParameter(
             "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
@@ -361,8 +323,7 @@ namespace INPAR
       {
         StringParameter("AMGNXN_TYPE", "AMG(BGS)",
             "Name of the pre-built preconditioner to be used. If set to\"XML\" the preconditioner "
-            "is "
-            "defined using a xml file",
+            "is defined using a xml file",
             &list);
         StringParameter(
             "AMGNXN_XML_FILE", "none", "xml file defining the AMGnxn preconditioner", &list);
