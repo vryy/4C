@@ -250,8 +250,9 @@ def check_inputtests(look_cmd, allerrors):
   tests_empty_sections = []
 
   for input_test in input_tests:
-    with open(input_test, "r") as dat:
+    with open(input_test, "r") as f:
       num_current_section_non_empty_lines = None
+      
       for line in f:
         if line.startswith("--"):
           if num_current_section_non_empty_lines == 0:
