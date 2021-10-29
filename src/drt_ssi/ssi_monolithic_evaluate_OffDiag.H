@@ -69,7 +69,8 @@ namespace SSI
 
    protected:
     //! copy slave entries to master side scaled by -1.0
-    void CopySlaveToMasterScatraStructureInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    void CopySlaveToMasterScatraStructureInterface(
+        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
     //! copy slave entries to master side scaled by -1.0
@@ -84,19 +85,19 @@ namespace SSI
 
    private:
     //! map extractor associated with all degrees of freedom inside structure field
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_structure_;
 
     //! map extractor associated with all degrees of freedom inside structural field
-    const Teuchos::RCP<const Epetra_Map> full_map_structure_;
+    Teuchos::RCP<const Epetra_Map> full_map_structure_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! scatra discretization
     Teuchos::RCP<SCATRA::ScaTraTimIntImpl> scatra_;
 
     //! structure problem
-    const Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
+    Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure_;
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
     Teuchos::RCP<const SSI::UTILS::SSIStructureMeshTying> ssi_structure_meshtying_;
@@ -145,7 +146,7 @@ namespace SSI
 
    private:
     //! map extractor associated with all degrees of freedom inside scatra field
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
+    Teuchos::RCP<const Epetra_Map> full_map_scatra_;
   };
 }  // namespace SSI
 #endif  // #ifndef SSI_MONOLITHIC_EVALUATE_OffDiag_H

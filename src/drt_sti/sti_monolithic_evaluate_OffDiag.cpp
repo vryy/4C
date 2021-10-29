@@ -352,7 +352,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::EvaluateScatraThermoInterfac
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraThermoInterface(
-    Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
     Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
 {
   // zero out master matrix
@@ -364,7 +364,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
     {
       // cast master and slave matrix
       const auto blockslavematrix =
-          Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(slavematrix);
+          Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
           Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(mastermatrix);
 
@@ -398,7 +398,8 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::CopySlaveToMasterScatraTherm
     case LINALG::MatrixType::sparse:
     {
       // cast master and slave matrix
-      const auto sparseslavematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(slavematrix);
+      const auto sparseslavematrix =
+          Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(slavematrix);
       auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mastermatrix);
 
       // derive linearizations of master-side scatra fluxes w.r.t. slave-side thermo dofs

@@ -77,25 +77,25 @@ namespace STI
     Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermo() const
     {
       return block_map_thermo_;
-    };
+    }
 
     //! map extractor associated with degrees of freedom on interface of temperature field
     Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermoInterface() const
     {
       return block_map_thermo_interface_;
-    };
+    }
 
     //! map extractor associated with all degrees of freedom inside scatra field
-    Teuchos::RCP<const Epetra_Map> FullMapScatra() const { return full_map_scatra_; };
+    Teuchos::RCP<const Epetra_Map> FullMapScatra() const { return full_map_scatra_; }
 
     //! map extractor associated with all degrees of freedom inside thermo field
-    Teuchos::RCP<const Epetra_Map> FullMapThermo() const { return full_map_thermo_; };
+    Teuchos::RCP<const Epetra_Map> FullMapThermo() const { return full_map_thermo_; }
 
     //! map associated with all degrees of freedom on thermo interface
-    Teuchos::RCP<const Epetra_Map> InterfaceMapScaTra() const { return interface_map_scatra_; };
+    Teuchos::RCP<const Epetra_Map> InterfaceMapScaTra() const { return interface_map_scatra_; }
 
     //! map associated with all degrees of freedom on scatra interface
-    Teuchos::RCP<const Epetra_Map> InterfaceMapThermo() const { return interface_map_thermo_; };
+    Teuchos::RCP<const Epetra_Map> InterfaceMapThermo() const { return interface_map_thermo_; }
 
     //! problem with deforming mesh
     bool IsAle() const { return isale_; }
@@ -104,53 +104,53 @@ namespace STI
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyScaTra() const
     {
       return meshtying_strategy_scatra_;
-    };
+    }
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> MeshtyingStrategyThermo() const
     {
       return meshtying_strategy_thermo_;
-    };
+    }
 
     //! ScaTra subproblem
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); };
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() { return scatra_->ScaTraField(); }
 
     //! Thermo subproblem
-    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() { return thermo_->ScaTraField(); };
+    Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ThermoField() { return thermo_->ScaTraField(); }
 
    private:
     //! map extractor associated with all degrees of freedom inside temperature field
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_;
 
     //! map extractor associated with degrees of freedom on interface of temperature field
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_;
 
     //! map extractor associated with all degrees of freedom inside scatra field
-    const Teuchos::RCP<const Epetra_Map> full_map_scatra_;
+    Teuchos::RCP<const Epetra_Map> full_map_scatra_;
 
     //! map extractor associated with all degrees of freedom inside thermo field
-    const Teuchos::RCP<const Epetra_Map> full_map_thermo_;
+    Teuchos::RCP<const Epetra_Map> full_map_thermo_;
 
     //! map associated with all degrees of freedom on thermo interface
-    const Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
+    Teuchos::RCP<const Epetra_Map> interface_map_scatra_;
 
     //! map associated with all degrees of freedom on scatra interface
-    const Teuchos::RCP<const Epetra_Map> interface_map_thermo_;
+    Teuchos::RCP<const Epetra_Map> interface_map_thermo_;
 
     //! flag, if mesh deforms
     const bool isale_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
+    Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
 
     //! ScaTra subproblem
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
     //! Thermo subproblem
-    const Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
+    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo_;
   };
 
   //! evaluation of scatra-thermo off-diagonal blocks for matching nodes
@@ -188,10 +188,11 @@ namespace STI
     Teuchos::RCP<const LINALG::MultiMapExtractor> BlockMapThermoInterfaceSlave() const
     {
       return block_map_thermo_interface_slave_;
-    };
+    }
 
     //! copy slave entries to master side scaled by -1.0
-    void CopySlaveToMasterScatraThermoInterface(Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    void CopySlaveToMasterScatraThermoInterface(
+        Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
     //! evaluate condition on slave side
@@ -199,7 +200,7 @@ namespace STI
 
     //! map extractor associated with degrees of freedom on interface (slave side) of temperature
     //! field
-    const Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave_;
+    Teuchos::RCP<const LINALG::MultiMapExtractor> block_map_thermo_interface_slave_;
   };
 
   //! evaluation of scatra-thermo off-diagonal blocks for standard Mortar on scatra discretization
@@ -219,9 +220,6 @@ namespace STI
         Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra,
         Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> thermo);
-
-    //! destructor
-    ~ScatraThermoOffDiagCouplingMortarStandard() override = default;
 
     //! evaluation of interface contributions to scatra-thermo off-diagonal block
     void EvaluateOffDiagBlockScatraThermoInterface(

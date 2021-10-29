@@ -238,7 +238,7 @@ void SSTI::ThermoStructureOffDiagCoupling::EvaluateOffDiagBlockStructureThermoDo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
     Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
 {
   mastermatrix->Zero();
@@ -249,7 +249,8 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
     {
       const int numberthermoblocks = thermo_->ScaTraField()->BlockMaps().NumMaps();
 
-      auto blockslavematrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(slavematrix);
+      auto blockslavematrix =
+          Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
           Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(mastermatrix);
 
@@ -292,7 +293,7 @@ void SSTI::ThermoStructureOffDiagCoupling::CopySlaveToMasterThermoStructureInter
     }
     case LINALG::MatrixType::sparse:
     {
-      auto sparseslavematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(slavematrix);
+      auto sparseslavematrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(slavematrix);
       auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mastermatrix);
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and

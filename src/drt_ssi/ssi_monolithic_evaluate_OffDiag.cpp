@@ -248,7 +248,7 @@ void SSI::ScatraStructureOffDiagCoupling::EvaluateOffDiagBlockStructureScatraDom
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterface(
-    Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+    Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
     Teuchos::RCP<LINALG::SparseOperator>& mastermatrix)
 {
   mastermatrix->Zero();
@@ -261,7 +261,8 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
 
       // cast scatrastructureinterfaceslaveside
       // cast master and slave matrix
-      auto blockslavematrix = Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(slavematrix);
+      auto blockslavematrix =
+          Teuchos::rcp_dynamic_cast<const LINALG::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
           Teuchos::rcp_dynamic_cast<LINALG::BlockSparseMatrixBase>(mastermatrix);
 
@@ -306,7 +307,7 @@ void SSI::ScatraStructureOffDiagCoupling::CopySlaveToMasterScatraStructureInterf
     case LINALG::MatrixType::sparse:
     {
       // cast scatrastructureinterfaceslaveside
-      auto sparseslavematrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(slavematrix);
+      auto sparseslavematrix = Teuchos::rcp_dynamic_cast<const LINALG::SparseMatrix>(slavematrix);
       auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mastermatrix);
 
       // copy slave side values to master side and scale with minus 1. Insert into
