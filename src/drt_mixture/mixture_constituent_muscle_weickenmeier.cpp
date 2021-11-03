@@ -506,7 +506,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
               (1.0 - omega0) * std::pow(lambdaM, 2.);
   double derivIp = (omega0 / 3.0) * (2.0 * lambdaM - 2.0 / std::pow(lambdaM, 2.)) +
                    2.0 * (1.0 - omega0) * lambdaM;
-  double derivderivIp = (omega0 / 3.0) * (2.0 + 4.0 * std::pow(lambdaM, 3.)) + 2.0 * (1.0 - omega0);
+  double derivderivIp = (omega0 / 3.0) * (2.0 + 4.0 / std::pow(lambdaM, 3.)) + 2.0 * (1.0 - omega0);
 
   // argument for Lambert W function
   double xi =
