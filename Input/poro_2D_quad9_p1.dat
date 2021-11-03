@@ -97,8 +97,6 @@ COMPONENT 0 FUNCTION 0.4
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 2 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1.0*0.5*(1-cos((2*pi/2.0)))
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 4 QUANTITY velx VALUE -1.58808710111670681e+00 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 5 QUANTITY pressure VALUE 2.06232620712705073e+00 TOLERANCE 1e-8

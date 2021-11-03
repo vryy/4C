@@ -124,7 +124,6 @@ NODE    55 DNODE 1
 NODE    59 DNODE 1
 NODE    60 DNODE 2
 NODE    62 DNODE 2
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    9 DSURFACE 1
 NODE    10 DSURFACE 1
@@ -171,7 +170,6 @@ NODE    24 DSURFACE 5
 NODE    25 DSURFACE 5
 NODE    26 DSURFACE 5
 NODE    27 DSURFACE 5
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1      COORD   0.0000000000000000e+00  0.0000000000000000e+00  1.0000000000000000e+00
 NODE 2      COORD   0.0000000000000000e+00  0.0000000000000000e+00  5.0000000000000000e-01

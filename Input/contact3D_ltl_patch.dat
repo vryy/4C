@@ -99,7 +99,6 @@ E 4 - 0 Master Inactive
 DLINE  1
 // top_contact_edge
 E 1 -
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    62 DLINE 1
 NODE    63 DLINE 1
@@ -187,7 +186,6 @@ NODE    17 DSURFACE 4
 NODE    19 DSURFACE 4
 NODE    22 DSURFACE 4
 NODE    26 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00 -5.0000000000000000e-01  7.0710678118654746e-01
 NODE         2 COORD -3.5355339059327373e-01 -5.0000000000000000e-01  3.5355339059327373e-01

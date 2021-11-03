@@ -84,7 +84,6 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 NIT_STAB_FAC                    33.89681558
@@ -156,7 +155,6 @@ NODE 20044 DNODE 1
 NODE 20915 DNODE 1
 NODE 21475 DNODE 1
 NODE 21955 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 17218 DSURFACE 1
 NODE 17221 DSURFACE 1

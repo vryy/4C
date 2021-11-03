@@ -1,4 +1,3 @@
--------------------------------------------------------------TITLE
 ------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        88
 NODES                           256
@@ -161,7 +160,6 @@ MAT 4 MAT_ElastHyper NUMMAT 2 MATIDS 31 32 DENS 2.0e-6
 MAT 41 ELAST_IsoNeoHooke MUE 10.0
 MAT 42 ELAST_VolSussmanBathe KAPPA 100.0
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))+1)*heaviside(5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))+1)-5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0)))))*heaviside(5.0*(t-(0.18+25.0/(5.0*(25.0-(-25.0))))))-5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))*heaviside(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0))))))+(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))-1)*heaviside(5.0*(t-(0.52-25.0/(5.0*(25.0-(-25.0)))))-1)
 -------------------------------------------------------------FUNCT2
@@ -233,8 +231,6 @@ E 9 - coupling_id 1
 DSURF  2
 E 2 - NUMDOF 3 ONOFF 1 0 0 STIFF 1.5 0.0 0.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.001 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION refsurfnormal COUPLING none
 E 3 - NUMDOF 3 ONOFF 1 0 0 STIFF 0.075 0.0 0.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.005 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION refsurfnormal COUPLING none
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -908,7 +904,6 @@ NODE    251 DSURFACE 19
 NODE    252 DSURFACE 19
 NODE    253 DSURFACE 19
 NODE    255 DSURFACE 19
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  3.2814512999999998e+01 -3.2814512999999998e+01  3.2814512999999998e+01
 NODE         2 COORD  2.2814513000000002e+01 -3.2814512999999998e+01  3.2814512999999998e+01

@@ -227,8 +227,6 @@ DSURF  2
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.3
 // s_contact
 E 3 - 1 Master Inactive FrCoeffOrBound 0.3
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

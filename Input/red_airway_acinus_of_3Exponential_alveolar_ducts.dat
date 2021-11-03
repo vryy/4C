@@ -9,7 +9,6 @@ NUMDF                           1
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      ReducedDimensionalAirWays
 RESTART 0 //599
---------------------------------------------------------------------------IO
 -----------------------------------------REDUCED DIMENSIONAL AIRWAYS DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      OneStepTheta

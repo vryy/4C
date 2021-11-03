@@ -211,8 +211,6 @@ DVOL   2
 E 1 - PoroMultiFluid 1
 // all_nodes
 E 1 - ScaTra 3
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1601 DSURFACE 1
 NODE    1602 DSURFACE 1

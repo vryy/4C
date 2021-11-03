@@ -117,11 +117,6 @@ MAT 3 ELAST_IsoTestMaterial C1 1000 C2 1000
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.1 7 VALUES 0 1000 1000
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -4.46782216985193714e-01 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -4.52866612208278951e-01 TOLERANCE 1e-9

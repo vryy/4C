@@ -117,8 +117,6 @@ E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 DSURF                           1
 //node_ns2
 E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0625 0.0 FUNCT 0 1 0 Live Mid
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 8 DSURFACE 3
 NODE 40 DSURFACE 3
@@ -318,7 +316,6 @@ NODE 135 DSURFACE 1
 NODE 133 DSURFACE 1
 NODE 131 DSURFACE 1
 NODE 127 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000e+00 0.0000000000000e+00 0.0000000000000e+00
 NODE 2 COORD 6.0000000000000e+00 5.5000000000000e+00 0.0000000000000e+00

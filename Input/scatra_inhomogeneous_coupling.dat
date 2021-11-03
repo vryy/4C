@@ -215,7 +215,6 @@ COMPONENT 2  FUNCTION 1.0
 VARFUNCTION phi2
 -------------------------------------------------------------FUNCT3
 VARFUNCTION phi1
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE  1.35334921116613854e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE 3.67880229125432279e-01 TOLERANCE 1e-9
@@ -231,9 +230,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  0
 NDVOL   2
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE    1 DVOL 1
 NODE    2 DVOL 1

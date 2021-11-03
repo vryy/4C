@@ -96,7 +96,6 @@ MAT 20 MAT_scatra_reaction NUMSCAL 1 STOICH -1 REACCOEFF -1.0 COUPLING simple_mu
 MAT 21 MAT_scatra_reaction NUMSCAL 1 STOICH -1 REACCOEFF 1.0 COUPLING power_multiplicative ROLE 3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION sin(3.0*pi*z)*cos(3.0*atan2(y,x))
-----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 3.53009326494774844e-01 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 250 QUANTITY phi VALUE 9.02249473392839785e-01 TOLERANCE 1e-8
@@ -107,10 +106,6 @@ NDPOINT 0
 NDLINE  0
 NDSURF  0
 NDVOL   0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00 -1.2500000000000000e+00  0.0000000000000000e+00
 NODE         2 COORD  0.0000000000000000e+00 -1.2457432749209754e+00  4.5937379454142557e-02

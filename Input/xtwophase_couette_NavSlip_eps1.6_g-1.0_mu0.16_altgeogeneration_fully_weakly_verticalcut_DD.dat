@@ -148,8 +148,6 @@ GMSH_CUT_OUT                    No //Yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          DirectDivergence //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -297,7 +295,6 @@ SIDE fluid z+ DSURFACE 5
 SIDE fluid z- DSURFACE 6
 ------------------------------------------------DVOL-NODE TOPOLOGY
 VOLUME fluid DVOL 1
--------------------------------------------------------NODE COORDS
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND  0.0  0.0 -0.05
 UPPER_BOUND  1.6  1.6  0.05

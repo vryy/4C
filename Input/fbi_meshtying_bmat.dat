@@ -234,7 +234,6 @@ DSURF  2
 E 5 - 1 Master
 // randschicht_coupling_surf
 E 6 - 1 Slave
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    27 DLINE 1
 NODE    28 DLINE 1
@@ -918,7 +917,6 @@ NODE    728 DSURFACE 7
 NODE    734 DSURFACE 7
 NODE    738 DSURFACE 7
 NODE    742 DSURFACE 7
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00 -6.2500000000000000e-01 -2.5000000000000000e-01
 NODE         2 COORD  0.0000000000000000e+00  0.0000000000000000e+00 -2.5000000000000000e-01

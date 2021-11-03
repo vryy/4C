@@ -170,7 +170,6 @@ E 1 - PoroMultiFluid 1
 DLINE  1
 // right_EC
 E 2 - PoroMultiFluid 5
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    101 DLINE 1
 NODE    102 DLINE 1
@@ -756,7 +755,6 @@ NODE       558  DSURF 1
 NODE       559  DSURF 1
 NODE       560  DSURF 1
 NODE       561  DSURF 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.5000000000000000e+00  5.0000000000000000e-01  0.0000000000000000e+00
 NODE         2 COORD  2.3999999999999999e+00  5.0000000000000000e-01  0.0000000000000000e+00

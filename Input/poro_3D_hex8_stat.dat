@@ -84,9 +84,6 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e2 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.0001 DENSITY 1.0e-3 PERMEABILITY 1.0e-6 TYPE Darcy
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 5*t
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 1 QUANTITY velx VALUE -4.81319652783599172e-02 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 2 QUANTITY pressure VALUE -2.31802853520968639e-02 TOLERANCE 1e-5

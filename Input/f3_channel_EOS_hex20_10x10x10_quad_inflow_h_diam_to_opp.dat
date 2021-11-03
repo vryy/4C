@@ -132,7 +132,6 @@ COMPONENT 3 FUNCTION 0.0 //(-10.0*0.1*x) //+5.0*z // 0.0 // pressure
 COMPONENT 0 FUNCTION 20.0*2.0*y*(z*z-0.25)*1.0
 ------------------------------------------------------------FUNCT5
 COMPONENT 0 FUNCTION 20.0*2.0*z*(y*y-0.25)*1.0
-------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 1207 QUANTITY velx VALUE 3.91213999815898106e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1207 QUANTITY vely VALUE 6.07682824901312896e-03 TOLERANCE 1e-12

@@ -14,7 +14,6 @@ NUMDF                           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
---------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
@@ -90,7 +89,6 @@ TOL_VEL_INC_INF                 1e-10
 TOL_VEL_INC_L2                  1e-10
 TOL_VEL_RES_INF                 1e-10
 TOL_VEL_RES_L2                  1e-10
--------------------------------------------------------------MORTAR COUPLING
 -------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 GHOSTING_STRATEGY               redundant_all
 --------------------------------------------------------------------SOLVER 1
@@ -426,8 +424,6 @@ NODE 1231 DLINE 7
 NODE 1262 DLINE 7
 NODE 1264 DLINE 7
 NODE 1295 DLINE 7
----------------------------------------------------------DSURF-NODE TOPOLOGY
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 1.0000000000000000e+00 -2.0000000000000000e-03 0.0000000000000000e+00
 NODE 2 COORD 1.0000000000000000e+00 0.0000000000000000e+00 0.0000000000000000e+00

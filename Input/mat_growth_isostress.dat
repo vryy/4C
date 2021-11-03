@@ -120,9 +120,6 @@ MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.1 100.0 VALUES 0.0 1.0 1.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 1.7586914039811e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 4.0725754775365e-02 TOLERANCE 1e-6
@@ -304,7 +301,6 @@ NODE 213 DSURFACE 2
 NODE 214 DSURFACE 2
 NODE 215 DSURFACE 2
 NODE 216 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 1.00000000e+00
 NODE 2 COORD 0.00000000e+00 0.00000000e+00 8.00000012e-01

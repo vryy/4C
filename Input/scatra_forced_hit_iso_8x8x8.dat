@@ -211,8 +211,6 @@ E 6 - 2 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 DVOL                            1
 //                              volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    145 DSURFACE 1
 NODE    146 DSURFACE 1

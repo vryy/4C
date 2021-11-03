@@ -60,10 +60,6 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION (5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2))
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 215 QUANTITY phi VALUE 6.37531817624907571e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 323 QUANTITY phi VALUE 6.32039659753278582e-01 TOLERANCE 1e-12
@@ -100,8 +96,6 @@ DSURF                           1
 // The current setting in this test with periodic b.c.'s required this workaround.
 //
 E 3 -
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -139,7 +133,6 @@ NODE 333 DSURFACE 3
 NODE 334 DSURFACE 3
 NODE 335 DSURFACE 3
 NODE 336 DSURFACE 3
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 -9.99999978e-03 3.33333341e-03
 NODE 2 COORD 0.00000000e+00 -9.99999978e-03 -3.33333341e-03

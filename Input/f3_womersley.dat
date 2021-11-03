@@ -160,7 +160,6 @@ E 1 - 1 POLYNOMIAL PREBIASED InFlow WithCorrection Period 1.0 Order 2 Harmonics 
 ------------------------------------DESIGN LINE VOLUMETRIC FLOW BORDER NODES
 DLINE                           1
 E 1 - 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
@@ -853,7 +852,6 @@ NODE 504 DSURFACE 3
 NODE 506 DSURFACE 3
 NODE 508 DSURFACE 3
 NODE 510 DSURFACE 3
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 6.00000000e+00 -1.00000000e+00 2.50000000e-01
 NODE 2 COORD 6.00000000e+00 -6.00000024e-01 2.50000000e-01

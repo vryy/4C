@@ -99,7 +99,6 @@ NODE    142 DNODE 3
 NODE    4 DNODE 4
 NODE    93 DNODE 5
 NODE    141 DNODE 6
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    4 DSURFACE 1
@@ -125,7 +124,6 @@ NODE    114 DSURFACE 6
 NODE    115 DSURFACE 6
 NODE    116 DSURFACE 6
 NODE    117 DSURFACE 6
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  5.0000000000000000e+00
 NODE         2 COORD -5.0000000000000000e-01 -5.0000000000000000e-01  4.0000000000000000e+00

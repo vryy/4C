@@ -207,7 +207,6 @@ COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION (sin(t*pi/2)) (1.0+0.1*sin((t-1.0)*pi/2))
-----------------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE    2.50160077822538351e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 1 QUANTITY phi2 VALUE   8.38072314178585187e-01 TOLERANCE 1e-9
@@ -243,8 +242,6 @@ E 1 - NUMDOF 5 ONOFF 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 FUNCT 3 0 0 0 0
 DSURF  1
 //inflow
 E 2 - NUMDOF 5 ONOFF 0 1 1 1 1 VAL 0.0 1.0 1.0 1.0 1.0 FUNCT 0 0 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 45 DSURFACE 1
 NODE 46 DSURFACE 1
@@ -264,7 +261,6 @@ NODE 924 DSURFACE 2
 NODE 925 DSURFACE 2
 NODE 926 DSURFACE 2
 NODE 931 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -1.9500000000000000e+01 -2.5000000000000000e-01 2.5000000000000000e-01
 NODE 2 COORD -1.9500000000000000e+01 -2.5000000000000000e-01 -2.5000000000000000e-01

@@ -96,7 +96,6 @@ GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_TIMEINT                //XFLUID_TIMEINT
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -135,7 +134,6 @@ MOVINGLEVELSETCYLINDER ORIGIN 0.0 -1.0 0.0 RADIUS 0.3 DIRECTION 0.0 1.0 0.0 DIST
 COMPONENT 0 FUNCTION 2.0*sin((2.0*2.0/2.0)*t)
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION 2.71^(x/0.03)
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 //node: 4222 is top of bubble
 XFLUID DIS fluid NODE 4222 QUANTITY velx VALUE 1.74144242269582902e-02 TOLERANCE 1e-8

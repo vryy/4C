@@ -259,7 +259,6 @@ NODE 950 DNODE 1
 NODE 952 DNODE 1
 NODE 954 DNODE 1
 NODE 956 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 926 DSURFACE 1
 NODE 927 DSURFACE 1
@@ -2989,7 +2988,6 @@ NODE 1973 DSURFACE 18
 NODE 1975 DSURFACE 18
 NODE 1977 DSURFACE 18
 NODE 1979 DSURFACE 18
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 5.00000000e-01 0.00000000e+00 -2.29999995e+00
 NODE 2 COORD 4.61939752e-01 -1.91341713e-01 -2.29999995e+00

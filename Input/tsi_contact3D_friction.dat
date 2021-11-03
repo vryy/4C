@@ -137,10 +137,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 SRC_FIELD structure SRC_MAT 3 TAR_FIELD thermo TAR_MAT 4
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 293.0
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -162,8 +158,6 @@ DSURF  2
 E 1 - 1 Slave Active FrCoeffOrBound 0.2
 // untenoben
 E 2 - 1 Master Inactive FrCoeffOrBound 0.2
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    101 DSURFACE 1
 NODE    102 DSURFACE 1

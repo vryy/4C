@@ -83,7 +83,6 @@ NODE 17 DNODE 2
 NODE 18 DNODE 2
 NODE 9 DNODE 3
 NODE 11 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -105,7 +104,6 @@ NODE 25 DSURFACE 2
 NODE 32 DSURFACE 2
 NODE 38 DSURFACE 2
 NODE 46 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000000e+00 3.0917150284381401e+00 9.5153204456250329e+00
 NODE 2 COORD 0.0000000000000000e+00 8.0942150286338315e+00 5.8807914493066491e+00

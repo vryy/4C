@@ -177,7 +177,6 @@ E 7 - 1 Slave
 E 8 - 1 Master
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    51 DNODE 1
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    231 DSURFACE 1
 NODE    232 DSURFACE 1

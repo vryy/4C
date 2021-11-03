@@ -114,7 +114,6 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress
 -------------------------------------------------------------------MATERIALS
@@ -140,8 +139,6 @@ COMPONENT 3 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500.0 DESCRIPTION -0.1*t -0.1*1
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 4
 NDLINE 10

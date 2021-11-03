@@ -24,7 +24,6 @@ RESTART                         0
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
---------------------------------------------------------------------------IO
 ----------------------------------------------------------TWO PHASE FLOW
 CONVTOL                         1e-06
 ITEMAX                          1
@@ -174,7 +173,6 @@ E 6 - NUMDOF 4 ONOFF 1 1 1 1 VAL 1.0 1.0 1.0 1.0 FUNCT 1 1 1 2
 DVOL                            0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 649 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 145 DSURFACE 1
 NODE 146 DSURFACE 1

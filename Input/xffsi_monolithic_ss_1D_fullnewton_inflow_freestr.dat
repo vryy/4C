@@ -68,7 +68,6 @@ ITEMAX                          7
 SHAPEDERIVATIVES                yes
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Hybrid_LM_Cauchy_stress       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 XFF_CONV_STAB_SCALING           none
@@ -137,7 +136,6 @@ NODE 33 DNODE 3
 NODE 34 DNODE 3
 NODE 35 DNODE 3
 NODE 36 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 25 DSURFACE 1
 NODE 26 DSURFACE 1

@@ -19,8 +19,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      Af_Gen_Alpha   //Np_Gen_Alpha //BDF2                          // identical results with: Np_Gen_Alpha

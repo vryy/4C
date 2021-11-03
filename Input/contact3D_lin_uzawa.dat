@@ -68,9 +68,6 @@ LM_SHAPEFCN                     Standard
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
 LM_DUAL_CONSISTENT              none
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

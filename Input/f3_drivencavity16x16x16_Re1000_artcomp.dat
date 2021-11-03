@@ -88,9 +88,6 @@ MAT 1 MAT_fluid   DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION (sin(pi*(t/1-0.5))+1)/2 1
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 2559 QUANTITY     velx VALUE -1.609719478e-03 TOLERANCE 1e-9
 FLUID DIS fluid NODE 2559 QUANTITY     vely VALUE -2.661722674e-06 TOLERANCE 1e-9

@@ -65,9 +65,6 @@ SEMI_SMOOTH_CN                  1.0
 LM_SHAPEFCN                     Dual
 SEARCH_ALGORITHM                BruteForceEleBased
 SEARCH_PARAM                    0.3
----------------------------------------------------------------FLUID DYNAMIC
------------------------------------------------------------------ALE DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK

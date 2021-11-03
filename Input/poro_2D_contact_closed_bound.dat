@@ -153,8 +153,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPT
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 50000000 DESCRIPTION 0 12.5*0.5*(1-cos(2*pi/5*(t-1)))
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 160 QUANTITY vely VALUE -1.08529440348016237e+00 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 160 QUANTITY pressure VALUE 7.89263824426179195e+00 TOLERANCE 1e-8
@@ -198,7 +196,6 @@ E 6 -
 DLINE  1
 // poro_contact_interface
 E 2 -
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    111 DLINE 1
 NODE    112 DLINE 1
@@ -1003,7 +1000,6 @@ NODE    794 DSURFACE 1
 NODE    795 DSURFACE 1
 NODE    796 DSURFACE 1
 NODE    797 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1    COORD  -3.0000000000000000e+00  1.5100000000000000e+01  0.0000000000000000e+00
 NODE 2    COORD  -4.0000000000000000e+00  1.5100000000000000e+01  0.0000000000000000e+00

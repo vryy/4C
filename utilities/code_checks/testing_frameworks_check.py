@@ -245,6 +245,34 @@ def check_inputtests(look_cmd, allerrors):
     allerrors.append('The following input files are missing in TestingFrameworkListOfTests.cmake:')
     allerrors.append('')
     allerrors.extend(missing_input_tests)
+  
+  # check if input tests have empty sections
+  tests_empty_sections = []
+
+  for input_test in input_tests:
+    with open(input_test, "r") as f:
+      num_current_section_non_empty_lines = None
+      
+      for line in f:
+        if line.startswith("--"):
+          if num_current_section_non_empty_lines == 0:
+            tests_empty_sections.append(input_test)
+            break
+          else:
+            num_current_section_non_empty_lines = 0
+
+        elif num_current_section_non_empty_lines is None:
+          # No section title until now
+          continue
+
+        elif line.strip() != "":
+          num_current_section_non_empty_lines += 1
+  
+  if len(tests_empty_sections) > 0:
+    errors += 1
+    allerrors.append('The following input files have empty sections. Please delete them or correct your input file.')
+    allerrors.append('')
+    allerrors.extend(tests_empty_sections)
 
   return errors
 

@@ -71,7 +71,6 @@ E 2 - 1 Master
 E 3 - 1 Slave
 // main_domain_outer_boundary_ycurs
 E 4 - 1 Slave
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    2 DLINE 1
@@ -733,8 +732,6 @@ NODE    2862 DLINE 5
 NODE    2887 DLINE 5
 NODE    2912 DLINE 5
 NODE    3456 DLINE 5
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -2.5000000000368425e+00 -2.7941176471000002e+00  0.0000000000000000e+00
 NODE         2 COORD -2.5980392157245618e+00 -2.7941176471000002e+00  0.0000000000000000e+00

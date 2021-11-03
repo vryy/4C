@@ -172,7 +172,6 @@ KERNEL_INTERSECTION_FLOATTYPE cln
 KERNEL_DISTANCE_FLOATTYPE cln
 GENERAL_POSITON_DISTANCE_FLOATTYPE cln
 GENERAL_POSITON_POSITION_FLOATTYPE double
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -235,8 +234,6 @@ E 6 - 1 structure conforming
 DSURF 1
 // FSI
 E 6 - COUPLINGID 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

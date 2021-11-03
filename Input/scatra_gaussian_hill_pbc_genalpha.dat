@@ -92,10 +92,6 @@ COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION (5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983)^2))
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 222 QUANTITY phi1 VALUE 3.750658381e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 230 QUANTITY phi1 VALUE 3.712613405e-01 TOLERANCE 1e-9
@@ -133,8 +129,6 @@ DSURF                           2
 E 1 - 1 Master PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
 //                              outflow
 E 2 - 1 Slave PLANE yz LAYER 0 ANGLE 0.0 ABSTREETOL 1e-9
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -160,7 +154,6 @@ NODE 1809 DSURFACE 2
 NODE 1810 DSURFACE 2
 NODE 1811 DSURFACE 2
 NODE 1812 DSURFACE 2
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 -9.99999978e-03 3.33333341e-03
 NODE 2 COORD 0.00000000e+00 -9.99999978e-03 -3.33333341e-03

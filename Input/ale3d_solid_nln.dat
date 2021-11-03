@@ -336,7 +336,6 @@ NODE    587     DNODE  587
 NODE    592     DNODE  592
 NODE    597     DNODE  597
 NODE    602     DNODE  602
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    17 DSURFACE 1
 NODE    18 DSURFACE 1
@@ -580,7 +579,6 @@ NODE    587 DSURFACE 2
 NODE    592 DSURFACE 2
 NODE    597 DSURFACE 2
 NODE    602 DSURFACE 2
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1    COORD  -5.0000000000000000e+00  -5.0000000000000000e+00  1.0000000000000000e+00
 NODE 2    COORD  -5.0000000000000000e+00  -5.0000000000000000e+00  5.0000000000000000e-01

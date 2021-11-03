@@ -165,7 +165,6 @@ GMSH_CUT_OUT                    Yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 //XFLUID_BOUNDARY                 xfluid_stationary_boundary
 //INTERFACE_VEL_INITIAL           interface_vel_init_zero
@@ -212,8 +211,6 @@ COMPONENT 0 FUNCTION 0.0
 COMPONENT 1 FUNCTION 0.0
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0 // pressure
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 //In air
 XFLUID DIS fluid NODE 87 QUANTITY velx VALUE 0.0 TOLERANCE 1e-9

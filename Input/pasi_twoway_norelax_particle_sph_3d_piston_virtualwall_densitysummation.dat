@@ -1112,7 +1112,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 1
 DSURF  1
 // particlewall
 E 1 - MAT -1
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    9 DLINE 1
 NODE    10 DLINE 1

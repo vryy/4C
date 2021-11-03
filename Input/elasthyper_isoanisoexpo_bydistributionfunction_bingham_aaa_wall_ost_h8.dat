@@ -84,15 +84,12 @@ MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0  POLYCONVEX 0
 MAT 2 ELAST_CoupAnisoExpo K1 3E+04 K2 127.0 GAMMA 0.0 K1COMP 0.0 K2COMP 0.0 STR_TENS_ID 100
 MAT 3 ELAST_CoupNeoHooke YOUNG 10.0 NUE 0.49
 MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR Bingham C1 11.6 C2 9.7 C3 0.0 C4 1000.0 //6.61303987e+05
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6.5 50000.0 DESCRIPTION t/6.5 t/6.5
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION b
 VARIABLE 0 NAME b TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 50000.0 DESCRIPTION 0.5*(1.0-cos((t*pi/10.0))) 0.5*(1.0-cos((t*pi/10.0)))
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 18 QUANTITY dispy VALUE 4.30701915619418862e-05 TOLERANCE 1e-09
 STRUCTURE DIS structure NODE 27 QUANTITY dispy VALUE 8.61403892453240953e-05 TOLERANCE 1e-09
@@ -122,7 +119,6 @@ E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0132 0.0 0.0 FUNCT 2 0 0
 E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // wall_surface_y+
 E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0132 0.0 FUNCT 0 2 0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    766 DLINE 1
 NODE    767 DLINE 1
@@ -329,7 +325,6 @@ NODE    720 DSURFACE 4
 NODE    766 DSURFACE 4
 NODE    767 DSURFACE 4
 NODE    768 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00  0.0000000000000000e+00  1.6000000000000000e-02
 NODE         2 COORD  0.0000000000000000e+00  0.0000000000000000e+00  8.0000000000000002e-03

@@ -156,8 +156,6 @@ SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 COMPONENT 0 FUNCTION 10*(y-1)*(1-cos(2*t*pi/5))
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION (1-cos(2*t*pi/5))
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 68 QUANTITY dispx VALUE -2.97030674264687697e-04 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 68 QUANTITY dispy VALUE -4.91579012131915932e-04 TOLERANCE 1e-9
@@ -1487,7 +1485,6 @@ NODE    1036 DSURFACE 13
 NODE    1037 DSURFACE 13
 NODE    1070 DSURFACE 13
 NODE    1071 DSURFACE 13
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0000000000000000e+00 -2.0000000000000000e-03  0.0000000000000000e+00
 NODE         2 COORD  0.0000000000000000e+00 -2.0000000000000000e-03 -5.0000000000000003e-02

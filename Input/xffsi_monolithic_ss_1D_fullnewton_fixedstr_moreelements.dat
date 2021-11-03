@@ -57,7 +57,6 @@ ITEMAX                          15
 SHAPEDERIVATIVES                no
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_full_newton
 XFLUIDFLUID                     yes
@@ -129,7 +128,6 @@ NODE 49 DNODE 3
 NODE 50 DNODE 3
 NODE 51 DNODE 3
 NODE 52 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 33 DSURFACE 1
 NODE 34 DSURFACE 1

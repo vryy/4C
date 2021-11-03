@@ -68,8 +68,6 @@ NDVOL   0
 DSURF  1
 // absorbing
 E 1 - NUMDOF 1 ONOFF 1 FUNCT 2 VAL 1.0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    40 DSURFACE 1
 NODE    41 DSURFACE 1
@@ -229,7 +227,6 @@ NODE    328 DSURFACE 1
 NODE    329 DSURFACE 1
 NODE    330 DSURFACE 1
 NODE    331 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.4109489407213788e-03 -6.7487961795120566e-02 -1.2697568511876167e-01
 NODE         2 COORD -1.3178345187660657e-02 -2.2091610798239947e-01 -9.4247321466924328e-02

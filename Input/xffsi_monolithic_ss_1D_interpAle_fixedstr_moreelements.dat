@@ -75,7 +75,6 @@ TOL_VEL_RES_INF                 1e-08
 TOL_VEL_RES_L2                  1e-10
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------------XFEM GENERAL
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 XFLUIDFLUID                     yes
@@ -149,7 +148,6 @@ NODE 49 DNODE 3
 NODE 50 DNODE 3
 NODE 51 DNODE 3
 NODE 52 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 33 DSURFACE 1
 NODE 34 DSURFACE 1

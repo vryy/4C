@@ -78,7 +78,6 @@ MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 301 302 DENS 0.1
 MAT 301 ELAST_CoupLogNeoHooke MODE Lame C1 3454.231434 C2 5736.552135      // C1 = mue, C2 = lambda
 MAT 302 ELAST_CoupTransverselyIsotropic ALPHA -2045.768566 BETA -386.764504 GAMMA 19424.87514 ANGLE 0 STR_TENS_ID 303
 MAT 303 ELAST_StructuralTensor STRATEGY Standard
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 3.175 3.175
@@ -267,7 +266,6 @@ NODE    1079 DSURFACE 3
 NODE    1082 DSURFACE 3
 NODE    1101 DSURFACE 3
 NODE    1104 DSURFACE 3
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -3.1750000000000000e+01 -7.4999999999999997e-02  6.3499999999999996e+00
 NODE         2 COORD -3.1750000000000000e+01 -7.4999999999999997e-02  5.0800000000000001e+00

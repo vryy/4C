@@ -149,7 +149,6 @@ E 13 - 1 Master Inactive
 E 14 - 1 Slave Active
 // mta2_master
 E 15 - 1 Master Inactive
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    945 DLINE 1
 NODE    946 DLINE 1
@@ -851,8 +850,6 @@ NODE    1829 DLINE 15
 NODE    1831 DLINE 15
 NODE    1833 DLINE 15
 NODE    1835 DLINE 15
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.9999999999999999e-01 -9.0000000000000002e-01  0.0000000000000000e+00
 NODE         2 COORD  1.0000000000000001e-01 -9.0000000000000002e-01  0.0000000000000000e+00

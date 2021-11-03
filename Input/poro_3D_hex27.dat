@@ -110,9 +110,6 @@ MAT 3 MAT_FluidPoro DYNVISCOSITY 0.001 DENSITY 1.0 PERMEABILITY 1.0e-4 TYPE Darc
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 8 500000.0 DESCRIPTION -1e0*(1-exp(-t^2/0.5)) -1e0*(1-exp(-8^2/0.5))
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 100 QUANTITY velx VALUE -1.03462367631295456e-02 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 115 QUANTITY pressure VALUE 2.25680537875319631e+00 TOLERANCE 1e-6

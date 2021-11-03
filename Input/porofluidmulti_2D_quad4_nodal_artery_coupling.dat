@@ -199,7 +199,6 @@ NODE         3  DSURF 1
 NODE         4  DSURF 1
 NODE         5  DSURF 1
 NODE         6  DSURF 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1 COORD  0.0  10.0  0.0
 NODE 2 COORD  -10.0 10.0  0.0

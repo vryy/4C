@@ -20,7 +20,6 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMALEDIS                       1
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha

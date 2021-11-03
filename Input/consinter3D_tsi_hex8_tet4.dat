@@ -231,8 +231,6 @@ DSURF  2
 E 3 - NUMDOF 1 ONOFF 1 VAL 0.0 FUNCT 0
 // Temp2
 E 4 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 2
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    21 DSURFACE 1
 NODE    55 DSURFACE 1
@@ -320,7 +318,6 @@ NODE    193 DSURFACE 4
 NODE    194 DSURFACE 4
 NODE    197 DSURFACE 4
 NODE    199 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1   COORD 3.8765521049499512e+00 1.2762699127197266e+00 1.1971355676651001e+00
 NODE 2   COORD 4.1495118141174316e+00 1.2157612480223179e-02 1.4701380729675293e+00

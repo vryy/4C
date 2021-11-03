@@ -85,7 +85,6 @@ MAT 12 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.21
 MAT 13 ELAST_VolSussmanBathe KAPPA 1000.0
 MAT 14 ELAST_AnisoActiveStress_Evolution SIGMA 70.0 TAUC0 0.0 MAX_ACTIVATION 20.0 MIN_ACTIVATION -30.0 SOURCE_ACTIVATION 1 ACTIVATION_THRES 0 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION (5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))+1.0)-5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.18+20.0/(5.0*(20.0-(-30.0))))))-5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0))))))+(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)*heaviside(5.0*(t-(1.52-20.0/(5.0*(20.0-(-30.0)))))-1.0)
 ----------------------------------------------------------------------FUNCT2
@@ -94,7 +93,6 @@ VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999.0 DESCRIPTION
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 999.0 DESCRIPTION 0.0933256806275 0.0
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 226 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -118,7 +116,6 @@ E 7 - 1
 ---------------------------------DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS
 DSURF                           1
 E 4 - NUMDOF 3 ONOFF 1 0 0 STIFF 0.075 0.0 0.0 TIMEFUNCTSTIFF 0 0 0 VISCO 0.005 0.0 0.0 TIMEFUNCTVISCO 0 0 0 DISPLOFFSET 0.0 0.0 0.0 TIMEFUNCTDISPLOFFSET 0 0 0 FUNCTNONLINSTIFF 0 0 0 DIRECTION refsurfnormal COUPLING none
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
@@ -748,7 +745,6 @@ NODE 182 DSURFACE 11
 NODE 184 DSURFACE 11
 NODE 186 DSURFACE 11
 NODE 188 DSURFACE 11
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0000000000000000e+00 -3.4334468446124561e+01 1.7302785205857678e+01
 NODE 2 COORD 0.0000000000000000e+00 -3.0652479400586152e+01 2.2022896520379248e+01

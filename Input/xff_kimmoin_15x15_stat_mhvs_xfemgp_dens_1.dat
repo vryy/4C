@@ -162,7 +162,6 @@ E 2 - 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 2319 DNODE 1
 NODE 2323 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

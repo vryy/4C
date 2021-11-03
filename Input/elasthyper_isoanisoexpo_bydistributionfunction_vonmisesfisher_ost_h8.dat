@@ -65,13 +65,9 @@ MAT 2 ELAST_IsoAnisoExpo  K1 1.0E6 K2 100.0 GAMMA 0.0 K1COMP 0.0 K2COMP 0.0 STR_
 MAT 3 ELAST_Iso1Pow C 2.5E4 D 1
 MAT 4 ELAST_VolSussmanBathe KAPPA 1.0E6
 MAT 100 ELAST_StructuralTensor STRATEGY ByDistributionFunction DISTR vonMisesFisher C1 500.0
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 6.5 50000.0 DESCRIPTION t/6.5 t/6.5
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -1.92993171410875419e+00  TOLERANCE 1e-09
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -1.92875998245896563e+00  TOLERANCE 1e-09
@@ -193,7 +189,6 @@ NODE    25 DSURFACE 4
 NODE    26 DSURFACE 4
 NODE    29 DSURFACE 4
 NODE    31 DSURFACE 4
-------------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.0000000000000000e+01 -1.0000000000000000e+01  1.0000000000000000e+01
 NODE         2 COORD -1.0000000000000000e+01 -1.0000000000000000e+01  3.3333333333333330e+00

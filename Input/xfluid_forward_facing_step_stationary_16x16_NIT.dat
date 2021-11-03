@@ -122,7 +122,6 @@ GMSH_CUT_OUT                    No
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation                  //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation                  //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_TIMEINT                  STD=COPY/SL_and_GHOST=COPY/GP
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
@@ -142,7 +141,6 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 10.0 DENSITY 1.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
---------------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------RESULT DESCRIPTION
 // nodes 255, 256 : element containing edge in fluid
 // nodes 287, 288 : element containing edge in solid

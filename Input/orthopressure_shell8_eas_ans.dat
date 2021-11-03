@@ -58,7 +58,6 @@ UZAWAPARAM                      1.0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.85
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -111,7 +110,6 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Aztec_MSR                     // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -1632,7 +1630,6 @@ NODE 709 DSURFACE 4
 NODE 377 DSURFACE 4
 NODE 766 DSURFACE 4
 NODE 317 DSURFACE 4
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e+00 5.000000000000000e+01 0.000000000000000e+00
 NODE 2 COORD -7.584539339242009e-16 4.982922465023206e+01 4.128967274840769e+00

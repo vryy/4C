@@ -19,7 +19,6 @@ NUMDF                           3
 PROBLEMTYP                      Structure
 SHAPEFCT                        Nurbs
 RESTART                         0
---------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 ADAPTCONV                       No

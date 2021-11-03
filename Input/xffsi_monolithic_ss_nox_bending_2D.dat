@@ -14,7 +14,6 @@ NODES                           3198
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0//215//
---------------------------------------------------------------------------IO
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         8
 TIMESTEP                        0.003                         //0.00625
@@ -286,7 +285,6 @@ NODE 2564 DNODE 2
 NODE 2568 DNODE 2
 NODE 2851 DNODE 2
 NODE 2855 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 2521 DSURFACE 1
 NODE 2522 DSURFACE 1

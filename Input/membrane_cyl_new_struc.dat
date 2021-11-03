@@ -1,6 +1,5 @@
 //
 //
--------------------------------------------------------------TITLE
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    32
 //NODES       40
@@ -31,7 +30,6 @@ MAT 1 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 1.0
 MAT 2 ELAST_IsoNeoHooke MUE 40.0
 MAT 3 ELAST_CoupAnisoExpo K1 100.0 K2 2.0 K1COMP 1.0 K2COMP 1.0 GAMMA 0.0 INIT 1 STR_TENS_ID 100
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
------------------------------------------------CLONING MATERIAL MAP
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 1000 VALUES 0 1 1
@@ -114,7 +112,6 @@ NODE    37 DSURFACE 1
 NODE    38 DSURFACE 1
 NODE    39 DSURFACE 1
 NODE    40 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.0000000000000000e+01  0.0000000000000000e+00 -1.0000000000000000e+01
 NODE         2 COORD  2.0000000000000000e+01 -7.0710678118654746e+00 -7.0710678118654746e+00

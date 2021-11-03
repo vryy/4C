@@ -5,7 +5,6 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -191,8 +190,6 @@ COMPONENT 1 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION ((1-cos(pi*t))*0.5) 1
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 1.10201828804365777e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 1.11409512911062637e-02 TOLERANCE 1e-6
@@ -209,7 +206,6 @@ NDVOL                           1
 DPOINT                          0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           0
-----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS

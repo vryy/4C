@@ -31,7 +31,6 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
-----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
@@ -175,7 +174,6 @@ NODE 24 DNODE 2
 NODE 25 DNODE 2
 NODE 26 DNODE 2
 NODE 27 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 28 DSURFACE 1
 NODE 29 DSURFACE 1

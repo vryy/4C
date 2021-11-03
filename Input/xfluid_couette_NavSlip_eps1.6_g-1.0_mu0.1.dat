@@ -178,8 +178,6 @@ GMSH_CUT_OUT                    No //Yes
 MAX_NUM_DOFSETS                 3
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation //Tessellation
---------------------------------------------------------------XFLUID DYNAMIC
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche
 VISC_ADJOINT_SYMMETRY           yes
@@ -224,7 +222,6 @@ COMPONENT 3 FUNCTION 10*(x-1.6)+4.0 // pressure
 // COMPONENT 1 FUNCTION 0.0
 // COMPONENT 2 FUNCTION 0.0
 // COMPONENT 3 FUNCTION 0.0 // pressure
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 255 QUANTITY velx VALUE 38.5 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 255 QUANTITY vely VALUE 0.0 TOLERANCE 1e-12

@@ -164,8 +164,6 @@ SRC_FIELD xstructure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 -------------------------------------------------------------FUNCT1
 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 -2.0 -2.0
--------------------------------------------------RESULT DESCRIPTION
-
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  5
@@ -185,7 +183,6 @@ DLINE  2
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.0
 // contact_plate
 E 4 - 1 Master Inactive FrCoeffOrBound 0.0
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    4 DLINE 1
@@ -249,8 +246,6 @@ NODE    374 DLINE 3
 NODE    375 DLINE 3
 NODE    373 DLINE 4
 NODE    376 DLINE 4
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -5.0000000000000000e+00  5.0000000000000000e+00  0.0000000000000000e+00
 NODE         2 COORD -4.9798714698002389e+00  4.5518034555815881e+00  0.0000000000000000e+00

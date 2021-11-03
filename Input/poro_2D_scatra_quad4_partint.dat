@@ -130,7 +130,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTIO
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION -1.0*0.5*(1-cos(t*pi/2.0)) -1
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 11 QUANTITY phi VALUE 5.10660091019520257e-01 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 16 QUANTITY phi VALUE 5.95117298270338546e-01 TOLERANCE 1e-8
@@ -223,7 +222,6 @@ NODE 6 DSURFACE 1
 NODE 7 DSURFACE 1
 NODE 8 DSURFACE 1
 NODE 9 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 5.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00
 NODE 2 COORD 0.0000000000000000e+00 5.0000000000000000e+00 0.0000000000000000e+00

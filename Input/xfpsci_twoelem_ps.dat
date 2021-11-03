@@ -7,7 +7,6 @@
 //This basic testcase 1Element Poro / 1Element Structure
 //tests the implementation of the Poro nopenetration condition for
 //porous contact!!!
--------------------------------------------------------------TITLE
 ------------------------------------------------------PROBLEM SIZE
 DIM           3
 -----------------------------------------------------DISCRETISATION
@@ -198,9 +197,6 @@ PARTITION   structured
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 2 TIMES 0.0 5 DESCRIPTION t/5*0.2
--------------------------------------------------------------FUNCT2
--------------------------------------------------------------FUNCT3
--------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  0
@@ -230,8 +226,6 @@ E 6 - COUPLINGID 1 COUPSTRATEGY xfluid INTLAW navslip_contact SLIPCOEFFICIENT 0.
 DSURF  1
 // all poro red
 E 7 - COUPLINGID 1 BJ_COEFF 1 BJ NIT contact_yes
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

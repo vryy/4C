@@ -108,7 +108,6 @@ MAT 202 ELAST_CoupTransverselyIsotropic ALPHA -2045.768566 BETA -386.764504 GAMM
 MAT 203 ELAST_StructuralTensor STRATEGY Standard
 MAT 3 MAT_ElastHyper NUMMAT 1 MATIDS 101 DENS 0.001
 MAT 301 ELAST_CoupLogNeoHooke MODE YN C1 1.0  C2 0.0                       // C1 = E, C2 = nu
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 0.3*t
 -------------------------------------------------RESULT DESCRIPTION
@@ -144,8 +143,6 @@ E 6 - 1 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
 E 7 - 0 Slave Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
 // tape_upper_and_table_contact
 E 8 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    2638 DSURFACE 1
 NODE    2639 DSURFACE 1
@@ -967,7 +964,6 @@ NODE    2868 DSURFACE 8
 NODE    2869 DSURFACE 8
 NODE    2872 DSURFACE 8
 NODE    2873 DSURFACE 8
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.7500000000000000e+01  7.4999999999999289e-02  3.5000000000000000e+01
 NODE         2 COORD -1.7500000000000000e+01  7.4999999999999289e-02  3.1500000000000000e+01

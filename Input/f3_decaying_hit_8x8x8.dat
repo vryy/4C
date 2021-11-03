@@ -134,8 +134,6 @@ ML_DAMPCOARSE     1.0       // damping coarse grid
 MAT 1 MAT_fluid DYNVISCOSITY 0.0007431 DENSITY 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 12 QUANTITY velx VALUE -4.72558408869176383e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 12 QUANTITY vely VALUE -3.45469748650821418e-01 TOLERANCE 1e-8
@@ -176,8 +174,6 @@ E 6 - 2 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 DVOL                            1
 //                              volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    145 DSURFACE 1
 NODE    146 DSURFACE 1

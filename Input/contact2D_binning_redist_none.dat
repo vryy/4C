@@ -140,7 +140,6 @@ DLINE  2
 E 2 - 0 Slave Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
 // table_top_curve
 E 3 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    9 DLINE 1
 NODE    10 DLINE 1
@@ -246,7 +245,6 @@ NODE    84 DSURFACE 1
 NODE    85 DSURFACE 1
 NODE    86 DSURFACE 1
 NODE    87 DSURFACE 1
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD -8.9999999999999991e-01  9.9999999999999978e-02  0.0000000000000000e+00
 NODE         2 COORD -8.9999999999999991e-01  3.4999999999999998e-01  0.0000000000000000e+00

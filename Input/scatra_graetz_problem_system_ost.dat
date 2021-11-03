@@ -177,9 +177,6 @@ COMPONENT 3 FUNCTION 0.0
 COMPONENT 0 FUNCTION 1.0
 COMPONENT 1 FUNCTION 1.0
 COMPONENT 2 FUNCTION 1.0
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_x VALUE 2.531103188e-03 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 691 QUANTITY flux_domain_1_y VALUE -1.853245252e-02 TOLERANCE 1e-9
@@ -225,8 +222,6 @@ E 8 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 1.0 FUNCT 0 0 0
 //E 9 - 6 1 1 1 0 0 0 1.0 1.0 1.0 0.0 0.0 0.0 none none none none none none 0 0 0 0 0 0
 //                              cathode
 E 10 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 2 DSURFACE 1
 NODE 3 DSURFACE 1
@@ -1962,7 +1957,6 @@ NODE 1201 DSURFACE 10
 NODE 1202 DSURFACE 10
 NODE 1231 DSURFACE 10
 NODE 1232 DSURFACE 10
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 -1.25000000e-01 9.99999978e-03
 NODE 2 COORD 0.00000000e+00 -1.25000000e-01 -9.99999978e-03

@@ -71,7 +71,6 @@ MAT 51 VISCO_PART TAU 0.75
 MAT 6  VISCO_BRANCH NUMMAT 2 MATIDS 60 61
 MAT 60 ELAST_CoupNeoHooke YOUNG 800.0 NUE 0
 MAT 61 VISCO_PART TAU 1.1
------------------------------------------------CLONING MATERIAL MAP
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5 50000.0 DESCRIPTION t/5 0
@@ -81,7 +80,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 50000.0 DESCRIPTI
 -------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION (-x/sqrt(x*x+y*y))*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 5.0 50000.0 DESCRIPTION t/5 0
--------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE -2.84821787682603889e+00  TOLERANCE 1e-08
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 3.34080337912945735e+00  TOLERANCE 1e-08
@@ -221,7 +219,6 @@ NODE    25 DSURFACE 4
 NODE    26 DSURFACE 4
 NODE    29 DSURFACE 4
 NODE    31 DSURFACE 4
-------------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------------NODE COORDS
 NODE         1 COORD -1.0000000000000000e+01 -1.0000000000000000e+01  1.0000000000000000e+01
 NODE         2 COORD -1.0000000000000000e+01 -1.0000000000000000e+01  3.3333333333333330e+00

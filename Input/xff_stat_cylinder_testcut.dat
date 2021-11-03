@@ -135,7 +135,6 @@ COMPONENT 2 FUNCTION 0
 COMPONENT 3 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE 0
@@ -294,7 +293,6 @@ NODE 1487 DNODE 2
 NODE 1489 DNODE 2
 NODE 1491 DNODE 2
 NODE 1493 DNODE 2
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 49 DSURFACE 1
 NODE 50 DSURFACE 1

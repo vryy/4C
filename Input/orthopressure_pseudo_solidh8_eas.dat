@@ -52,7 +52,6 @@ UZAWAPARAM                      1.0
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.85
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -105,7 +104,6 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -4848,7 +4846,6 @@ NODE 3243 DSURFACE 7
 NODE 3244 DSURFACE 7
 NODE 3245 DSURFACE 7
 NODE 3246 DSURFACE 7
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e+00 5.000000000000000e+01 0.000000000000000e+00
 NODE 2 COORD -7.584539339242009e-16 4.982922465023206e+01 4.128967274840769e+00
@@ -10265,11 +10262,6 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 1.044E6 NUE 0.45
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.6 100000 VALUES 0 16132.0 16132.0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2238 QUANTITY dispx VALUE 1.06859421313755098e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1403 QUANTITY dispz VALUE -8.97509686848324312e-04 TOLERANCE 1e-8

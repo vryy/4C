@@ -295,8 +295,6 @@ DSURF  2
 E 1 - 0 Slave Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact RemoveDBCSlaveNodes
 // contact_ur
 E 2 - 0 Master Inactive FrCoeffOrBound 0.0 AdhesionBound 0.0 Solidcontact
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    45 DSURFACE 1
 NODE    46 DSURFACE 1

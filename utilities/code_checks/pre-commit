@@ -13,9 +13,14 @@
 # Stage 2: Header check
 # A set of Python scripts checks the staged files for compliance with the BACI header requirements
 # If a header is missing or does not follow the BACI standards, the Python scripts will generate error messages in the shell output
-# The commit will be rejected if errors appear (script exit 1). The user has to change the headers manually until all requirements are fulfilled
+# The commit will be rejected if errors appear (script exits 1). The user has to change the headers manually until all requirements are fulfilled
 #
-# Stage 3: Check commit on master
+# Stage 3: Framework check
+# A Python script checks if the unit tests follow the naming conventions, its addition to a local CMakeLists.txt, or if they are not ordered in alphabetical order.
+# It also checks if the input file tests use an unjustified high mpi rank, if they are missing in TestingFrameworkListOfTests.cmake or if they have empty sections.
+# The commit will be rejected in case a check fails (script exits 1).
+# 
+# Stage 4: Check commit on master
 # A commit on master branch is rejected (script exits 1). The user is asked to create and checkout a new feature branch in order to proceed with the commit.
 #
 # The commit will be accepted if the script exits with 0

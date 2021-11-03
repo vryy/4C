@@ -250,9 +250,6 @@ MAT 2 THERM_FourierIso CAPA 6.445 CONDUCT 1031.2
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION 273.15 //0°C
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
@@ -314,8 +311,6 @@ DLINE                           0
 DSURF                           1
 // THR left surf heat convection
 E 8 - Tempnp coeff -6.444497425 surtemp 373.15 surtempfunct 0 funct 0 // 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 49 DSURFACE 1
 NODE 50 DSURFACE 1

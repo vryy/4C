@@ -86,7 +86,6 @@ VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 NODAL_DOFSET_STRATEGY           ConnectGhostDofsets_PerNodeAndPosition
 MAX_NUM_DOFSETS                 2
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                 Nitsche                       // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 NIT_STAB_FAC                    31.38594035                   // = 50.0/CT(3D) with former 50 in [10;100]
@@ -130,11 +129,6 @@ COMPONENT 0 FUNCTION 4.0*y*(1.0-y) // -1.0 //101.0 //0.01*(-y) // 0.0100051*(-y)
 COMPONENT 1 FUNCTION 0.0 //0.01*x // 0.0100051*x
 COMPONENT 2 FUNCTION 0.0
 COMPONENT 3 FUNCTION 0.0 // pressure
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 XFLUID DIS fluid NODE 1103 QUANTITY velx VALUE 3.06595704625690579e-01 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 1103 QUANTITY vely VALUE -8.91002762823945617e-03 TOLERANCE 1e-8

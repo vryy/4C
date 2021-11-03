@@ -1152,11 +1152,6 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 1 14000 VALUES 0 -0.2 0.2 0.2
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 1.27588967737111612e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 3.88314963797428388e-03 TOLERANCE 1e-8

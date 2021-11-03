@@ -138,7 +138,6 @@ COMPONENT 2 FUNCTION 1.0 //initial pres. field
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000000 DESCRIPTION 0.5*(sin((t*pi/1)-(pi/2)))+0.5 0.5*(sin((1*pi/1)-(pi/2)))+0.5
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 58 QUANTITY velx VALUE 4.999999796e-01 TOLERANCE 1e-09
 FLUID DIS fluid NODE 58 QUANTITY vely VALUE -3.78429347706251327e-11 TOLERANCE 1e-13
@@ -394,7 +393,6 @@ NODE 111 DSURFACE 1
 NODE 112 DSURFACE 1
 NODE 113 DSURFACE 1
 NODE 114 DSURFACE 1
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 0.0000000000000000e+00
 NODE 2 COORD -2.5000000000000000e-01 -5.0000000000000000e-01 0.0000000000000000e+00

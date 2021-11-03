@@ -64,7 +64,6 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          Amesos_KLU_nonsym             // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -918,10 +917,5 @@ STRUCTURE DIS structure NODE 152 QUANTITY dispz VALUE -5.87335780749806413e-01 T
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION 50000*t 5000
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 -------------------------------------------------------------------------END
 //                              END

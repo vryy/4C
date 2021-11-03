@@ -161,7 +161,6 @@ NODE 49 DNODE 3
 NODE 65 DNODE 3
 NODE 94 DNODE 3
 NODE 102 DNODE 3
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 25 DSURFACE 1
 NODE 26 DSURFACE 1

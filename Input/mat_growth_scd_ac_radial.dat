@@ -5,7 +5,6 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
@@ -190,8 +189,6 @@ COMPONENT 1 FUNCTION    0.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION ((1-cos(pi*t))*0.5) 1
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 4.39956401821199497e-04 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 212 QUANTITY dispy VALUE 1.29723409943776269e-03 TOLERANCE 1e-7

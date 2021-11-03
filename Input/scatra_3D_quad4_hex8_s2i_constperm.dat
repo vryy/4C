@@ -82,7 +82,6 @@ DLINE  2
 E 1 - 1 Slave KineticModel ConstantPermeability numscal 2 permeabilities 1.0 0.1
 // coupling_block
 E 2 - 1 Master
------------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1332 DLINE 1
 NODE    1333 DLINE 1
@@ -337,8 +336,6 @@ NODE    1559 DLINE 3
 NODE    1560 DLINE 3
 NODE    1561 DLINE 3
 NODE    1562 DLINE 3
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  6.6987298107780591e-02 -5.0000000000000000e-01  1.1160254037844386e+00
 NODE         2 COORD  1.6987298107780574e-02 -5.0000000000000000e-01  1.0294228634059945e+00

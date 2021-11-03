@@ -42,9 +42,6 @@ MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1 500000.0 DESCRIPTION t 1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1562 QUANTITY dispx VALUE 6.017410620e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 852 QUANTITY dispx VALUE 4.254860682e-01 TOLERANCE 1e-6
@@ -841,7 +838,6 @@ NODE 1534 DSURFACE 5
 NODE 1547 DSURFACE 5
 NODE 1560 DSURFACE 5
 NODE 1573 DSURFACE 5
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 4.00000000e+00 0.00000000e+00 -2.00000000e+00
 NODE 2 COORD 3.96577954e+00 5.22104740e-01 -2.00000000e+00

@@ -158,8 +158,6 @@ E 4 - COUPLINGID 1 xfluid
 DVOL 1
 // Fluid volume
 E 1 - 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 29 DSURFACE 1
 NODE 30 DSURFACE 1

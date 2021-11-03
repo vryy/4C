@@ -145,8 +145,6 @@ E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.2 0.3 0.7 FUNCT 4 4 4 4
 DSURF  1
 // rightsurf
 E 2 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.1 0.0 0.0 0.0 FUNCT 0 0 0 0
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    69 DSURFACE 1
 NODE    70 DSURFACE 1
@@ -184,7 +182,6 @@ NODE    358 DSURFACE 2
 NODE    366 DSURFACE 2
 NODE    389 DSURFACE 2
 NODE    394 DSURFACE 2
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  9.0850487351417542e-02 -7.3562957346439362e-02  3.0142429471015930e-01
 NODE         2 COORD -1.5401271054727810e-05  2.3488594678728381e-01  5.0000000000000000e-01

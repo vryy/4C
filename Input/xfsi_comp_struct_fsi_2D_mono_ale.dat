@@ -270,7 +270,6 @@ E 6 - COUPLINGID 1
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 461 DNODE 1
 NODE 462 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

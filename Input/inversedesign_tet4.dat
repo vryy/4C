@@ -61,7 +61,6 @@ MAXITER                         150
 UZAWAPARAM                      1.0
 UZAWAMAXITER                    20
 UZAWAALGO                       direct
--------------------------------------------------------------CONTACT DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
@@ -94,7 +93,6 @@ NUMSTEP                         200
 MAXTIME                         5.0
 ALE_TYPE                        solid
 RESULTSEVRY                     1
------------------------------------------------------------------TSI DYNAMIC
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -1517,7 +1515,6 @@ NODE 591 DSURFACE 6
 NODE 388 DSURFACE 6
 NODE 380 DSURFACE 6
 NODE 384 DSURFACE 6
-----------------------------------------------------------DVOL-NODE TOPOLOGY
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 93.176900350782120 -33.371456234539998 -0.081093165050385
 NODE 2 COORD 92.719716657634464 -34.260828898532750 -0.082679443407244

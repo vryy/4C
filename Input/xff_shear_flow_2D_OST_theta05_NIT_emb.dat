@@ -80,8 +80,6 @@ COMPONENT 0 FUNCTION (1.0/0.8)*y
 COMPONENT 1 FUNCTION 0
 COMPONENT 2 FUNCTION 0
 COMPONENT 3 FUNCTION 9
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0

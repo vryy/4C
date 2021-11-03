@@ -174,7 +174,6 @@ KERNEL_INTERSECTION_FLOATTYPE double
 KERNEL_DISTANCE_FLOATTYPE double
 GENERAL_POSITON_DISTANCE_FLOATTYPE double
 GENERAL_POSITON_POSITION_FLOATTYPE double
-------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 COUPLING_METHOD                    Nitsche
 VISC_ADJOINT_SYMMETRY              none
@@ -236,8 +235,6 @@ E 2 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 DSURF 1
 // FSI
 E 6 - COUPLINGID 1 COUPSTRATEGY solid
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1

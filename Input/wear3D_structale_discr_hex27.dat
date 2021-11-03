@@ -131,8 +131,6 @@ DSURF  2
 E 2 - 1 Slave Inactive FrCoeffOrBound 0.1
 // master
 E 3 - 1 Master Inactive FrCoeffOrBound 0.1
------------------------------------------------DNODE-NODE TOPOLOGY
------------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    3 DSURFACE 1
 NODE    4 DSURFACE 1
@@ -266,7 +264,6 @@ NODE    207 DSURFACE 4
 NODE    209 DSURFACE 4
 NODE    210 DSURFACE 4
 NODE    216 DSURFACE 4
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE 1    COORD  -2.2500000000000000e+00  -4.5000000000000001e-01  4.0000000000000002e-01
 NODE 2    COORD  -2.2500000000000000e+00  -4.5000000000000001e-01  -4.0000000000000002e-01

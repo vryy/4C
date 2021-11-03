@@ -32,7 +32,6 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
-----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
@@ -126,8 +125,6 @@ COMPONENT 2 FUNCTION 0
 COMPONENT 3 FUNCTION 9
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 FUNCTION y // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE 0
@@ -185,8 +182,6 @@ DSURF 0
 DVOL 1
 // Fluid 2 volume
 E 2 - 1
----------------------------------------------------------DNODE-NODE TOPOLOGY
----------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 21 DSURFACE 1
 NODE 22 DSURFACE 1

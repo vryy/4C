@@ -292,11 +292,6 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 1000.0 NUE 0.3
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2.00000 500000.0 DESCRIPTION sin(t/2.0*pi/2) 1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.50021465115858316e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.296593242983814389e-14 TOLERANCE 1e-12
