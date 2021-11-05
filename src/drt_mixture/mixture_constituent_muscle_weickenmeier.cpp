@@ -482,14 +482,14 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActiveNominalStres
   Pa = Poptft * fxi * fv;
 
   // compute derivative of active nominal stress Pa w.r.t. lambdaM
-  double dFsdLamdaM = 0.0;  // derivative of fxi w.r.t. lambdaM
+  double dFxidLamdaM = 0.0;  // derivative of fxi w.r.t. lambdaM
   if (Pa != 0)
   {
-    dFsdLamdaM = ((std::pow(lambdaMin - lambdaM, 2) - std::pow(lambdaMin - lambdaOpt, 2)) /
-                     std::pow(lambdaMin - lambdaOpt, 3)) *
-                 explambda;
+    dFxidLamdaM = ((std::pow(lambdaMin - lambdaM, 2) - std::pow(lambdaMin - lambdaOpt, 2)) /
+                      std::pow(lambdaMin - lambdaOpt, 3)) *
+                  explambda;
   }
-  derivPa = Poptft * (fv * dFsdLamdaM + fxi * dFvdDotLambdaM * dDotLambdaMdLambdaM);
+  derivPa = Poptft * (fv * dFxidLamdaM + fxi * dFvdDotLambdaM * dDotLambdaMdLambdaM);
 }
 
 void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
@@ -506,7 +506,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateActivationLevel(
               (1.0 - omega0) * std::pow(lambdaM, 2.);
   double derivIp = (omega0 / 3.0) * (2.0 * lambdaM - 2.0 / std::pow(lambdaM, 2.)) +
                    2.0 * (1.0 - omega0) * lambdaM;
-  double derivderivIp = (omega0 / 3.0) * (2.0 + 4.0 * std::pow(lambdaM, 3.)) + 2.0 * (1.0 - omega0);
+  double derivderivIp = (omega0 / 3.0) * (2.0 + 4.0 / std::pow(lambdaM, 3.)) + 2.0 * (1.0 - omega0);
 
   // argument for Lambert W function
   double xi =
@@ -560,7 +560,7 @@ void MIXTURE::MixtureConstituent_Muscle_Weickenmeier::EvaluateLambert(
   {
     dserror(
         "Maximal number of iterations for evaluation of Lambert W function with Halley's method "
-        "exceeded for tolerance %d.",
+        "exceeded for tolerance %E.",
         tol);
   }
 }
