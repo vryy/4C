@@ -56,13 +56,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
     {
       switch (coupling_type_)
       {
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement:
-        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+            reference_configuration_forced_to_zero_fad:
+          break;
+        default:
           dserror(
               "Beam-to-solid surface coupling with rotational coupling is only implemented in "
               "combination with the \"fad\" variants of surface coupling.");
-          break;
-        default:
           break;
       }
     }
