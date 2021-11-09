@@ -51,6 +51,23 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
         beam_to_solid_contact_params_list, "ROTATIONAL_COUPLING");
     rotational_coupling_penalty_parameter_ =
         beam_to_solid_contact_params_list.get<double>("ROTATIONAL_COUPLING_PENALTY_PARAMETER");
+
+    if (rotational_coupling_)
+    {
+      switch (coupling_type_)
+      {
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::consistent_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::displacement_fad:
+        case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
+            reference_configuration_forced_to_zero_fad:
+          break;
+        default:
+          dserror(
+              "Beam-to-solid surface coupling with rotational coupling is only implemented in "
+              "combination with the \"fad\" variants of surface coupling.");
+          break;
+      }
+    }
   }
 
   // Setup the output parameter object.
