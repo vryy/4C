@@ -541,6 +541,11 @@ namespace FLD
     */
     virtual void Output();
 
+    /*
+     * \brief Write fluid runtime output
+     */
+    virtual void WriteRuntimeOutput();
+
     virtual void OutputNonlinearBC();
 
     virtual void OutputToGmsh(const int step, const double time, const bool inflow) const;

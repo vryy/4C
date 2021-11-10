@@ -22,7 +22,7 @@ GEOMETRY_PAIR_STRATEGY                segmentation
 GEOMETRY_PAIR_SEARCH_POINTS           5
 SEARCH_RADIUS                         0.2
 ---------------------------------------------------------------------FSI DYNAMIC
-MAXTIME                               5
+MAXTIME                               0.002
 TIMESTEP                              0.001
 NUMSTEP                               2
 RESULTSEVRY                           1
@@ -68,6 +68,14 @@ USE_ABSOLUTE_POSITIONS                Yes
 TRIAD_VISUALIZATIONPOINT              No
 STRAINS_GAUSSPOINT                    No
 MATERIAL_FORCES_GAUSSPOINT            Yes
+-----------------------------------------------------IO/RUNTIME VTK OUTPUT/FLUID
+OUTPUT_FLUID                          Yes
+VELOCITY                              Yes
+ACCELERATION                          Yes
+PRESSURE                              Yes
+ELEMENT_OWNER                         Yes
+ELEMENT_GID                           Yes
+NODE_GID                              Yes
 ------------------------------------------------------------------------------IO
 OUTPUT_BIN                            Yes
 STRUCT_ELE                            No

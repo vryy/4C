@@ -13,9 +13,12 @@
 
 #include "../drt_lib/drt_discret.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 
+#include "fluid_discretization_runtime_vtu_output_params.H"
+#include "../drt_io/discretization_runtime_vtu_writer.H"
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -27,6 +30,8 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       solver_(solver),
       params_(params),
       output_(output),
+      runtime_output_writer_(Teuchos::null),
+      runtime_output_params_(),
       time_(0.0),
       step_(0),
       dta_(params_->get<double>("time step size")),
@@ -42,6 +47,21 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
       projector_(Teuchos::null),
       kspsplitter_(Teuchos::null)
 {
+  // check for special fluid output which is to be handled by an own writer object
+  Teuchos::RCP<const Teuchos::ParameterList> fluid_runtime_output_list =
+      Teuchos::rcp(new Teuchos::ParameterList(
+          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
+
+  bool output_fluid =
+      (bool)DRT::INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
+
+  // create and initialize parameter container object for fluid specific runtime vtk output
+  if (output_fluid)
+  {
+    runtime_output_params_.Init(*fluid_runtime_output_list);
+    runtime_output_params_.Setup();
+    runtime_output_writer_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter());
+  }
 }
 
 FLD::TimInt::~TimInt() {}

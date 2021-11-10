@@ -749,6 +749,7 @@ set(OBJS_DRT_INPAR
   src/drt_inpar/inpar_io.cpp
   src/drt_inpar/inpar_IO_monitor_structure_dbc.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output.cpp
+  src/drt_inpar/inpar_IO_runtime_vtk_output_fluid.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure.cpp
   src/drt_inpar/inpar_IO_runtime_vtk_output_structure_beams.cpp
   src/drt_inpar/inpar_IO_runtime_vtp_output_structure.cpp
@@ -1451,6 +1452,7 @@ set(OBJS_DRT_THERMO
   src/drt_thermo/thrtimint_expleuler.cpp
 )
 set(OBJS_DRT_FLUID
+  src/drt_fluid/fluid_discretization_runtime_vtu_output_params.cpp
   src/drt_fluid/fluid_coupling_red_models.cpp
   src/drt_fluid/fluid_dyn_nln_drt.cpp
   src/drt_fluid/fluid_meshtying.cpp
