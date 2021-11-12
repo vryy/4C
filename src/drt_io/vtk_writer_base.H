@@ -17,6 +17,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <bits/c++config.h>
 #include <stdint.h>
 #include <zlib.h>
 
@@ -187,7 +188,7 @@ class VtkWriterBase
 
 
   //! throw error if file stream not ready to write into
-  void ThrowErrorIfInvalidFileStream(const std::ofstream& filestream) const;
+  void ThrowErrorIfInvalidFileStream(const std::ostream& ostream) const;
 
  private:
   //! write prologue of the VTK master file (handled by proc 0)
@@ -252,9 +253,35 @@ class VtkWriterBase
   std::string DetermineVtkSubdirectoryNameFromFullVtkWorkingPath() const;
 
   //! write given master file and time value into given collection file stream
+  inline void WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+      std::ostream& collectionfilestream, const std::string& master_file_name,
+      const std::string& master_file_directory_name, double time) const
+  {
+    WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+        collectionfilestream, master_file_directory_name + "/" + master_file_name, time);
+  }
+
+  //! write given master file and time value into given collection file stream
   void WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
-      std::ofstream& collectionfilestream, const std::string& master_file_name,
-      const std::string& master_file_directory_name, double time) const;
+      std::ostream& collectionfilestream, const std::string& master_file_name_full_path,
+      double time) const;
+
+
+  std::string GetXmlOptionValue(const std::string& line, const std::string& name)
+  {
+    std::size_t start = line.find(name + "=\"");
+    if (start == std::string::npos)
+    {
+      dserror("Could not find parameter %s in line %s", name.c_str(), line.c_str());
+    }
+    start += name.length() + 2;
+    std::size_t end = line.find('"', start + 1);
+    if (end == std::string::npos)
+    {
+      dserror("Syntax error in line %s", line.c_str());
+    }
+    return line.substr(start, end - start);
+  }
 
  protected:
   //! subsequent phases in the process of writing data to VTK files:
