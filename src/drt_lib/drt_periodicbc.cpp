@@ -17,6 +17,11 @@
 /*---------------------------------------------------------------------*/
 
 
+#include <Isorropia_Epetra.hpp>
+#include <Isorropia_EpetraRedistributor.hpp>
+#include <Isorropia_EpetraPartitioner.hpp>
+#include <Isorropia_EpetraCostDescriber.hpp>
+
 #include "drt_periodicbc.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_matchingoctree.H"
@@ -24,6 +29,9 @@
 #include "../linalg/linalg_utils_densematrix_communication.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/standardtypes_cpp.H"
+#include "../linalg/linalg_utils_sparse_algebra_create.H"
+#include "drt_utils_rebalancing.H"
+#include "../linalg/linalg_utils_sparse_algebra_print.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -113,17 +121,10 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
 
     if (discret_->Comm().NumProc() > 1)
     {
-      if (discret_->Comm().MyPID() == 0 && verbose_)
-      {
-        std::cout << "\n---------------------------------------------\n";
-        std::cout << "Call METIS \n";
-        std::cout << std::endl;
-      }
-
-      // eventually call METIS to optimally distribute the nodes --- up to
+      // eventually  optimally distribute the nodes --- up to
       // now, a periodic boundary condition might remove all nodes from a
       // proc ...
-      BalanceLoadUsingMetis();
+      BalanceLoad();
     }
     // time measurement --- this causes the TimeMonitor tm0 to stop here
     //                                              (call of destructor)
@@ -1367,7 +1368,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
  | o set weights of edges between master/slave pairs to a high value    |
  |   in order to keep both on the same proc when redistributing         |
  |                                                                      |
- | o gather all data to proc 1, do partitioning using METIS             |
+ | o gather all data to proc 1, do partitioning using Zoltan            |
  |                                                                      |
  | o redistribute nodes without assigning dofs                          |
  |                                                                      |
@@ -1377,64 +1378,55 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
+void PeriodicBoundaryConditions::BalanceLoad()
 {
   if (discret_->Comm().NumProc() > 1)
   {
     const Epetra_Map* noderowmap = discret_->NodeRowMap();
 
     // weights for graph partition
-    Epetra_Vector weights(*noderowmap, false);
-    weights.PutScalar(10.0);
+    auto node_weights = LINALG::CreateVector(*noderowmap, true);
+    node_weights->PutScalar(1.0);
 
     // apply weight of special elements
-    for (int inode = 0; inode < noderowmap->NumMyElements(); ++inode)
+    for (int node_lid = 0; node_lid < noderowmap->NumMyElements(); ++node_lid)
     {
-      int gid = noderowmap->GID(inode);
-      DRT::Node* node = discret_->gNode(gid);
+      const int node_gid = noderowmap->GID(node_lid);
+      DRT::Node* node = discret_->gNode(node_gid);
       if (!node) dserror("cant find node");
       double weight = 0.0;
-      DRT::Element** surrele = node->Elements();
 
-      // returns 10.0 for standard elements
+      // loop over adjacent elements of this node and find element with highest cost
+      DRT::Element** surrele = node->Elements();
       for (int k = 0; k < node->NumElement(); ++k)
         weight = std::max(weight, surrele[k]->EvaluationCost());
 
-      weights.ReplaceMyValue(inode, 0, weight);
+      node_weights->ReplaceMyValue(node_lid, 0, weight);
     }
     // ----------------------------------------
     // loop masternodes to adjust weights of slavenodes
     // they need a small weight since they do not contribute any dofs
     // to the linear system
+    for (const auto& masterslavepair : *allcoupledcolnodes_)
     {
-      std::map<int, std::vector<int>>::iterator masterslavepair;
+      const int master_gid = masterslavepair.first;
+      // get masternode
+      DRT::Node* master = discret_->gNode(master_gid);
 
-      for (masterslavepair = allcoupledcolnodes_->begin();
-           masterslavepair != allcoupledcolnodes_->end(); ++masterslavepair)
+      if (master->Owner() != discret_->Comm().MyPID()) continue;
+
+      // loop slavenodes associated with master
+      std::vector<int> slave_gids = masterslavepair.second;
+      for (const auto slave_gid : slave_gids)
       {
-        // get masternode
-        DRT::Node* master = discret_->gNode(masterslavepair->first);
+        const double initval = 1.0;
 
-        if (master->Owner() != discret_->Comm().MyPID())
-        {
-          continue;
-        }
-
-        // loop slavenodes associated with master
-        for (std::vector<int>::iterator iter = masterslavepair->second.begin();
-             iter != masterslavepair->second.end(); ++iter)
-        {
-          double initval = 1.0;
-          int gid = *iter;
-
-          weights.ReplaceGlobalValues(1, &initval, &gid);
-        }
+        node_weights->ReplaceGlobalValues(1, &initval, &slave_gid);
       }
     }
 
     // allocate graph
-    Teuchos::RCP<Epetra_CrsGraph> nodegraph =
-        Teuchos::rcp(new Epetra_CrsGraph(Copy, *noderowmap, 108, false));
+    auto nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *noderowmap, 108, false));
 
     // -------------------------------------------------------------
     // iterate all elements on this proc including ghosted ones
@@ -1446,27 +1438,27 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     // graph will be the correct and complete graph of the distributed
     // discretization even if nodes are not ghosted.
 
-    for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
+    for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
     {
       // get the element
-      DRT::Element* ele = discret_->lColElement(nele);
+      DRT::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
-      const int nnode = ele->NumNode();
-      const int* nodeids = ele->NodeIds();
+      const int num_nodes_per_ele = ele->NumNode();
+      const int* node_gids_per_ele = ele->NodeIds();
 
-      for (int row = 0; row < nnode; ++row)
+      for (int row = 0; row < num_nodes_per_ele; ++row)
       {
-        const int rownode = nodeids[row];
+        const int node_gid = node_gids_per_ele[row];
 
         // insert into line of graph only when this proc owns the node
-        if (!noderowmap->MyGID(rownode)) continue;
+        if (!noderowmap->MyGID(node_gid)) continue;
 
         // insert all neighbours from element in the graph
-        for (int col = 0; col < nnode; ++col)
+        for (int col = 0; col < num_nodes_per_ele; ++col)
         {
-          int colnode = nodeids[col];
-          int err = nodegraph->InsertGlobalIndices(rownode, 1, &colnode);
+          int neighbor_node = node_gids_per_ele[col];
+          const int err = nodegraph->InsertGlobalIndices(node_gid, 1, &neighbor_node);
           if (err < 0) dserror("nodegraph->InsertGlobalIndices returned err=%d", err);
         }
       }
@@ -1478,48 +1470,44 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     // is connected to a master/slave, we connect the corresponding slaves/master
     // as well
 
-    for (int nele = 0; nele < discret_->NumMyColElements(); ++nele)
+    for (int ele_lid = 0; ele_lid < discret_->NumMyColElements(); ++ele_lid)
     {
       // get the element
-      DRT::Element* ele = discret_->lColElement(nele);
+      DRT::Element* ele = discret_->lColElement(ele_lid);
 
       // get its nodes and nodeids
-      const int nnode = ele->NumNode();
-      const int* nodeids = ele->NodeIds();
+      const int num_nodes_per_ele = ele->NumNode();
+      const int* node_gids_per_ele = ele->NodeIds();
 
-      for (int row = 0; row < nnode; ++row)
+      for (int row = 0; row < num_nodes_per_ele; ++row)
       {
-        const int rownode = nodeids[row];
+        const int node_gid = node_gids_per_ele[row];
 
         // insert into line of graph only when this proc owns the node
-        if (!noderowmap->MyGID(rownode)) continue;
+        if (!noderowmap->MyGID(node_gid)) continue;
 
-        std::map<int, std::vector<int>>::iterator masterslavepair =
-            allcoupledcolnodes_->find(rownode);
-        if (masterslavepair != allcoupledcolnodes_->end())
+        // only, if this node is a coupled node
+        if (allcoupledcolnodes_->find(node_gid) != allcoupledcolnodes_->end())
         {
           // get all masternodes of this element
-          for (int col = 0; col < nnode; ++col)
+          for (int col = 0; col < num_nodes_per_ele; ++col)
           {
-            int colnode = nodeids[col];
+            int neighbor_node = node_gids_per_ele[col];
 
-            std::map<int, std::vector<int>>::iterator othermasterslavepair =
-                allcoupledcolnodes_->find(colnode);
+            const auto othermasterslavepair = allcoupledcolnodes_->find(neighbor_node);
             if (othermasterslavepair != allcoupledcolnodes_->end())
             {
+              const auto other_slave_gids = othermasterslavepair->second;
               // add connection to all slaves
-
-              for (std::vector<int>::iterator iter = othermasterslavepair->second.begin();
-                   iter != othermasterslavepair->second.end(); ++iter)
+              for (auto other_slave_gid : other_slave_gids)
               {
-                int othermastersslaveindex = *iter;
-                int masterindex = rownode;
-                int err = nodegraph->InsertGlobalIndices(rownode, 1, &othermastersslaveindex);
+                int err = nodegraph->InsertGlobalIndices(node_gid, 1, &other_slave_gid);
                 if (err < 0) dserror("nodegraph->InsertGlobalIndices returned err=%d", err);
 
-                if (noderowmap->MyGID(*iter))
+                if (noderowmap->MyGID(other_slave_gid))
                 {
-                  err = nodegraph->InsertGlobalIndices(*iter, 1, &masterindex);
+                  int masterindex = node_gid;
+                  err = nodegraph->InsertGlobalIndices(other_slave_gid, 1, &masterindex);
                   if (err < 0) dserror("nodegraph->InsertGlobalIndices returned err=%d", err);
                 }
               }
@@ -1533,327 +1521,95 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
     int err = nodegraph->FillComplete();
     if (err) dserror("graph->FillComplete returned %d", err);
 
+    //
+    // nodegraph: row for each node, column with nodes from the same element and coupled nodes
+    //
+
     const int myrank = nodegraph->Comm().MyPID();
     const int numproc = nodegraph->Comm().NumProc();
 
     if (numproc > 1)
     {
-      // proc that will do the serial partitioning
-      // the graph is collapsed to this proc
-      // Normally this would be proc 0 but 0 always has so much to do.... ;-)
-      int workrank = 1;
+      // get rowmap of the graph  (from blockmap -> map)
+      const Epetra_BlockMap& graph_row_map = nodegraph->RowMap();
+      const Epetra_Map graph_rowmap(graph_row_map.NumGlobalElements(),
+          graph_row_map.NumMyElements(), graph_row_map.MyGlobalElements(), 0, nodegraph->Comm());
 
-      // get rowmap of the graph
-      const Epetra_BlockMap& tmp = nodegraph->RowMap();
-      Epetra_Map rowmap(tmp.NumGlobalElements(), tmp.NumMyElements(), tmp.MyGlobalElements(), 0,
-          nodegraph->Comm());
-
-      // -------------------------------------------------------------
-      // build a target map that stores everything on proc workrank
-      // We have arbirtary gids here and we do not tell metis about
-      // them. So we have to keep rowrecv until the redistributed map is
-      // build.
-
-      // rowrecv is a fully redundant vector (size of number of nodes)
-      std::vector<int> rowrecv(rowmap.NumGlobalElements());
-
-      // after AllreduceEMap rowrecv contains
-      //
-      // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
-      // * | | .... | | * | | .... | | * ..........  * | | .... | | *
-      // *-+-+-    -+-+-*-+-+-    -+-+-*-           -*-+-+-    -+-+-*
-      //   gids stored     gids stored                  gids stored
-      //  on first proc  on second proc                 on last proc
-      //
-      // the ordering of the gids on the procs is arbitrary (as copied
-      // from the map)
-      LINALG::AllreduceEMap(rowrecv, rowmap);
-
-      // construct an epetra map from the list of gids
-      Epetra_Map tmap(rowmap.NumGlobalElements(),
-          // if ..........    then ............... else
-          (myrank == workrank) ? (int)rowrecv.size() : 0, &rowrecv[0], 0, rowmap.Comm());
-
-      // export the graph to tmap
-      Epetra_CrsGraph tgraph(Copy, tmap, 108, false);
-      Epetra_Export exporter(rowmap, tmap);
+      // set standard value of edge weight to 1.0
+      auto edge_weights = Teuchos::rcp(new Epetra_CrsMatrix(Copy, graph_rowmap, 15));
+      for (int i = 0; i < nodegraph->NumMyRows(); ++i)
       {
-        int err = tgraph.Export(*nodegraph, exporter, Add);
-        if (err < 0) dserror("Graph export returned err=%d", err);
-      }
-      tgraph.FillComplete();
-      tgraph.OptimizeStorage();
+        const int grow = nodegraph->RowMap().GID(i);
 
-      // export the weights to tmap
-      Epetra_Vector tweights(tmap, false);
-      err = tweights.Export(weights, exporter, Insert);
-      if (err < 0) dserror("Vector export returned err=%d", err);
+        const int glob_length = nodegraph->NumGlobalIndices(grow);
+        int numentries = 0;
+        std::vector<int> indices(glob_length);
+        nodegraph->ExtractGlobalRowCopy(grow, glob_length, numentries, &indices[0]);
 
-      // metis requests indexes. So we need a reverse lookup from gids
-      // to indexes.
-      std::map<int, int> idxmap;
-      // xadj points from index i to the index of the
-      // first adjacent node
-      std::vector<int> xadj(rowmap.NumGlobalElements() + 1);
-      // a list of adjacent nodes, adressed using xadj
-      std::vector<int> adjncy(tgraph.NumGlobalNonzeros());  // the size is an upper bound
-
-      // This is a vector of size n that upon successful completion stores the partition vector of
-      // the graph
-      std::vector<int> part(tmap.NumMyElements());
-
-      // construct reverse lookup for all procs
-      for (unsigned i = 0; i < rowrecv.size(); ++i)
-      {
-        idxmap[rowrecv[i]] = i;
-      }
-
-      if (myrank == workrank)
-      {
-        // ----------------------------------------
-
-        // rowrecv(i)       rowrecv(i+1)                      node gids
-        //     ^                 ^
-        //     |                 |
-        //     | idxmap          | idxmap
-        //     |                 |
-        //     v                 v
-        //     i                i+1                       equivalent indices
-        //     |                 |
-        //     | xadj            | xadj
-        //     |                 |
-        //     v                 v
-        //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
-        //    | | | | | | | | | | | ............... | | |      adjncy
-        //    +-+-+-+-+-+-+-+-+-+-+                -+-+-+
-        //
-        //    |       i's       |    (i+1)'s
-        //    |    neighbours   |   neighbours           (numbered by equivalent indices)
-        //
-
-        int count = 0;
-        xadj[0] = 0;
-        for (int row = 0; row < tgraph.NumMyRows(); ++row)
-        {
-          int grid = tgraph.RowMap().GID(row);
-          int numindices;
-          int* lindices;
-          int err = tgraph.ExtractMyRowView(row, numindices, lindices);
-          if (err) dserror("Epetra_CrsGraph::ExtractMyRowView returned err=%d", err);
-
-          for (int col = 0; col < numindices; ++col)
-          {
-            int gcid = tgraph.ColMap().GID(lindices[col]);
-            if (gcid == grid) continue;
-            adjncy[count] = idxmap[gcid];
-            ++count;
-          }
-          xadj[row + 1] = count;
-        }
-      }
-
-      // broadcast xadj
-      tmap.Comm().Broadcast(&xadj[0], xadj.size(), workrank);
-
-      // broadcast adjacence (required for edge weights)
-      int adjncysize = (int)adjncy.size();
-      tmap.Comm().Broadcast(&adjncysize, 1, workrank);
-      adjncy.resize(adjncysize);
-      tmap.Comm().Broadcast(&adjncy[0], adjncysize, workrank);
-
-      // -------------------------------------------------------------
-      // set a fully redundant vector of weights for edges
-      std::vector<int> ladjwgt(adjncy.size(), 0);
-      std::vector<int> adjwgt(adjncy.size(), 0);
-
-      for (std::vector<int>::iterator iter = ladjwgt.begin(); iter != ladjwgt.end(); ++iter)
-      {
-        *iter = 0;
+        std::vector<double> values(numentries, 1.0);
+        edge_weights->InsertGlobalValues(grow, numentries, &(values[0]), &(indices[0]));
+        if (err < 0) dserror("edge_weights->InsertGlobalValues returned err=%d", err);
       }
 
       // loop all master nodes on this proc
-      std::map<int, std::vector<int>>::iterator masterslavepair;
-
-      for (masterslavepair = allcoupledcolnodes_->begin();
-           masterslavepair != allcoupledcolnodes_->end(); ++masterslavepair)
+      for (const auto& masterslavepair : *allcoupledcolnodes_)
       {
         // get masternode
-        DRT::Node* master = discret_->gNode(masterslavepair->first);
+        DRT::Node* master = discret_->gNode(masterslavepair.first);
 
-        if (master->Owner() != myrank)
-        {
-          continue;
-        }
-
-        std::map<int, int>::iterator paul = idxmap.find(master->Id());
-        if (paul == idxmap.end())
-        {
-          dserror("master not in reverse lookup");
-        }
-
-        // inverse lookup
-        int masterindex = idxmap[master->Id()];
+        if (master->Owner() != myrank) continue;
 
         // loop slavenodes
-        for (std::vector<int>::iterator iter = masterslavepair->second.begin();
-             iter != masterslavepair->second.end(); ++iter)
+        for (int slave_gids : masterslavepair.second)
         {
-          DRT::Node* slave = discret_->gNode(*iter);
-
-          if (slave->Owner() != myrank)
-          {
-            dserror("own master but not slave\n");
-          }
-
-          int slaveindex = idxmap[slave->Id()];
-
-          std::map<int, int>::iterator foo = idxmap.find(slave->Id());
-          if (foo == idxmap.end())
-          {
-            dserror("slave not in reverse lookup");
-          }
+          DRT::Node* slave = discret_->gNode(slave_gids);
 
           // -------------------------------------------------------------
           // connections between master and slavenodes are very strong
           // we do not want to partition between master and slave nodes
-          for (int j = xadj[masterindex]; j < xadj[masterindex + 1]; ++j)
-          {
-            if (adjncy[j] == slaveindex)
-            {
-              ladjwgt[j] = 100;
-            }
-          }
 
-          for (int j = xadj[slaveindex]; j < xadj[slaveindex + 1]; ++j)
-          {
-            if (adjncy[j] == masterindex)
-            {
-              ladjwgt[j] = 100;
-            }
-          }
+          // store gids and values as a vector with one entry
+          std::vector<int> master_gid(1, master->Id());
+          std::vector<int> slave_gid(1, slave->Id());
+          // add 99 to the initial value of 1.0 to set costs to 100
+          std::vector<double> value(1, 99.0);
+
+          err = edge_weights->InsertGlobalValues(master->Id(), 1, &(value[0]), &(slave_gid[0]));
+          if (err < 0) dserror("InsertGlobalIndices returned err=%d", err);
+          err = edge_weights->InsertGlobalValues(slave->Id(), 1, &(value[0]), &(master_gid[0]));
+          if (err < 0) dserror("InsertGlobalIndices returned err=%d", err);
         }
       }
 
-      // do communication to aquire edge weight information from all procs
-      tmap.Comm().SumAll(&ladjwgt[0], &adjwgt[0], adjwgt.size());
+      // setup cost describer
+      auto costs = Teuchos::rcp(new Isorropia::Epetra::CostDescriber);
+      costs->setGraphEdgeWeights(edge_weights);
+      costs->setVertexWeights(node_weights);
 
-      // the standard edge weight is one
-      for (std::vector<int>::iterator iter = adjwgt.begin(); iter != adjwgt.end(); ++iter)
-      {
-        if (*iter == 0) *iter = 1;
-      }
+      // setup partitioner
+      Teuchos::ParameterList paramlist;
+      paramlist.set("PARTITIONING METHOD", "GRAPH");
+      Teuchos::ParameterList& sublist = paramlist.sublist("Zoltan");
+      sublist.set("LB_METHOD", "GRAPH");
+      sublist.set("GRAPH_PACKAGE", "ParMETIS");
+      sublist.set("LB_APPROACH", "PARTITION");
 
-      // the reverse lookup is not required anymore
-      idxmap.clear();
+      Teuchos::RCP<const Epetra_CrsGraph> const_nodegraph(nodegraph);
 
-      // -------------------------------------------------------------
-      // do partitioning using metis on workrank
-      if (myrank == workrank)
-      {
-        // the vertex weights
-        std::vector<int> vwgt(tweights.MyLength());
-        for (int i = 0; i < tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
-
-        // 0 No weights (vwgts and adjwgt are NULL)
-        // 1 Weights on the edges only (vwgts = NULL)
-        // 2 Weights on the vertices only (adjwgt = NULL)
-        // 3 Weights both on vertices and edges.
-        int wgtflag = 3;
-        // 0 C-style numbering is assumed that starts from 0
-        // 1 Fortran-style numbering is assumed that starts from 1
-        int numflag = 0;
-        // The number of parts to partition the graph.
-        int npart = numproc;
-        // This is an array of 5 integers that is used to pass parameters for the various phases of
-        // the algorithm. If options[0]=0 then default values are used. If options[0]=1, then the
-        // remaining four elements of options are interpreted as follows: options[1]    Determines
-        // matching type. Possible values are:
-        //               1 Random Matching (RM)
-        //               2 Heavy-Edge Matching (HEM)
-        //               3 Sorted Heavy-Edge Matching (SHEM) (Default)
-        //               Experiments has shown that both HEM and SHEM perform quite well.
-        // options[2]    Determines the algorithm used during initial partitioning. Possible values
-        // are:
-        //               1 Region Growing (Default)
-        // options[3]    Determines the algorithm used for re%Gï¬%@nement. Possible values
-        // are:
-        //               1 Early-Exit Boundary FM re%Gï¬%@nement (Default)
-        // options[4]    Used for debugging purposes. Always set it to 0 (Default).
-        int options[5] = {0, 3, 1, 1, 0};
-        // Upon successful completion, this variable stores the number of edges that are cut by the
-        // partition.
-        int edgecut = 0;
-        // The number of vertices in the graph.
-        int nummyele = tmap.NumMyElements();
-
-        if (verbose_)
-        {
-          std::cout << "proc " << myrank << " repartition graph using metis\n";
-        }
-        if (numproc < 8)  // better for smaller no. of partitions
-        {
-          METIS_PartGraphRecursive(&nummyele, &xadj[0], &adjncy[0], &vwgt[0], &adjwgt[0], &wgtflag,
-              &numflag, &npart, options, &edgecut, &part[0]);
-
-          if (verbose_)
-          {
-            std::cout << "METIS_PartGraphRecursive produced edgecut of " << edgecut << "\n";
-            fflush(stdout);
-          }
-        }
-        else
-        {
-          METIS_PartGraphKway(&nummyele, &xadj[0], &adjncy[0], &vwgt[0], &adjwgt[0], &wgtflag,
-              &numflag, &npart, options, &edgecut, &part[0]);
-        }
-
-
-      }  // if (myrank==workrank)
-
-      // broadcast partitioning result
-      int size = tmap.NumMyElements();
-      tmap.Comm().Broadcast(&size, 1, workrank);
-      part.resize(size);
-      tmap.Comm().Broadcast(&part[0], size, workrank);
-
-      // loop part and count no. of nodes belonging to me
-      // (we reuse part to save on memory)
-      int count = 0;
-      for (int i = 0; i < size; ++i)
-        if (part[i] == myrank)
-        {
-          part[count] = rowrecv[i];
-          ++count;
-        }
-
-      // rowrecv is done
-      rowrecv.clear();
-
-      // create map with new layout
-      Epetra_Map newmap(size, count, &part[0], 0, nodegraph->Comm());
-
-      // create the new graph and export to it
-      Teuchos::RCP<Epetra_CrsGraph> newnodegraph;
-
-      newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, newmap, 108, false));
-      Epetra_Export exporter2(nodegraph->RowMap(), newmap);
-      err = newnodegraph->Export(*nodegraph, exporter2, Add);
-      if (err < 0) dserror("Graph export returned err=%d", err);
-      newnodegraph->FillComplete();
+      auto newnodegraph =
+          DRT::UTILS::REBALANCING::RebalanceGraph(const_nodegraph, costs, paramlist);
       newnodegraph->OptimizeStorage();
 
       // the rowmap will become the new distribution of nodes
-      const Epetra_BlockMap rntmp = newnodegraph->RowMap();
-      Epetra_Map newnoderowmap(
-          -1, rntmp.NumMyElements(), rntmp.MyGlobalElements(), 0, discret_->Comm());
+      const Epetra_Map newnoderowmap(-1, newnodegraph->RowMap().NumMyElements(),
+          newnodegraph->RowMap().MyGlobalElements(), 0, discret_->Comm());
 
       // the column map will become the new ghosted distribution of nodes
-      const Epetra_BlockMap Mcntmp = newnodegraph->ColMap();
-      Epetra_Map newnodecolmap(
-          -1, Mcntmp.NumMyElements(), Mcntmp.MyGlobalElements(), 0, discret_->Comm());
+      const Epetra_Map newnodecolmap(-1, newnodegraph->ColMap().NumMyElements(),
+          newnodegraph->ColMap().MyGlobalElements(), 0, discret_->Comm());
+
       // do the redistribution without assigning dofs
       discret_->Redistribute(newnoderowmap, newnodecolmap, false, true, true);
-
 
       if (discret_->Comm().MyPID() == 0 && verbose_)
       {
@@ -1868,6 +1624,4 @@ void PeriodicBoundaryConditions::BalanceLoadUsingMetis()
       PutAllSlavesToMastersProc();
     }
   }
-
-  return;
-}  // BalanceLoadUsingMetis
+}
