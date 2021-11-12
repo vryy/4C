@@ -36,19 +36,19 @@ class DRT::INPUT::DomainReader_TestSuite : public CxxTest::TestSuite
 
   void tearDown() { testdis_ = Teuchos::null; }
 
-  void test_MyDis0()
+  void Test_MyDis0()
   {
     DomainReader dr(testdis_, testreader_, "unittestsection");
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-  void test_MyDis1()
+  void Test_MyDis1()
   {
     DomainReader dr(testdis_, testreader_, "unittestsection", "unittesttype");
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-  void test_MyDis2()
+  void Test_MyDis2()
   {
     std::set<std::string> dummyset;
     dummyset.insert("type0");

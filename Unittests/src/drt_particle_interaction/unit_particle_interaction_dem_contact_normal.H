@@ -73,7 +73,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
   // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpring are called
   // in setUp() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void Test_GetNormalContactStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -81,7 +81,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void Test_GetTimeCriticalStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -91,7 +91,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void Test_NormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -108,7 +108,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 
-  void test_NormalPotentialEnergy()
+  void Test_NormalPotentialEnergy()
   {
     const double gap = -0.15;
 
@@ -173,7 +173,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
   // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpringDamp are
   // called in setUp() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void Test_GetNormalContactStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -181,7 +181,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void Test_GetTimeCriticalStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -191,7 +191,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void Test_NormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -262,7 +262,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
   // note: the public functions Init() and Setup() of class DEMContactNormalHertz are called in
   // setUp() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void Test_GetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -270,7 +270,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void Test_GetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -278,7 +278,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void Test_NormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -296,7 +296,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 
-  void test_NormalPotentialEnergy()
+  void Test_NormalPotentialEnergy()
   {
     const double gap = -0.15;
 
@@ -349,7 +349,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
   // note: the public functions Init() and Setup() of class DEMContactNormalLeeHerrmann are called
   // in setUp() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void Test_GetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -357,7 +357,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void Test_GetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -365,7 +365,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void Test_NormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -424,7 +424,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
   // note: the public functions Init() and Setup() of class DEMContactNormalKuwabaraKono are called
   // in setUp() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void Test_GetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -432,7 +432,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void Test_GetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -440,7 +440,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void Test_NormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -499,7 +499,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
   // note: the public functions Init() and Setup() of class DEMContactNormalTsuji are called in
   // setUp() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void Test_GetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -507,7 +507,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void Test_GetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -515,7 +515,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void Test_NormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;

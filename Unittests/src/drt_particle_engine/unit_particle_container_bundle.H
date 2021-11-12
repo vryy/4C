@@ -187,7 +187,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
   // ParticleContainerBundle are called in setUp() and thus implicitly tested by all following
   // unittests
 
-  void test_ScaleStateSpecificContainer()
+  void Test_ScaleStateSpecificContainer()
   {
     particlecontainerbundle_->ScaleStateSpecificContainer(
         2.0, PARTICLEENGINE::Radius, PARTICLEENGINE::Phase1);
@@ -245,7 +245,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_UpdateStateSpecificContainer()
+  void Test_UpdateStateSpecificContainer()
   {
     particlecontainerbundle_->UpdateStateSpecificContainer(
         2.0, PARTICLEENGINE::Radius, 1.0, PARTICLEENGINE::Mass, PARTICLEENGINE::Phase1);
@@ -303,7 +303,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_SetStateSpecificContainer()
+  void Test_SetStateSpecificContainer()
   {
     std::vector<double> mass(1);
     mass[0] = 1.1;
@@ -360,7 +360,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_ClearStateSpecificContainer()
+  void Test_ClearStateSpecificContainer()
   {
     std::vector<double> mass(1);
     mass[0] = 0.0;
@@ -417,7 +417,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_ScaleStateAllContainers()
+  void Test_ScaleStateAllContainers()
   {
     particlecontainerbundle_->ScaleStateAllContainers(2.0, PARTICLEENGINE::Mass);
 
@@ -516,7 +516,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_UpdateStateAllContainers()
+  void Test_UpdateStateAllContainers()
   {
     particlecontainerbundle_->UpdateStateAllContainers(
         2.0, PARTICLEENGINE::Mass, 1.0, PARTICLEENGINE::Radius);
@@ -616,7 +616,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_SetStateAllContainers()
+  void Test_SetStateAllContainers()
   {
     std::vector<double> mass(1);
     mass[0] = 1.1;
@@ -711,7 +711,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_ClearStateAllContainers()
+  void Test_ClearStateAllContainers()
   {
     std::vector<double> mass(1);
     mass[0] = 0.0;
@@ -806,7 +806,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_CheckAndDecreaseSizeAllContainersOfSpecificStatus()
+  void Test_CheckAndDecreaseSizeAllContainersOfSpecificStatus()
   {
     ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
@@ -824,7 +824,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ContainerSize(), 2);
   }
 
-  void test_ClearAllContainersOfSpecificStatus()
+  void Test_ClearAllContainersOfSpecificStatus()
   {
     particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Ghosted);
 
@@ -834,7 +834,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ParticlesStored(), 0);
   }
 
-  void test_GetVectorOfParticleObjectsOfAllContainers()
+  void Test_GetVectorOfParticleObjectsOfAllContainers()
   {
     std::vector<ParticleObjShrdPtr> particlesstored;
 

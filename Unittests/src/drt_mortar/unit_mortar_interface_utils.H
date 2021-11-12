@@ -22,7 +22,7 @@ namespace MORTAR
 class MORTAR::InterfaceUtils_TestSuite : public CxxTest::TestSuite
 {
  public:
-  void test_ComputeParallelDistributionStatistics()
+  void Test_ComputeParallelDistributionStatistics()
   {
     std::vector<int> quantityAcrossAllRanks = {2, 1, 4, 3};
 

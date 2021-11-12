@@ -54,7 +54,7 @@ class CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw_TestSuite : public CxxTest:
   }
 
   //! test member function Evaluate
-  void test_Evaluate()
+  void Test_Evaluate()
   {
     // gap < 0
     TS_ASSERT_THROWS_ANYTHING(coconstlaw_->Evaluate(1.0));
@@ -67,7 +67,7 @@ class CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw_TestSuite : public CxxTest:
   }
 
   //! test member function Evaluate
-  void test_EvaluateDeriv()
+  void Test_EvaluateDeriv()
   {
     TS_ASSERT_DELTA(coconstlaw_->EvaluateDeriv(-0.75), 0.5625, 1.e-15);
     TS_ASSERT_THROWS_ANYTHING(coconstlaw_->EvaluateDeriv(-0.25));

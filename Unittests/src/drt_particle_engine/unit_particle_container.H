@@ -115,34 +115,34 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   // note: the public functions Init(), Setup() and AddParticle() of class ParticleContainer are
   // called in setUp() and thus implicitly tested by all following unittests
 
-  void test_IncreaseContainerSize()
+  void Test_IncreaseContainerSize()
   {
     container_->IncreaseContainerSize();
     TS_ASSERT_EQUALS(container_->ParticlesStored(), 3);
     TS_ASSERT_EQUALS(container_->ContainerSize(), 14);
   }
 
-  void test_DecreaseContainerSize()
+  void Test_DecreaseContainerSize()
   {
     container_->DecreaseContainerSize();
     TS_ASSERT_EQUALS(container_->ParticlesStored(), 3);
     TS_ASSERT_EQUALS(container_->ContainerSize(), 3);
   }
 
-  void test_CheckAndDecreaseContainerSize()
+  void Test_CheckAndDecreaseContainerSize()
   {
     container_->CheckAndDecreaseContainerSize();
     TS_ASSERT_EQUALS(container_->ParticlesStored(), 3);
     TS_ASSERT_EQUALS(container_->ContainerSize(), 3);
   }
 
-  void test_ClearContainer()
+  void Test_ClearContainer()
   {
     container_->ClearContainer();
     TS_ASSERT_EQUALS(container_->ParticlesStored(), 0);
   }
 
-  void test_AddParticle()
+  void Test_AddParticle()
   {
     // init a particle
     int globalid(0);
@@ -172,7 +172,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_EQUALS(container_->ParticlesStored(), 4);
   }
 
-  void test_ReplaceParticle()
+  void Test_ReplaceParticle()
   {
     // init a particle
     int globalid(0);
@@ -214,7 +214,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     compareParticleStates(particle_reference, particle);
   }
 
-  void test_GetParticle()
+  void Test_GetParticle()
   {
     int globalid(0);
     int globalid_reference(0);
@@ -274,7 +274,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_RemoveParticle()
+  void Test_RemoveParticle()
   {
     int globalid(0);
     int globalid_reference(0);
@@ -326,14 +326,14 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_GetStateDim()
+  void Test_GetStateDim()
   {
     TS_ASSERT_EQUALS(container_->GetStateDim(PARTICLEENGINE::Position), 3);
     TS_ASSERT_EQUALS(container_->GetStateDim(PARTICLEENGINE::Velocity), 3);
     TS_ASSERT_EQUALS(container_->GetStateDim(PARTICLEENGINE::Mass), 1);
   }
 
-  void test_GetPtrToState()
+  void Test_GetPtrToState()
   {
     std::vector<double> pos(3);
     std::vector<double> vel(3);
@@ -383,7 +383,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_CondGetPtrToState()
+  void Test_CondGetPtrToState()
   {
     std::vector<double> pos(3);
     std::vector<double> vel(3);
@@ -433,13 +433,13 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_CondGetPtrToState_NotStored()
+  void Test_CondGetPtrToState_NotStored()
   {
     double* currpos = container_->CondGetPtrToState(PARTICLEENGINE::Acceleration, 0);
     TS_ASSERT_EQUALS(currpos, nullptr);
   }
 
-  void test_GetPtrToGlobalID()
+  void Test_GetPtrToGlobalID()
   {
     int globalid_reference(0);
 
@@ -457,7 +457,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_ScaleState()
+  void Test_ScaleState()
   {
     int globalid(0);
 
@@ -517,7 +517,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_UpdateState()
+  void Test_UpdateState()
   {
     int globalid(0);
 
@@ -575,7 +575,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_SetState()
+  void Test_SetState()
   {
     int globalid(0);
 
@@ -611,7 +611,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_ClearState()
+  void Test_ClearState()
   {
     int globalid(0);
 
@@ -639,19 +639,19 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void test_GetMinValueOfState()
+  void Test_GetMinValueOfState()
   {
     TS_ASSERT_DELTA(container_->GetMinValueOfState(PARTICLEENGINE::Mass), 0.12, 1e-14);
     TS_ASSERT_DELTA(container_->GetMinValueOfState(PARTICLEENGINE::Position), -8.54, 1e-14);
   }
 
-  void test_GetMaxValueOfState()
+  void Test_GetMaxValueOfState()
   {
     TS_ASSERT_DELTA(container_->GetMaxValueOfState(PARTICLEENGINE::Mass), 12.34, 1e-14);
     TS_ASSERT_DELTA(container_->GetMaxValueOfState(PARTICLEENGINE::Position), 61.0, 1e-14);
   }
 
-  void test_GetStoredStates()
+  void Test_GetStoredStates()
   {
     const std::set<StateEnum>& particleStates = container_->GetStoredStates();
     TS_ASSERT_EQUALS(particleStates.size(), 3);
@@ -660,7 +660,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     TS_ASSERT(particleStates.find(PARTICLEENGINE::Mass) != particleStates.end());
   }
 
-  void test_HaveStoredState()
+  void Test_HaveStoredState()
   {
     TS_ASSERT(container_->HaveStoredState(PARTICLEENGINE::Position));
     TS_ASSERT(container_->HaveStoredState(PARTICLEENGINE::Velocity));
@@ -670,9 +670,9 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     TS_ASSERT(not container_->HaveStoredState(PARTICLEENGINE::Density));
   }
 
-  void test_ContainerSize() { TS_ASSERT_EQUALS(container_->ContainerSize(), 7); }
+  void Test_ContainerSize() { TS_ASSERT_EQUALS(container_->ContainerSize(), 7); }
 
-  void test_ParticlesStored() { TS_ASSERT_EQUALS(container_->ParticlesStored(), 3); }
+  void Test_ParticlesStored() { TS_ASSERT_EQUALS(container_->ParticlesStored(), 3); }
 
   void compareParticleStates(ParticleStates& particle_reference, ParticleStates& particle)
   {

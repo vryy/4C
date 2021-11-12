@@ -156,7 +156,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
   /// Tear down test suite
   void tearDown() override {}
 
-  void test_AddStrainEnergy()
+  void Test_AddStrainEnergy()
   {
     LINALG::Matrix<3, 1> prinv(true);
     LINALG::Matrix<3, 1> modinv(true);
@@ -178,7 +178,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(psi, 3.3088538178019045, 1e-10);
   }
 
-  void test_EvaluateFunc()
+  void Test_EvaluateFunc()
   {
     LINALG::Matrix<3, 1> prinv(true);
     LINALG::Matrix<3, 1> modinv(true);
@@ -200,7 +200,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(psi, 3.3088538178019045, 1e-10);
   }
 
-  void test_EvaluateFirstDerivativesAniso()
+  void Test_EvaluateFirstDerivativesAniso()
   {
     LINALG::Matrix<2, 1> dPIaniso(true);
 
@@ -224,7 +224,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(dPIaniso(1), 0.0, 1e-10);
   }
 
-  void test_EvaluateSecondDerivativesAniso()
+  void Test_EvaluateSecondDerivativesAniso()
   {
     LINALG::Matrix<3, 1> ddPIaniso(true);
 
@@ -252,7 +252,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(ddPIaniso(2), 0.0, 1e-10);
   }
 
-  void test_GetDerivativesAniso()
+  void Test_GetDerivativesAniso()
   {
     LINALG::Matrix<2, 1> dPIaniso(true);
     LINALG::Matrix<3, 1> ddPIaniso(true);
@@ -321,7 +321,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
   }
 
 
-  void test_AddStressAnisoPrincipal()
+  void Test_AddStressAnisoPrincipal()
   {
     LINALG::Matrix<6, 1> S_stress;
     LINALG::Matrix<6, 6> cmat;

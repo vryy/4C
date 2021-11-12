@@ -55,7 +55,7 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::Te
   // setUp()
   //       and thus implicitly tested by all following unittests
 
-  void test_ArtificialViscosity()
+  void Test_ArtificialViscosity()
   {
     const double dens_i = 1.01;
     const double dens_j = 0.97;

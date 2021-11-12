@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Test a moving straight beam in a hex8 element with hermite line2 shape functions.
      */
-    void test_beam_to_fluid_meshtying_hex8_moving_beam()
+    void Test_beam_to_fluid_meshtying_hex8_moving_beam()
     {
       // Element types.
       typedef GEOMETRYPAIR::t_hermite beam_type;

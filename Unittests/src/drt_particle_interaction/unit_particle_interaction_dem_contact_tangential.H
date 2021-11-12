@@ -69,7 +69,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
   // note: the public functions Init() and Setup() of class DEMContactTangentialLinearSpringDamp are
   // called in setUp() and thus implicitly tested by all following unittests
 
-  void test_TangentialContactForce_stick()
+  void Test_TangentialContactForce_stick()
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;
@@ -106,7 +106,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
     TS_ASSERT_EQUALS(stick_tangential, true);
   }
 
-  void test_TangentialContactForce_slip()
+  void Test_TangentialContactForce_slip()
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;
@@ -143,7 +143,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
     TS_ASSERT_EQUALS(stick_tangential, false);
   }
 
-  void test_TangentialPotentialEnergy()
+  void Test_TangentialPotentialEnergy()
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;

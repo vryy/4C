@@ -38,14 +38,14 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
 
   void tearDown() {}
 
-  void test_pow()
+  void Test_pow()
   {
     TS_ASSERT_DELTA(UTILS::pow<2>(1.34), 1.7956, 1.0e-14);
     TS_ASSERT_DELTA(UTILS::pow<5>(0.8), 0.32768, 1.0e-14);
     TS_ASSERT_DELTA(UTILS::pow<4>(3.5), 150.0625, 1.0e-14);
   }
 
-  void test_vec_clear()
+  void Test_vec_clear()
   {
     double c[3] = {2.5, 7.5, -1.8};
     UTILS::vec_clear(c);
@@ -55,7 +55,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], 0.0, 1.0e-14);
   }
 
-  void test_vec_set()
+  void Test_vec_set()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
@@ -66,7 +66,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], 4.25, 1.0e-14);
   }
 
-  void test_vec_add()
+  void Test_vec_add()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
@@ -77,7 +77,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], 2.45, 1.0e-14);
   }
 
-  void test_vec_sub()
+  void Test_vec_sub()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
@@ -88,7 +88,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], -6.05, 1.0e-14);
   }
 
-  void test_vec_scale()
+  void Test_vec_scale()
   {
     double c[3] = {2.5, 7.5, -1.8};
     UTILS::vec_scale(c, 1.8);
@@ -98,7 +98,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], -3.24, 1.0e-14);
   }
 
-  void test_vec_setscale()
+  void Test_vec_setscale()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
@@ -109,7 +109,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], 7.65, 1.0e-14);
   }
 
-  void test_vec_addscale()
+  void Test_vec_addscale()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     double c[3] = {2.5, 7.5, -1.8};
@@ -120,7 +120,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], 5.85, 1.0e-14);
   }
 
-  void test_vec_setcross()
+  void Test_vec_setcross()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     const double b[3] = {-0.5, -3.5, 0.2};
@@ -132,7 +132,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], -4.5, 1.0e-14);
   }
 
-  void test_vec_addcross()
+  void Test_vec_addcross()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     const double b[3] = {-0.5, -3.5, 0.2};
@@ -144,7 +144,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(c[2], -6.3, 1.0e-14);
   }
 
-  void test_vec_dot()
+  void Test_vec_dot()
   {
     const double a[3] = {1.0, -2.0, 4.25};
     const double b[3] = {-0.5, -3.5, 0.2};
@@ -154,7 +154,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(UTILS::vec_dot(a, b), a_dot_b, 1.0e-14);
   }
 
-  void test_vec_norm2()
+  void Test_vec_norm2()
   {
     const double a[3] = {1.0, -2.0, 4.25};
 
@@ -163,7 +163,7 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(UTILS::vec_norm2(a), a_norm2, 1.0e-14);
   }
 
-  void test_unitsurfacetangents()
+  void Test_unitsurfacetangents()
   {
     double n[3] = {1.0, -2.0, 4.25};
     UTILS::vec_scale(n, 1.0 / UTILS::vec_norm2(n));
@@ -188,11 +188,11 @@ class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuit
     TS_ASSERT_DELTA(n_ref[2], n[2], 1.0e-14);
   }
 
-  void test_lintrans_lower() { TS_ASSERT_DELTA(UTILS::lintrans(0.5, 1.2, 3.8), 0.0, 1.0e-14); }
+  void Test_lintrans_lower() { TS_ASSERT_DELTA(UTILS::lintrans(0.5, 1.2, 3.8), 0.0, 1.0e-14); }
 
-  void test_lintrans_in() { TS_ASSERT_DELTA(UTILS::lintrans(2.24, 1.2, 3.8), 0.4, 1.0e-14); }
+  void Test_lintrans_in() { TS_ASSERT_DELTA(UTILS::lintrans(2.24, 1.2, 3.8), 0.4, 1.0e-14); }
 
-  void test_lintrans_upper() { TS_ASSERT_DELTA(UTILS::lintrans(4.0, 1.2, 3.8), 1.0, 1.0e-14); }
+  void Test_lintrans_upper() { TS_ASSERT_DELTA(UTILS::lintrans(4.0, 1.2, 3.8), 1.0, 1.0e-14); }
 };
 
 /*---------------------------------------------------------------------------*/

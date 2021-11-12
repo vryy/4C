@@ -57,7 +57,7 @@ class MAT::StVenantKirchhoff_TestSuite : public CxxTest::TestSuite
   void tearDown() { return; }
 
   //! evaluate function unit testing for StVenantKirchhoff material
-  void test_Evaluate()
+  void Test_Evaluate()
   {
     // calculate reference results for stress
     const double Ref_Stress_calc1 =
@@ -93,7 +93,7 @@ class MAT::StVenantKirchhoff_TestSuite : public CxxTest::TestSuite
     return;
   }
   //! strain energy unit testing for StVenantKirchhoff material
-  void test_StrainEnergy()
+  void Test_StrainEnergy()
   {
     // define reference result for strain energy
     const double Ref_StrainEnergy = 908.6538;

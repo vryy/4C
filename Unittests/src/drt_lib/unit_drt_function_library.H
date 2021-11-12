@@ -117,7 +117,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     scalarField = Teuchos::null;
   };
 
-  void test_Evaluate_ConstantOrigin_ConstantLocal()
+  void Test_Evaluate_ConstantOrigin_ConstantLocal()
   {
     Teuchos::RCP<Function> testFunction = Teuchos::rcp(new TranslatedFunction(constant, constant));
     // the whole function is a constant in all components
@@ -127,7 +127,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1000), A_CONSTANT, 1e-15);
   }
 
-  void test_Evaluate_ConstantOrigin_SpaceDependentLocal()
+  void Test_Evaluate_ConstantOrigin_SpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(constant, scalarField));
@@ -138,7 +138,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), expected(at123, withOrigin(at111)), 1e-15);
   }
 
-  void test_Evaluate_MovingOrigin_ConstantLocal()
+  void Test_Evaluate_MovingOrigin_ConstantLocal()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, constant));
@@ -149,7 +149,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), A_CONSTANT, 1e-15);
   }
 
-  void test_Evaluate_MovingOrigin_SpaceDependentLocal()
+  void Test_Evaluate_MovingOrigin_SpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
@@ -157,13 +157,13 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->Evaluate(0, at123, 1), expected(at123, withOrigin(at111)), 1e-15);
   }
 
-  void test_EvaluateTimeDerivative_ConstantOrigin_ConstantLocal()
+  void Test_EvaluateTimeDerivative_ConstantOrigin_ConstantLocal()
   {
     Teuchos::RCP<Function> testFunction = Teuchos::rcp(new TranslatedFunction(constant, constant));
     TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at111, 0, 1)[1], 0, 1e-15);
   }
 
-  void test_EvaluateTimeDerivative_ConstantOrigin_SpaceDependentLocal()
+  void Test_EvaluateTimeDerivative_ConstantOrigin_SpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(constant, scalarField));
@@ -171,7 +171,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 0, 1)[1], 0, 1e-15);
   }
 
-  void test_EvaluateTimeDerivative_MovingOrigin_ConstantLocal()
+  void Test_EvaluateTimeDerivative_MovingOrigin_ConstantLocal()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, constant));
@@ -179,7 +179,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(testFunction->EvaluateTimeDerivative(0, at123, 1, 1)[1], 0, 1e-15);
   }
 
-  void test_EvaluateTimeDerivative_MovingOrigin_SpaceDependentLocal()
+  void Test_EvaluateTimeDerivative_MovingOrigin_SpaceDependentLocal()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
@@ -193,7 +193,7 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
         expectedTimeDerivative(at123, 1), 1e-15);
   }
 
-  void test_EvaluateTimeDerivative_Degree0()
+  void Test_EvaluateTimeDerivative_Degree0()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
@@ -201,28 +201,28 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
         expected(at123, withOrigin(at111)), 1e-15);
   }
 
-  void test_ShouldThrow_When_EvaluateTimeDerivative_DegreeGreater1()
+  void Test_ShouldThrow_When_EvaluateTimeDerivative_DegreeGreater1()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
     TS_ASSERT_THROWS_ANYTHING(testFunction->EvaluateTimeDerivative(0, at111, 0, 2));
   }
 
-  void test_ShouldThrow_When_EvaluatedComponentNegative()
+  void Test_ShouldThrow_When_EvaluatedComponentNegative()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
     TS_ASSERT_THROWS_ANYTHING(testFunction->Evaluate(-1, at111, 0));
   }
 
-  void test_ShouldThrow_When_EvaluatedComponentTooLarge()
+  void Test_ShouldThrow_When_EvaluatedComponentTooLarge()
   {
     Teuchos::RCP<Function> testFunction =
         Teuchos::rcp(new TranslatedFunction(linearTime, scalarField));
     TS_ASSERT_THROWS_ANYTHING(testFunction->Evaluate(2, at111, 0));
   }
 
-  void test_ShouldThrow_When_OriginHasOnlyOneComponent()
+  void Test_ShouldThrow_When_OriginHasOnlyOneComponent()
   {
     TS_ASSERT_THROWS_ANYTHING(new TranslatedFunction(scalarField, constant));
   }

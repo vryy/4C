@@ -40,7 +40,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   void tearDown() {}
 
   //! test corner value Pb = 0 mmHg
-  void test_GetOxyPartialPressure_Pb_0()
+  void Test_GetOxyPartialPressure_Pb_0()
   {
     // Parameters
     const double n = 2.7;
@@ -58,7 +58,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   }
 
   //! test value Pb = 25 mmHg
-  void test_GetOxyPartialPressure_Pb_25()
+  void Test_GetOxyPartialPressure_Pb_25()
   {
     // Parameters
     const double n = 2.5;
@@ -80,7 +80,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   }
 
   //! test value Pb = 50 mmHg
-  void test_GetOxyPartialPressure_Pb_50()
+  void Test_GetOxyPartialPressure_Pb_50()
   {
     // Parameters
     const double n = 2.7;
@@ -102,7 +102,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   }
 
   //! test value Pb = 100 mmHg
-  void test_GetOxyPartialPressure_Pb_100()
+  void Test_GetOxyPartialPressure_Pb_100()
   {
     // Parameters
     const double n = 2.2;

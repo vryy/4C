@@ -29,7 +29,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
 
   void tearDown() {}
 
-  void test_uninitializedUse()
+  void Test_uninitializedUse()
   {
     Pstream ps;
     TS_ASSERT_THROWS(ps.flush(), const std::runtime_error &);
@@ -37,7 +37,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void test_doubleInitialize()
+  void Test_doubleInitialize()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
@@ -46,7 +46,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
         const std::runtime_error &);
   }
 
-  void test_nonexistantProc()
+  void Test_nonexistantProc()
   {
     Pstream ps;
     TS_ASSERT_THROWS(
@@ -54,7 +54,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
         const std::runtime_error &);
   }
 
-  void test_initializedUse()
+  void Test_initializedUse()
   {
     Pstream ps;
     ps.setup(true, false, false, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -63,7 +63,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void test_outputLevel()
+  void Test_outputLevel()
   {
     Pstream ps;
     ps.setup(true, false, false, IO::minimal, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -72,7 +72,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(lvl << 4);
   }
 
-  void test_inputTypes()
+  void Test_inputTypes()
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -82,7 +82,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void test_externalOperators()
+  void Test_externalOperators()
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -90,7 +90,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps << "blah" << IO::endl);
   }
 
-  void test_Level()
+  void Test_Level()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -100,7 +100,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(lvl.SetLevel(IO::minimal) << 5);
   }
 
-  void test_LevelExternalOperators()
+  void Test_LevelExternalOperators()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");

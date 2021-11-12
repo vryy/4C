@@ -52,7 +52,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::T
   /**
    * \brief Test the evaluation of averaged normals on a patch of hex8/quad4 elements.
    */
-  void test_surface_patch_averaged_normals_quad4()
+  void Test_surface_patch_averaged_normals_quad4()
   {
     // Define the type of the face elements.
     using surface = GEOMETRYPAIR::t_quad4;
@@ -67,14 +67,14 @@ class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::T
 
     // Fill the discretization object with the geometry.
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_map;
-    xtest_surface_patch_quad4<face_element_type>(discret_, face_elements_map);
+    Xtest_surface_patch_quad4<face_element_type>(discret_, face_elements_map);
 
     // Load the result vectors.
     std::vector<double> reference_normals, current_normals, position;
     std::vector<std::vector<double>> current_normals_derivative, position_derivative;
     std::vector<std::vector<std::vector<double>>> current_normals_derivative_2,
         position_derivative_2;
-    xtest_surface_patch_quad4_results(reference_normals, current_normals,
+    Xtest_surface_patch_quad4_results(reference_normals, current_normals,
         current_normals_derivative, current_normals_derivative_2, position, position_derivative,
         position_derivative_2);
 

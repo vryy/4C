@@ -25,7 +25,7 @@ namespace INPAR
 class INPAR::STR::InparStructure_TestSuite : public CxxTest::TestSuite
 {
  public:
-  void test_String2ModelType()
+  void Test_String2ModelType()
   {
     TS_ASSERT_EQUALS(INPAR::STR::String2ModelType("Structure"), INPAR::STR::model_structure);
     TS_ASSERT_EQUALS(INPAR::STR::String2ModelType("Contact"), INPAR::STR::model_contact);
@@ -43,7 +43,7 @@ class INPAR::STR::InparStructure_TestSuite : public CxxTest::TestSuite
         INPAR::STR::String2ModelType("BeamInteraction"), INPAR::STR::model_beaminteraction);
   }
 
-  void test_ModelTypeString()
+  void Test_ModelTypeString()
   {
     TS_ASSERT_EQUALS(INPAR::STR::ModelTypeString(INPAR::STR::model_structure), "Structure");
     TS_ASSERT_EQUALS(INPAR::STR::ModelTypeString(INPAR::STR::model_contact), "Contact");

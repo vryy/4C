@@ -61,7 +61,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex8 element, with line2 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex8_line2()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex8_line2()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -228,7 +228,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex8 element, with line3 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex8_line3()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex8_line3()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -434,7 +434,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex8 element, with line4 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex8_line4()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex8_line4()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -679,7 +679,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex20 element, with line2 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex20_line2()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex20_line2()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -954,7 +954,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex20 element, with line3 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex20_line3()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex20_line3()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -1304,7 +1304,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex20 element, with line4 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex20_line4()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex20_line4()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -1729,7 +1729,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex27 element, with line2 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex27_line2()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex27_line2()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -2067,7 +2067,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex27 element, with line3 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex27_line3()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex27_line3()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -2501,7 +2501,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a hex27 element, with line4 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_hex27_line4()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_hex27_line4()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3031,7 +3031,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a tet4 element, with line2 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_tet4_line2()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_tet4_line2()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3162,7 +3162,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a tet4 element, with line3 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_tet4_line3()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_tet4_line3()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3320,7 +3320,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a tet4 element, with line4 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_tet4_line4()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_tet4_line4()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3505,7 +3505,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a tet10 element, with line2 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_tet10_line2()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_tet10_line2()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3690,7 +3690,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a tet10 element, with line3 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_tet10_line3()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_tet10_line3()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;
@@ -3920,7 +3920,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Test a non straight beam in a tet10 element, with line4 mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_tet10_line4()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_tet10_line4()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;

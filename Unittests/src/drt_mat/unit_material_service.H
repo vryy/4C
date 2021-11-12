@@ -42,7 +42,7 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
   /// Tear down test suite
   void tearDown() override {}
 
-  void test_invariants_principal()
+  void Test_invariants_principal()
   {
     LINALG::Matrix<3, 1> prinv(false);
     MAT::InvariantsPrincipal(prinv, *tens);

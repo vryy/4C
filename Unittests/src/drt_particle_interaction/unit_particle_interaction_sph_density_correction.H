@@ -55,9 +55,9 @@ class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public CxxTe
   // setUp()
   //       and thus implicitly tested by all following unittests
 
-  void test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
+  void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
 
-  void test_CorrectedDensityInterior()
+  void Test_CorrectedDensityInterior()
   {
     const double denssum = 1.07;
     double dens = 0.98;
@@ -67,7 +67,7 @@ class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public CxxTe
     TS_ASSERT_EQUALS(dens, denssum);
   }
 
-  void test_CorrectedDensityFreeSurface()
+  void Test_CorrectedDensityFreeSurface()
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -107,9 +107,9 @@ class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public Cxx
   // setUp()
   //       and thus implicitly tested by all following unittests
 
-  void test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
+  void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
 
-  void test_CorrectedDensityInterior()
+  void Test_CorrectedDensityInterior()
   {
     const double denssum = 1.07;
     double dens = 0.98;
@@ -119,7 +119,7 @@ class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public Cxx
     TS_ASSERT_EQUALS(dens, denssum);
   }
 
-  void test_CorrectedDensityFreeSurface()
+  void Test_CorrectedDensityFreeSurface()
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -159,9 +159,9 @@ class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public CxxTes
   // setUp()
   //       and thus implicitly tested by all following unittests
 
-  void test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), true); }
+  void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), true); }
 
-  void test_CorrectedDensityInterior()
+  void Test_CorrectedDensityInterior()
   {
     const double denssum = 1.07;
     double dens = 0.98;
@@ -171,7 +171,7 @@ class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public CxxTes
     TS_ASSERT_EQUALS(dens, denssum);
   }
 
-  void test_CorrectedDensityFreeSurface()
+  void Test_CorrectedDensityFreeSurface()
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;

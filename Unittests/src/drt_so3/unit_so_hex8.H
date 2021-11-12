@@ -71,7 +71,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test Number of DOFs per element
    */
-  void test_NumDofPerElement()
+  void Test_NumDofPerElement()
   {
     TS_ASSERT_EQUALS(testele_->NumDofPerElement(), 0);
     TS_ASSERT_EQUALS(copytestele_->NumDofPerElement(), 0);
@@ -80,7 +80,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test Number of DOFs per node function
    */
-  void test_NumDofPerNode()
+  void Test_NumDofPerNode()
   {
     double pd[3] = {1, 2, 3};
     DRT::Node node_dummy(0, pd, false);
@@ -91,7 +91,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test the polynomial degree
    */
-  void test_Degree()
+  void Test_Degree()
   {
     TS_ASSERT_EQUALS(testele_->Degree(), 1);
     TS_ASSERT_EQUALS(copytestele_->Degree(), 1);
@@ -100,7 +100,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test the number of volumes the element is composed of
    */
-  void test_NumVolume()
+  void Test_NumVolume()
   {
     TS_ASSERT_EQUALS(testele_->NumVolume(), 1);
     TS_ASSERT_EQUALS(copytestele_->NumVolume(), 1);
@@ -109,7 +109,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test the number of surfaces the element is composed of
    */
-  void test_NumSurface()
+  void Test_NumSurface()
   {
     TS_ASSERT_EQUALS(testele_->NumSurface(), 6);
     TS_ASSERT_EQUALS(copytestele_->NumSurface(), 6);
@@ -118,7 +118,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test the number of lines the element is composed of
    */
-  void test_NumLine()
+  void Test_NumLine()
   {
     TS_ASSERT_EQUALS(testele_->NumLine(), 12);
     TS_ASSERT_EQUALS(copytestele_->NumLine(), 12);
@@ -127,7 +127,7 @@ class DRT::ELEMENTS::So_hex8_TestSuite : public CxxTest::TestSuite
   /**
    * Test the calculation of the element center coordinates
    */
-  void test_ElementCenterRefeCoords()
+  void Test_ElementCenterRefeCoords()
   {
     double midpoint[3] = {0.528750000000000, 0.351250000000000, 1.035000000000000};
     for (int i = 0; i < 3; ++i)

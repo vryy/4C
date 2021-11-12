@@ -50,7 +50,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
   /// Tear down test suite
   void tearDown() override {}
 
-  void test_EvaluateCe()
+  void Test_EvaluateCe()
   {
     LINALG::Matrix<3, 3> CeM(false);
     MAT::EvaluateCe(FM_, iFinM_, CeM);
@@ -69,7 +69,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     TS_ASSERT_DELTA(CeM(2, 1), 0.0564151401, 1e-10);
   }
 
-  void test_EvaluateiCinCiCin()
+  void Test_EvaluateiCinCiCin()
   {
     LINALG::Matrix<3, 3> iCinCiCinM(false);
     MAT::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
@@ -88,7 +88,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     TS_ASSERT_DELTA(iCinCiCinM(2, 1), 0.0631150197598975, 1e-10);
   }
 
-  void test_ElastHyperEvaluateElasticPart()
+  void Test_ElastHyperEvaluateElasticPart()
   {
     LINALG::Matrix<6, 1> S_stress;
     LINALG::Matrix<6, 6> cmat;

@@ -41,7 +41,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates of an undeformed element (sanity check)
    *  Expected result = VALID */
-  void test_element_undeformed()
+  void Test_element_undeformed()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
@@ -82,7 +82,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates following Fig. 5 in Johnen2017
    *  Expected result = INVALID */
-  void test_element_fig5_johnen2017()
+  void Test_element_fig5_johnen2017()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
@@ -123,7 +123,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates following Fig. 6 in Johnen2017
    *  Expected result = VALID */
-  void test_element_fig6_johnen2017()
+  void Test_element_fig6_johnen2017()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
@@ -164,7 +164,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates following Fig. 7 in Johnen2017
    *  Expected result = INVALID */
-  void test_element_fig7_johnen2017()
+  void Test_element_fig7_johnen2017()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;

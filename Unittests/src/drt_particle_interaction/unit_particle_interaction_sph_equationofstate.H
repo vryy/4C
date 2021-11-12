@@ -68,7 +68,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
   // setUp()
   //       and thus implicitly tested by all following unittests
 
-  void test_DensityToPressure()
+  void Test_DensityToPressure()
   {
     const double density = 0.75;
     const double density0 = 0.4;
@@ -79,7 +79,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
         equationofstate_special_->DensityToPressure(density, density0), 0.47775e1, 1.0e-08);
   }
 
-  void test_PressureToDensity()
+  void Test_PressureToDensity()
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
@@ -89,7 +89,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
         equationofstate_special_->PressureToDensity(pressure, density0), 0.506938775, 1.0e-08);
   }
 
-  void test_DensityToEnergy()
+  void Test_DensityToEnergy()
   {
     const double density = 0.75;
     const double mass = 1.3;
@@ -129,7 +129,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
   // setUp()
   //       and thus implicitly tested by all following unittests
 
-  void test_DensityToPressure()
+  void Test_DensityToPressure()
   {
     const double density = 0.75;
     const double density0 = 0.4;
@@ -137,7 +137,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     TS_ASSERT_DELTA(equationofstate_->DensityToPressure(density, density0), 9.1875, 1.0e-08);
   }
 
-  void test_PressureToDensity()
+  void Test_PressureToDensity()
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
@@ -145,7 +145,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.146938775, 1.0e-08);
   }
 
-  void test_DensityToEnergy()
+  void Test_DensityToEnergy()
   {
     const double density = 0.75;
     const double mass = 1.3;

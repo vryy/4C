@@ -68,7 +68,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     anisotropy_->SetGaussPointFibers(gpfibers);
   }
 
-  void test_GetScalarProduct()
+  void Test_GetScalarProduct()
   {
     SetupAnisotropyExtension(1, 1);
     TS_ASSERT_DELTA(anisotropyExtension_->GetScalarProduct(0), 1.0, 1e-10);
@@ -83,7 +83,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     TS_ASSERT_DELTA(anisotropyExtension_->GetScalarProduct(0), 1.0, 1e-10);
   }
 
-  void test_GetFiber()
+  void Test_GetFiber()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
@@ -112,7 +112,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     TESTING::AssertDelta(anisotropyExtension_->GetFiber(1), fibersgp1_->at(1), 1e-10);
   }
 
-  void test_GetStructuralTensor()
+  void Test_GetStructuralTensor()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
@@ -141,7 +141,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(1), 1e-10);
   }
 
-  void test_StructuralTensors_stress()
+  void Test_StructuralTensors_stress()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
