@@ -14,8 +14,6 @@
 
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "fluid_ele_calc_xfem_coupling_impl.H"
-
 //   qnuP - option SHOULD BE ON!
 //     projects the given velocity into normal direction in case there
 //     is a smoothed projection matrix given.
