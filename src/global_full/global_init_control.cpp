@@ -79,9 +79,6 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     case every_group_read_dat_file:
     case copy_dat_file:
     {
-      // TODO: to be removed after implementation has been done
-      // if(npType == copy_dat_file)
-      //  dserror("copyDatFile is not yet available for -nptype=");
       if (inoutargs > 4)
         dserror(
             "You specified too many arguments (%d). A maximum of four args is allowed", inoutargs);
@@ -128,6 +125,9 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     std::cout << "input is read from     " << infilename.str() << std::endl;
   }
 
+  // bool parameter defining if input argument is given
+  bool restart_bool = false;
+  bool restartfrom_bool = false;
 
   // default case is an identical restartfile_kenner and outputfile_kenner
   restartfilekenner << outfilekenner.str();
@@ -140,6 +140,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       int r = atoi(restart.substr(8, std::string::npos).c_str());
       // tell the global problem about the restart step given in the command line
       problem->SetRestartStep(r);
+      restart_bool = true;
     }
     else if (restart.substr(0, 12) == "restartfrom=")
     {
@@ -178,7 +179,15 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
               "separateDatFiles are available");
           break;
       }
+
+      restartfrom_bool = true;
     }
+  }
+
+  // Throw error in case restartfrom is given but no restart step is specified
+  if (restartfrom_bool == true && restart_bool == false)
+  {
+    dserror("You need to specify a restart step when using restartfrom.");
   }
 
   /// set IO file names and kenners
