@@ -22,15 +22,10 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& fbi = list->sublist("FLUID BEAM INTERACTION", false, "");
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to fluid meshtying */
-
 
   setStringToIntegralParameter<BeamToFluidCoupling>("COUPLING", "two-way", "Type of FBI coupling",
       tuple<std::string>("two-way", "fluid", "solid"),
@@ -94,35 +89,33 @@ void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       beam_to_fluid_meshtying.sublist("RUNTIME VTK OUTPUT", false, "");
 
   // Whether to write vtp output at all for beam to fluid meshtying.
-  setStringToIntegralParameter<int>("WRITE_OUTPUT", "No",
-      "Enable / disable beam-to-fluid mesh tying output.", yesnotuple, yesnovalue,
+  BoolParameter("WRITE_OUTPUT", "No", "Enable / disable beam-to-fluid mesh tying output.",
       &beam_to_fluid_meshtying_vtk);
 
-  setStringToIntegralParameter<int>("NODAL_FORCES", "No",
+  BoolParameter("NODAL_FORCES", "No",
       "Enable / disable output of the resulting nodal forces due to beam to Fluid interaction.",
-      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
-
-  setStringToIntegralParameter<int>("SEGMENTATION", "No",
-      "Enable / disable output of segmentation points.", yesnotuple, yesnovalue,
       &beam_to_fluid_meshtying_vtk);
 
-  setStringToIntegralParameter<int>("INTEGRATION_POINTS", "No",
+  BoolParameter("SEGMENTATION", "No", "Enable / disable output of segmentation points.",
+      &beam_to_fluid_meshtying_vtk);
+
+  BoolParameter("INTEGRATION_POINTS", "No",
       "Enable / disable output of used integration points. If the meshtying method has 'forces' at "
       "the integration point, they will also be output.",
-      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_vtk);
 
-  setStringToIntegralParameter<int>("CONSTRAINT_VIOLATION", "No",
+  BoolParameter("CONSTRAINT_VIOLATION", "No",
       "Enable / disable output of the constraint violation into a output_name.penalty csv file.",
-      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_vtk);
 
-  setStringToIntegralParameter<int>("MORTAR_LAMBDA_DISCRET", "No",
+  BoolParameter("MORTAR_LAMBDA_DISCRET", "No",
       "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
       "multiplier shape functions.",
-      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_vtk);
 
-  setStringToIntegralParameter<int>("MORTAR_LAMBDA_CONTINUOUS", "No",
+  BoolParameter("MORTAR_LAMBDA_CONTINUOUS", "No",
       "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
-      yesnotuple, yesnovalue, &beam_to_fluid_meshtying_vtk);
+      &beam_to_fluid_meshtying_vtk);
 
   DRT::INPUT::IntParameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
       "Number of segments for continuous mortar output", &beam_to_fluid_meshtying_vtk);

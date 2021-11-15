@@ -29,10 +29,6 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION", false, "");
 
   setStringToIntegralParameter<int>("REPARTITIONSTRATEGY", "Adaptive",
@@ -48,8 +44,7 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
   Teuchos::ParameterList& crosslinking = beaminteraction.sublist("CROSSLINKING", false, "");
 
   // remove this some day
-  setStringToIntegralParameter<int>(
-      "CROSSLINKER", "No", "Crosslinker in problem", yesnotuple, yesnovalue, &crosslinking);
+  BoolParameter("CROSSLINKER", "No", "Crosslinker in problem", &crosslinking);
 
   // bounding box for initial random crosslinker position
   StringParameter("INIT_LINKER_BOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
@@ -97,8 +92,7 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
 
   Teuchos::ParameterList& spherebeamlink = beaminteraction.sublist("SPHERE BEAM LINK", false, "");
 
-  setStringToIntegralParameter<int>(
-      "SPHEREBEAMLINKING", "No", "Integrins in problem", yesnotuple, yesnovalue, &spherebeamlink);
+  BoolParameter("SPHEREBEAMLINKING", "No", "Integrins in problem", &spherebeamlink);
 
   // Reading double parameter for contraction rate for active linker
   DoubleParameter("CONTRACTIONRATE", 0.0, "contraction rate of cell (integrin linker) in [μm/s]",

@@ -20,19 +20,14 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   /* parameters for structural meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC", false, "");
 
   IntParameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for meshtying and contact", &scontact);
 
-  setStringToIntegralParameter<int>("RESTART_WITH_CONTACT", "No",
-      "Must be chosen if a non-contact simulation is to be restarted with contact", yesnotuple,
-      yesnovalue, &scontact);
+  BoolParameter("RESTART_WITH_CONTACT", "No",
+      "Must be chosen if a non-contact simulation is to be restarted with contact", &scontact);
 
   setStringToIntegralParameter<int>("ADHESION", "None", "Type of adhesion law",
       tuple<std::string>("None", "none", "bounded", "b"),
@@ -42,14 +37,14 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<std::string>("None", "Stick", "Tresca", "Coulomb"),
       tuple<int>(friction_none, friction_stick, friction_tresca, friction_coulomb), &scontact);
 
-  setStringToIntegralParameter<int>("FRLESS_FIRST", "No",
+  BoolParameter("FRLESS_FIRST", "No",
       "If chosen the first time step of a newly in contact slave node is regarded as frictionless",
-      yesnotuple, yesnovalue, &scontact);
+      &scontact);
 
-  setStringToIntegralParameter<int>("GP_SLIP_INCR", "No",
+  BoolParameter("GP_SLIP_INCR", "No",
       "If chosen the slip increment is computed gp-wise which results to a non-objective quantity, "
       "but this would be consistent to wear and tsi calculations.",
-      yesnotuple, yesnovalue, &scontact);
+      &scontact);
 
   setStringToIntegralParameter<int>("STRATEGY", "LagrangianMultipliers",
       "Type of employed solving strategy",
@@ -79,19 +74,18 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   DoubleParameter("UZAWACONSTRTOL", 1.0e-8,
       "Tolerance of constraint norm for Uzawa solution strategy", &scontact);
 
-  setStringToIntegralParameter<int>("SEMI_SMOOTH_NEWTON", "Yes",
-      "If chosen semi-smooth Newton concept is applied", yesnotuple, yesnovalue, &scontact);
+  BoolParameter(
+      "SEMI_SMOOTH_NEWTON", "Yes", "If chosen semi-smooth Newton concept is applied", &scontact);
 
   DoubleParameter("SEMI_SMOOTH_CN", 1.0, "Weighting factor cn for semi-smooth PDASS", &scontact);
   DoubleParameter("SEMI_SMOOTH_CT", 1.0, "Weighting factor ct for semi-smooth PDASS", &scontact);
 
-  setStringToIntegralParameter<int>("CONTACTFORCE_ENDTIME", "No",
+  BoolParameter("CONTACTFORCE_ENDTIME", "No",
       "If chosen, the contact force is not evaluated at the generalized midpoint, but at the end "
       "of the time step",
-      yesnotuple, yesnovalue, &scontact);
+      &scontact);
 
-  setStringToIntegralParameter<int>("VELOCITY_UPDATE", "No",
-      "If chosen, velocity update method is applied", yesnotuple, yesnovalue, &scontact);
+  BoolParameter("VELOCITY_UPDATE", "No", "If chosen, velocity update method is applied", &scontact);
 
   setStringToIntegralParameter<int>("EMOUTPUT", "None", "Type of energy and momentum output",
       tuple<std::string>(
@@ -110,8 +104,8 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
           errornorms_infiniteplate, errornorms_infiniteplate),
       &scontact);
 
-  setStringToIntegralParameter<int>("INITCONTACTBYGAP", "No",
-      "Initialize init contact by weighted gap vector", yesnotuple, yesnovalue, &scontact);
+  BoolParameter(
+      "INITCONTACTBYGAP", "No", "Initialize init contact by weighted gap vector", &scontact);
 
   DoubleParameter("INITCONTACTGAPVALUE", 0.0,
       "Value for initialization of init contact set with gap vector", &scontact);
@@ -142,18 +136,18 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   setStringToIntegralParameter<int>("CONTACT_REGULARIZATION", "no", "use regularized contact",
       tuple<std::string>("no", "tanh"), tuple<int>(reg_none, reg_tanh), &scontact);
 
-  setStringToIntegralParameter<int>("NONSMOOTH_GEOMETRIES", "No",
+  BoolParameter("NONSMOOTH_GEOMETRIES", "No",
       "If chosen the contact algorithm combines mortar and nts formulations. This is needed if "
       "contact between entities of different geometric dimension (such as contact between surfaces "
       "and lines, or lines and nodes) can occur",
-      yesnotuple, yesnovalue, &scontact);
+      &scontact);
 
-  setStringToIntegralParameter<int>("NONSMOOTH_CONTACT_SURFACE", "No",
+  BoolParameter("NONSMOOTH_CONTACT_SURFACE", "No",
       "This flag is used to alter the criterion for the evaluation of the so-called qualified "
       "vectors in the case of a self contact scenario. This is needed as the standard criterion is "
       "only valid for smooth surfaces and thus has to be altered, if the surface that is defined "
       "to be a self contact surface is non-smooth!",
-      yesnotuple, yesnovalue, &scontact);
+      &scontact);
 
   DoubleParameter("HYBRID_ANGLE_MIN", -1.0,
       "Non-smooth contact: angle between cpp normal and element normal: begin transition (Mortar)",
@@ -162,9 +156,8 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       "Non-smooth contact: angle between cpp normal and element normal: end transition (NTS)",
       &scontact);
 
-  setStringToIntegralParameter<int>("CPP_NORMALS", "No",
-      "If chosen the nodal normal field is created as averaged CPP normal field.", yesnotuple,
-      yesnovalue, &scontact);
+  BoolParameter("CPP_NORMALS", "No",
+      "If chosen the nodal normal field is created as averaged CPP normal field.", &scontact);
 
   BoolParameter(
       "TIMING_DETAILS", "No", "Enable and print detailed contact timings to screen.", &scontact);
@@ -173,20 +166,20 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // sub-list "Augmented"
   Teuchos::ParameterList& augcontact = scontact.sublist("AUGMENTED");
 
-  setStringToIntegralParameter<int>("PRINT_LINEAR_CONSERVATION", "No",
-      "Do and print the linear momentum conservation check.", yesnotuple, yesnovalue, &augcontact);
+  BoolParameter("PRINT_LINEAR_CONSERVATION", "No",
+      "Do and print the linear momentum conservation check.", &augcontact);
 
-  setStringToIntegralParameter<int>("PRINT_ANGULAR_CONSERVATION", "No",
-      "Do and print the angular momentum conservation check.", yesnotuple, yesnovalue, &augcontact);
+  BoolParameter("PRINT_ANGULAR_CONSERVATION", "No",
+      "Do and print the angular momentum conservation check.", &augcontact);
 
   setStringToIntegralParameter<int>("VARIATIONAL_APPROACH", "incomplete",
       "Type of employed variational approach", tuple<std::string>("complete", "incomplete"),
       tuple<int>(var_complete, var_incomplete), &augcontact);
 
-  setStringToIntegralParameter<int>("ADD_INACTIVE_FORCE_CONTRIBUTIONS", "No",
+  BoolParameter("ADD_INACTIVE_FORCE_CONTRIBUTIONS", "No",
       "Add the contribution from the inactive Lagrange multipliers to the"
       "force balance.",
-      yesnotuple, yesnovalue, &augcontact);
+      &augcontact);
 
   setStringToIntegralParameter<int>("ASSEMBLE_STRATEGY", "node_based",
       "Type of employed assemble strategy", tuple<std::string>("node_based"),
@@ -260,10 +253,10 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       " switching strategy to switch between the different solving strategies",
       tuple<std::string>("PreAsymptotic"), tuple<int>(switch_preasymptotic), &combo_contact);
 
-  setStringToIntegralParameter<int>("PRINT2SCREEN", "Yes",
+  BoolParameter("PRINT2SCREEN", "Yes",
       "Activate the screen output of the COMBO strategy and the different "
       "switching strategies.",
-      yesnotuple, yesnovalue, &combo_contact);
+      &combo_contact);
 
   // --------------------------------------------------------------------------
   // sub-sub-list "Augmented/Lagrange_Multiplier_Function"
@@ -390,15 +383,14 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // sub-list "eXtended contact formulation"
   Teuchos::ParameterList& xcontact = scontact.sublist("XCONTACT");
   // TODO
-  setStringToIntegralParameter<int>("CONST_CPP_NORMAL", "No",
+  BoolParameter("CONST_CPP_NORMAL", "No",
       "If chosen, closest point normal on master is assumed to be constant during"
       " variation and linearization.",
-      yesnotuple, yesnovalue, &xcontact);
+      &xcontact);
 
   // TODO
-  setStringToIntegralParameter<int>("H1_DUALITY_PAIRING", "Yes",
-      "If chosen, H1 duality pairing for contact potential is used.", yesnotuple, yesnovalue,
-      &xcontact);
+  BoolParameter("H1_DUALITY_PAIRING", "Yes",
+      "If chosen, H1 duality pairing for contact potential is used.", &xcontact);
 
   // --------------------------------------------------------------------------
   DoubleParameter(
@@ -411,11 +403,11 @@ void INPAR::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
       tuple<std::string>("slave", "master", "harmonic"),
       tuple<int>(NitWgt_slave, NitWgt_master, NitWgt_harmonic), &scontact);
 
-  setStringToIntegralParameter<int>("NITSCHE_PENALTY_ADAPTIVE", "yes",
-      "adapt penalty parameter after each converged time step", yesnotuple, yesnovalue, &scontact);
+  BoolParameter("NITSCHE_PENALTY_ADAPTIVE", "yes",
+      "adapt penalty parameter after each converged time step", &scontact);
 
-  setStringToIntegralParameter<int>("REGULARIZED_NORMAL_CONTACT", "No",
-      "add a regularized normal contact formulation", yesnotuple, yesnovalue, &scontact);
+  BoolParameter("REGULARIZED_NORMAL_CONTACT", "No", "add a regularized normal contact formulation",
+      &scontact);
   DoubleParameter("REGULARIZATION_THICKNESS", -1., "maximum contact penetration", &scontact);
   DoubleParameter("REGULARIZATION_STIFFNESS", -1.,
       "initial contact stiffness (i.e. initial \"penalty parameter\")", &scontact);

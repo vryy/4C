@@ -20,16 +20,9 @@ void INPAR::BROWNIANDYN::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& browniandyn_list = list->sublist("BROWNIAN DYNAMICS", false, "");
 
-  setStringToIntegralParameter<int>("BROWNDYNPROB", "No", "switch Brownian dynamics on/off",
-      yesnotuple, yesnovalue, &browniandyn_list);
-
-
+  BoolParameter("BROWNDYNPROB", "No", "switch Brownian dynamics on/off", &browniandyn_list);
 
   // Reading double parameter for viscosity of background fluid
   DoubleParameter("VISCOSITY", 0.0, "viscosity", &browniandyn_list);

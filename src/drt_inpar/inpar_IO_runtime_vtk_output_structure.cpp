@@ -31,10 +31,6 @@ namespace INPAR
         using Teuchos::setStringToIntegralParameter;
         using Teuchos::tuple;
 
-        Teuchos::Array<std::string> yesnotuple =
-            tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-        Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
         // related sublist
         Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
         Teuchos::ParameterList& sublist_IO_VTK =
@@ -43,39 +39,34 @@ namespace INPAR
             sublist_IO_VTK.sublist("STRUCTURE", false, "");
 
         // whether to write output for structure
-        setStringToIntegralParameter<int>("OUTPUT_STRUCTURE", "No", "write structure output",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+        BoolParameter(
+            "OUTPUT_STRUCTURE", "No", "write structure output", &sublist_IO_VTK_structure);
 
         // whether to write displacement state
-        setStringToIntegralParameter<int>("DISPLACEMENT", "No", "write displacement output",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+        BoolParameter("DISPLACEMENT", "No", "write displacement output", &sublist_IO_VTK_structure);
 
         // whether to write velocity state
-        setStringToIntegralParameter<int>("VELOCITY", "No", "write velocity output", yesnotuple,
-            yesnovalue, &sublist_IO_VTK_structure);
+        BoolParameter("VELOCITY", "No", "write velocity output", &sublist_IO_VTK_structure);
 
         // whether to write element owner
-        setStringToIntegralParameter<int>("ELEMENT_OWNER", "No", "write element owner", yesnotuple,
-            yesnovalue, &sublist_IO_VTK_structure);
+        BoolParameter("ELEMENT_OWNER", "No", "write element owner", &sublist_IO_VTK_structure);
 
         // whether to write element GIDs
-        setStringToIntegralParameter<int>("ELEMENT_GID", "No", "write baci internal element GIDs",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+        BoolParameter(
+            "ELEMENT_GID", "No", "write baci internal element GIDs", &sublist_IO_VTK_structure);
 
         // write element ghosting information
-        setStringToIntegralParameter<int>("ELEMENT_GHOSTING", "No",
-            "write which processors ghost the elements", yesnotuple, yesnovalue,
+        BoolParameter("ELEMENT_GHOSTING", "No", "write which processors ghost the elements",
             &sublist_IO_VTK_structure);
 
         // whether to write node GIDs
-        setStringToIntegralParameter<int>("NODE_GID", "No", "write baci internal node GIDs",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+        BoolParameter("NODE_GID", "No", "write baci internal node GIDs", &sublist_IO_VTK_structure);
 
         // whether to write stress and / or strain data
-        setStringToIntegralParameter<int>("STRESS_STRAIN", "No",
+        BoolParameter("STRESS_STRAIN", "No",
             "Write element stress and / or strain  data. The type of stress / strain has to be "
             "selected in the --IO input section",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_structure);
+            &sublist_IO_VTK_structure);
 
         // mode to write gauss point data
         setStringToIntegralParameter<INPAR::STR::GaussPointDataOutputType>(

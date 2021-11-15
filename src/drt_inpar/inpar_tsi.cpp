@@ -23,10 +23,6 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& tsidyn = list->sublist("TSI DYNAMIC", false,
       "Thermo Structure Interaction\n"
       "Dynamic section for TSI solver with various coupling methods");
@@ -104,16 +100,14 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "LINEAR_SOLVER", -1, "number of linear solver used for monolithic TSI problems", &tsidynmono);
 
   // convergence criteria adaptivity of monolithic TSI solver
-  setStringToIntegralParameter<int>("ADAPTCONV", "No",
-      "Switch on adaptive control of linear solver tolerance for nonlinear solution", yesnotuple,
-      yesnovalue, &tsidynmono);
+  BoolParameter("ADAPTCONV", "No",
+      "Switch on adaptive control of linear solver tolerance for nonlinear solution", &tsidynmono);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &tsidynmono);
 
-  setStringToIntegralParameter<int>("INFNORMSCALING", "yes",
-      "Scale blocks of matrix with row infnorm?", yesnotuple, yesnovalue, &tsidynmono);
+  BoolParameter("INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &tsidynmono);
 
   // merge TSI block matrix to enable use of direct solver in monolithic TSI
   // default: "No", i.e. use block matrix
@@ -168,8 +162,8 @@ void INPAR::TSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
           INPAR::CONTACT::NitWgt_harmonic, INPAR::CONTACT::NitWgt_phyiscal),
       &tsic);
 
-  setStringToIntegralParameter<int>("NITSCHE_PENALTY_ADAPTIVE_TSI", "yes",
-      "adapt penalty parameter after each converged time step", yesnotuple, yesnovalue, &tsic);
+  BoolParameter("NITSCHE_PENALTY_ADAPTIVE_TSI", "yes",
+      "adapt penalty parameter after each converged time step", &tsic);
 
   DoubleParameter(
       "PENALTYPARAM_THERMO", 0.0, "Penalty parameter for Nitsche solution strategy", &tsic);

@@ -31,10 +31,6 @@ namespace INPAR
         using Teuchos::setStringToIntegralParameter;
         using Teuchos::tuple;
 
-        Teuchos::Array<std::string> yesnotuple =
-            tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-        Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
         // related sublist
         Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
         Teuchos::ParameterList& sublist_IO_VTK =
@@ -42,40 +38,32 @@ namespace INPAR
         Teuchos::ParameterList& sublist_IO_VTK_fluid = sublist_IO_VTK.sublist("FLUID", false, "");
 
         // whether to write output for fluid
-        setStringToIntegralParameter<int>("OUTPUT_FLUID", "No", "write fluid output", yesnotuple,
-            yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("OUTPUT_FLUID", "No", "write fluid output", &sublist_IO_VTK_fluid);
 
         // whether to write velocity state
-        setStringToIntegralParameter<int>("VELOCITY", "No", "write velocity output", yesnotuple,
-            yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("VELOCITY", "No", "write velocity output", &sublist_IO_VTK_fluid);
 
         // whether to write pressure state
-        setStringToIntegralParameter<int>("PRESSURE", "No", "write pressure output", yesnotuple,
-            yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("PRESSURE", "No", "write pressure output", &sublist_IO_VTK_fluid);
 
         // whether to write acceleration state
-        setStringToIntegralParameter<int>("ACCELERATION", "No", "write acceleration output",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("ACCELERATION", "No", "write acceleration output", &sublist_IO_VTK_fluid);
 
         // whether to write displacement state
-        setStringToIntegralParameter<int>("DISPLACEMENT", "No", "write displacement output",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("DISPLACEMENT", "No", "write displacement output", &sublist_IO_VTK_fluid);
 
         // whether to write displacement state
-        setStringToIntegralParameter<int>("GRIDVELOCITY", "No", "write grid velocity output",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("GRIDVELOCITY", "No", "write grid velocity output", &sublist_IO_VTK_fluid);
 
         // whether to write element owner
-        setStringToIntegralParameter<int>("ELEMENT_OWNER", "No", "write element owner", yesnotuple,
-            yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("ELEMENT_OWNER", "No", "write element owner", &sublist_IO_VTK_fluid);
 
         // whether to write element GIDs
-        setStringToIntegralParameter<int>("ELEMENT_GID", "No", "write baci internal element GIDs",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter(
+            "ELEMENT_GID", "No", "write baci internal element GIDs", &sublist_IO_VTK_fluid);
 
         // whether to write node GIDs
-        setStringToIntegralParameter<int>("NODE_GID", "No", "write baci internal node GIDs",
-            yesnotuple, yesnovalue, &sublist_IO_VTK_fluid);
+        BoolParameter("NODE_GID", "No", "write baci internal node GIDs", &sublist_IO_VTK_fluid);
       }
     }  // namespace FLUID
   }    // namespace IO_RUNTIME_VTK

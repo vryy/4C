@@ -77,10 +77,6 @@ namespace INPAR
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      Teuchos::Array<std::string> yesnotuple =
-          tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-      Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
       Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC", false, "");
 
       setStringToIntegralParameter<int>("INT_STRATEGY", "Old",
@@ -229,8 +225,8 @@ namespace INPAR
           "way of evaluating the constitutive matrix",
           tuple<std::string>("analytical", "finitedifferences"), tuple<int>(0, 1), &sdyn);
 
-      setStringToIntegralParameter<int>("LOADLIN", "No",
-          "Use linearization of external follower load in Newton", yesnotuple, yesnovalue, &sdyn);
+      BoolParameter(
+          "LOADLIN", "No", "Use linearization of external follower load in Newton", &sdyn);
 
       setStringToIntegralParameter<int>("MASSLIN", "No", "Application of nonlinear inertia terms",
           tuple<std::string>("No", "no", "Standard", "standard", "Rotations", "rotations"),
@@ -238,8 +234,7 @@ namespace INPAR
           tuple<int>(ml_none, ml_none, ml_standard, ml_standard, ml_rotations, ml_rotations),
           &sdyn);
 
-      setStringToIntegralParameter<int>(
-          "NEGLECTINERTIA", "No", "Neglect inertia", yesnotuple, yesnovalue, &sdyn);
+      BoolParameter("NEGLECTINERTIA", "No", "Neglect inertia", &sdyn);
 
       // Since predictor "none" would be misleading, the usage of no predictor is called vague.
       setStringToIntegralParameter<int>("PREDICT", "ConstDis", "Type of predictor",
@@ -263,19 +258,17 @@ namespace INPAR
           tuple<int>(consolve_uzawa, consolve_simple, consolve_direct), &sdyn);
 
       // convergence criteria adaptivity
-      setStringToIntegralParameter<int>("ADAPTCONV", "No",
-          "Switch on adaptive control of linear solver tolerance for nonlinear solution",
-          yesnotuple, yesnovalue, &sdyn);
+      BoolParameter("ADAPTCONV", "No",
+          "Switch on adaptive control of linear solver tolerance for nonlinear solution", &sdyn);
       DoubleParameter("ADAPTCONV_BETTER", 0.1,
           "The linear solver shall be this much better than the current nonlinear residual in the "
           "nonlinear convergence limit",
           &sdyn);
 
-      setStringToIntegralParameter<int>("LUMPMASS", "No",
-          "Lump the mass matrix for explicit time integration", yesnotuple, yesnovalue, &sdyn);
+      BoolParameter("LUMPMASS", "No", "Lump the mass matrix for explicit time integration", &sdyn);
 
-      setStringToIntegralParameter<int>("MODIFIEDEXPLEULER", "Yes",
-          "Use the modified explicit Euler time integration scheme", yesnotuple, yesnovalue, &sdyn);
+      BoolParameter("MODIFIEDEXPLEULER", "Yes",
+          "Use the modified explicit Euler time integration scheme", &sdyn);
 
       // linear solver id used for structural problems
       IntParameter(

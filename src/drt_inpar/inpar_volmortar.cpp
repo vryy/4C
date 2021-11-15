@@ -22,10 +22,6 @@ void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   /* parameters for volmortar */
   Teuchos::ParameterList& volmortar = list->sublist("VOLMORTAR COUPLING", false, "");
 
@@ -59,9 +55,9 @@ void INPAR::VOLMORTAR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
           dualquad_quad_mod, dualquad_quad_mod),
       &volmortar);
 
-  setStringToIntegralParameter<int>("MESH_INIT", "No",
-      "If chosen, mesh initialization procedure is performed", yesnotuple, yesnovalue, &volmortar);
+  BoolParameter(
+      "MESH_INIT", "No", "If chosen, mesh initialization procedure is performed", &volmortar);
 
-  setStringToIntegralParameter<int>("KEEP_EXTENDEDGHOSTING", "Yes",
-      "If chosen, extended ghosting is kept for simulation", yesnotuple, yesnovalue, &volmortar);
+  BoolParameter("KEEP_EXTENDEDGHOSTING", "Yes",
+      "If chosen, extended ghosting is kept for simulation", &volmortar);
 }

@@ -301,15 +301,10 @@ void INPAR::PATSPEC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& ps = list->sublist("PATIENT SPECIFIC", false, "");
 
-  setStringToIntegralParameter<int>("PATSPEC", "No",
-      "Triggers application of patient specific tools in discretization construction", yesnotuple,
-      yesnovalue, &ps);
+  BoolParameter("PATSPEC", "No",
+      "Triggers application of patient specific tools in discretization construction", &ps);
 
   BoolParameter("REMODEL", "No", "Turn remodeling on/off", &ps);
   BoolParameter(
@@ -323,13 +318,10 @@ void INPAR::PATSPEC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   StringParameter(
       "CENTERLINEFILE", "name.txt", "filename of file containing centerline points", &ps);
 
-  setStringToIntegralParameter<int>(
-      "CALCSTRENGTH", "No", "Calculate strength on/off", yesnotuple, yesnovalue, &ps);
+  BoolParameter("CALCSTRENGTH", "No", "Calculate strength on/off", &ps);
   DoubleParameter("AAA_SUBRENDIA", 22.01, "subrenal diameter of the AAA", &ps);
-  setStringToIntegralParameter<int>(
-      "FAMILYHIST", "No", "Does the patient have AAA family history", yesnotuple, yesnovalue, &ps);
-  setStringToIntegralParameter<int>(
-      "MALE_PATIENT", "Yes", "Is the patient a male?", yesnotuple, yesnovalue, &ps);
+  BoolParameter("FAMILYHIST", "No", "Does the patient have AAA family history", &ps);
+  BoolParameter("MALE_PATIENT", "Yes", "Is the patient a male?", &ps);
   // historically the maximum ilt thickness was computed based on distance to orthopressure/fsi
   // surface on luminal side of the ilt. From the maximum an approximate wall thickness of 1.0 mm is
   // subtrated (hardcoded in patspec). This obviously can cause problems when the wall thickness is
@@ -337,8 +329,8 @@ void INPAR::PATSPEC::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // needs the luminal and the outer surface of the ILT as AAA surface condition. To use this mehtod
   // set the flag below to yes. The old way is kept here only to allow evaluation of the AAA
   // database.
-  setStringToIntegralParameter<int>("CALC_ACCURATE_MAX_ILT_THICK", "no",
-      "Method with which the Max ILT thickness is calculated", yesnotuple, yesnovalue, &ps);
+  BoolParameter("CALC_ACCURATE_MAX_ILT_THICK", "no",
+      "Method with which the Max ILT thickness is calculated", &ps);
 }
 
 

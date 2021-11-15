@@ -28,10 +28,6 @@ namespace INPAR
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      Teuchos::Array<std::string> yesnotuple =
-          tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-      Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
       // related sublist
       Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
       Teuchos::ParameterList& sublist_IO_VTK_structure =
@@ -53,9 +49,8 @@ namespace INPAR
 
 
       // whether to write output in every iteration of the nonlinear solver
-      setStringToIntegralParameter<int>("EVERY_ITERATION", "No",
-          "write output in every iteration of the nonlinear solver", yesnotuple, yesnovalue,
-          &sublist_IO_VTK_structure);
+      BoolParameter("EVERY_ITERATION", "No",
+          "write output in every iteration of the nonlinear solver", &sublist_IO_VTK_structure);
     }
 
 

@@ -27,10 +27,6 @@ namespace INPAR
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      Teuchos::Array<std::string> yesnotuple =
-          tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-      Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
       // related sublist
       Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
       Teuchos::ParameterList& sublist_IO_VTP_structure =
@@ -53,26 +49,23 @@ namespace INPAR
 
 
       // whether to write output in every iteration of the nonlinear solver
-      setStringToIntegralParameter<int>("EVERY_ITERATION", "No",
-          "write output in every iteration of the nonlinear solver", yesnotuple, yesnovalue,
-          &sublist_IO_VTP_structure);
+      BoolParameter("EVERY_ITERATION", "No",
+          "write output in every iteration of the nonlinear solver", &sublist_IO_VTP_structure);
 
       // write owner at every visualization point
-      setStringToIntegralParameter<int>("OWNER", "No", "write owner of every point", yesnotuple,
-          yesnovalue, &sublist_IO_VTP_structure);
+      BoolParameter("OWNER", "No", "write owner of every point", &sublist_IO_VTP_structure);
 
       // write orientation at every visualization point
-      setStringToIntegralParameter<int>("ORIENTATIONANDLENGTH", "No",
-          "write orientation at every point", yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
-
-      // write number of bonds at every visualization point
-      setStringToIntegralParameter<int>("NUMBEROFBONDS", "No",
-          "write number of bonds of every point", yesnotuple, yesnovalue,
+      BoolParameter("ORIENTATIONANDLENGTH", "No", "write orientation at every point",
           &sublist_IO_VTP_structure);
 
+      // write number of bonds at every visualization point
+      BoolParameter(
+          "NUMBEROFBONDS", "No", "write number of bonds of every point", &sublist_IO_VTP_structure);
+
       // write force actin in linker
-      setStringToIntegralParameter<int>("LINKINGFORCE", "No", "write force acting in linker",
-          yesnotuple, yesnovalue, &sublist_IO_VTP_structure);
+      BoolParameter(
+          "LINKINGFORCE", "No", "write force acting in linker", &sublist_IO_VTP_structure);
     }
 
 

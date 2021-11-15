@@ -24,10 +24,6 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC", false, "");
 
   setStringToIntegralParameter<int>("DYNAMICTYP", "OneStepTheta",
@@ -103,16 +99,14 @@ void INPAR::THR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       tuple<int>(pred_vague, pred_consttemp, pred_consttemprate, pred_tangtemp), &tdyn);
 
   // convergence criteria solver adaptivity
-  setStringToIntegralParameter<int>("ADAPTCONV", "No",
-      "Switch on adaptive control of linear solver tolerance for nonlinear solution", yesnotuple,
-      yesnovalue, &tdyn);
+  BoolParameter("ADAPTCONV", "No",
+      "Switch on adaptive control of linear solver tolerance for nonlinear solution", &tdyn);
   DoubleParameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &tdyn);
 
-  setStringToIntegralParameter<int>("LUMPCAPA", "No",
-      "Lump the capacity matrix for explicit time integration", yesnotuple, yesnovalue, &tdyn);
+  BoolParameter("LUMPCAPA", "No", "Lump the capacity matrix for explicit time integration", &tdyn);
 
   BoolParameter("HEATINTEGRATION", "no", "use heat integration method by Rolph and Bathe", &tdyn);
   DoubleParameter("TOLMELT", 0.0, "Tolerance until which latent heat is integrated.", &tdyn);

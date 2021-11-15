@@ -19,10 +19,6 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::Array<std::string> yesnotuple =
-      tuple<std::string>("Yes", "No", "yes", "no", "YES", "NO");
-  Teuchos::Array<int> yesnovalue = tuple<int>(true, false, true, false, true, false);
-
   Teuchos::ParameterList& fpsidyn = list->sublist("FPSI DYNAMIC", false,
       "Fluid Porous Structure Interaction\n"
       "FPSI solver with various coupling methods");
@@ -37,24 +33,23 @@ void INPAR::FPSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("COUPALGO", "fpsi_monolithic_plain",
       "Iteration Scheme over the fields", name, label, &fpsidyn);
 
-  setStringToIntegralParameter<int>("SHAPEDERIVATIVES", "No",
+  BoolParameter("SHAPEDERIVATIVES", "No",
       "Include linearization with respect to mesh movement in Navier Stokes equation.\n"
       "Supported in monolithic FPSI for now.",
-      yesnotuple, yesnovalue, &fpsidyn);
+      &fpsidyn);
 
-  setStringToIntegralParameter<int>("USESHAPEDERIVATIVES", "No",
+  BoolParameter("USESHAPEDERIVATIVES", "No",
       "Add linearization with respect to mesh movement in Navier Stokes equation to stiffness "
       "matrix.\n"
       "Supported in monolithic FPSI for now.",
-      yesnotuple, yesnovalue, &fpsidyn);
+      &fpsidyn);
 
   setStringToIntegralParameter<int>("PARTITIONED", "RobinNeumann",
       "Coupling strategies for partitioned FPSI solvers.",
       tuple<std::string>("RobinNeumann", "monolithic", "nocoupling"),
       tuple<int>(RobinNeumann, monolithic, nocoupling), &fpsidyn);
 
-  setStringToIntegralParameter<int>("SECONDORDER", "No", "Second order coupling at the interface.",
-      yesnotuple, yesnovalue, &fpsidyn);
+  BoolParameter("SECONDORDER", "No", "Second order coupling at the interface.", &fpsidyn);
 
   // Iterationparameters
   StringParameter("RESTOL", "1e-8 1e-8 1e-8 1e-8 1e-8 1e-8",
