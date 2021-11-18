@@ -17,9 +17,7 @@
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
-#include "drt_utils_cond_and_mat_definition.H"
 #include "drt_utils_cond_and_mat_definition.cpp"
-#include "../drt_inpar/inpar_s2i.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -311,12 +309,7 @@ void DRT::INPUT::IntVectorConditionComponent::Print(
     if (noneallowed_ and i == -1)
       stream << "none ";
     else
-    {
-      if (fortranstyle_)
-        stream << i + 1 << " ";
-      else
-        stream << i + 1 << " ";
-    }
+      stream << i + 1 << " ";
   }
 }
 
@@ -369,11 +362,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntVectorConditionComponent::SetLength(int length)
-{
-  length_ = length;
-  return;
-}
+void DRT::INPUT::IntVectorConditionComponent::SetLength(int length) { length_ = length; }
 
 
 /*----------------------------------------------------------------------*
@@ -489,11 +478,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::RealVectorConditionComponent::SetLength(int length)
-{
-  length_ = length;
-  return;
-}
+void DRT::INPUT::RealVectorConditionComponent::SetLength(int length) { length_ = length; }
 
 DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle(std::string name,
     Teuchos::RCP<IntConditionComponent> intcomp,
@@ -506,7 +491,9 @@ DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle(std::string name,
       intvectsepcomp_(std::move(intvectsepcomp)),
       intvectcomp_(std::move(intvectcomp)),
       realvectsepcomp_(std::move(realvectsepcomp)),
-      realvectcomp_(std::move(realvectcomp)){};
+      realvectcomp_(std::move(realvectcomp))
+{
+}
 
 void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
 {
@@ -542,7 +529,7 @@ void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::
   stream << " ";
   intvectcomp_[1]->Print(stream, cond);
   stream << " ";
-};
+}
 
 Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(ConditionDefinition* def,
     Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
@@ -583,7 +570,9 @@ DRT::INPUT::IntRealBundle::IntRealBundle(std::string name,
       intsepcomp_(std::move(intsepcomp)),
       intvectcomp_(std::move(intvectcomp)),
       realsepcomp_(std::move(realsepcomp)),
-      realvectcomp_(std::move(realvectcomp)){};
+      realvectcomp_(std::move(realvectcomp))
+{
+}
 
 /*----------------------------------------------------------------------*
  | CondCompBundle::DefaultLine()                              ehrl 09/12|
@@ -614,8 +603,6 @@ void DRT::INPUT::IntRealBundle::DefaultLine(std::ostream& stream)
     }
     realvectcomp_[i]->DefaultLine(stream);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -647,9 +634,7 @@ void DRT::INPUT::IntRealBundle::Print(std::ostream& stream, const DRT::Condition
     }
     realvectcomp_[i]->Print(stream, cond);
   }
-
-  return;
-};
+}
 
 /*----------------------------------------------------------------------*
  | CondCompBundle::Read()                                     ehrl 09/12|
@@ -712,8 +697,6 @@ void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
     i->DefaultLine(stream);
     stream << " ";
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -727,8 +710,6 @@ void DRT::INPUT::CondCompBundle::Print(std::ostream& stream, const DRT::Conditio
     i->Print(stream, cond);
     stream << " ";
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -792,8 +773,6 @@ void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
       break;
     }
   }
-
-  return;
 }
 
 
@@ -821,8 +800,6 @@ void DRT::INPUT::CondCompBundleSelector::Print(std::ostream& stream, const DRT::
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
