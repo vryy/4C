@@ -449,25 +449,14 @@ namespace DRT
     };
 
 
-    /// Boundary condition for model dependent BC parameters
-    /*!
-      \see ConditionDefinition
-
-      \author Ehrl
-      \date 09/12
-     */
+    /// Selector to get specific condition components by model (ID)
     class CondCompBundleSelector : public ConditionComponent
     {
      public:
-      /*! construct a selector for a model dependent condition component bundle
-
-        \param name variable name in DRT::Condition
-        \param stringcomp type of model
-                          model type have to be defined as an enum (strings are not supported)
-        \param condcomp vector containing a list of BC parameter assigned to different models
-       */
-      CondCompBundleSelector(std::string name, Teuchos::RCP<StringConditionComponent> stringcomp,
-          std::vector<Teuchos::RCP<CondCompBundle>> condcomp);
+      //! \param name_condition_components  name of condition components
+      //! \param condcomp                   vector of all components as bundle
+      CondCompBundleSelector(std::string name_condition_components,
+          const std::vector<Teuchos::RCP<CondCompBundle>>& condcomp);
 
       void DefaultLine(std::ostream& stream) override;
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
@@ -478,8 +467,8 @@ namespace DRT
      private:
       //! handling of the model type
       Teuchos::RCP<StringConditionComponent> stringcomp_;
-      //! vector containing a list of BC parameter assigned to different models
-      std::vector<Teuchos::RCP<CondCompBundle>> condcomp_;
+      //! map containing different conditions assigned to different models
+      std::map<int, Teuchos::RCP<CondCompBundle>> condcomp_;
     };
 
     //--------------------------------------------------------------------------------------------------
