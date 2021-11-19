@@ -32,7 +32,12 @@ namespace LIBB64
   // libb64 is in the public domain
   namespace base64
   {
-    typedef enum { step_A, step_B, step_C } base64_encodestep;
+    typedef enum
+    {
+      step_A,
+      step_B,
+      step_C
+    } base64_encodestep;
 
     typedef struct
     {
