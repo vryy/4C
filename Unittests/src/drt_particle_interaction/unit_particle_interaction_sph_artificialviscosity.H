@@ -54,7 +54,7 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public BACICxxTest
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_ArtificialViscosity()
+  void TestArtificialViscosity()
   {
     const double dens_i = 1.01;
     const double dens_j = 0.97;

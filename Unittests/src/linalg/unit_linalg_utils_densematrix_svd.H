@@ -133,7 +133,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
   }
 
  public:
-  void Test_SVD2x2Matrix()
+  void TestSVD2x2Matrix()
   {
     constexpr int rows = 2;
     constexpr int cols = 2;
@@ -155,7 +155,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD2x2SerialDenseMatrix()
+  void TestSVD2x2SerialDenseMatrix()
   {
     constexpr int rows = 2;
     constexpr int cols = 2;
@@ -177,7 +177,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD3x3Matrix()
+  void TestSVD3x3Matrix()
   {
     constexpr int rows = 3;
     constexpr int cols = 3;
@@ -205,7 +205,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD3x3SerialDenseMatrix()
+  void TestSVD3x3SerialDenseMatrix()
   {
     constexpr int rows = 3;
     constexpr int cols = 3;
@@ -233,7 +233,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD4x4Matrix()
+  void TestSVD4x4Matrix()
   {
     constexpr int rows = 4;
     constexpr int cols = 4;
@@ -268,7 +268,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD4x4SerialDenseMatrix()
+  void TestSVD4x4SerialDenseMatrix()
   {
     constexpr int rows = 4;
     constexpr int cols = 4;
@@ -303,7 +303,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD3x2Matrix()
+  void TestSVD3x2Matrix()
   {
     constexpr int rows = 3;
     constexpr int cols = 2;
@@ -327,7 +327,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD3x2SerialDenseMatrix()
+  void TestSVD3x2SerialDenseMatrix()
   {
     constexpr int rows = 3;
     constexpr int cols = 2;
@@ -351,7 +351,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD2x3Matrix()
+  void TestSVD2x3Matrix()
   {
     constexpr int rows = 2;
     constexpr int cols = 3;
@@ -375,7 +375,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD2x3SerialDenseMatrix()
+  void TestSVD2x3SerialDenseMatrix()
   {
     constexpr int rows = 2;
     constexpr int cols = 3;
@@ -399,7 +399,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD1x3Matrix()
+  void TestSVD1x3Matrix()
   {
     constexpr int rows = 1;
     constexpr int cols = 3;
@@ -420,7 +420,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD1x3SerialDenseMatrix()
+  void TestSVD1x3SerialDenseMatrix()
   {
     constexpr int rows = 1;
     constexpr int cols = 3;
@@ -441,7 +441,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD3x1Matrix()
+  void TestSVD3x1Matrix()
   {
     constexpr int rows = 3;
     constexpr int cols = 1;
@@ -462,7 +462,7 @@ class LINALG::Linalg_SVD_TestSuite : public BACICxxTestWrapper
     AssertSVDResult(A, Q, S, VT, singular_values);
   }
 
-  void Test_SVD3x1SerialDenseMatrix()
+  void TestSVD3x1SerialDenseMatrix()
   {
     constexpr int rows = 3;
     constexpr int cols = 1;

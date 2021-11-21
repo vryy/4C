@@ -54,9 +54,9 @@ class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public BACIC
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
+  void TestComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
 
-  void Test_CorrectedDensityInterior()
+  void TestCorrectedDensityInterior()
   {
     const double denssum = 1.07;
     double dens = 0.98;
@@ -66,7 +66,7 @@ class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public BACIC
     TS_ASSERT_EQUALS(dens, denssum);
   }
 
-  void Test_CorrectedDensityFreeSurface()
+  void TestCorrectedDensityFreeSurface()
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -105,9 +105,9 @@ class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public BAC
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
+  void TestComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
 
-  void Test_CorrectedDensityInterior()
+  void TestCorrectedDensityInterior()
   {
     const double denssum = 1.07;
     double dens = 0.98;
@@ -117,7 +117,7 @@ class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public BAC
     TS_ASSERT_EQUALS(dens, denssum);
   }
 
-  void Test_CorrectedDensityFreeSurface()
+  void TestCorrectedDensityFreeSurface()
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;
@@ -156,9 +156,9 @@ class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public BACICx
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), true); }
+  void TestComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), true); }
 
-  void Test_CorrectedDensityInterior()
+  void TestCorrectedDensityInterior()
   {
     const double denssum = 1.07;
     double dens = 0.98;
@@ -168,7 +168,7 @@ class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public BACICx
     TS_ASSERT_EQUALS(dens, denssum);
   }
 
-  void Test_CorrectedDensityFreeSurface()
+  void TestCorrectedDensityFreeSurface()
   {
     const double denssum = 1.07;
     const double colorfield = 0.82;

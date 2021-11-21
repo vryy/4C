@@ -87,7 +87,7 @@ class DRT::UTILS::UtilsRefConfig_TestSuite : public BACICxxTestWrapper
 
   void TearDown() override { testdis_ = Teuchos::null; }
 
-  void Test_LocalToGlobalPositionAtXiRefConfig()
+  void TestLocalToGlobalPositionAtXiRefConfig()
   {
     // get hex8 element and test it
     const DRT::Element* hex8ele = testdis_->gElement(0);
@@ -128,7 +128,7 @@ class DRT::UTILS::UtilsRefConfig_TestSuite : public BACICxxTestWrapper
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(tri3elecoords(i, 0), tri3refsolution[i], 1e-14);
   }
 
-  void Test_ComputeUnitNormalAtXiRefConfig()
+  void TestComputeUnitNormalAtXiRefConfig()
   {
     // get quad4 element and test it
     const DRT::Element* quad4ele = testdis_->gElement(1);

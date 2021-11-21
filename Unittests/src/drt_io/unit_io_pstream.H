@@ -37,7 +37,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void Test_doubleInitialize()
+  void TestDoubleInitialize()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
@@ -46,7 +46,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
         const std::runtime_error &);
   }
 
-  void Test_nonexistantProc()
+  void TestNonexistantProc()
   {
     Pstream ps;
     TS_ASSERT_THROWS(
@@ -54,7 +54,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
         const std::runtime_error &);
   }
 
-  void Test_initializedUse()
+  void TestInitializedUse()
   {
     Pstream ps;
     ps.setup(true, false, false, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -63,7 +63,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void Test_outputLevel()
+  void TestOutputLevel()
   {
     Pstream ps;
     ps.setup(true, false, false, IO::minimal, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -72,7 +72,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_THROWS_NOTHING(lvl << 4);
   }
 
-  void Test_inputTypes()
+  void TestInputTypes()
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -82,7 +82,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void Test_externalOperators()
+  void TestExternalOperators()
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -90,7 +90,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_THROWS_NOTHING(ps << "blah" << IO::endl);
   }
 
-  void Test_Level()
+  void TestLevel()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -100,7 +100,7 @@ class IO::Pstream_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_THROWS_NOTHING(lvl.SetLevel(IO::minimal) << 5);
   }
 
-  void Test_LevelExternalOperators()
+  void TestLevelExternalOperators()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");

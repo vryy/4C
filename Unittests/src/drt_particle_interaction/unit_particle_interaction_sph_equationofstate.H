@@ -67,7 +67,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public BACICxxT
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_DensityToPressure()
+  void TestDensityToPressure()
   {
     const double density = 0.75;
     const double density0 = 0.4;
@@ -78,7 +78,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public BACICxxT
         equationofstate_special_->DensityToPressure(density, density0), 0.47775e1, 1.0e-08);
   }
 
-  void Test_PressureToDensity()
+  void TestPressureToDensity()
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
@@ -88,7 +88,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public BACICxxT
         equationofstate_special_->PressureToDensity(pressure, density0), 0.506938775, 1.0e-08);
   }
 
-  void Test_DensityToEnergy()
+  void TestDensityToEnergy()
   {
     const double density = 0.75;
     const double mass = 1.3;
@@ -127,7 +127,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public BACICxx
   // note: the public functions Init() and Setup() of class SPHEquationOfStateIdealGas are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_DensityToPressure()
+  void TestDensityToPressure()
   {
     const double density = 0.75;
     const double density0 = 0.4;
@@ -135,7 +135,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public BACICxx
     TS_ASSERT_DELTA(equationofstate_->DensityToPressure(density, density0), 9.1875, 1.0e-08);
   }
 
-  void Test_PressureToDensity()
+  void TestPressureToDensity()
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
@@ -143,7 +143,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public BACICxx
     TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.146938775, 1.0e-08);
   }
 
-  void Test_DensityToEnergy()
+  void TestDensityToEnergy()
   {
     const double density = 0.75;
     const double mass = 1.3;

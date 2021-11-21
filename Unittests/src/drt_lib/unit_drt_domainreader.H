@@ -39,19 +39,19 @@ class DRT::INPUT::DomainReader_TestSuite : public BACICxxTestWrapper
 
   void TearDown() override { testdis_ = Teuchos::null; }
 
-  void Test_MyDis0()
+  void TestMyDis0()
   {
     DomainReader dr(testdis_, testreader_, "unittestsection");
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-  void Test_MyDis1()
+  void TestMyDis1()
   {
     DomainReader dr(testdis_, testreader_, "unittestsection", "unittesttype");
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-  void Test_MyDis2()
+  void TestMyDis2()
   {
     std::set<std::string> dummyset;
     dummyset.insert("type0");

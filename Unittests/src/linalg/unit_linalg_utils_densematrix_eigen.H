@@ -118,7 +118,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
   }
 
  public:
-  void Test_SymmetricEigenValues2x2()
+  void TestSymmetricEigenValues2x2()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -134,7 +134,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenValues(L, eigenvalues);
   }
 
-  void Test_SymmetricEigenProblem2x2()
+  void TestSymmetricEigenProblem2x2()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -151,7 +151,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, L, eigenvectors, eigenvalues);
   }
 
-  void Test_SymmetricEigen2x2NoVectors()
+  void TestSymmetricEigen2x2NoVectors()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -167,7 +167,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenValues(L, eigenvalues);
   }
 
-  void Test_SymmetricEigenProblem2x2Vectors()
+  void TestSymmetricEigenProblem2x2Vectors()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -184,7 +184,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, L, eigenvectors, eigenvalues);
   }
 
-  void Test_SYEV2x2()
+  void TestSYEV2x2()
   {
     LINALG::Matrix<2, 2> A(false);
     A(0, 0) = 0.9964456203546112;
@@ -201,7 +201,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, S, V, eigenvalues);
   }
 
-  void Test_SymmetricEigenValues3x3()
+  void TestSymmetricEigenValues3x3()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -223,7 +223,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenValues(L, eigenvalues);
   }
 
-  void Test_SymmetricEigenProblem3x3()
+  void TestSymmetricEigenProblem3x3()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -246,7 +246,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void Test_SymmetricEigen3x3NoVectors()
+  void TestSymmetricEigen3x3NoVectors()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -268,7 +268,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenValues(L, eigenvalues);
   }
 
-  void Test_SymmetricEigenProblem3x3Vectors()
+  void TestSymmetricEigenProblem3x3Vectors()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -291,7 +291,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void Test_SYEV3x3()
+  void TestSYEV3x3()
   {
     LINALG::Matrix<3, 3> A(false);
     A(0, 0) = 1.2966342861458506;
@@ -314,7 +314,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, S, V, eigenvalues);
   }
 
-  void Test_SymmetricEigenValues4x4()
+  void TestSymmetricEigenValues4x4()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -343,7 +343,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenValues(L, eigenvalues);
   }
 
-  void Test_SymmetricEigenProblem4x4()
+  void TestSymmetricEigenProblem4x4()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -373,7 +373,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void Test_SymmetricEigen4x4NoVectors()
+  void TestSymmetricEigen4x4NoVectors()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -402,7 +402,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenValues(L, eigenvalues);
   }
 
-  void Test_SymmetricEigenProblem4x4Vectors()
+  void TestSymmetricEigenProblem4x4Vectors()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -432,7 +432,7 @@ class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void Test_SYEV4x4()
+  void TestSYEV4x4()
   {
     LINALG::Matrix<4, 4> A(false);
     A(0, 0) = 0.5561130226871257;

@@ -74,7 +74,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
   // note: the public functions Init() and Setup() of class DEMContactRollingViscous are
   // called in Setup() and thus implicitly tested by all following unittests
 
-  void Test_EffectiveRadiusParticle()
+  void TestEffectiveRadiusParticle()
   {
     const double rad_i = 1.2;
     const double rad_j = 0.8;
@@ -88,7 +88,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
     TS_ASSERT_DELTA(r_eff, r_eff_ref, 1.0e-12);
   }
 
-  void Test_EffectiveRadiusParticle_nullptr_rad_j()
+  void TestEffectiveRadiusParticle_nullptr_rad_j()
   {
     const double rad_i = 1.2;
     const double gap = -0.3;
@@ -101,7 +101,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
     TS_ASSERT_DELTA(r_eff, r_eff_ref, 1.0e-12);
   }
 
-  void Test_RelativeRollingVelocity()
+  void TestRelativeRollingVelocity()
   {
     const double r_eff = 0.5;
 
@@ -130,7 +130,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
 
-  void Test_RelativeRollingVelocity_nullptr_angvel_j()
+  void TestRelativeRollingVelocity_nullptr_angvel_j()
   {
     const double r_eff = 0.5;
 
@@ -153,7 +153,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
 
-  void Test_RollingContactMoment()
+  void TestRollingContactMoment()
   {
     double gap_rolling[3] = {0.0};
     gap_rolling[0] = 0.1;
@@ -197,7 +197,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
       TS_ASSERT_DELTA(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
   }
 
-  void Test_RollingPotentialEnergy()
+  void TestRollingPotentialEnergy()
   {
     double gap_rolling[3] = {0.0};
 
@@ -246,7 +246,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
   // note: the public functions Init() and Setup() of class DEMContactRollingViscous are
   // called in Setup() and thus implicitly tested by all following unittests
 
-  void Test_EffectiveRadiusParticle()
+  void TestEffectiveRadiusParticle()
   {
     const double rad_i = 1.2;
     const double rad_j = 0.8;
@@ -260,7 +260,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     TS_ASSERT_DELTA(r_eff, r_eff_ref, 1.0e-12);
   }
 
-  void Test_EffectiveRadiusParticle_nullptr_rad_j()
+  void TestEffectiveRadiusParticle_nullptr_rad_j()
   {
     const double rad_i = 1.2;
     const double gap = -0.3;
@@ -273,7 +273,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     TS_ASSERT_DELTA(r_eff, r_eff_ref, 1.0e-12);
   }
 
-  void Test_RelativeRollingVelocity()
+  void TestRelativeRollingVelocity()
   {
     const double r_eff = 0.5;
 
@@ -303,7 +303,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
 
-  void Test_RelativeRollingVelocity_nullptr_angvel_j()
+  void TestRelativeRollingVelocity_nullptr_angvel_j()
   {
     const double r_eff = 0.5;
 
@@ -327,7 +327,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
 
-  void Test_RollingContactMoment_stick()
+  void TestRollingContactMoment_stick()
   {
     double gap_rolling[3] = {0.0};
     gap_rolling[0] = 0.1;
@@ -366,7 +366,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     TS_ASSERT_EQUALS(stick_rolling, false);
   }
 
-  void Test_RollingContactMoment_slip()
+  void TestRollingContactMoment_slip()
   {
     double gap_rolling[3] = {0.0};
     gap_rolling[0] = 0.1;
@@ -405,7 +405,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     TS_ASSERT_EQUALS(stick_rolling, false);
   }
 
-  void Test_RollingPotentialEnergy()
+  void TestRollingPotentialEnergy()
   {
     double gap_rolling[3] = {0.0};
     gap_rolling[0] = 0.1;

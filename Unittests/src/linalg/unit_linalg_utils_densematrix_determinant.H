@@ -33,7 +33,7 @@ namespace LINALG
 class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void Test_Determinant2x2()
+  void TestDeterminant2x2()
   {
     LINALG::Matrix<2, 2, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -44,7 +44,7 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_DELTA(LINALG::Determinant(A), -0.2639054076334587, 1e-14);
   }
 
-  void Test_Determinant3x3()
+  void TestDeterminant3x3()
   {
     LINALG::Matrix<3, 3, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -60,7 +60,7 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_DELTA(LINALG::Determinant(A), -0.1008304741716571, 1e-14);
   }
 
-  void Test_Determinant4x4()
+  void TestDeterminant4x4()
   {
     LINALG::Matrix<4, 4, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -83,7 +83,7 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_DELTA(LINALG::Determinant(A), -0.01620776397174742, 1e-14);
   }
 
-  void Test_DeterminantLU_2x2()
+  void TestDeterminantLU2x2()
   {
     LINALG::SerialDenseMatrix A(2, 2, true);
     A(0, 0) = 0.72903241936703114203;
@@ -94,7 +94,7 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.2639054076334587, 1e-14);
   }
 
-  void Test_DeterminantLU_3x3()
+  void TestDeterminantLU3x3()
   {
     LINALG::SerialDenseMatrix A(3, 3, true);
     A(0, 0) = 0.72903241936703114203;
@@ -110,7 +110,7 @@ class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
     TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.1008304741716571, 1e-14);
   }
 
-  void Test_DeterminantLU_4x4()
+  void TestDeterminantLU4x4()
   {
     LINALG::SerialDenseMatrix A(4, 4, true);
     A(0, 0) = 0.72903241936703114203;

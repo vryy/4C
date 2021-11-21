@@ -61,7 +61,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a tri3 surface, with default normals on the surface.
    */
-  void Test_point_to_surface_projection_tri3()
+  void TestPointToSurfaceProjectionTri3()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -73,7 +73,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<9, 1, double> q_solid;
-    Xtest_setup_tri3(q_solid);
+    XtestSetupTri3(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -98,7 +98,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a tri3 surface, with given normals on the nodes.
    */
-  void Test_point_to_surface_projection_normal_interpolation_tri3()
+  void TestPointToSurfaceProjectionNormalInterpolationTri3()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -111,7 +111,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates and normals for the solid element.
     LINALG::Matrix<9, 1, double> q_solid;
     LINALG::Matrix<9, 1, double> nodal_normals(true);
-    Xtest_setup_tri3(q_solid, &nodal_normals);
+    XtestSetupTri3(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -136,7 +136,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a tri6 surface, with default normals on the surface.
    */
-  void Test_point_to_surface_projection_tri6()
+  void TestPointToSurfaceProjectionTri6()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -148,7 +148,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<18, 1, double> q_solid;
-    Xtest_setup_tri6(q_solid);
+    XtestSetupTri6(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -173,7 +173,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a tri3 surface, with given normals on the nodes.
    */
-  void Test_point_to_surface_projection_normal_interpolation_tri6()
+  void TestPointToSurfaceProjectionNormalInterpolationTri6()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -186,7 +186,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates and normals for the solid element.
     LINALG::Matrix<18, 1, double> q_solid;
     LINALG::Matrix<18, 1, double> nodal_normals(true);
-    Xtest_setup_tri6(q_solid, &nodal_normals);
+    XtestSetupTri6(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -211,7 +211,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a quad4 surface, with default normals on the surface.
    */
-  void Test_point_to_surface_projection_quad4()
+  void TestPointToSurfaceProjectionQuad4()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -224,7 +224,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the normals on the solid element.
     // Define the coordinates for the solid element.
     LINALG::Matrix<12, 1, double> q_solid(true);
-    Xtest_setup_quad4(q_solid);
+    XtestSetupQuad4(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -249,7 +249,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a quad4 surface, with given normals on the nodes.
    */
-  void Test_point_to_surface_projection_normal_interpolation_quad4()
+  void TestPointToSurfaceProjectionNormalInterpolationQuad4()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -262,7 +262,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates and normals for the solid element.
     LINALG::Matrix<12, 1, double> q_solid(true);
     LINALG::Matrix<12, 1, double> nodal_normals(true);
-    Xtest_setup_quad4(q_solid, &nodal_normals);
+    XtestSetupQuad4(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -287,7 +287,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a quad8 surface, with default normals on the surface.
    */
-  void Test_point_to_surface_projection_quad8()
+  void TestPointToSurfaceProjectionQuad8()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -299,7 +299,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<24, 1, double> q_solid;
-    Xtest_setup_quad8(q_solid);
+    XtestSetupQuad8(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -324,7 +324,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a quad8 surface, with given normals on the nodes.
    */
-  void Test_point_to_surface_projection_normal_interpolation_quad8()
+  void TestPointToSurfaceProjectionNormalInterpolationQuad8()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -337,7 +337,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates for the solid element.
     LINALG::Matrix<24, 1, double> q_solid;
     LINALG::Matrix<24, 1, double> nodal_normals;
-    Xtest_setup_quad8(q_solid, &nodal_normals);
+    XtestSetupQuad8(q_solid, &nodal_normals);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -362,7 +362,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a quad9 surface, with default normals on the surface.
    */
-  void Test_point_to_surface_projection_quad9()
+  void TestPointToSurfaceProjectionQuad9()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -374,7 +374,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<27, 1, double> q_solid;
-    Xtest_setup_quad9(q_solid);
+    XtestSetupQuad9(q_solid);
 
     // Point to project to.
     LINALG::Matrix<3, 1, double> point(true);
@@ -399,7 +399,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the projection of a point to a quad9 surface, with given normals on the nodes.
    */
-  void Test_point_to_surface_projection_normal_interpolation_quad9()
+  void TestPointToSurfaceProjectionNormalInterpolationQuad9()
   {
     // Set up the pair.
     Teuchos::RCP<DRT::Element> beam = Teuchos::rcp(new DRT::ELEMENTS::Beam3r(0, 0));
@@ -412,7 +412,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates and normals for the solid element.
     LINALG::Matrix<27, 1, double> q_solid;
     LINALG::Matrix<27, 1, double> nodal_normals;
-    Xtest_setup_quad9(q_solid, &nodal_normals);
+    XtestSetupQuad9(q_solid, &nodal_normals);
 
 
     // Point to project to.
@@ -438,12 +438,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri3 surface, with default normals on the surface.
    */
-  void Test_line_to_surface_intersection_tri3()
+  void TestLineToSurfaceIntersectionTri3()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
@@ -454,7 +454,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<9, 1, double> q_solid;
-    Xtest_setup_tri3(q_solid);
+    XtestSetupTri3(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -490,12 +490,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri3 surface, with given normals on the nodes.
    */
-  void Test_line_to_surface_intersection_normal_interpolation_tri3()
+  void TestLineToSurfaceIntersectionNormalInterpolationTri3()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
@@ -507,7 +507,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates for the solid element.
     LINALG::Matrix<9, 1, double> q_solid;
     LINALG::Matrix<9, 1, double> nodal_normals;
-    Xtest_setup_tri3(q_solid, &nodal_normals);
+    XtestSetupTri3(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -543,12 +543,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri6 surface, with default normals on the surface.
    */
-  void Test_line_to_surface_intersection_tri6()
+  void TestLineToSurfaceIntersectionTri6()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
@@ -559,7 +559,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<18, 1, double> q_solid;
-    Xtest_setup_tri6(q_solid);
+    XtestSetupTri6(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -595,12 +595,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a tri6 surface, with given normals on the nodes.
    */
-  void Test_line_to_surface_intersection_normal_interpolation_tri6()
+  void TestLineToSurfaceIntersectionNormalInterpolationTri6()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
@@ -612,7 +612,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates for the solid element.
     LINALG::Matrix<18, 1, double> q_solid;
     LINALG::Matrix<18, 1, double> nodal_normals;
-    Xtest_setup_tri6(q_solid, &nodal_normals);
+    XtestSetupTri6(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -648,12 +648,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad4 surface, with default normals on the surface.
    */
-  void Test_line_to_surface_intersection_quad4()
+  void TestLineToSurfaceIntersectionQuad4()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
@@ -664,7 +664,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<12, 1, double> q_solid;
-    Xtest_setup_quad4(q_solid);
+    XtestSetupQuad4(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -700,12 +700,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad4 surface, with given normals on the nodes.
    */
-  void Test_line_to_surface_intersection_normal_interpolation_quad4()
+  void TestLineToSurfaceIntersectionNormalInterpolationQuad4()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
@@ -717,7 +717,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates for the solid element.
     LINALG::Matrix<12, 1, double> q_solid;
     LINALG::Matrix<12, 1, double> nodal_normals;
-    Xtest_setup_quad4(q_solid, &nodal_normals);
+    XtestSetupQuad4(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -753,12 +753,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad8 surface, with default normals on the surface.
    */
-  void Test_line_to_surface_intersection_quad8()
+  void TestLineToSurfaceIntersectionQuad8()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
@@ -769,7 +769,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<24, 1, double> q_solid;
-    Xtest_setup_quad8(q_solid);
+    XtestSetupQuad8(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -805,12 +805,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad8 surface, with given normals on the nodes.
    */
-  void Test_line_to_surface_intersection_normal_interpolation_quad8()
+  void TestLineToSurfaceIntersectionNormalInterpolationQuad8()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
@@ -822,7 +822,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates for the solid element.
     LINALG::Matrix<24, 1, double> q_solid;
     LINALG::Matrix<24, 1, double> nodal_normals;
-    Xtest_setup_quad8(q_solid, &nodal_normals);
+    XtestSetupQuad8(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -858,12 +858,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad9 surface, with default normals on the surface.
    */
-  void Test_line_to_surface_intersection_quad9()
+  void TestLineToSurfaceIntersectionQuad9()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
@@ -874,7 +874,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
 
     // Define the coordinates for the solid element.
     LINALG::Matrix<27, 1, double> q_solid;
-    Xtest_setup_quad9(q_solid);
+    XtestSetupQuad9(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
@@ -910,12 +910,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
   /**
    * Test the intersection of a line with a quad9 surface, with given normals on the nodes.
    */
-  void Test_line_to_surface_intersection_normal_interpolation_quad9()
+  void TestLineToSurfaceIntersectionNormalInterpolationQuad9()
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
     LINALG::Matrix<12, 1, double> q_beam;
-    Xtest_setup_beam(element_1, q_beam);
+    XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
@@ -927,7 +927,7 @@ class GEOMETRYPAIR::GeometryPairLineToSurface_TestSuite : public BACICxxTestWrap
     // Define the coordinates for the solid element.
     LINALG::Matrix<27, 1, double> q_solid;
     LINALG::Matrix<27, 1, double> nodal_normals;
-    Xtest_setup_quad9(q_solid, &nodal_normals);
+    XtestSetupQuad9(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;

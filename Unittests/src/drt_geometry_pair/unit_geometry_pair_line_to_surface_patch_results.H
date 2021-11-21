@@ -20,7 +20,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Fill arrays with the results for the unit tests.
    */
-  void Xtest_surface_patch_quad4_results(std::vector<double>& reference_normals,
+  void XtestSurfacePatchQuad4Results(std::vector<double>& reference_normals,
       std::vector<double>& current_normals,
       std::vector<std::vector<double>>& current_normals_derivative,
       std::vector<std::vector<std::vector<double>>>& current_normals_derivative_2,

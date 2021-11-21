@@ -57,7 +57,7 @@ class MAT::StVenantKirchhoff_TestSuite : public BACICxxTestWrapper
   void TearDown() override { return; }
 
   //! evaluate function unit testing for StVenantKirchhoff material
-  void Test_Evaluate()
+  void TestEvaluate()
   {
     // calculate reference results for stress
     const double Ref_Stress_calc1 =
@@ -93,7 +93,7 @@ class MAT::StVenantKirchhoff_TestSuite : public BACICxxTestWrapper
     return;
   }
   //! strain energy unit testing for StVenantKirchhoff material
-  void Test_StrainEnergy()
+  void TestStrainEnergy()
   {
     // define reference result for strain energy
     const double Ref_StrainEnergy = 908.6538;

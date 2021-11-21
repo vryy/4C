@@ -89,7 +89,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
   // note: the public functions Init() and Setup() of class SPHKernelCubicSpline are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_KernelSpaceDimension()
+  void TestKernelSpaceDimension()
   {
     int dim = 0;
 
@@ -103,7 +103,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
     TS_ASSERT_EQUALS(dim, 3);
   }
 
-  void Test_SmoothingLength()
+  void TestSmoothingLength()
   {
     const double support = 0.8;
     const double h = 0.4;
@@ -113,7 +113,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
     TS_ASSERT_DELTA(kernel_3D_->SmoothingLength(support), h, 1.0e-10);
   }
 
-  void Test_NormalizationConstant()
+  void TestNormalizationConstant()
   {
     const double h = 0.4;
     const double inv_h = 1.0 / h;
@@ -127,7 +127,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
     TS_ASSERT_DELTA(kernel_3D_->NormalizationConstant(inv_h), normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_W0()
+  void TestW0()
   {
     const double support = 0.8;
     const double h = 0.4;
@@ -142,7 +142,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
     TS_ASSERT_DELTA(kernel_3D_->W0(support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_W()
+  void TestW()
   {
     const double support = 0.8;
     const double h = 0.4;
@@ -192,7 +192,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
         kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_dWdrij()
+  void TestdWdrij()
   {
     const double support = 0.8;
     const double h = 0.4;
@@ -242,7 +242,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
         kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_d2Wdrij2()
+  void Testd2Wdrij2()
   {
     const double support = 0.8;
     const double h = 0.4;
@@ -292,7 +292,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWr
         kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_GradWij()
+  void TestGradWij()
   {
     const double rij = 0.2;
     const double support = 0.8;
@@ -373,7 +373,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
   // note: the public functions Init() and Setup() of class SPHKernelQuinticSpline are called in
   // Setup() and thus implicitly tested by all following unittests
 
-  void Test_KernelSpaceDimension()
+  void TestKernelSpaceDimension()
   {
     int dim = 0;
 
@@ -387,7 +387,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
     TS_ASSERT_EQUALS(dim, 3);
   }
 
-  void Test_SmoothingLength()
+  void TestSmoothingLength()
   {
     const double support = 0.9;
     const double h = 0.3;
@@ -397,7 +397,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
     TS_ASSERT_DELTA(kernel_3D_->SmoothingLength(support), h, 1.0e-10);
   }
 
-  void Test_NormalizationConstant()
+  void TestNormalizationConstant()
   {
     const double h = 0.3;
     const double inv_h = 1.0 / h;
@@ -411,7 +411,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
     TS_ASSERT_DELTA(kernel_3D_->NormalizationConstant(inv_h), normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_W0()
+  void TestW0()
   {
     const double support = 0.9;
     const double h = 0.3;
@@ -426,7 +426,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
     TS_ASSERT_DELTA(kernel_3D_->W0(support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_W()
+  void TestW()
   {
     const double support = 0.9;
     const double h = 0.3;
@@ -487,7 +487,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
         kernel_3D_->W(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_dWdrij()
+  void TestdWdrij()
   {
     const double support = 0.9;
     const double h = 0.3;
@@ -549,7 +549,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
         kernel_3D_->dWdrij(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_d2Wdrij2()
+  void Testd2Wdrij2()
   {
     const double support = 0.9;
     const double h = 0.3;
@@ -612,7 +612,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTest
         kernel_3D_->d2Wdrij2(rij, support), w_unnormalized * normalizationconstant_3D, 1.0e-10);
   }
 
-  void Test_GradWij()
+  void TestGradWij()
   {
     const double rij = 0.2;
     const double support = 0.9;

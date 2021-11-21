@@ -40,7 +40,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
   void TearDown() override {}
 
   //! test corner value Pb = 0 mmHg
-  void Test_GetOxyPartialPressure_Pb_0()
+  void TestGetOxyPartialPressurePb0()
   {
     // Parameters
     const double n = 2.7;
@@ -58,7 +58,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
   }
 
   //! test value Pb = 25 mmHg
-  void Test_GetOxyPartialPressure_Pb_25()
+  void TestGetOxyPartialPressurePb25()
   {
     // Parameters
     const double n = 2.5;
@@ -80,7 +80,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
   }
 
   //! test value Pb = 50 mmHg
-  void Test_GetOxyPartialPressure_Pb_50()
+  void TestGetOxyPartialPressurePb50()
   {
     // Parameters
     const double n = 2.7;
@@ -102,7 +102,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACI
   }
 
   //! test value Pb = 100 mmHg
-  void Test_GetOxyPartialPressure_Pb_100()
+  void TestGetOxyPartialPressurePb100()
   {
     // Parameters
     const double n = 2.2;

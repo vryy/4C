@@ -27,7 +27,7 @@ namespace GEOMETRYPAIR
    * \brief Fill a discretization with the geometry for the unit test.
    */
   template <typename face_element_type>
-  void Xtest_surface_patch_quad4(const Teuchos::RCP<DRT::Discretization>& discret,
+  void XtestSurfacePatchQuad4(const Teuchos::RCP<DRT::Discretization>& discret,
       std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
     // The order here is the following: First all x-values, then y-values and then z-values.

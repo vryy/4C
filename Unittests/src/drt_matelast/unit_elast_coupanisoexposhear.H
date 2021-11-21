@@ -64,7 +64,7 @@ class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite : public BAC
     anisotropy_->SetGaussPointFibers(gpfibers);
   }
 
-  void Test_GetScalarProduct()
+  void TestGetScalarProduct()
   {
     // element fibers
     SetupAnisotropyExtension(1, {0, 1});
@@ -105,7 +105,7 @@ class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite : public BAC
     TS_ASSERT_DELTA(anisotropyExtension_->GetScalarProduct(1), scalarProductsgp1_->at(2), 1e-10);
   }
 
-  void Test_GetStructuralTensor()
+  void TestGetStructuralTensor()
   {
     // element fibers
     SetupAnisotropyExtension(1, {0, 1});
@@ -146,7 +146,7 @@ class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite : public BAC
     AssertMatrixEqual(anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(2), 1e-10);
   }
 
-  void Test_StructuralTensors_stress() {}
+  void TestStructuralTensorsStress() {}
 
  private:
   template <unsigned int N, unsigned int M>

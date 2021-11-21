@@ -30,28 +30,28 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   void TearDown() override { lineDefinition = Teuchos::null; }
 
   // Tag
-  void Test_AddTag()
+  void TestAddTag()
   {
     std::istringstream input("OMEGA");
     lineDefinition->AddTag("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_TagRequired_But_NothingGiven()
+  void TestReadFalseWhenTagRequiredButNothingGiven()
   {
     std::istringstream input("");
     lineDefinition->AddTag("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_TagRequired_But_IntGiven()
+  void TestReadFalseWhenTagRequiredButIntGiven()
   {
     std::istringstream input("1");
     lineDefinition->AddTag("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_TagRequired_But_DoubleGiven()
+  void TestReadFalseWhenTagRequiredButDoubleGiven()
   {
     std::istringstream input("1.23");
     lineDefinition->AddTag("OMEGA");
@@ -59,14 +59,14 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // String
-  void Test_AddString()
+  void TestAddString()
   {
     std::istringstream input("OMEGA");
     lineDefinition->AddString("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_StringRequired_But_NothingGiven()
+  void TestReadFalseWhenStringRequiredButNothingGiven()
   {
     std::istringstream input("");
     lineDefinition->AddString("OMEGA");
@@ -74,28 +74,28 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Int
-  void Test_AddInt()
+  void TestAddInt()
   {
     std::istringstream input("1");
     lineDefinition->AddInt("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_IntRequired_But_NothingGiven()
+  void TestReadFalseWhenIntRequiredButNothingGiven()
   {
     std::istringstream input("");
     lineDefinition->AddInt("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_IntRequired_But_DoubleGiven()
+  void TestReadFalseWhenIntRequiredButDoubleGiven()
   {
     std::istringstream input("1.23");
     lineDefinition->AddInt("OMEGA");
     AssertThrowsError(input);
   }
 
-  void Test_ReadFalse_When_IntConcatenatedWithSomething()
+  void TestReadFalseWhenIntConcatenatedWithSomething()
   {
     std::istringstream input("1*8e+2");
     lineDefinition->AddInt("OMEGA");
@@ -103,28 +103,28 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Int Vector
-  void Test_AddIntVector()
+  void TestAddIntVector()
   {
     std::istringstream input("1 2 3");
     lineDefinition->AddIntVector("OMEGA", 3);
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_IntVectorRequired_But_TooFewVectorEntriesGiven()
+  void TestReadFalseWhenIntVectorRequiredButTooFewVectorEntriesGiven()
   {
     std::istringstream input("1 2");
     lineDefinition->AddIntVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_IntVectorRequired_But_TooManyVectorEntriesGiven()
+  void TestReadFalseWhenIntVectorRequiredButTooManyVectorEntriesGiven()
   {
     std::istringstream input("1 2 3 4");
     lineDefinition->AddIntVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_IntVectorRequired_But_DoubleVectorEntriesGiven()
+  void TestReadFalseWhenIntVectorRequiredButDoubleVectorEntriesGiven()
   {
     std::istringstream input("1.23 2.34 3.45");
     lineDefinition->AddIntVector("OMEGA", 3);
@@ -132,21 +132,21 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Double Vector
-  void Test_AddDoubleVector()
+  void TestAddDoubleVector()
   {
     std::istringstream input("1 2 3");
     lineDefinition->AddDoubleVector("OMEGA", 3);
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_DoubleVectorRequired_But_TooFewVectorEntriesGiven()
+  void TestReadFalseWhenDoubleVectorRequiredButTooFewVectorEntriesGiven()
   {
     std::istringstream input("1 2");
     lineDefinition->AddDoubleVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_DoubleVectorRequired_But_TooManyVectorEntriesGiven()
+  void TestReadFalseWhenDoubleVectorRequiredButTooManyVectorEntriesGiven()
   {
     std::istringstream input("1 2 3 4");
     lineDefinition->AddDoubleVector("OMEGA", 3);
@@ -154,21 +154,21 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Named String
-  void Test_AddNamedString()
+  void TestAddNamedString()
   {
     std::istringstream input("OMEGA TEST");
     lineDefinition->AddNamedString("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_NamedStringRequired_But_NothingGiven()
+  void TestReadFalseWhenNamedStringRequiredButNothingGiven()
   {
     std::istringstream input("OMEGA ");
     lineDefinition->AddNamedString("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedStringRequired_But_NoNameGiven()
+  void TestReadFalseWhenNamedStringRequiredButNoNameGiven()
   {
     std::istringstream input("TEST");
     lineDefinition->AddNamedString("OMEGA");
@@ -176,28 +176,28 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Named Int
-  void Test_AddNamedInt()
+  void TestAddNamedInt()
   {
     std::istringstream input("OMEGA 1");
     lineDefinition->AddNamedInt("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_NamedIntRequired_But_NothingGiven()
+  void TestReadFalseWhenNamedIntRequiredButNothingGiven()
   {
     std::istringstream input("OMEGA");
     lineDefinition->AddNamedInt("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedIntRequired_But_DoubleGiven()
+  void TestReadFalseWhenNamedIntRequiredButDoubleGiven()
   {
     std::istringstream input("OMEGA 1.23");
     lineDefinition->AddNamedInt("OMEGA");
     AssertThrowsError(input);
   }
 
-  void Test_ReadFalse_When_NamedIntRequired_But_NoNameGiven()
+  void TestReadFalseWhenNamedIntRequiredButNoNameGiven()
   {
     std::istringstream input("1");
     lineDefinition->AddNamedInt("OMEGA");
@@ -205,35 +205,35 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Named Int Vector
-  void Test_AddNamedIntVector()
+  void TestAddNamedIntVector()
   {
     std::istringstream input("OMEGA 1 2 3");
     lineDefinition->AddNamedIntVector("OMEGA", 3);
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_NamedIntVectorRequired_But_TooFewVectorEntriesGiven()
+  void TestReadFalseWhenNamedIntVectorRequiredButTooFewVectorEntriesGiven()
   {
     std::istringstream input("OMEGA 1 2");
     lineDefinition->AddNamedIntVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedIntVectorRequired_But_TooManyVectorEntriesGiven()
+  void TestReadFalseWhenNamedIntVectorRequiredButTooManyVectorEntriesGiven()
   {
     std::istringstream input("OMEGA 1 2 3 4");
     lineDefinition->AddNamedIntVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedIntVectorRequired_But_DoubleVectorEntriesGiven()
+  void TestReadFalseWhenNamedIntVectorRequiredButDoubleVectorEntriesGiven()
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45");
     lineDefinition->AddNamedIntVector("OMEGA", 3);
     AssertThrowsError(input);
   }
 
-  void Test_ReadFalse_When_NamedIntVectorRequired_But_NoNameGiven()
+  void TestReadFalseWhenNamedIntVectorRequiredButNoNameGiven()
   {
     std::istringstream input("1.23 2.34 3.45");
     lineDefinition->AddNamedIntVector("OMEGA", 3);
@@ -241,28 +241,28 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Named Double
-  void Test_AddNamedDouble()
+  void TestAddNamedDouble()
   {
     std::istringstream input("OMEGA 1.23");
     lineDefinition->AddNamedDouble("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_NamedDoubleRequired_But_NothingGiven()
+  void TestReadFalseWhenNamedDoubleRequiredButNothingGiven()
   {
     std::istringstream input("OMEGA");
     lineDefinition->AddNamedDouble("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedDoubleConcatenatedWithSomething()
+  void TestReadFalseWhenNamedDoubleConcatenatedWithSomething()
   {
     std::istringstream input("OMEGA 123.45*893");
     lineDefinition->AddNamedDouble("OMEGA");
     AssertThrowsError(input);
   }
 
-  void Test_ReadFalse_When_NamedDoubleRequired_But_NoNameGiven()
+  void TestReadFalseWhenNamedDoubleRequiredButNoNameGiven()
   {
     std::istringstream input("1.23");
     lineDefinition->AddNamedDouble("OMEGA");
@@ -270,28 +270,28 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Named Double Vector
-  void Test_AddNamedDoubleVector()
+  void TestAddNamedDoubleVector()
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45");
     lineDefinition->AddNamedDoubleVector("OMEGA", 3);
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadFalse_When_NamedDoubleVectorRequired_But_TooFewVectorEntriesGiven()
+  void TestReadFalseWhenNamedDoubleVectorRequiredButTooFewVectorEntriesGiven()
   {
     std::istringstream input("OMEGA 1.23 2.34");
     lineDefinition->AddNamedDoubleVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedDoubleVectorRequired_But_TooManyVectorEntriesGiven()
+  void TestReadFalseWhenNamedDoubleVectorRequiredButTooManyVectorEntriesGiven()
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45 4.56");
     lineDefinition->AddNamedDoubleVector("OMEGA", 3);
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadFalse_When_NamedDoubleVectorRequired_But_NoNameGiven()
+  void TestReadFalseWhenNamedDoubleVectorRequiredButNoNameGiven()
   {
     std::istringstream input("1.23 2.34 3.45");
     lineDefinition->AddNamedDoubleVector("OMEGA", 3);
@@ -299,21 +299,21 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Too much in stream except from comments and whitespaces
-  void Test_ReadFalse_When_StreamHasTooMuch()
+  void TestReadFalseWhenStreamHasTooMuch()
   {
     std::istringstream input("OMEGA More data that is not in lineDefinition.");
     lineDefinition->AddTag("OMEGA");
     AssertReadReturnsFalse(input);
   }
 
-  void Test_ReadTrue_When_StreamHasTooMuchButOnlyComments()
+  void TestReadTrueWhenStreamHasTooMuchButOnlyComments()
   {
     std::istringstream input("OMEGA // Comment");
     lineDefinition->AddTag("OMEGA");
     AssertReadReturnsTrue(input);
   }
 
-  void Test_ReadTrue_When_StreamHasTooMuchButOnlyWhitespaces()
+  void TestReadTrue_When_StreamHasTooMuchButOnlyWhitespaces()
   {
     std::istringstream input("OMEGA           ");
     lineDefinition->AddTag("OMEGA");
@@ -321,7 +321,7 @@ class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
   }
 
   // Empty stream
-  void Test_ReadTrue_When_EmptyStreamIntoEmptyDefinition()
+  void TestReadTrueWhenEmptyStreamIntoEmptyDefinition()
   {
     std::istringstream input("");
     AssertReadReturnsTrue(input);

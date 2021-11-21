@@ -56,7 +56,7 @@ class CONTACT::CONSTITUTIVELAW::BrokenrationalConstitutiveLaw_TestSuite : public
   }
 
   //! test member function Evaluate
-  void Test_Evaluate()
+  void TestEvaluate()
   {
     // gap < 0
     TS_ASSERT_THROWS_ANYTHING(coconstlaw_->Evaluate(1.0));
@@ -69,7 +69,7 @@ class CONTACT::CONSTITUTIVELAW::BrokenrationalConstitutiveLaw_TestSuite : public
   }
 
   //! test member function Evaluate
-  void Test_EvaluateDeriv()
+  void TestEvaluateDeriv()
   {
     TS_ASSERT_DELTA(coconstlaw_->EvaluateDeriv(-2.5), 0.5, 1.e-15);
     TS_ASSERT_THROWS_ANYTHING(coconstlaw_->EvaluateDeriv(-0.25));

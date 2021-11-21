@@ -22,7 +22,7 @@ namespace MORTAR
 class MORTAR::InterfaceUtils_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void Test_ComputeParallelDistributionStatistics()
+  void TestComputeParallelDistributionStatistics()
   {
     std::vector<int> quantityAcrossAllRanks = {2, 1, 4, 3};
 

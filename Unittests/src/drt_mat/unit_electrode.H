@@ -323,7 +323,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   }
 
   //! test member function ComputeOpenCircuitPotential of electrode material
-  void Test_ComputeOpenCircuitPotential()
+  void TestComputeOpenCircuitPotential()
   {
     // define results and tolerances for anode materials
     const double results_anode_redlichkister[] = {
@@ -383,7 +383,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   }
 
   //! test member function ComputeFirstDerivOpenCircuitPotentialConc of electrode material
-  void Test_ComputeFirstDerivOpenCircuitPotentialConc()
+  void TestComputeFirstDerivOpenCircuitPotentialConc()
   {
     // define results and tolerances for anode materials
     const double results_anode_redlichkister[] = {
@@ -443,7 +443,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   }
 
   //! test member function ComputeFirstDerivOpenCircuitPotentialTemp of electrode material
-  void Test_ComputeFirstDerivOpenCircuitPotentialTemp()
+  void TestComputeFirstDerivOpenCircuitPotentialTemp()
   {
     // define results and tolerances for cathode materials
     const double results_cathode_csv[] = {0.0, 0.0, 0.0};
@@ -476,7 +476,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   }
 
   //! test member function ComputeSecondDerivOpenCircuitPotentialConc of electrode material
-  void Test_ComputeSecondDerivOpenCircuitPotentialConc()
+  void TestComputeSecondDerivOpenCircuitPotentialConc()
   {
     // define results and tolerances for anode materials
     const double results_anode_redlichkister[] = {
