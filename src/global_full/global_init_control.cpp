@@ -126,8 +126,8 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   }
 
   // bool parameter defining if input argument is given
-  bool restart_bool = false;
-  bool restartfrom_bool = false;
+  bool restartIsGiven = false;
+  bool restartfromIsGiven = false;
 
   // default case is an identical restartfile_kenner and outputfile_kenner
   restartfilekenner << outfilekenner.str();
@@ -140,7 +140,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
       int r = atoi(restart.substr(8, std::string::npos).c_str());
       // tell the global problem about the restart step given in the command line
       problem->SetRestartStep(r);
-      restart_bool = true;
+      restartIsGiven = true;
     }
     else if (restart.substr(0, 12) == "restartfrom=")
     {
@@ -180,12 +180,12 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
           break;
       }
 
-      restartfrom_bool = true;
+      restartfromIsGiven = true;
     }
   }
 
   // throw error in case restartfrom is given but no restart step is specified
-  if (restartfrom_bool == true && restart_bool == false)
+  if (restartfromIsGiven == true && restartIsGiven == false)
   {
     dserror("You need to specify a restart step when using restartfrom.");
   }

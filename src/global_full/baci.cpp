@@ -99,8 +99,8 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
 
     // Gather values
     const int num_procs = comm.NumProc();
-    auto *recvbuf = new double[num_procs];
-    MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    auto recvbuf = std::unique_ptr<double[]>(new double[num_procs]);
+    MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf.get(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Compute and output statistics on proc 0
     if (comm.MyPID() == 0)
