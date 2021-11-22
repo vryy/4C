@@ -7,6 +7,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include <utility>
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_inputreader.H"
@@ -134,9 +135,9 @@ void SetupParallelOutput(std::string& outputfile_kenner, Teuchos::RCP<Epetra_Com
   bool file = DRT::INPUT::IntegralValue<int>(io, "WRITE_TO_FILE");
   bool preGrpID = DRT::INPUT::IntegralValue<int>(io, "PREFIX_GROUP_ID");
   int oproc = io.get<int>("LIMIT_OUTP_TO_PROC");
-  IO::verbositylevel level = DRT::INPUT::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
+  auto level = DRT::INPUT::IntegralValue<IO::verbositylevel>(io, "VERBOSITY");
 
-  IO::cout.setup(screen, file, preGrpID, level, lcomm, oproc, group, outputfile_kenner);
+  IO::cout.setup(screen, file, preGrpID, level, std::move(lcomm), oproc, group, outputfile_kenner);
 
   return;
 }

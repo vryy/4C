@@ -63,7 +63,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
   }
 
   // number of input/output arguments specified by the user
-  int inoutargs = int(inout.size());
+  auto inoutargs = int(inout.size());
 
   std::stringstream infilename;
   std::stringstream outfilekenner;
@@ -184,7 +184,7 @@ void ntaini_ccadiscret(int argc, char** argv, std::string& inputfile_name,
     }
   }
 
-  // Throw error in case restartfrom is given but no restart step is specified
+  // throw error in case restartfrom is given but no restart step is specified
   if (restartfrom_bool == true && restart_bool == false)
   {
     dserror("You need to specify a restart step when using restartfrom.");
