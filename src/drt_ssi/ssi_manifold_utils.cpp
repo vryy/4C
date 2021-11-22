@@ -807,6 +807,13 @@ SSI::ManifoldMeshTyingStrategyBase::ManifoldMeshTyingStrategyBase(
     SetupMeshTyingHandler(scatra_manifold_dis, ssi_maps_);
     Teuchos::RCP<Epetra_Map> slave_dof_map = Teuchos::null;
 
+    if (meshtying_handler_.empty())
+    {
+      dserror(
+          "Could not create mesh tying between manifold fields. They are not intersecting. "
+          "Disable 'MESHTYING_MANIFOLD' or create intersecting manifold conditions.");
+    }
+
     // merge slave dof maps from all mesh tying conditions
     for (const auto& meshtying : meshtying_handler_)
     {
