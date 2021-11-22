@@ -761,12 +761,7 @@ void INPAR::SCATRA::SetValidConditions(
     multiscalecouplingcomponents.emplace_back(
         Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
     multiscalecouplingcomponents.emplace_back(
-        Teuchos::rcp(new CondCompBundleSelector("kinetic models for macro-micro coupling",
-            Teuchos::rcp(new StringConditionComponent("kinetic model", "ConstantPermeability",
-                Teuchos::tuple<std::string>("ConstantPermeability", "Butler-Volmer"),
-                Teuchos::tuple<int>(
-                    INPAR::S2I::kinetics_constperm, INPAR::S2I::kinetics_butlervolmer))),
-            kineticmodels)));
+        Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
 
     // insert input file line components into condition definitions
     for (auto& multiscalecouplingcomponent : multiscalecouplingcomponents)

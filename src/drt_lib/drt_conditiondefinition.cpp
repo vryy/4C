@@ -17,7 +17,6 @@
 #include "drt_colors.H"
 #include "drt_globalproblem.H"
 #include "drt_discret.H"
-#include "drt_utils_cond_and_mat_definition.H"
 #include "drt_utils_cond_and_mat_definition.cpp"
 
 /*----------------------------------------------------------------------*
@@ -310,12 +309,7 @@ void DRT::INPUT::IntVectorConditionComponent::Print(
     if (noneallowed_ and i == -1)
       stream << "none ";
     else
-    {
-      if (fortranstyle_)
-        stream << i + 1 << " ";
-      else
-        stream << i + 1 << " ";
-    }
+      stream << i + 1 << " ";
   }
 }
 
@@ -368,11 +362,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntVectorConditionComponent::SetLength(int length)
-{
-  length_ = length;
-  return;
-}
+void DRT::INPUT::IntVectorConditionComponent::SetLength(int length) { length_ = length; }
 
 
 /*----------------------------------------------------------------------*
@@ -488,11 +478,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::RealVectorConditionComponent::SetLength(int length)
-{
-  length_ = length;
-  return;
-}
+void DRT::INPUT::RealVectorConditionComponent::SetLength(int length) { length_ = length; }
 
 DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle(std::string name,
     Teuchos::RCP<IntConditionComponent> intcomp,
@@ -505,7 +491,9 @@ DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle(std::string name,
       intvectsepcomp_(std::move(intvectsepcomp)),
       intvectcomp_(std::move(intvectcomp)),
       realvectsepcomp_(std::move(realvectsepcomp)),
-      realvectcomp_(std::move(realvectcomp)){};
+      realvectcomp_(std::move(realvectcomp))
+{
+}
 
 void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
 {
@@ -541,7 +529,7 @@ void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::
   stream << " ";
   intvectcomp_[1]->Print(stream, cond);
   stream << " ";
-};
+}
 
 Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(ConditionDefinition* def,
     Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
@@ -582,7 +570,9 @@ DRT::INPUT::IntRealBundle::IntRealBundle(std::string name,
       intsepcomp_(std::move(intsepcomp)),
       intvectcomp_(std::move(intvectcomp)),
       realsepcomp_(std::move(realsepcomp)),
-      realvectcomp_(std::move(realvectcomp)){};
+      realvectcomp_(std::move(realvectcomp))
+{
+}
 
 /*----------------------------------------------------------------------*
  | CondCompBundle::DefaultLine()                              ehrl 09/12|
@@ -613,8 +603,6 @@ void DRT::INPUT::IntRealBundle::DefaultLine(std::ostream& stream)
     }
     realvectcomp_[i]->DefaultLine(stream);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -646,9 +634,7 @@ void DRT::INPUT::IntRealBundle::Print(std::ostream& stream, const DRT::Condition
     }
     realvectcomp_[i]->Print(stream, cond);
   }
-
-  return;
-};
+}
 
 /*----------------------------------------------------------------------*
  | CondCompBundle::Read()                                     ehrl 09/12|
@@ -711,8 +697,6 @@ void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
     i->DefaultLine(stream);
     stream << " ";
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -726,8 +710,6 @@ void DRT::INPUT::CondCompBundle::Print(std::ostream& stream, const DRT::Conditio
     i->Print(stream, cond);
     stream << " ";
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -742,20 +724,29 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundle::Read(ConditionDefini
   return condline;
 }
 
-/* -----------------------------------------------------------------------------------------------*
- | Class CondCompBundleSelector                                                         ehrl 09/12|
- * -----------------------------------------------------------------------------------------------*/
-
 /*----------------------------------------------------------------------*
- | CondCompBundleSelector::Constructor()                      ehrl 09/12|
  *----------------------------------------------------------------------*/
-DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(std::string name,
-    Teuchos::RCP<StringConditionComponent> stringcomp,
-    std::vector<Teuchos::RCP<CondCompBundle>> condcomp)
-    : ConditionComponent(std::move(name)),
-      stringcomp_(std::move(stringcomp)),
-      condcomp_(std::move(condcomp))
+DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(std::string name_condition_components,
+    const std::vector<Teuchos::RCP<CondCompBundle>>& condcomp)
+    : ConditionComponent(name_condition_components + "_selector_internal"),
+      stringcomp_(),
+      condcomp_()
 {
+  Teuchos::Array<std::string> names;
+  Teuchos::Array<int> models;
+
+  for (const auto& component : condcomp)
+  {
+    if (condcomp_.find(component->Model()) != condcomp_.end())
+      dserror("condition model number is not unique.");
+
+    condcomp_.emplace(component->Model(), component);
+    names.push_back(component->Name());
+    models.push_back(component->Model());
+  }
+
+  stringcomp_ = Teuchos::rcp(
+      new StringConditionComponent(std::move(name_condition_components), names[0], names, models));
 }
 
 /*----------------------------------------------------------------------*
@@ -775,15 +766,13 @@ void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
 
   for (auto& ii : condcomp_)
   {
-    if (defaultvalue.compare(ii->Name()) == 0)
+    if (defaultvalue == ii.second->Name())
     {
       // print default condition component bundle (default bundle)
-      ii->DefaultLine(stream);
+      ii.second->DefaultLine(stream);
       break;
     }
   }
-
-  return;
 }
 
 
@@ -804,15 +793,13 @@ void DRT::INPUT::CondCompBundleSelector::Print(std::ostream& stream, const DRT::
 
   for (auto& ii : condcomp_)
   {
-    if (defaultvalue.compare(ii->Name()) == 0)
+    if (defaultvalue == ii.second()->Name())
     {
       // print default condition component bundle (default bundle)
-      ii->DefaultLine(stream);
+      ii.second->DefaultLine(stream);
       break;
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -824,15 +811,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundleSelector::Read(Conditi
   stringcomp_->Read(def, condline, condition);
   // get model (number is associated with a enum)
   const int model = condition->GetInt(stringcomp_->Name());
-
-  // check if model defined in the condition match model defined in CondCompBundle
-  // safety check, if models in condcomp_ are ordered in the same way as the enum defined by you
-  if (model != condcomp_[model]->Model())
-    dserror(
-        "The model defined in your dat-file does not match the model type stored for the "
-        "CondCompBundle.\n"
-        "Probably, the order of the CondCompBundle in std::vector<CondCompBundle> does not match \n"
-        "the model order defined in the enum!!");
 
   // read associated parameters
   condcomp_[model]->Read(def, condline, condition);

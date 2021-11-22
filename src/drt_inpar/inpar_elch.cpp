@@ -370,14 +370,8 @@ void INPAR::ELCH::SetValidConditions(
     elechemcomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("epsilon")));
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("zero_cur")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("zero_cur")));
-    elechemcomponents.emplace_back(Teuchos::rcp(new CondCompBundleSelector("kinetic model bundle",
-        Teuchos::rcp(new StringConditionComponent("kinetic model", "Butler-Volmer",
-            Teuchos::tuple<std::string>("Butler-Volmer", "Butler-Volmer-Yang1997", "Tafel",
-                "linear", "Butler-Volmer-Newman", "Butler-Volmer-Bard", "Nernst", "zero"),
-            Teuchos::tuple<int>(INPAR::ELCH::butler_volmer, INPAR::ELCH::butler_volmer_yang1997,
-                INPAR::ELCH::tafel, INPAR::ELCH::linear, INPAR::ELCH::butler_volmer_newman,
-                INPAR::ELCH::butler_volmer_bard, INPAR::ELCH::nernst, INPAR::ELCH::zero))),
-        reactionmodel)));
+    elechemcomponents.emplace_back(
+        Teuchos::rcp(new CondCompBundleSelector("kinetic model", reactionmodel)));
 
     Teuchos::RCP<ConditionDefinition> electrodeboundarykineticspoint =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
@@ -498,11 +492,7 @@ void INPAR::ELCH::SetValidConditions(
       }
 
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new CondCompBundleSelector("kinetic model bundle",
-              Teuchos::rcp(new StringConditionComponent("kinetic model", "Butler-Volmer",
-                  Teuchos::tuple<std::string>("Butler-Volmer"),
-                  Teuchos::tuple<int>(INPAR::ELCH::butler_volmer))),
-              kineticmodels)));
+          Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
     }
 
     // insert input file line components into condition definitions

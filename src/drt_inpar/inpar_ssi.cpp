@@ -401,13 +401,8 @@ void INPAR::SSI::SetValidConditions(
 
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new SeparatorConditionComponent("KineticModel")));
-    surfmanifoldkinetics->AddComponent(Teuchos::rcp(
-        new CondCompBundleSelector("kinetics model for coupling scatra <-> scatra on manifold",
-            Teuchos::rcp(new StringConditionComponent("KineticModel", "NoFlux",
-                Teuchos::tuple<std::string>("ConstantInterfaceResistance", "NoFlux"),
-                Teuchos::tuple<int>(INPAR::SSI::kinetics_constantinterfaceresistance,
-                    INPAR::SSI::kinetics_noflux))),
-            kineticmodels)));
+    surfmanifoldkinetics->AddComponent(
+        Teuchos::rcp(new CondCompBundleSelector("KineticModel", kineticmodels)));
   }
 
   condlist.emplace_back(surfmanifoldkinetics);
