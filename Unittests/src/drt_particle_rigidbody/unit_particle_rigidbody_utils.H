@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_rigidbody/particle_rigidbody_utils.H"
 
 /*---------------------------------------------------------------------------*
@@ -31,12 +31,12 @@ namespace PARTICLERIGIDBODY
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
+class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() {}
+  void Setup() override {}
 
-  void tearDown() {}
+  void TearDown() override {}
 
   void Test_quaternion_clear()
   {

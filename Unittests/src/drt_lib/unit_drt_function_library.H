@@ -11,7 +11,7 @@
 #ifndef UNIT_DRT_FUNCTION_LIBRARY_H
 #define UNIT_DRT_FUNCTION_LIBRARY_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "../../../src/drt_lib/drt_function.H"
 #include "../../../src/drt_lib/drt_function_library.H"
 
@@ -25,7 +25,7 @@ namespace DRT
 
 
 
-class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
+class DRT::UTILS::TranslatedFunction_TestSuite : public BACICxxTestWrapper
 {
  private:
   constexpr static double A_CONSTANT = 1.0;
@@ -103,14 +103,14 @@ class DRT::UTILS::TranslatedFunction_TestSuite : public CxxTest::TestSuite
 
 
  public:
-  void setUp() override
+  void Setup() override
   {
     constant = Teuchos::rcp(new ConstantVectorFunctionStub());
     scalarField = Teuchos::rcp(new ScalarFieldFunctionStub());
     linearTime = Teuchos::rcp(new LinearTimeVectorFunctionStub());
   };
 
-  void tearDown() override
+  void TearDown() override
   {
     constant = Teuchos::null;
     linearTime = Teuchos::null;

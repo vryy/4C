@@ -12,7 +12,7 @@
 #define UNIT_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_H_
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_beam3/beam3r.H"
 #include "src/drt_so3/so_hex8.H"
@@ -35,13 +35,13 @@ namespace GEOMETRYPAIR
 /**
  * Class to test the line to volume geometry pair segmentation algorithm.
  */
-class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxTest::TestSuite
+class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public BACICxxTestWrapper
 {
  public:
   /**
    * Set up the testing environment.
    */
-  void setUp()
+  void Setup() override
   {
     // Set up the evaluation data container for the geometry pairs.
     Teuchos::ParameterList line_to_volume_params_list;
@@ -53,7 +53,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   /**
    * Delete pointers and other class variables.
    */
-  void tearDown()
+  void TearDown() override
   {
     // Dereference the pointers.
     evaluation_data_ = Teuchos::null;

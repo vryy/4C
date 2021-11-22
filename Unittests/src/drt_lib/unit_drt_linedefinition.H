@@ -7,7 +7,7 @@
 #ifndef UNIT_DRT_LINEDEFINITION_H_
 #define UNIT_DRT_LINEDEFINITION_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_lib/drt_linedefinition.H"
 
 namespace DRT
@@ -19,15 +19,15 @@ namespace DRT
 }  // namespace DRT
 
 
-class DRT::INPUT::LineDefinition_TestSuite : public CxxTest::TestSuite
+class DRT::INPUT::LineDefinition_TestSuite : public BACICxxTestWrapper
 {
  private:
   Teuchos::RCP<LineDefinition> lineDefinition;
 
  public:
-  void setUp() override { lineDefinition = Teuchos::rcp(new LineDefinition()); }
+  void Setup() override { lineDefinition = Teuchos::rcp(new LineDefinition()); }
 
-  void tearDown() override { lineDefinition = Teuchos::null; }
+  void TearDown() override { lineDefinition = Teuchos::null; }
 
   // Tag
   void Test_AddTag()

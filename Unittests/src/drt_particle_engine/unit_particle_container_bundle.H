@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_engine/particle_container_bundle.H"
 
 /*---------------------------------------------------------------------------*
@@ -28,7 +28,7 @@ namespace PARTICLEENGINE
 /*---------------------------------------------------------------------------*
  | particle container bundle test suite                       sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSuite
+class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEENGINE::ParticleContainerBundle> particlecontainerbundle_;
@@ -36,7 +36,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
   int statesvectorsize_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create and init particle container bundle
     particlecontainerbundle_ = std::unique_ptr<PARTICLEENGINE::ParticleContainerBundle>(
@@ -181,10 +181,10 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void tearDown() { particlecontainerbundle_ = nullptr; }
+  void TearDown() override { particlecontainerbundle_ = nullptr; }
 
   // note: the public functions Init(), Setup() and GetSpecificContainer() of class
-  // ParticleContainerBundle are called in setUp() and thus implicitly tested by all following
+  // ParticleContainerBundle are called in Setup() and thus implicitly tested by all following
   // unittests
 
   void Test_ScaleStateSpecificContainer()

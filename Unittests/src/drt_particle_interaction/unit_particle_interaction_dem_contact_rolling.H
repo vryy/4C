@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_dem_contact_rolling.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -32,7 +32,7 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | rolling contact handler test suite                         sfuchs 07/2019 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingViscous> contactrolling_;
@@ -47,7 +47,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public CxxTest::
   const double k_normal_ = 4.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -69,10 +69,10 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public CxxTest::
     contactrolling_->Setup(k_normal_);
   }
 
-  void tearDown() { contactrolling_ = nullptr; }
+  void TearDown() override { contactrolling_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactRollingViscous are
-  // called in setUp() and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
   void Test_EffectiveRadiusParticle()
   {
@@ -210,7 +210,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public CxxTest::
   }
 };
 
-class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactRollingCoulomb> contactrolling_;
@@ -222,7 +222,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::
   const double k_normal_ = 4.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -241,10 +241,10 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public CxxTest::
     contactrolling_->Setup(k_normal_);
   }
 
-  void tearDown() { contactrolling_ = nullptr; }
+  void TearDown() override { contactrolling_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactRollingViscous are
-  // called in setUp() and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
   void Test_EffectiveRadiusParticle()
   {

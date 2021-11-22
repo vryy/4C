@@ -12,7 +12,7 @@
 #ifndef BACI_UNIT_ELAST_COUPANISOEXPOSHEAR_H
 #define BACI_UNIT_ELAST_COUPANISOEXPOSHEAR_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Teuchos_RCPDecl.hpp>
 #include "src/linalg/linalg_fixedsizematrix.H"
 #include "src/drt_matelast/elast_coupanisoexposhear.H"
@@ -28,11 +28,11 @@ namespace MAT
 }  // namespace MAT
 
 // class implementation
-class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite : public CxxTest::TestSuite
+class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     SetupFibers();
     SetupStructuralTensors();
@@ -41,7 +41,7 @@ class MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension_TestSuite : public Cxx
   }
 
   /// Tear down test suite
-  void tearDown() override {}
+  void TearDown() override {}
 
   void SetupAnisotropyExtension(int init_mode, std::array<int, 2> fiber_ids)
   {

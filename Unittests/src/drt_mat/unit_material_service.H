@@ -12,7 +12,7 @@
 #ifndef BACI_UNIT_MATERIAL_SERVICE_H
 #define BACI_UNIT_MATERIAL_SERVICE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include <Teuchos_RCPDecl.hpp>
 #include "src/drt_mat/material_service.H"
@@ -23,11 +23,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
+class MAT::MaterialService_TestSuite : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     tens = Teuchos::rcp(new LINALG::Matrix<3, 3>);
 
@@ -40,7 +40,7 @@ class MAT::MaterialService_TestSuite : public CxxTest::TestSuite
   }
 
   /// Tear down test suite
-  void tearDown() override {}
+  void TearDown() override {}
 
   void Test_invariants_principal()
   {

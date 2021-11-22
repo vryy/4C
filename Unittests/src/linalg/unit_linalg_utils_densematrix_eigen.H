@@ -10,7 +10,7 @@
 #define UNIT_LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/linalg/linalg_utils_densematrix_eigen.H"
 #include "../common/special_assertions.H"
@@ -31,7 +31,7 @@ namespace LINALG
  *
  * \note The values for the matrix used in tests below are generated with python/numpy
  */
-class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
+class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
 {
  private:
   template <std::size_t size>

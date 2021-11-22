@@ -10,7 +10,7 @@
 #ifndef UNIT_SO_TET4_H_
 #define UNIT_SO_TET4_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Epetra_SerialComm.h>
 #include "src/drt_so3/so_tet4.H"
 #include "src/drt_lib/drt_globalproblem.H"
@@ -27,13 +27,13 @@ namespace DRT
 /**
  * Class to test main functionality of tet4 element
  */
-class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
+class DRT::ELEMENTS::So_tet4_TestSuite : public BACICxxTestWrapper
 {
  public:
   /**
    * Set up the testing environment.
    */
-  void setUp()
+  void Setup() override
   {
     // create a discretization, that creates node to element pointers and keeps the nodes alive
     testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
@@ -56,7 +56,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Delete pointers.
    */
-  void tearDown()
+  void TearDown() override
   {
     copytestele_ = Teuchos::null;
     testele_ = Teuchos::null;

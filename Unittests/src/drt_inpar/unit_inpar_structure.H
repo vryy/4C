@@ -8,7 +8,7 @@
 #ifndef UNIT_INPAR_STRUCTURE_H
 #define UNIT_INPAR_STRUCTURE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_inpar/inpar_structure.H"
 
@@ -22,7 +22,7 @@ namespace INPAR
 }  // namespace INPAR
 
 // Implementation
-class INPAR::STR::InparStructure_TestSuite : public CxxTest::TestSuite
+class INPAR::STR::InparStructure_TestSuite : public BACICxxTestWrapper
 {
  public:
   void Test_String2ModelType()

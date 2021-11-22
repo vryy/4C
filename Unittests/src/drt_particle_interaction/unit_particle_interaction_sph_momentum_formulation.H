@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.H"
 
 /*---------------------------------------------------------------------------*
@@ -29,13 +29,13 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | momentum formulation handler test suite                    sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationMonaghan> momentumformulation_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create momentum formulation handler
     momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationMonaghan>(
@@ -48,11 +48,10 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     momentumformulation_->Setup();
   }
 
-  void tearDown() { momentumformulation_ = nullptr; }
+  void TearDown() override { momentumformulation_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHMomentumFormulationMonaghan are
-  // called in setUp()
-  //       and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
   void Test_SpecificCoefficient()
   {
@@ -834,13 +833,13 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
   }
 };
 
-class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationAdami> momentumformulation_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create momentum formulation handler
     momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationAdami>(
@@ -853,11 +852,10 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     momentumformulation_->Setup();
   }
 
-  void tearDown() { momentumformulation_ = nullptr; }
+  void TearDown() override { momentumformulation_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHMomentumFormulationAdami are called
-  // in setUp()
-  //       and thus implicitly tested by all following unittests
+  // in Setup() and thus implicitly tested by all following unittests
 
   void Test_SpecificCoefficient()
   {

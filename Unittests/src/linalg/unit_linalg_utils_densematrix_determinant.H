@@ -10,7 +10,7 @@
 #define UNIT_LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/linalg/linalg_utils_densematrix_determinant.H"
 
@@ -30,7 +30,7 @@ namespace LINALG
  *       > A = Table[RandomReal[WorkingPrecision->50], {i, n}, {j, n}];
  *       where n needs do be replace by the dimension, e.g., n=2, n=3, or n=4
  */
-class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
+class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
 {
  public:
   void Test_Determinant2x2()

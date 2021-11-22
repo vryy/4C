@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_engine/particle_container.H"
 
 /*---------------------------------------------------------------------------*
@@ -28,7 +28,7 @@ namespace PARTICLEENGINE
 /*---------------------------------------------------------------------------*
  | particle container test suite                              sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
+class PARTICLEENGINE::ParticleContainer_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEENGINE::ParticleContainer> container_;
@@ -36,7 +36,7 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
   int statesvectorsize_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     int size = 7;
     std::set<StateEnum> stateEnumSet = {
@@ -110,10 +110,10 @@ class PARTICLEENGINE::ParticleContainer_TestSuite : public CxxTest::TestSuite
     }
   }
 
-  void tearDown() { container_ = nullptr; }
+  void TearDown() override { container_ = nullptr; }
 
   // note: the public functions Init(), Setup() and AddParticle() of class ParticleContainer are
-  // called in setUp() and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
   void Test_IncreaseContainerSize()
   {

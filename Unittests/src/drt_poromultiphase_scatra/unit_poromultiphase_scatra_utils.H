@@ -11,7 +11,7 @@
 #define UNITTESTS_POROMULTIPHASE_SCATRA_UTILS_H_
 
 // headers
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 
 // forward declarations
@@ -30,14 +30,14 @@ namespace POROMULTIPHASESCATRA
  * numerical inversion of a known function, so we can test if the inversion gives correct results
  * for a known forward relation.
  */
-class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxTest::TestSuite
+class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACICxxTestWrapper
 {
  public:
   //! set up
-  void setUp() {}
+  void Setup() override {}
 
   //! tear down
-  void tearDown() {}
+  void TearDown() override {}
 
   //! test corner value Pb = 0 mmHg
   void Test_GetOxyPartialPressure_Pb_0()

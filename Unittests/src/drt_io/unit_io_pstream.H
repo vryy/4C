@@ -10,7 +10,7 @@
 #ifndef UNIT_IO_PSTREAM_H_
 #define UNIT_IO_PSTREAM_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <stdexcept>
 #include <Epetra_SerialComm.h>
 #include <mpi.h>
@@ -21,13 +21,13 @@ namespace IO
   class Pstream_TestSuite;
 }
 
-class IO::Pstream_TestSuite : public CxxTest::TestSuite
+class IO::Pstream_TestSuite : public BACICxxTestWrapper
 {
  private:
  public:
-  void setUp() {}
+  void Setup() override {}
 
-  void tearDown() {}
+  void TearDown() override {}
 
   void Test_uninitializedUse()
   {

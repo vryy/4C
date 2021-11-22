@@ -12,7 +12,7 @@
 #ifndef BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 #define BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
 
@@ -24,11 +24,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSuite
+class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     FM_(0, 0) = 1.1;
     FM_(1, 1) = 1.2;
@@ -48,7 +48,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     iCinM_.MultiplyNT(iFinM_, iFinM_);
   }
   /// Tear down test suite
-  void tearDown() override {}
+  void TearDown() override {}
 
   void Test_EvaluateCe()
   {

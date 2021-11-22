@@ -12,7 +12,7 @@
 #define UNIT_BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_H
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <vector>
 
 #include "../../../src/drt_beam3/beam3eb.H"
@@ -37,14 +37,14 @@ namespace BEAMINTERACTION
   /**
    * Class to test the local coupling matrices calculated by the beam to fluid meshtying gpts pair.
    */
-  class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : CxxTest::TestSuite,
+  class BEAMINTERACTION::BeamToFluidMeshtyingPairGPTS_TestSuite : BACICxxTestWrapper,
                                                                   BeamToFluidMeshtyingPairGaussPoint
   {
    public:
     /**
      * \brief Set up the testing environment.
      */
-    void setUp()
+    void Setup() override
     {
       // Set up the evaluation data container for the geometry pairs.
       Teuchos::ParameterList line_to_volume_params_list;
@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Delete pointers and other class variables.
      */
-    void tearDown()
+    void TearDown() override
     {
       // Dereference the pointers.
       evaluation_data_ = Teuchos::null;

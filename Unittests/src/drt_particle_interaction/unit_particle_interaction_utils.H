@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
 /*---------------------------------------------------------------------------*
@@ -31,12 +31,12 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | pow helper test suite                                      sfuchs 10/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::UTILS::PowHelper_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() {}
+  void Setup() override {}
 
-  void tearDown() {}
+  void TearDown() override {}
 
   void Test_pow()
   {

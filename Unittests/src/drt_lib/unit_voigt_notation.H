@@ -10,7 +10,7 @@
 #ifndef UNIT_VOIGT_NOTATION_H
 #define UNIT_VOIGT_NOTATION_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include <Teuchos_RCPDecl.hpp>
 #include <src/drt_lib/voigt_notation.H>
@@ -23,10 +23,10 @@ namespace UTILS
   }
 }  // namespace UTILS
 
-class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
+class UTILS::VOIGT::VoigtNotation_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() override
+  void Setup() override
   {
     tens = Teuchos::rcp(new LINALG::Matrix<3, 3>);
     itens = Teuchos::rcp(new LINALG::Matrix<3, 3>);
@@ -76,7 +76,7 @@ class UTILS::VOIGT::VoigtNotation_TestSuite : public CxxTest::TestSuite
     (*itens_strain)(5) = 2 * -0.0208824;
   }
 
-  void tearDown() override {}
+  void TearDown() override {}
 
   void Test_MatrixToVector_StressLike()
   {

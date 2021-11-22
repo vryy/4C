@@ -10,7 +10,7 @@
 #ifndef UNIT_LINEAR_COCONSTLAW_H
 #define UNIT_LINEAR_COCONSTLAW_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "../../../src/drt_contact_constitutivelaw/linear_contactconstitutivelaw.H"
 
@@ -23,11 +23,11 @@ namespace CONTACT
 }  // namespace CONTACT
 
 // class implementation
-class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public CxxTest::TestSuite
+class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public BACICxxTestWrapper
 {
  public:
   //! set up unit testing
-  void setUp()
+  void Setup() override
   {
     // initialize container for material parameters
     const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
@@ -47,7 +47,7 @@ class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public CxxTest
   }
 
   //! tear down unit testing
-  void tearDown()
+  void TearDown() override
   {
     coconstlaw_ = Teuchos::null;
     return;

@@ -11,7 +11,7 @@
 #ifndef UNIT_ELECTRODE_H
 #define UNIT_ELECTRODE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_inpar/inpar_elch.H"
 
@@ -25,11 +25,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::Electrode_TestSuite : public CxxTest::TestSuite
+class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 {
  public:
   //! set up unit testing for electrode material
-  void setUp() override
+  void Setup() override
   {
     // initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material());
@@ -299,7 +299,7 @@ class MAT::Electrode_TestSuite : public CxxTest::TestSuite
   }
 
   //! tear down unit testing for electrode material
-  void tearDown() override
+  void TearDown() override
   {
     // free memory by resetting pointers and clearing vectors
     anode_redlichkister_ = Teuchos::null;

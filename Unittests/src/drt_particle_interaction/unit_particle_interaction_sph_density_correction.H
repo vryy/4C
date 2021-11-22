@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_sph_density_correction.H"
 
 /*---------------------------------------------------------------------------*
@@ -30,13 +30,13 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | density correction handler test suite                      sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionInterior> densitycorrection_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create density correction handler
     densitycorrection_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionInterior>(
@@ -49,11 +49,10 @@ class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public CxxTe
     densitycorrection_->Setup();
   }
 
-  void tearDown() { densitycorrection_ = nullptr; }
+  void TearDown() override { densitycorrection_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
   void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
 
@@ -82,13 +81,13 @@ class PARTICLEINTERACTION::SPHDensityCorrectionInterior_TestSuite : public CxxTe
   }
 };
 
-class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionNormalized> densitycorrection_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create density correction handler
     densitycorrection_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionNormalized>(
@@ -101,11 +100,10 @@ class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public Cxx
     densitycorrection_->Setup();
   }
 
-  void tearDown() { densitycorrection_ = nullptr; }
+  void TearDown() override { densitycorrection_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
   void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), false); }
 
@@ -134,13 +132,13 @@ class PARTICLEINTERACTION::SPHDensityCorrectionNormalized_TestSuite : public Cxx
   }
 };
 
-class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionRandles> densitycorrection_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create density correction handler
     densitycorrection_ = std::unique_ptr<PARTICLEINTERACTION::SPHDensityCorrectionRandles>(
@@ -153,11 +151,10 @@ class PARTICLEINTERACTION::SPHDensityCorrectionRandles_TestSuite : public CxxTes
     densitycorrection_->Setup();
   }
 
-  void tearDown() { densitycorrection_ = nullptr; }
+  void TearDown() override { densitycorrection_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
   void Test_ComputeDensityBC() { TS_ASSERT_EQUALS(densitycorrection_->ComputeDensityBC(), true); }
 

@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_sph_kernel.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -34,7 +34,7 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | kernel handler test suite                                  sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_1D_;
@@ -42,7 +42,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
   std::unique_ptr<PARTICLEINTERACTION::SPHKernelCubicSpline> kernel_3D_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_sph_1D;
@@ -79,7 +79,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
     kernel_3D_->Setup();
   }
 
-  void tearDown()
+  void TearDown() override
   {
     kernel_1D_ = nullptr;
     kernel_2D_ = nullptr;
@@ -87,7 +87,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
   }
 
   // note: the public functions Init() and Setup() of class SPHKernelCubicSpline are called in
-  // setUp() and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
   void Test_KernelSpaceDimension()
   {
@@ -318,7 +318,7 @@ class PARTICLEINTERACTION::SPHKernelCubicSpline_TestSuite : public CxxTest::Test
   }
 };
 
-class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_1D_;
@@ -326,7 +326,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
   std::unique_ptr<PARTICLEINTERACTION::SPHKernelQuinticSpline> kernel_3D_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_sph_1D;
@@ -363,7 +363,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
     kernel_3D_->Setup();
   }
 
-  void tearDown()
+  void TearDown() override
   {
     kernel_1D_ = nullptr;
     kernel_2D_ = nullptr;
@@ -371,7 +371,7 @@ class PARTICLEINTERACTION::SPHKernelQuinticSpline_TestSuite : public CxxTest::Te
   }
 
   // note: the public functions Init() and Setup() of class SPHKernelQuinticSpline are called in
-  // setUp() and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
   void Test_KernelSpaceDimension()
   {

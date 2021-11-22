@@ -12,7 +12,7 @@
 #define UNIT_BEAMINTERACTION_BEAM_TO_SOLIV_VOLUME_MESHTYING_MORTAR_H_
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_beam3/beam3r.H"
 #include "src/drt_so3/so_hex8.H"
@@ -34,13 +34,13 @@ namespace BEAMINTERACTION
 /**
  * Class to test the local mortar matrices calculated by the beam to volume mesh tying mortar pair.
  */
-class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public CxxTest::TestSuite
+class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public BACICxxTestWrapper
 {
  public:
   /**
    * \brief Set up the testing environment.
    */
-  void setUp()
+  void Setup() override
   {
     // Set up the evaluation data container for the geometry pairs.
     Teuchos::ParameterList line_to_volume_params_list;
@@ -52,7 +52,7 @@ class BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar_TestSuite : public C
   /**
    * \brief Delete pointers and other class variables.
    */
-  void tearDown()
+  void TearDown() override
   {
     // Dereference the pointers.
     evaluation_data_ = Teuchos::null;

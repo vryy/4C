@@ -10,7 +10,7 @@
 #ifndef UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_
 #define UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_so3/so_hex8_determinant_analysis.H"
 
 namespace DRT
@@ -24,7 +24,7 @@ namespace DRT
 /**
  * Class to test determinant check of hex8 element
  */
-class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
+class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
 {
   Teuchos::RCP<DRT::ELEMENTS::So_Hex8_Determinant_Analysis> analyser_;
 
@@ -32,12 +32,12 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
   /**
    * Set up the testing environment.
    */
-  void setUp() override { analyser_ = DRT::ELEMENTS::So_Hex8_Determinant_Analysis::create(); }
+  void Setup() override { analyser_ = DRT::ELEMENTS::So_Hex8_Determinant_Analysis::create(); }
 
   /**
    * Delete pointers.
    */
-  void tearDown() override { analyser_ = Teuchos::null; }
+  void TearDown() override { analyser_ = Teuchos::null; }
 
   /** Test coordinates of an undeformed element (sanity check)
    *  Expected result = VALID */

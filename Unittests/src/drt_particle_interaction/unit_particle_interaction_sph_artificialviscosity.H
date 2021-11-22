@@ -15,7 +15,7 @@ interactions
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_sph_artificialviscosity.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -30,13 +30,13 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | artificial viscosity handler test suite                    sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity> artificialviscosity_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create artificial viscosity handler
     artificialviscosity_ = std::unique_ptr<PARTICLEINTERACTION::SPHArtificialViscosity>(
@@ -49,11 +49,10 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public CxxTest::Te
     artificialviscosity_->Setup();
   }
 
-  void tearDown() { artificialviscosity_ = nullptr; }
+  void TearDown() override { artificialviscosity_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
   void Test_ArtificialViscosity()
   {

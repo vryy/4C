@@ -12,7 +12,7 @@
 #ifndef BACI_UNIT_ELAST_COUPANISOEXPOBASE_H
 #define BACI_UNIT_ELAST_COUPANISOEXPOBASE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Teuchos_RCPDecl.hpp>
 #include "src/linalg/linalg_fixedsizematrix.H"
 #include "src/drt_matelast/elast_coupanisoexpo.H"
@@ -103,11 +103,11 @@ namespace MAT
 }  // namespace MAT
 
 // class implementation
-class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
+class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     LINALG::Matrix<3, 3> Id(false);
     MAT::IdentityMatrix(Id);
@@ -154,7 +154,7 @@ class MAT::ELASTIC::CoupAnisoExpoBase_TestSuite : public CxxTest::TestSuite
   }
 
   /// Tear down test suite
-  void tearDown() override {}
+  void TearDown() override {}
 
   void Test_AddStrainEnergy()
   {
