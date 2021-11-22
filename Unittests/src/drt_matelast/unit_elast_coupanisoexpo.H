@@ -19,7 +19,7 @@
 #include "src/drt_mat/anisotropy.H"
 #include "src/drt_matelast/elast_aniso_structuraltensor_strategy.H"
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 namespace MAT
 {

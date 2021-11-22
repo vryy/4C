@@ -13,7 +13,7 @@
 #include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/linalg/linalg_utils_densematrix_eigen.H"
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include <cstring>

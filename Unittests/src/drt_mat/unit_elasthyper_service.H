@@ -14,7 +14,7 @@
 #include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Teuchos_RCPDecl.hpp>
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 #include <src/drt_mat/elasthyper_service.H>
 #include <src/drt_matelast/elast_isoneohooke.H>

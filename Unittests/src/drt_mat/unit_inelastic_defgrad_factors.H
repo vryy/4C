@@ -13,7 +13,7 @@
 #define BACI_UNIT_INELASTIC_DEFGRAD_FACTORS_H
 
 #include "Unittests/src/common/unit_cxx_test_wrapper.H"
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 #include "src/drt_inpar/inpar_material.H"
 

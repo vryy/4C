@@ -16,7 +16,7 @@
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 namespace MAT
 {

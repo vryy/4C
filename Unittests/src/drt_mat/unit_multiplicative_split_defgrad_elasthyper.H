@@ -16,7 +16,7 @@
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper.H"
 #include "src/drt_inpar/inpar_structure.H"
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 namespace MAT
 {
