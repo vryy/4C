@@ -12,7 +12,7 @@
 #define UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_AVERAGED_NORMALS_H_
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include <Epetra_SerialComm.h>
 #include "src/drt_geometry_pair/geometry_pair_element_faces.H"
@@ -32,13 +32,13 @@ namespace GEOMETRYPAIR
 /**
  * \brief Class to test the surface patch functionality of the geometry pairs.
  */
-class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::TestSuite
+class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public BACICxxTestWrapper
 {
  public:
   /**
    * \brief Set up the testing environment, is called before each test.
    */
-  void setUp()
+  void Setup() override
   {
     Teuchos::RCP<Epetra_SerialComm> comm = Teuchos::rcp<Epetra_SerialComm>(new Epetra_SerialComm());
     discret_ = Teuchos::rcp(new DRT::Discretization("unit_test", comm));
@@ -47,12 +47,12 @@ class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::T
   /**
    * \brief Delete pointers and other class variables, is called after each test.
    */
-  void tearDown() { discret_ = Teuchos::null; }
+  void TearDown() override { discret_ = Teuchos::null; }
 
   /**
    * \brief Test the evaluation of averaged normals on a patch of hex8/quad4 elements.
    */
-  void test_surface_patch_averaged_normals_quad4()
+  void TestSurfacePatchAveragedNormalsQuad4()
   {
     // Define the type of the face elements.
     using surface = GEOMETRYPAIR::t_quad4;
@@ -67,16 +67,15 @@ class GEOMETRYPAIR::GeometryPairLineToSurfacePatch_TestSuite : public CxxTest::T
 
     // Fill the discretization object with the geometry.
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_map;
-    xtest_surface_patch_quad4<face_element_type>(discret_, face_elements_map);
+    XtestSurfacePatchQuad4<face_element_type>(discret_, face_elements_map);
 
     // Load the result vectors.
     std::vector<double> reference_normals, current_normals, position;
     std::vector<std::vector<double>> current_normals_derivative, position_derivative;
     std::vector<std::vector<std::vector<double>>> current_normals_derivative_2,
         position_derivative_2;
-    xtest_surface_patch_quad4_results(reference_normals, current_normals,
-        current_normals_derivative, current_normals_derivative_2, position, position_derivative,
-        position_derivative_2);
+    XtestSurfacePatchQuad4Results(reference_normals, current_normals, current_normals_derivative,
+        current_normals_derivative_2, position, position_derivative, position_derivative_2);
 
     // Face element that will be analyzed.
     const unsigned int investigated_face_element_volume_id = 14;

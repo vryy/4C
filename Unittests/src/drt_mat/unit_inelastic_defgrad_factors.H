@@ -12,8 +12,8 @@
 #ifndef BACI_UNIT_INELASTIC_DEFGRAD_FACTORS_H
 #define BACI_UNIT_INELASTIC_DEFGRAD_FACTORS_H
 
-#include "cxxtest/TestSuite.h"
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
+#include "Unittests/src/common/special_assertions.H"
 
 #include "src/drt_inpar/inpar_material.H"
 
@@ -31,11 +31,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
+class MAT::InelasticDefgradFactors_TestSuite : public BACICxxTestWrapper
 {
  public:
   /// set up test suite
-  void setUp() override
+  void Setup() override
   {
     // clang-format off
     // set up the deformation gradient
@@ -271,7 +271,7 @@ class MAT::InelasticDefgradFactors_TestSuite : public CxxTest::TestSuite
   }
 
   /// tear down test suite
-  void tearDown() override
+  void TearDown() override
   {
     linear_shape_ = Teuchos::null;
     polynomial_shape_ = Teuchos::null;

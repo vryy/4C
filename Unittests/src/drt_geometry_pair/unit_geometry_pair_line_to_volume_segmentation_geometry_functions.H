@@ -20,8 +20,7 @@ namespace GEOMETRYPAIR
    * \brief The following code part is generated with meshpy. The function defines element
    * coordinates for unit test examples.
    */
-  void xtest_line_along_element_surface_geometry(
-      std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
+  void XtestLineAlongElementSurfaceGeometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
@@ -115,7 +114,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Create the geometry for two solid elements and a line between them.
    */
-  void xtest_line_in_small_elements_geometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
+  void XtestLineInSmallElementsGeometry(std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<LINALG::Matrix<12, 1, double>>& q_line_elements,
       std::vector<LINALG::Matrix<9, 1, double>>& q_rot_line_elements,
@@ -210,7 +209,7 @@ namespace GEOMETRYPAIR
    * \brief The following code part is generated with meshpy. The function defines element
    * coordinates for unit test examples.
    */
-  void xtest_multiple_intersections_hex27_geometry(
+  void XtestMultipleIntersectionsHex27Geometry(
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<LINALG::Matrix<12, 1, double>>& q_line_elements,
@@ -337,7 +336,7 @@ namespace GEOMETRYPAIR
    * \brief The following code part is generated with meshpy. The function defines element
    * coordinates for unit test examples.
    */
-  void xtest_multiple_intersections_tet10_geometry(
+  void XtestMultipleIntersectionsTet10Geometry(
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<LINALG::Matrix<12, 1, double>>& q_line_elements,
@@ -414,7 +413,7 @@ namespace GEOMETRYPAIR
    *
    * The solid is a 90degree element of a hollow cylinder.
    */
-  void xtest_multiple_intersections_nurbs27_geometry(
+  void XtestMultipleIntersectionsNurbs27Geometry(
       std::vector<Teuchos::RCP<DRT::Element>>& line_elements,
       std::vector<Teuchos::RCP<DRT::Element>>& volume_elements,
       std::vector<LINALG::Matrix<12, 1, double>>& q_line_elements,

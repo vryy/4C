@@ -10,7 +10,7 @@
 #ifndef UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_
 #define UNITTESTS_SRC_DRT_SO3_UNIT_SO_HEX8_DETERMINANT_ANALYSIS_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_so3/so_hex8_determinant_analysis.H"
 
 namespace DRT
@@ -24,7 +24,7 @@ namespace DRT
 /**
  * Class to test determinant check of hex8 element
  */
-class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
+class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public BACICxxTestWrapper
 {
   Teuchos::RCP<DRT::ELEMENTS::So_Hex8_Determinant_Analysis> analyser_;
 
@@ -32,16 +32,16 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
   /**
    * Set up the testing environment.
    */
-  void setUp() override { analyser_ = DRT::ELEMENTS::So_Hex8_Determinant_Analysis::create(); }
+  void Setup() override { analyser_ = DRT::ELEMENTS::So_Hex8_Determinant_Analysis::create(); }
 
   /**
    * Delete pointers.
    */
-  void tearDown() override { analyser_ = Teuchos::null; }
+  void TearDown() override { analyser_ = Teuchos::null; }
 
   /** Test coordinates of an undeformed element (sanity check)
    *  Expected result = VALID */
-  void test_element_undeformed()
+  void TestElementUndeformed()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
@@ -82,7 +82,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates following Fig. 5 in Johnen2017
    *  Expected result = INVALID */
-  void test_element_fig5_johnen2017()
+  void TestElementFig5Johnen2017()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
@@ -123,7 +123,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates following Fig. 6 in Johnen2017
    *  Expected result = VALID */
-  void test_element_fig6_johnen2017()
+  void TestElementFig6Johnen2017()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;
@@ -164,7 +164,7 @@ class DRT::ELEMENTS::So_hex8_DetAnalysis_TestSuite : public CxxTest::TestSuite
 
   /** Test coordinates following Fig. 7 in Johnen2017
    *  Expected result = INVALID */
-  void test_element_fig7_johnen2017()
+  void TestElementFig7Johnen2017()
   {
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
     std::cout << "\n\n" << std::string(80, '*') << "\n" << __PRETTY_FUNCTION__;

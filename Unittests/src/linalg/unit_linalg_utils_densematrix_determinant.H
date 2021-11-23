@@ -10,7 +10,7 @@
 #define UNIT_LINALG_UTILS_DENSEMATRIX_DETERMINANT_H
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/linalg/linalg_utils_densematrix_determinant.H"
 
@@ -30,10 +30,10 @@ namespace LINALG
  *       > A = Table[RandomReal[WorkingPrecision->50], {i, n}, {j, n}];
  *       where n needs do be replace by the dimension, e.g., n=2, n=3, or n=4
  */
-class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
+class LINALG::Linalg_Determinant_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void test_Determinant2x2()
+  void TestDeterminant2x2()
   {
     LINALG::Matrix<2, 2, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -44,7 +44,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(LINALG::Determinant(A), -0.2639054076334587, 1e-14);
   }
 
-  void test_Determinant3x3()
+  void TestDeterminant3x3()
   {
     LINALG::Matrix<3, 3, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -60,7 +60,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(LINALG::Determinant(A), -0.1008304741716571, 1e-14);
   }
 
-  void test_Determinant4x4()
+  void TestDeterminant4x4()
   {
     LINALG::Matrix<4, 4, double> A;
     A(0, 0) = 0.72903241936703114203;
@@ -83,7 +83,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(LINALG::Determinant(A), -0.01620776397174742, 1e-14);
   }
 
-  void test_DeterminantLU_2x2()
+  void TestDeterminantLU2x2()
   {
     LINALG::SerialDenseMatrix A(2, 2, true);
     A(0, 0) = 0.72903241936703114203;
@@ -94,7 +94,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.2639054076334587, 1e-14);
   }
 
-  void test_DeterminantLU_3x3()
+  void TestDeterminantLU3x3()
   {
     LINALG::SerialDenseMatrix A(3, 3, true);
     A(0, 0) = 0.72903241936703114203;
@@ -110,7 +110,7 @@ class LINALG::Linalg_Determinant_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(LINALG::DeterminantLU(A), -0.1008304741716571, 1e-14);
   }
 
-  void test_DeterminantLU_4x4()
+  void TestDeterminantLU4x4()
   {
     LINALG::SerialDenseMatrix A(4, 4, true);
     A(0, 0) = 0.72903241936703114203;

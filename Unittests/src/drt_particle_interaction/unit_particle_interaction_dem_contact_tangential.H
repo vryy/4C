@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_dem_contact_tangential.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -32,7 +32,7 @@ namespace PARTICLEINTERACTION
  | tangential contact handler test suite                      sfuchs 02/2019 |
  *---------------------------------------------------------------------------*/
 // clang-format off
-class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : public BACICxxTestWrapper
 // clang-format on
 {
  private:
@@ -45,7 +45,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
   const double k_normal_ = 4.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -64,12 +64,12 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
     contacttangential_->Setup(k_normal_);
   }
 
-  void tearDown() { contacttangential_ = nullptr; }
+  void TearDown() override { contacttangential_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactTangentialLinearSpringDamp are
-  // called in setUp() and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
-  void test_TangentialContactForce_stick()
+  void TestTangentialContactForce_stick()
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;
@@ -106,7 +106,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
     TS_ASSERT_EQUALS(stick_tangential, true);
   }
 
-  void test_TangentialContactForce_slip()
+  void TestTangentialContactForce_slip()
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;
@@ -143,7 +143,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
     TS_ASSERT_EQUALS(stick_tangential, false);
   }
 
-  void test_TangentialPotentialEnergy()
+  void TestTangentialPotentialEnergy()
   {
     double gap_tangential[3] = {0.0};
     gap_tangential[0] = 0.1;

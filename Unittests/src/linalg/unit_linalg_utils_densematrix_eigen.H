@@ -10,10 +10,10 @@
 #define UNIT_LINALG_UTILS_DENSEMATRIX_EIGEN_H
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/linalg/linalg_utils_densematrix_eigen.H"
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 #include <Epetra_SerialDenseMatrix.h>
 #include <Epetra_SerialDenseVector.h>
 #include <cstring>
@@ -31,7 +31,7 @@ namespace LINALG
  *
  * \note The values for the matrix used in tests below are generated with python/numpy
  */
-class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
+class LINALG::Linalg_Eigen_TestSuite : public BACICxxTestWrapper
 {
  private:
   template <std::size_t size>
@@ -118,7 +118,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
   }
 
  public:
-  void test_SymmetricEigenValues2x2()
+  void TestSymmetricEigenValues2x2()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -134,7 +134,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenValues(L, eigenvalues);
   }
 
-  void test_SymmetricEigenProblem2x2()
+  void TestSymmetricEigenProblem2x2()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -151,7 +151,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, L, eigenvectors, eigenvalues);
   }
 
-  void test_SymmetricEigen2x2NoVectors()
+  void TestSymmetricEigen2x2NoVectors()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -167,7 +167,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenValues(L, eigenvalues);
   }
 
-  void test_SymmetricEigenProblem2x2Vectors()
+  void TestSymmetricEigenProblem2x2Vectors()
   {
     Epetra_SerialDenseMatrix A(2, 2, false);
     A(0, 0) = 0.9964456203546112;
@@ -184,7 +184,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, L, eigenvectors, eigenvalues);
   }
 
-  void test_SYEV2x2()
+  void TestSYEV2x2()
   {
     LINALG::Matrix<2, 2> A(false);
     A(0, 0) = 0.9964456203546112;
@@ -201,7 +201,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, S, V, eigenvalues);
   }
 
-  void test_SymmetricEigenValues3x3()
+  void TestSymmetricEigenValues3x3()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -223,7 +223,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenValues(L, eigenvalues);
   }
 
-  void test_SymmetricEigenProblem3x3()
+  void TestSymmetricEigenProblem3x3()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -246,7 +246,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void test_SymmetricEigen3x3NoVectors()
+  void TestSymmetricEigen3x3NoVectors()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -268,7 +268,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenValues(L, eigenvalues);
   }
 
-  void test_SymmetricEigenProblem3x3Vectors()
+  void TestSymmetricEigenProblem3x3Vectors()
   {
     Epetra_SerialDenseMatrix A(3, 3, false);
     A(0, 0) = 1.2966342861458506;
@@ -291,7 +291,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void test_SYEV3x3()
+  void TestSYEV3x3()
   {
     LINALG::Matrix<3, 3> A(false);
     A(0, 0) = 1.2966342861458506;
@@ -314,7 +314,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, S, V, eigenvalues);
   }
 
-  void test_SymmetricEigenValues4x4()
+  void TestSymmetricEigenValues4x4()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -343,7 +343,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenValues(L, eigenvalues);
   }
 
-  void test_SymmetricEigenProblem4x4()
+  void TestSymmetricEigenProblem4x4()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -373,7 +373,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void test_SymmetricEigen4x4NoVectors()
+  void TestSymmetricEigen4x4NoVectors()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -402,7 +402,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenValues(L, eigenvalues);
   }
 
-  void test_SymmetricEigenProblem4x4Vectors()
+  void TestSymmetricEigenProblem4x4Vectors()
   {
     Epetra_SerialDenseMatrix A(4, 4, false);
     A(0, 0) = 0.5561130226871257;
@@ -432,7 +432,7 @@ class LINALG::Linalg_Eigen_TestSuite : public CxxTest::TestSuite
     AssertEigenProblem(A, L, V, eigenvalues);
   }
 
-  void test_SYEV4x4()
+  void TestSYEV4x4()
   {
     LINALG::Matrix<4, 4> A(false);
     A(0, 0) = 0.5561130226871257;

@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_rigidbody/particle_rigidbody_utils.H"
 
 /*---------------------------------------------------------------------------*
@@ -31,14 +31,14 @@ namespace PARTICLERIGIDBODY
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
+class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() {}
+  void Setup() override {}
 
-  void tearDown() {}
+  void TearDown() override {}
 
-  void test_quaternion_clear()
+  void TestQuaternionClear()
   {
     double q[4] = {1.0, 2.0, 3.0, 4.0};
     UTILS::quaternion_clear(q);
@@ -49,7 +49,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q[3], 1.0, 1.0e-14);
   }
 
-  void test_quaternion_set()
+  void TestQuaternionSet()
   {
     double q1[4] = {0.0, 0.0, 0.0, 1.0};
     const double q2[4] = {1.0, 2.0, 3.0, 4.0};
@@ -62,7 +62,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q1[3], q2[3], 1.0e-14);
   }
 
-  void test_quaternion_invert()
+  void TestQuaternionInvert()
   {
     double q1[4] = {0.0, 0.0, 0.0, 1.0};
     const double q2[4] = {1.0, 2.0, 3.0, 4.0};
@@ -75,7 +75,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q1[3], q2[3], 1.0e-14);
   }
 
-  void test_quaternion_product()
+  void TestQuaternionProduct()
   {
     const double phi1[3] = {0.1, -2.0, 0.3};
     const double phi2[3] = {-0.8, 5.0, 0.0};
@@ -95,7 +95,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q12[3], 0.04320319605818204, 1.0e-14);
   }
 
-  void test_quaternion_from_angle_zero()
+  void TestQuaternionFromAngleZero()
   {
     const double phi[3] = {0.0, 0.0, 0.0};
 
@@ -108,7 +108,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q[3], 1.0, 1.0e-14);
   }
 
-  void test_quaternion_from_angle_x()
+  void TestQuaternionFromAngleX()
   {
     const double phi[3] = {M_PI / 2, 0.0, 0.0};
 
@@ -121,7 +121,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q[3], std::cos(M_PI / 4), 1.0e-14);
   }
 
-  void test_quaternion_from_angle_y()
+  void TestQuaternionFromAngleY()
   {
     const double phi[3] = {0.0, M_PI / 2, 0.0};
 
@@ -134,7 +134,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q[3], std::cos(M_PI / 4), 1.0e-14);
   }
 
-  void test_quaternion_from_angle_z()
+  void TestQuaternionFromAngleZ()
   {
     const double phi[3] = {0.0, 0.0, M_PI / 2};
 
@@ -147,7 +147,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q[3], std::cos(M_PI / 4), 1.0e-14);
   }
 
-  void test_quaternion_from_angle_general()
+  void TestQuaternionFromAngleGeneral()
   {
     const double phi[3] = {-M_PI / 3, M_PI, M_PI / 2};
 
@@ -160,7 +160,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(q[3], -0.2588190451025209, 1.0e-14);
   }
 
-  void test_quaternion_rotate_vector_x_around_z()
+  void TestQuaternionRotateVectorXAroundZ()
   {
     double v[3] = {1.0, 0.0, 0.0};
     double w[3] = {0.0, 0.0, 0.0};
@@ -174,7 +174,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(w[2], 0.0, 1.0e-14);
   }
 
-  void test_quaternion_rotate_vector_z_around_y()
+  void TestQuaternionRotateVectorZAroundY()
   {
     double v[3] = {0.0, 0.0, 1.0};
     double w[3] = {0.0, 0.0, 0.0};
@@ -188,7 +188,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(w[2], 0.0, 1.0e-14);
   }
 
-  void test_quaternion_rotate_vector_y_around_x()
+  void TestQuaternionRotateVectory_around_x()
   {
     double v[3] = {0.0, 1.0, 0.0};
     double w[3] = {0.0, 0.0, 0.0};
@@ -202,7 +202,7 @@ class PARTICLERIGIDBODY::UTILS::Quaternion_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_DELTA(w[2], 1.0, 1.0e-14);
   }
 
-  void test_quaternion_rotate_vector_general()
+  void TestQuaternionRotateVectorGeneral()
   {
     double v[3] = {0.5, 1.0, -2.0};
     double w[3] = {0.0, 0.0, 0.0};

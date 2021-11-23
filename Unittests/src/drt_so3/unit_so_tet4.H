@@ -10,7 +10,7 @@
 #ifndef UNIT_SO_TET4_H_
 #define UNIT_SO_TET4_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Epetra_SerialComm.h>
 #include "src/drt_so3/so_tet4.H"
 #include "src/drt_lib/drt_globalproblem.H"
@@ -27,13 +27,13 @@ namespace DRT
 /**
  * Class to test main functionality of tet4 element
  */
-class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
+class DRT::ELEMENTS::So_tet4_TestSuite : public BACICxxTestWrapper
 {
  public:
   /**
    * Set up the testing environment.
    */
-  void setUp()
+  void Setup() override
   {
     // create a discretization, that creates node to element pointers and keeps the nodes alive
     testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
@@ -56,7 +56,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Delete pointers.
    */
-  void tearDown()
+  void TearDown() override
   {
     copytestele_ = Teuchos::null;
     testele_ = Teuchos::null;
@@ -71,7 +71,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test Number of DOFs per node function
    */
-  void test_NumDofPerNode()
+  void TestNumDofPerNode()
   {
     double pd[3] = {1, 2, 3};
     DRT::Node node_dummy(0, pd, false);
@@ -82,7 +82,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test Number of DOFs per element
    */
-  void test_NumDofPerElement()
+  void TestNumDofPerElement()
   {
     TS_ASSERT_EQUALS(testele_->NumDofPerElement(), 0);
     TS_ASSERT_EQUALS(copytestele_->NumDofPerElement(), 0);
@@ -91,7 +91,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test the polynomial degree
    */
-  void test_Degree()
+  void TestDegree()
   {
     TS_ASSERT_EQUALS(testele_->Degree(), 1);
     TS_ASSERT_EQUALS(copytestele_->Degree(), 1);
@@ -100,7 +100,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test the number of volumes the element is composed of
    */
-  void test_NumVolume()
+  void TestNumVolume()
   {
     TS_ASSERT_EQUALS(testele_->NumVolume(), 1);
     TS_ASSERT_EQUALS(copytestele_->NumVolume(), 1);
@@ -109,7 +109,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test the number of surfaces the element is composed of
    */
-  void test_NumSurface()
+  void TestNumSurface()
   {
     TS_ASSERT_EQUALS(testele_->NumSurface(), 4);
     TS_ASSERT_EQUALS(copytestele_->NumSurface(), 4);
@@ -118,7 +118,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test the number of lines the element is composed of
    */
-  void test_NumLine()
+  void TestNumLine()
   {
     TS_ASSERT_EQUALS(testele_->NumLine(), 6);
     TS_ASSERT_EQUALS(copytestele_->NumLine(), 6);
@@ -127,7 +127,7 @@ class DRT::ELEMENTS::So_tet4_TestSuite : public CxxTest::TestSuite
   /**
    * Test the calculation of the element center coordinates
    */
-  void test_ElementCenterRefeCoords()
+  void TestElementCenterRefeCoords()
   {
     double midpoint[3] = {0.5625, 0.2050, 0.6550};
     for (int i = 0; i < 3; ++i)

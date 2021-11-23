@@ -45,10 +45,10 @@ def is_unittest_file(fname):
   if not os.path.splitext(parts[-1])[1] in ".h .H .hpp".split():
     return False
   
-  # open file and check, whether it contains a CxxTest::TestSuite
+  # open file and check, whether it contains a BACICxxTestWrapper
   with open(fname, 'r') as f:
     content = cstyle_comment_remover('\n'.join(f.readlines()))
-    if 'CxxTest::TestSuite' not in content:
+    if 'BACICxxTestWrapper' not in content:
       return False
   
   return True

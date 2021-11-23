@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_sph_momentum_formulation.H"
 
 /*---------------------------------------------------------------------------*
@@ -29,13 +29,13 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | momentum formulation handler test suite                    sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationMonaghan> momentumformulation_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create momentum formulation handler
     momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationMonaghan>(
@@ -48,13 +48,12 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     momentumformulation_->Setup();
   }
 
-  void tearDown() { momentumformulation_ = nullptr; }
+  void TearDown() override { momentumformulation_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHMomentumFormulationMonaghan are
-  // called in setUp()
-  //       and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
-  void test_SpecificCoefficient()
+  void TestSpecificCoefficient()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -78,7 +77,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     TS_ASSERT_DELTA(speccoeff_ji, speccoeff_ji_ref, 1.0e-14);
   }
 
-  void test_PressureGradient()
+  void TestPressureGradient()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -110,7 +109,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_PressureGradient_nullptr_acc_i()
+  void TestPressureGradient_nullptr_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -138,7 +137,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_PressureGradient_nullptr_acc_j()
+  void TestPressureGradient_nullptr_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -166,7 +165,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
-  void test_ShearForces()
+  void TestShearForces()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -236,7 +235,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ShearForces_nullptr_acc_i()
+  void TestShearForces_nullptr_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -299,7 +298,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ShearForces_nullptr_acc_j()
+  void TestShearForces_nullptr_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -362,7 +361,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
-  void test_StandardBackgroundPressure()
+  void TestStandardBackgroundPressure()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -395,7 +394,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_StandardBackgroundPressure_nullptr_mod_acc_i()
+  void TestStandardBackgroundPressure_nullptr_mod_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -424,7 +423,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_StandardBackgroundPressure_nullptr_mod_acc_j()
+  void TestStandardBackgroundPressure_nullptr_mod_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -453,7 +452,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
   }
 
-  void test_GeneralizedBackgroundPressure()
+  void TestGeneralizedBackgroundPressure()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -489,7 +488,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_GeneralizedBackgroundPressure_nullptr_mod_acc_i()
+  void TestGeneralizedBackgroundPressure_nullptr_mod_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -519,7 +518,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_GeneralizedBackgroundPressure_nullptr_mod_acc_j()
+  void TestGeneralizedBackgroundPressure_nullptr_mod_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -549,7 +548,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution()
+  void TestModifiedVelocityContribution()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -615,7 +614,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_i()
+  void TestModifiedVelocityContribution_nullptr_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -677,7 +676,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_j()
+  void TestModifiedVelocityContribution_nullptr_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -739,7 +738,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_i_mod_vel_i()
+  void TestModifiedVelocityContribution_nullptr_acc_i_mod_vel_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -786,7 +785,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_j_mod_vel_j()
+  void TestModifiedVelocityContribution_nullptr_acc_j_mod_vel_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -834,13 +833,13 @@ class PARTICLEINTERACTION::SPHMomentumFormulationMonaghan_TestSuite : public Cxx
   }
 };
 
-class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationAdami> momentumformulation_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create momentum formulation handler
     momentumformulation_ = std::unique_ptr<PARTICLEINTERACTION::SPHMomentumFormulationAdami>(
@@ -853,13 +852,12 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     momentumformulation_->Setup();
   }
 
-  void tearDown() { momentumformulation_ = nullptr; }
+  void TearDown() override { momentumformulation_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHMomentumFormulationAdami are called
-  // in setUp()
-  //       and thus implicitly tested by all following unittests
+  // in Setup() and thus implicitly tested by all following unittests
 
-  void test_SpecificCoefficient()
+  void TestSpecificCoefficient()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -884,7 +882,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     TS_ASSERT_DELTA(speccoeff_ji, speccoeff_ji_ref, 1.0e-14);
   }
 
-  void test_PressureGradient()
+  void TestPressureGradient()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -916,7 +914,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_PressureGradient_nullptr_acc_i()
+  void TestPressureGradient_nullptr_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -944,7 +942,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_PressureGradient_nullptr_acc_j()
+  void TestPressureGradient_nullptr_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -972,7 +970,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
-  void test_ShearForces()
+  void TestShearForces()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1021,7 +1019,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ShearForces_nullptr_acc_i()
+  void TestShearForces_nullptr_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1066,7 +1064,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ShearForces_nullptr_acc_j()
+  void TestShearForces_nullptr_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1111,7 +1109,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_i[i], acc_i_ref[i], 1.0e-14);
   }
 
-  void test_StandardBackgroundPressure()
+  void TestStandardBackgroundPressure()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1142,7 +1140,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_StandardBackgroundPressure_nullptr_mod_acc_i()
+  void TestStandardBackgroundPressure_nullptr_mod_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1169,7 +1167,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_StandardBackgroundPressure_nullptr_mod_acc_j()
+  void TestStandardBackgroundPressure_nullptr_mod_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1196,7 +1194,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
   }
 
-  void test_GeneralizedBackgroundPressure()
+  void TestGeneralizedBackgroundPressure()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1234,7 +1232,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_GeneralizedBackgroundPressure_nullptr_mod_acc_i()
+  void TestGeneralizedBackgroundPressure_nullptr_mod_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1265,7 +1263,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_j[i], mod_acc_j_ref[i], 1.0e-14);
   }
 
-  void test_GeneralizedBackgroundPressure_nullptr_mod_acc_j()
+  void TestGeneralizedBackgroundPressure_nullptr_mod_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1296,7 +1294,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(mod_acc_i[i], mod_acc_i_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution()
+  void TestModifiedVelocityContribution()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1360,7 +1358,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_i()
+  void TestModifiedVelocityContribution_nullptr_acc_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1420,7 +1418,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_j()
+  void TestModifiedVelocityContribution_nullptr_acc_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1481,7 +1479,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
   }
 
 
-  void test_ModifiedVelocityContribution_nullptr_acc_i_mod_vel_i()
+  void TestModifiedVelocityContribution_nullptr_acc_i_mod_vel_i()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;
@@ -1527,7 +1525,7 @@ class PARTICLEINTERACTION::SPHMomentumFormulationAdami_TestSuite : public CxxTes
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(acc_j[i], acc_j_ref[i], 1.0e-14);
   }
 
-  void test_ModifiedVelocityContribution_nullptr_acc_j_mod_vel_j()
+  void TestModifiedVelocityContribution_nullptr_acc_j_mod_vel_j()
   {
     const double dens_i = 1.02;
     const double dens_j = 0.97;

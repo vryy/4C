@@ -12,14 +12,14 @@
 #ifndef BACI_UNIT_ELAST_COUPANISOEXPO_H
 #define BACI_UNIT_ELAST_COUPANISOEXPO_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Teuchos_RCPDecl.hpp>
 #include "src/linalg/linalg_fixedsizematrix.H"
 #include "src/drt_matelast/elast_coupanisoexpo.H"
 #include "src/drt_mat/anisotropy.H"
 #include "src/drt_matelast/elast_aniso_structuraltensor_strategy.H"
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 namespace MAT
 {
@@ -30,19 +30,19 @@ namespace MAT
 }  // namespace MAT
 
 // class implementation
-class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest::TestSuite
+class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     SetupFibers();
     SetupStructuralTensors();
-    SetupStructuralTensors_stress();
+    SetupStructuralTensorsStress();
   }
 
   /// Tear down test suite
-  void tearDown() override {}
+  void TearDown() override {}
 
   void SetupAnisotropyExtension(int init_mode, int fiber_id)
   {
@@ -68,7 +68,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     anisotropy_->SetGaussPointFibers(gpfibers);
   }
 
-  void test_GetScalarProduct()
+  void TestGetScalarProduct()
   {
     SetupAnisotropyExtension(1, 1);
     TS_ASSERT_DELTA(anisotropyExtension_->GetScalarProduct(0), 1.0, 1e-10);
@@ -83,7 +83,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     TS_ASSERT_DELTA(anisotropyExtension_->GetScalarProduct(0), 1.0, 1e-10);
   }
 
-  void test_GetFiber()
+  void TestGetFiber()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
@@ -112,7 +112,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     TESTING::AssertDelta(anisotropyExtension_->GetFiber(1), fibersgp1_->at(1), 1e-10);
   }
 
-  void test_GetStructuralTensor()
+  void TestGetStructuralTensor()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
@@ -141,7 +141,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
     TESTING::AssertDelta(anisotropyExtension_->GetStructuralTensor(1), tensorsgp1_->at(1), 1e-10);
   }
 
-  void test_StructuralTensors_stress()
+  void TestStructuralTensorsStress()
   {
     // Test element fibers
     SetupAnisotropyExtension(1, 1);
@@ -227,7 +227,7 @@ class MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension_TestSuite : public CxxTest:
       tensorsele_->at(i).MultiplyNT(fibersele_->at(i), fibersele_->at(i));
     }
   }
-  void SetupStructuralTensors_stress()
+  void SetupStructuralTensorsStress()
   {
     tensorsgp0_stress_ = Teuchos::rcp(new std::vector<LINALG::Matrix<6, 1>>(2));
     tensorsgp1_stress_ = Teuchos::rcp(new std::vector<LINALG::Matrix<6, 1>>(2));

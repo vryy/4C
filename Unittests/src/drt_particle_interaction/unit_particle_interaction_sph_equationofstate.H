@@ -15,7 +15,7 @@ interactions
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_sph_equationofstate.H"
 
 /*---------------------------------------------------------------------------*
@@ -30,14 +30,14 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | kernel handler test suite                                  sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait> equationofstate_;
   std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateGenTait> equationofstate_special_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     const double speedofsound = 3.5;
     const double refdensfac = 0.9;
@@ -58,17 +58,16 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
     equationofstate_special_->Setup();
   }
 
-  void tearDown()
+  void TearDown() override
   {
     equationofstate_ = nullptr;
     equationofstate_special_ = nullptr;
   }
 
   // note: the public functions Init() and Setup() of class SPHEquationOfStateGenTait are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
-  void test_DensityToPressure()
+  void TestDensityToPressure()
   {
     const double density = 0.75;
     const double density0 = 0.4;
@@ -79,7 +78,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
         equationofstate_special_->DensityToPressure(density, density0), 0.47775e1, 1.0e-08);
   }
 
-  void test_PressureToDensity()
+  void TestPressureToDensity()
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
@@ -89,7 +88,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
         equationofstate_special_->PressureToDensity(pressure, density0), 0.506938775, 1.0e-08);
   }
 
-  void test_DensityToEnergy()
+  void TestDensityToEnergy()
   {
     const double density = 0.75;
     const double mass = 1.3;
@@ -102,13 +101,13 @@ class PARTICLEINTERACTION::SPHEquationOfStateGenTait_TestSuite : public CxxTest:
   }
 };
 
-class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::SPHEquationOfStateIdealGas> equationofstate_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     const double speedofsound = 3.5;
 
@@ -123,13 +122,12 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     equationofstate_->Setup();
   }
 
-  void tearDown() { equationofstate_ = nullptr; }
+  void TearDown() override { equationofstate_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class SPHEquationOfStateIdealGas are called in
-  // setUp()
-  //       and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
-  void test_DensityToPressure()
+  void TestDensityToPressure()
   {
     const double density = 0.75;
     const double density0 = 0.4;
@@ -137,7 +135,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     TS_ASSERT_DELTA(equationofstate_->DensityToPressure(density, density0), 9.1875, 1.0e-08);
   }
 
-  void test_PressureToDensity()
+  void TestPressureToDensity()
   {
     const double pressure = 1.8;
     const double density0 = 0.4;
@@ -145,7 +143,7 @@ class PARTICLEINTERACTION::SPHEquationOfStateIdealGas_TestSuite : public CxxTest
     TS_ASSERT_DELTA(equationofstate_->PressureToDensity(pressure, density0), 0.146938775, 1.0e-08);
   }
 
-  void test_DensityToEnergy()
+  void TestDensityToEnergy()
   {
     const double density = 0.75;
     const double mass = 1.3;

@@ -12,7 +12,7 @@
 #ifndef UNITTESTS_SRC_DRT_MAT_UNIT_STVENANTKIRCHHOFF_H_
 #define UNITTESTS_SRC_DRT_MAT_UNIT_STVENANTKIRCHHOFF_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_mat/stvenantkirchhoff.H"
 
@@ -28,11 +28,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::StVenantKirchhoff_TestSuite : public CxxTest::TestSuite
+class MAT::StVenantKirchhoff_TestSuite : public BACICxxTestWrapper
 {
  public:
   //! set up unit test for StVenantKirchhoff material
-  void setUp()
+  void Setup() override
   {
     // initialize container for material parameters
     const Teuchos::RCP<MAT::PAR::Material> container = Teuchos::rcp(new MAT::PAR::Material());
@@ -54,10 +54,10 @@ class MAT::StVenantKirchhoff_TestSuite : public CxxTest::TestSuite
   }
 
   //! tear down unit testing for StVenantKirchhoff material
-  void tearDown() { return; }
+  void TearDown() override { return; }
 
   //! evaluate function unit testing for StVenantKirchhoff material
-  void test_Evaluate()
+  void TestEvaluate()
   {
     // calculate reference results for stress
     const double Ref_Stress_calc1 =
@@ -93,7 +93,7 @@ class MAT::StVenantKirchhoff_TestSuite : public CxxTest::TestSuite
     return;
   }
   //! strain energy unit testing for StVenantKirchhoff material
-  void test_StrainEnergy()
+  void TestStrainEnergy()
   {
     // define reference result for strain energy
     const double Ref_StrainEnergy = 908.6538;

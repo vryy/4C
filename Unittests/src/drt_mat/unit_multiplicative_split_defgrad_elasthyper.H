@@ -11,12 +11,12 @@
 #ifndef BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 #define BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper.H"
 #include "src/drt_inpar/inpar_structure.H"
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 namespace MAT
 {
@@ -24,10 +24,10 @@ namespace MAT
 }
 
 // class implementation
-class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::TestSuite
+class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() override
+  void Setup() override
   {
     // set up the deformation gradient
     FM_(0, 0) = 1.1;
@@ -66,7 +66,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyper_TestSuite : public CxxTest::Tes
     SetUpMultiplicativeSplitObjectWithRequirements();
   }
 
-  void tearDown() override
+  void TearDown() override
   {
     // We need to make sure the DRT::Problem instance created in setUp is deleted again. If this is
     // not done, some troubles arise where unit tests influence each other on some configurations.

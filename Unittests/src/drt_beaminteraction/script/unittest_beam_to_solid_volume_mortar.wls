@@ -189,7 +189,7 @@ StringRiffle[{
 functionStringPre="  /**
    * \\brief Test a non straight beam in a mathematica_solid_type element, with mathematica_mortar_type mortar shape functions.
    */
-  void test_beam_to_solid_meshtying_mortar_hermite3_mathematica_solid_type_mathematica_mortar_type()
+  void Test_beam_to_solid_meshtying_mortar_hermite3_mathematica_solid_type_mathematica_mortar_type()
   {
     // Element types.
     typedef GEOMETRYPAIR::t_hermite beam_type;

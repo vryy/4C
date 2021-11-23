@@ -12,7 +12,7 @@
 #define UNIT_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_H_
 
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_beam3/beam3r.H"
 #include "src/drt_so3/so_hex8.H"
@@ -35,13 +35,13 @@ namespace GEOMETRYPAIR
 /**
  * Class to test the line to volume geometry pair segmentation algorithm.
  */
-class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxTest::TestSuite
+class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public BACICxxTestWrapper
 {
  public:
   /**
    * Set up the testing environment.
    */
-  void setUp()
+  void Setup() override
   {
     // Set up the evaluation data container for the geometry pairs.
     Teuchos::ParameterList line_to_volume_params_list;
@@ -53,7 +53,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   /**
    * Delete pointers and other class variables.
    */
-  void tearDown()
+  void TearDown() override
   {
     // Dereference the pointers.
     evaluation_data_ = Teuchos::null;
@@ -67,7 +67,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
    * Test a non straight beam that lies exactly between two solid. The segmentation should only be
    * done on one of the pairs.
    */
-  void test_line_along_element_surface()
+  void TestLineAlongElementSurface()
   {
     // Definition of variables for this test case.
     std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
@@ -78,7 +78,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_line_along_element_surface_geometry(
+    XtestLineAlongElementSurfaceGeometry(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -107,7 +107,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
    * small. This is to check that the parameter coordinates are converged in the local Newton
    * iterations.
    */
-  void test_line_in_small_elements()
+  void TestLineInSmallElements()
   {
     // Definition of variables for this test case.
     std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
@@ -118,7 +118,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_line_in_small_elements_geometry(
+    XtestLineInSmallElementsGeometry(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -148,7 +148,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   /**
    * Test a beam that has multiple intersections with a HEX27 element.
    */
-  void test_multiple_intersections_hex27()
+  void TestMultipleIntersectionsHex27()
   {
     // Definition of variables for this test case.
     std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
@@ -159,7 +159,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_multiple_intersections_hex27_geometry(
+    XtestMultipleIntersectionsHex27Geometry(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -189,7 +189,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   /**
    * Test a beam that has multiple intersections with a TET10 element.
    */
-  void test_multiple_intersections_tet10()
+  void TestMultipleIntersectionsTet10()
   {
     // Definition of variables for this test case.
     std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
@@ -200,7 +200,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
         geometry_pairs;
 
     // Get the geometry.
-    xtest_multiple_intersections_tet10_geometry(
+    XtestMultipleIntersectionsTet10Geometry(
         line_elements_, volume_elements_, q_line_elements, q_rot_line_elements, q_volume_elements);
 
     // Vector with vector of segments for Evaluate.
@@ -231,7 +231,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
   /**
    * Test a beam that has multiple intersections with a NURBS27 element.
    */
-  void test_multiple_intersections_nurbs27()
+  void TestMultipleIntersectionsNurbs27()
   {
     // Definition of variables for this test case.
     std::vector<LINALG::Matrix<12, 1, double>> q_line_elements;
@@ -250,7 +250,7 @@ class GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation_TestSuite : public CxxT
     DRT::Problem::Instance()->AddDis("structure", structdis);
 
     // Get the geometry.
-    xtest_multiple_intersections_nurbs27_geometry(line_elements_, volume_elements_, q_line_elements,
+    XtestMultipleIntersectionsNurbs27Geometry(line_elements_, volume_elements_, q_line_elements,
         q_rot_line_elements, q_volume_elements, structdis);
 
     // Create and evaluate the geometry pairs.

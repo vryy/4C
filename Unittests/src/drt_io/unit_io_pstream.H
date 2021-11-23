@@ -10,7 +10,7 @@
 #ifndef UNIT_IO_PSTREAM_H_
 #define UNIT_IO_PSTREAM_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <stdexcept>
 #include <Epetra_SerialComm.h>
 #include <mpi.h>
@@ -21,15 +21,15 @@ namespace IO
   class Pstream_TestSuite;
 }
 
-class IO::Pstream_TestSuite : public CxxTest::TestSuite
+class IO::Pstream_TestSuite : public BACICxxTestWrapper
 {
  private:
  public:
-  void setUp() {}
+  void Setup() override {}
 
-  void tearDown() {}
+  void TearDown() override {}
 
-  void test_uninitializedUse()
+  void Test_uninitializedUse()
   {
     Pstream ps;
     TS_ASSERT_THROWS(ps.flush(), const std::runtime_error &);
@@ -37,7 +37,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void test_doubleInitialize()
+  void TestDoubleInitialize()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 4, "");
@@ -46,7 +46,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
         const std::runtime_error &);
   }
 
-  void test_nonexistantProc()
+  void TestNonexistantProc()
   {
     Pstream ps;
     TS_ASSERT_THROWS(
@@ -54,7 +54,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
         const std::runtime_error &);
   }
 
-  void test_initializedUse()
+  void TestInitializedUse()
   {
     Pstream ps;
     ps.setup(true, false, false, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -63,7 +63,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void test_outputLevel()
+  void TestOutputLevel()
   {
     Pstream ps;
     ps.setup(true, false, false, IO::minimal, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -72,7 +72,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(lvl << 4);
   }
 
-  void test_inputTypes()
+  void TestInputTypes()
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -82,7 +82,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps.close());
   }
 
-  void test_externalOperators()
+  void TestExternalOperators()
   {
     Pstream ps;
     ps.setup(false, false, true, IO::debug, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -90,7 +90,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(ps << "blah" << IO::endl);
   }
 
-  void test_Level()
+  void TestLevel()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::undef, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");
@@ -100,7 +100,7 @@ class IO::Pstream_TestSuite : public CxxTest::TestSuite
     TS_ASSERT_THROWS_NOTHING(lvl.SetLevel(IO::minimal) << 5);
   }
 
-  void test_LevelExternalOperators()
+  void TestLevelExternalOperators()
   {
     Pstream ps;
     ps.setup(true, false, true, IO::standard, Teuchos::rcp(new Epetra_SerialComm), 0, 0, "");

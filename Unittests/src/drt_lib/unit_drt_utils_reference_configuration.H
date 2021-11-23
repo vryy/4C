@@ -15,7 +15,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                  cschmidt 11/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_lib/drt_utils_reference_configuration.H"
 #include "src/drt_so3/so_tet4.H"
 #include "src/drt_so3/so_hex8.H"
@@ -35,13 +35,13 @@ namespace DRT
 /*---------------------------------------------------------------------------*
  | utils reference configuration test suite                 cschmidt 11/2018 |
  *---------------------------------------------------------------------------*/
-class DRT::UTILS::UtilsRefConfig_TestSuite : public CxxTest::TestSuite
+class DRT::UTILS::UtilsRefConfig_TestSuite : public BACICxxTestWrapper
 {
  private:
   Teuchos::RCP<Discretization> testdis_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a discretization, to store the created elements and nodes
     testdis_ = Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
@@ -85,9 +85,9 @@ class DRT::UTILS::UtilsRefConfig_TestSuite : public CxxTest::TestSuite
     testdis_->FillComplete(false, false, false);
   }
 
-  void tearDown() { testdis_ = Teuchos::null; }
+  void TearDown() override { testdis_ = Teuchos::null; }
 
-  void test_LocalToGlobalPositionAtXiRefConfig()
+  void TestLocalToGlobalPositionAtXiRefConfig()
   {
     // get hex8 element and test it
     const DRT::Element* hex8ele = testdis_->gElement(0);
@@ -128,7 +128,7 @@ class DRT::UTILS::UtilsRefConfig_TestSuite : public CxxTest::TestSuite
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(tri3elecoords(i, 0), tri3refsolution[i], 1e-14);
   }
 
-  void test_ComputeUnitNormalAtXiRefConfig()
+  void TestComputeUnitNormalAtXiRefConfig()
   {
     // get quad4 element and test it
     const DRT::Element* quad4ele = testdis_->gElement(1);

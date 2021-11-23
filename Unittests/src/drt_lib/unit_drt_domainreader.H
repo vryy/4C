@@ -10,7 +10,7 @@
 #ifndef UNIT_DRT_DOMAINREADER_H_
 #define UNIT_DRT_DOMAINREADER_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_lib/drt_domainreader.H"
 #include "stubs/DatFileReader_stub.H"
@@ -25,30 +25,33 @@ namespace DRT
   }
 }  // namespace DRT
 
-class DRT::INPUT::DomainReader_TestSuite : public CxxTest::TestSuite
+class DRT::INPUT::DomainReader_TestSuite : public BACICxxTestWrapper
 {
  private:
   Teuchos::RCP<Discretization> testdis_;
   DatFileReaderStub testreader_;
 
  public:
-  void setUp() { testdis_ = Teuchos::rcp(new Discretization("dummy", testreader_.Comm())); }
+  void Setup() override
+  {
+    testdis_ = Teuchos::rcp(new Discretization("dummy", testreader_.Comm()));
+  }
 
-  void tearDown() { testdis_ = Teuchos::null; }
+  void TearDown() override { testdis_ = Teuchos::null; }
 
-  void test_MyDis0()
+  void TestMyDis0()
   {
     DomainReader dr(testdis_, testreader_, "unittestsection");
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-  void test_MyDis1()
+  void TestMyDis1()
   {
     DomainReader dr(testdis_, testreader_, "unittestsection", "unittesttype");
     TS_ASSERT_EQUALS(testdis_, dr.MyDis());
   }
 
-  void test_MyDis2()
+  void TestMyDis2()
   {
     std::set<std::string> dummyset;
     dummyset.insert("type0");

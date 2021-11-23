@@ -19,7 +19,7 @@ namespace GEOMETRYPAIR
   /**
    * Setup the surface geometry for the tri4 tests.
    */
-  void xtest_setup_tri3(
+  void XtestSetupTri3(
       LINALG::Matrix<9, 1, double>& q_solid, LINALG::Matrix<9, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
@@ -50,7 +50,7 @@ namespace GEOMETRYPAIR
   /**
    * Setup the surface geometry for the tri6 tests.
    */
-  void xtest_setup_tri6(LINALG::Matrix<18, 1, double>& q_solid,
+  void XtestSetupTri6(LINALG::Matrix<18, 1, double>& q_solid,
       LINALG::Matrix<18, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
@@ -99,7 +99,7 @@ namespace GEOMETRYPAIR
   /**
    * Setup the surface geometry for the quad4 tests.
    */
-  void xtest_setup_quad4(LINALG::Matrix<12, 1, double>& q_solid,
+  void XtestSetupQuad4(LINALG::Matrix<12, 1, double>& q_solid,
       LINALG::Matrix<12, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0;
@@ -136,7 +136,7 @@ namespace GEOMETRYPAIR
   /**
    * Setup the surface geometry for the quad8 tests.
    */
-  void xtest_setup_quad8(LINALG::Matrix<24, 1, double>& q_solid,
+  void XtestSetupQuad8(LINALG::Matrix<24, 1, double>& q_solid,
       LINALG::Matrix<24, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
@@ -197,7 +197,7 @@ namespace GEOMETRYPAIR
   /**
    * Setup the surface geometry for the quad9 tests.
    */
-  void xtest_setup_quad9(LINALG::Matrix<27, 1, double>& q_solid,
+  void XtestSetupQuad9(LINALG::Matrix<27, 1, double>& q_solid,
       LINALG::Matrix<27, 1, double>* nodal_normals_ptr = NULL)
   {
     q_solid(0) = 0.;
@@ -264,8 +264,7 @@ namespace GEOMETRYPAIR
   /**
    * Setup the beam geometry for the tests.
    */
-  void xtest_setup_beam(
-      Teuchos::RCP<DRT::Element>& element_1, LINALG::Matrix<12, 1, double>& q_beam)
+  void XtestSetupBeam(Teuchos::RCP<DRT::Element>& element_1, LINALG::Matrix<12, 1, double>& q_beam)
   {
     // Set up the beam.
     const int dummy_node_ids[2] = {0, 1};

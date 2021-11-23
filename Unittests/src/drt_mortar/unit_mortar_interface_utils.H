@@ -8,7 +8,7 @@
 #ifndef UNIT_MORTAR_INTERFACE_UTILS_H
 #define UNIT_MORTAR_INTERFACE_UTILS_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "src/drt_mortar/mortar_interface_utils.H"
 
@@ -19,10 +19,10 @@ namespace MORTAR
 }
 
 // Implementation
-class MORTAR::InterfaceUtils_TestSuite : public CxxTest::TestSuite
+class MORTAR::InterfaceUtils_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void test_ComputeParallelDistributionStatistics()
+  void TestComputeParallelDistributionStatistics()
   {
     std::vector<int> quantityAcrossAllRanks = {2, 1, 4, 3};
 

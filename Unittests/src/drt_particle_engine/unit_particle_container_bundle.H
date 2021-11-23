@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_engine/particle_container_bundle.H"
 
 /*---------------------------------------------------------------------------*
@@ -28,7 +28,7 @@ namespace PARTICLEENGINE
 /*---------------------------------------------------------------------------*
  | particle container bundle test suite                       sfuchs 05/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSuite
+class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEENGINE::ParticleContainerBundle> particlecontainerbundle_;
@@ -36,7 +36,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
   int statesvectorsize_;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create and init particle container bundle
     particlecontainerbundle_ = std::unique_ptr<PARTICLEENGINE::ParticleContainerBundle>(
@@ -181,13 +181,13 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void tearDown() { particlecontainerbundle_ = nullptr; }
+  void TearDown() override { particlecontainerbundle_ = nullptr; }
 
   // note: the public functions Init(), Setup() and GetSpecificContainer() of class
-  // ParticleContainerBundle are called in setUp() and thus implicitly tested by all following
+  // ParticleContainerBundle are called in Setup() and thus implicitly tested by all following
   // unittests
 
-  void test_ScaleStateSpecificContainer()
+  void TestScaleStateSpecificContainer()
   {
     particlecontainerbundle_->ScaleStateSpecificContainer(
         2.0, PARTICLEENGINE::Radius, PARTICLEENGINE::Phase1);
@@ -245,7 +245,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_UpdateStateSpecificContainer()
+  void TestUpdateStateSpecificContainer()
   {
     particlecontainerbundle_->UpdateStateSpecificContainer(
         2.0, PARTICLEENGINE::Radius, 1.0, PARTICLEENGINE::Mass, PARTICLEENGINE::Phase1);
@@ -303,7 +303,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_SetStateSpecificContainer()
+  void TestSetStateSpecificContainer()
   {
     std::vector<double> mass(1);
     mass[0] = 1.1;
@@ -360,7 +360,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_ClearStateSpecificContainer()
+  void TestClearStateSpecificContainer()
   {
     std::vector<double> mass(1);
     mass[0] = 0.0;
@@ -417,7 +417,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_ScaleStateAllContainers()
+  void TestScaleStateAllContainers()
   {
     particlecontainerbundle_->ScaleStateAllContainers(2.0, PARTICLEENGINE::Mass);
 
@@ -516,7 +516,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_UpdateStateAllContainers()
+  void TestUpdateStateAllContainers()
   {
     particlecontainerbundle_->UpdateStateAllContainers(
         2.0, PARTICLEENGINE::Mass, 1.0, PARTICLEENGINE::Radius);
@@ -616,7 +616,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_SetStateAllContainers()
+  void TestSetStateAllContainers()
   {
     std::vector<double> mass(1);
     mass[0] = 1.1;
@@ -711,7 +711,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_ClearStateAllContainers()
+  void TestClearStateAllContainers()
   {
     std::vector<double> mass(1);
     mass[0] = 0.0;
@@ -806,7 +806,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     }
   }
 
-  void test_CheckAndDecreaseSizeAllContainersOfSpecificStatus()
+  void TestCheckAndDecreaseSizeAllContainersOfSpecificStatus()
   {
     ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(
         PARTICLEENGINE::Phase1, PARTICLEENGINE::Owned);
@@ -824,7 +824,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ContainerSize(), 2);
   }
 
-  void test_ClearAllContainersOfSpecificStatus()
+  void TestClearAllContainersOfSpecificStatus()
   {
     particlecontainerbundle_->ClearAllContainersOfSpecificStatus(PARTICLEENGINE::Ghosted);
 
@@ -834,7 +834,7 @@ class PARTICLEENGINE::ParticleContainerBundle_TestSuite : public CxxTest::TestSu
     TS_ASSERT_EQUALS(container->ParticlesStored(), 0);
   }
 
-  void test_GetVectorOfParticleObjectsOfAllContainers()
+  void TestGetVectorOfParticleObjectsOfAllContainers()
   {
     std::vector<ParticleObjShrdPtr> particlesstored;
 

@@ -14,7 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_particle_interaction/particle_interaction_dem_contact_normal.H"
 #include "src/drt_particle_interaction/particle_interaction_utils.H"
 
@@ -36,7 +36,7 @@ namespace PARTICLEINTERACTION
 /*---------------------------------------------------------------------------*
  | normal contact handler test suite                          sfuchs 11/2018 |
  *---------------------------------------------------------------------------*/
-class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpring> contactnormal_;
@@ -48,7 +48,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
   const double dens_max_ = 1.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -68,12 +68,12 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     contactnormal_->Setup(dens_max_);
   }
 
-  void tearDown() { contactnormal_ = nullptr; }
+  void TearDown() override { contactnormal_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpring are called
-  // in setUp() and thus implicitly tested by all following unittests
+  // in Setup() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void TestGetNormalContactStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -81,7 +81,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void TestGetTimeCriticalStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -91,7 +91,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void TestNormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -108,7 +108,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
     TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 
-  void test_NormalPotentialEnergy()
+  void TestNormalPotentialEnergy()
   {
     const double gap = -0.15;
 
@@ -122,7 +122,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpring_TestSuite : public CxxTe
   }
 };
 
-class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp> contactnormal_;
@@ -136,7 +136,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
   const double dens_max_ = 1.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -164,16 +164,16 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     contactnormal_ezero_->Setup(dens_max_);
   }
 
-  void tearDown()
+  void TearDown() override
   {
     contactnormal_ = nullptr;
     contactnormal_ezero_ = nullptr;
   }
 
   // note: the public functions Init() and Setup() of class DEMContactNormalLinearSpringDamp are
-  // called in setUp() and thus implicitly tested by all following unittests
+  // called in Setup() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void TestGetNormalContactStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -181,7 +181,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void TestGetTimeCriticalStiffness()
   {
     const double k_normal =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -191,7 +191,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void TestNormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -225,7 +225,7 @@ class PARTICLEINTERACTION::DEMContactNormalLinearSpringDamp_TestSuite : public C
   }
 };
 
-class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalHertz> contactnormal_;
@@ -237,7 +237,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
   const double dens_max_ = 1.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -257,12 +257,12 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     contactnormal_->Setup(dens_max_);
   }
 
-  void tearDown() { contactnormal_ = nullptr; }
+  void TearDown() override { contactnormal_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactNormalHertz are called in
-  // setUp() and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void TestGetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -270,7 +270,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void TestGetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -278,7 +278,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void TestNormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -296,7 +296,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(normalcontactforce, normalcontactforce_ref, 1.0e-12);
   }
 
-  void test_NormalPotentialEnergy()
+  void TestNormalPotentialEnergy()
   {
     const double gap = -0.15;
 
@@ -310,7 +310,7 @@ class PARTICLEINTERACTION::DEMContactNormalHertz_TestSuite : public CxxTest::Tes
   }
 };
 
-class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalLeeHerrmann> contactnormal_;
@@ -323,7 +323,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
   const double dens_max_ = 1.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -344,12 +344,12 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     contactnormal_->Setup(dens_max_);
   }
 
-  void tearDown() { contactnormal_ = nullptr; }
+  void TearDown() override { contactnormal_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactNormalLeeHerrmann are called
-  // in setUp() and thus implicitly tested by all following unittests
+  // in Setup() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void TestGetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -357,7 +357,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void TestGetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -365,7 +365,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void TestNormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -385,7 +385,7 @@ class PARTICLEINTERACTION::DEMContactNormalLeeHerrmann_TestSuite : public CxxTes
   }
 };
 
-class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalKuwabaraKono> contactnormal_;
@@ -398,7 +398,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
   const double dens_max_ = 1.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -419,12 +419,12 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     contactnormal_->Setup(dens_max_);
   }
 
-  void tearDown() { contactnormal_ = nullptr; }
+  void TearDown() override { contactnormal_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactNormalKuwabaraKono are called
-  // in setUp() and thus implicitly tested by all following unittests
+  // in Setup() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void TestGetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -432,7 +432,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void TestGetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -440,7 +440,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void TestNormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;
@@ -460,7 +460,7 @@ class PARTICLEINTERACTION::DEMContactNormalKuwabaraKono_TestSuite : public CxxTe
   }
 };
 
-class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::TestSuite
+class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public BACICxxTestWrapper
 {
  private:
   std::unique_ptr<PARTICLEINTERACTION::DEMContactNormalTsuji> contactnormal_;
@@ -473,7 +473,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
   const double dens_max_ = 1.0;
 
  public:
-  void setUp()
+  void Setup() override
   {
     // create a parameter list
     Teuchos::ParameterList params_dem;
@@ -494,12 +494,12 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     contactnormal_->Setup(dens_max_);
   }
 
-  void tearDown() { contactnormal_ = nullptr; }
+  void TearDown() override { contactnormal_ = nullptr; }
 
   // note: the public functions Init() and Setup() of class DEMContactNormalTsuji are called in
-  // setUp() and thus implicitly tested by all following unittests
+  // Setup() and thus implicitly tested by all following unittests
 
-  void test_GetNormalContactStiffness()
+  void TestGetNormalContactStiffness()
   {
     const double k_normal = 10.0 / 3.0 * M_PI * dens_max_ * UTILS::pow<2>(v_max_) *
                             std::pow(r_max_, 0.5) / std::pow(2.0 * c_, 2.5);
@@ -507,7 +507,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetNormalContactStiffness(), k_normal, 1.0e-12);
   }
 
-  void test_GetTimeCriticalStiffness()
+  void TestGetTimeCriticalStiffness()
   {
     const double k_normal_crit =
         2.0 / 3.0 * r_max_ * M_PI * dens_max_ * UTILS::pow<2>(v_max_) / UTILS::pow<2>(c_);
@@ -515,7 +515,7 @@ class PARTICLEINTERACTION::DEMContactNormalTsuji_TestSuite : public CxxTest::Tes
     TS_ASSERT_DELTA(contactnormal_->GetCriticalNormalContactStiffness(), k_normal_crit, 1.0e-12);
   }
 
-  void test_NormalContactForce()
+  void TestNormalContactForce()
   {
     const double gap = -0.15;
     const double rad_i = 1.2;

@@ -12,11 +12,11 @@
 #ifndef BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 #define BACI_UNIT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <src/linalg/linalg_fixedsizematrix.H>
 #include "src/drt_mat/multiplicative_split_defgrad_elasthyper_service.H"
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 namespace MAT
 {
@@ -24,11 +24,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSuite
+class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     FM_(0, 0) = 1.1;
     FM_(1, 1) = 1.2;
@@ -48,9 +48,9 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     iCinM_.MultiplyNT(iFinM_, iFinM_);
   }
   /// Tear down test suite
-  void tearDown() override {}
+  void TearDown() override {}
 
-  void test_EvaluateCe()
+  void TestEvaluateCe()
   {
     LINALG::Matrix<3, 3> CeM(false);
     MAT::EvaluateCe(FM_, iFinM_, CeM);
@@ -69,7 +69,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     TS_ASSERT_DELTA(CeM(2, 1), 0.0564151401, 1e-10);
   }
 
-  void test_EvaluateiCinCiCin()
+  void TestEvaluateiCinCiCin()
   {
     LINALG::Matrix<3, 3> iCinCiCinM(false);
     MAT::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
@@ -88,7 +88,7 @@ class MAT::MultiplicativeSplitDefgrad_ElastHyperService : public CxxTest::TestSu
     TS_ASSERT_DELTA(iCinCiCinM(2, 1), 0.0631150197598975, 1e-10);
   }
 
-  void test_ElastHyperEvaluateElasticPart()
+  void TestElastHyperEvaluateElasticPart()
   {
     LINALG::Matrix<6, 1> S_stress;
     LINALG::Matrix<6, 6> cmat;

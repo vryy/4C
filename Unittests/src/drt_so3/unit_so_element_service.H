@@ -10,7 +10,7 @@
 #ifndef UNIT_SO_ELEMENT_SERVICE_H_
 #define UNIT_SO_ELEMENT_SERVICE_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_lib/drt_element.H"
 #include "src/drt_so3/so_element_service.H"
 
@@ -22,12 +22,12 @@ namespace DRT
   }
 }  // namespace DRT
 
-class DRT::ELEMENTS::SoElementServiceTestSuite : public CxxTest::TestSuite
+class DRT::ELEMENTS::SoElementServiceTestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() override {}
+  void Setup() override {}
 
-  void tearDown() override {}
+  void TearDown() override {}
 
   void TestProjectNodalQuantityToXi()
   {

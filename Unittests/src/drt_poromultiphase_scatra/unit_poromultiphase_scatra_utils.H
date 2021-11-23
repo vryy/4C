@@ -11,7 +11,7 @@
 #define UNITTESTS_POROMULTIPHASE_SCATRA_UTILS_H_
 
 // headers
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include "src/drt_poromultiphase_scatra/poromultiphase_scatra_utils.H"
 
 // forward declarations
@@ -30,17 +30,17 @@ namespace POROMULTIPHASESCATRA
  * numerical inversion of a known function, so we can test if the inversion gives correct results
  * for a known forward relation.
  */
-class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxTest::TestSuite
+class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public BACICxxTestWrapper
 {
  public:
   //! set up
-  void setUp() {}
+  void Setup() override {}
 
   //! tear down
-  void tearDown() {}
+  void TearDown() override {}
 
   //! test corner value Pb = 0 mmHg
-  void test_GetOxyPartialPressure_Pb_0()
+  void TestGetOxyPartialPressurePb0()
   {
     // Parameters
     const double n = 2.7;
@@ -58,7 +58,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   }
 
   //! test value Pb = 25 mmHg
-  void test_GetOxyPartialPressure_Pb_25()
+  void TestGetOxyPartialPressurePb25()
   {
     // Parameters
     const double n = 2.5;
@@ -80,7 +80,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   }
 
   //! test value Pb = 50 mmHg
-  void test_GetOxyPartialPressure_Pb_50()
+  void TestGetOxyPartialPressurePb50()
   {
     // Parameters
     const double n = 2.7;
@@ -102,7 +102,7 @@ class POROMULTIPHASESCATRA::UTILS::OxygenPartialPressure_TestSuite : public CxxT
   }
 
   //! test value Pb = 100 mmHg
-  void test_GetOxyPartialPressure_Pb_100()
+  void TestGetOxyPartialPressurePb100()
   {
     // Parameters
     const double n = 2.2;

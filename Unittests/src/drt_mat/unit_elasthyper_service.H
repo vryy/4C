@@ -11,10 +11,10 @@
 #ifndef BACI_UNIT_ELASTHYPER_SERVICE_H
 #define BACI_UNIT_ELASTHYPER_SERVICE_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <Teuchos_RCPDecl.hpp>
 
-#include "../common/special_assertions.H"
+#include "Unittests/src/common/special_assertions.H"
 
 #include <src/drt_mat/elasthyper_service.H>
 #include <src/drt_matelast/elast_isoneohooke.H>
@@ -32,11 +32,11 @@ namespace MAT
 }
 
 // class implementation
-class MAT::ElastHyperService_TestSuite : public CxxTest::TestSuite
+class MAT::ElastHyperService_TestSuite : public BACICxxTestWrapper
 {
  public:
   /// Setup Testsuite
-  void setUp() override
+  void Setup() override
   {
     prinv_(0) = 3.1;
     prinv_(1) = 3.2;

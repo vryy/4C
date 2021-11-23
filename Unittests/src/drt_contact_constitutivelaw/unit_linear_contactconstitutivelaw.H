@@ -10,7 +10,7 @@
 #ifndef UNIT_LINEAR_COCONSTLAW_H
 #define UNIT_LINEAR_COCONSTLAW_H
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 
 #include "../../../src/drt_contact_constitutivelaw/linear_contactconstitutivelaw.H"
 
@@ -23,11 +23,11 @@ namespace CONTACT
 }  // namespace CONTACT
 
 // class implementation
-class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public CxxTest::TestSuite
+class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public BACICxxTestWrapper
 {
  public:
   //! set up unit testing
-  void setUp()
+  void Setup() override
   {
     // initialize container for material parameters
     const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
@@ -47,14 +47,14 @@ class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public CxxTest
   }
 
   //! tear down unit testing
-  void tearDown()
+  void TearDown() override
   {
     coconstlaw_ = Teuchos::null;
     return;
   }
 
   //! test member function Evaluate
-  void test_Evaluate()
+  void TestEvaluate()
   {
     // gap < 0
     TS_ASSERT_THROWS_ANYTHING(coconstlaw_->Evaluate(1.0));
@@ -67,7 +67,7 @@ class CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw_TestSuite : public CxxTest
   }
 
   //! test member function Evaluate
-  void test_EvaluateDeriv()
+  void TestEvaluateDeriv()
   {
     TS_ASSERT_DELTA(coconstlaw_->EvaluateDeriv(-0.75), 1.5, 1.e-15);
     TS_ASSERT_THROWS_ANYTHING(coconstlaw_->EvaluateDeriv(-0.25));
