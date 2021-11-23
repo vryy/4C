@@ -85,17 +85,25 @@ namespace DRT
 
       DRT::Element* Clone() const override;
 
+      //! evaluate elemental specific values
+      //!
+      //! \param[out] truss_disp       nodal displacement
+      //! \param[out] dtruss_disp_du   derivative of truss displacement w.r.t. global displacement
+      //! \param[out] dN_dx            derivative of shape functions
+      void PrepCalcInternalForceStiffTotLag(LINALG::Matrix<6, 1>& truss_disp,
+          LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx);
+
       //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
       //! positions (using kinematic type tr3_totlag)
-      void CalcInternalForceStiffTotLag(const LINALG::Matrix<6, 1>& nodal_positions_totlag,
+      virtual void CalcInternalForceStiffTotLag(
           Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat);
 
       DRT::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+          Epetra_SerialDenseVector& elevec3) override;
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
@@ -158,15 +166,10 @@ namespace DRT
 
       void Unpack(const std::vector<char>& data) override;
 
-     protected:
-      //! get access to the parameter interface
-      inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
-      {
-        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
-        return *interface_ptr_;
-      }
+      //! set nodal displacement of truss from outside
+      void SetTrussDisplacement(LINALG::Matrix<6, 1>& disp_ele);
 
-     private:
+     protected:
       //! kind of integration to be performed
       enum IntegrationType
       {
@@ -175,6 +178,51 @@ namespace DRT
         lobattointegration
       };
 
+      //! get access to the parameter interface
+      inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
+      {
+        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+        return *interface_ptr_;
+      }
+
+      //! extract elemental quantities from nodal quantities
+      virtual void ExtractElementalVariables(
+          LocationArray& la, DRT::Discretization& discretization, Teuchos::ParameterList& params);
+
+      //! determine Gauss rule from required type of integration
+      DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
+
+      //! calculation of elastic energy
+      virtual void t3_energy(Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy);
+
+      //! cross section area
+      double crosssec_;
+
+      //! internal energy of element
+      double eint_;
+
+      //! length in reference configuration
+      double lcurr_;
+
+      //! inverse of reference length
+      double inv_lrefe_;
+
+      //! length in reference configuration
+      double lrefe_;
+
+      //! squared reference length
+      double lrefe2_;
+
+      //! squared current length
+      double lcurr2_;
+
+      //! nodal displacements for this element
+      std::vector<double> disp_ele_;
+
+      //! nodal velocity for this element
+      std::vector<double> vel_ele_;
+
+     private:
       //! possible kinematic types
       enum KinematicType
       {
@@ -182,20 +230,12 @@ namespace DRT
         tr3_engstrain
       };
 
-      //! determine Gauss rule from required type of integration
-      DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
-
-      //! calculation of elastic energy
-      void t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
-          Epetra_SerialDenseVector& intenergy);
-
       //! lump mass matrix
       void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
       //! and enginerring strains
-      void t3_nlnstiffmass(Teuchos::ParameterList& params, std::vector<double>& vel,
-          std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
+      void t3_nlnstiffmass(Epetra_SerialDenseMatrix* stiffmatrix,
           Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force);
 
       //! \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain
@@ -203,26 +243,18 @@ namespace DRT
       //!
       //! Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses
       //! \f$\varepsilon=\Delta d / d\f$ as strain measure.
-      void t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& DummyDisp,
-          Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector& DummyForce);
+      void t3_nlnstiffmass_engstr(Epetra_SerialDenseMatrix& DummyStiffMatrix,
+          Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector& DummyForce);
 
       //! calculation of nonlinear stiffness and mass matrix
-      void t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDisp,
-          Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector& DummyForce);
-
-      //! cross section area
-      double crosssec_;
+      void t3_nlnstiffmass_totlag(Epetra_SerialDenseMatrix& DummyStiffMatrix,
+          Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector& DummyForce);
 
       //! container containing all kind of Truss3 thisandthat
       DRT::Container data_;
 
       //! reference tangent position
       LINALG::Matrix<1, 3> diff_disp_ref_;
-
-      //! internal energy of element
-      double eint_;
 
       //! gaussrule_ will be initialized automatically to a 2 point integration rule
       DRT::UTILS::GaussRule1D gaussrule_;
@@ -241,12 +273,6 @@ namespace DRT
 
       //! Kinematic type
       KinematicType kintype_;
-
-      //! length in reference configuration
-      double lcurr_;
-
-      //! length in reference configuration
-      double lrefe_;
 
       //! material type
       int material_;

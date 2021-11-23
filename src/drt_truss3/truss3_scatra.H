@@ -54,6 +54,10 @@ namespace DRT
        */
       Truss3Scatra(int id, int owner);
 
+      Truss3Scatra(const Truss3Scatra& old);
+
+      DRT::Element* Clone() const override;
+
       DRT::ElementType& ElementType() const override { return Truss3ScatraType::Instance(); }
 
       /// return SCATRA::ImplType
@@ -62,15 +66,53 @@ namespace DRT
       bool ReadElement(const std::string& eletype, const std::string& distype,
           DRT::INPUT::LineDefinition* linedef) override;
 
-
       int UniqueParObjectId() const override
       {
         return Truss3ScatraType::Instance().UniqueParObjectId();
       }
 
+      void CalcInternalForceStiffTotLag(
+          Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat) override;
+
+      void Pack(DRT::PackBuffer& data) const override;
+      void Unpack(const std::vector<char>& data) override;
+
+     protected:
+      void ExtractElementalVariables(LocationArray& la, DRT::Discretization& discretization,
+          Teuchos::ParameterList& params) override;
+
+      void t3_energy(Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy) override;
+
      private:
       //! scalar transport implementation type (physics)
       INPAR::SCATRA::ImplType impltype_;
+
+      //! evaluate elemental specific values
+      //!
+      //! \param[out] truss_disp       nodal displacement
+      //! \param[out] dtruss_disp_du   derivative of truss displacement w.r.t. global displacement
+      //! \param[out] dN_dx            derivative of shape functions
+      //! \param[out] nodal_concentration  nodal concentrations
+      void PrepCalcInternalForceStiffTotLagScaTra(LINALG::Matrix<6, 1>& truss_disp,
+          LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx,
+          LINALG::Matrix<2, 1>& nodal_concentration);
+
+      //! calculation of concentration at Gauß Points, given concentration at nodes
+      double ProjectScalarToGaussPoint(double xi, const LINALG::Matrix<2, 1>& c) const;
+
+      //! compute polynomial growth factor
+      double GetGrowthFactorConcProp(
+          int poly_num, double c_GP, double c_0, const std::vector<double>& poly_params) const;
+
+      //! compute polynomial growth factor based on amount of substance
+      double GetGrowthFactorAoSProp(
+          int poly_num, double c_GP, double c_0, const std::vector<double>& poly_params) const;
+
+      //! nodal concentration for this element
+      std::vector<double> phi_ele_;
+
+      // don't want = operator
+      Truss3Scatra& operator=(const Truss3Scatra& old);
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

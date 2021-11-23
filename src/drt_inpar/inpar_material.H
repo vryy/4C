@@ -202,6 +202,7 @@ namespace INPAR
       m_structpororeactionECM,  ///< wrapper material for poroelasticity (structure)
       m_superelast,             ///< Superelastic material behaviour of shape memory alloys
       m_stvenant,               ///< St.Venant Kirchhoff material
+      m_stvenant_growth,        ///< St.Venant Kirchhoff material with growth polynomial
       m_sutherland,            ///< material with temperature dependence according to Sutherland law
       m_tempdepwater,          ///< temperature-dependent water
       m_th_fourier_iso,        ///< isotropic (linear) Fourier's law of heat conduction

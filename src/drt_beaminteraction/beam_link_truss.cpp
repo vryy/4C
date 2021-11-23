@@ -192,7 +192,8 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForce(
   LINALG::SerialDenseVector force(6, true);
   LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(absolute_nodal_positions, force, stiffmat);
+  linkele_->SetTrussDisplacement(absolute_nodal_positions);
+  linkele_->CalcInternalForceStiffTotLag(force, stiffmat);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 3, &force(0) + 6, &forcevec2(0));
@@ -218,7 +219,8 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateStiff(LINALG::SerialDenseMatrix& st
   LINALG::SerialDenseVector force(6, true);
   LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(absolute_nodal_positions, force, stiffmat);
+  linkele_->SetTrussDisplacement(absolute_nodal_positions);
+  linkele_->CalcInternalForceStiffTotLag(force, stiffmat);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -250,7 +252,8 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForceStiff(LINALG::SerialDenseVecto
   LINALG::SerialDenseVector force(6, true);
   LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(absolute_nodal_positions, force, stiffmat);
+  linkele_->SetTrussDisplacement(absolute_nodal_positions);
+  linkele_->CalcInternalForceStiffTotLag(force, stiffmat);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 3, &force(0) + 6, &forcevec2(0));

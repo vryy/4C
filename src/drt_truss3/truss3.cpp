@@ -78,16 +78,25 @@ void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(
 DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
     : DRT::Element(id, owner),
       crosssec_(0.0),
+      eint_(0.0),
+      lcurr_(0.0),
+      inv_lrefe_(0.0),
+      lrefe_(0.0),
+      lrefe2_(0.0),
+      lcurr2_(0.0),
+      disp_ele_(),
+      vel_ele_(),
       data_(),
       diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
       // note: for corotational approach integration for Neumann conditions only
       // hence enough to integrate 3rd order polynomials exactly
       gaussrule_(DRT::UTILS::intrule_line_2point),
       isinit_(false),
+      jacobimass_(),
+      jacobinode_(),
       kintype_(tr3_totlag),
-      lcurr_(0.0),
-      lrefe_(0.0),
-      material_(0)
+      material_(0),
+      X_()
 {
 }
 /*----------------------------------------------------------------------*
@@ -97,16 +106,22 @@ DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
     : DRT::Element(old),
       crosssec_(old.crosssec_),
       data_(old.data_),
+      eint_(old.eint_),
+      lcurr_(old.lcurr_),
+      lrefe_(old.lrefe_),
+      lrefe2_(old.lrefe2_),
+      lcurr2_(old.lcurr2_),
+      disp_ele_(old.disp_ele_),
+      vel_ele_(old.vel_ele_),
       diff_disp_ref_(old.diff_disp_ref_),
       gaussrule_(old.gaussrule_),
       isinit_(old.isinit_),
       jacobimass_(old.jacobimass_),
       jacobinode_(old.jacobinode_),
       kintype_(old.kintype_),
-      lcurr_(old.lcurr_),
-      lrefe_(old.lrefe_),
       material_(old.material_),
       X_(old.X_)
+
 {
 }
 /*----------------------------------------------------------------------*
@@ -152,10 +167,15 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
   AddtoPack(data, isinit_);
   AddtoPack<6, 1>(data, X_);
+  AddtoPack(data, disp_ele_);
+  AddtoPack(data, vel_ele_);
   AddtoPack<1, 3>(data, diff_disp_ref_);
   AddtoPack(data, material_);
   AddtoPack(data, lrefe_);
   AddtoPack(data, lcurr_);
+  AddtoPack(data, lrefe2_);
+  AddtoPack(data, lcurr2_);
+  AddtoPack(data, inv_lrefe_);
   AddtoPack(data, jacobimass_);
   AddtoPack(data, jacobinode_);
   AddtoPack(data, crosssec_);
@@ -182,10 +202,15 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
   isinit_ = ExtractInt(position, data);
   ExtractfromPack<6, 1>(position, data, X_);
+  ExtractfromPack(position, data, disp_ele_);
+  ExtractfromPack(position, data, vel_ele_);
   ExtractfromPack<1, 3>(position, data, diff_disp_ref_);
   ExtractfromPack(position, data, material_);
   ExtractfromPack(position, data, lrefe_);
   ExtractfromPack(position, data, lcurr_);
+  ExtractfromPack(position, data, lrefe2_);
+  ExtractfromPack(position, data, lcurr2_);
+  ExtractfromPack(position, data, inv_lrefe_);
   ExtractfromPack(position, data, jacobimass_);
   ExtractfromPack(position, data, jacobinode_);
   ExtractfromPack(position, data, crosssec_);
@@ -461,7 +486,8 @@ void DRT::ELEMENTS::Truss3::LocationVector(
   }
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 {
   // reference node positions

@@ -890,10 +890,10 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-  // de St.Venant--Kirchhoff
+  // St.Venant--Kirchhoff
   {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_StVenantKirchhoff",
-        "de St.Venant--Kirchhoff material", INPAR::MAT::m_stvenant));
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_Struct_StVenantKirchhoff", "St.Venant--Kirchhoff material", INPAR::MAT::m_stvenant));
 
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
@@ -904,7 +904,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-  // de St.Venant--Kirchhoff with temperature
+  // St.Venant--Kirchhoff with growth factor
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_StVK_Growth",
+        "St.Venant--Kirchhoff material with growth", INPAR::MAT::m_stvenant_growth));
+
+    AddNamedReal(m, "YOUNG", "Young's modulus");
+    AddNamedReal(m, "NUE", "Poisson's ratio");
+    AddNamedReal(m, "DENS", "mass density");
+    AddNamedReal(m, "THEXPANS", "coefficient of linear thermal expansion", 0.0, true);
+    AddNamedReal(m, "C0", "Base concentration");
+    AddNamedBool(m, "AMOUNT_PROPORTIONAL_GROWTH", "growth proportional to amount of substance");
+    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
+    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // St.Venant--Kirchhoff with temperature
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrStVenantK",
         "Thermo St.Venant--Kirchhoff material", INPAR::MAT::m_thermostvenant));
