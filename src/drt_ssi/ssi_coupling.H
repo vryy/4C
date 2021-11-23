@@ -75,6 +75,14 @@ namespace SSI
     virtual void SetScalarField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
 
+    //! \brief set micro soultion of scatra field other field
+    //!
+    //! \param dis     discretization to write micro scatra solution on
+    //! \param phi     micro scatra solution
+    //! \param nds     number of dofset to write micro scatra solution on
+    virtual void SetScalarFieldMicro(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) = 0;
+
     //! \brief set scatra on manifold solution on other field
     //!
     //! \param dis    discretization to write scatra on manifold solution on
@@ -112,6 +120,9 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScalarFieldMicro(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScaTraManifoldField(
@@ -182,6 +193,9 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScalarFieldMicro(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScaTraManifoldField(
@@ -270,6 +284,9 @@ namespace SSI
     void SetScalarField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
+    void SetScalarFieldMicro(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
     void SetScaTraManifoldField(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
@@ -343,6 +360,9 @@ namespace SSI
         Teuchos::RCP<const Epetra_Vector> convvel, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     void SetScalarField(
+        DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
+
+    void SetScalarFieldMicro(
         DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds) override;
 
     void SetScaTraManifoldField(

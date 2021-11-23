@@ -24,8 +24,9 @@
 #include "../drt_lib/drt_dofset_definedmapping_wrapper.H"
 #include "../drt_lib/drt_dofset_gidbased_wrapper.H"
 #include "../drt_lib/drt_dofset_predefineddofnumber.H"
-
 #include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -51,6 +52,15 @@ void SSI::SSICouplingMatchingVolume::Init(const int ndim,
     Teuchos::RCP<DRT::DofSetInterface> dofsettemp =
         Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
     if (structdis->AddDofSet(dofsettemp) != 2) dserror("unexpected dof sets in structure field");
+  }
+
+  if (DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra_multiscale) != -1 or
+      DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_newman_multiscale) != -1)
+  {
+    Teuchos::RCP<DRT::DofSetInterface> dofsetmicro =
+        Teuchos::rcp(new DRT::DofSetPredefinedDoFNumber(1, 0, 0, true));
+    if (scatradis->AddDofSet(dofsetmicro) != 2) dserror("unexpected dof sets in scatra field");
+    if (structdis->AddDofSet(dofsetmicro) != 2) dserror("unexpected dof sets in structure field");
   }
 
   AssignMaterialPointers(structdis, scatradis);
@@ -114,6 +124,14 @@ void SSI::SSICouplingMatchingVolume::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.SetState(nds, "scalarfield", phi);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolume::SetScalarFieldMicro(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dis.SetState(nds, "MicroCon", phi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -251,6 +269,14 @@ void SSI::SSICouplingNonMatchingBoundary::SetScalarField(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void SSI::SSICouplingNonMatchingBoundary::SetScalarFieldMicro(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dserror("transferring micro scalar state to structure discretization not implemented.");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::SetScaTraManifoldField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
@@ -354,6 +380,14 @@ void SSI::SSICouplingNonMatchingVolume::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.SetState(nds, "scalarfield", volcoupl_structurescatra_->ApplyVectorMapping12(phi));
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingNonMatchingVolume::SetScalarFieldMicro(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dserror("transferring micro scalar state to structure discretization not implemented.");
 }
 
 /*----------------------------------------------------------------------*/
@@ -546,6 +580,14 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarField(
     DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
 {
   dis.SetState(nds, "scalarfield", phi);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSICouplingMatchingVolumeAndBoundary::SetScalarFieldMicro(
+    DRT::Discretization& dis, Teuchos::RCP<const Epetra_Vector> phi, unsigned nds)
+{
+  dserror("transferring micro scalar state to structure discretization not implemented.");
 }
 
 /*----------------------------------------------------------------------*/
