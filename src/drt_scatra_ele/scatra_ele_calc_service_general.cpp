@@ -160,12 +160,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
-#ifdef DEBUG
-      if ((!calc_grad_phi and elevec1_epetra.Length() != numdofpernode_ + 1) or
-          (calc_grad_phi and elevec1_epetra.Length() != numdofpernode_ + numscal_ + 1))
-        dserror("length of elevec1_epetra not correct");
-#endif
-
       // calculate scalars and domain integral
       CalculateScalars(ele, elevec1_epetra, inverting, calc_grad_phi);
 
@@ -595,7 +589,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         {
           // initialize micro scale in multi-scale simulations
           Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
-              ->Initialize(ele->Id(), iquad);
+              ->Initialize(ele->Id(), iquad, scatrapara_->IsAle());
         }
       }
 
@@ -631,11 +625,16 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           }
           else
           {
+            const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+                SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+            const double detF = EvalDetFAtIntPoint(ele, intpoints, iquad);
+
             // solve micro scale
             std::vector<double> dummy(1, 0.);
             Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
-                ->Evaluate(
-                    iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0], dummy);
+                ->Evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
+                    dummy, detF);
           }
         }
       }
@@ -804,7 +803,10 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
 
-  if (scatrapara_->IsAle())
+  // check for the action parameter
+  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+
+  if (scatrapara_->IsAle() and action != SCATRA::micro_scale_read_restart)
   {
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = params.get<int>("ndsdisp");
@@ -829,9 +831,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
   }
   else
     edispnp_.Clear();
-
-  // check for the action parameter
-  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
 
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,

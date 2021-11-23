@@ -33,11 +33,12 @@ namespace MAT
   class ScatraMultiScaleGP
   {
    public:
-    //! constructor
-    ScatraMultiScaleGP(const int ele_id,  //!< macro-scale element ID
-        const int gp_id,                  //!< macro-scale Gauss point ID
-        const int microdisnum             //!< number of micro-scale discretization
-    );
+    //!
+    //! \param ele_id        macro-scale element ID
+    //! \param gp_id         macro-scale Gauss point ID
+    //! \param microdisnum   number of micro-scale discretization
+    //! \param is_ale        true, if the underlying macro dis deforms
+    ScatraMultiScaleGP(const int ele_id, const int gp_id, const int microdisnum, bool is_ale);
 
     //! destructor
     ~ScatraMultiScaleGP();
@@ -50,12 +51,16 @@ namespace MAT
     );
 
     //! evaluate micro scale
-    void Evaluate(const std::vector<double>& phinp_macro,  //!< macro-scale state variables
-        double& q_micro,                                   //!< micro-scale coupling flux
-        std::vector<double>& dq_dphi_micro,  //!< derivatives of micro-scale coupling flux w.r.t.
-                                             //!< macro-scale state variables
-        const bool solve = true  //!< flag indicating whether micro-scale problem should be solved
-    );
+    //! \param phinp_macro     macro-scale state variables
+    //! \param q_micro         micro-scale coupling flux
+    //! \param dq_dphi_micro   derivatives of micro-scale coupling flux w.r.t. macro-scale state
+    //!                        variables
+    //! \param detF            determinant of deformation gradient of macro dis at current
+    //!                        Gauß point
+    //! \param solve           flag indicating whether micro-scale problem should be
+    //!                        solved
+    void Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
+        std::vector<double>& dq_dphi_micro, double detF, const bool solve = true);
 
     //! evaluate mean concentration on micro scale
     double EvaluateMeanConcentration() const;
@@ -71,6 +76,9 @@ namespace MAT
 
     //! read restart on micro scale
     void ReadRestart();
+
+    //! calculate derivative of determinate w.r.t. time according to macro time int scheme
+    void CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint);
 
    private:
     //! map between number of micro-scale discretization and micro-scale time integrator
@@ -118,6 +126,22 @@ namespace MAT
 
     //! file name prefix for restart
     std::string restartname_;
+
+    //! determinate of deformation gradient of macro dis at last time step
+    double detFn_;
+
+    //! determinate of deformation gradient of macro dis at last current step
+    double detFnp_;
+
+    //! derivative of determinate of deformation gradient of macro dis w.r.t. time at last time step
+    double ddetFdtn_;
+
+    //! derivative of determinate of deformation gradient of macro dis w.r.t. time at current time
+    //! step
+    double ddetFdtnp_;
+
+    //! indicates if macro dis deforms
+    const bool is_ale_;
   };  // class MAT::ScatraMultiScaleGP
 }  // namespace MAT
 #endif

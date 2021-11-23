@@ -291,6 +291,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phin, ephin_, lm);
   }
 
+  // set reaction coefficient
+  if (params.isParameter("rea_coeff")) reamanager_->SetReaCoeff(params.get<double>("rea_coeff"), 0);
+
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -942,6 +945,61 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsAtI
     derxy2_.Clear();
 
   // return integration factor for current GP: fac = Gauss weight * det(J)
+  return fac;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
+    const DRT::Element* const& ele, const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,
+    const int iquad)
+{
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (unsigned idim = 0; idim < nsd_ele_; idim++) xsi_(idim) = gpcoord[idim];
+
+  // const double det = EvalShapeFuncAndDerivsInParameterSpace();
+  static LINALG::Matrix<nsd_ele_, nen_> deriv_red;
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_, funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
+
+  // reference coordinates of elemental nodes
+  LINALG::Matrix<nsd_, nen_> XYZ;
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
+
+  // reference coordinates of elemental nodes in space dimension of element
+  LINALG::Matrix<nsd_ele_, nen_> XYZe;
+  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
+    for (int j = 0; j < static_cast<int>(nen_); ++j) XYZe(i, j) = XYZ(i, j);
+
+  // compute global spatial derivatives
+  LINALG::Matrix<nsd_ele_, nsd_ele_> dXds;
+  dXds.MultiplyNT(deriv_red, XYZe);
+  LINALG::Matrix<nsd_ele_, nsd_ele_> dsdX;
+  dsdX.Invert(dXds);
+  LINALG::Matrix<nsd_ele_, nen_> derXYZ;
+  derXYZ.Multiply(dsdX, deriv_red);
+
+  // compute deformation gradient
+  LINALG::Matrix<nsd_ele_, nsd_ele_> F;
+
+  LINALG::Matrix<nsd_ele_, nen_> edispnp;
+
+  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
+    for (int j = 0; j < static_cast<int>(nsd_ele_); ++j) edispnp(i, j) = edispnp_(i, j);
+
+  F.MultiplyNT(derXYZ, edispnp);
+
+  LINALG::Matrix<nsd_ele_, nsd_ele_> one;
+  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i) one(i, i) = 1.0;
+
+  F.Update(1.0, one, 1.0);
+
+  const double fac = F.Determinant();
+
   return fac;
 }
 
@@ -2008,13 +2066,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   double q_micro(0.0);
   std::vector<double> dq_dphi_micro(1, 0.0);
 
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  const double detF = EvalDetFAtIntPoint(ele, intpoints, iquad);
+
   // evaluate multi-scale scalar transport material
   matmultiscale->Evaluate(
-      iquad, std::vector<double>(1, scatravarmanager_->Phinp(k)), q_micro, dq_dphi_micro);
+      iquad, std::vector<double>(1, scatravarmanager_->Phinp(k)), q_micro, dq_dphi_micro, detF);
 
   // macro-scale matrix contribution
   const double matrixterm =
-      timefacfac * dq_dphi_micro[0] * matmultiscale->SpecificMicroScaleSurfaceArea();
+      timefacfac * dq_dphi_micro[0] * matmultiscale->SpecificMicroScaleSurfaceArea(detF);
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = funct_(vi) * matrixterm;
@@ -2024,7 +2087,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   }
 
   // macro-scale vector contribution
-  const double rhsterm = rhsfac * q_micro * matmultiscale->SpecificMicroScaleSurfaceArea();
+  const double rhsterm = rhsfac * q_micro * matmultiscale->SpecificMicroScaleSurfaceArea(detF);
   for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * numdofpernode_ + k] -= funct_(vi) * rhsterm;
 }
 

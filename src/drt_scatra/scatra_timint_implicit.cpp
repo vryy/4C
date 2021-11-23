@@ -40,10 +40,14 @@
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_control.H"
 
+#include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_periodicbc.H"
+#include "../drt_lib/drt_utils_gid_vector.H"
+#include "../drt_lib/drt_utils_vector.H"
 
+#include "../drt_mat/elchmat.H"
 #include "../drt_mat/electrode.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -145,12 +149,15 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<DRT::Discretization> act
           DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(*params, "VELOCITYFIELD")),
       mean_conc_(Teuchos::null),
       membrane_conc_(Teuchos::null),
+      phinp_micro_(Teuchos::null),
       nds_vel_(-1),
       nds_disp_(-1),
       nds_pres_(-1),
       nds_wss_(-1),
+      nds_micro_(-1),
       densific_(0, 0.0),
       c0_(0, 0.0),
+      macro_micro_rea_coeff_(0.0),
       discret_(actdis),
       output_(std::move(output)),
       convform_(DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(*params, "CONVFORM")),
@@ -349,6 +356,8 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // solutions at time n+1 and n
   phinp_ = LINALG::CreateVector(*dofrowmap, true);
   phin_ = LINALG::CreateVector(*dofrowmap, true);
+  if (nds_micro_ != -1) phinp_micro_ = LINALG::CreateVector(*discret_->DofRowMap(nds_micro_));
+
   if (solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro or
       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken or
       solvtype_ == INPAR::SCATRA::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit or
@@ -1024,6 +1033,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeLoop()
 
     // compute error for problems with analytical solution (initial field!)
     EvaluateErrorComparedToAnalyticalSol();
+
+    // calculate mean concentration of micro discretization and set state to nds_micro_
+    if (macro_scale_ and nds_micro_ != -1) CalcMeanMicroConcentration();
   }
 }
 
@@ -2822,6 +2834,9 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     ComputeInteriorValues();
 
   }  // nonlinear iteration
+
+  // calculate mean concentration of micro discretization and set state to nds_micro_
+  if (macro_scale_ and nds_micro_ != -1) CalcMeanMicroConcentration();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -3241,6 +3256,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
             }
 
             case INPAR::S2I::kinetics_butlervolmer:
+            case INPAR::S2I::kinetics_butlervolmerreduced:
             {
               // access material of electrode
               Teuchos::RCP<const MAT::Electrode> matelectrode =
@@ -3310,12 +3326,14 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double epdderiv =
                   matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(conc_ed, faraday, frt);
 
-              // electrode-electrolyte overpotential at multi-scale coupling point
               const double eta = phinp_macro_[2] - phinp_macro_[1] - epd;
 
               // Butler-Volmer exchange mass flux density
               const double j0 =
-                  kr * pow(conc_el, alphaa) * pow(cmax - conc_ed, alphaa) * pow(conc_ed, alphac);
+                  condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
+                      ? kr
+                      : kr * pow(conc_el, alphaa) * pow(cmax - conc_ed, alphaa) *
+                            pow(conc_ed, alphac);
 
               // exponential Butler-Volmer terms
               const double expterm1 = exp(alphaa * frt * eta);
@@ -3336,11 +3354,16 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
               // core linearizations associated with Butler-Volmer mass flux density
               const double dj_dc_ed =
-                  kr * pow(conc_el, alphaa) * pow(cmax - conc_ed, alphaa - 1.) *
-                      pow(conc_ed, alphac - 1.) * (-alphaa * conc_ed + alphac * (cmax - conc_ed)) *
-                      expterm +
+                  (condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
+                          ? 0.0
+                          : kr * pow(conc_el, alphaa) * pow(cmax - conc_ed, alphaa - 1.) *
+                                pow(conc_ed, alphac - 1.) *
+                                (-alphaa * conc_ed + alphac * (cmax - conc_ed)) * expterm) +
                   j0 * (-alphaa * frt * epdderiv * expterm1 - alphac * frt * epdderiv * expterm2);
-              dq_dphi_[0] = j0 * alphaa / conc_el * expterm;  // dj_dc_el
+              dq_dphi_[0] =
+                  condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
+                      ? 0.0
+                      : j0 * alphaa / conc_el * expterm;
               dq_dphi_[1] =
                   -j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);  // dj_dpot_el
               dq_dphi_[2] = -dq_dphi_[1];                                     // dj_dpot_ed
@@ -3353,6 +3376,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
               break;
             }
+            case INPAR::S2I::kinetics_nointerfaceflux:
+              break;
 
             default:
             {
@@ -3585,4 +3610,134 @@ Teuchos::RCP<LINALG::SparseOperator> SCATRA::ScaTraTimIntImpl::InitSystemMatrix(
   }
 
   return systemmatrix;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
+{
+  phinp_micro_->PutScalar(0.0);
+
+  if (nds_micro_ < 0) dserror("must set number of dofset for micro scale concentrations");
+  discret_->ClearState();
+  discret_->SetState("phinp", phinp_);
+
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action", SCATRA::calc_elch_elctrode_mean_concentration);
+
+  // number of dofset associated with displacement-related dofs
+  if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
+
+  // evaluate nodal mean concentration of micro discretizations
+  DRT::AssembleStrategy strategy(nds_micro_, nds_micro_, Teuchos::null, Teuchos::null, phinp_micro_,
+      Teuchos::null, Teuchos::null);
+  discret_->Evaluate(eleparams, strategy);
+
+  // divide nodal values by number of adjacent elements (due to assembly)
+  const auto* node_row_map = discret_->NodeRowMap();
+  for (int node_lid = 0; node_lid < node_row_map->NumMyElements(); ++node_lid)
+  {
+    const int node_gid = node_row_map->GID(node_lid);
+    const auto* node = discret_->gNode(node_gid);
+    std::vector<int> dofs = discret_->Dof(nds_micro_, node);
+
+    if (dofs.size() != 1) dserror("Only one dof expected.");
+
+    const int dof_gid = dofs[0];
+    const int dof_lid = phinp_micro_->Map().LID(dof_gid);
+
+    // only if this dof is part of the phinp_micro_ vector/map
+    if (dof_lid != -1)
+    {
+      const double old_value = (*phinp_micro_)[dof_lid];
+      const int num_elements = node->NumElement();
+      const double new_value = old_value / static_cast<double>(num_elements);
+      phinp_micro_->ReplaceMyValue(dof_lid, 0, new_value);
+    }
+  }
+
+  // nodes with 3 dofs
+  std::vector<int> multiscale_nodes;
+  // nodes with 2 dofs
+  std::vector<int> other_nodes;
+
+  // loop over all element and search for nodes that are on elements with 2 dof on one side and 3
+  // dofs at the other side
+  for (int ele_lid = 0; ele_lid < Discretization()->ElementRowMap()->NumMyElements(); ++ele_lid)
+  {
+    const int ele_gid = Discretization()->ElementRowMap()->GID(ele_lid);
+    auto* ele = Discretization()->gElement(ele_gid);
+
+    for (auto mat_id = 0; mat_id < ele->NumMaterial(); ++mat_id)
+    {
+      auto ele_mat = ele->Material(mat_id);
+      auto material_type = ele_mat->MaterialType();
+
+      if (material_type == INPAR::MAT::m_elchmat)
+      {
+        const auto* elchmat = static_cast<const MAT::ElchMat*>(ele_mat.get());
+
+        const int num_dof_element = elchmat->NumDOF();
+
+        const DRT::Node* const* nodes = ele->Nodes();
+        for (int inode = 0; inode < ele->NumNode(); ++inode)
+        {
+          if (num_dof_element == 3)
+            DRT::UTILS::AddOwnedNodeGID(Discretization(), nodes[inode]->Id(), multiscale_nodes);
+          else if (num_dof_element == 2)
+            DRT::UTILS::AddOwnedNodeGID(Discretization(), nodes[inode]->Id(), other_nodes);
+          else
+            dserror("Only 2 or 3 dofs per element supported");
+        }
+      }
+    }
+  }
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(multiscale_nodes);
+  DRT::UTILS::SortAndRemoveDuplicateVectorElements(other_nodes);
+
+  // find nodes that connect elements with 2 and 3 nodes ("hybrid nodes")
+  std::vector<int> hybrid_nodes;
+  for (int other_node : other_nodes)
+  {
+    for (int multiscale_node : multiscale_nodes)
+    {
+      if (other_node == multiscale_node)
+      {
+        hybrid_nodes.emplace_back(multiscale_node);
+        break;
+      }
+    }
+  }
+
+  // get dofs from hybrid nodes
+  std::vector<int> hybrid_dofs;
+  for (int hybrid_node_gid : hybrid_nodes)
+  {
+    auto* hybrid_node = Discretization()->gNode(hybrid_node_gid);
+    auto dofs = Discretization()->Dof(2, hybrid_node);
+    for (int dof : dofs) hybrid_dofs.emplace_back(dof);
+  }
+
+  // correct values on hybrid dofs (value on node with 2 dofs is artificially set to 1.0)
+  for (int hybrid_dof : hybrid_dofs)
+  {
+    const int lid = phinp_micro_->Map().LID(hybrid_dof);
+    if (lid != -1)
+    {
+      const double value = (*phinp_micro_)[lid];
+      const double corrected_value = 2.0 * value - 1.0;
+      phinp_micro_->ReplaceMyValue(lid, 0, corrected_value);
+    }
+  }
+
+  discret_->ClearState();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AddProblemSpecificParametersAndVectors(
+    Teuchos::ParameterList& params)
+{
+  if (micro_scale_) params.set<double>("rea_coeff", macro_micro_rea_coeff_);
 }

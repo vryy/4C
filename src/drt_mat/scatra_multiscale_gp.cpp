@@ -30,7 +30,7 @@ std::map<int, int> MAT::ScatraMultiScaleGP::microdisnum_nummacrogp_map_;
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(
-    const int ele_id, const int gp_id, const int microdisnum)
+    const int ele_id, const int gp_id, const int microdisnum, const bool is_ale)
     : gp_id_(gp_id),
       ele_id_(ele_id),
       eleowner_(DRT::Problem::Instance()->GetDis("scatra")->ElementRowMap()->MyGID(ele_id)),
@@ -42,7 +42,13 @@ MAT::ScatraMultiScaleGP::ScatraMultiScaleGP(
       phidtnp_(Teuchos::null),
       hist_(Teuchos::null),
       micro_output_(Teuchos::null),
-      restartname_("")
+      restartname_(""),
+      detFn_(1.0),
+      detFnp_(1.0),
+      ddetFdtn_(0.0),
+      ddetFdtnp_(0.0),
+      is_ale_(is_ale)
+
 {
 }
 
@@ -247,7 +253,7 @@ void MAT::ScatraMultiScaleGP::PrepareTimeStep(const std::vector<double>& phinp_m
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, double& q_micro,
-    std::vector<double>& dq_dphi_micro, const bool solve)
+    std::vector<double>& dq_dphi_micro, const double detFnp, const bool solve)
 {
   // extract micro-scale time integrator
   const Teuchos::RCP<SCATRA::TimIntOneStepTheta>& microtimint =
@@ -256,6 +262,16 @@ void MAT::ScatraMultiScaleGP::Evaluate(const std::vector<double>& phinp_macro, d
   // set current state in micro-scale time integrator
   microtimint->SetState(phin_, phinp_, phidtn_, phidtnp_, hist_, micro_output_, phinp_macro, step_,
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
+
+  if (is_ale_)
+  {
+    // update determinant of deformation gradient
+    detFnp_ = detFnp;
+
+    // calculate time derivative and pass to micro time integration as reaction coefficient
+    CalculateDdetFDt(microtimint);
+    microtimint->SetMacroMicroReaCoeff(ddetFdtnp_);
+  }
 
   if (step_ == 0 or !solve)
   {
@@ -347,6 +363,13 @@ double MAT::ScatraMultiScaleGP::EvaluateMeanConcentrationTimeDerivative() const
  *------------------------------------------------------------------------------*/
 void MAT::ScatraMultiScaleGP::Update()
 {
+  if (is_ale_)
+  {
+    // Update detF
+    detFn_ = detFnp_;
+    ddetFdtn_ = ddetFdtnp_;
+  }
+
   // extract micro-scale time integrator
   Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint = microdisnum_microtimint_map_[microdisnum_];
 
@@ -458,6 +481,12 @@ void MAT::ScatraMultiScaleGP::Output()
     // output micro-scale quantities
     microtimint->Output();
 
+    if (microtimint->DoOutputRestart() and is_ale_)
+    {
+      microtimint->DiscWriter()->WriteDouble("detFn", detFn_);
+      microtimint->DiscWriter()->WriteDouble("ddetFdtn", ddetFdtn_);
+    }
+
     // clear state in micro-scale time integrator
     microtimint->ClearState();
   }
@@ -479,13 +508,51 @@ void MAT::ScatraMultiScaleGP::ReadRestart()
       DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance("scatra")->Time());
 
   // read restart on micro scale
-  Teuchos::RCP<IO::InputControl> inputcontrol =
-      Teuchos::rcp(new IO::InputControl(restartname_, true));
+  auto inputcontrol = Teuchos::rcp(new IO::InputControl(restartname_, true));
   microtimint->ReadRestart(step_, inputcontrol);
 
   // safety check
   if (microtimint->Step() != step_) dserror("Time step mismatch!");
 
+  Teuchos::RCP<IO::DiscretizationReader> reader(Teuchos::null);
+  if (inputcontrol == Teuchos::null)
+    reader = Teuchos::rcp(new IO::DiscretizationReader(microtimint->Discretization(), step_));
+  else
+    reader = Teuchos::rcp(
+        new IO::DiscretizationReader(microtimint->Discretization(), inputcontrol, step_));
+
+  if (is_ale_)
+  {
+    detFn_ = reader->ReadDouble("detFn");
+    ddetFdtn_ = reader->ReadDouble("ddetFdtn");
+  }
+
   // clear state in micro-scale time integrator
   microtimint->ClearState();
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::ScatraMultiScaleGP::CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneStepTheta> microtimint)
+{
+  const double dt = microtimint->Dt();
+
+  switch (microtimint->MethodName())
+  {
+    case INPAR::SCATRA::TimeIntegrationScheme::timeint_one_step_theta:
+    {
+      const double theta = microtimint->ScatraParameterList()->get<double>("THETA");
+
+      const double part1 = (detFnp_ - detFn_) / dt;
+      const double part2 = (1 - theta) * ddetFdtn_;
+      ddetFdtnp_ = 1 / theta * (part1 - part2);
+
+      break;
+    }
+    default:
+    {
+      dserror("time integration scheme not supported to calculate d detF / d t.");
+      break;
+    }
+  }
 }

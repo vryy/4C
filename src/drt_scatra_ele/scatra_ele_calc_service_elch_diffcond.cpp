@@ -817,6 +817,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::SetInternalVari
       my::funct_, my::derxy_, my::ephinp_, my::ephin_, my::econvelnp_, my::ehist_);
 }
 
+template <DRT::Element::DiscretizationType distype, int probdim>
+void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
+    probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseVector& conc)
+{
+  // for complete 1D simulation of battery:
+  // Micro state must exist for electrolyte -> set value to 1.0
+  for (int node = 0; node < static_cast<int>(my::nen_); ++node) conc(node) = 1.0;
+}
 // template classes
 // 1D elements
 template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<DRT::Element::line2, 1>;

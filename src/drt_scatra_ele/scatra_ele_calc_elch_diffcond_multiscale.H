@@ -63,6 +63,13 @@ namespace DRT
           Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
           ) final;
 
+      void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseVector& conc) override;
+
+      void CalculateScalars(const DRT::Element* ele, Epetra_SerialDenseVector& scalars,
+          bool inverting, bool calc_grad_phi) override;
+
       //! get diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> DiffManager() const
       {

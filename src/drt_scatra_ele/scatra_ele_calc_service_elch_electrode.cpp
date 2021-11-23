@@ -38,6 +38,12 @@ int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(
 
       break;
     }
+    case SCATRA::calc_elch_elctrode_mean_concentration:
+    {
+      CalculateMeanElectrodeConcentration(ele, discretization, la, elevec1_epetra);
+
+      break;
+    }
 
     case SCATRA::calc_scatra_manifold_flux:
     {

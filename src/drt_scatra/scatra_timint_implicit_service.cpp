@@ -2783,6 +2783,8 @@ void SCATRA::OutputScalarsStrategyBase::Init(const ScaTraTimIntImpl* const scatr
   output_mean_grad_ = DRT::INPUT::IntegralValue<bool>(
       *scatratimint->ScatraParameterList(), "OUTPUTSCALARSMEANGRAD");
 
+  output_micro_dis_ = scatratimint->MacroScale() and scatratimint->NdsMicro();
+
   std::string filename("");
   if (scatratimint->ScatraParameterList()->isParameter("output_file_name_discretization") and
       scatratimint->ScatraParameterList()->get<bool>("output_file_name_discretization"))
@@ -2977,6 +2979,9 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
     meangradients_[condid].resize(numscalpercondition_[condid], 0.0);
     domainintegral_[condid] = 0.0;
 
+    // micro dis has only one dof
+    if (output_micro_dis_) micrototalscalars_[condid].resize(1, 0.0);
+
     // register all data vectors
     runtime_csvwriter_->RegisterDataVector("Integral of domain " + std::to_string(condid), 1, 16);
     for (int k = 0; k < numdofpernodepercondition_[condid]; ++k)
@@ -2997,6 +3002,11 @@ void SCATRA::OutputScalarsStrategyCondition::InitStrategySpecific(
                                                    std::to_string(condid),
             1, 16);
       }
+    }
+    if (output_micro_dis_)
+    {
+      runtime_csvwriter_->RegisterDataVector(
+          "Total value of micro scalar in domain " + std::to_string(condid), 1, 16);
     }
   }
 }
@@ -3089,6 +3099,12 @@ void SCATRA::OutputScalarsStrategyCondition::PassToCSVWriter()
                                                  std::to_string(condid),
             {meangradients_[condid][k]});
       }
+    }
+    if (output_micro_dis_)
+    {
+      runtime_csvwriter_->AppendDataVector(
+          "Total value of micro scalar in domain " + std::to_string(condid),
+          {micrototalscalars_[condid][0]});
     }
   }
 }
@@ -3213,8 +3229,9 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
     // initialize result vector
     // first components = scalar integrals, last component = domain integral
     const int num_active_scalars = output_mean_grad_ ? numscalpernode : 0;
-    auto scalars =
-        Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode + 1 + num_active_scalars));
+    const int num_micro_dis = output_micro_dis_ ? 1 : 0;
+    auto scalars = Teuchos::rcp(
+        new Epetra_SerialDenseVector(numdofpernode + 1 + num_active_scalars + num_micro_dis));
 
     // perform integration
     scatratimint->discret_->EvaluateScalars(eleparams, scalars, "TotalAndMeanScalar", condid);
@@ -3240,6 +3257,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
         meangradients_[condid][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
       }
     }
+    if (output_micro_dis_) micrototalscalars_[condid][0] = (*scalars)[scalars->Length() - 1];
   }
 }
 
