@@ -31,7 +31,7 @@
 #include <trilinos_version.H>
 
 #ifdef TRAP_FE
-#include <fenv.h>
+#include <cfenv>
 #endif /* TRAP_FE */
 
 
@@ -65,7 +65,7 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
     /* Each proc knows about sucess/failure of opening its status file. Communication among all
      * procs will reveal, if _any_ proc has failure status. */
     // Get file status failure indicator on this proc
-    int local_status_failed = static_cast<int>(!status_file.is_open());
+    auto local_status_failed = static_cast<int>(!status_file.is_open());
 
     // Check file status among all procs
     int global_status_failed = 0;
@@ -99,8 +99,8 @@ void GetMemoryHighWaterMark(const Epetra_Comm &comm)
 
     // Gather values
     const int num_procs = comm.NumProc();
-    double *recvbuf = new double[num_procs];
-    MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    auto recvbuf = std::unique_ptr<double[]>(new double[num_procs]);
+    MPI_Gather(&local_mem, 1, MPI_DOUBLE, recvbuf.get(), 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
     // Compute and output statistics on proc 0
     if (comm.MyPID() == 0)
@@ -338,11 +338,13 @@ int main(int argc, char *argv[])
     feenableexcept(FE_INVALID | FE_DIVBYZERO);
 
     // Initialize a signal handle for SIGFPE
-    struct sigaction act;
+    struct sigaction act
+    {
+    };
     act.sa_handler = sigfpe_handler;
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
-    sigaction(SIGFPE, &act, 0);
+    sigaction(SIGFPE, &act, nullptr);
 
     /* The hard GNU way. But it does too much. */
     /*fesetenv((fenv_t*)-2);*/
