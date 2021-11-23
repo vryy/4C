@@ -197,16 +197,16 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
     if (trans_dT_intvisc_ > 0.0)
     {
       tempfac_i =
-          UTILS::complintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+          UTILS::CompLinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
       tempfac_j =
-          UTILS::complintrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+          UTILS::CompLinTrans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
     }
 
     // compute artificial viscosity
     const double artvisc_i =
-        UTILS::vec_norm2(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
+        UTILS::VecNormTwo(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
     const double artvisc_j =
-        UTILS::vec_norm2(cfg_j) / h_j * artvisc_lg_int_ + tempfac_j * artvisc_sl_int_;
+        UTILS::VecNormTwo(cfg_j) / h_j * artvisc_lg_int_ + tempfac_j * artvisc_sl_int_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0 or artvisc_j > 0.0)
@@ -270,8 +270,8 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
 
     // versor from particle j to i
     double e_ij[3];
-    UTILS::vec_set(e_ij, particlepair.e_ij_);
-    if (swapparticles) UTILS::vec_scale(e_ij, -1.0);
+    UTILS::VecSet(e_ij, particlepair.e_ij_);
+    if (swapparticles) UTILS::VecScale(e_ij, -1.0);
 
     // first derivative of kernel
     const double dWdrij = (swapparticles) ? particlepair.dWdrji_ : particlepair.dWdrij_;
@@ -320,11 +320,11 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
     double tempfac_i = 1.0;
     if (trans_dT_intvisc_ > 0.0)
       tempfac_i =
-          UTILS::complintrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
+          UTILS::CompLinTrans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_intvisc_);
 
     // compute artificial viscosity
     const double artvisc_i =
-        UTILS::vec_norm2(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
+        UTILS::VecNormTwo(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0)

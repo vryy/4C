@@ -26,22 +26,22 @@ namespace PARTICLEINTERACTION
   namespace UTILS
   {
     /**
-     *  \brief providing a more efficient method to determine the power with integer exponents
+     *  \brief provide an efficient method to determine the power with integer exponents
      */
     template <class T, int N>
     struct helper
     {
       static_assert(N >= 0, "The exponent must be positive!");
-      static constexpr T pow(const T x)
+      static constexpr T Pow(const T x)
       {
-        return ((N % 2) == 0 ? 1 : x) * helper<T, (N / 2)>::pow(x * x);
+        return ((N % 2) == 0 ? 1 : x) * helper<T, (N / 2)>::Pow(x * x);
       }
     };
 
     template <class T>
     struct helper<T, 0>
     {
-      static constexpr T pow(const T x) { return 1; }
+      static constexpr T Pow(const T x) { return 1; }
     };
 
     /**
@@ -50,9 +50,9 @@ namespace PARTICLEINTERACTION
      *  when you use this helper function there will be no need to explicitly insert the class type
      */
     template <int N, class T>
-    T constexpr pow(T const x)
+    T constexpr Pow(T const x)
     {
-      return helper<T, N>::pow(x);
+      return helper<T, N>::Pow(x);
     }
 
     //! @name collection of three dimensional vector operations
@@ -62,7 +62,7 @@ namespace PARTICLEINTERACTION
      *  \brief clear vector c
      */
     template <class T>
-    inline void vec_clear(T* c)
+    inline void VecClear(T* c)
     {
       c[0] = 0.0;
       c[1] = 0.0;
@@ -73,7 +73,7 @@ namespace PARTICLEINTERACTION
      *  \brief set vector a to vector c
      */
     template <class T>
-    inline void vec_set(T* c, const T* a)
+    inline void VecSet(T* c, const T* a)
     {
       c[0] = a[0];
       c[1] = a[1];
@@ -84,7 +84,7 @@ namespace PARTICLEINTERACTION
      *  \brief add vector a to vector c
      */
     template <class T>
-    inline void vec_add(T* c, const T* a)
+    inline void VecAdd(T* c, const T* a)
     {
       c[0] += a[0];
       c[1] += a[1];
@@ -95,7 +95,7 @@ namespace PARTICLEINTERACTION
      *  \brief subtract vector a from vector c
      */
     template <class T>
-    inline void vec_sub(T* c, const T* a)
+    inline void VecSub(T* c, const T* a)
     {
       c[0] -= a[0];
       c[1] -= a[1];
@@ -106,7 +106,7 @@ namespace PARTICLEINTERACTION
      *  \brief scale vector c
      */
     template <class T>
-    inline void vec_scale(T* c, const T fac)
+    inline void VecScale(T* c, const T fac)
     {
       c[0] *= fac;
       c[1] *= fac;
@@ -117,7 +117,7 @@ namespace PARTICLEINTERACTION
      *  \brief scale vector a and set to vector c
      */
     template <class T>
-    inline void vec_setscale(T* c, const T fac, const T* a)
+    inline void VecSetScale(T* c, const T fac, const T* a)
     {
       c[0] = fac * a[0];
       c[1] = fac * a[1];
@@ -128,7 +128,7 @@ namespace PARTICLEINTERACTION
      *  \brief scale vector a and add to vector c
      */
     template <class T>
-    inline void vec_addscale(T* c, const T fac, const T* a)
+    inline void VecAddScale(T* c, const T fac, const T* a)
     {
       c[0] += fac * a[0];
       c[1] += fac * a[1];
@@ -139,7 +139,7 @@ namespace PARTICLEINTERACTION
      *  \brief set cross product of vector a and vector b to vector c
      */
     template <class T>
-    inline void vec_setcross(T* c, const T* a, const T* b)
+    inline void VecSetCross(T* c, const T* a, const T* b)
     {
       c[0] = a[1] * b[2] - a[2] * b[1];
       c[1] = a[2] * b[0] - a[0] * b[2];
@@ -150,7 +150,7 @@ namespace PARTICLEINTERACTION
      *  \brief add cross product of vector a and vector b to vector c
      */
     template <class T>
-    inline void vec_addcross(T* c, const T* a, const T* b)
+    inline void VecAddCross(T* c, const T* a, const T* b)
     {
       c[0] += a[1] * b[2] - a[2] * b[1];
       c[1] += a[2] * b[0] - a[0] * b[2];
@@ -161,7 +161,7 @@ namespace PARTICLEINTERACTION
      *  \brief return scalar product of vector a and vector b
      */
     template <class T>
-    inline T vec_dot(const T* a, const T* b)
+    inline T VecDot(const T* a, const T* b)
     {
       return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
     }
@@ -170,7 +170,7 @@ namespace PARTICLEINTERACTION
      *  \brief return 2-norm of vector a
      */
     template <class T>
-    inline T vec_norm2(const T* a)
+    inline T VecNormTwo(const T* a)
     {
       return std::sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
     }
@@ -184,10 +184,10 @@ namespace PARTICLEINTERACTION
      *  \brief construct orthogonal unit surface tangent vectors from given unit surface normal
      */
     template <class T>
-    inline void unitsurfacetangents(const T* n, T* t1, T* t2)
+    inline void UnitSurfaceTangents(const T* n, T* t1, T* t2)
     {
 #ifdef DEBUG
-      if (std::abs(1.0 - vec_norm2(n)) > 1.0e-14)
+      if (std::abs(1.0 - VecNormTwo(n)) > 1.0e-14)
         dserror("given unit surface normal not normalized!");
 #endif
 
@@ -210,9 +210,9 @@ namespace PARTICLEINTERACTION
         t1[2] = 0.0;
       }
 
-      vec_scale(t1, 1.0 / vec_norm2(t1));
+      VecScale(t1, 1.0 / VecNormTwo(t1));
 
-      vec_setcross(t2, n, t1);
+      VecSetCross(t2, n, t1);
     }
 
     //@}
@@ -223,7 +223,7 @@ namespace PARTICLEINTERACTION
     /**
      *  \brief linear transition function
      */
-    inline double lintrans(const double x, const double x1, const double x2)
+    inline double LinTrans(const double x, const double x1, const double x2)
     {
 #ifdef DEBUG
       if (not(std::abs(x2 - x1) > 1.0e-14)) dserror("danger of division by zero!");
@@ -237,9 +237,9 @@ namespace PARTICLEINTERACTION
     /**
      *  \brief complementary linear transition function
      */
-    inline double complintrans(const double x, const double x1, const double x2)
+    inline double CompLinTrans(const double x, const double x1, const double x2)
     {
-      return 1.0 - lintrans(x, x1, x2);
+      return 1.0 - LinTrans(x, x1, x2);
     }
 
     //@}

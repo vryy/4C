@@ -124,8 +124,8 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
     contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    UTILS::vec_setcross(v_rel_rolling_ref, angvel_i, e_ji);
-    UTILS::vec_addcross(v_rel_rolling_ref, e_ji, angvel_j);
+    UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
+    UTILS::VecAddCross(v_rel_rolling_ref, e_ji, angvel_j);
 
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
@@ -148,7 +148,7 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
     contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    UTILS::vec_setcross(v_rel_rolling_ref, angvel_i, e_ji);
+    UTILS::VecSetCross(v_rel_rolling_ref, angvel_i, e_ji);
 
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
@@ -181,17 +181,17 @@ class PARTICLEINTERACTION::DEMContactRollingViscous_TestSuite : public BACICxxTe
         r_eff, mu_rolling_, normalcontactforce, rollingcontactmoment);
 
     double rollingcontactmoment_ref[3] = {0.0};
-    const double fac = young_ / (1.0 - UTILS::pow<2>(nue_));
+    const double fac = young_ / (1.0 - UTILS::Pow<2>(nue_));
     const double c_1 = 1.15344;
     const double d_rolling_fac =
         mu_rolling_ * (1.0 - e_) / (c_1 * std::pow(fac, 0.4) * std::pow(v_max_, 0.2));
     const double d_rolling = d_rolling_fac * std::pow(0.5 * r_eff, -0.2);
 
     double rollingcontactforce[3];
-    UTILS::vec_setscale(rollingcontactforce, -(d_rolling * normalcontactforce), v_rel_rolling);
+    UTILS::VecSetScale(rollingcontactforce, -(d_rolling * normalcontactforce), v_rel_rolling);
 
-    UTILS::vec_setcross(rollingcontactmoment_ref, rollingcontactforce, e_ji);
-    UTILS::vec_scale(rollingcontactmoment_ref, r_eff);
+    UTILS::VecSetCross(rollingcontactmoment_ref, rollingcontactforce, e_ji);
+    UTILS::VecScale(rollingcontactmoment_ref, r_eff);
 
     for (int i = 0; i < 3; ++i)
       TS_ASSERT_DELTA(rollingcontactmoment[i], rollingcontactmoment_ref[i], 1.0e-12);
@@ -296,9 +296,9 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, angvel_j, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    UTILS::vec_setcross(v_rel_rolling_ref, e_ji, angvel_i);
-    UTILS::vec_addcross(v_rel_rolling_ref, angvel_j, e_ji);
-    UTILS::vec_scale(v_rel_rolling_ref, r_eff);
+    UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
+    UTILS::VecAddCross(v_rel_rolling_ref, angvel_j, e_ji);
+    UTILS::VecScale(v_rel_rolling_ref, r_eff);
 
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
@@ -321,8 +321,8 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
     contactrolling_->RelativeRollingVelocity(r_eff, e_ji, angvel_i, nullptr, v_rel_rolling);
 
     double v_rel_rolling_ref[3] = {0.0};
-    UTILS::vec_setcross(v_rel_rolling_ref, e_ji, angvel_i);
-    UTILS::vec_scale(v_rel_rolling_ref, r_eff);
+    UTILS::VecSetCross(v_rel_rolling_ref, e_ji, angvel_i);
+    UTILS::VecScale(v_rel_rolling_ref, r_eff);
 
     for (int i = 0; i < 3; ++i) TS_ASSERT_DELTA(v_rel_rolling[i], v_rel_rolling_ref[i], 1.0e-12);
   }
@@ -414,7 +414,7 @@ class PARTICLEINTERACTION::DEMContactRollingCoulomb_TestSuite : public BACICxxTe
 
     const double k_rolling = (1.0 - nue_) / (1.0 - 0.5 * nue_) * k_normal_;
     const double rollingpotentialenergy_ref =
-        0.5 * k_rolling * UTILS::vec_dot(gap_rolling, gap_rolling);
+        0.5 * k_rolling * UTILS::VecDot(gap_rolling, gap_rolling);
 
     double rollingpotentialenergy = 0.0;
     contactrolling_->RollingPotentialEnergy(gap_rolling, rollingpotentialenergy);

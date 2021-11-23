@@ -451,7 +451,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialMass()
 
     // compute mass via particle volume and initial density
     const double fac = material->initDensity_ * 4.0 / 3.0 * M_PI;
-    for (int i = 0; i < particlestored; ++i) mass[i] = fac * UTILS::pow<3>(radius[i]);
+    for (int i = 0; i < particlestored; ++i) mass[i] = fac * UTILS::Pow<3>(radius[i]);
   }
 }
 
@@ -479,7 +479,7 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::SetInitialInertia()
     double* inertia = container->GetPtrToState(PARTICLEENGINE::Inertia, 0);
 
     // compute mass via particle volume and initial density
-    for (int i = 0; i < particlestored; ++i) inertia[i] = 0.4 * mass[i] * UTILS::pow<2>(radius[i]);
+    for (int i = 0; i < particlestored; ++i) inertia[i] = 0.4 * mass[i] * UTILS::Pow<2>(radius[i]);
   }
 }
 
@@ -531,14 +531,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::ComputeAcceleration() const
 
     // compute acceleration
     for (int i = 0; i < particlestored; ++i)
-      UTILS::vec_addscale(&acc[statedim * i], (1.0 / mass[i]), &force[statedim * i]);
+      UTILS::VecAddScale(&acc[statedim * i], (1.0 / mass[i]), &force[statedim * i]);
 
     // compute angular acceleration
     if (angacc and moment)
     {
       for (int i = 0; i < particlestored; ++i)
-        UTILS::vec_addscale(&angacc[statedim * i],
-            (5.0 / (2.0 * mass[i] * UTILS::pow<2>(radius[i]))), &moment[statedim * i]);
+        UTILS::VecAddScale(&angacc[statedim * i],
+            (5.0 / (2.0 * mass[i] * UTILS::Pow<2>(radius[i]))), &moment[statedim * i]);
     }
   }
 }
@@ -611,14 +611,14 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleKineticEnergy(
 
     // add translational kinetic energy contribution
     for (int i = 0; i < particlestored; ++i)
-      kineticenergy += 0.5 * mass[i] * UTILS::vec_dot(&vel[statedim * i], &vel[statedim * i]);
+      kineticenergy += 0.5 * mass[i] * UTILS::VecDot(&vel[statedim * i], &vel[statedim * i]);
 
     // add rotational kinetic energy contribution
     if (angvel)
     {
       for (int i = 0; i < particlestored; ++i)
-        kineticenergy += 0.5 * (0.4 * mass[i] * UTILS::pow<2>(radius[i])) *
-                         UTILS::vec_dot(&angvel[statedim * i], &angvel[statedim * i]);
+        kineticenergy += 0.5 * (0.4 * mass[i] * UTILS::Pow<2>(radius[i])) *
+                         UTILS::VecDot(&angvel[statedim * i], &angvel[statedim * i]);
     }
   }
 }
@@ -651,6 +651,6 @@ void PARTICLEINTERACTION::ParticleInteractionDEM::EvaluateParticleGravitationalP
 
     // add gravitational potential energy contribution
     for (int i = 0; i < particlestored; ++i)
-      gravitationalpotentialenergy -= mass[i] * UTILS::vec_dot(&gravity_[0], &pos[statedim * i]);
+      gravitationalpotentialenergy -= mass[i] * UTILS::VecDot(&gravity_[0], &pos[statedim * i]);
   }
 }

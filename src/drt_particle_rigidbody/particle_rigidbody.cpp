@@ -333,7 +333,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::AddGravityAcceleration(std::vector<dou
     double* acc_k = &rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k][0];
 
     // set gravity acceleration
-    PARTICLEINTERACTION::UTILS::vec_add(acc_k, &gravity[0]);
+    PARTICLEINTERACTION::UTILS::VecAdd(acc_k, &gravity[0]);
   }
 }
 
@@ -799,7 +799,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearPartialMassQuantities()
     // clear mass quantities
     mass_k[0] = 0.0;
     for (int i = 0; i < 6; ++i) inertia_k[i] = 0.0;
-    PARTICLEINTERACTION::UTILS::vec_clear(pos_k);
+    PARTICLEINTERACTION::UTILS::VecClear(pos_k);
   }
 }
 
@@ -849,7 +849,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 
     // sum contribution of particle i
     mass_k[0] += mass_i[0];
-    PARTICLEINTERACTION::UTILS::vec_addscale(pos_k, mass_i[0], pos_i);
+    PARTICLEINTERACTION::UTILS::VecAddScale(pos_k, mass_i[0], pos_i);
   }
 
   // iterate over hosted rigid bodies
@@ -864,7 +864,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 #endif
 
     // determine center of gravity of (partial) rigid body k
-    PARTICLEINTERACTION::UTILS::vec_scale(pos_k, 1.0 / mass_k[0]);
+    PARTICLEINTERACTION::UTILS::VecScale(pos_k, 1.0 / mass_k[0]);
   }
 
   // loop over particles in container
@@ -894,8 +894,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
     const double* inertia_i = container_i->GetPtrToState(PARTICLEENGINE::Inertia, particle_i);
 
     double r_ki[3];
-    PARTICLEINTERACTION::UTILS::vec_set(r_ki, pos_k);
-    PARTICLEINTERACTION::UTILS::vec_sub(r_ki, pos_i);
+    PARTICLEINTERACTION::UTILS::VecSet(r_ki, pos_k);
+    PARTICLEINTERACTION::UTILS::VecSub(r_ki, pos_i);
 
     // sum contribution of particle i
     inertia_k[0] += inertia_i[0] + (r_ki[1] * r_ki[1] + r_ki[2] * r_ki[2]) * mass_i[0];
@@ -1009,18 +1009,18 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
 
     // clear mass and position
     mass_k[0] = 0.0;
-    PARTICLEINTERACTION::UTILS::vec_clear(pos_k);
+    PARTICLEINTERACTION::UTILS::VecClear(pos_k);
 
     // iterate over partial quantities
     for (int p = 0; p < numpartial_k; ++p)
     {
       // sum contribution of partial quantity
       mass_k[0] += partialmass_k[p];
-      PARTICLEINTERACTION::UTILS::vec_addscale(pos_k, partialmass_k[p], &partialpos_k[p][0]);
+      PARTICLEINTERACTION::UTILS::VecAddScale(pos_k, partialmass_k[p], &partialpos_k[p][0]);
     }
 
     // determine center of gravity of rigid body k
-    PARTICLEINTERACTION::UTILS::vec_scale(pos_k, 1.0 / mass_k[0]);
+    PARTICLEINTERACTION::UTILS::VecScale(pos_k, 1.0 / mass_k[0]);
   }
 
   // iterate over owned rigid bodies
@@ -1050,8 +1050,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
     for (int p = 0; p < numpartial_k; ++p)
     {
       double r_kp[3];
-      PARTICLEINTERACTION::UTILS::vec_set(r_kp, pos_k);
-      PARTICLEINTERACTION::UTILS::vec_sub(r_kp, &partialpos_k[p][0]);
+      PARTICLEINTERACTION::UTILS::VecSet(r_kp, pos_k);
+      PARTICLEINTERACTION::UTILS::VecSub(r_kp, &partialpos_k[p][0]);
 
       // sum contribution of partial quantity
       for (int i = 0; i < 6; ++i) inertia_k[i] += partialinertia_k[p][i];
@@ -1076,8 +1076,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyForceAndTorque()
     double* torque_k = &rigidbodydatastate_->GetRefMutableTorque()[rigidbody_k][0];
 
     // clear force and torque of rigid body k
-    PARTICLEINTERACTION::UTILS::vec_clear(force_k);
-    PARTICLEINTERACTION::UTILS::vec_clear(torque_k);
+    PARTICLEINTERACTION::UTILS::VecClear(force_k);
+    PARTICLEINTERACTION::UTILS::VecClear(torque_k);
   }
 }
 
@@ -1141,8 +1141,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
     const double* force_i = container_i->GetPtrToState(PARTICLEENGINE::Force, particle_i);
 
     // sum contribution of particle i
-    PARTICLEINTERACTION::UTILS::vec_add(force_k, force_i);
-    PARTICLEINTERACTION::UTILS::vec_addcross(torque_k, relpos_i, force_i);
+    PARTICLEINTERACTION::UTILS::VecAdd(force_k, force_i);
+    PARTICLEINTERACTION::UTILS::VecAddCross(torque_k, relpos_i, force_i);
   }
 }
 
@@ -1202,8 +1202,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTor
       double* torque_k = &rigidbodydatastate_->GetRefMutableTorque()[rigidbody_k][0];
 
       // sum gathered contribution to full force and torque
-      PARTICLEINTERACTION::UTILS::vec_add(force_k, &tmp_force_k[0]);
-      PARTICLEINTERACTION::UTILS::vec_add(torque_k, &tmp_torque_k[0]);
+      PARTICLEINTERACTION::UTILS::VecAdd(force_k, &tmp_force_k[0]);
+      PARTICLEINTERACTION::UTILS::VecAdd(torque_k, &tmp_torque_k[0]);
     }
 
     if (position != rmsg.size())
@@ -1226,15 +1226,15 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
     double* angacc_k = &rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k][0];
 
     // compute acceleration of rigid body k
-    PARTICLEINTERACTION::UTILS::vec_addscale(acc_k, 1 / mass_k[0], force_k);
+    PARTICLEINTERACTION::UTILS::VecAddScale(acc_k, 1 / mass_k[0], force_k);
 
     // compute inverse of rotation
     double invrot_k[4];
-    UTILS::quaternion_invert(invrot_k, rot_k);
+    UTILS::QuaternionInvert(invrot_k, rot_k);
 
     // get torque in the reference frame
     double reftorque_k[3];
-    UTILS::quaternion_rotate_vector(reftorque_k, invrot_k, torque_k);
+    UTILS::QuaternionRotateVector(reftorque_k, invrot_k, torque_k);
 
     // determinant of mass moment of inertia
     const double det_inertia_k =
@@ -1259,12 +1259,12 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
                      reftorque_k[1] * (inertia_k[3] * inertia_k[4] - inertia_k[0] * inertia_k[5]) +
                      reftorque_k[2] * (inertia_k[0] * inertia_k[1] - inertia_k[3] * inertia_k[3]);
 
-    PARTICLEINTERACTION::UTILS::vec_scale(refangacc_k, 1.0 / det_inertia_k);
+    PARTICLEINTERACTION::UTILS::VecScale(refangacc_k, 1.0 / det_inertia_k);
 
     // compute angular acceleration of rigid body k in the rotating frame
     double temp[3];
-    UTILS::quaternion_rotate_vector(temp, rot_k, refangacc_k);
-    PARTICLEINTERACTION::UTILS::vec_add(angacc_k, temp);
+    UTILS::QuaternionRotateVector(temp, rot_k, refangacc_k);
+    PARTICLEINTERACTION::UTILS::VecAdd(angacc_k, temp);
   }
 }
 
@@ -1277,7 +1277,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyOrientation()
     double* rot_k = &rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k][0];
 
     // initialize rotation of rigid body k
-    UTILS::quaternion_clear(rot_k);
+    UTILS::QuaternionClear(rot_k);
   }
 }
 
@@ -1293,21 +1293,21 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double 
     const double* angvel_k = &rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k][0];
 
     // update position
-    PARTICLEINTERACTION::UTILS::vec_addscale(pos_k, timeincrement, vel_k);
+    PARTICLEINTERACTION::UTILS::VecAddScale(pos_k, timeincrement, vel_k);
 
     // save current rotation
     double curr_rot_k[4];
-    UTILS::quaternion_set(curr_rot_k, rot_k);
+    UTILS::QuaternionSet(curr_rot_k, rot_k);
 
     // get rotation increment
     double phi_k[3];
-    PARTICLEINTERACTION::UTILS::vec_setscale(phi_k, timeincrement, angvel_k);
+    PARTICLEINTERACTION::UTILS::VecSetScale(phi_k, timeincrement, angvel_k);
 
     double incr_rot_k[4];
-    UTILS::quaternion_from_angle(incr_rot_k, phi_k);
+    UTILS::QuaternionFromAngle(incr_rot_k, phi_k);
 
     // update rotation
-    UTILS::quaternion_product(rot_k, incr_rot_k, curr_rot_k);
+    UTILS::QuaternionProduct(rot_k, incr_rot_k, curr_rot_k);
   }
 }
 
@@ -1323,8 +1323,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyVelocities(const double
     const double* angacc_k = &rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k][0];
 
     // update velocities
-    PARTICLEINTERACTION::UTILS::vec_addscale(vel_k, timeincrement, acc_k);
-    PARTICLEINTERACTION::UTILS::vec_addscale(angvel_k, timeincrement, angacc_k);
+    PARTICLEINTERACTION::UTILS::VecAddScale(vel_k, timeincrement, acc_k);
+    PARTICLEINTERACTION::UTILS::VecAddScale(angvel_k, timeincrement, angacc_k);
   }
 }
 
@@ -1338,8 +1338,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyAccelerations()
     double* angacc_k = &rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k][0];
 
     // clear accelerations of rigid body k
-    PARTICLEINTERACTION::UTILS::vec_clear(acc_k);
-    PARTICLEINTERACTION::UTILS::vec_clear(angacc_k);
+    PARTICLEINTERACTION::UTILS::VecClear(acc_k);
+    PARTICLEINTERACTION::UTILS::VecClear(angacc_k);
   }
 }
 
@@ -1558,8 +1558,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleRelativePositionInBody
     double* relposbody_i =
         container_i->GetPtrToState(PARTICLEENGINE::RelativePositionBodyFrame, particle_i);
 
-    PARTICLEINTERACTION::UTILS::vec_set(relposbody_i, pos_i);
-    PARTICLEINTERACTION::UTILS::vec_sub(relposbody_i, pos_k);
+    PARTICLEINTERACTION::UTILS::VecSet(relposbody_i, pos_i);
+    PARTICLEINTERACTION::UTILS::VecSub(relposbody_i, pos_k);
   }
 }
 
@@ -1608,7 +1608,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidParticleRelativePosition()
     double* relpos_i = container_i->GetPtrToState(PARTICLEENGINE::RelativePosition, particle_i);
 
     // update relative position of particle i
-    UTILS::quaternion_rotate_vector(relpos_i, rot_k, relposbody_i);
+    UTILS::QuaternionRotateVector(relpos_i, rot_k, relposbody_i);
   }
 }
 
@@ -1657,8 +1657,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticlePosition()
     double* pos_i = container_i->GetPtrToState(PARTICLEENGINE::Position, particle_i);
 
     // set position of particle i
-    PARTICLEINTERACTION::UTILS::vec_set(pos_i, pos_k);
-    PARTICLEINTERACTION::UTILS::vec_add(pos_i, relpos_i);
+    PARTICLEINTERACTION::UTILS::VecSet(pos_i, pos_k);
+    PARTICLEINTERACTION::UTILS::VecAdd(pos_i, relpos_i);
   }
 }
 
@@ -1709,9 +1709,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleVelocities()
     double* angvel_i = container_i->CondGetPtrToState(PARTICLEENGINE::AngularVelocity, particle_i);
 
     // set velocities of particle i
-    PARTICLEINTERACTION::UTILS::vec_set(vel_i, vel_k);
-    PARTICLEINTERACTION::UTILS::vec_addcross(vel_i, angvel_k, relpos_i);
-    if (angvel_i) PARTICLEINTERACTION::UTILS::vec_set(angvel_i, angvel_k);
+    PARTICLEINTERACTION::UTILS::VecSet(vel_i, vel_k);
+    PARTICLEINTERACTION::UTILS::VecAddCross(vel_i, angvel_k, relpos_i);
+    if (angvel_i) PARTICLEINTERACTION::UTILS::VecSet(angvel_i, angvel_k);
   }
 }
 
@@ -1765,13 +1765,13 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidParticleAccelerations()
 
     // evaluate relative velocity of particle i
     double relvel_i[3];
-    PARTICLEINTERACTION::UTILS::vec_setcross(relvel_i, angvel_k, relpos_i);
+    PARTICLEINTERACTION::UTILS::VecSetCross(relvel_i, angvel_k, relpos_i);
 
     // set accelerations of particle i
-    PARTICLEINTERACTION::UTILS::vec_set(acc_i, acc_k);
-    PARTICLEINTERACTION::UTILS::vec_addcross(acc_i, angacc_k, relpos_i);
-    PARTICLEINTERACTION::UTILS::vec_addcross(acc_i, angvel_k, relvel_i);
-    if (angacc_i) PARTICLEINTERACTION::UTILS::vec_set(angacc_i, angacc_k);
+    PARTICLEINTERACTION::UTILS::VecSet(acc_i, acc_k);
+    PARTICLEINTERACTION::UTILS::VecAddCross(acc_i, angacc_k, relpos_i);
+    PARTICLEINTERACTION::UTILS::VecAddCross(acc_i, angvel_k, relvel_i);
+    if (angacc_i) PARTICLEINTERACTION::UTILS::VecSet(angacc_i, angacc_k);
   }
 }
 
@@ -1893,11 +1893,11 @@ void PARTICLERIGIDBODY::RigidBodyHandler::EvaluateRigidBodySolidification(
 
         // vector from particle i to j
         double r_ji[3];
-        PARTICLEINTERACTION::UTILS::vec_set(r_ji, pos_j);
-        PARTICLEINTERACTION::UTILS::vec_sub(r_ji, pos_i);
+        PARTICLEINTERACTION::UTILS::VecSet(r_ji, pos_j);
+        PARTICLEINTERACTION::UTILS::VecSub(r_ji, pos_i);
 
         // absolute distance between particles
-        const double absdist = PARTICLEINTERACTION::UTILS::vec_norm2(r_ji);
+        const double absdist = PARTICLEINTERACTION::UTILS::VecNormTwo(r_ji);
 
         // set rigid body color to the one of the closest rigid particle j
         if (absdist < mindist)
@@ -1931,10 +1931,10 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange
 
     // vector from previous to current position of rigid body k
     double prev_r_kk[3];
-    PARTICLEINTERACTION::UTILS::vec_set(prev_r_kk, pos_k);
-    PARTICLEINTERACTION::UTILS::vec_sub(prev_r_kk, prevpos_k);
+    PARTICLEINTERACTION::UTILS::VecSet(prev_r_kk, pos_k);
+    PARTICLEINTERACTION::UTILS::VecSub(prev_r_kk, prevpos_k);
 
     // update velocity
-    PARTICLEINTERACTION::UTILS::vec_addcross(vel_k, angvel_k, prev_r_kk);
+    PARTICLEINTERACTION::UTILS::VecAddCross(vel_k, angvel_k, prev_r_kk);
   }
 }
