@@ -98,6 +98,8 @@ namespace DRT
       virtual void CalcInternalForceStiffTotLag(
           Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat);
 
+      virtual void CalcGPStresses(Teuchos::ParameterList& params);
+
       DRT::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -222,6 +224,9 @@ namespace DRT
       //! nodal velocity for this element
       std::vector<double> vel_ele_;
 
+      //! gaussrule_ will be initialized automatically to a 2 point integration rule
+      DRT::UTILS::GaussRule1D gaussrule_;
+
      private:
       //! possible kinematic types
       enum KinematicType
@@ -255,9 +260,6 @@ namespace DRT
 
       //! reference tangent position
       LINALG::Matrix<1, 3> diff_disp_ref_;
-
-      //! gaussrule_ will be initialized automatically to a 2 point integration rule
-      DRT::UTILS::GaussRule1D gaussrule_;
 
       //!  data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;

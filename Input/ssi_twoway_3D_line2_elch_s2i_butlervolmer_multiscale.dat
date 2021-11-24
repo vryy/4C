@@ -19,6 +19,8 @@ Academic test case for multi-scale electrochemistry:
 DIM           3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
+-----------------------------------------------------------------IO
+STRUCT_STRESS                   2PK
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
 INITIALFIELD                    field_by_condition

@@ -56,6 +56,8 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_nlnstifflmass;
     else if (action == "calc_struct_stress")
       act = ELEMENTS::struct_calc_stress;
+    else if (action == "postprocess_stress")
+      act = ELEMENTS::struct_postprocess_stress;
     else if (action == "calc_struct_update_istep")
       act = ELEMENTS::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
@@ -118,16 +120,58 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
 
       break;
     }
+    case ELEMENTS::struct_calc_stress:
+    {
+      if (discretization.Comm().MyPID() == Owner())
+      {
+        ExtractElementalVariables(la, discretization, params);
+
+        CalcGPStresses(params);
+      }
+      break;
+    }
     case ELEMENTS::struct_postprocess_stress:
     {
-      // no stress calculation for postprocess. Does not really make sense!
-      dserror("No stress output for Truss3!");
+      const auto gpstressmap =
+          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+              "gpstressmap", Teuchos::null);
+
+      if (gpstressmap == Teuchos::null)
+        dserror("no gp stress/strain map available for postprocessing");
+
+      std::string stresstype = params.get<std::string>("stresstype", "ndxyz");
+
+      int gid = Id();
+      Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+      Teuchos::RCP<Epetra_MultiVector> poststress =
+          params.get<Teuchos::RCP<Epetra_MultiVector>>("poststress", Teuchos::null);
+      if (poststress == Teuchos::null) dserror("No element stress/strain vector available");
+
+      if (stresstype == "ndxyz")
+      {
+        dserror("Nodal stress not supported for truss3");
+      }
+      else if (stresstype == "cxyz")
+      {
+        const Epetra_BlockMap& elemap = poststress->Map();
+        int lid = elemap.LID(Id());
+        const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+        if (lid != -1)
+        {
+          (*((*poststress)(0)))[lid] = 0.0;
+          for (int j = 0; j < intpoints.nquad; ++j)
+            (*((*poststress)(0)))[lid] += 1.0 / intpoints.nquad * (*gpstress)(j, 0);
+        }
+      }
+      else
+      {
+        dserror("unknown type of stress/strain output on element level");
+      }
 
       break;
     }
     case ELEMENTS::struct_calc_update_istep:
     case ELEMENTS::struct_calc_reset_istep:
-    case ELEMENTS::struct_calc_stress:
     case ELEMENTS::struct_calc_recover:
     case ELEMENTS::struct_calc_predict:
     {
@@ -544,6 +588,75 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
       const double second_part = dN_dx(row) * def_grad * dPK2_du * int_fac;
       stiffmat(row, col) = first_part + second_part;
     }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3::CalcGPStresses(Teuchos::ParameterList& params)
+{
+  // safety check
+  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
+    dserror("only St. Venant Kirchhoff material supported for truss element");
+
+  Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+  INPAR::STR::StressType iostress;
+  if (IsParamsInterface())
+  {
+    stressdata = ParamsInterface().MutableStressDataPtr();
+    iostress = ParamsInterface().GetStressOutputType();
+  }
+  else
+  {
+    stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+    iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+  }
+
+  const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+
+  Epetra_SerialDenseMatrix stress(intpoints.nquad, MAT::NUM_STRESS_3D);
+
+  switch (iostress)
+  {
+    case INPAR::STR::stress_2pk:
+    {
+      static LINALG::Matrix<6, 1> truss_disp;
+      static LINALG::Matrix<6, 6> dtruss_disp_du;
+      static LINALG::Matrix<6, 1> dN_dx;
+
+      PrepCalcInternalForceStiffTotLag(truss_disp, dtruss_disp_du, dN_dx);
+
+      const double youngs_modulus =
+          static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+
+      // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
+      const double epsilon_GL = 0.5 * (lcurr2_ - lrefe2_) / lrefe2_;
+
+      // 2nd Piola-Kirchhoff stress
+      const double PK2 = youngs_modulus * epsilon_GL;
+
+      for (int ip = 0; ip < intpoints.nquad; ++ip) stress(ip, 0) = PK2;
+      break;
+    }
+    case INPAR::STR::stress_cauchy:
+    {
+      dserror("Cauchy stress not supported for truss 3");
+      break;
+    }
+
+    case INPAR::STR::stress_none:
+      break;
+    default:
+      dserror("Requested stress type not available");
+      break;
+  }
+
+  {
+    DRT::PackBuffer data;
+    AddtoPack(data, stress);
+    data.StartPacking();
+    AddtoPack(data, stress);
+    std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
   }
 }
 

@@ -14,6 +14,8 @@
 
 #include "../drt_mat/stvenantkirchhoff.H"
 
+#include "../drt_structure_new/str_elements_paramsinterface.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3ScatraType DRT::ELEMENTS::Truss3ScatraType::instance_;
@@ -190,25 +192,25 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       const double youngs_modulus = stvk_growth_mat->Youngs();
 
       // get Gauß rule
-      auto gauss_points = DRT::UTILS::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
+      auto intpoints = DRT::UTILS::IntegrationPoints1D(gaussrule_);
 
       // computing forcevec and stiffmat
       forcevec.Scale(0.0);
       stiffmat.Scale(0.0);
-      for (int i = 0; i < gauss_points.nquad; ++i)
+      for (int i = 0; i < intpoints.nquad; ++i)
       {
         const double dx_dxi = lrefe_ / 2.0;
-        const double int_fac = dx_dxi * gauss_points.qwgt[i] * crosssec_;
+        const double int_fac = dx_dxi * intpoints.qwgt[i] * crosssec_;
 
         // get concentration at Gauß point
-        const double c_GP = ProjectScalarToGaussPoint(gauss_points.qxg[i][0], nodal_concentration);
+        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
 
         // growth propotional to amount of substance of proportional to concentration
         const double growth_factor =
             amount_prop_growth ? GetGrowthFactorAoSProp(poly_num, c_GP, c_0, poly_params)
                                : GetGrowthFactorConcProp(poly_num, c_GP, c_0, poly_params);
 
-        // calculate Stress
+        // calculate stress
         const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
         const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
 
@@ -233,6 +235,112 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       }
       break;
     }
+    default:
+    {
+      dserror("Material type is not supported");
+      break;
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(Teuchos::ParameterList& params)
+{
+  // safety check
+  if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
+      Material()->MaterialType() != INPAR::MAT::m_stvenant)
+    dserror("only St. Venant Kirchhoff growth material supported for truss element");
+
+  switch (Material()->MaterialType())
+  {
+    case INPAR::MAT::m_stvenant:
+    {
+      Truss3::CalcGPStresses(params);
+      break;
+    }
+    case INPAR::MAT::m_stvenant_growth:
+    {
+      Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+      INPAR::STR::StressType iostress;
+      if (IsParamsInterface())
+      {
+        stressdata = ParamsInterface().MutableStressDataPtr();
+        iostress = ParamsInterface().GetStressOutputType();
+      }
+      else
+      {
+        stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+        iostress =
+            DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
+      }
+
+      const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
+
+      Epetra_SerialDenseMatrix stress(intpoints.nquad, MAT::NUM_STRESS_3D);
+
+      switch (iostress)
+      {
+        case INPAR::STR::stress_2pk:
+        {
+          LINALG::Matrix<6, 1> truss_disp;
+          LINALG::Matrix<6, 6> dtruss_disp_du;
+          LINALG::Matrix<6, 1> dN_dx;
+          LINALG::Matrix<2, 1> nodal_concentration;
+          const int ndof = 6;
+
+          PrepCalcInternalForceStiffTotLagScaTra(
+              truss_disp, dtruss_disp_du, dN_dx, nodal_concentration);
+
+          // get data from input
+          const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
+          const double c_0 = stvk_growth_mat->C0();
+          const int poly_num = stvk_growth_mat->PolyNum();
+          const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
+          const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
+          const double youngs_modulus = stvk_growth_mat->Youngs();
+
+          for (int i = 0; i < intpoints.nquad; ++i)
+          {
+            // get concentration at Gauß point
+            const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
+
+            // growth propotional to amount of substance of proportional to concentration
+            const double growth_factor =
+                amount_prop_growth ? GetGrowthFactorAoSProp(poly_num, c_GP, c_0, poly_params)
+                                   : GetGrowthFactorConcProp(poly_num, c_GP, c_0, poly_params);
+
+            // calculate stress
+            const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
+            const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
+
+            stress(i, 0) = PK2_1D;
+          }
+
+          break;
+        }
+        case INPAR::STR::stress_cauchy:
+        {
+          dserror("Cauchy stress not supported for truss 3");
+          break;
+        }
+
+        case INPAR::STR::stress_none:
+          break;
+        default:
+          dserror("Requested stress type not available");
+          break;
+      }
+
+      {
+        DRT::PackBuffer data;
+        AddtoPack(data, stress);
+        data.StartPacking();
+        AddtoPack(data, stress);
+        std::copy(data().begin(), data().end(), std::back_inserter(*stressdata));
+      }
+    }
+    break;
     default:
     {
       dserror("Material type is not supported");

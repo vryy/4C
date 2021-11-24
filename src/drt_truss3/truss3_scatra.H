@@ -74,6 +74,8 @@ namespace DRT
       void CalcInternalForceStiffTotLag(
           Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat) override;
 
+      void CalcGPStresses(Teuchos::ParameterList& params) override;
+
       void Pack(DRT::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
 
