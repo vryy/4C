@@ -99,10 +99,10 @@ class PARTICLEINTERACTION::SPHArtificialViscosity_TestSuite : public BACICxxTest
                        (dens_ij * (std::pow(abs_rij, 2) + epsilon * std::pow(h_ij, 2)));
 
     double acc_i_ref[3];
-    UTILS::vec_setscale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
+    UTILS::VecSetScale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
 
     double acc_j_ref[3];
-    UTILS::vec_setscale(acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
+    UTILS::VecSetScale(acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
 
     artificialviscosity_->ArtificialViscosity(vel_i, vel_j, &mass_i, &mass_j, artvisc_i, artvisc_j,
         dWdrij, dWdrji, dens_ij, h_ij, c_ij, abs_rij, e_ij, acc_i, acc_j);

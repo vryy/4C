@@ -53,10 +53,10 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::PressureGradient(const
     const double& speccoeff_ji, const double* e_ij, double* acc_i, double* acc_j) const
 {
   const double fac =
-      (press_i[0] / UTILS::pow<2>(dens_i[0]) + press_j[0] / UTILS::pow<2>(dens_j[0]));
+      (press_i[0] / UTILS::Pow<2>(dens_i[0]) + press_j[0] / UTILS::Pow<2>(dens_j[0]));
 
-  if (acc_i) UTILS::vec_addscale(acc_i, -speccoeff_ij * fac, e_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, speccoeff_ji * fac, e_ij);
+  if (acc_i) UTILS::VecAddScale(acc_i, -speccoeff_ij * fac, e_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const double* dens_i,
@@ -80,20 +80,20 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ShearForces(const doub
   if (diffusion_coeff < 0.0) dserror("diffusion coefficient is negative!");
 
   double vel_ij[3];
-  UTILS::vec_set(vel_ij, vel_i);
-  UTILS::vec_sub(vel_ij, vel_j);
+  UTILS::VecSet(vel_ij, vel_i);
+  UTILS::VecSub(vel_ij, vel_j);
 
   const double inv_densi_densj_absdist = 1.0 / (dens_i[0] * dens_j[0] * abs_rij);
 
   // diffusion
   const double fac_diff = diffusion_coeff * inv_densi_densj_absdist;
-  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij * fac_diff, vel_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac_diff, vel_ij);
+  if (acc_i) UTILS::VecAddScale(acc_i, speccoeff_ij * fac_diff, vel_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac_diff, vel_ij);
 
   // convection
-  const double fac_conv = convection_coeff * UTILS::vec_dot(vel_ij, e_ij) * inv_densi_densj_absdist;
-  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij * fac_conv, e_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac_conv, e_ij);
+  const double fac_conv = convection_coeff * UTILS::VecDot(vel_ij, e_ij) * inv_densi_densj_absdist;
+  if (acc_i) UTILS::VecAddScale(acc_i, speccoeff_ij * fac_conv, e_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac_conv, e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPressure(
@@ -101,10 +101,10 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::StandardBackgroundPres
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
     double* mod_acc_j) const
 {
-  const double fac = (1.0 / UTILS::pow<2>(dens_i[0]) + 1.0 / UTILS::pow<2>(dens_j[0]));
+  const double fac = (1.0 / UTILS::Pow<2>(dens_i[0]) + 1.0 / UTILS::Pow<2>(dens_j[0]));
 
-  if (mod_acc_i) UTILS::vec_addscale(mod_acc_i, -speccoeff_ij * bg_press_i * fac, e_ij);
-  if (mod_acc_j) UTILS::vec_addscale(mod_acc_j, speccoeff_ji * bg_press_j * fac, e_ij);
+  if (mod_acc_i) UTILS::VecAddScale(mod_acc_i, -speccoeff_ij * bg_press_i * fac, e_ij);
+  if (mod_acc_j) UTILS::VecAddScale(mod_acc_j, speccoeff_ji * bg_press_j * fac, e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundPressure(
@@ -113,12 +113,12 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::GeneralizedBackgroundP
     const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
 {
   if (mod_acc_i)
-    UTILS::vec_addscale(
-        mod_acc_i, -mod_bg_press_i * (mass_j[0] / UTILS::pow<2>(dens_i[0])) * mod_dWdrij, e_ij);
+    UTILS::VecAddScale(
+        mod_acc_i, -mod_bg_press_i * (mass_j[0] / UTILS::Pow<2>(dens_i[0])) * mod_dWdrij, e_ij);
 
   if (mod_acc_j)
-    UTILS::vec_addscale(
-        mod_acc_j, mod_bg_press_j * (mass_i[0] / UTILS::pow<2>(dens_j[0])) * mod_dWdrji, e_ij);
+    UTILS::VecAddScale(
+        mod_acc_j, mod_bg_press_j * (mass_i[0] / UTILS::Pow<2>(dens_j[0])) * mod_dWdrji, e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContribution(
@@ -131,21 +131,21 @@ void PARTICLEINTERACTION::SPHMomentumFormulationMonaghan::ModifiedVelocityContri
   if (mod_vel_i)
   {
     double modvel_ii[3];
-    UTILS::vec_set(modvel_ii, mod_vel_i);
-    UTILS::vec_sub(modvel_ii, vel_i);
-    UTILS::vec_addscale(A_ij_e_ij, (UTILS::vec_dot(modvel_ii, e_ij) / dens_i[0]), vel_i);
+    UTILS::VecSet(modvel_ii, mod_vel_i);
+    UTILS::VecSub(modvel_ii, vel_i);
+    UTILS::VecAddScale(A_ij_e_ij, (UTILS::VecDot(modvel_ii, e_ij) / dens_i[0]), vel_i);
   }
 
   if (mod_vel_j)
   {
     double modvel_jj[3];
-    UTILS::vec_set(modvel_jj, mod_vel_j);
-    UTILS::vec_sub(modvel_jj, vel_j);
-    UTILS::vec_addscale(A_ij_e_ij, (UTILS::vec_dot(modvel_jj, e_ij) / dens_j[0]), vel_j);
+    UTILS::VecSet(modvel_jj, mod_vel_j);
+    UTILS::VecSub(modvel_jj, vel_j);
+    UTILS::VecAddScale(A_ij_e_ij, (UTILS::VecDot(modvel_jj, e_ij) / dens_j[0]), vel_j);
   }
 
-  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij, A_ij_e_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji, A_ij_e_ij);
+  if (acc_i) UTILS::VecAddScale(acc_i, speccoeff_ij, A_ij_e_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }
 
 PARTICLEINTERACTION::SPHMomentumFormulationAdami::SPHMomentumFormulationAdami()
@@ -158,7 +158,7 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::SpecificCoefficient(const
     const double* dens_j, const double* mass_i, const double* mass_j, const double& dWdrij,
     const double& dWdrji, double* speccoeff_ij, double* speccoeff_ji) const
 {
-  const double fac = (UTILS::pow<2>(mass_i[0] / dens_i[0]) + UTILS::pow<2>(mass_j[0] / dens_j[0]));
+  const double fac = (UTILS::Pow<2>(mass_i[0] / dens_i[0]) + UTILS::Pow<2>(mass_j[0] / dens_j[0]));
 
   if (speccoeff_ij) speccoeff_ij[0] = fac * (dWdrij / mass_i[0]);
   if (speccoeff_ji) speccoeff_ji[0] = fac * (dWdrji / mass_j[0]);
@@ -170,8 +170,8 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::PressureGradient(const do
 {
   const double fac = (dens_i[0] * press_j[0] + dens_j[0] * press_i[0]) / (dens_i[0] + dens_j[0]);
 
-  if (acc_i) UTILS::vec_addscale(acc_i, -speccoeff_ij * fac, e_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, speccoeff_ji * fac, e_ij);
+  if (acc_i) UTILS::VecAddScale(acc_i, -speccoeff_ij * fac, e_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, speccoeff_ji * fac, e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double* dens_i,
@@ -187,13 +187,13 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ShearForces(const double*
     return;
 
   double vel_ij[3];
-  UTILS::vec_set(vel_ij, vel_i);
-  UTILS::vec_sub(vel_ij, vel_j);
+  UTILS::VecSet(vel_ij, vel_i);
+  UTILS::VecSub(vel_ij, vel_j);
 
   const double fac = viscosity / abs_rij;
 
-  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij * fac, vel_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji * fac, vel_ij);
+  if (acc_i) UTILS::VecAddScale(acc_i, speccoeff_ij * fac, vel_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji * fac, vel_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressure(
@@ -201,8 +201,8 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::StandardBackgroundPressur
     const double& speccoeff_ij, const double& speccoeff_ji, const double* e_ij, double* mod_acc_i,
     double* mod_acc_j) const
 {
-  if (mod_acc_i) UTILS::vec_addscale(mod_acc_i, -speccoeff_ij * bg_press_i, e_ij);
-  if (mod_acc_j) UTILS::vec_addscale(mod_acc_j, speccoeff_ji * bg_press_j, e_ij);
+  if (mod_acc_i) UTILS::VecAddScale(mod_acc_i, -speccoeff_ij * bg_press_i, e_ij);
+  if (mod_acc_j) UTILS::VecAddScale(mod_acc_j, speccoeff_ji * bg_press_j, e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPressure(
@@ -211,12 +211,12 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::GeneralizedBackgroundPres
     const double& mod_dWdrji, const double* e_ij, double* mod_acc_i, double* mod_acc_j) const
 {
   if (mod_acc_i)
-    UTILS::vec_addscale(
-        mod_acc_i, -(mod_bg_press_i * mass_i[0] * mod_dWdrij) / UTILS::pow<2>(dens_i[0]), e_ij);
+    UTILS::VecAddScale(
+        mod_acc_i, -(mod_bg_press_i * mass_i[0] * mod_dWdrij) / UTILS::Pow<2>(dens_i[0]), e_ij);
 
   if (mod_acc_j)
-    UTILS::vec_addscale(
-        mod_acc_j, (mod_bg_press_j * mass_j[0] * mod_dWdrji) / UTILS::pow<2>(dens_j[0]), e_ij);
+    UTILS::VecAddScale(
+        mod_acc_j, (mod_bg_press_j * mass_j[0] * mod_dWdrji) / UTILS::Pow<2>(dens_j[0]), e_ij);
 }
 
 void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribution(
@@ -229,19 +229,19 @@ void PARTICLEINTERACTION::SPHMomentumFormulationAdami::ModifiedVelocityContribut
   if (mod_vel_i)
   {
     double modvel_ii[3];
-    UTILS::vec_set(modvel_ii, mod_vel_i);
-    UTILS::vec_sub(modvel_ii, vel_i);
-    UTILS::vec_addscale(A_ij_e_ij, 0.5 * dens_i[0] * UTILS::vec_dot(modvel_ii, e_ij), vel_i);
+    UTILS::VecSet(modvel_ii, mod_vel_i);
+    UTILS::VecSub(modvel_ii, vel_i);
+    UTILS::VecAddScale(A_ij_e_ij, 0.5 * dens_i[0] * UTILS::VecDot(modvel_ii, e_ij), vel_i);
   }
 
   if (mod_vel_j)
   {
     double modvel_jj[3];
-    UTILS::vec_set(modvel_jj, mod_vel_j);
-    UTILS::vec_sub(modvel_jj, vel_j);
-    UTILS::vec_addscale(A_ij_e_ij, 0.5 * dens_j[0] * UTILS::vec_dot(modvel_jj, e_ij), vel_j);
+    UTILS::VecSet(modvel_jj, mod_vel_j);
+    UTILS::VecSub(modvel_jj, vel_j);
+    UTILS::VecAddScale(A_ij_e_ij, 0.5 * dens_j[0] * UTILS::VecDot(modvel_jj, e_ij), vel_j);
   }
 
-  if (acc_i) UTILS::vec_addscale(acc_i, speccoeff_ij, A_ij_e_ij);
-  if (acc_j) UTILS::vec_addscale(acc_j, -speccoeff_ji, A_ij_e_ij);
+  if (acc_i) UTILS::VecAddScale(acc_i, speccoeff_ij, A_ij_e_ij);
+  if (acc_j) UTILS::VecAddScale(acc_j, -speccoeff_ji, A_ij_e_ij);
 }

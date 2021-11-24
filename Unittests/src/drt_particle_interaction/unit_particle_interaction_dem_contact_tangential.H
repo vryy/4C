@@ -152,7 +152,7 @@ class PARTICLEINTERACTION::DEMContactTangentialLinearSpringDamp_TestSuite : publ
 
     const double k_tangential = (1.0 - nue_) / (1.0 - 0.5 * nue_) * k_normal_;
     const double tangentialpotentialenergy_ref =
-        0.5 * k_tangential * UTILS::vec_dot(gap_tangential, gap_tangential);
+        0.5 * k_tangential * UTILS::VecDot(gap_tangential, gap_tangential);
 
     double tangentialpotentialenergy = 0.0;
     contacttangential_->TangentialPotentialEnergy(gap_tangential, tangentialpotentialenergy);

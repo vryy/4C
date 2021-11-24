@@ -235,11 +235,11 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
 
     // relative velocity in contact point c between particle i and j (neglecting angular velocity)
     double vel_rel[3];
-    UTILS::vec_set(vel_rel, vel_i);
-    UTILS::vec_sub(vel_rel, vel_j);
+    UTILS::VecSet(vel_rel, vel_i);
+    UTILS::VecSub(vel_rel, vel_j);
 
     // magnitude of relative velocity in normal direction
-    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlepair.e_ji_);
+    const double vel_rel_normal = UTILS::VecDot(vel_rel, particlepair.e_ji_);
 
     // calculate effective radius
     const double r_eff = (rad_i[0] * rad_j[0]) / (rad_i[0] + rad_j[0]);
@@ -282,9 +282,9 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleAdhesion()
     }
 
     // add adhesion force contribution
-    UTILS::vec_addscale(force_i, adhesionhistory_ij.adhesion_force_, particlepair.e_ji_);
+    UTILS::VecAddScale(force_i, adhesionhistory_ij.adhesion_force_, particlepair.e_ji_);
     if (status_j == PARTICLEENGINE::Owned)
-      UTILS::vec_addscale(force_j, -adhesionhistory_ij.adhesion_force_, particlepair.e_ji_);
+      UTILS::VecAddScale(force_j, -adhesionhistory_ij.adhesion_force_, particlepair.e_ji_);
   }
 }
 
@@ -407,11 +407,11 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
 
     // relative velocity in wall contact point j (neglecting angular velocity)
     double vel_rel[3];
-    UTILS::vec_set(vel_rel, vel_i);
-    UTILS::vec_sub(vel_rel, vel_j);
+    UTILS::VecSet(vel_rel, vel_i);
+    UTILS::VecSub(vel_rel, vel_j);
 
     // magnitude of relative velocity in normal direction
-    const double vel_rel_normal = UTILS::vec_dot(vel_rel, particlewallpair.e_ji_);
+    const double vel_rel_normal = UTILS::VecDot(vel_rel, particlewallpair.e_ji_);
 
     // get reference to touched adhesion history
     TouchedDEMHistoryPairAdhesion& touchedadhesionhistory_ij =
@@ -433,7 +433,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
         vel_rel_normal, mass_i[0], adhesionhistory_ij.adhesion_force_);
 
     // add adhesion force contribution
-    UTILS::vec_addscale(force_i, adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
+    UTILS::VecAddScale(force_i, adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
 
     // copy history to relevant wall elements in penetration volume
     for (int histele : particlewallpair.histeles_)
@@ -443,7 +443,7 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     double walladhesionforce[3] = {0.0};
     if (writeinteractionoutput or walldatastate->GetForceCol() != Teuchos::null)
     {
-      UTILS::vec_setscale(
+      UTILS::VecSetScale(
           walladhesionforce, -adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
     }
 
@@ -452,12 +452,12 @@ void PARTICLEINTERACTION::DEMAdhesion::EvaluateParticleWallAdhesion()
     {
       // compute vector from particle i to wall contact point j
       double r_ji[3];
-      UTILS::vec_setscale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
+      UTILS::VecSetScale(r_ji, (rad_i[0] + particlewallpair.gap_), particlewallpair.e_ji_);
 
       // calculate wall contact point
       double wallcontactpoint[3];
-      UTILS::vec_set(wallcontactpoint, pos_i);
-      UTILS::vec_add(wallcontactpoint, r_ji);
+      UTILS::VecSet(wallcontactpoint, pos_i);
+      UTILS::VecAdd(wallcontactpoint, r_ji);
 
       // set wall attack point and states
       for (int dim = 0; dim < 3; ++dim) attackpoints.push_back(wallcontactpoint[dim]);
