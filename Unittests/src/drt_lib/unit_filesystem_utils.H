@@ -10,7 +10,7 @@
 #ifndef UNIT_FILESYSTEM_UTILS_H_
 #define UNIT_FILESYSTEM_UTILS_H_
 
-#include <cxxtest/TestSuite.h>
+#include "Unittests/src/common/unit_cxx_test_wrapper.H"
 #include <string>
 #include <src/drt_lib/filesystem_utils.H>
 
@@ -22,20 +22,20 @@ namespace UTILS
   }
 }  // namespace UTILS
 
-class UTILS::FILESYSTEM::FileSystemUtils_TestSuite : public CxxTest::TestSuite
+class UTILS::FILESYSTEM::FileSystemUtils_TestSuite : public BACICxxTestWrapper
 {
  public:
-  void setUp() override {}
+  void Setup() override {}
 
-  void tearDown() override {}
+  void TearDown() override {}
 
-  void test_IsAbsolutePath()
+  void TestIsAbsolutePath()
   {
     TS_ASSERT(UTILS::FILESYSTEM::IsAbsolutePath("/abs/path/to/file"))
-    TS_ASSERT(!UTILS::FILESYSTEM::IsAbsolutePath("rel/path/to/file"))
+    TS_ASSERT(!UTILS::FILESYSTEM::IsAbsolutePath("rel/path/to/file"));
   }
 
-  void test_GetDirectoryName()
+  void TestGetDirectoryName()
   {
     TS_ASSERT(UTILS::FILESYSTEM::GetDirectoryName("/abs/path/to/file") == "/abs/path/to/")
     TS_ASSERT(UTILS::FILESYSTEM::GetDirectoryName("file") == "./")
