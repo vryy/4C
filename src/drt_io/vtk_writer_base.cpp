@@ -18,6 +18,7 @@
 
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/filesystem_utils.H"
 
 #include "../drt_io/io_pstream.H"
 
@@ -725,17 +726,27 @@ void VtkWriterBase::CreateRestartedInitialCollectionFileMidSection(
     // found line with timestep
     if (line.find("timestep=", 0) != std::string::npos)
     {
-      unsigned first = line.find("timestep=\"");
-      // shift position by number of characters of timestep="
-      first += 10;
-      unsigned last = line.find("\" group=");
-      std::string readtime_string = line.substr(first, last - first);
-
-      // convert to double
-      double readtime = std::atof(readtime_string.c_str());
+      double readtime = std::atof(GetXmlOptionValue(line, "timestep").c_str());
 
       if (readtime <= (restart_time + 1e-12))
-        collection_file_midsection_cumulated_content_ << line << "\n";
+      {
+        std::string filename = GetXmlOptionValue(line, "file");
+
+        if (UTILS::FILESYSTEM::IsAbsolutePath(restartfilename))
+        {
+          // Do not modify the path if the restart is given with an absolute path (we don't want to
+          // have absolute paths in the colllection file)
+          WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+              collection_file_midsection_cumulated_content_, filename, readtime);
+        }
+        else
+        {
+          std::string new_filename = UTILS::FILESYSTEM::Join(
+              UTILS::FILESYSTEM::GetDirectoryName(restartfilename), filename);
+          WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
+              collection_file_midsection_cumulated_content_, new_filename, readtime);
+        }
+      }
       else
         break;
     }
@@ -807,20 +818,18 @@ std::string VtkWriterBase::DetermineVtkSubdirectoryNameFromFullVtkWorkingPath() 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void VtkWriterBase::WriteMasterFileAndTimeValueIntoGivenVtkCollectionFileStream(
-    std::ofstream& collectionfilestream, const std::string& master_file_name,
-    const std::string& master_file_directory_name, double time) const
+    std::ostream& collectionfilestream, const std::string& master_file_name, double time) const
 {
   ThrowErrorIfInvalidFileStream(collectionfilestream);
 
   collectionfilestream << "    <DataSet timestep=\"" << std::scientific
                        << std::setprecision(std::numeric_limits<double>::digits10 - 1) << time
-                       << "\" group=\"\" part=\"0\" file=\"" << master_file_directory_name << "/"
-                       << master_file_name << "\"/>\n";
+                       << R"(" group="" part="0" file=")" << master_file_name << "\"/>\n";
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::ThrowErrorIfInvalidFileStream(const std::ofstream& filestream) const
+void VtkWriterBase::ThrowErrorIfInvalidFileStream(const std::ostream& ostream) const
 {
-  if (not filestream) dserror("VtkWriterBase: trying to write to invalid output stream!");
+  if (not ostream) dserror("VtkWriterBase: trying to write to invalid output stream!");
 }
