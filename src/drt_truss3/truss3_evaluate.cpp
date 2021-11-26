@@ -239,7 +239,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
 
   switch (kintype_)
   {
-    case tr3_totlag:
+    case KinematicType::tr3_totlag:
     {
       // calculate deformation gradient
       const double def_grad = lcurr / lrefe_;
@@ -251,7 +251,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
       intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * epsilon * epsilon);
     }
     break;
-    case tr3_engstrain:
+    case KinematicType::tr3_engstrain:
     {
       // calculating strain epsilon from node position by scalar product:
       const double epsilon = (lcurr - lrefe_) / lrefe_;
@@ -339,10 +339,10 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Epetra_SerialDenseMatrix* stiffmatri
   }
   switch (kintype_)
   {
-    case tr3_totlag:
+    case KinematicType::tr3_totlag:
       t3_nlnstiffmass_totlag(DummyStiffMatrix, massmatrix, DummyForce);
       break;
-    case tr3_engstrain:
+    case KinematicType::tr3_engstrain:
       t3_nlnstiffmass_engstr(DummyStiffMatrix, massmatrix, DummyForce);
       break;
     default:
@@ -697,11 +697,10 @@ void DRT::ELEMENTS::Truss3::ExtractElementalVariables(
   vel_ele_.clear();
 
   // only if random numbers for Brownian dynamics are passed to element, get element velocities
-  std::vector<double> myvel(la[0].lm_.size());
   if (params.get<Teuchos::RCP<Epetra_MultiVector>>("RandomNumbers", Teuchos::null) != Teuchos::null)
   {
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-    DRT::UTILS::ExtractMyValues(*vel, myvel, la[0].lm_);
+    DRT::UTILS::ExtractMyValues(*vel, vel_ele_, la[0].lm_);
   }
 }
 

@@ -99,16 +99,16 @@ namespace DRT
           LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx,
           LINALG::Matrix<2, 1>& nodal_concentration);
 
-      //! calculation of concentration at Gauß Points, given concentration at nodes
+      //! calculation of concentration at Gauss Points, given concentration at nodes
       double ProjectScalarToGaussPoint(double xi, const LINALG::Matrix<2, 1>& c) const;
 
       //! compute polynomial growth factor
       double GetGrowthFactorConcProp(
-          int poly_num, double c_GP, double c_0, const std::vector<double>& poly_params) const;
+          double c_GP, double c_0, const std::vector<double>& poly_params) const;
 
       //! compute polynomial growth factor based on amount of substance
       double GetGrowthFactorAoSProp(
-          int poly_num, double c_GP, double c_0, const std::vector<double>& poly_params) const;
+          double c_GP, double c_0, const std::vector<double>& poly_params) const;
 
       //! nodal concentration for this element
       std::vector<double> phi_ele_;

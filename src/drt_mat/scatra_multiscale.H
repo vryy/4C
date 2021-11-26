@@ -135,7 +135,7 @@ namespace MAT
     //! \return  specific area between micro and macro dis
     double SpecificMicroScaleSurfaceArea(const double detF) const
     {
-      return Params()->SpecificMicroScaleSurfaceArea() * detF;
+      return Params()->SpecificMicroScaleSurfaceArea() * std::pow(detF, -1.0 / 3.0);
     }
 
    protected:

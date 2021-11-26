@@ -130,7 +130,7 @@ namespace MAT
     //! determinate of deformation gradient of macro dis at last time step
     double detFn_;
 
-    //! determinate of deformation gradient of macro dis at last current step
+    //! determinate of deformation gradient of macro dis at current step
     double detFnp_;
 
     //! derivative of determinate of deformation gradient of macro dis w.r.t. time at last time step

@@ -2914,10 +2914,6 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
   // perform integration
   scatratimint->discret_->EvaluateScalars(eleparams, scalars);
 
-  // modifications of domain integrals due to use of spherical coordinates
-  if (DRT::INPUT::IntegralValue<bool>(*scatratimint->params_, "SPHERICALCOORDS"))
-    scalars->Scale(4. * PI);
-
   // extract domain integral
   domainintegral_[dummy_domain_id_] = (*scalars)[numdofpernode_];
 
@@ -3235,10 +3231,6 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
 
     // perform integration
     scatratimint->discret_->EvaluateScalars(eleparams, scalars, "TotalAndMeanScalar", condid);
-
-    // modifications of domain integrals due to use of spherical coordinates
-    if (DRT::INPUT::IntegralValue<bool>(*scatratimint->params_, "SPHERICALCOORDS"))
-      scalars->Scale(4. * PI);
 
     // extract domain integral
     domainintegral_[condid] = (*scalars)[numdofpernode];

@@ -544,8 +544,8 @@ void MAT::ScatraMultiScaleGP::CalculateDdetFDt(Teuchos::RCP<SCATRA::TimIntOneSte
       const double theta = microtimint->ScatraParameterList()->get<double>("THETA");
 
       const double part1 = (detFnp_ - detFn_) / dt;
-      const double part2 = (1 - theta) * ddetFdtn_;
-      ddetFdtnp_ = 1 / theta * (part1 - part2);
+      const double part2 = (1.0 - theta) * ddetFdtn_;
+      ddetFdtnp_ = 1.0 / theta * (part1 - part2);
 
       break;
     }

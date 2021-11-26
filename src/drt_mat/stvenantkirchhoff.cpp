@@ -303,17 +303,14 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
   //**********************************************************************
 }
 
-// StVenant-Kirchhoff Material with growth properties
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-//  StVenantKirchhoff material with growth parameters
 MAT::PAR::StVKGrowth::StVKGrowth(Teuchos::RCP<MAT::PAR::Material> matdata)
     : StVenantKirchhoff(matdata),
       c0_(matdata->GetDouble("C0")),
       poly_num_(matdata->GetInt("POLY_PARA_NUM")),
       poly_params_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
-      amount_prop_growth_(static_cast<bool>(matdata->GetInt("AMOUNT_PROPORTIONAL_GROWTH")))
+      amount_prop_growth_(static_cast<bool>(matdata->GetInt("AOS_PROP_GROWTH")))
 {
   if (c0_ <= 0.0) dserror("Reference concentration must be greater than zero");
   if (poly_num_ <= 0) dserror("Polynomial order must be greater than zero");

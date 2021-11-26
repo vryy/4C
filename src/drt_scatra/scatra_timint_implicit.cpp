@@ -3205,9 +3205,10 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
           dserror("Number of 1D elements adjacent to the boundary node must be 1!");
 
         // compute domain integration factor
-        double fac(1.);
-        if (DRT::INPUT::IntegralValue<bool>(*params_, "SPHERICALCOORDS"))
-          fac *= *node->X() * *node->X();
+        constexpr double four_pi = 4.0 * M_PI;
+        const double fac = DRT::INPUT::IntegralValue<bool>(*params_, "SPHERICALCOORDS")
+                               ? *node->X() * *node->X() * four_pi
+                               : 0.0;
 
         // extract degrees of freedom from node
         const std::vector<int> dofs = discret_->Dof(0, node);
@@ -3332,12 +3333,12 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double j0 =
                   condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
                       ? kr
-                      : kr * pow(conc_el, alphaa) * pow(cmax - conc_ed, alphaa) *
-                            pow(conc_ed, alphac);
+                      : kr * std::pow(conc_el, alphaa) * std::pow(cmax - conc_ed, alphaa) *
+                            std::pow(conc_ed, alphac);
 
               // exponential Butler-Volmer terms
-              const double expterm1 = exp(alphaa * frt * eta);
-              const double expterm2 = exp(-alphac * frt * eta);
+              const double expterm1 = std::exp(alphaa * frt * eta);
+              const double expterm2 = std::exp(-alphac * frt * eta);
               const double expterm = expterm1 - expterm2;
 
               // safety check
@@ -3356,8 +3357,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               const double dj_dc_ed =
                   (condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
                           ? 0.0
-                          : kr * pow(conc_el, alphaa) * pow(cmax - conc_ed, alphaa - 1.) *
-                                pow(conc_ed, alphac - 1.) *
+                          : kr * std::pow(conc_el, alphaa) *
+                                std::pow(cmax - conc_ed, alphaa - 1.0) *
+                                std::pow(conc_ed, alphac - 1.0) *
                                 (-alphaa * conc_ed + alphac * (cmax - conc_ed)) * expterm) +
                   j0 * (-alphaa * frt * epdderiv * expterm1 - alphac * frt * epdderiv * expterm2);
               dq_dphi_[0] =
@@ -3696,7 +3698,7 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   DRT::UTILS::SortAndRemoveDuplicateVectorElements(multiscale_nodes);
   DRT::UTILS::SortAndRemoveDuplicateVectorElements(other_nodes);
 
-  // find nodes that connect elements with 2 and 3 nodes ("hybrid nodes")
+  // find nodes that connect elements with 2 and 3 dofs ("hybrid nodes")
   std::vector<int> hybrid_nodes;
   for (int other_node : other_nodes)
   {
@@ -3719,14 +3721,14 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
     for (int dof : dofs) hybrid_dofs.emplace_back(dof);
   }
 
-  // correct values on hybrid dofs (value on node with 2 dofs is artificially set to 1.0)
+  // correct values on hybrid dofs (value on node with 2 dofs is artificially set to 0.0)
   for (int hybrid_dof : hybrid_dofs)
   {
     const int lid = phinp_micro_->Map().LID(hybrid_dof);
     if (lid != -1)
     {
       const double value = (*phinp_micro_)[lid];
-      const double corrected_value = 2.0 * value - 1.0;
+      const double corrected_value = 2.0 * value;
       phinp_micro_->ReplaceMyValue(lid, 0, corrected_value);
     }
   }

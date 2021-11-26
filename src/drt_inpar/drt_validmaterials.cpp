@@ -914,7 +914,9 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "DENS", "mass density");
     AddNamedReal(m, "THEXPANS", "coefficient of linear thermal expansion", 0.0, true);
     AddNamedReal(m, "C0", "Base concentration");
-    AddNamedBool(m, "AMOUNT_PROPORTIONAL_GROWTH", "growth proportional to amount of substance");
+    AddNamedBool(m, "AOS_PROP_GROWTH",
+        "growth proportional to amount of substance (AOS) if true or proportional to concentration "
+        "if false");
     AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
     AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
 

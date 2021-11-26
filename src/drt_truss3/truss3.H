@@ -85,7 +85,7 @@ namespace DRT
 
       DRT::Element* Clone() const override;
 
-      //! evaluate elemental specific values
+      //! prepare elemental specific geometric values
       //!
       //! \param[out] truss_disp       nodal displacement
       //! \param[out] dtruss_disp_du   derivative of truss displacement w.r.t. global displacement
@@ -116,7 +116,7 @@ namespace DRT
 
       inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
-      //! return reference length
+      //! return current length
       double Lcurr() const { return lcurr_; }
 
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
@@ -203,7 +203,7 @@ namespace DRT
       //! internal energy of element
       double eint_;
 
-      //! length in reference configuration
+      //! length in current length
       double lcurr_;
 
       //! inverse of reference length
@@ -229,7 +229,7 @@ namespace DRT
 
      private:
       //! possible kinematic types
-      enum KinematicType
+      enum class KinematicType
       {
         tr3_totlag,
         tr3_engstrain

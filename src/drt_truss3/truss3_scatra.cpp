@@ -185,13 +185,12 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
 
       // get data from input
       const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
-      const double c_0 = static_cast<const MAT::StVKGrowth*>(Material().get())->C0();
-      const int poly_num = static_cast<const MAT::StVKGrowth*>(Material().get())->PolyNum();
+      const double c_0 = stvk_growth_mat->C0();
       const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
       const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
       const double youngs_modulus = stvk_growth_mat->Youngs();
 
-      // get Gauß rule
+      // get Gauss rule
       auto intpoints = DRT::UTILS::IntegrationPoints1D(gaussrule_);
 
       // computing forcevec and stiffmat
@@ -202,13 +201,13 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
         const double dx_dxi = lrefe_ / 2.0;
         const double int_fac = dx_dxi * intpoints.qwgt[i] * crosssec_;
 
-        // get concentration at Gauß point
+        // get concentration at Gauss point
         const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
 
         // growth propotional to amount of substance of proportional to concentration
-        const double growth_factor =
-            amount_prop_growth ? GetGrowthFactorAoSProp(poly_num, c_GP, c_0, poly_params)
-                               : GetGrowthFactorConcProp(poly_num, c_GP, c_0, poly_params);
+        const double growth_factor = amount_prop_growth
+                                         ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params)
+                                         : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
         // calculate stress
         const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
@@ -295,20 +294,19 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(Teuchos::ParameterList& params)
           // get data from input
           const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
           const double c_0 = stvk_growth_mat->C0();
-          const int poly_num = stvk_growth_mat->PolyNum();
           const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
           const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
           const double youngs_modulus = stvk_growth_mat->Youngs();
 
           for (int i = 0; i < intpoints.nquad; ++i)
           {
-            // get concentration at Gauß point
+            // get concentration at Gauss point
             const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
 
             // growth propotional to amount of substance of proportional to concentration
-            const double growth_factor =
-                amount_prop_growth ? GetGrowthFactorAoSProp(poly_num, c_GP, c_0, poly_params)
-                                   : GetGrowthFactorConcProp(poly_num, c_GP, c_0, poly_params);
+            const double growth_factor = amount_prop_growth
+                                             ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params)
+                                             : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
             // calculate stress
             const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
@@ -359,30 +357,20 @@ double DRT::ELEMENTS::Truss3Scatra::ProjectScalarToGaussPoint(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorConcProp(const int poly_num, const double c_GP,
-    const double c_0, const std::vector<double>& poly_params) const
+double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorConcProp(
+    const double c_GP, const double c_0, const std::vector<double>& poly_params) const
 {
-  double growth_factor = 0.0;
-  for (int j = 0; j < poly_num; ++j)
-  {
-    growth_factor += poly_params[j] * (std::pow((c_GP - c_0), j));
-  }
-  return growth_factor;
+  return DRT::UTILS::Polynomial(poly_params).Evaluate(c_GP - c_0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 // Get growth factor with Amount of substance instead of concentration
-double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorAoSProp(const int poly_num, const double c_GP,
-    const double c_0, const std::vector<double>& poly_params) const
+double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorAoSProp(
+    const double c_GP, const double c_0, const std::vector<double>& poly_params) const
 {
-  double growth_factor = 0.0;
   const double def_grad = lcurr_ * inv_lrefe_;
-  for (int j = 0; j < poly_num; ++j)
-  {
-    growth_factor += poly_params[j] * (std::pow(c_GP * def_grad - c_0, j));
-  }
-  return growth_factor;
+  return DRT::UTILS::Polynomial(poly_params).Evaluate(c_GP * def_grad - c_0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -470,12 +458,11 @@ void DRT::ELEMENTS::Truss3Scatra::t3_energy(
       // get data from input
       const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
       const double c_0 = static_cast<const MAT::StVKGrowth*>(Material().get())->C0();
-      const int poly_num = static_cast<const MAT::StVKGrowth*>(Material().get())->PolyNum();
       const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
       const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
       const double youngs_modulus = stvk_growth_mat->Youngs();
 
-      // get Gauß rule
+      // get Gauss rule
       auto gauss_points = DRT::UTILS::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
 
       // internal energy
@@ -486,9 +473,9 @@ void DRT::ELEMENTS::Truss3Scatra::t3_energy(
 
         const double c_GP = ProjectScalarToGaussPoint(gauss_points.qxg[j][0], nodal_concentration);
 
-        const double growth_factor =
-            amount_prop_growth ? GetGrowthFactorAoSProp(poly_num, c_GP, c_0, poly_params)
-                               : GetGrowthFactorConcProp(poly_num, c_GP, c_0, poly_params);
+        const double growth_factor = amount_prop_growth
+                                         ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params)
+                                         : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
         const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
         const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
