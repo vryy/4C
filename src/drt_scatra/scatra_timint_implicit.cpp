@@ -2489,7 +2489,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   strategy_->EvaluateMeshtying();
 
   // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
-  EvaluateMacroMicroCoupling();
+  if (micro_scale_) EvaluateMacroMicroCoupling();
 }
 
 /*----------------------------------------------------------------------------*
