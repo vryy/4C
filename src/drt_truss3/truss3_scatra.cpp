@@ -78,14 +78,14 @@ void DRT::ELEMENTS::Truss3ScatraType::SetupElementDefinition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3Scatra::Truss3Scatra(int id, int owner)
-    : Truss3(id, owner), impltype_(INPAR::SCATRA::impltype_undefined), phi_ele_()
+    : Truss3(id, owner), impltype_(INPAR::SCATRA::impltype_undefined)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Truss3Scatra::Truss3Scatra(const DRT::ELEMENTS::Truss3Scatra& old)
-    : Truss3(static_cast<Truss3>(old)), impltype_(old.impltype_), phi_ele_(old.phi_ele_)
+    : Truss3(static_cast<Truss3>(old)), impltype_(old.impltype_)
 {
 }
 /*----------------------------------------------------------------------*
@@ -109,7 +109,6 @@ void DRT::ELEMENTS::Truss3Scatra::Pack(DRT::PackBuffer& data) const
   // add base class Element
   Truss3::Pack(data);
   AddtoPack(data, impltype_);
-  AddtoPack(data, phi_ele_);
 }
 
 /*----------------------------------------------------------------------*
@@ -127,7 +126,6 @@ void DRT::ELEMENTS::Truss3Scatra::Unpack(const std::vector<char>& data)
   Truss3::Unpack(basedata);
 
   ExtractfromPack(position, data, impltype_);
-  ExtractfromPack(position, data, phi_ele_);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -158,7 +156,8 @@ bool DRT::ELEMENTS::Truss3Scatra::ReadElement(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
-    Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat)
+    const std::map<std::string, std::vector<double>>& ele_state, Epetra_SerialDenseVector& forcevec,
+    Epetra_SerialDenseMatrix& stiffmat)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
@@ -169,7 +168,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
   {
     case INPAR::MAT::m_stvenant:
     {
-      Truss3::CalcInternalForceStiffTotLag(forcevec, stiffmat);
+      Truss3::CalcInternalForceStiffTotLag(ele_state, forcevec, stiffmat);
       break;
     }
     case INPAR::MAT::m_stvenant_growth:
@@ -181,7 +180,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       const int ndof = 6;
 
       PrepCalcInternalForceStiffTotLagScaTra(
-          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration);
+          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
 
       // get data from input
       const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
@@ -205,26 +204,27 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
         const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
 
         // growth propotional to amount of substance of proportional to concentration
-        const double growth_factor = amount_prop_growth
-                                         ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params)
-                                         : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
+        const double growth_factor =
+            amount_prop_growth ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params, truss_disp)
+                               : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
         // calculate stress
-        const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
+        const double E_el_1D =
+            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) - 1.0);
         const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
 
         // calculate residual (force.vec) and linearisation (stiffmat)
         for (int row = 0; row < ndof; ++row)
         {
-          const double def_grad = truss_disp(row) * inv_lrefe_;
+          const double def_grad = truss_disp(row) / lrefe_;
           const double scalar_R = int_fac * def_grad * PK2_1D;
           forcevec(row) += dN_dx(row) * scalar_R;
           for (int col = 0; col < ndof; ++col)
           {
-            const double ddef_grad_du = dtruss_disp_du(row, col) * inv_lrefe_;
+            const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
             const double sign = (col < 3 ? 1.0 : -1.0);
             const double dPK2_1D_du = 2.0 * youngs_modulus / growth_factor * 1.0 /
-                                      (lrefe2_ * std::pow(growth_factor, 2)) * sign *
+                                      (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) * sign *
                                       truss_disp(col);
             const double first_part = dN_dx(row) * ddef_grad_du * PK2_1D;
             const double second_part = dN_dx(row) * def_grad * dPK2_1D_du;
@@ -244,7 +244,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
+    Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
@@ -255,7 +256,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(Teuchos::ParameterList& params)
   {
     case INPAR::MAT::m_stvenant:
     {
-      Truss3::CalcGPStresses(params);
+      Truss3::CalcGPStresses(params, ele_state);
       break;
     }
     case INPAR::MAT::m_stvenant_growth:
@@ -286,10 +287,9 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(Teuchos::ParameterList& params)
           LINALG::Matrix<6, 6> dtruss_disp_du;
           LINALG::Matrix<6, 1> dN_dx;
           LINALG::Matrix<2, 1> nodal_concentration;
-          const int ndof = 6;
 
           PrepCalcInternalForceStiffTotLagScaTra(
-              truss_disp, dtruss_disp_du, dN_dx, nodal_concentration);
+              truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
 
           // get data from input
           const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
@@ -304,12 +304,13 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(Teuchos::ParameterList& params)
             const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
 
             // growth propotional to amount of substance of proportional to concentration
-            const double growth_factor = amount_prop_growth
-                                             ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params)
-                                             : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
+            const double growth_factor =
+                amount_prop_growth ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params, truss_disp)
+                                   : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
             // calculate stress
-            const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
+            const double E_el_1D =
+                0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) - 1.0);
             const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
 
             stress(i, 0) = PK2_1D;
@@ -366,61 +367,73 @@ double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorConcProp(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 // Get growth factor with Amount of substance instead of concentration
-double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorAoSProp(
-    const double c_GP, const double c_0, const std::vector<double>& poly_params) const
+double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorAoSProp(const double c_GP, const double c_0,
+    const std::vector<double>& poly_params, const LINALG::Matrix<6, 1>& truss_disp) const
 {
-  const double def_grad = lcurr_ * inv_lrefe_;
+  const double def_grad = Lcurr(truss_disp) / lrefe_;
   return DRT::UTILS::Polynomial(poly_params).Evaluate(c_GP * def_grad - c_0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(
-    LocationArray& la, DRT::Discretization& discretization, Teuchos::ParameterList& params)
+void DRT::ELEMENTS::Truss3Scatra::ExtractElementalVariables(LocationArray& la,
+    const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
+    std::map<std::string, std::vector<double>>& ele_state)
 {
-  Truss3::ExtractElementalVariables(la, discretization, params);
+  // add displacements
+  Truss3::ExtractElementalVariables(la, discretization, params, ele_state);
 
   // first: check, if micro state is set; if not -> take macro state
   // get nodal phi from micro state
+  std::vector<double> phi_ele;
   if (discretization.NumDofSets() == 3 and discretization.HasState(2, "MicroCon"))
   {
-    phi_ele_.resize(la[2].lm_.size());
-    phi_ele_.clear();
+    phi_ele.resize(la[2].lm_.size());
+    phi_ele.clear();
     auto phi = discretization.GetState(2, "MicroCon");
     if (phi == Teuchos::null) dserror("Cannot get state vector 'MicroCon'");
-    DRT::UTILS::ExtractMyValues(*phi, phi_ele_, la[2].lm_);
+    DRT::UTILS::ExtractMyValues(*phi, phi_ele, la[2].lm_);
   }
   // get nodal phi from micro state
   else if (discretization.HasState(1, "scalarfield"))
   {
-    phi_ele_.resize(la[1].lm_.size());
-    phi_ele_.clear();
+    phi_ele.resize(la[1].lm_.size());
+    phi_ele.clear();
     auto phi = discretization.GetState(1, "scalarfield");
     if (phi == Teuchos::null) dserror("Cannot get state vectors 'scalar'");
-    DRT::UTILS::ExtractMyValues(*phi, phi_ele_, la[1].lm_);
+    DRT::UTILS::ExtractMyValues(*phi, phi_ele, la[1].lm_);
   }
   else
     dserror("Cannot find state vector");
+
+  if (ele_state.find("phi") == ele_state.end())
+    ele_state.emplace(std::make_pair("phi", phi_ele));
+  else
+    ele_state["phi"] = phi_ele;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
     LINALG::Matrix<6, 1>& truss_disp, LINALG::Matrix<6, 6>& dtruss_disp_du,
-    LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration)
+    LINALG::Matrix<6, 1>& dN_dx, LINALG::Matrix<2, 1>& nodal_concentration,
+    const std::map<std::string, std::vector<double>>& ele_state)
 {
-  PrepCalcInternalForceStiffTotLag(truss_disp, dtruss_disp_du, dN_dx);
-  nodal_concentration(0) = phi_ele_[0];
-  switch (phi_ele_.size())
+  PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
+
+  const std::vector<double>& phi_ele = ele_state.at("phi");
+
+  nodal_concentration(0) = phi_ele[0];
+  switch (phi_ele.size())
   {
     case 2:
-      nodal_concentration(1) = phi_ele_[1];
+      nodal_concentration(1) = phi_ele[1];
       break;
     case 4:
-      nodal_concentration(1) = phi_ele_[2];
+      nodal_concentration(1) = phi_ele[2];
       break;
     case 6:
-      nodal_concentration(1) = phi_ele_[3];
+      nodal_concentration(1) = phi_ele[3];
       break;
     default:
       dserror("Vector has size other than 2,4, or 6. Please use different mapping strategy!");
@@ -430,8 +443,9 @@ void DRT::ELEMENTS::Truss3Scatra::PrepCalcInternalForceStiffTotLagScaTra(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3Scatra::t3_energy(
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy)
+void DRT::ELEMENTS::Truss3Scatra::Energy(
+    const std::map<std::string, std::vector<double>>& ele_state, Teuchos::ParameterList& params,
+    Epetra_SerialDenseVector& intenergy)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
@@ -442,7 +456,7 @@ void DRT::ELEMENTS::Truss3Scatra::t3_energy(
   {
     case INPAR::MAT::m_stvenant:
     {
-      Truss3::t3_energy(params, intenergy);
+      Truss3::Energy(ele_state, params, intenergy);
       break;
     }
     case INPAR::MAT::m_stvenant_growth:
@@ -453,7 +467,7 @@ void DRT::ELEMENTS::Truss3Scatra::t3_energy(
       LINALG::Matrix<2, 1> nodal_concentration;
 
       PrepCalcInternalForceStiffTotLagScaTra(
-          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration);
+          truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
 
       // get data from input
       const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
@@ -473,11 +487,12 @@ void DRT::ELEMENTS::Truss3Scatra::t3_energy(
 
         const double c_GP = ProjectScalarToGaussPoint(gauss_points.qxg[j][0], nodal_concentration);
 
-        const double growth_factor = amount_prop_growth
-                                         ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params)
-                                         : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
+        const double growth_factor =
+            amount_prop_growth ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params, truss_disp)
+                               : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
-        const double E_el_1D = 0.5 * (lcurr2_ / (lrefe2_ * std::pow(growth_factor, 2)) - 1.0);
+        const double E_el_1D =
+            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) - 1.0);
         const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
         eint_ = 0.5 * PK2_1D * E_el_1D * int_fac;
       }

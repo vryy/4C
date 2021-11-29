@@ -90,9 +90,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     // calculate internal energy
     case ELEMENTS::struct_calc_energy:
     {
-      ExtractElementalVariables(la, discretization, params);
+      std::map<std::string, std::vector<double>> ele_state;
+      ExtractElementalVariables(la, discretization, params, ele_state);
 
-      t3_energy(params, elevec1);
+      Energy(ele_state, params, elevec1);
 
       break;
     }
@@ -103,20 +104,21 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_nlnstiff:
     case ELEMENTS::struct_calc_internalforce:
     {
-      ExtractElementalVariables(la, discretization, params);
+      std::map<std::string, std::vector<double>> ele_state;
+      ExtractElementalVariables(la, discretization, params, ele_state);
 
       // for engineering strains instead of total lagrange use t3_nlnstiffmass2
       if (act == ELEMENTS::struct_calc_nlnstiffmass)
-        t3_nlnstiffmass(&elemat1, &elemat2, &elevec1);
+        NlnStiffMass(ele_state, &elemat1, &elemat2, &elevec1);
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
       {
-        t3_nlnstiffmass(&elemat1, &elemat2, &elevec1);
-        t3_lumpmass(&elemat2);
+        NlnStiffMass(ele_state, &elemat1, &elemat2, &elevec1);
+        LumpMass(&elemat2);
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
-        t3_nlnstiffmass(&elemat1, nullptr, &elevec1);
+        NlnStiffMass(ele_state, &elemat1, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_internalforce)
-        t3_nlnstiffmass(nullptr, nullptr, &elevec1);
+        NlnStiffMass(ele_state, nullptr, nullptr, &elevec1);
 
       break;
     }
@@ -124,9 +126,10 @@ int DRT::ELEMENTS::Truss3::Evaluate(Teuchos::ParameterList& params,
     {
       if (discretization.Comm().MyPID() == Owner())
       {
-        ExtractElementalVariables(la, discretization, params);
+        std::map<std::string, std::vector<double>> ele_state;
+        ExtractElementalVariables(la, discretization, params, ele_state);
 
-        CalcGPStresses(params);
+        CalcGPStresses(params, ele_state);
       }
       break;
     }
@@ -204,11 +207,13 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_energy(
+void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy)
 {
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
     dserror("only St. Venant Kirchhoff material supported for truss element");
+
+  const std::vector<double>& disp_ele = ele_state.at("disp");
 
   // initialization of internal energy
   double intenergy_calc = 0.0;
@@ -228,7 +233,7 @@ void DRT::ELEMENTS::Truss3::t3_energy(
   const int ndof = 6;
 
   // current nodal position (first
-  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele_[j];
+  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
 
   // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
   aux(0) = (xcurr(0) - xcurr(3));
@@ -281,8 +286,10 @@ void DRT::ELEMENTS::Truss3::t3_energy(
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force)
+void DRT::ELEMENTS::Truss3::NlnStiffMass(
+    const std::map<std::string, std::vector<double>>& ele_state,
+    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
+    Epetra_SerialDenseVector* force)
 {
   /*
    * It is observed that for mixed problems, such is the case for biopolymer network simulations
@@ -301,49 +308,14 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Epetra_SerialDenseMatrix* stiffmatri
   Epetra_SerialDenseVector DummyForce;
   DummyForce.Size(6);
   DummyForce.Scale(0);
-  // 1x6 velocity vector
-  LINALG::Matrix<1, 6> DummyVel;
-  DummyVel.Clear();
-  // 1x6 displacement vector
-  LINALG::Matrix<1, 6> DummyDisp;
-  DummyDisp.Clear();
-  // Map velocity global level into element level
-  if (vel_ele_.size() > 12)
-    dserror("Vector is larger than 12. Please use different mapping strategy!");
-  else if (vel_ele_.size() == 6)
-  {
-    for (int i = 0; i < 6; i++) DummyVel(i) += vel_ele_[i];
-  }
-  else if (vel_ele_.size() == 12)
-  {
-    for (int i = 0; i < 3; i++)
-    {
-      DummyVel(i) += vel_ele_[i];
-      DummyVel(i + 3) += vel_ele_[i + 6];
-    }
-  }
-  // Map displacement global level into element level
-  if (disp_ele_.size() > 12)
-    dserror("Vector is larger than 12. Please use different mapping strategy!");
-  else if (disp_ele_.size() == 6)
-  {
-    for (int i = 0; i < 6; i++) DummyDisp(i) += disp_ele_[i];
-  }
-  else if (disp_ele_.size() == 12)
-  {
-    for (int i = 0; i < 3; i++)
-    {
-      DummyDisp(i) += disp_ele_[i];
-      DummyDisp(i + 3) += disp_ele_[i + 6];
-    }
-  }
+
   switch (kintype_)
   {
     case KinematicType::tr3_totlag:
-      t3_nlnstiffmass_totlag(DummyStiffMatrix, massmatrix, DummyForce);
+      NlnStiffMassTotLag(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
       break;
     case KinematicType::tr3_engstrain:
-      t3_nlnstiffmass_engstr(DummyStiffMatrix, massmatrix, DummyForce);
+      NlnStiffMassEngStr(ele_state, DummyStiffMatrix, massmatrix, DummyForce);
       break;
     default:
       dserror("Unknown type kintype_ for Truss3");
@@ -395,11 +367,13 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass(Epetra_SerialDenseMatrix* stiffmatri
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(Epetra_SerialDenseMatrix& DummyStiffMatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector& DummyForce)
+void DRT::ELEMENTS::Truss3::NlnStiffMassTotLag(
+    const std::map<std::string, std::vector<double>>& ele_state,
+    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
+    Epetra_SerialDenseVector& DummyForce)
 {
   // calculate force vector and stiffness matrix
-  CalcInternalForceStiffTotLag(DummyForce, DummyStiffMatrix);
+  CalcInternalForceStiffTotLag(ele_state, DummyForce, DummyStiffMatrix);
 
   const int ndof = 6;
   const int ndof_per_node = ndof / 2;
@@ -423,11 +397,15 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_totlag(Epetra_SerialDenseMatrix& Dum
  | nonlinear stiffness and mass matrix (private) tk 10/08| | engineering strain measure, large
  displacements and rotations                                                |
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(Epetra_SerialDenseMatrix& DummyStiffMatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector& DummyForce)
+void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
+    const std::map<std::string, std::vector<double>>& ele_state,
+    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
+    Epetra_SerialDenseVector& DummyForce)
 {
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
     dserror("only St. Venant Kirchhoff material supported for truss element");
+
+  const std::vector<double>& disp_ele = ele_state.at("disp");
 
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6, 1> xcurr;
@@ -439,7 +417,7 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(Epetra_SerialDenseMatrix& Dum
   const int ndof_per_node = ndof / 2;
 
   // current nodal position
-  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele_[j];
+  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
 
   // computing auxiliary vector aux = 4.0*N^T_{,xi} * N_{,xi} * xcurr
   aux(0) = xcurr(0) - xcurr(3);
@@ -497,13 +475,16 @@ void DRT::ELEMENTS::Truss3::t3_nlnstiffmass_engstr(Epetra_SerialDenseMatrix& Dum
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(LINALG::Matrix<6, 1>& truss_disp,
+void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(
+    const std::map<std::string, std::vector<double>>& ele_state, LINALG::Matrix<6, 1>& truss_disp,
     LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx)
 {
+  const std::vector<double>& disp_ele = ele_state.at("disp");
+
   const int ndof = 6;
   static LINALG::Matrix<6, 1> xcurr;
   // current nodal position
-  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele_[j];
+  for (int j = 0; j < ndof; ++j) xcurr(j) = X_(j) + disp_ele[j];
 
   /* current nodal displacement (first entries 0 .. 2 for first node, 3 ..5 for second node)
    * compared to reference configuration; note: in general this is not equal to the values in disp
@@ -529,22 +510,14 @@ void DRT::ELEMENTS::Truss3::PrepCalcInternalForceStiffTotLag(LINALG::Matrix<6, 1
       dtruss_disp_du(4, 4) = dtruss_disp_du(5, 5) = -1.0;
 
   // spatial derivative of shape functions
-  const double inv_lrefe = 1.0 / lrefe_;
-  dN_dx(0) = dN_dx(1) = dN_dx(2) = inv_lrefe;
-  dN_dx(3) = dN_dx(4) = dN_dx(5) = -inv_lrefe;
-
-  // current length
-  lcurr_ = truss_disp.Norm2() * M_SQRT1_2;
-
-  lrefe2_ = lrefe_ * lrefe_;
-  lcurr2_ = lcurr_ * lcurr_;
-
-  inv_lrefe_ = 1.0 / lrefe_;
+  dN_dx(0) = dN_dx(1) = dN_dx(2) = 1.0 / lrefe_;
+  dN_dx(3) = dN_dx(4) = dN_dx(5) = -1.0 / lrefe_;
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
-    Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat)
+    const std::map<std::string, std::vector<double>>& ele_state, Epetra_SerialDenseVector& forcevec,
+    Epetra_SerialDenseMatrix& stiffmat)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
@@ -554,7 +527,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
   static LINALG::Matrix<6, 6> dtruss_disp_du;
   static LINALG::Matrix<6, 1> dN_dx;
 
-  PrepCalcInternalForceStiffTotLag(truss_disp, dtruss_disp_du, dN_dx);
+  PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
   const int ndof = 6;
 
@@ -562,7 +535,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
       static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
 
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-  const double epsilon_GL = 0.5 * (lcurr2_ - lrefe2_) / lrefe2_;
+  const double epsilon_GL = 0.5 * (Lcurr2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
   // 2nd Piola-Kirchhoff stress
   const double PK2 = youngs_modulus * epsilon_GL;
@@ -573,16 +546,16 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
 
   for (int row = 0; row < ndof; ++row)
   {
-    const double def_grad = truss_disp(row) * inv_lrefe_;
+    const double def_grad = truss_disp(row) / lrefe_;
 
     forcevec(row) = dN_dx(row) * def_grad * PK2 * int_fac;
     for (int col = 0; col < ndof; ++col)
     {
       // derivative of deformation gradient w.r.t. nodal displacement
-      const double ddef_grad_du = dtruss_disp_du(row, col) * inv_lrefe_;
+      const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
       // derivative of 2nd Piola Kirchhoff stress w.r.t. nodal displacement
       const double sign = (col < 3 ? 1.0 : -1.0);
-      const double dPK2_du = youngs_modulus / lrefe2_ * sign * truss_disp(col);
+      const double dPK2_du = youngs_modulus / (lrefe_ * lrefe_) * sign * truss_disp(col);
       // product rule for derivative of forcevec w.r.t. nodal displacement = stiffmat
       const double first_part = dN_dx(row) * ddef_grad_du * PK2 * int_fac;
       const double second_part = dN_dx(row) * def_grad * dPK2_du * int_fac;
@@ -593,7 +566,8 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::CalcGPStresses(Teuchos::ParameterList& params)
+void DRT::ELEMENTS::Truss3::CalcGPStresses(
+    Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
   if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
@@ -624,13 +598,13 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(Teuchos::ParameterList& params)
       static LINALG::Matrix<6, 6> dtruss_disp_du;
       static LINALG::Matrix<6, 1> dN_dx;
 
-      PrepCalcInternalForceStiffTotLag(truss_disp, dtruss_disp_du, dN_dx);
+      PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
       const double youngs_modulus =
           static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
 
       // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-      const double epsilon_GL = 0.5 * (lcurr2_ - lrefe2_) / lrefe2_;
+      const double epsilon_GL = 0.5 * (Lcurr2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
       // 2nd Piola-Kirchhoff stress
       const double PK2 = youngs_modulus * epsilon_GL;
@@ -662,7 +636,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(Teuchos::ParameterList& params)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
+void DRT::ELEMENTS::Truss3::LumpMass(Epetra_SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -683,32 +657,18 @@ void DRT::ELEMENTS::Truss3::t3_lumpmass(Epetra_SerialDenseMatrix* emass)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::ExtractElementalVariables(
-    LocationArray& la, DRT::Discretization& discretization, Teuchos::ParameterList& params)
+void DRT::ELEMENTS::Truss3::ExtractElementalVariables(LocationArray& la,
+    const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
+    std::map<std::string, std::vector<double>>& ele_state)
 {
-  disp_ele_.resize(la[0].lm_.size());
-  disp_ele_.clear();
+  std::vector<double> disp_ele(la[0].lm_.size());
 
   auto disp = discretization.GetState("displacement");
   if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-  DRT::UTILS::ExtractMyValues(*disp, disp_ele_, la[0].lm_);
+  DRT::UTILS::ExtractMyValues(*disp, disp_ele, la[0].lm_);
 
-  vel_ele_.resize(la[0].lm_.size());
-  vel_ele_.clear();
-
-  // only if random numbers for Brownian dynamics are passed to element, get element velocities
-  if (params.get<Teuchos::RCP<Epetra_MultiVector>>("RandomNumbers", Teuchos::null) != Teuchos::null)
-  {
-    Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
-    DRT::UTILS::ExtractMyValues(*vel, vel_ele_, la[0].lm_);
-  }
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::SetTrussDisplacement(LINALG::Matrix<6, 1>& x_curr)
-{
-  disp_ele_.resize(x_curr.Rows());
-  disp_ele_.clear();
-  for (int i = 0; i < static_cast<int>(x_curr.Rows()); ++i) disp_ele_[i] = x_curr(i, 0) - X_(i);
+  if (ele_state.find("disp") == ele_state.end())
+    ele_state.emplace(std::make_pair("disp", disp_ele));
+  else
+    ele_state["disp"] = disp_ele;
 }

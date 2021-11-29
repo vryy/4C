@@ -71,19 +71,22 @@ namespace DRT
         return Truss3ScatraType::Instance().UniqueParObjectId();
       }
 
-      void CalcInternalForceStiffTotLag(
+      void CalcInternalForceStiffTotLag(const std::map<std::string, std::vector<double>>& ele_state,
           Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat) override;
 
-      void CalcGPStresses(Teuchos::ParameterList& params) override;
+      void CalcGPStresses(Teuchos::ParameterList& params,
+          const std::map<std::string, std::vector<double>>& ele_state) override;
 
       void Pack(DRT::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
 
      protected:
-      void ExtractElementalVariables(LocationArray& la, DRT::Discretization& discretization,
-          Teuchos::ParameterList& params) override;
+      void ExtractElementalVariables(LocationArray& la, const DRT::Discretization& discretization,
+          const Teuchos::ParameterList& params,
+          std::map<std::string, std::vector<double>>& ele_state) override;
 
-      void t3_energy(Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy) override;
+      void Energy(const std::map<std::string, std::vector<double>>& ele_state,
+          Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy) override;
 
      private:
       //! scalar transport implementation type (physics)
@@ -97,7 +100,8 @@ namespace DRT
       //! \param[out] nodal_concentration  nodal concentrations
       void PrepCalcInternalForceStiffTotLagScaTra(LINALG::Matrix<6, 1>& truss_disp,
           LINALG::Matrix<6, 6>& dtruss_disp_du, LINALG::Matrix<6, 1>& dN_dx,
-          LINALG::Matrix<2, 1>& nodal_concentration);
+          LINALG::Matrix<2, 1>& nodal_concentration,
+          const std::map<std::string, std::vector<double>>& ele_state);
 
       //! calculation of concentration at Gauss Points, given concentration at nodes
       double ProjectScalarToGaussPoint(double xi, const LINALG::Matrix<2, 1>& c) const;
@@ -107,11 +111,8 @@ namespace DRT
           double c_GP, double c_0, const std::vector<double>& poly_params) const;
 
       //! compute polynomial growth factor based on amount of substance
-      double GetGrowthFactorAoSProp(
-          double c_GP, double c_0, const std::vector<double>& poly_params) const;
-
-      //! nodal concentration for this element
-      std::vector<double> phi_ele_;
+      double GetGrowthFactorAoSProp(double c_GP, double c_0, const std::vector<double>& poly_params,
+          const LINALG::Matrix<6, 1>& truss_disp) const;
 
       // don't want = operator
       Truss3Scatra& operator=(const Truss3Scatra& old);
