@@ -201,11 +201,7 @@ namespace DRT
 
      private:
       // add nodal displacements to point coordinates
-      void UpdateNodeCoordinates()
-      {
-        xyze_ += edispnp_;
-        return;
-      };
+      void UpdateNodeCoordinates() { xyze_ += edispnp_; };
 
      protected:
       //! Constructor
@@ -266,27 +262,43 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
+      virtual void EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix)
+      {
+        dserror("not yet implemented");
+      };
+
       //! extract nodal state variables associated with boundary element
       virtual void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la                                        //!< location array
       );
 
-      //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(LINALG::Matrix<nen_, 1>& estate,  //!< nodal state variables
-          const DRT::Discretization& discretization,           //!< discretization
-          DRT::Element::LocationArray& la,                     //!< location array
-          const std::string& statename = "phinp",              //!< name of relevant state
-          const int& nds = 0                                   //!< number of relevant dofset
-          ) const;
+      /*!
+       * @brief extract nodal state variables associated with boundary element
+       *
+       * @param estate          nodal state variables
+       * @param discretization  discretization
+       * @param la              location array
+       * @param statename       name of relevant state
+       * @param nds             number of relevant dofset
+       */
+      void ExtractNodeValues(LINALG::Matrix<nen_, 1>& estate,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          const std::string& statename = "phinp", const int& nds = 0) const;
 
-      //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(
-          std::vector<LINALG::Matrix<nen_, 1>>& estate,  //!< nodal state variables
-          const DRT::Discretization& discretization,     //!< discretization
-          DRT::Element::LocationArray& la,               //!< location array
-          const std::string& statename = "phinp",        //!< name of relevant state
-          const int& nds = 0                             //!< number of relevant dofset
-          ) const;
+      /*!
+       * @brief extract nodal state variables associated with boundary element
+       *
+       * @param estate          nodal state variables
+       * @param discretization  discretization
+       * @param la              location array
+       * @param statename       name of relevant state
+       * @param nds             number of relevant dofset
+       */
+      void ExtractNodeValues(std::vector<LINALG::Matrix<nen_, 1>>& estate,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          const std::string& statename = "phinp", const int& nds = 0) const;
 
       //! calculate boundary integral, i.e., surface area of boundary element
       void CalcBoundaryIntegral(const DRT::FaceElement* ele,  //!< the element we are dealing with

@@ -33,18 +33,15 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype>
     class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype>
     {
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype> my;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype> myelch;
-      typedef DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils myelectrodeutils;
+      using my = DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>;
+      using myelch = DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype>;
+      using myelectrodeutils = DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      public:
       //! singleton access method
       static ScaTraEleBoundaryCalcElchElectrode<distype>* Instance(int numdofpernode, int numscal,
           const std::string& disname,
           const ScaTraEleBoundaryCalcElchElectrode* delete_me = nullptr);
-
-      //! destructor
-      virtual ~ScaTraEleBoundaryCalcElchElectrode() = default;
 
       //! singleton destruction
       virtual void Done();
@@ -252,34 +249,25 @@ namespace DRT
       ScaTraEleBoundaryCalcElchElectrode(
           int numdofpernode, int numscal, const std::string& disname);
 
-      //! evaluate scatra-scatra interface coupling condition
-      void EvaluateS2ICoupling(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                    ///< parameter list
-          DRT::Discretization& discretization,               ///< discretization
-          DRT::Element::LocationArray& la,                   ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,            ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix,           ///< element matrix for master side
-          Epetra_SerialDenseVector& eslaveresidual           ///< element residual for slave side
-          ) override;
+      void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
+          Epetra_SerialDenseVector& eslaveresidual) override;
 
       void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
           Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual,
           Epetra_SerialDenseVector& emasterresidual) override;
 
-      //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
-      //! coupling condition
-      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element
-          Teuchos::ParameterList& params,                      ///< parameter list
-          DRT::Discretization& discretization,                 ///< discretization
-          DRT::Element::LocationArray& la,                     ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix               ///< element matrix for slave side
-          ) override;
+      void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix) override;
 
-      //! extract valence of species k from element material
-      double GetValence(const Teuchos::RCP<const MAT::Material>& material,  ///< element material
-          int k                                                             ///< species number
-          ) const override;
+      void EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix) override;
+
+      double GetValence(const Teuchos::RCP<const MAT::Material>& material, int k) const override;
 
       //! evaluate factor F/RT
       virtual double GetFRT() const;

@@ -370,6 +370,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
+    case SCATRA::bd_calc_s2icoupling_capacitance_od:
+    {
+      EvaluateS2ICouplingCapacitanceOD(params, discretization, la, elemat1_epetra, elemat2_epetra);
+      break;
+    }
+
     case SCATRA::bd_calc_boundary_integral:
     {
       CalcBoundaryIntegral(ele, elevec1_epetra);
@@ -1252,18 +1258,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
   return;
 }
 
-
 /*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
-    LINALG::Matrix<nen_, 1>& estate,            //!< nodal state variables
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la,            //!< location array
-    const std::string& statename,               //!< name of relevant state
-    const int& nds                              //!< number of relevant dofset
-    ) const
+    LINALG::Matrix<nen_, 1>& estate, const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // initialize matrix vector
   std::vector<LINALG::Matrix<nen_, 1>> estate_temp(1, LINALG::Matrix<nen_, 1>(true));
@@ -1273,22 +1273,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
 
   // copy extracted state variables
   estate = estate_temp[0];
-
-  return;
 }
 
-
 /*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
-    std::vector<LINALG::Matrix<nen_, 1>>& estate,  //!< nodal state variables
-    const DRT::Discretization& discretization,     //!< discretization
-    DRT::Element::LocationArray& la,               //!< location array
-    const std::string& statename,                  //!< name of relevant state
-    const int& nds                                 //!< number of relevant dofset
-    ) const
+    std::vector<LINALG::Matrix<nen_, 1>>& estate, const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // extract global state vector from discretization
   const Teuchos::RCP<const Epetra_Vector> state = discretization.GetState(nds, statename);
@@ -1297,8 +1289,6 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
 
   // extract nodal state variables associated with boundary element
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
-
-  return;
 }
 
 

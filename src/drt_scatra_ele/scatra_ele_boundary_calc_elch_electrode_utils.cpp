@@ -146,9 +146,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   if (std::abs(expterm) > 1.0e5)
   {
     dserror(
-        "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
-        "%lf",
-        expterm);
+        "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf", expterm);
   }
 
   // core linearization associated with Butler-Volmer mass flux density

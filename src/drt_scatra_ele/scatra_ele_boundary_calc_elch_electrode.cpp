@@ -562,6 +562,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
       // Butler-Volmer kinetics
       case INPAR::S2I::kinetics_butlervolmer:
       case INPAR::S2I::kinetics_butlervolmerreduced:
+      case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
       {
         // access input parameters associated with current condition
         const int numelectrons = my::scatraparamsboundary_->NumElectrons();
@@ -690,6 +691,128 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICoup
   }    // loop over integration points
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICouplingOD
 
+/*---------------------------------------------------------------------------------------*
+ *---------------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype>::EvaluateS2ICouplingCapacitanceOD(
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseMatrix& emastermatrix)
+{
+  const int differentiationtype =
+      params.get<int>("differentiationtype", static_cast<int>(SCATRA::DifferentiationType::none));
+
+  const int kineticmodel = my::scatraparamsboundary_->KineticModel();
+  const int numelectrons = my::scatraparamsboundary_->NumElectrons();
+  const double capacitance = my::scatraparamsboundary_->Capacitance();
+  const double faraday = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
+
+  // extract local nodal values of time derivatives at current time step on both sides of the
+  // scatra-scatra interface
+  std::vector<LINALG::Matrix<my::nen_, 1>> eslavephidtnp(
+      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphidtnp(
+      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
+  {
+    my::ExtractNodeValues(eslavephidtnp, discretization, la, "islavephidtnp");
+    my::ExtractNodeValues(emasterphidtnp, discretization, la, "imasterphidtnp");
+  }
+
+  // extract local nodal values of current time step on master side of scatra-scatra interface
+  this->ExtractNodeValues(discretization, la);
+  std::vector<LINALG::Matrix<my::nen_, 1>> emasterphinp(
+      my::numdofpernode_, LINALG::Matrix<my::nen_, 1>(true));
+  my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
+
+  // integration points and weights
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  // loop over integration points
+  for (int gpid = 0; gpid < intpoints.IP().nquad; ++gpid)
+  {
+    // evaluate values of shape functions at current integration point
+    my::EvalShapeFuncAndIntFac(intpoints, gpid);
+
+    // evaluate shape derivatives
+    static LINALG::Matrix<my::nsd_ + 1, my::nen_> shapederivatives;
+    my::EvalShapeDerivatives(shapederivatives);
+
+    // evaluate overall integration factors
+    const double timefacwgt = my::scatraparamstimint_->TimeFac() * intpoints.IP().qwgt[gpid];
+    if (timefacwgt < 0.0) dserror("Integration factor is negative!");
+
+    // compute matrix and vector contributions according to kinetic
+    // model for current scatra-scatra interface coupling condition
+    switch (kineticmodel)
+    {
+      // Butler-Volmer kinetics
+      case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
+      {
+        // evaluate time derivative of potential values at current integration point on slave- and
+        // master-side of scatra-scatra interface
+        const double eslavepotdtintnp = my::funct_.Dot(eslavephidtnp[1]);
+        const double emasterpotdtintnp = my::funct_.Dot(emasterphidtnp[1]);
+
+        // core residual term associated with capacitive mass flux density
+        const double jC =
+            capacitance * (eslavepotdtintnp - emasterpotdtintnp) / (numelectrons * faraday);
+
+        // derivative of interface flux w.r.t. displacement
+        switch (differentiationtype)
+        {
+          case static_cast<int>(SCATRA::DifferentiationType::disp):
+          {
+            const double djC_dd_timefacwgt = jC * timefacwgt;
+
+            // loop over matrix columns
+            for (int ui = 0; ui < my::nen_; ++ui)
+            {
+              const int fui = ui * 3;
+
+              // loop over matrix rows
+              for (int vi = 0; vi < my::nen_; ++vi)
+              {
+                const int row_conc = vi * 2;
+                const int row_pot = row_conc + 1;
+                const double vi_djC_dd_slave = my::funct_(vi) * djC_dd_timefacwgt;
+
+                // loop over spatial dimensions
+                for (int dim = 0; dim < 3; ++dim)
+                {
+                  // compute linearizations w.r.t. slave-side structural displacements
+                  eslavematrix(row_pot, fui + dim) +=
+                      numelectrons * vi_djC_dd_slave * shapederivatives(dim, ui);
+                  // compute linearizations w.r.t. master-side structural displacements
+                  emastermatrix(row_conc, fui + dim) -= vi_djC_dd_slave * shapederivatives(dim, ui);
+                  emastermatrix(row_pot, fui + dim) -=
+                      numelectrons * vi_djC_dd_slave * shapederivatives(dim, ui);
+                }
+              }
+            }
+
+            break;
+          }
+          default:
+          {
+            dserror("Unknown differentiation type");
+            break;
+          }
+        }
+        break;
+      }
+
+      default:
+      {
+        dserror(
+            "Kinetic model for scatra-scatra interface coupling with capacitance is not yet "
+            "implemented!");
+        break;
+      }
+    }
+  }
+}
 
 /*-------------------------------------------------------------------------------------*
  | extract valence of species k from element material                       fang 02/15 |
