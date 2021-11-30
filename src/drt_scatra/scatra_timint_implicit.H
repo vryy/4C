@@ -252,6 +252,15 @@ namespace SCATRA
     //! setup natural convection
     virtual void SetupNatConv();
 
+    //! set number of dofset to write micro scale values on
+    void SetNodeSetMicroScale(int nds_micro) { nds_micro_ = nds_micro; }
+
+    //! store reaction coefficient for macro-micro coupling with deforming macro dis
+    void SetMacroMicroReaCoeff(const double macro_micro_rea_coeff)
+    {
+      macro_micro_rea_coeff_ = macro_micro_rea_coeff;
+    }
+
     /*--- calculate and update -----------------------------------------------*/
 
     //! do time integration (time loop)
@@ -331,6 +340,9 @@ namespace SCATRA
     //! calculated
     virtual void PostCalcInitialTimeDerivative(){};
 
+    //! calculate mean concentrations of micro discretization at nodes
+    void CalcMeanMicroConcentration();
+
     /*--- query and output ---------------------------------------------------*/
 
     //! return ALE flag
@@ -392,6 +404,9 @@ namespace SCATRA
 
     //! return number of dofset associated with displacement dofs
     int NdsDisp() override { return nds_disp_; }
+
+    //! number of dofset to store nodal micro quantities on macro dis
+    int NdsMicro() const { return nds_micro_; }
 
     //! return domain flux vector
     Teuchos::RCP<const Epetra_MultiVector> FluxDomain() const { return flux_domain_; };
@@ -603,6 +618,9 @@ namespace SCATRA
     //! return scalar field phi at time n+1
     Teuchos::RCP<Epetra_Vector> Phinp() const { return phinp_; }
 
+    //! get mean concentration of micro discretization
+    Teuchos::RCP<Epetra_Vector> PhinpMicro() const { return phinp_micro_; }
+
     //! return increment of scalar field phi at time n+1 for partitioned simulations
     Teuchos::RCP<Epetra_Vector>& PhinpInc() { return phinp_inc_; };
 
@@ -682,6 +700,9 @@ namespace SCATRA
 
     //! return rcp ptr to neumann loads vector
     Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override { return neumann_loads_; };
+
+    //! write restart output at current step
+    bool DoOutputRestart() const { return (step_ % uprestart_ == 0 and step_ != 0); }
 
     /*========================================================================*/
     //! @name turbulence and related
@@ -821,7 +842,7 @@ namespace SCATRA
     //! add parameters depending on the problem, i.e., loma, level-set, ...
     virtual void AddProblemSpecificParametersAndVectors(
         Teuchos::ParameterList& params  //!< parameter list
-    ){};
+    );
 
     //! return the right time-scaling-factor for the true residual
     virtual double ResidualScaling() const = 0;
@@ -902,7 +923,7 @@ namespace SCATRA
     };
 
     //! is output needed for the current time step?
-    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
+    bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); }
 
     //! write state vectors (phinp and convective velocity) to BINIO
     virtual void OutputState();
@@ -1240,6 +1261,9 @@ namespace SCATRA
     //! fps3i)
     Teuchos::RCP<const Epetra_Vector> membrane_conc_;
 
+    //! mean concentration of micro discretization  on macro dis
+    Teuchos::RCP<Epetra_Vector> phinp_micro_;
+
     //! number of dofset associated with velocity related dofs
     int nds_vel_;
 
@@ -1251,6 +1275,9 @@ namespace SCATRA
 
     //! number of dofset associated with wall shear stress dofs
     int nds_wss_;
+
+    //! number of dofset to write micro scale values on
+    int nds_micro_;
 
     /*========================================================================*/
     //! @name coefficients and related
@@ -1264,6 +1291,9 @@ namespace SCATRA
 
     //! initial concentrations for natural convection
     std::vector<double> c0_;
+
+    //! reaction coefficient
+    double macro_micro_rea_coeff_;
 
     /*========================================================================*/
     //! @name Galerkin discretization, boundary conditions, and related
@@ -1548,7 +1578,7 @@ namespace SCATRA
     /*========================================================================*/
     //! @name Internal variables
     /*========================================================================*/
-    //! mean values of transported scalars
+    //! size of domain
     std::map<const int, double> domainintegral_;
 
     //! mean values of transported scalars
@@ -1557,11 +1587,17 @@ namespace SCATRA
     //! mean values of gradient of transported scalars
     std::map<const int, std::vector<double>> meangradients_;
 
+    //! total of micro scalars
+    std::map<const int, std::vector<double>> micrototalscalars_;
+
     //! process number
     int myrank_;
 
     //! do output of mean of gradient
     bool output_mean_grad_;
+
+    //! do output of micro dis
+    bool output_micro_dis_;
 
     //! writes evaluated data to output
     std::shared_ptr<RuntimeCsvWriter> runtime_csvwriter_;

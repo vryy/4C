@@ -35,6 +35,7 @@ TEMPERATURE                     298.0
 EQUPOT                          divi
 DIFFCOND_FORMULATION            Yes
 INITPOTCALC                     yes
+COUPLE_BOUNDARY_FLUXES          No
 -------------------------------------------------------SSI CONTROL
 NUMSTEP                         50
 TIMESTEP                        0.1

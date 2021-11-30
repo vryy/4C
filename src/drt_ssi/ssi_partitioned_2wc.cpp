@@ -16,7 +16,6 @@
 
 #include "../drt_scatra_ele/scatra_ele.H"
 #include "../drt_scatra/scatra_timint_implicit.H"
-
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
@@ -190,6 +189,9 @@ void SSI::SSIPart2WC::DoScatraStep()
   // set structure-based scalar transport values
   SetScatraSolution(ScaTraField()->Phinp());
 
+  // set structure-based scalar transport values in case of Micro-Macro problem
+  if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
+
   // evaluate temperature from function and set to structural discretization
   EvaluateAndSetTemperatureField();
 }
@@ -235,6 +237,8 @@ void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
   if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
 
   SetScatraSolution(ScaTraField()->Phinp());
+  if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
+
   // NOTE: the predictor of the structure is called in here
   StructureField()->PrepareTimeStep();
 }

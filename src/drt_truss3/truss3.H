@@ -85,17 +85,38 @@ namespace DRT
 
       DRT::Element* Clone() const override;
 
+      //! prepare elemental specific geometric values
+      //! \param[in] ele_state         elemental states (depending on the instantiated element)
+      //! \param[out] truss_disp       nodal displacement
+      //! \param[out] dtruss_disp_du   derivative of truss displacement w.r.t. global displacement
+      //! \param[out] dN_dx            derivative of shape functions
+      void PrepCalcInternalForceStiffTotLag(
+          const std::map<std::string, std::vector<double>>& ele_state,
+          LINALG::Matrix<6, 1>& truss_disp, LINALG::Matrix<6, 6>& dtruss_disp_du,
+          LINALG::Matrix<6, 1>& dN_dx);
+
       //! \brief calculate internal force vector and stiffness matrix based on absolute nodal
       //! positions (using kinematic type tr3_totlag)
-      void CalcInternalForceStiffTotLag(const LINALG::Matrix<6, 1>& nodal_positions_totlag,
+      //!
+      //! \param[in] ele_state    elemental states (depending on the instantiated element)
+      //! \param[out] forcevec    element force vector
+      //! \param[out] stiffmat    element stiffness matrix
+      virtual void CalcInternalForceStiffTotLag(
+          const std::map<std::string, std::vector<double>>& ele_state,
           Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat);
+
+      //! calcluate stresses at Gauss point
+      //! \param[in] params      parameter list
+      //! \param[in] ele_state   elemental states (depending on the instantiated element)
+      virtual void CalcGPStresses(Teuchos::ParameterList& params,
+          const std::map<std::string, std::vector<double>>& ele_state);
 
       DRT::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
+          Epetra_SerialDenseVector& elevec3) override;
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
@@ -106,8 +127,19 @@ namespace DRT
 
       inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
-      //! return reference length
-      double Lcurr() const { return lcurr_; }
+      //! Return the current length of this element computed from the truss displacement @p
+      //! truss_disp
+      double Lcurr(const LINALG::Matrix<6, 1>& truss_disp) const
+      {
+        return truss_disp.Norm2() * M_SQRT1_2;
+      }
+
+      //! Return the squared current length of this element computed from the truss displacement @p
+      //! truss_disp
+      double Lcurr2(const LINALG::Matrix<6, 1>& truss_disp) const
+      {
+        return Lcurr(truss_disp) * Lcurr(truss_disp);
+      }
 
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
@@ -158,15 +190,10 @@ namespace DRT
 
       void Unpack(const std::vector<char>& data) override;
 
-     protected:
-      //! get access to the parameter interface
-      inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
-      {
-        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
-        return *interface_ptr_;
-      }
+      //! coordinates of nodes in reference configuration
+      const LINALG::Matrix<6, 1>& X() const { return X_; }
 
-     private:
+     protected:
       //! kind of integration to be performed
       enum IntegrationType
       {
@@ -175,57 +202,97 @@ namespace DRT
         lobattointegration
       };
 
-      //! possible kinematic types
-      enum KinematicType
+      //! get access to the parameter interface
+      inline STR::ELEMENTS::ParamsInterface& ParamsInterface()
       {
-        tr3_totlag,
-        tr3_engstrain
-      };
+        if (not IsParamsInterface()) dserror("The interface ptr is not set!");
+        return *interface_ptr_;
+      }
+
+      //! extract elemental quantities from nodal quantities
+      //!
+      //! \param[in] la              location array
+      //! \param[in] discretization  discretization
+      //! \param[in] params          parameter list
+      //! \param[out] ele_state      elemental states (depending on the instantiated element)
+      virtual void ExtractElementalVariables(LocationArray& la,
+          const DRT::Discretization& discretization, const Teuchos::ParameterList& params,
+          std::map<std::string, std::vector<double>>& ele_state);
 
       //! determine Gauss rule from required type of integration
       DRT::UTILS::GaussRule1D MyGaussRule(int nnode, IntegrationType integrationtype);
 
       //! calculation of elastic energy
-      void t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
-          Epetra_SerialDenseVector& intenergy);
+      //!
+      //! \param ele_state [in]   elemental states (depending on the instantiated element)
+      //! \param params
+      //! \param intenergy
+      virtual void Energy(const std::map<std::string, std::vector<double>>& ele_state,
+          Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy);
+
+      //! cross section area
+      double crosssec_;
+
+      //! internal energy of element
+      double eint_;
+
+      //! length in reference configuration
+      double lrefe_;
+
+      //! gaussrule_ will be initialized automatically to a 2 point integration rule
+      DRT::UTILS::GaussRule1D gaussrule_;
+
+     private:
+      //! possible kinematic types
+      enum class KinematicType
+      {
+        tr3_totlag,
+        tr3_engstrain
+      };
 
       //! lump mass matrix
-      void t3_lumpmass(Epetra_SerialDenseMatrix* emass);
+      void LumpMass(Epetra_SerialDenseMatrix* emass);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
       //! and enginerring strains
-      void t3_nlnstiffmass(Teuchos::ParameterList& params, std::vector<double>& vel,
-          std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force);
+      //!
+      //! \param[in] ele_state     elemental states (depending on the instantiated element)
+      //! \param[out] stiffmatrix  elemental sitffness matrix
+      //! \param[out] massmatrix   elemental mass matrix
+      //! \param[out] force        elemental force vector
+      void NlnStiffMass(const std::map<std::string, std::vector<double>>& ele_state,
+          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
+          Epetra_SerialDenseVector* force);
 
       //! \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain
       //! measure.
       //!
       //! Unlike the fully nonlinear implementation of #t3_nlnstiffmass_totlag, this function uses
       //! \f$\varepsilon=\Delta d / d\f$ as strain measure.
-      void t3_nlnstiffmass_engstr(const LINALG::Matrix<1, 6>& DummyDisp,
+      //!
+      //! \param[in] ele_state            elemental states (depending on the instantiated element)
+      //! \param[out] DummyStiffMatrix    elemental sitffness matrix
+      //! \param[out] massmatrix          elemental mass matrix
+      //! \param[out] DummyForce          elemental force vector
+      void NlnStiffMassEngStr(const std::map<std::string, std::vector<double>>& ele_state,
           Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
           Epetra_SerialDenseVector& DummyForce);
 
       //! calculation of nonlinear stiffness and mass matrix
-      void t3_nlnstiffmass_totlag(LINALG::Matrix<1, 6>& DummyDisp,
+      //!
+      //! \param[in] ele_state           elemental states (depending on the instantiated element)
+      //! \param[out] DummyStiffMatrix   elemental sitffness matrix
+      //! \param[out] massmatrix         elemental mass matrix
+      //! \param[out] DummyForce         elemental force vector
+      void NlnStiffMassTotLag(const std::map<std::string, std::vector<double>>& ele_state,
           Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
           Epetra_SerialDenseVector& DummyForce);
-
-      //! cross section area
-      double crosssec_;
 
       //! container containing all kind of Truss3 thisandthat
       DRT::Container data_;
 
       //! reference tangent position
       LINALG::Matrix<1, 3> diff_disp_ref_;
-
-      //! internal energy of element
-      double eint_;
-
-      //! gaussrule_ will be initialized automatically to a 2 point integration rule
-      DRT::UTILS::GaussRule1D gaussrule_;
 
       //!  data exchange between the element and the time integrator.
       Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
@@ -241,12 +308,6 @@ namespace DRT
 
       //! Kinematic type
       KinematicType kintype_;
-
-      //! length in reference configuration
-      double lcurr_;
-
-      //! length in reference configuration
-      double lrefe_;
 
       //! material type
       int material_;

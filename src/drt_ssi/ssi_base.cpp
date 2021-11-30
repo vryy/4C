@@ -33,6 +33,8 @@
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_utils_rebalancing.H"
 
+#include "../drt_mat/matpar_bundle.H"
+
 #include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_scatra/scatra_timint_meshtying_strategy_s2i.H"
 #include "../drt_scatra/scatra_utils.H"
@@ -55,6 +57,10 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
       is_manifold_meshtying_(DRT::INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
       iter_(0),
+      macro_scale_(DRT::Problem::Instance()->Materials()->FirstIdByType(
+                       INPAR::MAT::m_scatra_multiscale) != -1 or
+                   DRT::Problem::Instance()->Materials()->FirstIdByType(
+                       INPAR::MAT::m_newman_multiscale) != -1),
       meshtying_strategy_s2i_(Teuchos::null),
       scatra_base_algorithm_(Teuchos::null),
       scatra_manifold_base_algorithm_(Teuchos::null),
@@ -145,7 +151,15 @@ void SSI::SSIBase::Setup()
       ssicoupling_->SetScalarField(
           *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->Phinp(), 1);
 
-    // temperature is non primary variable. Only set, if function for temperature is given
+    if (macro_scale_)
+    {
+      ScaTraField()->CalcMeanMicroConcentration();
+      ssicoupling_->SetScalarFieldMicro(
+          *DRT::Problem::Instance()->GetDis("structure"), ScaTraField()->PhinpMicro(), 2);
+    }
+
+
+    //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
       temperature_vector_ = Teuchos::rcp(
@@ -548,6 +562,17 @@ void SSI::SSIBase::SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) cons
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void SSI::SSIBase::SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const
+{
+  // safety checks
+  CheckIsInit();
+  CheckIsSetup();
+
+  ssicoupling_->SetScalarFieldMicro(*StructureField()->Discretization(), phi, 2);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void SSI::SSIBase::SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi)
 {
   // safety checks
@@ -804,6 +829,8 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
 
   ScaTraBaseAlgorithm()->Init(*scatratimeparams, SSI::UTILS::ModifyScaTraParams(scatraparams),
       problem->SolverParams(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
+
+  if (macro_scale_) ScaTraBaseAlgorithm()->ScaTraField()->SetNodeSetMicroScale(2);
 
   // create and initialize scatra base algorithm for manifolds
   if (IsScaTraManifold())

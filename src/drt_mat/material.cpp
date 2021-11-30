@@ -175,6 +175,12 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       auto* params = static_cast<MAT::PAR::StVenantKirchhoff*>(curmat->Parameter());
       return params->CreateMaterial();
     }
+    case INPAR::MAT::m_stvenant_growth:
+    {
+      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::StVKGrowth(curmat));
+      auto* params = static_cast<MAT::PAR::StVKGrowth*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
     case INPAR::MAT::m_thermostvenant:
     {
       if (curmat->Parameter() == nullptr)

@@ -160,12 +160,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       if (phinp == Teuchos::null) dserror("Cannot get state vector 'phinp'");
       DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phinp, ephinp_, lm);
 
-#ifdef DEBUG
-      if ((!calc_grad_phi and elevec1_epetra.Length() != numdofpernode_ + 1) or
-          (calc_grad_phi and elevec1_epetra.Length() != numdofpernode_ + numscal_ + 1))
-        dserror("length of elevec1_epetra not correct");
-#endif
-
       // calculate scalars and domain integral
       CalculateScalars(ele, elevec1_epetra, inverting, calc_grad_phi);
 
@@ -595,7 +589,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         {
           // initialize micro scale in multi-scale simulations
           Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
-              ->Initialize(ele->Id(), iquad);
+              ->Initialize(ele->Id(), iquad, scatrapara_->IsAle());
         }
       }
 
@@ -631,11 +625,16 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
           }
           else
           {
+            const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+                SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+            const double detF = EvalDetFAtIntPoint(ele, intpoints, iquad);
+
             // solve micro scale
             std::vector<double> dummy(1, 0.);
             Teuchos::rcp_static_cast<MAT::ScatraMatMultiScale>(ele->Material())
-                ->Evaluate(
-                    iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0], dummy);
+                ->Evaluate(iquad, std::vector<double>(1, scatravarmanager_->Phinp(0)), dummy[0],
+                    dummy, detF);
           }
         }
       }
@@ -804,7 +803,10 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
 
-  if (scatrapara_->IsAle())
+  // check for the action parameter
+  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
+
+  if (scatrapara_->IsAle() and action != SCATRA::micro_scale_read_restart)
   {
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = params.get<int>("ndsdisp");
@@ -829,9 +831,6 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
   }
   else
     edispnp_.Clear();
-
-  // check for the action parameter
-  const auto action = DRT::INPUT::get<SCATRA::Action>(params, "action");
 
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
@@ -2297,6 +2296,61 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHeteroReacMatAndRHS(
 
     }  // end loop all scalars
   }    // end loop Gauss points
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype, int probdim>
+double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalDetFAtIntPoint(
+    const DRT::Element* const& ele, const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,
+    const int iquad)
+{
+  // coordinates of the current integration point
+  const double* gpcoord = (intpoints.IP().qxg)[iquad];
+  for (unsigned idim = 0; idim < nsd_ele_; idim++) xsi_(idim) = gpcoord[idim];
+
+  // const double det = EvalShapeFuncAndDerivsInParameterSpace();
+  static LINALG::Matrix<nsd_ele_, nen_> deriv_red;
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_, funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_, deriv_red);
+
+  // reference coordinates of elemental nodes
+  LINALG::Matrix<nsd_, nen_> XYZ;
+  GEO::fillInitialPositionArray<distype, nsd_, LINALG::Matrix<nsd_, nen_>>(ele, XYZ);
+
+  // reference coordinates of elemental nodes in space dimension of element
+  LINALG::Matrix<nsd_ele_, nen_> XYZe;
+  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
+    for (int j = 0; j < static_cast<int>(nen_); ++j) XYZe(i, j) = XYZ(i, j);
+
+  // compute global spatial derivatives
+  LINALG::Matrix<nsd_ele_, nsd_ele_> dXds;
+  dXds.MultiplyNT(deriv_red, XYZe);
+  LINALG::Matrix<nsd_ele_, nsd_ele_> dsdX;
+  dsdX.Invert(dXds);
+  LINALG::Matrix<nsd_ele_, nen_> derXYZ;
+  derXYZ.Multiply(dsdX, deriv_red);
+
+  // compute deformation gradient
+  LINALG::Matrix<nsd_ele_, nsd_ele_> F;
+
+  LINALG::Matrix<nsd_ele_, nen_> edispnp;
+
+  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i)
+    for (int j = 0; j < static_cast<int>(nsd_ele_); ++j) edispnp(i, j) = edispnp_(i, j);
+
+  F.MultiplyNT(derXYZ, edispnp);
+
+  LINALG::Matrix<nsd_ele_, nsd_ele_> one;
+  for (int i = 0; i < static_cast<int>(nsd_ele_); ++i) one(i, i) = 1.0;
+
+  F.Update(1.0, one, 1.0);
+
+  const double fac = F.Determinant();
+
+  return fac;
 }
 
 

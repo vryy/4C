@@ -99,8 +99,13 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
   phinp[1] = my::funct_.Dot(my::ephinp_[1]);
   phinp[2] = my::funct_.Dot(my::ephinp_[2]);
 
+  const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  const double detF = my::EvalDetFAtIntPoint(ele, intpoints, iquad);
+
   // evaluate multi-scale Newman material
-  newmanmultiscale->Evaluate(iquad, phinp, q_micro, dq_dphi_micro,
+  newmanmultiscale->Evaluate(iquad, phinp, q_micro, dq_dphi_micro, detF,
       not DRT::ELEMENTS::ScaTraEleParameterStd::Instance("scatra")->PartitionedMultiScale());
 
   // calculate gradient of electric potential inside electrode
@@ -123,7 +128,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
   //                           = i_ed
   //
   const double specific_micro_scale_surface_area =
-      newmanmultiscale->SpecificMicroScaleSurfaceArea();
+      newmanmultiscale->SpecificMicroScaleSurfaceArea(detF);
   const double dq_dc_el = timefacfac * dq_dphi_micro[0] * specific_micro_scale_surface_area;
   const double dq_dpot_el = timefacfac * dq_dphi_micro[1] * specific_micro_scale_surface_area;
   const double dq_dpot_ed = timefacfac * dq_dphi_micro[2] * specific_micro_scale_surface_area;

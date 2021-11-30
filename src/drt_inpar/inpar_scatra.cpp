@@ -755,6 +755,46 @@ void INPAR::SCATRA::SetValidConditions(
         kineticmodels.emplace_back(Teuchos::rcp(
             new CondCompBundle("Butler-Volmer", butlervolmer, INPAR::S2I::kinetics_butlervolmer)));
       }
+
+      {
+        // Butler-Volmer-reduced
+        std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreduced;
+        // total number of existing scalars
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+        // string separator in front of integer stoichiometry vector in input file line
+        std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
+        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+        // integer vector of stoichiometric coefficients
+        std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
+        intvectcomp.emplace_back(
+            Teuchos::rcp(new IntVectorConditionComponent("stoichiometries", 0)));
+        // empty vector --> no separators for real vectors needed
+        std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
+        // empty vector --> no real vectors needed
+        std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
+        butlervolmerreduced.emplace_back(Teuchos::rcp(
+            new IntRealBundle("stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")),
+                intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("e-")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+
+        kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced",
+            butlervolmerreduced, INPAR::S2I::kinetics_butlervolmerreduced)));
+      }
+
+      {
+        // no interface flux
+        std::vector<Teuchos::RCP<ConditionComponent>> nointerfaceflux;
+
+        kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
+            "NoInterfaceFlux", nointerfaceflux, INPAR::S2I::kinetics_nointerfaceflux)));
+      }
     }  // kinetic models for macro-micro coupling
 
     // insert kinetic models into vector with condition components

@@ -27,11 +27,10 @@ bool DRT::ELEMENTS::Truss3::ReadElement(
   std::string buffer;
   linedef->ExtractString("KINEM", buffer);
 
-
   if (buffer == "totlag")  // geometrically non-linear with Total Lagrangean approach
-    kintype_ = tr3_totlag;
+    kintype_ = KinematicType::tr3_totlag;
   else if (buffer == "engstr")  // geometrically non-linear approach with engineering strains
-    kintype_ = tr3_engstrain;
+    kintype_ = KinematicType::tr3_engstrain;
   else
     dserror("Reading of Truss3 element failed because of unknown kinematic type!");
 

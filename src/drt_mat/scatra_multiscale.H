@@ -31,13 +31,13 @@ namespace MAT
       ScatraMultiScale(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! return name of micro-scale input file
-      const std::string MicroInputFileName() const { return microfile_; };
+      const std::string MicroInputFileName() const { return microfile_; }
 
       //! return number of micro-scale discretization
       int MicroDisNum() const { return microdisnum_; };
 
       //! return specific micro-scale surface area A_s
-      double SpecificMicroScaleSurfaceArea() const { return A_s_; };
+      double SpecificMicroScaleSurfaceArea() const { return A_s_; }
 
      protected:
       //! @name material parameters
@@ -60,9 +60,10 @@ namespace MAT
   {
    public:
     //! initialize multi-scale scalar transport material
-    void Initialize(const int ele_id,  //!< macro-scale element ID
-        const int gp_id                //!< macro-scale Gauss point ID
-    );
+    //! \param[in] ele_id         macro-scale element ID
+    //! \param[in] gp_id          macro-scale Gauss point ID
+    //! \param[in] is_ale         true, if the underlying macro dis deforms
+    void Initialize(const int ele_id, const int gp_id, bool is_ale);
 
     /*!
      * @brief prepare time step on micro scale
@@ -79,10 +80,11 @@ namespace MAT
      * @param[in] phinp_macro  macro-scale state variables
      * @param[out] q_micro        micro-scale flux
      * @param[out] dq_dphi_micro  derivatives of micro-scale flux w.r.t. macro-scale state variables
-     * @param[in] solve           flag indicating whether micro-scale problem should be solved
+     * @param[in] detF       determinant of deformation gradient of macro dis at current Gauß point
+     * @param[in] solve      flag indicating whether micro-scale problem should be solved
      */
     void Evaluate(const int gp_id, const std::vector<double>& phinp_macro, double& q_micro,
-        std::vector<double>& dq_dphi_micro, const bool solve = true) const;
+        std::vector<double>& dq_dphi_micro, double detF, const bool solve = true) const;
 
     /*!
      * @brief evaluate mean concentration on micro scale
@@ -122,16 +124,19 @@ namespace MAT
     void ReadRestart(const int gp_id) const;
 
     //! return name of micro-scale input file
-    const std::string MicroInputFileName() const { return Params()->MicroInputFileName(); };
+    const std::string MicroInputFileName() const { return Params()->MicroInputFileName(); }
 
     //! return number of micro-scale discretization
-    int MicroDisNum() const { return Params()->MicroDisNum(); };
+    int MicroDisNum() const { return Params()->MicroDisNum(); }
 
     //! return specific micro-scale surface area A_s
-    double SpecificMicroScaleSurfaceArea() const
+    //!
+    //! \param detF determinant of deformation gradient of macro dis at current Gauß point
+    //! \return  specific area between micro and macro dis
+    double SpecificMicroScaleSurfaceArea(const double detF) const
     {
-      return Params()->SpecificMicroScaleSurfaceArea();
-    };
+      return Params()->SpecificMicroScaleSurfaceArea() * std::pow(detF, -1.0 / 3.0);
+    }
 
    protected:
     //! construct empty material

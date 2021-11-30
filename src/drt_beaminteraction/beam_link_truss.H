@@ -175,6 +175,8 @@ namespace BEAMINTERACTION
     void FillStateVariablesForElementEvaluation(
         LINALG::Matrix<6, 1, double>& absolute_nodal_positions) const;
 
+    void GetDispForElementEvaluation(std::map<std::string, std::vector<double>>& ele_state) const;
+
     //@}
 
    private:

@@ -208,13 +208,21 @@ namespace DRT
           const int iquad  //!< id of current Gauss point
       );
 
+      //! evaluate determinante of deformation gradient from displacements at integration point
+      //! \param ele         current element
+      //! \param intpoints   integration points
+      //! \param iquad       ID of current integration point
+      //! \return  determinante of deformation gradient at integration point
+      virtual double EvalDetFAtIntPoint(const DRT::Element* const& ele,
+          const DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad);
+
       //! evaluate shape functions and their derivatives at current integration point
       double EvalShapeFuncAndDerivsInParameterSpace();
 
       //! set internal variables
       virtual void SetInternalVariablesForMatAndRHS();
 
-      // add nodal displacements to point coordinates
+      //! add nodal displacements to point coordinates
       virtual void UpdateNodeCoordinates() { xyze_ += edispnp_; };
 
       //! finite difference check for debugging purposes

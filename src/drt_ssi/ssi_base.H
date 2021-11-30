@@ -210,6 +210,9 @@ namespace SSI
     /// set scatra solution on other fields
     virtual void SetScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
 
+    /// set micro scatra solution on other fields
+    virtual void SetMicroScatraSolution(Teuchos::RCP<const Epetra_Vector> phi) const;
+
     /// set scatra on manifold solution on other fields
     void SetScatraManifoldSolution(Teuchos::RCP<const Epetra_Vector> phi);
 
@@ -283,6 +286,9 @@ namespace SSI
     //! set up structural model evaluator for scalar-structure interaction
     virtual void SetupModelEvaluator() const {};
 
+    //! macro-micro scatra problem?
+    bool MacroScale() const { return macro_scale_; }
+
    private:
     /*!
      * @brief Checks whether flags for adaptive time stepping in ssi have been set consistently
@@ -345,6 +351,9 @@ namespace SSI
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
     int iter_;
+
+    //! macro-micro scatra problem?
+    const bool macro_scale_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
     Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> meshtying_strategy_s2i_;

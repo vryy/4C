@@ -379,7 +379,7 @@ namespace DRT
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> DiffManager()
       {
         return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCond>(my::diffmanager_);
-      };
+      }
 
       //! get internal variable manager for diffusion-conduction formulation
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>> VarManager()
@@ -387,13 +387,17 @@ namespace DRT
         return Teuchos::rcp_static_cast<
             ScaTraEleInternalVariableManagerElchDiffCond<my::nsd_, my::nen_>>(
             my::scatravarmanager_);
-      };
+      }
 
       //! get utility class supporting element evaluation for diffusion-conduction formulation
       ScaTraEleUtilsElchDiffCond<distype>* Utils()
       {
         return static_cast<ScaTraEleUtilsElchDiffCond<distype>*>(myelch::utils_);
-      };
+      }
+
+      void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseVector& conc) override;
 
       //! flag for used element formulation (material based)
       INPAR::ELCH::DiffCondMat diffcondmat_;

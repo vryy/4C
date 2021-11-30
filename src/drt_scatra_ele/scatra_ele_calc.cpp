@@ -291,6 +291,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractElementAndNodeValues
     DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*phin, ephin_, lm);
   }
 
+  // set reaction coefficient
+  if (params.isParameter("rea_coeff")) reamanager_->SetReaCoeff(params.get<double>("rea_coeff"), 0);
+
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -1087,8 +1090,9 @@ double DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvalShapeFuncAndDerivsInP
     // evaluate radial coordinate
     xyzint.Multiply(xyze_, funct_);
 
-    // multiply standard Jacobian determinant by square of radial coordinate
-    det *= xyzint(0) * xyzint(0);
+    // multiply standard Jacobian determinant by square of radial coordinate and 4 pi
+    constexpr double four_pi = 4.0 * M_PI;
+    det *= xyzint(0) * xyzint(0) * four_pi;
   }
 
   return det;
@@ -2008,13 +2012,18 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   double q_micro(0.0);
   std::vector<double> dq_dphi_micro(1, 0.0);
 
+  const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+      SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  const double detF = EvalDetFAtIntPoint(ele, intpoints, iquad);
+
   // evaluate multi-scale scalar transport material
   matmultiscale->Evaluate(
-      iquad, std::vector<double>(1, scatravarmanager_->Phinp(k)), q_micro, dq_dphi_micro);
+      iquad, std::vector<double>(1, scatravarmanager_->Phinp(k)), q_micro, dq_dphi_micro, detF);
 
   // macro-scale matrix contribution
   const double matrixterm =
-      timefacfac * dq_dphi_micro[0] * matmultiscale->SpecificMicroScaleSurfaceArea();
+      timefacfac * dq_dphi_micro[0] * matmultiscale->SpecificMicroScaleSurfaceArea(detF);
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
     const double v = funct_(vi) * matrixterm;
@@ -2024,7 +2033,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
   }
 
   // macro-scale vector contribution
-  const double rhsterm = rhsfac * q_micro * matmultiscale->SpecificMicroScaleSurfaceArea();
+  const double rhsterm = rhsfac * q_micro * matmultiscale->SpecificMicroScaleSurfaceArea(detF);
   for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * numdofpernode_ + k] -= funct_(vi) * rhsterm;
 }
 

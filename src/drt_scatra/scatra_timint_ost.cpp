@@ -315,6 +315,9 @@ void SCATRA::TimIntOneStepTheta::OutputRestart() const
   // additional state vectors that are needed for One-Step-Theta restart
   output_->WriteVector("phidtn", phidtn_);
   output_->WriteVector("phin", phin_);
+
+  // write nodal micro concentration
+  if (macro_scale_ and nds_micro_ != -1) output_->WriteVector("phinp_micro", phinp_micro_);
 }
 
 /*----------------------------------------------------------------------*
@@ -351,11 +354,16 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(const int step, Teuchos::RCP<IO::In
   // read restart on micro scale in multi-scale simulations if necessary
   if (macro_scale_)
   {
+    if (nds_micro_ != -1) reader->ReadVector(phinp_micro_, "phinp_micro");
+
     // create parameter list for macro-scale elements
     Teuchos::ParameterList eleparams;
 
     // set action
     eleparams.set<int>("action", SCATRA::micro_scale_read_restart);
+
+    // provide displacement field in case of ALE
+    if (isale_) eleparams.set<int>("ndsdisp", nds_disp_);
 
     // loop over macro-scale elements
     discret_->Evaluate(eleparams);

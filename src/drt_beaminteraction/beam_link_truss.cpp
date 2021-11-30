@@ -185,14 +185,13 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForce(
 {
   CheckInitSetup();
 
-  LINALG::Matrix<6, 1> absolute_nodal_positions;
-
-  FillStateVariablesForElementEvaluation(absolute_nodal_positions);
+  std::map<std::string, std::vector<double>> ele_state;
+  GetDispForElementEvaluation(ele_state);
 
   LINALG::SerialDenseVector force(6, true);
   LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(absolute_nodal_positions, force, stiffmat);
+  linkele_->CalcInternalForceStiffTotLag(ele_state, force, stiffmat);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 3, &force(0) + 6, &forcevec2(0));
@@ -211,14 +210,13 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateStiff(LINALG::SerialDenseMatrix& st
 {
   CheckInitSetup();
 
-  LINALG::Matrix<6, 1> absolute_nodal_positions;
-
-  FillStateVariablesForElementEvaluation(absolute_nodal_positions);
+  std::map<std::string, std::vector<double>> ele_state;
+  GetDispForElementEvaluation(ele_state);
 
   LINALG::SerialDenseVector force(6, true);
   LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(absolute_nodal_positions, force, stiffmat);
+  linkele_->CalcInternalForceStiffTotLag(ele_state, force, stiffmat);
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -243,18 +241,16 @@ bool BEAMINTERACTION::BeamLinkTruss::EvaluateForceStiff(LINALG::SerialDenseVecto
 {
   CheckInitSetup();
 
-  LINALG::Matrix<6, 1> absolute_nodal_positions;
-
-  FillStateVariablesForElementEvaluation(absolute_nodal_positions);
+  std::map<std::string, std::vector<double>> ele_state;
+  GetDispForElementEvaluation(ele_state);
 
   LINALG::SerialDenseVector force(6, true);
   LINALG::SerialDenseMatrix stiffmat(6, 6, true);
 
-  linkele_->CalcInternalForceStiffTotLag(absolute_nodal_positions, force, stiffmat);
+  linkele_->CalcInternalForceStiffTotLag(ele_state, force, stiffmat);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 3, &force(0) + 6, &forcevec2(0));
-
 
   for (unsigned int i = 0; i < 3; ++i)
   {
@@ -294,6 +290,22 @@ void BEAMINTERACTION::BeamLinkTruss::FillStateVariablesForElementEvaluation(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void BEAMINTERACTION::BeamLinkTruss::GetDispForElementEvaluation(
+    std::map<std::string, std::vector<double>>& ele_state) const
+{
+  const auto ref_position = linkele_->X();
+  std::vector<double> disp(6, 0);
+  for (unsigned int i = 0; i < 3; ++i)
+  {
+    disp[i] = GetBindSpotPos1()(i) - ref_position(i, 0);
+    disp[3 + i] = GetBindSpotPos2()(i) - ref_position(i + 3, 0);
+  }
+
+  ele_state.emplace(std::make_pair("disp", disp));
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamLinkTruss::ScaleLinkerReferenceLength(double scalefac)
 {
   linkele_->ScaleReferenceLength(scalefac);
@@ -309,7 +321,22 @@ void BEAMINTERACTION::BeamLinkTruss::GetBindingSpotForce(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const { return linkele_->Lcurr(); }
+double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const
+{
+  LINALG::Matrix<6, 1> xcurr;
+
+  FillStateVariablesForElementEvaluation(xcurr);
+
+  LINALG::Matrix<6, 1> truss_disp;
+  truss_disp(0) = xcurr(0) - xcurr(3);
+  truss_disp(1) = xcurr(1) - xcurr(4);
+  truss_disp(2) = xcurr(2) - xcurr(5);
+  truss_disp(3) = truss_disp(0);
+  truss_disp(4) = truss_disp(1);
+  truss_disp(5) = truss_disp(2);
+
+  return linkele_->Lcurr(truss_disp);
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

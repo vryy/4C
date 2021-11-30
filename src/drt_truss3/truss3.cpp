@@ -78,16 +78,18 @@ void DRT::ELEMENTS::Truss3Type::SetupElementDefinition(
 DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
     : DRT::Element(id, owner),
       crosssec_(0.0),
+      eint_(0.0),
+      lrefe_(0.0),
+      gaussrule_(DRT::UTILS::intrule_line_2point),
       data_(),
       diff_disp_ref_(LINALG::Matrix<1, 3>(true)),
-      // note: for corotational approach integration for Neumann conditions only
-      // hence enough to integrate 3rd order polynomials exactly
-      gaussrule_(DRT::UTILS::intrule_line_2point),
+      interface_ptr_(Teuchos::null),
       isinit_(false),
-      kintype_(tr3_totlag),
-      lcurr_(0.0),
-      lrefe_(0.0),
-      material_(0)
+      jacobimass_(),
+      jacobinode_(),
+      kintype_(KinematicType::tr3_totlag),
+      material_(0),
+      X_()
 {
 }
 /*----------------------------------------------------------------------*
@@ -96,17 +98,19 @@ DRT::ELEMENTS::Truss3::Truss3(int id, int owner)
 DRT::ELEMENTS::Truss3::Truss3(const DRT::ELEMENTS::Truss3& old)
     : DRT::Element(old),
       crosssec_(old.crosssec_),
+      eint_(old.eint_),
+      lrefe_(old.lrefe_),
+      gaussrule_(old.gaussrule_),
       data_(old.data_),
       diff_disp_ref_(old.diff_disp_ref_),
-      gaussrule_(old.gaussrule_),
+      interface_ptr_(old.interface_ptr_),
       isinit_(old.isinit_),
       jacobimass_(old.jacobimass_),
       jacobinode_(old.jacobinode_),
       kintype_(old.kintype_),
-      lcurr_(old.lcurr_),
-      lrefe_(old.lrefe_),
       material_(old.material_),
       X_(old.X_)
+
 {
 }
 /*----------------------------------------------------------------------*
@@ -155,7 +159,6 @@ void DRT::ELEMENTS::Truss3::Pack(DRT::PackBuffer& data) const
   AddtoPack<1, 3>(data, diff_disp_ref_);
   AddtoPack(data, material_);
   AddtoPack(data, lrefe_);
-  AddtoPack(data, lcurr_);
   AddtoPack(data, jacobimass_);
   AddtoPack(data, jacobinode_);
   AddtoPack(data, crosssec_);
@@ -185,7 +188,6 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   ExtractfromPack<1, 3>(position, data, diff_disp_ref_);
   ExtractfromPack(position, data, material_);
   ExtractfromPack(position, data, lrefe_);
-  ExtractfromPack(position, data, lcurr_);
   ExtractfromPack(position, data, jacobimass_);
   ExtractfromPack(position, data, jacobinode_);
   ExtractfromPack(position, data, crosssec_);
@@ -331,8 +333,6 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xr
     lrefe_ = std::sqrt((X_(3) - X_(0)) * (X_(3) - X_(0)) + (X_(4) - X_(1)) * (X_(4) - X_(1)) +
                        (X_(5) - X_(2)) * (X_(5) - X_(2)));
 
-    lcurr_ = lrefe_;
-
     // set jacobi determinants for integration of mass matrix and at nodes
     jacobimass_.resize(2);
     jacobimass_[0] = lrefe_ / 2.0;
@@ -461,7 +461,8 @@ void DRT::ELEMENTS::Truss3::LocationVector(
   }
 }
 
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 {
   // reference node positions

@@ -23,16 +23,17 @@ namespace SCATRA
   {
     // domain action
     calc_dissipation,  ///< calculate dissipation introduced by stabilization and turbulence models
-    calc_domain_and_bodyforce,           ///< calc_domain_and_bodyforce,
-    calc_domain_integral,                ///< n/a
-    calc_elch_boundary_kinetics_point,   ///< evaluate electrode kinetics point conditions
-    calc_elch_conductivity,              ///< calc_elch_conductivity,
-    calc_elch_domain_kinetics,           ///< calculate electrode kinetics in domain
-    calc_elch_electrode_soc_and_c_rate,  ///< calculate electrode state of charge and C rate
-    calc_error,                          ///< calc_error,
-    calc_error_reinit,                   ///< calc_error_reinit,
-    calc_flux_domain,                    ///< calc_condif_flux,
-    calc_grad_ele_center,                ///< reconstruct gradient at ele center
+    calc_domain_and_bodyforce,              ///< calc_domain_and_bodyforce,
+    calc_domain_integral,                   ///< n/a
+    calc_elch_boundary_kinetics_point,      ///< evaluate electrode kinetics point conditions
+    calc_elch_conductivity,                 ///< calc_elch_conductivity,
+    calc_elch_domain_kinetics,              ///< calculate electrode kinetics in domain
+    calc_elch_electrode_soc_and_c_rate,     ///< calculate electrode state of charge and C rate
+    calc_elch_elctrode_mean_concentration,  ///< calulate mean concentration of micro discretization
+    calc_error,                             ///< calc_error,
+    calc_error_reinit,                      ///< calc_error_reinit,
+    calc_flux_domain,                       ///< calc_condif_flux,
+    calc_grad_ele_center,                   ///< reconstruct gradient at ele center
     calc_heteroreac_mat_and_rhs,   ///< calculate RHS and linearizations of heterogeneous reaction
                                    ///< terms
     calc_immersed_element_source,  ///< calculate sink/source term due to segregation from an

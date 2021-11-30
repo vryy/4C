@@ -30,7 +30,7 @@ the file filter_commmon/filter_evaluation.cpp needs to be adapted accordingly.
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void MAT::ScatraMultiScale::Initialize(const int ele_id, const int gp_id)
+void MAT::ScatraMultiScale::Initialize(const int ele_id, const int gp_id, const bool is_ale)
 {
   // safety check
   if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
@@ -40,7 +40,7 @@ void MAT::ScatraMultiScale::Initialize(const int ele_id, const int gp_id)
   {
     // instantiate and initialize multi-scale scalar transport submaterial at macro-scale Gauss
     // point
-    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id, gp_id, MicroDisNum()));
+    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id, gp_id, MicroDisNum(), is_ale));
     matgp_[gp_id]->Init();
   }
 }
@@ -60,13 +60,13 @@ void MAT::ScatraMultiScale::PrepareTimeStep(
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void MAT::ScatraMultiScale::Evaluate(const int gp_id, const std::vector<double>& phinp_macro,
-    double& q_micro, std::vector<double>& dq_dphi_micro, const bool solve) const
+    double& q_micro, std::vector<double>& dq_dphi_micro, const double detF, const bool solve) const
 {
   // safety check
   if (gp_id < 0) dserror("Invalid macro-scale Gauss point ID!");
 
   // evaluate multi-scale scalar transport sub material at macro-scale Gauss point
-  matgp_.at(gp_id)->Evaluate(phinp_macro, q_micro, dq_dphi_micro, solve);
+  matgp_.at(gp_id)->Evaluate(phinp_macro, q_micro, dq_dphi_micro, detF, solve);
 }
 
 
