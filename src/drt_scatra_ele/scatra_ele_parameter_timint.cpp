@@ -18,7 +18,6 @@ general static parameters required for scalar transport element evaluation.
 #include "scatra_ele_parameter_timint.H"
 
 /*----------------------------------------------------------------------*
- | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(
     const std::string& disname,                //!< name of discretization
@@ -31,7 +30,7 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt
 
   // check whether instance already exists for current discretization, and perform instantiation if
   // not
-  if (delete_me == NULL)
+  if (delete_me == nullptr)
   {
     if (instances.find(disname) == instances.end())
       instances[disname] = new ScaTraEleParameterTimInt();
@@ -40,14 +39,15 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt
   // destruct instance
   else
   {
-    for (std::map<std::string, ScaTraEleParameterTimInt*>::iterator i = instances.begin();
-         i != instances.end(); ++i)
+    for (auto i = instances.begin(); i != instances.end(); ++i)
+    {
       if (i->second == delete_me)
       {
         delete i->second;
         instances.erase(i);
-        return NULL;
+        return nullptr;
       }
+    }
     dserror("Could not locate the desired instance. Internal error.");
   }
 
@@ -55,21 +55,15 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt* DRT::ELEMENTS::ScaTraEleParameterTimInt
   return instances[disname];
 }
 
-
 /*----------------------------------------------------------------------*
- | singleton destruction                                     fang 08/15 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ScaTraEleParameterTimInt::Done()
 {
   // delete singleton
   Instance("", this);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | private constructor for singletons                        fang 08/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
     : is_genalpha_(false),
@@ -83,9 +77,7 @@ DRT::ELEMENTS::ScaTraEleParameterTimInt::ScaTraEleParameterTimInt()
       timefacrhstau_(0.0),
       alphaF_(0.0)
 {
-  return;
 }
-
 
 //----------------------------------------------------------------------*/
 //----------------------------------------------------------------------*/
@@ -154,47 +146,4 @@ void DRT::ELEMENTS::ScaTraEleParameterTimInt::SetParameters(Teuchos::ParameterLi
   }
 
   timederivativefac_ = parameters.get<double>("time derivative factor", -1.0);
-}
-
-
-//----------------------------------------------------------------------*/
-// print fluid time parameter to screen                 rasthofer 11/13 |
-//----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleParameterTimInt::PrintScaTraTimeParameter()
-{
-  //  std::cout << std::endl << "|-----------------------------------------------------------" <<
-  //  std::endl; std::cout << "|  Fluid Element Time parameter: " << std::endl; std::cout <<
-  //  "|-------------------------------------------------------------------" << std::endl;
-  //  //! time parameters set?
-  //  std::cout << "|    time algorithm:         " << timealgo_ << std::endl;
-  //  //! is stationary?
-  //  std::cout << "|    is stationary?:         " << is_stationary_ << std::endl;
-  //  //! time algorithm
-  //  std::cout << "|    time parameters set:    " << set_general_fluid_timeparameter_ << std::endl;
-  //  //! actual time to evaluate the body BC
-  //  std::cout << "|    time:                   " << time_ << std::endl;
-  //  //! time-step length
-  //  std::cout << "|    time step:              " << dt_ << std::endl;
-  //  //! timefac = dt_ * ("pseudo"-)theta_
-  //  std::cout << "|    time factor:            " << timefac_ << std::endl;
-  //  //! factor for left-hand side due to one-step-theta time-integration scheme
-  //  std::cout << "|    theta:                  " << theta_ << std::endl;
-  //  //! factor for right-hand side due to one-step-theta time-integration scheme
-  //  std::cout << "|    (1-theta):              " << omtheta_ << std::endl;
-  //  //! generalised-alpha parameter (connecting velocity and acceleration)
-  //  std::cout << "|    gamma:                  " << gamma_ << std::endl;
-  //  //! generalised-alpha parameter (velocity)
-  //  std::cout << "|    alpha_F:                " << alphaF_ << std::endl;
-  //  //! generalised-alpha parameter (acceleration)
-  //  std::cout << "|    alpha_M:                " << alphaM_ << std::endl;
-  //  //! generalised-alpha parameter, alphaF_*gamma_*dt_
-  //  std::cout << "|    time factor mat_u:      " << afgdt_ << std::endl;
-  //  //! time integration factor for the right hand side (boundary elements)
-  //  std::cout << "|    time factor rhs:        " << timefacrhs_ << std::endl;
-  //  //! time integration factor for the left hand side (pressure)
-  //  std::cout << "|    time factor mat_p:      " << timefacpre_ << std::endl;
-  //  std::cout << std::endl << "|-----------------------------------------------------------" <<
-  //  std::endl;
-
-  return;
 }

@@ -24,53 +24,47 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    /// Destructor
-    virtual ~TimIntBDF2();
-
     /// Setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void ComputeIntermediateValues() { return; };
+    void ComputeIntermediateValues() override{};
 
     /// compute values at the interior of the elements (required for hdg)
-    virtual void ComputeInteriorValues() { return; };
+    void ComputeInteriorValues() override{};
 
     ///  compute scalar time derivative
-    void ComputeTimeDerivative();
+    void ComputeTimeDerivative() override;
 
     ///  compute scalar time derivate parameters of the input voltage to compute double layer
     ///  current densities
-    virtual void ComputeTimeDerivPot0(const bool init) { return; };
+    void ComputeTimeDerivPot0(const bool init) override{};
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    virtual void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     /// read restart data
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
-
-    // routine to return scalar field phi at time step n-1
-    Teuchos::RCP<Epetra_Vector> Phinm() { return Teuchos::null; }
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
     /// routine to return scalar field phi at time step n+alpha_F
-    Teuchos::RCP<Epetra_Vector> Phiaf() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> Phiaf() override { return Teuchos::null; }
 
     /// routine to return scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Epetra_Vector> Phiam() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> Phiam() override { return Teuchos::null; }
 
     /// routine to return time derivative of scalar field phi at time step n+alpha_M
-    Teuchos::RCP<Epetra_Vector> Phidtam() { return Teuchos::null; }
+    Teuchos::RCP<Epetra_Vector> Phidtam() override { return Teuchos::null; }
 
     /// routine to return fine-scale scalar field fsphi at time step n+1
-    virtual Teuchos::RCP<Epetra_Vector> FsPhi()
+    Teuchos::RCP<Epetra_Vector> FsPhi() override
     {
       if (Sep_ != Teuchos::null) Sep_->Multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
     };
 
     /// routine to return time integration specific parameters
-    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
+    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
     {
       Teuchos::RCP<Teuchos::ParameterList> timeparams;
       timeparams = Teuchos::rcp(new Teuchos::ParameterList());
@@ -82,50 +76,49 @@ namespace SCATRA
       return timeparams;
     }
 
-
-   protected:
     /// don't want = operator and cctor
-    TimIntBDF2 operator=(const TimIntBDF2& old);
+    TimIntBDF2 operator=(const TimIntBDF2& old) = delete;
 
     /// copy constructor
-    TimIntBDF2(const TimIntBDF2& old);
+    TimIntBDF2(const TimIntBDF2& old) = delete;
 
+   protected:
     /// set time parameter for element evaluation
-    virtual void SetElementTimeParameter(bool forcedincrementalsolver = false) const;
+    void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
 
     //! calculate consistent initial conditions in compliance with initial scalar field
     //! this is not necessary for BDF2 time integration scheme
-    void CalcInitialTimeDerivative() { return; };
+    void CalcInitialTimeDerivative() override{};
 
     /// Set the part of the righthandside belonging to the last timestep.
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
-    void ExplicitPredictor() const;
+    void ExplicitPredictor() const override;
 
     /// add actual Neumann loads with time factor
-    void AddNeumannToResidual();
+    void AddNeumannToResidual() override;
 
     /// AVM3-based scale separation
-    void AVM3Separation();
+    void AVM3Separation() override;
 
     /// dynamic Smagorinsky model
-    void DynamicComputationOfCs();
+    void DynamicComputationOfCs() override;
 
     /// dynamic Vreman model
-    void DynamicComputationOfCv();
+    void DynamicComputationOfCv() override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false);
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override;
 
     /// write additional data required for restart
-    virtual void OutputRestart() const;
+    void OutputRestart() const override;
 
     /// return the right time-scaling-factor for the true residual
-    double ResidualScaling() const { return 1.0 / (dta_ * theta_); }
+    double ResidualScaling() const override { return 1.0 / (dta_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
     double theta_;

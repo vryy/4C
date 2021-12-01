@@ -205,9 +205,6 @@ namespace SCATRA
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
     const Teuchos::RCP<LINALG::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };
 
-    //! return master dofs transformed to slave side of scatra-scatra interface
-    const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const { return imasterphinp_; };
-
     //! return type of global system matrix in global system of equations
     const LINALG::MatrixType& MatrixType() const { return matrixtype_; };
 
@@ -1143,24 +1140,6 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,  //!< slave-side location array
         DRT::Element::LocationArray& la_master  //!< master-side location array
     );
-
-    //! return system matrix 1
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix1() const { return systemmatrix1_; };
-
-    //! return system matrix 2
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix2() const { return systemmatrix2_; };
-
-    //! return system matrix 3
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix3() const { return systemmatrix3_; };
-
-    //! return system matrix 4
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix4() const { return systemmatrix4_; };
-
-    //! return system vector 1
-    const Teuchos::RCP<Epetra_MultiVector>& SystemVector1() const { return systemvector1_; };
-
-    //! return system vector 2
-    const Teuchos::RCP<Epetra_MultiVector>& SystemVector2() const { return systemvector2_; };
 
    private:
     /*!

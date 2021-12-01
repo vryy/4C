@@ -85,7 +85,7 @@ namespace DRT
       /*----------------------------------------------------------------------*/
       //! compute largest element diameter for reinitialization pseudo time step size
       template <DRT::Element::DiscretizationType pdistype, class M1>
-      double getEleDiameter(const M1& xyze)
+      double GetEleDiameter(const M1& xyze)
       {
         double elediam = 0.0;
 
@@ -336,6 +336,8 @@ namespace DRT
       );
 
       //! computes the factor for the wall shear stress dependent interface flux
+      //! @note: Calculated as in Calvez, V., "Mathematical and numerical modeling of early
+      //!        atherosclerotic lesions",ESAIM: Proceedings. Vol. 30. EDP Sciences, 2010
       double WSSinfluence(
           const LINALG::Matrix<nsd_ + 1, nen_>& ewss,  ///< vector of euclidean norm of shear stress
                                                        ///< tensor of each node of the element

@@ -3263,7 +3263,7 @@ void SCATRA::ScaTraTimIntElch::BuildBlockMaps(
     }
 
     // extract number of domain partitioning conditions
-    const unsigned ncond = partitioningconditions.size();
+    const std::size_t ncond = partitioningconditions.size();
 
     // each domain block specified by the domain partitioning conditions is again subdivided into
     // the specific dofs, therefore (ncond * NumDofPerNode()) block maps are set up below

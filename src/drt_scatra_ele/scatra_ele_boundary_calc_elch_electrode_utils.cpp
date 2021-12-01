@@ -191,8 +191,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
       // convergence check
       if (std::abs(residual) < convtol)
+      {
         break;
-
+      }
       else if (iternum == itemax)
         dserror(
             "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
