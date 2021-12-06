@@ -41,6 +41,13 @@ void DRT::UTILS::ComputeStructure3DNullSpace(
     DRT::Node* actnode = dis.lRowNode(i);
     const double* x = actnode->X();
     std::vector<int> dofs = dis.Dof(0, actnode);  // use current dofset
+
+    if (dofs.size() != 3)
+      dserror(
+          "The computation of the solid nullspace in three dimensions requires three DOFs"
+          "per solid node, however the current node carries %d DOFs.",
+          dofs.size());
+
     for (unsigned j = 0; j < dofs.size(); ++j)
     {
       const int dof = dofs[j];
@@ -107,6 +114,13 @@ void DRT::UTILS::ComputeStructure2DNullSpace(
     DRT::Node* actnode = dis.lRowNode(i);
     const double* x = actnode->X();
     std::vector<int> dofs = dis.Dof(0, actnode);
+
+    if (dofs.size() != 2)
+      dserror(
+          "The computation of the solid nullspace in two dimensions requires two DOFs"
+          "per solid node, however the current node carries %d DOFs.",
+          dofs.size());
+
     for (unsigned j = 0; j < dofs.size(); ++j)
     {
       const int dof = dofs[j];
@@ -176,6 +190,13 @@ void DRT::UTILS::ComputeBeam3DNullSpace(
     DRT::Node* actnode = dis.lRowNode(i);
     const double* x = actnode->X();
     std::vector<int> dofs = dis.Dof(actnode);
+
+    if (dofs.size() != 6)
+      dserror(
+          "The computation of the beam nullspace in three dimensions requires six DOFs"
+          "per solid node, however the current node carries %d DOFs.",
+          dofs.size());
+
     for (unsigned j = 0; j < dofs.size(); ++j)
     {
       const int dof = dofs[j];
@@ -289,6 +310,13 @@ void DRT::UTILS::ComputeShell3DNullSpace(
     DRT::Node* actnode = dis.lRowNode(i);
     const double* x = actnode->X();
     std::vector<int> dofs = dis.Dof(0, actnode);  // use current dofset
+
+    if (dofs.size() != 6)
+      dserror(
+          "The computation of the shell nullspace in three dimensions requires six DOFs"
+          "per solid node, however the current node carries %d DOFs.",
+          dofs.size());
+
     for (unsigned j = 0; j < dofs.size(); ++j)
     {
       const int dof = dofs[j];
