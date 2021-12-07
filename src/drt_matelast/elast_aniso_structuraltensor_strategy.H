@@ -73,8 +73,15 @@ namespace MAT
         /// type of structural tensor strategy
         int strategy_type_;
 
-        /// pure virtual in base class
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
       };  // class StructuralTensorParameter
     }     // namespace PAR
