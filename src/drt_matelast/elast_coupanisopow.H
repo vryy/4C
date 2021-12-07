@@ -30,10 +30,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        CoupAnisoPow(Teuchos::RCP<MAT::PAR::Material> matdata);
+        CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~CoupAnisoPow() { ; }
+        ~CoupAnisoPow() override { ; }
 
         /// @name material parameters
         //@{
@@ -65,7 +65,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -115,16 +115,16 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
 
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_coupanisoneohooke;
       }
@@ -132,18 +132,17 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
       /// Add anisotropic principal stresses
-      virtual void AddStressAnisoPrincipal(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
+          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
           int eleGID   ///< element GID
-      );
+          ) override;
 
       /// @name Access material constants
       //@{
@@ -155,24 +154,24 @@ namespace MAT
       //@}
 
       /// Set fiber directions
-      virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,           ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd            ///< deformation gradient
-      );
+      void SetFiberVecs(const double newgamma,  ///< new angle
+          const LINALG::Matrix<3, 3>& locsys,   ///< local coordinate system
+          const LINALG::Matrix<3, 3>& defgrd    ///< deformation gradient
+          ) override;
 
       /// Get fiber directions
-      virtual void GetFiberVecs(
+      void GetFiberVecs(
           std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      );
+          ) override;
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         anisoprinc = true;
         return;

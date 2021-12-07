@@ -22,7 +22,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::VolOgden::VolOgden(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::VolOgden::VolOgden(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->GetDouble("KAPPA")), beta_(matdata->GetDouble("BETA"))
 {
 }

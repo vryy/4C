@@ -178,12 +178,13 @@ void MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::OnGlobalGPDataInitiali
   isInitialized_ = true;
 }
 
-MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupAnisoExpoShear::CoupAnisoExpoShear(
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MAT::PAR::Parameter(matdata), MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata)
 {
   std::copy_n(matdata->Get<std::vector<int>>("FIBER_IDS")->begin(), 2, fiber_id_.begin());
 
-  for (unsigned i = 0; i < fiber_id_.size(); ++i) fiber_id_[i] -= 1;
+  for (int& i : fiber_id_) i -= 1;
 }
 
 MAT::ELASTIC::CoupAnisoExpoShear::CoupAnisoExpoShear(MAT::ELASTIC::PAR::CoupAnisoExpoShear* params)

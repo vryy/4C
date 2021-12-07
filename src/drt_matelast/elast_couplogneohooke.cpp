@@ -24,7 +24,7 @@ or
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
   std::string parmode = *(matdata->Get<std::string>("MODE"));

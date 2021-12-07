@@ -23,7 +23,7 @@ COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       nummat_(matdata->GetInt("NUMMAT")),
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
@@ -93,9 +93,8 @@ void MAT::ELASTIC::RemodelFiber::PackSummand(DRT::PackBuffer& data) const
 
   AddtoPack(data, init_rho_col_);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
-    for (unsigned int k = 0; k < potsumfiber_.size(); ++k)
-      potsumfiber_[k]->fiber->PackSummand(data);
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
+    for (const auto& k : potsumfiber_) k->fiber->PackSummand(data);
 
   return;
 }
@@ -147,8 +146,7 @@ void MAT::ELASTIC::RemodelFiber::UnpackSummand(
   ExtractfromPack(position, data, init_rho_col_);
 
   // loop map of associated potential summands
-  for (unsigned int k = 0; k < potsumfiber_.size(); ++k)
-    potsumfiber_[k]->fiber->UnpackSummand(data, position);
+  for (auto& k : potsumfiber_) k->fiber->UnpackSummand(data, position);
 
   return;
 }
@@ -247,8 +245,8 @@ void MAT::ELASTIC::RemodelFiber::Setup(
 
   // Initialize inelastic deformation gradients in FiberData (default time step size (does not have
   // to be the real one))
-  for (unsigned k = 0; k < potsumfiber_.size(); ++k)
-    for (int gp = 0; gp < numgp; ++gp) potsumfiber_[k]->UpdateNewton(gp, 1.0);
+  for (auto& k : potsumfiber_)
+    for (int gp = 0; gp < numgp; ++gp) k->UpdateNewton(gp, 1.0);
 
 
   return;
@@ -285,9 +283,8 @@ void MAT::ELASTIC::RemodelFiber::SetupStructuralTensorsGR()
 void MAT::ELASTIC::RemodelFiber::Update()
 {
   // update history variable
-  for (unsigned k = 0; k < potsumfiber_.size(); ++k)
-    for (unsigned gp = 0; gp < potsumfiber_[k]->cur_rho.size(); ++gp)
-      potsumfiber_[k]->UpdateHistory(gp);
+  for (auto& k : potsumfiber_)
+    for (unsigned gp = 0; gp < k->cur_rho.size(); ++gp) k->UpdateHistory(gp);
 
   return;
 }
@@ -300,14 +297,12 @@ void MAT::ELASTIC::RemodelFiber::UpdateFiberDirs(
   LINALG::Matrix<3, 3> id(true);
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
-  for (unsigned k = 0; k < potsumfiber_.size(); ++k)
-    potsumfiber_[k]->fiber->SetFiberVecs(-1.0, locsys, id);
+  for (auto& k : potsumfiber_) k->fiber->SetFiberVecs(-1.0, locsys, id);
 
   SetupStructuralTensorsGR();
 
-  for (unsigned k = 0; k < potsumfiber_.size(); ++k)
-    for (unsigned gp = 0; gp < potsumfiber_[0]->cur_lambr.size(); ++gp)
-      potsumfiber_[k]->UpdateNewton(gp, dt);
+  for (auto& k : potsumfiber_)
+    for (unsigned gp = 0; gp < potsumfiber_[0]->cur_lambr.size(); ++gp) k->UpdateNewton(gp, dt);
 
   UpdateSigH();
 
@@ -336,29 +331,27 @@ void MAT::ELASTIC::RemodelFiber::UpdateSigH()
   for (int i = 0; i < 3; ++i) id(i, i) = 1.0;
 
   double sig = 0.0;
-  for (unsigned k = 0; k < potsumfiber_.size(); ++k)
+  for (auto& k : potsumfiber_)
   {
-    if ((t1 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpo>(potsumfiber_[k]->fiber))
-            .getRawPtr())
+    if ((t1 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpo>(k->fiber)).getRawPtr())
     {
-      CpreM.Update(potsumfiber_[k]->G * potsumfiber_[k]->G, potsumfiber_[k]->AM, 0.0);
+      CpreM.Update(k->G * k->G, k->AM, 0.0);
       t1->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
-      sig = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
-      potsumfiber_[k]->growth->SetSigH(sig);
-      potsumfiber_[k]->remodel->SetSigH(sig);
+      sig = 2.0 * dPI(0) * k->G * k->G;
+      k->growth->SetSigH(sig);
+      k->remodel->SetSigH(sig);
     }
-    else if ((t2 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpoActive>(
-                  potsumfiber_[k]->fiber))
+    else if ((t2 = Teuchos::rcp_dynamic_cast<MAT::ELASTIC::CoupAnisoExpoActive>(k->fiber))
                  .getRawPtr())
     {
-      CpreM.Update(potsumfiber_[k]->G * potsumfiber_[k]->G, potsumfiber_[k]->AM, 0.0);
+      CpreM.Update(k->G * k->G, k->AM, 0.0);
       t2->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
-      sig = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
+      sig = 2.0 * dPI(0) * k->G * k->G;
       t2->EvaluateActiveStressCmatAniso(id, cmatactive, stressactv, 0, 0);
       UTILS::VOIGT::Stresses::VectorToMatrix(stressactv, stressactM);
-      sig += stressactM.Dot(potsumfiber_[k]->AM);
-      potsumfiber_[k]->growth->SetSigH(sig);
-      potsumfiber_[k]->remodel->SetSigH(sig);
+      sig += stressactM.Dot(k->AM);
+      k->growth->SetSigH(sig);
+      k->remodel->SetSigH(sig);
     }
   }
 
@@ -375,10 +368,10 @@ void MAT::ELASTIC::RemodelFiber::EvaluateAnisotropicStressCmat(LINALG::Matrix<3,
   stress.Clear();
   cmat.Clear();
 
-  for (unsigned k = 0; k < potsumfiber_.size(); ++k)
+  for (auto& k : potsumfiber_)
   {
-    potsumfiber_[k]->UpdateNewton(gp, dt);
-    AddStressCmat(CM, iFgM, *(potsumfiber_[k]), gp, eleGID, stress, cmat);
+    k->UpdateNewton(gp, dt);
+    AddStressCmat(CM, iFgM, *k, gp, eleGID, stress, cmat);
   }
 
   return;
@@ -698,7 +691,7 @@ void MAT::ELASTIC::RemodelFiber::AddStressCmat(LINALG::Matrix<3, 3> const& CM,
 template <typename T>
 void MAT::ELASTIC::RemodelFiber::EvaluateLocalCauchyStress(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM,
-    Teuchos::RCP<MAT::ELASTIC::Summand> const fiber, const int gp, int const eleGID, T& sig) const
+    Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber, const int gp, int const eleGID, T& sig) const
 {
   // temporary pointers to check the type of the remodelfiber (active or passive)
   Teuchos::RCP<MAT::ELASTIC::CoupAnisoExpo> t1;
@@ -737,7 +730,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateLocalCauchyStress(LINALG::Matrix<3, 3, 
 template <typename T>
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCe(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFgM, LINALG::Matrix<3, 3, T> const& iFrM,
-    LINALG::Matrix<3, 3, T> const& AM, Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,
+    LINALG::Matrix<3, 3, T> const& AM, Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,
     const int gp, int const eleGID, LINALG::Matrix<3, 3, T>& dsigdCe) const
 {
   // clear some variables
@@ -832,7 +825,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& C
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<3, 3> const& iFrM,
-    LINALG::Matrix<3, 3> const& AM, Teuchos::RCP<MAT::ELASTIC::Summand> const fiber, const int gp,
+    LINALG::Matrix<3, 3> const& AM, Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber, const int gp,
     int const eleGID, LINALG::Matrix<6, 6>& dsigdCedC) const
 {
   // clear some variables
@@ -1192,7 +1185,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& C
 template <typename T>
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM,
-    Teuchos::RCP<MAT::ELASTIC::Summand> const fiber, const int gp, int const eleGID,
+    Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber, const int gp, int const eleGID,
     LINALG::Matrix<3, 3, T>& dsigdC) const
 {
   // clear some variables
@@ -1637,9 +1630,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "lambda_r_0_0") || (name == "lambda_r_1_0"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < potsumfiber_[0]->last_lambr.size(); ++gp)
+    for (double gp : potsumfiber_[0]->last_lambr)
     {
-      data[0] += potsumfiber_[0]->last_lambr[gp];
+      data[0] += gp;
     }
     data[0] = data[0] / potsumfiber_[0]->last_lambr.size();
 
@@ -1648,9 +1641,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "lambda_r_0_1") || (name == "lambda_r_1_1"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < potsumfiber_[1]->last_lambr.size(); ++gp)
+    for (double gp : potsumfiber_[1]->last_lambr)
     {
-      data[0] += potsumfiber_[1]->last_lambr[gp];
+      data[0] += gp;
     }
     data[0] = data[0] / potsumfiber_[1]->last_lambr.size();
 
@@ -1659,9 +1652,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "lambda_r_0_2") || (name == "lambda_r_1_2"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < potsumfiber_[2]->last_lambr.size(); ++gp)
+    for (double gp : potsumfiber_[2]->last_lambr)
     {
-      data[0] += potsumfiber_[2]->last_lambr[gp];
+      data[0] += gp;
     }
     data[0] = data[0] / potsumfiber_[2]->last_lambr.size();
 
@@ -1670,9 +1663,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "lambda_r_0_3") || (name == "lambda_r_1_3"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < potsumfiber_[3]->last_lambr.size(); ++gp)
+    for (double gp : potsumfiber_[3]->last_lambr)
     {
-      data[0] += potsumfiber_[3]->last_lambr[gp];
+      data[0] += gp;
     }
     data[0] = data[0] / potsumfiber_[3]->last_lambr.size();
 
@@ -1683,9 +1676,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "fiber_cauchy_stress_0_0") || (name == "fiber_cauchy_stress_1_0"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < cauchystress_[0].size(); ++gp)
+    for (double gp : cauchystress_[0])
     {
-      data[0] += cauchystress_[0][gp];
+      data[0] += gp;
     }
     data[0] = data[0] / cauchystress_[0].size();
 
@@ -1694,9 +1687,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "fiber_cauchy_stress_0_1") || (name == "fiber_cauchy_stress_1_1"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < cauchystress_[1].size(); ++gp)
+    for (double gp : cauchystress_[1])
     {
-      data[0] += cauchystress_[1][gp];
+      data[0] += gp;
     }
     data[0] = data[0] / cauchystress_[1].size();
 
@@ -1705,9 +1698,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "fiber_cauchy_stress_0_2") || (name == "fiber_cauchy_stress_1_2"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < cauchystress_[2].size(); ++gp)
+    for (double gp : cauchystress_[2])
     {
-      data[0] += cauchystress_[2][gp];
+      data[0] += gp;
     }
     data[0] = data[0] / cauchystress_[2].size();
 
@@ -1716,9 +1709,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "fiber_cauchy_stress_0_3") || (name == "fiber_cauchy_stress_1_3"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned gp = 0; gp < cauchystress_[3].size(); ++gp)
+    for (double gp : cauchystress_[3])
     {
-      data[0] += cauchystress_[3][gp];
+      data[0] += gp;
     }
     data[0] = data[0] / cauchystress_[3].size();
 
@@ -1729,9 +1722,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "cur_rho_col_0_0") || (name == "cur_rho_col_1_0"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned i = 0; i < potsumfiber_[0]->cur_rho.size(); ++i)
+    for (double i : potsumfiber_[0]->cur_rho)
     {
-      data[0] += potsumfiber_[0]->cur_rho[i];
+      data[0] += i;
     }
     data[0] = data[0] / potsumfiber_[0]->cur_rho.size();
 
@@ -1741,9 +1734,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "cur_rho_col_0_1") || (name == "cur_rho_col_1_1"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned i = 0; i < potsumfiber_[1]->cur_rho.size(); ++i)
+    for (double i : potsumfiber_[1]->cur_rho)
     {
-      data[0] += potsumfiber_[1]->cur_rho[i];
+      data[0] += i;
     }
     data[0] = data[0] / potsumfiber_[1]->cur_rho.size();
 
@@ -1753,9 +1746,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "cur_rho_col_0_2") || (name == "cur_rho_col_1_2"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned i = 0; i < potsumfiber_[2]->cur_rho.size(); ++i)
+    for (double i : potsumfiber_[2]->cur_rho)
     {
-      data[0] += potsumfiber_[2]->cur_rho[i];
+      data[0] += i;
     }
     data[0] = data[0] / potsumfiber_[2]->cur_rho.size();
 
@@ -1765,9 +1758,9 @@ bool MAT::ELASTIC::RemodelFiber::VisData(
   if ((name == "cur_rho_col_0_3") || (name == "cur_rho_col_1_3"))
   {
     if (data.size() != 1) dserror("size mismatch");
-    for (unsigned i = 0; i < potsumfiber_[3]->cur_rho.size(); ++i)
+    for (double i : potsumfiber_[3]->cur_rho)
     {
-      data[0] += potsumfiber_[3]->cur_rho[i];
+      data[0] += i;
     }
     data[0] = data[0] / potsumfiber_[3]->cur_rho.size();
 

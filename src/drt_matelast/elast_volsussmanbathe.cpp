@@ -21,7 +21,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::VolSussmanBathe::VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), kappa_(matdata->GetDouble("KAPPA"))
 {
 }

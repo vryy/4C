@@ -67,7 +67,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoBase(Teuchos::RCP<MAT::PAR::Material> matdata);
+        explicit CoupAnisoExpoBase(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// Constructor only used for unit testing
         CoupAnisoExpoBase();

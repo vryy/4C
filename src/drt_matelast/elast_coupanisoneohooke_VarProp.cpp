@@ -20,7 +20,7 @@
  |                                                                      |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       c_(matdata->GetDouble("C")),
       sourceactiv_(matdata->GetInt("SOURCE_ACTIVATION")),

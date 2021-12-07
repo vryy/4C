@@ -20,7 +20,7 @@ The input line should read
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
@@ -83,7 +83,7 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
   int d = 0;
 
   // in case of stat inverse analysis use getparameter
-  if (params_->ReturnMatparams().size() != 0)
+  if (!params_->ReturnMatparams().empty())
   {
     c = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_c, eleGID);
     d = params_->GetParameter(MAT::ELASTIC::PAR::coup1pow_d, eleGID);

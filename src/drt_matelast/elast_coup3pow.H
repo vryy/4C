@@ -28,10 +28,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        Coup3Pow(Teuchos::RCP<MAT::PAR::Material> matdata);
+        Coup3Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~Coup3Pow() { ; }
+        ~Coup3Pow() override { ; }
 
         /// @name material parameters
         //@{
@@ -50,7 +50,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -86,7 +86,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coup3pow; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_coup3pow; }
 
       //@}
 
@@ -98,13 +98,13 @@ namespace MAT
           const int eleGID                      ///< element GID
       );
 
-      virtual void AddDerivativesPrincipal(
+      void AddDerivativesPrincipal(
           LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
           LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           int gp,                             ///< Gauss point
           int eleGID                          ///< element GID
-      );
+          ) override;
 
       /// @name Access methods
       //@{
@@ -114,13 +114,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         isoprinc = true;
         return;

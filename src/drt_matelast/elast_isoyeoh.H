@@ -31,10 +31,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        IsoYeoh(Teuchos::RCP<MAT::PAR::Material> matdata);
+        IsoYeoh(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~IsoYeoh() { ; }
+        ~IsoYeoh() override { ; }
 
         /// @name material parameters
         //@{
@@ -54,7 +54,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -97,28 +97,28 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoyeoh; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_isoyeoh; }
 
       //@}
 
       // add strain energy
-      virtual void AddStrainEnergy(double& psi,  ///< strain energy function
+      void AddStrainEnergy(double& psi,       ///< strain energy function
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
           int gp,                                ///< Gauss point
           int eleGID                             ///< element GID
-      );
+          ) override;
 
       // Add derivatives with respect to modified invariants.
-      virtual void AddDerivativesModified(
+      void AddDerivativesModified(
           LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants
           LINALG::Matrix<6, 1>&
               ddmodPII,  ///< second derivative with respect to modified invariants
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           int gp,                              ///< Gauss point
           int eleGID                           ///< element GID
-      );
+          ) override;
 
 
       /// @name Access methods
@@ -130,13 +130,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         isomod = true;
         return;

@@ -49,7 +49,7 @@ MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor_stress(int g
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MAT::PAR::ParameterAniso(matdata),
       MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata),
       adapt_angle_(matdata->GetInt("ADAPT_ANGLE")),

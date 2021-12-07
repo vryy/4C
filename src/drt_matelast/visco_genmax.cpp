@@ -25,7 +25,7 @@ The input line should read
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::GenMax::GenMax(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::GenMax::GenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       tau_(matdata->GetDouble("TAU")),
       beta_(matdata->GetDouble("BETA")),

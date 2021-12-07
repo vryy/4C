@@ -54,10 +54,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        StructuralTensorParameter(Teuchos::RCP<MAT::PAR::Material> matdata);
+        StructuralTensorParameter(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~StructuralTensorParameter() { ; }
+        ~StructuralTensorParameter() override { ; }
 
         /// @name material parameters
         //@{
@@ -74,7 +74,7 @@ namespace MAT
         int strategy_type_;
 
         /// pure virtual in base class
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       };  // class StructuralTensorParameter
     }     // namespace PAR

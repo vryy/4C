@@ -21,7 +21,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::VolPow::VolPow(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::VolPow::VolPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), a_(matdata->GetDouble("A")), expon_(matdata->GetDouble("EXPON"))
 {
 }

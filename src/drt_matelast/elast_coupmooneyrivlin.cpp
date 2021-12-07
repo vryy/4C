@@ -20,7 +20,8 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       c1_(matdata->GetDouble("C1")),
       c2_(matdata->GetDouble("C2")),

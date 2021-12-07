@@ -21,7 +21,7 @@ ADAPT_ANGLE 0 S 54000 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
  |                                                                      |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::CoupAnisoExpoActive::CoupAnisoExpoActive(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k1_(matdata->GetDouble("K1")),
       k2_(matdata->GetDouble("K2")),

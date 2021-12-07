@@ -24,7 +24,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), youngs_(matdata->GetDouble("YOUNG")), nue_(matdata->GetDouble("NUE"))
 {
   // Material Constants c and beta
@@ -113,7 +113,7 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& d
   double beta = 0.;
 
   // in case of stat inverse analysis use getparameter
-  if (params_->ReturnMatparams().size() != 0)
+  if (!params_->ReturnMatparams().empty())
   {
     c = params_->GetParameter(MAT::ELASTIC::PAR::coupneohooke_c, eleGID);
     beta = params_->GetParameter(MAT::ELASTIC::PAR::coupneohooke_beta, eleGID);

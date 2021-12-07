@@ -19,7 +19,8 @@
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       c_(matdata->GetDouble("C")),
       gamma_(matdata->GetDouble("GAMMA")),

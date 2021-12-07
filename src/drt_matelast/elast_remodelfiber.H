@@ -9,6 +9,8 @@
 #ifndef ELAST_REMODELFIBER_H_
 #define ELAST_REMODELFIBER_H_
 
+#include <utility>
+
 #include "elast_summand.H"
 #include "elast_coupanisoexpo.H"
 #include "elast_coupanisoexpoactive.H"
@@ -194,7 +196,7 @@ namespace MAT
     struct FiberData
     {
       /// Constructor
-      FiberData(Teuchos::RCP<MAT::ELASTIC::Summand> sum) : fiber(sum), G(0){};
+      FiberData(Teuchos::RCP<MAT::ELASTIC::Summand> sum) : fiber(std::move(sum)), G(0){};
 
       /// Update of internal data
       void UpdateNewton(int const gp, double const dt)
@@ -285,10 +287,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        RemodelFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
+        RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~RemodelFiber() = default;
+        ~RemodelFiber() override = default;
 
         /// length of material list
         const int nummat_;
@@ -321,7 +323,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       };  // class RemodelFiber
 
@@ -339,10 +341,10 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
 
@@ -350,7 +352,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_remodelfiber;
       };
@@ -375,14 +377,14 @@ namespace MAT
       };
 
       /// Update of summand
-      virtual void Update();
+      void Update() override;
 
       /*!
        * \brief Register anisotropy extensions to be passed to all summands
        *
        * \param anisotropy Reference to the anisotropy
        */
-      virtual void RegisterAnisotropyExtensions(Anisotropy& anisotropy);
+      void RegisterAnisotropyExtensions(Anisotropy& anisotropy) override;
 
       /// Setup of summand
       virtual void Setup(int numgp, double rho_tot, DRT::INPUT::LineDefinition* linedef);
@@ -476,16 +478,17 @@ namespace MAT
       virtual void VisNames(std::map<std::string, int>& names, unsigned int p);
 
       /// Return visualization data
-      virtual bool VisData(
-          const std::string& name, std::vector<double>& data, int numgp, int eleId);
+      bool VisData(
+          const std::string& name, std::vector<double>& data, int numgp, int eleId) override;
 
       /// Indicator for the chosen formulations
-      virtual void SpecifyFormulation(
-          bool& isoprinc,      ///< global indicator for isotropic principal formulation
-          bool& isomod,        ///< global indicator for isotropic splitted formulation
-          bool& anisoprinc,    ///< global indicator for anisotropic principal formulation
-          bool& anisomod,      ///< global indicator for anisotropic splitted formulation
-          bool& viscogeneral)  ///< global indicator, if one viscoelastic formulation is used
+      void SpecifyFormulation(
+          bool& isoprinc,    ///< global indicator for isotropic principal formulation
+          bool& isomod,      ///< global indicator for isotropic splitted formulation
+          bool& anisoprinc,  ///< global indicator for anisotropic principal formulation
+          bool& anisomod,    ///< global indicator for anisotropic splitted formulation
+          bool& viscogeneral)
+          override  ///< global indicator, if one viscoelastic formulation is used
       {
         anisoprinc = true;
         return;
@@ -562,10 +565,10 @@ namespace MAT
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
-          int gp,                                           ///< Gauss point
-          int eleGID,                                       ///< Element Id
-          T& sig) const;                                    ///< Local Cauchy stress
+          Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
+          int gp,                                            ///< Gauss point
+          int eleGID,                                        ///< Element Id
+          T& sig) const;                                     ///< Local Cauchy stress
 
       /// Evaluate derivative of local Cauchy stress in current fiber direction w.r.t. the elastic
       /// right Cauchy Green tensor (analytical differentiation)
@@ -577,9 +580,9 @@ namespace MAT
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
-          int gp,                                           ///< Gauss point
-          int eleGID,                                       ///< Element Id
+          Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
+          int gp,                                            ///< Gauss point
+          int eleGID,                                        ///< Element Id
           LINALG::Matrix<3, 3, T>& dsigdCeM)
           const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy-Green tensor
 
@@ -607,7 +610,7 @@ namespace MAT
               iFrM,  ///< Inverse remodeling deformation gradient (used in G&R)
           LINALG::Matrix<3, 3> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<MAT::ELASTIC::Summand> const
+          Teuchos::RCP<MAT::ELASTIC::Summand> const&
               fiber,                               ///< Type of remodel fiberEvaluatedsigdCedC
           int gp,                                  ///< Gauss point
           int eleGID,                              ///< Element Id
@@ -635,7 +638,7 @@ namespace MAT
               iFinM,  ///< Inverse inelastic deformation gradient (used in G&R)
           LINALG::Matrix<3, 3, T> const&
               AM,  ///< Structural tensor of associated anisotropic direction
-          Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
+          Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
           int gp,
           int eleGID,  ///< Element Id
           LINALG::Matrix<3, 3, T>& dsigdC)

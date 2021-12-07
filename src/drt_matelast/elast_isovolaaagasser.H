@@ -51,10 +51,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        IsoVolAAAGasser(Teuchos::RCP<MAT::PAR::Material> matdata);
+        IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~IsoVolAAAGasser() { ; }
+        ~IsoVolAAAGasser() override { ; }
 
         /// @name material parameters
         //@{
@@ -81,7 +81,7 @@ namespace MAT
           last = xi
         };
 
-        virtual void OptParams(std::map<std::string, int>* pnames);
+        void OptParams(std::map<std::string, int>* pnames) override;
 
         //@}
 
@@ -93,7 +93,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         void SetInitToTrue() { isinit_ = true; };
 
@@ -116,10 +116,10 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
 
@@ -127,7 +127,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_isovolaaagasser;
       }
@@ -137,37 +137,37 @@ namespace MAT
       void CalcCele(const int eleID);
 
       /// Setup of patient-specific stuff
-      virtual void SetupAAA(Teuchos::ParameterList& params, const int eleGID);
+      void SetupAAA(Teuchos::ParameterList& params, const int eleGID) override;
 
       // add strain energy
-      virtual void AddStrainEnergy(double& psi,  ///< strain energy function
+      void AddStrainEnergy(double& psi,       ///< strain energy function
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
           int gp,                                ///< Gauss point
           const int eleGID                       ///< element GID
-      );
+          ) override;
 
 
       // birzle 12/2014
       // Add derivatives with respect to modified invariants.
-      virtual void AddDerivativesModified(
+      void AddDerivativesModified(
           LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants
           LINALG::Matrix<6, 1>&
               ddmodPII,  ///< second derivative with respect to modified invariants
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           int gp,                              ///< Gauss point
           const int eleGID                     ///< element GID
-      );
+          ) override;
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         isomod = true;
         return;
@@ -176,11 +176,11 @@ namespace MAT
       //! @name Visualization methods
 
       /// Return names of visualization data
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       /// Return visualization data
-      virtual bool VisData(
-          const std::string& name, std::vector<double>& data, int numgp, int eleId);
+      bool VisData(
+          const std::string& name, std::vector<double>& data, int numgp, int eleId) override;
 
       //@}
 

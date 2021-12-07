@@ -31,10 +31,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        CoupVarga(Teuchos::RCP<MAT::PAR::Material> matdata);
+        CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~CoupVarga() { ; }
+        ~CoupVarga() override { ; }
 
         /// @name material parameters
         //@{
@@ -54,7 +54,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
 
       };  // class CoupVarga
@@ -98,32 +98,32 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupvarga; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_coupvarga; }
 
       /// add shear modulus equivalent
-      virtual void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-          double& shearmod                          ///< variable to add upon
-          ) const;
+      void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
+          double& shearmod                  ///< variable to add upon
+          ) const override;
 
       //@}
 
       /// Answer if coefficients with respect to principal stretches are provided
-      virtual bool HaveCoefficientsStretchesPrincipal() { return true; }
+      bool HaveCoefficientsStretchesPrincipal() override { return true; }
 
 
       /// Add coefficients with respect to principal stretches (or zeros)
-      virtual void AddCoefficientsStretchesPrincipal(
+      void AddCoefficientsStretchesPrincipal(
           LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
           LINALG::Matrix<6, 1>&
               delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
           const LINALG::Matrix<3, 1>&
               prstr  ///< principal stretches, [lambda_1, lambda_2, lambda_3]
-      );
+          ) override;
 
       /// add the derivatives of a coupled strain energy functions associated with a purely
       /// isochoric deformation
-      virtual void AddCoupDerivVol(
-          const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
+      void AddCoupDerivVol(
+          const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override
       {
         dserror("not implemented");
       }
@@ -141,13 +141,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         return;
       };

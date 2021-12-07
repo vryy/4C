@@ -20,7 +20,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::IsoRateDep::IsoRateDep(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), n_(matdata->GetDouble("N"))
 {
 }

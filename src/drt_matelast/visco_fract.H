@@ -33,10 +33,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        Fract(Teuchos::RCP<MAT::PAR::Material> matdata);
+        Fract(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~Fract() { ; }
+        ~Fract() override { ; }
 
         /// @name material parameters
         //@{
@@ -56,7 +56,7 @@ namespace MAT
         /// Function stays empty, since the call within the material factory is done only
         /// respective the elasthyper class
         ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -102,17 +102,17 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_fract; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_fract; }
 
       //@}
 
       /// Read material parameters
-      virtual void ReadMaterialParametersVisco(double& tau,  ///< relaxation parameter tau
-          double& beta,   ///< emphasis of viscous to elastic part
+      void ReadMaterialParametersVisco(double& tau,  ///< relaxation parameter tau
+          double& beta,                              ///< emphasis of viscous to elastic part
           double& alpha,  ///< fractional order derivative (just for visoc_fract)
           std::string&
               solve  //!< variant of the solution of the evolution integral (just for genmax)
-      );
+          ) override;
 
       /// @name Access methods
       //@{
@@ -123,26 +123,26 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         viscogeneral = true;
         return;
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      virtual void SpecifyViscoFormulation(
+      void SpecifyViscoFormulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
                                          ///< according to the generalized Maxwell Model
           bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
-      )
+          ) override
       {
         viscofract = true;
         return;

@@ -23,7 +23,7 @@ The input line should read
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       a_(matdata->GetDouble("A")),
       b_(matdata->GetDouble("B")),

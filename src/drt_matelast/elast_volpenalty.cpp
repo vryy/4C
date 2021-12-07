@@ -21,7 +21,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::VolPenalty::VolPenalty(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::VolPenalty::VolPenalty(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), eps_(matdata->GetDouble("EPSILON")), gam_(matdata->GetDouble("GAMMA"))
 {
   if (eps_ < 0. || gam_ <= 0.)
