@@ -12,6 +12,7 @@
 #include "../drt_adapter/adapter_coupling.H"
 
 #include "../drt_lib/drt_discret.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "../drt_mat/electrode.H"
 #include "../drt_mat/soret.H"
@@ -20,12 +21,14 @@
 
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode.H"
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
+#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
 #include "../drt_scatra_ele/scatra_ele_boundary_calc_sti_electrode.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_elch.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_timint.H"
 #include "../drt_scatra_ele/scatra_ele_parameter_boundary.H"
 
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_sparseoperator.H"
 #include "../linalg/linalg_solver.H"
 
 /*----------------------------------------------------------------------*
@@ -149,6 +152,210 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying()
   SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying();
 }  // SCATRA::MeshtyingStrategyS2IElch::EvaluateMeshtying
 
+/*-----------------------------------------------------------------------*
+ *-----------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
+{
+  // extract multi-scale coupling conditions
+  // loop over conditions
+  for (const auto& slave_condition : KineticsConditionsMeshtyingSlaveSide())
+  {
+    auto* cond_slave = slave_condition.second;
+
+    // only evaluate point coupling conditions
+    if (cond_slave->GType() != DRT::Condition::GeometryType::Point) continue;
+
+    auto* cond_master = MasterConditions()[slave_condition.first];
+
+    // extract nodal cloud
+    const std::vector<int>* const nodeids_slave = cond_slave->Nodes();
+    const std::vector<int>* const nodeids_master = cond_master->Nodes();
+
+    if (nodeids_slave->size() != 1 or nodeids_master->size() != 1)
+      dserror("only one node per condition allowed");
+
+    const int nodeid_slave = (*nodeids_slave)[0];
+    const int nodeid_master = (*nodeids_master)[0];
+
+    auto dis = scatratimint_->Discretization();
+
+    auto* slave_node = dis->gNode(nodeid_slave);
+    auto* master_node = dis->gNode(nodeid_master);
+
+    // extract degrees of freedom from node
+    const std::vector<int> slave_dofs = dis->Dof(0, slave_node);
+    const std::vector<int> master_dofs = dis->Dof(0, master_node);
+
+    const int ed_conc_gid = slave_dofs[0];
+    const int ed_pot_gid = slave_dofs[1];
+    const int el_conc_gid = master_dofs[0];
+    const int el_pot_gid = master_dofs[1];
+
+    auto dof_row_map = scatratimint_->DofRowMap();
+    const int ed_conc_lid = dof_row_map->LID(ed_conc_gid);
+    const int ed_pot_lid = dof_row_map->LID(ed_pot_gid);
+    const int el_conc_lid = dof_row_map->LID(el_conc_gid);
+    const int el_pot_lid = dof_row_map->LID(el_pot_gid);
+
+    // extract electrode-side and electrolyte-side values at coupling point
+    auto phinp = scatratimint_->Phinp();
+    const double ed_conc = (*phinp)[ed_conc_lid];
+    const double ed_pot = (*phinp)[ed_pot_lid];
+    const double el_conc = (*phinp)[el_conc_lid];
+    const double el_pot = (*phinp)[el_pot_lid];
+
+    // compute matrix and vector contributions according to kinetic model for current point coupling
+    // condition
+    const int kinetic_model = cond_slave->GetInt("kinetic model");
+    switch (kinetic_model)
+    {
+      case INPAR::S2I::kinetics_butlervolmer:
+      case INPAR::S2I::kinetics_butlervolmerreduced:
+      {
+        // access material of electrode
+        auto matelectrode =
+            Teuchos::rcp_dynamic_cast<const MAT::Electrode>(slave_node->Elements()[0]->Material());
+        if (matelectrode == Teuchos::null)
+          dserror("Invalid electrode material for multi-scale coupling!");
+
+        // access input parameters associated with current condition
+        const int nume = cond_slave->GetInt("e-");
+        if (nume != 1)
+        {
+          dserror(
+              "Invalid number of electrons involved in charge transfer at "
+              "electrode-electrolyte interface!");
+        }
+        const std::vector<int>* stoichiometries =
+            cond_slave->GetMutable<std::vector<int>>("stoichiometries");
+        if (stoichiometries == nullptr)
+        {
+          dserror(
+              "Cannot access vector of stoichiometric coefficients for multi-scale "
+              "coupling!");
+        }
+        if (stoichiometries->size() != 1)
+          dserror("Number of stoichiometric coefficients does not match number of scalars!");
+        if ((*stoichiometries)[0] != -1) dserror("Invalid stoichiometric coefficient!");
+        const double faraday =
+            DRT::Problem::Instance(0)->ELCHControlParams().get<double>("FARADAY_CONSTANT");
+        const double gasconstant =
+            DRT::Problem::Instance(0)->ELCHControlParams().get<double>("GAS_CONSTANT");
+        const double frt =
+            faraday / (gasconstant * (DRT::Problem::Instance(0)->ELCHControlParams().get<double>(
+                                         "TEMPERATURE")));
+        const double alphaa = cond_slave->GetDouble("alpha_a");
+        const double alphac = cond_slave->GetDouble("alpha_c");
+        const double kr = cond_slave->GetDouble("k_r");
+        if (kr < 0.0) dserror("Charge transfer constant k_r is negative!");
+
+        // extract saturation value of intercalated lithium concentration from electrode material
+        const double cmax = matelectrode->CMax();
+        if (cmax < 1.0e-12)
+          dserror("Saturation value c_max of intercalated lithium concentration is too small!");
+
+        // compute domain integration factor
+        constexpr double four_pi = 4.0 * M_PI;
+        const double fac = DRT::INPUT::IntegralValue<bool>(
+                               *scatratimint_->ScatraParameterList(), "SPHERICALCOORDS")
+                               ? *slave_node->X() * *slave_node->X() * four_pi
+                               : 1.0;
+        const double timefacfac =
+            DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFac() * fac;
+        const double timefacrhsfac =
+            DRT::ELEMENTS::ScaTraEleParameterTimInt::Instance(dis->Name())->TimeFacRhs() * fac;
+        if (timefacfac < 0.0 or timefacrhsfac < 0.0) dserror("Integration factor is negative!");
+
+        // equilibrium electric potential difference and its derivative w.r.t. concentration
+        // at electrode surface
+        const double epd = matelectrode->ComputeOpenCircuitPotential(ed_conc, faraday, frt);
+        const double epdderiv =
+            matelectrode->ComputeFirstDerivOpenCircuitPotentialConc(ed_conc, faraday, frt);
+
+        // overpotential
+        const double eta = ed_pot - el_pot - epd;
+
+        // Butler-Volmer exchange mass flux density
+        const double j0 =
+            cond_slave->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
+                ? kr
+                : kr * std::pow(el_conc, alphaa) * std::pow(cmax - ed_conc, alphaa) *
+                      std::pow(ed_conc, alphac);
+
+        // exponential Butler-Volmer terms
+        const double expterm1 = std::exp(alphaa * frt * eta);
+        const double expterm2 = std::exp(-alphac * frt * eta);
+        const double expterm = expterm1 - expterm2;
+
+        // safety check
+        if (std::abs(expterm) > 1.0e5)
+        {
+          dserror(
+              "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
+              "%lf",
+              expterm);
+        }
+
+        // core residual term associated with Butler-Volmer mass flux density
+        const double j = j0 * expterm;
+
+        // initialize a dummy resistance as the method below requires a resistance which is not
+        // relevant in this case
+        const double dummyresistance(0.0);
+        // define flux linearization terms
+        double dj_ded_conc(0.0), dj_del_conc(0.0), dj_ded_pot(0.0), dj_del_pot(0.0);
+        // calculate flux linearizations
+        DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
+            CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
+                alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc, ed_conc, cmax,
+                dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
+
+        // assemble concentration residuals
+        auto residual = scatratimint_->Residual();
+        (*residual)[ed_conc_lid] -= timefacrhsfac * j;
+        (*residual)[el_conc_lid] -= timefacrhsfac * j * -1.0;
+
+        // assemble potential residuals
+        (*residual)[ed_pot_lid] -= timefacrhsfac * nume * j;
+        (*residual)[el_pot_lid] -= timefacrhsfac * nume * j * -1.0;
+
+        // assemble concentration linearizations
+        auto sys_mat = scatratimint_->SystemMatrixOperator();
+        sys_mat->Assemble(timefacfac * dj_ded_conc, ed_conc_gid, ed_conc_gid);
+        sys_mat->Assemble(timefacfac * dj_del_conc, ed_conc_gid, el_conc_gid);
+        sys_mat->Assemble(timefacfac * dj_ded_pot, ed_conc_gid, ed_pot_gid);
+        sys_mat->Assemble(timefacfac * dj_del_pot, ed_conc_gid, el_pot_gid);
+
+        sys_mat->Assemble(timefacfac * dj_ded_conc * -1.0, el_conc_gid, ed_conc_gid);
+        sys_mat->Assemble(timefacfac * dj_del_conc * -1.0, el_conc_gid, el_conc_gid);
+        sys_mat->Assemble(timefacfac * dj_ded_pot * -1.0, el_conc_gid, ed_pot_gid);
+        sys_mat->Assemble(timefacfac * dj_del_pot * -1.0, el_conc_gid, el_pot_gid);
+
+        // assemble potential linearizations
+        sys_mat->Assemble(timefacfac * nume * dj_ded_conc, ed_pot_gid, ed_conc_gid);
+        sys_mat->Assemble(timefacfac * nume * dj_del_conc, ed_pot_gid, el_conc_gid);
+        sys_mat->Assemble(timefacfac * nume * dj_ded_pot, ed_pot_gid, ed_pot_gid);
+        sys_mat->Assemble(timefacfac * nume * dj_del_pot, ed_pot_gid, el_pot_gid);
+
+        sys_mat->Assemble(timefacfac * nume * dj_ded_conc * -1.0, el_pot_gid, ed_conc_gid);
+        sys_mat->Assemble(timefacfac * nume * dj_del_conc * -1.0, el_pot_gid, el_conc_gid);
+        sys_mat->Assemble(timefacfac * nume * dj_ded_pot * -1.0, el_pot_gid, ed_pot_gid);
+        sys_mat->Assemble(timefacfac * nume * dj_del_pot * -1.0, el_pot_gid, el_pot_gid);
+
+        break;
+      }
+      case INPAR::S2I::kinetics_nointerfaceflux:
+        break;
+
+      default:
+      {
+        dserror("Kinetic model for s2i coupling not yet implemented!");
+        break;
+      }
+    }
+  }
+}
+
 /*------------------------------------------------------------------------*
  | instantiate strategy for Newton-Raphson convergence check   fang 02/16 |
  *------------------------------------------------------------------------*/
@@ -158,6 +365,11 @@ void SCATRA::MeshtyingStrategyS2IElch::InitConvCheckStrategy()
       couplingtype_ == INPAR::S2I::coupling_mortar_saddlepoint_bubnov)
   {
     convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyS2ILMElch(
+        scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
+  }
+  else if (ElchTimInt()->MacroScale())
+  {
+    convcheckstrategy_ = Teuchos::rcp(new SCATRA::ConvCheckStrategyStdMacroScaleElch(
         scatratimint_->ScatraParameterList()->sublist("NONLINEAR")));
   }
   else

@@ -2304,12 +2304,11 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
     DRT::Element* actele = macro_dis->lColElement(i);
     Teuchos::RCP<MAT::Material> actmat = actele->Material();
 
-    if (id_elch != -1)
+    if (id_elch != -1 and actmat->MaterialType() == INPAR::MAT::m_elchmat)
     {
       // extract wrapped material
-      const Teuchos::RCP<const MAT::ElchMat> elchmat =
-          Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(actmat);
-      const Teuchos::RCP<const MAT::ElchPhase> elchphase =
+      auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(actmat);
+      auto elchphase =
           Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
       actmat = elchphase->MatById(elchphase->MatID(0));
     }

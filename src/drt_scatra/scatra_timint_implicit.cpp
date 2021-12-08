@@ -2491,6 +2491,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
 
   // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
   if (micro_scale_) EvaluateMacroMicroCoupling();
+  strategy_->EvaluatePointCoupling();
 }
 
 /*----------------------------------------------------------------------------*
@@ -3634,6 +3635,36 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   DRT::AssembleStrategy strategy(nds_micro_, nds_micro_, Teuchos::null, Teuchos::null, phinp_micro_,
       Teuchos::null, Teuchos::null);
   discret_->Evaluate(eleparams, strategy);
+
+  // copy states from first dof of MAT_Electrode
+  for (int ele_lid = 0; ele_lid < discret_->ElementRowMap()->NumMyElements(); ++ele_lid)
+  {
+    const int ele_gid = discret_->ElementRowMap()->GID(ele_lid);
+    auto* ele = discret_->gElement(ele_gid);
+
+    if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode) continue;
+
+    auto* nodes = ele->Nodes();
+
+    for (int node_lid = 0; node_lid < ele->NumNode(); ++node_lid)
+    {
+      // micro and macro dofs at this node
+      auto* node = nodes[node_lid];
+      int dof_macro = discret_->Dof(0, node)[0];
+      int dof_micro = discret_->Dof(nds_micro_, node)[0];
+
+      const int dof_lid_micro = phinp_micro_->Map().LID(dof_micro);
+      const int dof_lid_macro = phinp_->Map().LID(dof_macro);
+
+      // only if owned by this proc
+      if (dof_lid_micro != -1 and dof_lid_macro != -1)
+      {
+        const double macro_value = (*phinp_)[dof_lid_macro];
+        // Sum, because afterwards it is divided by the number of adjacent nodes
+        phinp_micro_->SumIntoMyValue(dof_lid_micro, 0, macro_value);
+      }
+    }
+  }
 
   // divide nodal values by number of adjacent elements (due to assembly)
   const auto* node_row_map = discret_->NodeRowMap();

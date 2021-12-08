@@ -139,6 +139,12 @@ void INPAR::S2I::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // scatra-scatra interface kinetics condition
   {
+    // definition of scatra-scatra interface kinetics point condition
+    auto s2ikineticspoint =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS POINT CONDITIONS", "S2IKinetics",
+            "Scatra-scatra line interface kinetics", DRT::Condition::S2IKinetics, true,
+            DRT::Condition::Point));
+
     // definition of scatra-scatra interface kinetics line condition
     auto s2ikineticsline =
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS LINE CONDITIONS", "S2IKinetics",
@@ -527,11 +533,13 @@ void INPAR::S2I::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& s2icomponent : s2icomponents)
     {
+      s2ikineticspoint->AddComponent(s2icomponent);
       s2ikineticsline->AddComponent(s2icomponent);
       s2ikineticssurf->AddComponent(s2icomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
+    condlist.emplace_back(s2ikineticspoint);
     condlist.emplace_back(s2ikineticsline);
     condlist.emplace_back(s2ikineticssurf);
 

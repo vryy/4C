@@ -193,6 +193,9 @@ namespace SCATRA
       return kinetics_conditions_meshtying_slaveside_;
     }
 
+    //! corresponding master conditions to kinetics condiditions
+    std::map<const int, DRT::Condition* const>& MasterConditions() { return master_conditions_; }
+
     //! return vector of Lagrange multiplier dofs
     const Teuchos::RCP<const Epetra_Vector> LM() const { return lm_; };
 
@@ -670,6 +673,9 @@ namespace SCATRA
 
     //! slave-side scatra-scatra interface kinetics conditions applied to a mesh tying interface
     std::map<const int, DRT::Condition* const> kinetics_conditions_meshtying_slaveside_;
+
+    //! corresponding master conditions to kinetics condiditions
+    std::map<const int, DRT::Condition* const> master_conditions_;
 
     //! flag for evaluation of interface linearizations and residuals on slave side only
     bool slaveonly_;

@@ -29,8 +29,7 @@
 #include "../drt_lib/drt_utils_gid_vector.H"
 #include "../drt_lib/drt_utils_vector.H"
 
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_parameter.H"
+#include "../drt_mat/electrode.H"
 
 #include "../drt_mortar/mortar_coupling3d_classes.H"
 #include "../drt_mortar/mortar_interface.H"
@@ -321,7 +320,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       for (auto kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
       {
         if (kinetics_slave_cond.second->GetInt("kinetic model") !=
-            static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
+                static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux) and
+            kinetics_slave_cond.second->GType() != DRT::Condition::GeometryType::Point)
         {
           // collect condition specific data and store to scatra boundary parameter class
           SetConditionSpecificScaTraParameters(*kinetics_slave_cond.second);
@@ -1760,7 +1760,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
   std::vector<DRT::Condition*> s2ikinetics_conditions(0, nullptr);
   scatratimint_->Discretization()->GetCondition("S2IKinetics", s2ikinetics_conditions);
   kinetics_conditions_meshtying_slaveside_.clear();
-  std::map<const int, DRT::Condition* const> masterconditions;
+  master_conditions_.clear();
   for (auto* s2imeshtying_cond : s2imeshtying_conditions)
   {
     for (auto* s2ikinetics_cond : s2ikinetics_conditions)
@@ -1798,9 +1798,9 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         case INPAR::S2I::side_master:
         {
-          if (masterconditions.find(s2ikinetics_cond_id) == masterconditions.end())
+          if (master_conditions_.find(s2ikinetics_cond_id) == master_conditions_.end())
           {
-            masterconditions.insert(std::make_pair(s2ikinetics_cond_id, s2ikinetics_cond));
+            master_conditions_.insert(std::make_pair(s2ikinetics_cond_id, s2ikinetics_cond));
           }
           else
           {
@@ -1832,12 +1832,15 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // to prevent them from being evaluated when calling EvaluateCondition on the discretization
       // TODO: this is somewhat unclean, because changing the conditions, makes calling
       // SetupMeshtying() twice invalid (which should not be necessary, but conceptually possible)
-      for (auto& mastercondition : masterconditions) mastercondition.second->Add("ConditionID", -1);
+      for (auto& mastercondition : master_conditions_)
+        mastercondition.second->Add("ConditionID", -1);
 
       if (scatratimint_->NumScal() < 1) dserror("Number of transported scalars not correctly set!");
 
       // construct new (empty coupling adapter)
       icoup_ = Teuchos::rcp(new ADAPTER::Coupling());
+
+      int num_dof_per_condition = -1;
 
       // initialize int vectors for global ids of slave and master interface nodes
       if (indepedent_setup_of_conditions_)
@@ -1853,14 +1856,20 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           const int kineticsID = kinetics_slave_cond.first;
           auto* kinetics_condition = kinetics_slave_cond.second;
 
+          if (num_dof_per_condition == -1)
+            num_dof_per_condition = scatratimint_->NumDofPerNodeInCondition(*kinetics_condition);
+          else if (num_dof_per_condition !=
+                   scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
+            dserror("all S2I conditions must have the same number of dof per node");
+
           if (kinetics_condition->GetInt("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDVector(
                 scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
 
-            auto mastercondition = masterconditions.find(kineticsID);
-            if (mastercondition == masterconditions.end())
+            auto mastercondition = master_conditions_.find(kineticsID);
+            if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
 
             DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
@@ -1873,7 +1882,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec_cond, islavenodegidvec_cond,
-            scatratimint_->NumDofPerNode(), true, 1.0e-8);
+            num_dof_per_condition, true, 1.0e-8);
       }
       else
       {
@@ -1885,14 +1894,20 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
           const int kineticsID = kinetics_slave_cond.first;
           auto* kinetics_condition = kinetics_slave_cond.second;
 
+          if (num_dof_per_condition == -1)
+            num_dof_per_condition = scatratimint_->NumDofPerNodeInCondition(*kinetics_condition);
+          else if (num_dof_per_condition !=
+                   scatratimint_->NumDofPerNodeInCondition(*kinetics_condition))
+            dserror("all S2I conditions must have the same number of dof per node");
+
           if (kinetics_condition->GetInt("kinetic model") !=
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDVector(
                 scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
 
-            auto mastercondition = masterconditions.find(kineticsID);
-            if (mastercondition == masterconditions.end())
+            auto mastercondition = master_conditions_.find(kineticsID);
+            if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
             else
               DRT::UTILS::AddOwnedNodeGIDVector(scatratimint_->Discretization(),
@@ -1905,7 +1920,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,
-            scatratimint_->NumDofPerNode(), true, 1.0e-8);
+            num_dof_per_condition, true, 1.0e-8);
       }
 
       // generate interior and interface maps
@@ -1996,7 +2011,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
         // extract current slave-side and associated master-side scatra-scatra interface coupling
         // conditions
-        std::vector<DRT::Condition*> mastercondition(1, masterconditions[condid]);
+        std::vector<DRT::Condition*> mastercondition(1, master_conditions_[condid]);
         std::vector<DRT::Condition*> slavecondition(1, kinetics_slave_cond.second);
 
         // fill maps
