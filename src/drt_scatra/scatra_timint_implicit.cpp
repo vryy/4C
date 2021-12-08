@@ -61,6 +61,7 @@
 
 #include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -3208,7 +3209,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
         constexpr double four_pi = 4.0 * M_PI;
         const double fac = DRT::INPUT::IntegralValue<bool>(*params_, "SPHERICALCOORDS")
                                ? *node->X() * *node->X() * four_pi
-                               : 0.0;
+                               : 1.0;
 
         // extract degrees of freedom from node
         const std::vector<int> dofs = discret_->Dof(0, node);
@@ -3222,7 +3223,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          switch (condition->GetInt("kinetic model"))
+          const int kinetic_model = condition->GetInt("kinetic model");
+
+          switch (kinetic_model)
           {
             case INPAR::S2I::kinetics_constperm:
             {
@@ -3353,22 +3356,18 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               // core residual term associated with Butler-Volmer mass flux density
               q_ = j0 * expterm;
 
-              // core linearizations associated with Butler-Volmer mass flux density
-              const double dj_dc_ed =
-                  (condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
-                          ? 0.0
-                          : kr * std::pow(conc_el, alphaa) *
-                                std::pow(cmax - conc_ed, alphaa - 1.0) *
-                                std::pow(conc_ed, alphac - 1.0) *
-                                (-alphaa * conc_ed + alphac * (cmax - conc_ed)) * expterm) +
-                  j0 * (-alphaa * frt * epdderiv * expterm1 - alphac * frt * epdderiv * expterm2);
-              dq_dphi_[0] =
-                  condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
-                      ? 0.0
-                      : j0 * alphaa / conc_el * expterm;
-              dq_dphi_[1] =
-                  -j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);  // dj_dpot_el
-              dq_dphi_[2] = -dq_dphi_[1];                                     // dj_dpot_ed
+              const double dummyresistance(0.0);
+              // define flux linearization terms
+              double dj_dc_ed(0.0), dj_dc_el(0.0), dj_dpot_ed(0.0), dj_dpot_el(0.0);
+              // calculate flux linearizations
+              DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
+                  CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
+                      alphac, dummyresistance, expterm1, expterm2, kr, faraday, conc_el, conc_ed,
+                      cmax, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
+
+              dq_dphi_[0] = dj_dc_el;
+              dq_dphi_[1] = dj_dpot_el;
+              dq_dphi_[2] = dj_dpot_ed;
 
               // assemble contribution from macro-micro coupling into global residual vector
               (*residual_)[lid] -= timefacrhsfac * q_;
