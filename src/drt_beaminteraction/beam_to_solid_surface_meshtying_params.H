@@ -90,6 +90,15 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns the type of surface triad construction for rotational coupling.
+     */
+    inline INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling GetSurfaceTriadConstruction()
+        const
+    {
+      return rotational_coupling_triad_construction_;
+    }
+
+    /**
      * \brief Returns a pointer to the vtk output parameters.
      * @return Pointer to vtk output parameters.
      */
@@ -107,6 +116,9 @@ namespace BEAMINTERACTION
 
     //! Penalty parameter for rotational coupling.
     double rotational_coupling_penalty_parameter_;
+
+    //! Type of surface triad construction.
+    INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling rotational_coupling_triad_construction_;
   };
 
 }  // namespace BEAMINTERACTION

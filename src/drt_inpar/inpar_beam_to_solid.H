@@ -75,7 +75,7 @@ namespace INPAR
     };
 
     /**
-     * \brief Contact discretization for beam to solid interactions.
+     * \brief Volume triad construction for beam-to-solid volume rotational interactions.
      */
     enum class BeamToSolidRotationCoupling
     {
@@ -104,6 +104,21 @@ namespace INPAR
       //! 3D case with a construction based on the local e1 vector and minization of realitve
       //! angles.
       deformation_gradient_3d_base_1
+    };
+
+    /**
+     * \brief Surface triad construction for beam-to-solid surface rotational interactions.
+     */
+    enum class BeamToSolidSurfaceRotationCoupling
+    {
+      //! Default value.
+      none,
+      //! Construction based on the surface deformation gradient and the averaged vector
+      //! construction from the solid volume triads.
+      averaged,
+      //! Construction based on the surface material director obtained by intersection of the beam
+      //! cross-section with the solid surface.
+      surface_cross_section_director
     };
 
     /**

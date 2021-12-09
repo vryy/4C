@@ -22,7 +22,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingP
       coupling_type_(INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::none),
       output_params_ptr_(Teuchos::null),
       rotational_coupling_(false),
-      rotational_coupling_penalty_parameter_(-1.0)
+      rotational_coupling_penalty_parameter_(-1.0),
+      rotational_coupling_triad_construction_(
+          INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling::none)
 {
   // Empty Constructor.
 }
@@ -51,6 +53,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::Init()
         beam_to_solid_contact_params_list, "ROTATIONAL_COUPLING");
     rotational_coupling_penalty_parameter_ =
         beam_to_solid_contact_params_list.get<double>("ROTATIONAL_COUPLING_PENALTY_PARAMETER");
+    rotational_coupling_triad_construction_ =
+        Teuchos::getIntegralValue<INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling>(
+            beam_to_solid_contact_params_list, "ROTATIONAL_COUPLING_SURFACE_TRIAD");
 
     if (rotational_coupling_)
     {
