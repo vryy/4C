@@ -24,7 +24,8 @@ namespace INPAR
   namespace BEAMTOSOLID
   {
     enum class BeamToSolidMortarShapefunctions;
-  }
+    enum class BeamToSolidSurfaceRotationCoupling;
+  }  // namespace BEAMTOSOLID
   namespace GEOMETRYPAIR
   {
     enum class SurfaceNormals;
@@ -158,6 +159,7 @@ namespace BEAMINTERACTION
      * @param q_solid_ref (in) Solid position vector in the reference configuration
      * @param q_solid (in) Solid position vector in the current configuration
      * @param quaternion_beam_ref (in) Reference rotation of the beam.
+     * @param surface_triad_type (in) How the surface triad should be constructed.
      * @param psi_solid (out) Rotation vector on solid surface.
      * @param element (in) Pointer to the face element.
      */
@@ -166,6 +168,7 @@ namespace BEAMINTERACTION
         const LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
         const LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot>& q_solid,
         const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+        const INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling surface_triad_type,
         LINALG::Matrix<3, 1, scalar_type_rot>& psi_solid,
         const DRT::Element* element = nullptr) const;
 
