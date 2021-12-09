@@ -33,20 +33,13 @@ namespace MAT
         /// standard constructor
         CoupMooneyRivlin(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupMooneyRivlin() override { ; }
-
         /// @name material parameters
         //@{
 
         /// material parameters
-
-
         double c1_;
         double c2_;
         double c3_;
-
-
         //@}
 
         /// Override this method and throw error, as the material should be created in within the

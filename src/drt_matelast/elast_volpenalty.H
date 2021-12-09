@@ -35,9 +35,6 @@ namespace MAT
         /// standard constructor
         VolPenalty(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~VolPenalty() override { ; }
-
         /// @name material parameters
         //@{
 

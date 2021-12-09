@@ -34,9 +34,6 @@ namespace MAT
         /// standard constructor
         VolSussmanBathe(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~VolSussmanBathe() override { ; }
-
         /// @name material parameters
         //@{
 

@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         CoupAnisoNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupAnisoNeoHooke() override { ; }
-
         /// @name material parameters
         //@{
 

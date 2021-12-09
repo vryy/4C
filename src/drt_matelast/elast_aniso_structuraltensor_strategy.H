@@ -56,9 +56,6 @@ namespace MAT
         /// standard constructor
         StructuralTensorParameter(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~StructuralTensorParameter() override { ; }
-
         /// @name material parameters
         //@{
         double c1_;  //!< constant 1 for distribution function

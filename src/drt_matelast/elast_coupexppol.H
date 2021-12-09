@@ -35,9 +35,6 @@ namespace MAT
         /// standard constructor
         CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupExpPol() override { ; }
-
         /// @name material parameters
         //@{
         double a_;

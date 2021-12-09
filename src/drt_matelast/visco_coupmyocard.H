@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         CoupMyocard(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupMyocard() override { ; }
-
         /// @name material parameters
         //@{
 

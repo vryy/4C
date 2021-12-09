@@ -35,9 +35,6 @@ namespace MAT
         /// standard constructor
         Fract(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~Fract() override { ; }
-
         /// @name material parameters
         //@{
 

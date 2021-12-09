@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         IsoVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoVarga() override { ; }
-
         /// @name material parameters
         //@{
 

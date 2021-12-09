@@ -36,9 +36,6 @@ namespace MAT
         /// standard constructor
         VolOgden(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~VolOgden() override { ; }
-
         /// @name material parameters
         //@{
 

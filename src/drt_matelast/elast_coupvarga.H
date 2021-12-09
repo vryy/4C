@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupVarga() override { ; }
-
         /// @name material parameters
         //@{
 

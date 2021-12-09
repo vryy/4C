@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         IsoMooneyRivlin(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoMooneyRivlin() override { ; }
-
         /// @name material parameters
         //@{
 

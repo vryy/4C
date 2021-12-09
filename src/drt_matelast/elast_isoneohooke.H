@@ -34,9 +34,6 @@ namespace MAT
         /// standard constructor
         IsoNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoNeoHooke() override { ; }
-
         /// @name material parameters
         //@{
 

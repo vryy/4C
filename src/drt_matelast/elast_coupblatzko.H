@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupBlatzKo() override { ; }
-
         /// @name material parameters
         //@{
 

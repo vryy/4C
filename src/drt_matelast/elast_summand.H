@@ -73,9 +73,6 @@ namespace MAT
       /// standard constructor
       Summand() { ; }
 
-      /// destructor
-      virtual ~Summand() = default;
-
       ///@name Packing and Unpacking (dummy routines)
       //@{
 

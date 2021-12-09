@@ -37,9 +37,6 @@ namespace MAT
         /// standard constructor
         GenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~GenMax() override { ; }
-
         /// @name material parameters
         //@{
 

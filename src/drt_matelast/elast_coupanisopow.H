@@ -32,9 +32,6 @@ namespace MAT
         /// standard constructor
         CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupAnisoPow() override { ; }
-
         /// @name material parameters
         //@{
 

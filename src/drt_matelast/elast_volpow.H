@@ -35,9 +35,6 @@ namespace MAT
         /// standard constructor
         VolPow(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~VolPow() override { ; }
-
         /// @name material parameters
         //@{
 

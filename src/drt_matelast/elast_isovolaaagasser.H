@@ -53,9 +53,6 @@ namespace MAT
         /// standard constructor
         IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoVolAAAGasser() override { ; }
-
         /// @name material parameters
         //@{
 

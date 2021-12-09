@@ -66,9 +66,6 @@ namespace MAT
         /// standard constructor
         explicit CoupTransverselyIsotropic(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// default destructor
-        ~CoupTransverselyIsotropic() override = default;
-
         /// alpha parameter of the constitutive law
         double alpha_ = 0.0;
 

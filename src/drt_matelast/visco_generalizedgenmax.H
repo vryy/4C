@@ -69,9 +69,6 @@ namespace MAT
         /// standard constructor
         ViscoBranch(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~ViscoBranch() override { ; }
-
         /// @name material parameters
         //@{
 

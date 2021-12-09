@@ -35,9 +35,6 @@ namespace MAT
         /// standard constructor
         CoupSimoPister(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupSimoPister() override { ; }
-
         /// @name material parameters
         //@{
 

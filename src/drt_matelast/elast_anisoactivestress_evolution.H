@@ -35,9 +35,6 @@ namespace MAT
         /// standard constructor
         explicit AnisoActiveStress_Evolution(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~AnisoActiveStress_Evolution() override = default;
-
         /// @name material parameters
         //@{
 

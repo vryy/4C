@@ -27,9 +27,6 @@ namespace MAT
         /// standard constructor
         CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupSVK() override { ; }
-
         /// @name material parameters
         //@{
 

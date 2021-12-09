@@ -34,9 +34,6 @@ namespace MAT
         /// standard constructor
         IsoTestMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoTestMaterial() override { ; }
-
         /// @name material parameters
         //@{
 

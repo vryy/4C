@@ -60,9 +60,6 @@ namespace MAT
         /// standard constructor
         IsoVolHUDependentNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoVolHUDependentNeoHooke() override { ; }
-
         /// @name material parameters
         //@{
 

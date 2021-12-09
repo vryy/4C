@@ -289,9 +289,6 @@ namespace MAT
         /// standard constructor
         RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~RemodelFiber() override = default;
-
         /// length of material list
         const int nummat_;
 

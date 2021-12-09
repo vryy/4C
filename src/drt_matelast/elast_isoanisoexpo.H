@@ -32,9 +32,6 @@ namespace MAT
         /// standard constructor
         IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoAnisoExpo() override { ; }
-
         /// @name material parameters
         //@{
 

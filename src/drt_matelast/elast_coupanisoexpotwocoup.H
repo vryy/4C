@@ -33,9 +33,6 @@ namespace MAT
         /// constructor with given material parameters
         explicit CoupAnisoExpoTwoCoup(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupAnisoExpoTwoCoup() override = default;
-
         /// @name material parameters
         //@{
 

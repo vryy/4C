@@ -33,9 +33,6 @@ namespace MAT
         /// standard constructor
         IsoYeoh(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoYeoh() override { ; }
-
         /// @name material parameters
         //@{
 

@@ -34,9 +34,6 @@ namespace MAT
         /// standard constructor
         IsoRateDep(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~IsoRateDep() override { ; }
-
         /// @name material parameters
         //@{
 
