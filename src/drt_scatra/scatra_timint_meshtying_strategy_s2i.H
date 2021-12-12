@@ -205,9 +205,6 @@ namespace SCATRA
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
     const Teuchos::RCP<LINALG::SparseMatrix>& MasterMatrix() const { return imastermatrix_; };
 
-    //! return master dofs transformed to slave side of scatra-scatra interface
-    const Teuchos::RCP<const Epetra_Vector> MasterPhinp() const { return imasterphinp_; };
-
     //! return type of global system matrix in global system of equations
     const LINALG::MatrixType& MatrixType() const { return matrixtype_; };
 
@@ -328,6 +325,9 @@ namespace SCATRA
     //! case) or for linearizations of master fluxes w.r.t. slave and master dofs (mortar case)
     Teuchos::RCP<LINALG::SparseMatrix> imastermatrix_;
 
+    //! auxiliary system matrix for linearizations of master fluxes w.r.t. slave dofs
+    Teuchos::RCP<LINALG::SparseMatrix> imasterslavematrix_;
+
     //! flag for meshtying method
     const INPAR::S2I::CouplingType couplingtype_;
 
@@ -370,8 +370,14 @@ namespace SCATRA
     //! auxiliary residual vector for master residuals
     Teuchos::RCP<Epetra_FEVector> imasterresidual_;
 
+    //! time derivative of slave dofs of scatra-scatra interface
+    Teuchos::RCP<Epetra_Vector> islavephidtnp_;
+
+    //! time derivative of master dofs transformed to slave side of scatra-scatra interface
+    Teuchos::RCP<Epetra_Vector> imasterphidt_on_slave_side_np_;
+
     //! master dofs transformed to slave side of scatra-scatra interface
-    Teuchos::RCP<Epetra_Vector> imasterphinp_;
+    Teuchos::RCP<Epetra_Vector> imasterphi_on_slave_side_np_;
 
     //! flag for interface side underlying Lagrange multiplier definition
     const INPAR::S2I::InterfaceSides lmside_;
@@ -460,6 +466,10 @@ namespace SCATRA
 
     //! build map extractors associated with blocks of global system matrix
     void BuildBlockMapExtractors();
+
+    //! evaluate and assemble all contributions due to capacitive fluxes at the scatra-scatra
+    //! interface
+    void EvaluateAndAssembleCapacitiveContributions();
 
     /*!
      * @brief  evaluate single mortar integration cell
@@ -667,6 +677,9 @@ namespace SCATRA
         const INPAR::S2I::InterfaceSides vector1_side,
         const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
         const INPAR::S2I::InterfaceSides vector2_side) const;
+
+    //! flag indicating if we have capacitive interface flux contributions
+    bool has_capacitive_contributions_;
 
     //! slave-side scatra-scatra interface kinetics conditions applied to a mesh tying interface
     std::map<const int, DRT::Condition* const> kinetics_conditions_meshtying_slaveside_;
@@ -1127,24 +1140,6 @@ namespace SCATRA
         DRT::Element::LocationArray& la_slave,  //!< slave-side location array
         DRT::Element::LocationArray& la_master  //!< master-side location array
     );
-
-    //! return system matrix 1
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix1() const { return systemmatrix1_; };
-
-    //! return system matrix 2
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix2() const { return systemmatrix2_; };
-
-    //! return system matrix 3
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix3() const { return systemmatrix3_; };
-
-    //! return system matrix 4
-    const Teuchos::RCP<LINALG::SparseOperator>& SystemMatrix4() const { return systemmatrix4_; };
-
-    //! return system vector 1
-    const Teuchos::RCP<Epetra_MultiVector>& SystemVector1() const { return systemvector1_; };
-
-    //! return system vector 2
-    const Teuchos::RCP<Epetra_MultiVector>& SystemVector2() const { return systemvector2_; };
 
    private:
     /*!

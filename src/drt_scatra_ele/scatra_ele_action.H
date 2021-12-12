@@ -131,14 +131,18 @@ namespace SCATRA
     bd_calc_mass_matrix,
     bd_calc_Neumann_inflow,
     bd_calc_normal_vectors,
-    bd_calc_Robin,                     ///< Robin boundary condition
-    bd_calc_s2icoupling,               ///< evaluate scatra-scatra interface coupling conditions
-    bd_calc_s2icoupling_growthgrowth,  ///< evaluate global growth-growth matrix block for
-                                       ///< scatra-scatra interface coupling involving interface
-                                       ///< layer growth
-    bd_calc_s2icoupling_growthscatra,  ///< evaluate global growth-scatra matrix block for
-                                       ///< scatra-scatra interface coupling involving interface
-                                       ///< layer growth
+    bd_calc_Robin,                       ///< Robin boundary condition
+    bd_calc_s2icoupling,                 ///< evaluate scatra-scatra interface coupling conditions
+    bd_calc_s2icoupling_capacitance,     ///< evaluate capacitance part of scatra-scatra interface
+                                         ///< coupling conditions
+    bd_calc_s2icoupling_capacitance_od,  ///< evaluate derivatives of scatra-scatra interface
+                                         ///< coupling capacitance conditions w.r.t. secondary dofs
+    bd_calc_s2icoupling_growthgrowth,    ///< evaluate global growth-growth matrix block for
+                                         ///< scatra-scatra interface coupling involving interface
+                                         ///< layer growth
+    bd_calc_s2icoupling_growthscatra,    ///< evaluate global growth-scatra matrix block for
+                                         ///< scatra-scatra interface coupling involving interface
+                                         ///< layer growth
     bd_calc_s2icoupling_od,            ///< evaluate derivatives of scatra-scatra interface coupling
                                        ///< conditions w.r.t. secondary dofs
     bd_calc_s2icoupling_scatragrowth,  ///< evaluate global scatra-growth matrix block for

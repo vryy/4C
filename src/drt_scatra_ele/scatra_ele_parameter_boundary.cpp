@@ -75,6 +75,7 @@ DRT::ELEMENTS::ScaTraEleParameterBoundary::ScaTraEleParameterBoundary(const std:
       regularizationtype_(INPAR::S2I::RegularizationType::regularization_undefined),
       resistance_(0.0),
       resistivity_(0.0),
+      capacitance_(0.0),
       stoichiometries_(nullptr),
       thermoperm_(-1.0)
 {
@@ -117,6 +118,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
 
         case INPAR::S2I::kinetics_butlervolmer:
         case INPAR::S2I::kinetics_butlervolmerreduced:
+        case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
@@ -127,6 +129,10 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
           SetNumElectrons(parameters);
           SetNumScal(parameters);
           SetStoichiometries(parameters);
+          if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
+          {
+            SetCapacitance(parameters);
+          }
           if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerpeltier)
             SetPeltier(parameters);
           else if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerresistance or
@@ -135,7 +141,6 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
             SetConvTolIterNum(parameters);
             SetResistance(parameters);
           }
-
           if (kineticmodel_ == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)
           {
             SetEnergySubstanceRatio(parameters);
@@ -307,6 +312,14 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetResistivity(Teuchos::Paramete
 {
   resistivity_ = 1.0 / (parameters.get<double>("conductivity", -1.0));
   if (resistivity_ <= 0.0) dserror("Conductivity must be positive");
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetCapacitance(Teuchos::ParameterList& parameters)
+{
+  capacitance_ = parameters.get<double>("capacitance", -1.0);
+  if (capacitance_ <= 0.0) dserror("Capacitance must be positive");
 }
 
 /*----------------------------------------------------------------------*

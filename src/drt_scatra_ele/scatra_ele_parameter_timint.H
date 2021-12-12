@@ -30,27 +30,21 @@ namespace DRT
      public:
       //! singleton access method
       static ScaTraEleParameterTimInt* Instance(
-          const std::string& disname,                       //!< name of discretization
-          const ScaTraEleParameterTimInt* delete_me = NULL  //!< creation/destruction indication
+          const std::string& disname,                          //!< name of discretization
+          const ScaTraEleParameterTimInt* delete_me = nullptr  //!< creation/destruction indication
       );
 
       //! Singleton destruction method called from global problem
-      void Done();
-
-      //! dtor
-      ~ScaTraEleParameterTimInt() {}
+      void Done() override;
 
       //! set parameters
-      void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
-
-      //! print parameters to screen
-      void PrintScaTraTimeParameter();
+      void SetParameters(Teuchos::ParameterList& parameters) override;
 
       bool IsGenAlpha() const { return is_genalpha_; };
       bool IsStationary() const { return is_stationary_; };
       bool IsIncremental() const { return is_incremental_; };
       double Time() const { return time_; };
+      double TimeDerivativeFac() const { return timederivativefac_; }
       double Dt() const { return dt_; };
       double TimeFac() const { return timefac_; };
       double TimeFacRhs() const { return timefacrhs_; };
@@ -65,6 +59,7 @@ namespace DRT
       bool is_stationary_;
       bool is_incremental_;
       double time_;
+      double timederivativefac_;
       double dt_;
       double timefac_;
       double timefacrhs_;

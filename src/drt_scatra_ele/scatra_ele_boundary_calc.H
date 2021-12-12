@@ -85,7 +85,7 @@ namespace DRT
       /*----------------------------------------------------------------------*/
       //! compute largest element diameter for reinitialization pseudo time step size
       template <DRT::Element::DiscretizationType pdistype, class M1>
-      double getEleDiameter(const M1& xyze)
+      double GetEleDiameter(const M1& xyze)
       {
         double elediam = 0.0;
 
@@ -201,11 +201,7 @@ namespace DRT
 
      private:
       // add nodal displacements to point coordinates
-      void UpdateNodeCoordinates()
-      {
-        xyze_ += edispnp_;
-        return;
-      };
+      void UpdateNodeCoordinates() { xyze_ += edispnp_; };
 
      protected:
       //! Constructor
@@ -237,6 +233,26 @@ namespace DRT
           Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
 
+      /*!
+       * @brief evaluate flux due to capacitance of scatra-scatra interface coupling condition
+       *
+       * @param[in] discretization   discretization
+       * @param[in] la               location array
+       * @param[out] eslavematrix    element matrix for slave side, i.e. slave-side residuals w.r.t.
+       *                             slave-side dofs
+       * @param[out] emastermatrix   element matrix for master side, i.e. master-side residuals
+       *                             w.r.t. slave-side dofs
+       * @param[out] eslaveresidual  element residual due to capacitive flux at slave side
+       * @param[out] emasterresidual element residual due to capacitive flux at master side
+       */
+      virtual void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
+          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+          Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual,
+          Epetra_SerialDenseVector& emasterresidual)
+      {
+        dserror("not yet implemented!");
+      };
+
       //! evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
       //! coupling condition
       virtual void EvaluateS2ICouplingOD(const DRT::FaceElement* ele,  ///< current boundary element
@@ -246,27 +262,43 @@ namespace DRT
           Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
+      virtual void EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix)
+      {
+        dserror("not yet implemented");
+      };
+
       //! extract nodal state variables associated with boundary element
       virtual void ExtractNodeValues(const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la                                        //!< location array
       );
 
-      //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(LINALG::Matrix<nen_, 1>& estate,  //!< nodal state variables
-          const DRT::Discretization& discretization,           //!< discretization
-          DRT::Element::LocationArray& la,                     //!< location array
-          const std::string& statename = "phinp",              //!< name of relevant state
-          const int& nds = 0                                   //!< number of relevant dofset
-          ) const;
+      /*!
+       * @brief extract nodal state variables associated with boundary element
+       *
+       * @param estate          nodal state variables
+       * @param discretization  discretization
+       * @param la              location array
+       * @param statename       name of relevant state
+       * @param nds             number of relevant dofset
+       */
+      void ExtractNodeValues(LINALG::Matrix<nen_, 1>& estate,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          const std::string& statename = "phinp", const int& nds = 0) const;
 
-      //! extract nodal state variables associated with boundary element
-      void ExtractNodeValues(
-          std::vector<LINALG::Matrix<nen_, 1>>& estate,  //!< nodal state variables
-          const DRT::Discretization& discretization,     //!< discretization
-          DRT::Element::LocationArray& la,               //!< location array
-          const std::string& statename = "phinp",        //!< name of relevant state
-          const int& nds = 0                             //!< number of relevant dofset
-          ) const;
+      /*!
+       * @brief extract nodal state variables associated with boundary element
+       *
+       * @param estate          nodal state variables
+       * @param discretization  discretization
+       * @param la              location array
+       * @param statename       name of relevant state
+       * @param nds             number of relevant dofset
+       */
+      void ExtractNodeValues(std::vector<LINALG::Matrix<nen_, 1>>& estate,
+          const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          const std::string& statename = "phinp", const int& nds = 0) const;
 
       //! calculate boundary integral, i.e., surface area of boundary element
       void CalcBoundaryIntegral(const DRT::FaceElement* ele,  //!< the element we are dealing with
@@ -304,6 +336,8 @@ namespace DRT
       );
 
       //! computes the factor for the wall shear stress dependent interface flux
+      //! @note: Calculated as in Calvez, V., "Mathematical and numerical modeling of early
+      //!        atherosclerotic lesions",ESAIM: Proceedings. Vol. 30. EDP Sciences, 2010
       double WSSinfluence(
           const LINALG::Matrix<nsd_ + 1, nen_>& ewss,  ///< vector of euclidean norm of shear stress
                                                        ///< tensor of each node of the element

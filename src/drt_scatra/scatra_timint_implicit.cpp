@@ -510,7 +510,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // -------------------------------------------------------------------
   // preparations for natural convection
   // -------------------------------------------------------------------
-  if (DRT::INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION") == true)
+  if (static_cast<bool>(DRT::INPUT::IntegralValue<int>(*params_, "NATURAL_CONVECTION")))
   {
     // allocate global density vector and initialize
     densafnp_ = LINALG::CreateVector(*discret_->DofRowMap(), true);
@@ -2833,6 +2833,7 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // compute values at the interior of the elements (required for hdg)
     ComputeInteriorValues();
 
+    ComputeTimeDerivative();
   }  // nonlinear iteration
 
   // calculate mean concentration of micro discretization and set state to nds_micro_

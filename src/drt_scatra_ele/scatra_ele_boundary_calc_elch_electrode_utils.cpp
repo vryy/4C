@@ -29,6 +29,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   {
     case INPAR::S2I::kinetics_butlervolmerreduced:
     case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
+    case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
     {
       dj_dc_slave = j0 * frt * epdderiv * (-alphaa * expterm1 - alphac * expterm2);
       dj_dc_master = 0.0;
@@ -145,9 +146,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
   if (std::abs(expterm) > 1.0e5)
   {
     dserror(
-        "Overflow of exponential term in Butler-Volmer formulation detected! Value: "
-        "%lf",
-        expterm);
+        "Overflow of exponential term in Butler-Volmer formulation detected! Value: %lf", expterm);
   }
 
   // core linearization associated with Butler-Volmer mass flux density
@@ -192,8 +191,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
       // convergence check
       if (std::abs(residual) < convtol)
+      {
         break;
-
+      }
       else if (iternum == itemax)
         dserror(
             "Local Newton-Raphson iteration for Butler-Volmer current density did not converge!");
@@ -217,5 +217,6 @@ bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsReducedButlerVolm
 {
   return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedresistance or
-          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance);
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedthermoresistance or
+          kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance);
 }

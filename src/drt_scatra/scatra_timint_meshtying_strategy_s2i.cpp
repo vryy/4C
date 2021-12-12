@@ -75,6 +75,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavenodeslumpedareas_(),
       islavematrix_(Teuchos::null),
       imastermatrix_(Teuchos::null),
+      imasterslavematrix_(Teuchos::null),
       couplingtype_(DRT::INPUT::IntegralValue<INPAR::S2I::CouplingType>(
           parameters.sublist("S2I COUPLING"), "COUPLINGTYPE")),
       D_(Teuchos::null),
@@ -91,7 +92,9 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       islavetomasterrowcoltransform_(Teuchos::null),
       islaveresidual_(Teuchos::null),
       imasterresidual_(Teuchos::null),
-      imasterphinp_(Teuchos::null),
+      islavephidtnp_(Teuchos::null),
+      imasterphidt_on_slave_side_np_(Teuchos::null),
+      imasterphi_on_slave_side_np_(Teuchos::null),
       lmside_(DRT::INPUT::IntegralValue<INPAR::S2I::InterfaceSides>(
           parameters.sublist("S2I COUPLING"), "LMSIDE")),
       matrixtype_(Teuchos::getIntegralValue<LINALG::MatrixType>(parameters, "MATRIXTYPE")),
@@ -118,6 +121,7 @@ SCATRA::MeshtyingStrategyS2I::MeshtyingStrategyS2I(
       growthscatrablock_(Teuchos::null),
       growthgrowthblock_(Teuchos::null),
       equilibration_(Teuchos::null),
+      has_capacitive_contributions_(false),
       kinetics_conditions_meshtying_slaveside_(),
       slaveonly_(DRT::INPUT::IntegralValue<bool>(parameters.sublist("S2I COUPLING"), "SLAVEONLY")),
       indepedent_setup_of_conditions_(DRT::INPUT::IntegralValue<bool>(
@@ -353,7 +357,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         {
           // check matrix
           Teuchos::RCP<LINALG::SparseMatrix> systemmatrix = scatratimint_->SystemMatrix();
-          if (systemmatrix == Teuchos::null) dserror("System matrix is not a sparse matrix!");
+          dsassert(systemmatrix != Teuchos::null, "System matrix is not a sparse matrix!");
 
           // assemble linearizations of slave fluxes w.r.t. slave dofs into global system matrix
           systemmatrix->Add(*islavematrix_, false, 1., 1.);
@@ -442,7 +446,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
             (*islavetomasterrowtransform_)(systemmatrixrowsslave, 1.,
                 ADAPTER::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
           }
-
           break;
         }
         case LINALG::MatrixType::block_condition:
@@ -451,7 +454,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // check matrix
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksystemmatrix =
               scatratimint_->BlockSystemMatrix();
-          if (blocksystemmatrix == Teuchos::null) dserror("System matrix is not a block matrix!");
+          dsassert(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
 
           Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockkss(
               islavematrix_->Split<LINALG::DefaultBlockMatrixStrategy>(
@@ -567,6 +570,8 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         interfacemaps_->AddVector(
             icoup_->SlaveToMaster(residualslave), 2, scatratimint_->Residual());
       }
+
+      if (has_capacitive_contributions_) EvaluateAndAssembleCapacitiveContributions();
 
       break;
     }
@@ -869,7 +874,6 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       break;
     }
   }
-
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<DRT::Condition*> s2icoupling_growth_conditions;
   scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", s2icoupling_growth_conditions);
@@ -1339,8 +1343,140 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
       }
     }
   }
-}  // SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying
+}
 
+/*--------------------------------------------------------------------------------------*
+ *--------------------------------------------------------------------------------------*/
+void SCATRA::MeshtyingStrategyS2I::EvaluateAndAssembleCapacitiveContributions()
+{
+  // create parameter list for elements
+  Teuchos::ParameterList capcondparas;
+
+  // action for elements
+  capcondparas.set<int>("action", bd_calc_s2icoupling_capacitance);
+
+  // number of dofset associated with displacement dofs
+  if (scatratimint_->IsALE()) capcondparas.set<int>("ndsdisp", scatratimint_->NdsDisp());
+
+  // set global state vectors according to time-integration scheme
+  scatratimint_->Discretization()->ClearState();
+  scatratimint_->AddTimeIntegrationSpecificVectors();
+
+  // zero out matrices and vectors
+  islavematrix_->Zero();
+  imasterslavematrix_->Zero();
+  islaveresidual_->PutScalar(0.0);
+  auto imasterresidual_on_slave_side = Teuchos::rcp(new Epetra_Vector(*interfacemaps_->Map(1)));
+  imasterresidual_on_slave_side->PutScalar(0.0);
+
+  // evaluate scatra-scatra interface coupling
+  for (auto kinetics_slave_cond_cap : kinetics_conditions_meshtying_slaveside_)
+  {
+    if (kinetics_slave_cond_cap.second->GetInt("kinetic model") ==
+        static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
+    {
+      // collect condition specific data and store to scatra boundary parameter class
+      SetConditionSpecificScaTraParameters(*kinetics_slave_cond_cap.second);
+
+      scatratimint_->Discretization()->EvaluateCondition(capcondparas, islavematrix_,
+          imasterslavematrix_, islaveresidual_, imasterresidual_on_slave_side, Teuchos::null,
+          "S2IKinetics", kinetics_slave_cond_cap.second->GetInt("ConditionID"));
+    }
+  }
+  scatratimint_->Discretization()->ClearState();
+
+  // finalize interface matrices
+  islavematrix_->Complete();
+  imasterslavematrix_->Complete();
+
+  switch (matrixtype_)
+  {
+    case LINALG::MatrixType::sparse:
+    {
+      auto systemmatrix = scatratimint_->SystemMatrix();
+      dsassert(systemmatrix != Teuchos::null, "System matrix is not a sparse matrix!");
+
+      // assemble additional components of linearizations of slave fluxes due to capacitance
+      // w.r.t. slave dofs into the global system matrix
+      systemmatrix->Add(*islavematrix_, false, 1.0, 1.0);
+
+      // assemble additional components of linearizations of slave fluxes due to capacitance
+      // w.r.t. master dofs into the global system matrix
+      LINALG::MatrixColTransform()(islavematrix_->RowMap(), islavematrix_->ColMap(), *islavematrix_,
+          -1.0, ADAPTER::CouplingSlaveConverter(*icoup_), *systemmatrix, true, true);
+
+      // assemble additional components of linearizations of master fluxes due to capacitance
+      // w.r.t. slave dofs into the global system matrix
+      LINALG::MatrixRowTransform()(
+          *imasterslavematrix_, 1.0, ADAPTER::CouplingSlaveConverter(*icoup_), *systemmatrix, true);
+
+      // assemble additional components of linearizations of master fluxes due to capacitance
+      // w.r.t. master dofs into the global system matrix
+      LINALG::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
+          ADAPTER::CouplingSlaveConverter(*icoup_), ADAPTER::CouplingSlaveConverter(*icoup_),
+          *systemmatrix, true, true);
+      break;
+    }
+    case LINALG::MatrixType::block_condition:
+    case LINALG::MatrixType::block_condition_dof:
+    {
+      // check matrix
+      auto blocksystemmatrix = scatratimint_->BlockSystemMatrix();
+      dsassert(blocksystemmatrix != Teuchos::null, "System matrix is not a block matrix!");
+
+      // prepare linearizations of slave fluxes due to capacitance w.r.t. slave dofs
+      auto blockkss = islavematrix_->Split<LINALG::DefaultBlockMatrixStrategy>(
+          *blockmaps_slave_, *blockmaps_slave_);
+      blockkss->Complete();
+
+      // prepare linearizations of slave fluxes due to capacitance w.r.t. master dofs
+      auto ksm = Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->SlaveDofMap(), 81, false));
+      LINALG::MatrixColTransform()(islavematrix_->RowMap(), islavematrix_->ColMap(), *islavematrix_,
+          -1.0, ADAPTER::CouplingSlaveConverter(*icoup_), *ksm);
+      ksm->Complete(*icoup_->MasterDofMap(), *icoup_->SlaveDofMap());
+      auto blockksm =
+          ksm->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_master_, *blockmaps_slave_);
+      blockksm->Complete();
+
+      // prepare linearizations of master fluxes due to capacitance w.r.t. slave dofs
+      auto kms = Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(), 81, false));
+      LINALG::MatrixRowTransform()(
+          *imasterslavematrix_, 1.0, ADAPTER::CouplingSlaveConverter(*icoup_), *kms);
+      kms->Complete(*icoup_->SlaveDofMap(), *icoup_->MasterDofMap());
+      auto blockkms =
+          kms->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_slave_, *blockmaps_master_);
+      blockkms->Complete();
+
+      // derive linearizations of master fluxes w.r.t. master dofs
+      auto kmm = Teuchos::rcp(new LINALG::SparseMatrix(*icoup_->MasterDofMap(), 81, false));
+      LINALG::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
+          ADAPTER::CouplingSlaveConverter(*icoup_), ADAPTER::CouplingSlaveConverter(*icoup_), *kmm);
+      kmm->Complete();
+      auto blockkmm =
+          kmm->Split<LINALG::DefaultBlockMatrixStrategy>(*blockmaps_master_, *blockmaps_master_);
+      blockkmm->Complete();
+
+      // assemble interface block matrices into global block system matrix
+      blocksystemmatrix->Add(*blockkss, false, 1.0, 1.0);
+      blocksystemmatrix->Add(*blockksm, false, 1.0, 1.0);
+      blocksystemmatrix->Add(*blockkms, false, 1.0, 1.0);
+      blocksystemmatrix->Add(*blockkmm, false, 1.0, 1.0);
+
+      break;
+    }
+    default:
+    {
+      dserror("Type of global system matrix for scatra-scatra interface coupling not recognized!");
+      break;
+    }
+  }
+
+  // assemble slave residuals into global residual vector
+  interfacemaps_->AddVector(islaveresidual_, 1, scatratimint_->Residual());
+  // transform master residuals and assemble into global residual vector
+  interfacemaps_->AddVector(
+      icoup_->SlaveToMaster(imasterresidual_on_slave_side), 2, scatratimint_->Residual(), 1.0);
+}
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
@@ -1793,6 +1929,23 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                 "the same ID %i!",
                 s2ikinetics_cond_id);
           }
+
+          if (s2ikinetics_cond->GetInt("kinetic model") ==
+              static_cast<int>(INPAR::S2I::kinetics_butlervolmerreducedcapacitance))
+          {
+            has_capacitive_contributions_ = true;
+
+            auto timeintscheme = DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(
+                *scatratimint_->ScatraParameterList(), "TIMEINTEGR");
+            if (not(timeintscheme == INPAR::SCATRA::timeint_bdf2 or
+                    timeintscheme == INPAR::SCATRA::timeint_one_step_theta))
+            {
+              dserror(
+                  "Solution of capacitive interface contributions, i.e. additional transient terms "
+                  "is only implemented for OST and BDF2 time integration schemes.");
+            }
+          }
+
           break;
         }
 
@@ -1925,11 +2078,16 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       // Although the interface vector only contains the transformed master interface dofs, we still
       // initialize it with the full DofRowMap of the discretization to make it work for parallel
       // computations.
-      imasterphinp_ = LINALG::CreateVector(*(scatratimint_->Discretization()->DofRowMap()), false);
+      islavephidtnp_ = LINALG::CreateVector(*(scatratimint_->Discretization()->DofRowMap()), false);
+      imasterphidt_on_slave_side_np_ =
+          LINALG::CreateVector(*(scatratimint_->Discretization()->DofRowMap()), false);
+      imasterphi_on_slave_side_np_ =
+          LINALG::CreateVector(*(scatratimint_->Discretization()->DofRowMap()), false);
 
       // initialize auxiliary system matrices and associated transformation operators
       islavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()), 81));
       imastermatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()), 81));
+      imasterslavematrix_ = Teuchos::rcp(new LINALG::SparseMatrix(*(icoup_->SlaveDofMap()), 81));
       islavetomasterrowtransform_ = Teuchos::rcp(new LINALG::MatrixRowTransform);
       if (not slaveonly_)
       {
@@ -2789,6 +2947,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
 
         case INPAR::S2I::kinetics_butlervolmer:
         case INPAR::S2I::kinetics_butlervolmerreduced:
+        case INPAR::S2I::kinetics_butlervolmerreducedcapacitance:
         case INPAR::S2I::kinetics_butlervolmerpeltier:
         case INPAR::S2I::kinetics_butlervolmerresistance:
         case INPAR::S2I::kinetics_butlervolmerreducedthermoresistance:
@@ -2801,6 +2960,10 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
           s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
           s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
           s2icouplingparameters.set<double>("alpha_c", s2ikinetics_cond.GetDouble("alpha_c"));
+
+          if (kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedcapacitance)
+            s2icouplingparameters.set<double>(
+                "capacitance", s2ikinetics_cond.GetDouble("capacitance"));
 
           if (kineticmodel == INPAR::S2I::kinetics_butlervolmerpeltier)
             s2icouplingparameters.set<double>("peltier", s2ikinetics_cond.GetDouble("peltier"));
@@ -3071,8 +3234,19 @@ void SCATRA::MeshtyingStrategyS2I::AddTimeIntegrationSpecificVectors() const
     // add state vector containing master-side scatra degrees of freedom to scatra discretization
     interfacemaps_->InsertVector(
         icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phiafnp()), 2)), 1,
-        imasterphinp_);
-    scatratimint_->Discretization()->SetState("imasterphinp", imasterphinp_);
+        imasterphi_on_slave_side_np_);
+    scatratimint_->Discretization()->SetState("imasterphinp", imasterphi_on_slave_side_np_);
+
+    if (has_capacitive_contributions_)
+    {
+      interfacemaps_->InsertVector(
+          interfacemaps_->ExtractVector(*(scatratimint_->Phidtnp()), 1), 1, islavephidtnp_);
+      scatratimint_->Discretization()->SetState("islavephidtnp", islavephidtnp_);
+      interfacemaps_->InsertVector(
+          icoup_->MasterToSlave(interfacemaps_->ExtractVector(*(scatratimint_->Phidtnp()), 2)), 1,
+          imasterphidt_on_slave_side_np_);
+      scatratimint_->Discretization()->SetState("imasterphidtnp", imasterphidt_on_slave_side_np_);
+    }
   }
 
   // only relevant for monolithic or semi-implicit evaluation of scatra-scatra interface layer

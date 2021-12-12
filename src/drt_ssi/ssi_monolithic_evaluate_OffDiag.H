@@ -68,14 +68,21 @@ namespace SSI
         Teuchos::RCP<LINALG::SparseOperator> structurescatradomain) const;
 
    protected:
-    //! copy slave entries to master side scaled by -1.0
-    void CopySlaveToMasterScatraStructureInterface(
+    //! copy slave side symmetric contributions to the scatra structure interface linearization
+    //! entries to master side scaled by -1.0
+    void CopySlaveToMasterScatraStructureSymmetricInterfaceContributions(
         Teuchos::RCP<const LINALG::SparseOperator> slavematrix,
         Teuchos::RCP<LINALG::SparseOperator>& mastermatrix);
 
-    //! copy slave entries to master side scaled by -1.0
-    void EvaluateScatraStructureInterfaceSlaveSide(
+    //! evaluate symmetric contributions to the scatra structure interface linearization on the
+    //! slave side
+    void EvaluateScatraStructureSymmetricInterfaceContributionsSlaveSide(
         Teuchos::RCP<LINALG::SparseOperator> slavematrix);
+
+    //! evaluate non-symmetric contributions to the scatra structure interface linearization
+    void EvaluateScatraStructureNonSymmetricInterfaceContributionsSlaveSide(
+        Teuchos::RCP<LINALG::SparseOperator> slavematrix,
+        Teuchos::RCP<LINALG::SparseOperator> mastermatrix);
 
     //! map extractor associated with all degrees of freedom inside structural field
     Teuchos::RCP<const Epetra_Map> FullMapStructure() const { return full_map_structure_; }

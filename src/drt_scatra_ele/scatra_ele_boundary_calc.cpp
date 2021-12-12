@@ -8,22 +8,16 @@
  */
 /*----------------------------------------------------------------------*/
 #include "scatra_ele_boundary_calc.H"
-#include "scatra_ele.H"
 #include "scatra_ele_parameter_std.H"
 #include "scatra_ele_parameter_timint.H"
 #include "scatra_ele_parameter_boundary.H"
 
-#include <cstdlib>
-
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
-
-#include "../drt_inpar/inpar_s2i.H"
 
 #include "../drt_lib/drt_globalproblem.H"  // for curves and functions
 #include "../drt_lib/standardtypes_cpp.H"  // for EPS12 and so on
 
 #include "../drt_mat/fourieriso.H"
-#include "../drt_mat/material.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/scatra_mat.H"
 #include "../drt_mat/thermostvenantkirchhoff.H"
@@ -61,9 +55,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ScaTraEleBoundaryCalc(
       rotsymmpbc_(Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 2,
           DRT::ELEMENTS::Fluid::none>()))
 {
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -94,7 +86,6 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::SetupCalc(
 }
 
 /*----------------------------------------------------------------------*
- | evaluate element                                          fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(DRT::FaceElement* ele,
@@ -114,7 +105,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::Evaluate(DRT::FaceElement* el
   ExtractElementAndNodeValues(ele, params, discretization, la);
 
   // check for the action parameter
-  const SCATRA::BoundaryAction action = DRT::INPUT::get<SCATRA::BoundaryAction>(params, "action");
+  const auto action = DRT::INPUT::get<SCATRA::BoundaryAction>(params, "action");
   // evaluate action
   EvaluateAction(ele, params, discretization, action, la, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra);
@@ -196,7 +187,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
     case SCATRA::bd_calc_Neumann:
     {
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-      if (condition == NULL) dserror("Cannot access Neumann boundary condition!");
+      if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
 
       EvaluateNeumann(ele, params, discretization, *condition, la, elevec1_epetra, 1.);
 
@@ -267,9 +258,10 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
         case DRT::Element::quad4:
         {
           if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+          {
             WeakDirichlet<DRT::Element::quad4, DRT::Element::hex8>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
-
+          }
           else
             dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
 
@@ -356,9 +348,23 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
       break;
     }
 
+    case SCATRA::bd_calc_s2icoupling_capacitance:
+    {
+      EvaluateS2ICouplingCapacitance(
+          discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra);
+
+      break;
+    }
+
     case SCATRA::bd_calc_s2icoupling_od:
     {
       EvaluateS2ICouplingOD(ele, params, discretization, la, elemat1_epetra);
+      break;
+    }
+
+    case SCATRA::bd_calc_s2icoupling_capacitance_od:
+    {
+      EvaluateS2ICouplingCapacitanceOD(params, discretization, la, elemat1_epetra, elemat2_epetra);
       break;
     }
 
@@ -382,9 +388,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateAction(DRT::FaceEleme
   return 0;
 }
 
-
 /*----------------------------------------------------------------------*
- | evaluate Neumann boundary condition                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(DRT::FaceElement* ele,
@@ -401,14 +405,16 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(DRT::FaceElem
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
   const int numdof = condition.GetInt("numdof");
-  const std::vector<int>* onoff = condition.Get<std::vector<int>>("onoff");
-  const std::vector<double>* val = condition.Get<std::vector<double>>("val");
-  const std::vector<int>* func = condition.Get<std::vector<int>>("funct");
+  const auto* onoff = condition.Get<std::vector<int>>("onoff");
+  const auto* val = condition.Get<std::vector<double>>("val");
+  const auto* func = condition.Get<std::vector<int>>("funct");
 
   if (numdofpernode_ != numdof)
+  {
     dserror(
         "The NUMDOF you have entered in your TRANSPORT NEUMANN CONDITION does not equal the number "
         "of scalars.");
+  }
 
   // integration loop
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -453,9 +459,7 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateNeumann(DRT::FaceElem
   return 0;
 }
 
-
 /*----------------------------------------------------------------------*
- | calculate normals vectors                                   vg 03/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(
@@ -489,9 +493,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcNormalVectors(
   }
 }
 
-
 /*----------------------------------------------------------------------*
- | calculate Neumann inflow boundary conditions                vg 03/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(const DRT::FaceElement* ele,
@@ -612,13 +614,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow(const DRT::Fac
       }
     }
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::NeumannInflow
 
-
 /*----------------------------------------------------------------------*
- | get density at integration point                          fang 02/15 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
@@ -633,13 +631,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
   {
     case INPAR::MAT::m_matlist:
     {
-      const MAT::MatList* actmat = static_cast<const MAT::MatList*>(material.get());
+      const auto* actmat = static_cast<const MAT::MatList*>(material.get());
 
       const int matid = actmat->MatID(0);
 
       if (actmat->MaterialById(matid)->MaterialType() == INPAR::MAT::m_scatra)
+      {
         // set density to unity
         density = 1.;
+      }
       else
         dserror("type of material found in material list is not supported");
 
@@ -665,9 +665,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity(
   return density;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetDensity
 
-
 /*----------------------------------------------------------------------*
- | calculate integral of convective flux across boundary      gjb 11/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiveFlux(
@@ -715,7 +713,6 @@ std::vector<double> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcConvectiv
 }  // ScaTraEleBoundaryCalc<distype>::ConvectiveFlux
 
 /*----------------------------------------------------------------------*
- | calculate boundary cond. due to convective heat transfer    vg 10/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
@@ -739,14 +736,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
       double shc = 0.0;
       if (material->MaterialType() == INPAR::MAT::m_th_fourier_iso)
       {
-        const MAT::FourierIso* actmat = static_cast<const MAT::FourierIso*>(material.get());
+        const auto* actmat = static_cast<const MAT::FourierIso*>(material.get());
 
         shc = actmat->Capacity();
       }
       else if (material->MaterialType() == INPAR::MAT::m_thermostvenant)
       {
-        const MAT::ThermoStVenantKirchhoff* actmat =
-            static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
+        const auto* actmat = static_cast<const MAT::ThermoStVenantKirchhoff*>(material.get());
 
         shc = actmat->Capacity();
       }
@@ -793,15 +789,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer(
       }
     }
   }
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ConvectiveHeatTransfer
 
-
-/*-------------------------------------------------------------------------------------------------------------------------------------*
- | compute shape derivatives, i.e., derivatives of square root of determinant of metric tensor
- w.r.t. spatial coordinates   fang 11/17 |
- *-------------------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeDerivatives(
     LINALG::Matrix<nsd_ + 1, nen_>& shapederivatives  //!< shape derivatives to be computed
@@ -838,20 +829,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeDerivatives(
     shapederivatives(2, ui) =
         denominator_inv * (numerator_zr * deriv_(0, ui) + numerator_zs * deriv_(1, ui));
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
-    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-    const int iquad,                                         ///< id of current Gauss point
-    LINALG::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
-)
+    const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints, const int iquad,
+    LINALG::Matrix<1 + nsd_, 1>* normalvec)
 {
   // coordinates of the current integration point
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
@@ -880,16 +865,14 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvalShapeFuncAndIntFac(
   // for nurbs elements the normal vector must be scaled with a special orientation factor!!
   if (DRT::NURBS::IsNurbs(distype))
   {
-    if (normalvec != NULL) normal_.Scale(normalfac_);
+    if (normalvec != nullptr) normal_.Scale(normalfac_);
   }
 
   // return the integration factor
   return intpoints.IP().qwgt[iquad] * drs;
 }
 
-
 /*----------------------------------------------------------------------*
- | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
@@ -947,24 +930,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::GetConstNormal(
     normal.Scale(1 / length);
   else
     dserror("Zero length for element normal");
-
-  return;
 }  // ScaTraEleBoundaryCalc<distype>::GetConstNormal
 
-
 /*----------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling condition       fang 10/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
-    const DRT::FaceElement* ele,              ///< current boundary element
-    Teuchos::ParameterList& params,           ///< parameter list
-    DRT::Discretization& discretization,      ///< discretization
-    DRT::Element::LocationArray& la,          ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-    Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-    Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
-)
+void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(const DRT::FaceElement* ele,
+    Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
+    Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual)
 {
   // extract local nodal values on present and opposite sides of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -998,14 +972,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICoupling(
         funct_, numscal_, kineticmodel, permeabilities, timefacfac, timefacrhsfac, eslavematrix,
         emastermatrix, dummymatrix, dummymatrix, eslaveresidual, dummyvector);
   }  // end of loop over integration points
-
-  return;
 }
 
-
-/*---------------------------------------------------------------------------------------*
- | evaluate scatra-scatra interface coupling condition at integration point   fang 05/16 |
- *---------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType distype_master>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegrationPoint(
@@ -1042,7 +1012,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
       // constant permeability model
       case INPAR::S2I::kinetics_constperm:
       {
-        if (permeabilities == NULL)
+        if (permeabilities == nullptr)
           dserror("Cannot access vector of permeabilities for scatra-scatra interface coupling!");
         if (permeabilities->size() != (unsigned)numscal)
           dserror("Number of permeabilities does not match number of scalars!");
@@ -1105,23 +1075,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingAtIntegra
       }
     }
   }  // end of loop over scalars
-
-  return;
 }
 
-
-/*---------------------------------------------------------------------------------------------------------------------------*
- | evaluate off-diagonal system matrix contributions associated with scatra-scatra interface
- coupling condition   fang 11/17 |
- *---------------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
-    const DRT::FaceElement* ele,            ///< current boundary element
-    Teuchos::ParameterList& params,         ///< parameter list
-    DRT::Discretization& discretization,    ///< discretization
-    DRT::Element::LocationArray& la,        ///< location array
-    Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& eslavematrix)
 {
   // extract local nodal values on present and opposite side of scatra-scatra interface
   ExtractNodeValues(discretization, la);
@@ -1224,38 +1186,24 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD(
       }  // selection of kinetic model
     }    // loop over scalars
   }      // loop over integration points
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateS2ICouplingOD
 
-
-/*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
- *-----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la             //!< location array
-)
+    const DRT::Discretization& discretization, DRT::Element::LocationArray& la)
 {
   // extract nodal state variables associated with time t_{n+1} or t_{n+alpha_f}
   ExtractNodeValues(ephinp_, discretization, la);
-
-  return;
 }
 
-
 /*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
-    LINALG::Matrix<nen_, 1>& estate,            //!< nodal state variables
-    const DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la,            //!< location array
-    const std::string& statename,               //!< name of relevant state
-    const int& nds                              //!< number of relevant dofset
-    ) const
+    LINALG::Matrix<nen_, 1>& estate, const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // initialize matrix vector
   std::vector<LINALG::Matrix<nen_, 1>> estate_temp(1, LINALG::Matrix<nen_, 1>(true));
@@ -1265,22 +1213,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
 
   // copy extracted state variables
   estate = estate_temp[0];
-
-  return;
 }
 
-
 /*-----------------------------------------------------------------------------*
- | extract nodal state variables associated with boundary element   fang 01/17 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
-    std::vector<LINALG::Matrix<nen_, 1>>& estate,  //!< nodal state variables
-    const DRT::Discretization& discretization,     //!< discretization
-    DRT::Element::LocationArray& la,               //!< location array
-    const std::string& statename,                  //!< name of relevant state
-    const int& nds                                 //!< number of relevant dofset
-    ) const
+    std::vector<LINALG::Matrix<nen_, 1>>& estate, const DRT::Discretization& discretization,
+    DRT::Element::LocationArray& la, const std::string& statename, const int& nds) const
 {
   // extract global state vector from discretization
   const Teuchos::RCP<const Epetra_Vector> state = discretization.GetState(nds, statename);
@@ -1289,19 +1229,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ExtractNodeValues(
 
   // extract nodal state variables associated with boundary element
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nen_, 1>>(*state, estate, la[nds].lm_);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------------------*
- | calculate boundary integral, i.e., surface area of boundary element   fang 07/15 |
- *----------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral(
-    const DRT::FaceElement* ele,      //!< the element we are dealing with
-    Epetra_SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
-)
+    const DRT::FaceElement* ele, Epetra_SerialDenseVector& scalar)
 {
   // initialize variable for boundary integral
   double boundaryintegral(0.);
@@ -1324,19 +1258,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral(
 
   // write result into result vector
   scalar(0) = boundaryintegral;
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
 
-
-/*----------------------------------------------------------------------------------*
- | calculate boundary mass matrix                                        fang 07/16 |
- *----------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMatMass(
-    const DRT::FaceElement* const element,  //!< boundary element
-    Epetra_SerialDenseMatrix& massmatrix    //!< element mass matrix
-)
+    const DRT::FaceElement* const element, Epetra_SerialDenseMatrix& massmatrix)
 {
   // get integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
@@ -1362,21 +1290,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcMatMass(
       }
     }
   }  // loop over integration points
-
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcBoundaryIntegral
 
-
 /*----------------------------------------------------------------------*
- | evaluate Robin boundary condition                    schoeder 03/15  |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(DRT::FaceElement* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la,  ///< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    const double scalar)
+    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
+    Epetra_SerialDenseVector& elevec1_epetra, const double scalar)
 {
   //////////////////////////////////////////////////////////////////////
   //              get current condition and parameters
@@ -1387,14 +1309,16 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(DRT::FaceE
   if (cond == Teuchos::null) dserror("Cannot access condition 'TransportRobin'");
 
   // get on/off flags
-  const std::vector<int>* onoff = cond->Get<std::vector<int>>("onoff");
+  const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
   // safety check
   if ((int)(onoff->size()) != numscal_)
+  {
     dserror(
         "Mismatch in size for Robin boundary conditions, onoff has length %i, but you have %i "
         "scalars",
         onoff->size(), numscal_);
+  }
 
   // extract prefactor and reference value from condition
   const double prefac = cond->GetDouble("prefactor");
@@ -1443,14 +1367,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(DRT::FaceE
         const double fac_3 = prefac * intfac * refconcfac;
 
         // evaluate current scalar at current integration point
-        const double phinp = funct_.Dot(ephinp[k]);
+        const double phinp_gp = funct_.Dot(ephinp[k]);
 
         // build RHS and matrix
         {
           //////////////////////////////////////////////////////////////////////
           //                  rhs
           //////////////////////////////////////////////////////////////////////
-          const double vrhs = scatraparamstimint_->TimeFacRhs() * (phinp - refval) * fac_3;
+          const double vrhs = scatraparamstimint_->TimeFacRhs() * (phinp_gp - refval) * fac_3;
 
           for (int vi = 0; vi < nen_; ++vi)
           {
@@ -1480,22 +1404,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::CalcRobinBoundary(DRT::FaceE
     // else //in the case of "OFF", a no flux condition is automatically applied
 
   }  // loop over scalars
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate surface/interface permeability                  Thon 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
-    const DRT::FaceElement* ele,          ///< current boundary element
-    Teuchos::ParameterList& params,       ///< parameter list
-    DRT::Discretization& discretization,  ///< discretization
-    DRT::Element::LocationArray& la,      ///< location array
-    Epetra_SerialDenseMatrix& elemat1,    ///< element matrix for slave side
-    Epetra_SerialDenseVector& elevec1     ///< element residual for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1)
 {
   //////////////////////////////////////////////////////////////////////
   //                  read nodal values
@@ -1549,7 +1466,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
   if (cond == Teuchos::null) dserror("Cannot access condition 'SurfacePermeability'");
 
-  const std::vector<int>* onoff = cond->Get<std::vector<int>>("onoff");
+  const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
   const double perm = cond->GetDouble("permeability coefficient");
 
@@ -1557,7 +1474,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
   // 1->yes
   const bool wss_onoff = (bool)cond->GetInt("wss onoff");
 
-  const std::vector<double>* coeffs = cond->Get<std::vector<double>>("wss coeffs");
+  const auto* coeffs = cond->Get<std::vector<double>>("wss coeffs");
 
   //////////////////////////////////////////////////////////////////////
   //                  build RHS and StiffMat
@@ -1622,22 +1539,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateSurfacePermeability(
       // else //in the case of "OFF", a no flux condition is automatically applied
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- |  Evaluate Kedem-Katchalsky interface                   Thon 11/14 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
-    const DRT::FaceElement* ele,          ///< current boundary element
-    Teuchos::ParameterList& params,       ///< parameter list
-    DRT::Discretization& discretization,  ///< discretization
-    DRT::Element::LocationArray& la,      ///< location array
-    Epetra_SerialDenseMatrix& elemat1,    ///< element matrix for slave side
-    Epetra_SerialDenseVector& elevec1     ///< element residual for slave side
-)
+    const DRT::FaceElement* ele, Teuchos::ParameterList& params,
+    DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1)
 {
   // safety checks
   if (scatraparamstimint_->IsGenAlpha() or not scatraparamstimint_->IsIncremental())
@@ -1701,16 +1611,12 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
   LINALG::Matrix<nsd_ + 1, nen_> ewss(true);
   DRT::UTILS::ExtractMyValues<LINALG::Matrix<nsd_ + 1, nen_>>(*wss, ewss, lmwss);
 
-  // rotate the vector field in the case of rotationally symmetric boundary conditions
-  // rotsymmpbc_->RotateMyValuesIfNecessary(ewss);
-
-
   // ------------get current condition----------------------------------
   Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
   if (cond == Teuchos::null)
     dserror("Cannot access condition 'DESIGN SCATRA COUPLING SURF CONDITIONS'");
 
-  const std::vector<int>* onoff = cond->Get<std::vector<int>>("onoff");
+  const auto* onoff = cond->Get<std::vector<int>>("onoff");
 
   // get the standard permeability of the interface
   const double perm = cond->GetDouble("permeability coefficient");
@@ -1718,7 +1624,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
   // get flag if concentration flux across membrane is affected by local wall shear stresses: 0->no
   // 1->yes
   const bool wss_onoff = (bool)cond->GetInt("wss onoff");
-  const std::vector<double>* coeffs = cond->Get<std::vector<double>>("wss coeffs");
+  const auto* coeffs = cond->Get<std::vector<double>>("wss coeffs");
 
   // hydraulic conductivity at interface
   const double conductivity = cond->GetDouble("hydraulic conductivity");
@@ -1759,7 +1665,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
         const double p = funct_.Dot(epressure);
 
         // mean concentration at integration point
-        const double phibar = funct_.Dot(ephibar[k]);
+        const double phibar_gp = funct_.Dot(ephibar[k]);
 
         // mean concentration at integration point
         const double facWSS = WSSinfluence(ewss, wss_onoff, coeffs);
@@ -1782,13 +1688,13 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
 
         // rhs
         const double vrhs =
-            facfac * facWSS * (perm * phi + (1 - sigma) * phibar * conductivity * p);
+            facfac * facWSS * (perm * phi + (1 - sigma) * phibar_gp * conductivity * p);
         // J_s =f_WSS*[perm*(phi1-phi2)+(1-sigma)*phibar*conductivity*(p1-p2)]
         // J_s := solute flux through scalar scalar interface
         // perm:=membrane permeability
         // sigma:=Staverman filtration coefficient
-        // phibar:= mean concentration within the membrane (for now: simply linear interpolated, but
-        // other interpolations also possible) conductivity:=local hydraulic conductivity of
+        // phibar_gp:= mean concentration within the membrane (for now: simply linear interpolated,
+        // but other interpolations also possible) conductivity:=local hydraulic conductivity of
         // membrane
 
         for (int vi = 0; vi < nen_; ++vi)
@@ -1801,14 +1707,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::EvaluateKedemKatchalsky(
     }  // if((*onoff)[k]==1)
     // else //in the case of "OFF", a no flux condition is automatically applied
   }
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  Factor of WSS dependent interface transport           hemmler 07/14 |
- |  Calculated as in Calvez, V., "Mathematical and numerical modeling of early atherosclerotic
- lesions",ESAIM: Proceedings. Vol. 30. EDP Sciences, 2010
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(
@@ -1834,9 +1735,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WSSinfluence(
   return facWSS;
 }
 
-
 /*----------------------------------------------------------------------*
- |  Integrate shapefunctions over surface (private)           gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
@@ -1866,10 +1765,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions(
 
   // add contribution to the global value
   params.set<double>("area", boundaryint);
-
-  return;
 }  // DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::IntegrateShapeFunctions
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -1890,8 +1786,8 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
 
   // get values and spatial functions from condition
   // (assumed to be constant on element boundary)
-  const std::vector<double>* val = (*dbc).Get<std::vector<double>>("val");
-  const std::vector<int>* func = (*dbc).Get<std::vector<int>>("funct");
+  const auto* val = (*dbc).Get<std::vector<double>>("val");
+  const auto* func = (*dbc).Get<std::vector<int>>("funct");
 
   // assign boundary value multiplied by time-curve factor
   double dirichval = (*val)[0];
@@ -2039,7 +1935,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
   // pre-factor for adjoint-consistency term:
   // either 1.0 (adjoint-consistent, default) or -1.0 (adjoint-inconsistent)
   double gamma = 1.0;
-  const std::string* consistency = (*dbc).Get<std::string>("Choice of gamma parameter");
+  const auto* consistency = (*dbc).Get<std::string>("Choice of gamma parameter");
   if (*consistency == "adjoint-consistent")
     gamma = 1.0;
   else if (*consistency == "diffusive-optimal")
@@ -2065,7 +1961,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
   const double area = intpoints_tau.IP().qwgt[0] * drs;
 
   // get number of dimensions for (boundary) element (convert from int to double)
-  const double dim = (double)bnsd;
+  const auto dim = (double)bnsd;
 
   // computation of characteristic length of (boundary) element
   // (2D: square root of element area, 1D: element length)
@@ -2144,7 +2040,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
         // get viscosity
         if (material->MaterialType() == INPAR::MAT::m_scatra)
         {
-          const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+          const auto* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 
           dsassert(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
 
@@ -2328,7 +2224,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
     {
       // evaluate function at current integration point (important: a 3D position vector is
       // required)
-      double coordgp3D[3];
+      std::array<double, 3> coordgp3D;
       coordgp3D[0] = 0.0;
       coordgp3D[1] = 0.0;
       coordgp3D[2] = 0.0;
@@ -2349,7 +2245,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
       // get viscosity
       if (material->MaterialType() == INPAR::MAT::m_scatra)
       {
-        const MAT::ScatraMat* actmat = static_cast<const MAT::ScatraMat*>(material.get());
+        const auto* actmat = static_cast<const MAT::ScatraMat*>(material.get());
 
         dsassert(numdofpernode_ == 1, "more than 1 dof per node for SCATRA material");
 
@@ -2582,15 +2478,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::WeakDirichlet(DRT::FaceEleme
       }
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | calculate boundary conditions for                                    |
- | impl. Characteristic Galerkin (2nd order)                            |
- | time integration just for the reinitialization equation schott 04/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 template <DRT::Element::DiscretizationType bdistype,
@@ -2744,7 +2634,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
 
   const double reinit_pseudo_timestepsize_factor = params.get<double>("pseudotimestepsize_factor");
 
-  const double meshsize = getEleDiameter<pdistype>(pxyze);
+  const double meshsize = GetEleDiameter<pdistype>(pxyze);
 
   const double pseudo_timestep_size = meshsize * reinit_pseudo_timestepsize_factor;
 
@@ -2875,10 +2765,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype>::ReinitCharacteristicGalerkin
 
     }  // loop over scalars
   }    // loop over integration points
-
-  return;
 }
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

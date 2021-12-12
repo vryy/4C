@@ -23,7 +23,6 @@
 #include "scatra_timint_bdf2.H"
 
 /*----------------------------------------------------------------------*
- |  Constructor (public)                                      gjb 08/08 |
  *----------------------------------------------------------------------*/
 SCATRA::TimIntBDF2::TimIntBDF2(Teuchos::RCP<DRT::Discretization> actdis,
     Teuchos::RCP<LINALG::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
@@ -36,12 +35,9 @@ SCATRA::TimIntBDF2::TimIntBDF2(Teuchos::RCP<DRT::Discretization> actdis,
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting
   // this has to be done before all state vectors are initialized
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |  initialize time integration                         rasthofer 09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::Setup()
 {
@@ -92,19 +88,9 @@ void SCATRA::TimIntBDF2::Setup()
           DRT::INPUT::IntegralValue<INPAR::SCATRA::InitialField>(*params_, "INITIALFIELD"));
     }
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
-| Destructor dtor (public)                                   gjb 08/08 |
-*----------------------------------------------------------------------*/
-SCATRA::TimIntBDF2::~TimIntBDF2() { return; }
-
-
-/*----------------------------------------------------------------------*
- |  set time parameter for element evaluation (usual call)   ehrl 11/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) const
 {
@@ -113,7 +99,7 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) c
   eleparams.set<int>("action", SCATRA::set_time_parameter);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
-  if (forcedincrementalsolver == false)
+  if (!forcedincrementalsolver)
     eleparams.set<bool>("incremental solver", incremental_);
   else
     eleparams.set<bool>("incremental solver", true);
@@ -122,28 +108,24 @@ void SCATRA::TimIntBDF2::SetElementTimeParameter(bool forcedincrementalsolver) c
   eleparams.set<double>("total time", time_);
   eleparams.set<double>("time factor", theta_ * dta_);
   eleparams.set<double>("alpha_F", 1.0);
+  if (Step() == 1)
+    eleparams.set<double>("time derivative factor", 1.0 / dta_);
+  else
+    eleparams.set<double>("time derivative factor", 3.0 / (2.0 * dta_));
 
   // call standard loop over elements
   discret_->Evaluate(
       eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-
-  return;
 }
 
-
 /*--------------------------------------------------------------------------*
- | set time for evaluation of POINT -Neumann boundary conditions   vg 12/08 |
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::SetTimeForNeumannEvaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | set part of the residual vector belonging to the old timestep        |
- |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
 {
@@ -177,13 +159,9 @@ void SCATRA::TimIntBDF2::SetOldPartOfRighthandside()
     // backward Euler => use theta=1.0
     theta_ = 1.0;
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | perform an explicit predictor step                         gjb 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ExplicitPredictor() const
 {
@@ -193,24 +171,16 @@ void SCATRA::TimIntBDF2::ExplicitPredictor() const
   if (step_ > 1) phinp_->Update(-1.0, *phinm_, 2.0);
   // for step == 1 phinp_ is already correctly initialized with the
   // initial field phin_
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | add actual Neumann loads                                             |
- | scaled with a factor resulting from time discretization     vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::AddNeumannToResidual()
 {
   residual_->Update(theta_ * dta_, *neumann_loads_, 1.0);
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | AVM3-based scale separation                                 vg 03/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::AVM3Separation()
 {
@@ -222,12 +192,9 @@ void SCATRA::TimIntBDF2::AVM3Separation()
 
   // set fine-scale vector
   discret_->SetState("fsphinp", fsphinp_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
- | dynamic Smagorinsky model                           rasthofer  08/12 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::DynamicComputationOfCs()
 {
@@ -239,13 +206,9 @@ void SCATRA::TimIntBDF2::DynamicComputationOfCs()
     DynSmag_->ApplyFilterForDynamicComputationOfPrt(
         phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | dynamic Vreman model                                krank      09/13 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::DynamicComputationOfCv()
 {
@@ -254,13 +217,9 @@ void SCATRA::TimIntBDF2::DynamicComputationOfCv()
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle = DirichletToggle();
     Vrem_->ApplyFilterForDynamicComputationOfDt(phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel_);
   }
-
-  return;
 }
 
-
 /*--------------------------------------------------------------------------*
- | add global state vectors specific for time-integration scheme   vg 11/08 |
  *--------------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver)
 {
@@ -269,13 +228,9 @@ void SCATRA::TimIntBDF2::AddTimeIntegrationSpecificVectors(bool forcedincrementa
 
   discret_->SetState("hist", hist_);
   discret_->SetState("phinp", phinp_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | compute time derivative                                     vg 09/09 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ComputeTimeDerivative()
 {
@@ -303,14 +258,9 @@ void SCATRA::TimIntBDF2::ComputeTimeDerivative()
   // as stated above. We do not want to set Dirichlet values for
   // dependent values like phidtnp_. This turned out to be inconsistent.
   // ApplyDirichletBC(time_,Teuchos::null,phidtnp_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | current solution becomes most recent solution of next timestep       |
- |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::Update(const int num)
 {
@@ -331,13 +281,9 @@ void SCATRA::TimIntBDF2::Update(const int num)
 
   // call time update of forcing routine
   if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->TimeUpdateForcing();
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- | write additional data required for restart                 gjb 08/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::OutputRestart() const
 {
@@ -347,13 +293,9 @@ void SCATRA::TimIntBDF2::OutputRestart() const
   // additional state vectors that are needed for BDF2 restart
   output_->WriteVector("phin", phin_);
   output_->WriteVector("phinm", phinm_);
-
-  return;
 }
 
-
 /*----------------------------------------------------------------------*
- |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input)
 {
@@ -382,6 +324,4 @@ void SCATRA::TimIntBDF2::ReadRestart(const int step, Teuchos::RCP<IO::InputContr
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or
       turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     AVM3Preparation();
-
-  return;
 }

@@ -312,6 +312,53 @@ void INPAR::S2I::SetValidConditions(
             }
 
             {
+              // Butler-Volmer-reduced with interface capacitance
+              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedcapacitance;
+              // total number of existing scalars
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("numscal")));
+              // string separator in front of integer stoichiometry vector in input file line
+              std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
+              intsepcomp.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("stoichiometries")));
+              // integer vector of stoichiometric coefficients
+              std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
+              intvectcomp.emplace_back(
+                  Teuchos::rcp(new IntVectorConditionComponent("stoichiometries", 0)));
+              // empty vector --> no separators for real vectors needed
+              std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
+              // empty vector --> no real vectors needed
+              std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
+              butlervolmerreducedcapacitance.emplace_back(Teuchos::rcp(new IntRealBundle(
+                  "stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")), intsepcomp,
+                  intvectcomp, realsepcomp, realvectcomp)));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("e-")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new IntConditionComponent("e-")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("k_r")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new RealConditionComponent("k_r")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("capacitance")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new RealConditionComponent("capacitance")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("alpha_a")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new RealConditionComponent("alpha_a")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new SeparatorConditionComponent("alpha_c")));
+              butlervolmerreducedcapacitance.emplace_back(
+                  Teuchos::rcp(new RealConditionComponent("alpha_c")));
+
+              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
+                  "Butler-VolmerReduced_Capacitance", butlervolmerreducedcapacitance,
+                  INPAR::S2I::kinetics_butlervolmerreducedcapacitance)));
+            }
+
+            {
               // Butler-Volmer-Resistance
               std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerresistance;
               // total number of existing scalars
