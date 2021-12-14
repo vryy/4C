@@ -12,7 +12,8 @@
 
 #include "../drt_mat/matpar_material.H"
 
-MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : k1_(matdata->GetDouble("K1")),
       k2_(matdata->GetDouble("K2")),
       gamma_(matdata->GetDouble("GAMMA")),

@@ -76,7 +76,7 @@ namespace MAT
       std::vector<LINALG::Matrix<3, 3>> structuralTensors_;
 
       /// Flag whether fibers are initialized
-      bool isInitialized_;
+      bool isInitialized_{};
 
       /// Initialization mode
       const int init_mode_;
@@ -98,14 +98,22 @@ namespace MAT
       {
        public:
         /// standard constructor
-        explicit CoupAnisoExpoShear(Teuchos::RCP<MAT::PAR::Material> matdata);
+        explicit CoupAnisoExpoShear(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name material parameters
         //@{
         /// Ids of the fiber for the shear behavior
-        std::array<int, 2> fiber_id_;
+        std::array<int, 2> fiber_id_{};
         //@}
 
       };  // class CoupAnisoExpoShear

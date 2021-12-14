@@ -19,7 +19,7 @@ the input line should read
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::Fract::Fract(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::Fract::Fract(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       tau_(matdata->GetDouble("TAU")),
       alpha_(matdata->GetDouble("ALPHA")),

@@ -33,9 +33,6 @@ namespace MAT
         /// constructor with given material parameters
         explicit CoupAnisoExpoTwoCoup(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~CoupAnisoExpoTwoCoup() override = default;
-
         /// @name material parameters
         //@{
 
@@ -57,15 +54,15 @@ namespace MAT
 
         //@}
 
-        /// create material instance of matching type with my parameters
-        ///
-        /// Remark:                                                  AN 03/2014
-        /// Function has to be implemented, since it is a pure virtual
-        /// function in the MAT::PAR::Material class.
-        /// Function stays empty, since the call within the material factory is done only
-        /// respective the elasthyper class
-        ///
-        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; }
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name Write methods
         //@{

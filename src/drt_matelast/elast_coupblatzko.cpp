@@ -21,7 +21,7 @@ The input line should read
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       mue_(matdata->GetDouble("MUE")),
       nue_(matdata->GetDouble("NUE")),

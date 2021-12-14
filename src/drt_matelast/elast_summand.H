@@ -73,9 +73,6 @@ namespace MAT
       /// standard constructor
       Summand() { ; }
 
-      /// destructor
-      virtual ~Summand() = default;
-
       ///@name Packing and Unpacking (dummy routines)
       //@{
 
@@ -712,7 +709,7 @@ namespace MAT
       };
 
       /// Read FIBERn
-      void ReadFiber(DRT::INPUT::LineDefinition* linedef, std::string kenner,
+      void ReadFiber(DRT::INPUT::LineDefinition* linedef, const std::string& kenner,
           LINALG::Matrix<3, 1>& fiber_vector);
 
       /// Read RAD-AXI-CIR

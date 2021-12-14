@@ -20,7 +20,8 @@ The input line should read
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupSVK::CoupSVK(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata)
+MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata)
+    : Parameter(matdata)
 {
   double c1 = matdata->GetDouble("YOUNG");
   double c2 = matdata->GetDouble("NUE");

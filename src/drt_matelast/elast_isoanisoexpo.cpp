@@ -23,7 +23,7 @@ The input line should read
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k1_(matdata->GetDouble("K1")),
       k2_(matdata->GetDouble("K2")),

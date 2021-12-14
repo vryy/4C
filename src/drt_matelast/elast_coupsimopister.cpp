@@ -25,7 +25,7 @@ The input line should read
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupSimoPister::CoupSimoPister(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupSimoPister::CoupSimoPister(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->GetDouble("MUE"))
 {
 }

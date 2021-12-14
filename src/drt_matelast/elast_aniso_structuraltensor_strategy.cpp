@@ -19,7 +19,7 @@
  |                                                                      |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       c1_(matdata->GetDouble("C1")),
       c2_(matdata->GetDouble("C2")),

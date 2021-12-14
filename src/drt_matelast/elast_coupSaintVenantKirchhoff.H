@@ -25,10 +25,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        CoupSVK(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~CoupSVK() { ; }
+        CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -40,7 +37,15 @@ namespace MAT
 
         //@}
 
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name Write methods
         //@{
@@ -77,37 +82,37 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_coupSVK; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_coupSVK; }
 
       //@}
 
       // add strain energy
-      virtual void AddStrainEnergy(double& psi,  ///< strain energy function
+      void AddStrainEnergy(double& psi,       ///< strain energy function
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
           int gp,                                ///< Gauss point
           int eleGID                             ///< element GID
-      );
+          ) override;
 
-      virtual void AddDerivativesPrincipal(
+      void AddDerivativesPrincipal(
           LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
           LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           int gp,                             ///< Gauss point
           int eleGID                          ///< element GID
-      );
+          ) override;
 
-      virtual void AddThirdDerivativesPrincipalIso(
+      void AddThirdDerivativesPrincipalIso(
           LINALG::Matrix<10, 1>& dddPIII_iso,     ///< third derivative with respect to invariants
           const LINALG::Matrix<3, 1>& prinv_iso,  ///< principal isotropic invariants
           int gp,                                 ///< Gauss point
-          int eleGID);                            ///< element GID
+          int eleGID) override;                   ///< element GID
 
       /// add the derivatives of a coupled strain energy functions associated with a purely
       /// isochoric deformation
-      virtual void AddCoupDerivVol(
-          const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4);
+      void AddCoupDerivVol(
+          const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override;
 
       /// @name Access methods
       //@{
@@ -116,13 +121,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         isoprinc = true;
         return;
@@ -130,7 +135,7 @@ namespace MAT
 
 
       /// a young's modulus equivalent
-      virtual void AddYoungsMod(double& young, double& shear, double& bulk)
+      void AddYoungsMod(double& young, double& shear, double& bulk) override
       {
         young += 9. * params_->mue_ * (3. * params_->lambda_ + 2. * params_->mue_) /
                  (params_->lambda_ + params_->mue_);

@@ -54,10 +54,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        StructuralTensorParameter(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~StructuralTensorParameter() { ; }
+        StructuralTensorParameter(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -73,8 +70,15 @@ namespace MAT
         /// type of structural tensor strategy
         int strategy_type_;
 
-        /// pure virtual in base class
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
       };  // class StructuralTensorParameter
     }     // namespace PAR

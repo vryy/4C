@@ -18,7 +18,7 @@ CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
  |                                                                      |
  *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
-    Teuchos::RCP<MAT::PAR::Material> matdata)
+    const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       alphamax_(matdata->GetDouble("ALPHA_MAX")),
       ctmin_(matdata->GetDouble("CT_MIN")),

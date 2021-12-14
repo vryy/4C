@@ -21,7 +21,7 @@ The input line should read
 /*----------------------------------------------------------------------*
  *         Constructor Material Parameter Class                         *
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }

@@ -31,10 +31,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        IsoVarga(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~IsoVarga() { ; }
+        IsoVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -46,15 +43,15 @@ namespace MAT
 
         //@}
 
-        /// create material instance of matching type with my parameters
-        ///
-        /// Remark:                                                  AN 03/2014
-        /// Function has to be implemented, since it is a pure virtual
-        /// function in the MAT::PAR::Material class.
-        /// Function stays empty, since the call within the material factory is done only
-        /// respective the elasthyper class
-        ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
       };  // class IsoVarga
 
@@ -95,26 +92,26 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isovarga; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_isovarga; }
 
       /// add shear modulus equivalent
-      virtual void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-          double& shearmod                          ///< variable to add upon
-          ) const;
+      void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
+          double& shearmod                  ///< variable to add upon
+          ) const override;
 
       //@}
 
       /// Answer if coefficients with respect to principal stretches are provided
-      virtual bool HaveCoefficientsStretchesModified() { return true; }
+      bool HaveCoefficientsStretchesModified() override { return true; }
 
       /// Add coefficients with respect to principal stretches (or zeros)
-      virtual void AddCoefficientsStretchesModified(
+      void AddCoefficientsStretchesModified(
           LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
           LINALG::Matrix<6, 1>&
               delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
           const LINALG::Matrix<3, 1>&
               modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]
-      );
+          ) override;
 
       /// @name Access methods
       //@{
@@ -129,13 +126,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         return;
       };

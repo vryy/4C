@@ -31,10 +31,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        CoupAnisoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~CoupAnisoNeoHooke() { ; }
+        CoupAnisoNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -50,15 +47,15 @@ namespace MAT
 
         //@}
 
-        /// create material instance of matching type with my parameters
-        ///
-        /// Remark:                                                  AN 03/2014
-        /// Function has to be implemented, since it is a pure virtual
-        /// function in the MAT::PAR::Material class.
-        /// Function stays empty, since the call within the material factory is done only
-        /// respective the elasthyper class
-        ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name Write methods
         //@{
@@ -102,10 +99,10 @@ namespace MAT
       ///@name Packing and Unpacking
       //@{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       //@}
 
@@ -113,7 +110,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_coupanisoneohooke;
       }
@@ -121,18 +118,17 @@ namespace MAT
       //@}
 
       /// Setup of summand
-      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
       /// Add anisotropic principal stresses
-      virtual void AddStressAnisoPrincipal(
-          const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
-          LINALG::Matrix<6, 6>& cmat,       ///< material stiffness matrix
-          LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
+      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,  ///< right Cauchy Green Tensor
+          LINALG::Matrix<6, 6>& cmat,                                ///< material stiffness matrix
+          LINALG::Matrix<6, 1>& stress,                              ///< 2nd PK-stress
           Teuchos::ParameterList&
               params,  ///< additional parameters for computation of material properties
           int gp,      ///< Gauss point
           int eleGID   ///< element GID
-      );
+          ) override;
 
       /// @name Access methods
       //@{
@@ -141,24 +137,24 @@ namespace MAT
       //@}
 
       /// Set fiber directions
-      virtual void SetFiberVecs(const double newgamma,  ///< new angle
-          const LINALG::Matrix<3, 3>& locsys,           ///< local coordinate system
-          const LINALG::Matrix<3, 3>& defgrd            ///< deformation gradient
-      );
+      void SetFiberVecs(const double newgamma,  ///< new angle
+          const LINALG::Matrix<3, 3>& locsys,   ///< local coordinate system
+          const LINALG::Matrix<3, 3>& defgrd    ///< deformation gradient
+          ) override;
 
       /// Get fiber directions
-      virtual void GetFiberVecs(
+      void GetFiberVecs(
           std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      );
+          ) override;
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< global indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         anisoprinc = true;
         return;

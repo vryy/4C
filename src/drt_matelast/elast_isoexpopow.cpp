@@ -19,7 +19,7 @@ C = Exponent D
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       k1_(matdata->GetDouble("K1")),
       k2_(matdata->GetDouble("K2")),

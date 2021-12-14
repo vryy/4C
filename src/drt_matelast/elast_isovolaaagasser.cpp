@@ -27,7 +27,7 @@ MAT 20 ELAST_isovolaaagasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), isinit_(false)
 {
   // new style

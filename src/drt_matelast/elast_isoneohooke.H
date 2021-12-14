@@ -32,10 +32,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        IsoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~IsoNeoHooke() { ; }
+        IsoNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -45,15 +42,15 @@ namespace MAT
 
         //@}
 
-        /// create material instance of matching type with my parameters
-        ///
-        /// Remark:                                                  AN 03/2014
-        /// Function has to be implemented, since it is a pure virtual
-        /// function in the MAT::PAR::Material class.
-        /// Function stays empty, since the call within the material factory is done only
-        /// respective the elasthyper class
-        ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name Write methods
         //@{
@@ -94,33 +91,33 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_isoneohooke; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_isoneohooke; }
 
       /// add shear modulus equivalent
-      virtual void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-          double& shearmod                          ///< variable to add upon
-          ) const;
+      void AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
+          double& shearmod                  ///< variable to add upon
+          ) const override;
 
       //@}
 
       // add strain energy
-      virtual void AddStrainEnergy(double& psi,  ///< strain energy function
+      void AddStrainEnergy(double& psi,       ///< strain energy function
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           const LINALG::Matrix<6, 1>& glstrain,  ///< Green-Lagrange strain
           int gp,                                ///< Gauss point
           int eleGID                             ///< element GID
-      );
+          ) override;
 
       // Add derivatives with respect to modified invariants.
-      virtual void AddDerivativesModified(
+      void AddDerivativesModified(
           LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants
           LINALG::Matrix<6, 1>&
               ddmodPII,  ///< second derivative with respect to modified invariants
           const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
           int gp,                              ///< Gauss point
           int eleGID                           ///< element GID
-      );
+          ) override;
 
 
       /// @name Access methods
@@ -130,13 +127,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         isomod = true;
         return;

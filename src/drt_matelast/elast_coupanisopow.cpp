@@ -17,7 +17,7 @@
 /*----------------------------------------------------------------------*
  |
  *----------------------------------------------------------------------*/
-MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(Teuchos::RCP<MAT::PAR::Material> matdata)
+MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k_(matdata->GetDouble("K")),
       d1_(matdata->GetDouble("D1")),

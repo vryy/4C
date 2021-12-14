@@ -35,10 +35,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        GenMax(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~GenMax() { ; }
+        GenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -50,21 +47,21 @@ namespace MAT
 
         //@}
 
-        /// create material instance of matching type with my parameters
-        ///
-        /// Remark:                                                  AN 03/2014
-        /// Function has to be implemented, since it is a pure virtual
-        /// function in the MAT::PAR::Material class.
-        /// Function stays empty, since the call within the material factory is done only
-        /// respective the elasthyper class
-        ///
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name Write methods
         //@{
         void SetTau(const double tau) { tau_ = tau; }
         void SetBeta(const double beta) { beta_ = beta; }
-        void SetSolve(const std::string solve) { solve_ = solve; }
+        void SetSolve(const std::string& solve) { solve_ = solve; }
         //@}
 
       };  // class GenMax
@@ -122,17 +119,17 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_genmax; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_genmax; }
 
       //@}
 
       /// Read material parameters
-      virtual void ReadMaterialParametersVisco(double& tau,  ///< relaxation parameter tau
-          double& beta,   ///< emphasis of viscous to elastic part
+      void ReadMaterialParametersVisco(double& tau,  ///< relaxation parameter tau
+          double& beta,                              ///< emphasis of viscous to elastic part
           double& alpha,  ///< fractional order derivative (just for visoc_fract)
           std::string&
               solve  //!< variant of the solution of the evolution integral (just for genmax)
-      );
+          ) override;
 
       /// @name Access methods
       //@{
@@ -143,26 +140,26 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         viscogeneral = true;
         return;
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      virtual void SpecifyViscoFormulation(
+      void SpecifyViscoFormulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
                                          ///< according to the generalized Maxwell Model
           bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
-      )
+          ) override
       {
         viscogenmax = true;
         return;

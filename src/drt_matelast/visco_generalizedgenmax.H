@@ -29,10 +29,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        GeneralizedGenMax(Teuchos::RCP<MAT::PAR::Material> matdata);
+        GeneralizedGenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~GeneralizedGenMax() { ; }
+        ~GeneralizedGenMax() override { ; }
 
         /// @name material parameters
         //@{
@@ -45,7 +45,7 @@ namespace MAT
 
         /// create material instance of matching type with my parameters
 
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -67,10 +67,7 @@ namespace MAT
       {
        public:
         /// standard constructor
-        ViscoBranch(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-        /// destructor
-        virtual ~ViscoBranch() { ; }
+        ViscoBranch(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// @name material parameters
         //@{
@@ -83,8 +80,15 @@ namespace MAT
 
         //@}
 
-        /// create material instance of matching type with my parameters
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
 
         /// @name Write methods
         //@{
@@ -104,10 +108,10 @@ namespace MAT
       {
        public:
         /// standard constructor
-        ViscoPart(Teuchos::RCP<MAT::PAR::Material> matdata);
+        ViscoPart(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
         /// destructor
-        virtual ~ViscoPart() { ; }
+        ~ViscoPart() override { ; }
 
         /// @name material parameters
         //@{
@@ -118,7 +122,7 @@ namespace MAT
         //@}
 
         /// create material instance of matching type with my parameters
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+        Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
         /// @name Write methods
         //@{
@@ -142,7 +146,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_generalizedgenmax;
       }
@@ -151,10 +155,10 @@ namespace MAT
       //@}
 
       /// Read material parameters
-      virtual void ReadMaterialParameters(int& numbranch,  ///< number of viscoelastic branches
-          const std::vector<int>*& matids,  ///< material IDs of the viscoelastic branches
-          std::string& solve                /// variant of the solution of the evolution integral
-      );
+      void ReadMaterialParameters(int& numbranch,  ///< number of viscoelastic branches
+          const std::vector<int>*& matids,         ///< material IDs of the viscoelastic branches
+          std::string& solve  /// variant of the solution of the evolution integral
+          ) override;
 
       /// @name Access methods
       //@{
@@ -169,26 +173,26 @@ namespace MAT
 
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         viscogeneral = true;
         return;
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      virtual void SpecifyViscoFormulation(
+      void SpecifyViscoFormulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
                                          ///< according to the generalized Maxwell Model
           bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
-      )
+          ) override
       {
         viscogeneralizedgenmax = true;
         return;
@@ -216,15 +220,15 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_viscobranch; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscobranch; }
 
 
       //@}
 
       /// Read material parameters
-      virtual void ReadMaterialParameters(double& nummat,  ///< number of materials in one branch
-          const std::vector<int>*& matids  ///< matierial IDs of each part of the branch
-      );
+      void ReadMaterialParameters(double& nummat,  ///< number of materials in one branch
+          const std::vector<int>*& matids          ///< matierial IDs of each part of the branch
+          ) override;
 
       /// @name Access methods
       //@{
@@ -234,13 +238,13 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         viscogeneral = true;
         return;
@@ -264,7 +268,7 @@ namespace MAT
       //@{
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::mes_viscopart; }
+      INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscopart; }
 
 
       //@}
@@ -281,26 +285,26 @@ namespace MAT
       //@}
 
       /// Indicator for formulation
-      virtual void SpecifyFormulation(
+      void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
           bool& isomod,       ///< global indicator for isotropic splitted formulation
           bool& anisoprinc,   ///< global indicator for anisotropic principal formulation
           bool& anisomod,     ///< global indicator for anisotropic splitted formulation
           bool& viscogeneral  ///< general indicator, if one viscoelastic formulation is used
-      )
+          ) override
       {
         viscogeneral = true;
         return;
       };
 
       /// Indicator for the chosen viscoelastic formulations
-      virtual void SpecifyViscoFormulation(
+      void SpecifyViscoFormulation(
           bool& isovisco,     ///< global indicator for isotropic, splitted and viscous formulation
           bool& viscogenmax,  ///< global indicator for viscous contribution according the SLS-Model
           bool& viscogeneralizedgenmax,  ///< global indicator for viscoelastic contribution
                                          ///< according to the generalized Maxwell Model
           bool& viscofract  ///< global indicator for viscous contribution according the FSLS-Model
-      )
+          ) override
       {
         return;
       };

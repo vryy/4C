@@ -66,9 +66,6 @@ namespace MAT
         /// standard constructor
         explicit CoupTransverselyIsotropic(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// default destructor
-        virtual ~CoupTransverselyIsotropic() = default;
-
         /// alpha parameter of the constitutive law
         double alpha_ = 0.0;
 
@@ -91,8 +88,15 @@ namespace MAT
         void Print() const;
 
        private:
-        /// derived function
-        virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; }
+        /// Override this method and throw error, as the material should be created in within the
+        /// Factory method of the elastic summand
+        Teuchos::RCP<MAT::Material> CreateMaterial() override
+        {
+          dserror(
+              "Cannot create a material from this method, as it should be created in "
+              "MAT::ELASTIC::Summand::Factory.");
+          return Teuchos::null;
+        };
       };  // class CoupAnisoSimple
     }     // namespace PAR
 
@@ -112,7 +116,7 @@ namespace MAT
      *  \author hiermeier \date 09/17 */
     class CoupTransverselyIsotropic : public Summand
     {
-      typedef MAT::ELASTIC::PAR::CoupTransverselyIsotropic my_params;
+      using my_params = MAT::ELASTIC::PAR::CoupTransverselyIsotropic;
 
      public:
       /// no default constructor
@@ -122,26 +126,26 @@ namespace MAT
       explicit CoupTransverselyIsotropic(my_params* params);
 
       /// default destructor
-      virtual ~CoupTransverselyIsotropic() = default;
+      ~CoupTransverselyIsotropic() override = default;
 
       /// @name Packing and Unpacking
       /// @{
 
-      virtual void PackSummand(DRT::PackBuffer& data) const;
+      void PackSummand(DRT::PackBuffer& data) const override;
 
-      virtual void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position);
+      void UnpackSummand(
+          const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
       /// @}
 
       /// material type
-      virtual INPAR::MAT::MaterialType MaterialType() const
+      INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_couptransverselyisotropic;
       }
 
       /// Setup of summand
-      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+      void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
       /** \brief add strain energy [derived]
        *
@@ -161,9 +165,9 @@ namespace MAT
        *  \param[in]  eleGID   element global ID
        *
        *  \author hiermeier \date 09/17 */
-      virtual void AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
+      void AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
           const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
-          const int eleGID);
+          const int eleGID) override;
 
       /** \brief Add anisotropic principal stresses
        *
@@ -175,9 +179,9 @@ namespace MAT
        *  \param[in]  eleGID element GID
        *
        *  \author hiermeier \date 09/17 */
-      virtual void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
-          LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
-          const int gp, const int eleGID);
+      void AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat,
+          LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
+          const int eleGID) override;
 
       /** \brief Set fiber directions
        *
@@ -185,13 +189,13 @@ namespace MAT
        *  \param[in] locsys    local coordinate system
        *  \param[in] defgrd    deformation gradient
        * */
-      virtual void SetFiberVecs(const double newangle, const LINALG::Matrix<3, 3>& locsys,
-          const LINALG::Matrix<3, 3>& defgrd);
+      void SetFiberVecs(const double newangle, const LINALG::Matrix<3, 3>& locsys,
+          const LINALG::Matrix<3, 3>& defgrd) override;
 
       /// Get fiber directions
-      virtual void GetFiberVecs(
+      void GetFiberVecs(
           std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
-      );
+          ) override;
 
       /** \brief Indicator for formulation
        *
@@ -201,8 +205,8 @@ namespace MAT
        *  \param[out] anisomod     global indicator for anisotropic splitted formulation
        *  \param[out] viscogeneral global indicator, if one viscoelastic formulation is used
        */
-      virtual void SpecifyFormulation(
-          bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod, bool& viscogeneral)
+      void SpecifyFormulation(bool& isoprinc, bool& isomod, bool& anisoprinc, bool& anisomod,
+          bool& viscogeneral) override
       {
         anisoprinc = true;
         return;
@@ -216,7 +220,7 @@ namespace MAT
        *
        *  \author hiermeier \date 09/17 */
       int ResetInvariants(
-          const LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = NULL);
+          const LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params = nullptr);
 
       /** \brief Add the material contributions to the second Piola Kirchhoff stress
        *  tensor
@@ -291,7 +295,7 @@ namespace MAT
 
      private:
       /// pointer to the fiber parameters
-      my_params* params_ = NULL;
+      my_params* params_ = nullptr;
 
       /// fiber direction
       LINALG::Matrix<3, 1> A_;
