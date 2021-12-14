@@ -10,6 +10,8 @@ evaluated with FAD.
 
 #include "beam_to_solid_surface_meshtying_pair_mortar_FAD.H"
 
+#include "beam_contact_params.H"
+#include "beam_to_solid_surface_meshtying_params.H"
 #include "beaminteraction_calc_utils.H"
 #include "beam_to_solid_mortar_manager.H"
 #include "../drt_geometry_pair/geometry_pair_line_to_surface.H"
@@ -282,14 +284,12 @@ void GetSurfaceBasis(const LINALG::Matrix<3, 1, double>& xi,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-template <typename scalar_type_rot_vec>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::GetSurfaceRotationVector(const LINALG::Matrix<3, 1, double>& xi,
+template <typename surface, typename scalar_type_rot_vec>
+void GetSurfaceRotationVectorAveraged(const LINALG::Matrix<3, 1, double>& xi,
     const LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
     const LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot_vec>& q_solid,
     const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
-    LINALG::Matrix<3, 1, scalar_type_rot_vec>& psi_solid, const DRT::Element* element) const
+    LINALG::Matrix<3, 1, scalar_type_rot_vec>& psi_solid, const DRT::Element* element)
 {
   // Get beam basis vectors in reference configuration.
   LINALG::Matrix<3, 3, double> triad_beam_ref(true);
@@ -314,8 +314,145 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
   // Get the solid rotation vector from the deformation gradient via construction in the cross
   // section plane.
-  GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
+  BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
       surface_F, triad_beam_ref, psi_solid);
+}
+
+/**
+ *
+ */
+template <typename surface, typename scalar_type_rot_vec>
+void GetSurfaceRotationVectorCrossSectionDirector(const LINALG::Matrix<3, 1, double>& xi,
+    const LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot_vec>& q_solid,
+    const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+    LINALG::Matrix<3, 1, scalar_type_rot_vec>& psi_solid, const DRT::Element* element)
+{
+  // Get beam basis vectors in reference configuration.
+  LINALG::Matrix<3, 3, double> triad_beam_ref(true);
+  LARGEROTATIONS::quaterniontotriad(quaternion_beam_ref, triad_beam_ref);
+
+  // Get the surface basis vectors in the reference configuration.
+  LINALG::Matrix<3, 3, double> surface_basis_ref;
+  GetSurfaceBasis<surface>(xi, q_solid_ref, surface_basis_ref, element);
+
+  // Get the surface basis vectors in the current configuration.
+  LINALG::Matrix<3, 3, scalar_type_rot_vec> surface_basis_current;
+  GetSurfaceBasis<surface>(xi, q_solid, surface_basis_current, element);
+
+  // Get the surface material director (the intersection between the beam cross-section and the
+  // surface tangent plane).
+  LINALG::Matrix<3, 1, double> surface_normal_ref;
+  LINALG::Matrix<3, 1, double> beam_cross_section_normal_ref;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+  {
+    surface_normal_ref(i_dim) = surface_basis_ref(i_dim, 2);
+    beam_cross_section_normal_ref(i_dim) = triad_beam_ref(i_dim, 0);
+  }
+  LINALG::Matrix<3, 1, double> surface_material_director_ref;
+  surface_material_director_ref.CrossProduct(surface_normal_ref, beam_cross_section_normal_ref);
+  surface_material_director_ref.Scale(1.0 / FADUTILS::VectorNorm(surface_material_director_ref));
+
+  // Get the reference triad of the surface.
+  LINALG::Matrix<3, 1, double> surface_material_director_perpendicular_ref;
+  surface_material_director_perpendicular_ref.CrossProduct(
+      surface_material_director_ref, surface_normal_ref);
+  LINALG::Matrix<3, 3, double> surface_triad_ref;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+  {
+    surface_triad_ref(i_dim, 0) = surface_material_director_ref(i_dim);
+    surface_triad_ref(i_dim, 1) = surface_normal_ref(i_dim);
+    surface_triad_ref(i_dim, 2) = surface_material_director_perpendicular_ref(i_dim);
+  }
+
+  // Get the offset of the reference triad, so it matches the beam reference triad.
+  LINALG::Matrix<3, 3, double> surface_triad_offset;
+  surface_triad_offset.MultiplyTN(surface_triad_ref, triad_beam_ref);
+
+  // Calculate the in plane surface deformation gradient.
+  LINALG::Matrix<3, 3, double> surface_basis_ref_inverse;
+  surface_basis_ref_inverse = surface_basis_ref;
+  LINALG::Inverse(surface_basis_ref_inverse);
+  LINALG::Matrix<3, 3, scalar_type_rot_vec> surface_basis_ref_inverse_scalar_type;
+  for (unsigned int i_row = 0; i_row < 3; i_row++)
+    for (unsigned int i_col = 0; i_col < 3; i_col++)
+      surface_basis_ref_inverse_scalar_type(i_row, i_col) = surface_basis_ref_inverse(i_row, i_col);
+  LINALG::Matrix<3, 3, scalar_type_rot_vec> surface_F;
+  surface_F.Multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
+
+  // Get the current material director.
+  LINALG::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_ref_fad;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    surface_material_director_ref_fad(i_dim) = surface_material_director_ref(i_dim);
+  LINALG::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_current;
+  surface_material_director_current.Multiply(surface_F, surface_material_director_ref_fad);
+  surface_material_director_current.Scale(
+      1.0 / FADUTILS::VectorNorm(surface_material_director_current));
+
+  // Get the current triad of the surface.
+  LINALG::Matrix<3, 1, scalar_type_rot_vec> surface_normal_current;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    surface_normal_current(i_dim) = surface_basis_current(i_dim, 2);
+  LINALG::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_perpendicular_current;
+  surface_material_director_perpendicular_current.CrossProduct(
+      surface_material_director_current, surface_normal_current);
+  LINALG::Matrix<3, 3, scalar_type_rot_vec> surface_triad_current;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+  {
+    surface_triad_current(i_dim, 0) = surface_material_director_current(i_dim);
+    surface_triad_current(i_dim, 1) = surface_normal_current(i_dim);
+    surface_triad_current(i_dim, 2) = surface_material_director_perpendicular_current(i_dim);
+  }
+
+  // Add the offset to the surface triad.
+  LINALG::Matrix<3, 3, scalar_type_rot_vec> surface_triad_offset_fad;
+  for (unsigned int i_row = 0; i_row < 3; i_row++)
+    for (unsigned int i_col = 0; i_col < 3; i_col++)
+      surface_triad_offset_fad(i_row, i_col) = surface_triad_offset(i_row, i_col);
+  LINALG::Matrix<3, 3, scalar_type_rot_vec> surface_triad_current_with_offset;
+  surface_triad_current_with_offset.Multiply(surface_triad_current, surface_triad_offset_fad);
+
+  // Get the rotation angle.
+  LINALG::Matrix<4, 1, scalar_type_rot_vec> rot_quat;
+  LARGEROTATIONS::triadtoquaternion(surface_triad_current_with_offset, rot_quat);
+  LARGEROTATIONS::quaterniontoangle(rot_quat, psi_solid);
+
+#ifdef DEBUG
+  LINALG::Matrix<3, 1, scalar_type_rot_vec> current_normal;
+  for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
+    current_normal(i_dim) = surface_basis_current(i_dim, 2);
+  if (abs(surface_material_director_current.Dot(current_normal)) < 1e-10)
+    dserror("The current material director has to lie within the surface tangent plane.");
+#endif
+}
+
+/**
+ *
+ */
+template <typename scalar_type, typename beam, typename surface, typename mortar>
+template <typename scalar_type_rot_vec>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
+    mortar>::GetSurfaceRotationVector(const LINALG::Matrix<3, 1, double>& xi,
+    const LINALG::Matrix<surface::n_dof_, 1, double>& q_solid_ref,
+    const LINALG::Matrix<surface::n_dof_, 1, scalar_type_rot_vec>& q_solid,
+    const LINALG::Matrix<4, 1, double>& quaternion_beam_ref,
+    const INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling surface_triad_type,
+    LINALG::Matrix<3, 1, scalar_type_rot_vec>& psi_solid, const DRT::Element* element) const
+{
+  switch (surface_triad_type)
+  {
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling::averaged:
+      GetSurfaceRotationVectorAveraged<surface>(
+          xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
+      break;
+    case INPAR::BEAMTOSOLID::BeamToSolidSurfaceRotationCoupling::surface_cross_section_director:
+      GetSurfaceRotationVectorCrossSectionDirector<surface>(
+          xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid, element);
+      break;
+    default:
+      dserror("Please supply a suitable solid triad construction.");
+      break;
+  }
 }
 
 /**
@@ -360,6 +497,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   LINALG::Matrix<mortar::n_dof_, 1, double> lambda_rot;
   for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
     lambda_rot(i_dof) = lambda_rot_double[i_dof];
+
+  // Get the type of surface triad construction.
+  const auto surface_triad_type =
+      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetSurfaceTriadConstruction();
 
   // Initialize local matrices.
   LINALG::Matrix<n_dof_rot_, n_dof_rot_, double> local_stiff_BB(true);
@@ -452,7 +593,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             quaternion_beam_ref, projected_gauss_point.GetEta());
         GetSurfaceRotationVector(projected_gauss_point.GetXi(),
             this->face_element_->GetFaceReferencePosition(), q_surface, quaternion_beam_ref,
-            psi_surface, this->face_element_->GetDrtFaceElement());
+            surface_triad_type, psi_surface, this->face_element_->GetDrtFaceElement());
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_surface_val(i_dim) = psi_surface(i_dim).val();
         LARGEROTATIONS::angletoquaternion(psi_surface_val, quaternion_surface);
@@ -611,6 +752,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   LINALG::Matrix<surface::n_dof_, mortar::n_dof_, double> local_FS(true);
   LINALG::Matrix<mortar::n_dof_, 1, double> local_kappa(true);
 
+  // Get the type of surface triad construction.
+  const auto surface_triad_type =
+      this->Params()->BeamToSolidSurfaceMeshtyingParams()->GetSurfaceTriadConstruction();
+
   // Evaluate the mortar terms for this pair.
   {
     // Initialize variables.
@@ -688,7 +833,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             quaternion_beam_ref, projected_gauss_point.GetEta());
         GetSurfaceRotationVector(projected_gauss_point.GetXi(),
             this->face_element_->GetFaceReferencePosition(), q_surface, quaternion_beam_ref,
-            psi_surface, this->face_element_->GetDrtFaceElement());
+            surface_triad_type, psi_surface, this->face_element_->GetDrtFaceElement());
         LARGEROTATIONS::angletoquaternion(psi_surface, quaternion_surface);
 
         // Calculate the relative rotation vector.

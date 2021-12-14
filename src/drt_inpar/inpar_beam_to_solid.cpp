@@ -218,6 +218,13 @@ void INPAR::BEAMTOSOLID::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
     DoubleParameter("ROTATIONAL_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface rotational meshtying",
         &beam_to_solid_surface_mestying);
+    setStringToIntegralParameter<BeamToSolidSurfaceRotationCoupling>(
+        "ROTATIONAL_COUPLING_SURFACE_TRIAD", "none", "Construction method for surface triad",
+        tuple<std::string>("none", "averaged", "surface_cross_section_director"),
+        tuple<BeamToSolidSurfaceRotationCoupling>(BeamToSolidSurfaceRotationCoupling::none,
+            BeamToSolidSurfaceRotationCoupling::averaged,
+            BeamToSolidSurfaceRotationCoupling::surface_cross_section_director),
+        &beam_to_solid_surface_mestying);
 
     // Add the geometry pair input parameters.
     INPAR::GEOMETRYPAIR::SetValidParametersLineTo3D(beam_to_solid_surface_mestying);
