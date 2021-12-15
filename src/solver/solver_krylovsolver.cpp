@@ -307,10 +307,15 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
       dserror("You need the HAVE_TEKO define flag set. Works only for Trilinos Q1/2012 or newer.");
 #endif
     }
-    else if (Params().isSublist("MueLu Parameters"))
+    else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
       preconditioner_ = Teuchos::rcp(
-          new MueLuBlockPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
+          new MueLuFlBlockPreconditioner(outfile_, Params().sublist("MueLu (Fluid) Parameters")));
+    }
+    else if (Params().isSublist("MueLu (TSI) Parameters"))
+    {
+      preconditioner_ = Teuchos::rcp(
+          new MueLuTsiBlockPreconditioner(outfile_, Params().sublist("MueLu (TSI) Parameters")));
     }
     else if (Params().isSublist("MueLu (Contact) Parameters"))
     {
