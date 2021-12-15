@@ -8,10 +8,6 @@ St. Venant-Kirchhoff material
 */
 /*----------------------------------------------------------------------*/
 
-
-#include <vector>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include "stvenantkirchhoff.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -301,104 +297,4 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>*
   //**********************************************************************
   //**********************************************************************
   //**********************************************************************
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::PAR::StVKGrowth::StVKGrowth(Teuchos::RCP<MAT::PAR::Material> matdata)
-    : StVenantKirchhoff(matdata),
-      c0_(matdata->GetDouble("C0")),
-      poly_num_(matdata->GetInt("POLY_PARA_NUM")),
-      poly_params_(*matdata->Get<std::vector<double>>("POLY_PARAMS")),
-      amount_prop_growth_(static_cast<bool>(matdata->GetInt("AOS_PROP_GROWTH")))
-{
-  if (c0_ <= 0.0) dserror("Reference concentration must be greater than zero");
-  if (poly_num_ <= 0) dserror("Polynomial order must be greater than zero");
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<MAT::Material> MAT::PAR::StVKGrowth::CreateMaterial()
-{
-  return Teuchos::rcp(new MAT::StVKGrowth(this));
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::StVKGrowthType MAT::StVKGrowthType::instance_;
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::StVKGrowthType::Create(const std::vector<char>& data)
-{
-  auto* stvk_growth = new MAT::StVKGrowth();
-  stvk_growth->Unpack(data);
-  return stvk_growth;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::StVKGrowth::StVKGrowth() : StVenantKirchhoff(), growth_params_(nullptr) {}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-MAT::StVKGrowth::StVKGrowth(MAT::PAR::StVKGrowth* params)
-    : StVenantKirchhoff(static_cast<MAT::PAR::StVenantKirchhoff*>(params)), growth_params_(params)
-{
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::StVKGrowth::Pack(DRT::PackBuffer& data) const
-{
-  DRT::PackBuffer::SizeMarker sm(data);
-  sm.Insert();
-
-  // pack type of this instance of ParObject
-  int type = UniqueParObjectId();
-  AddtoPack(data, type);
-  MAT::StVenantKirchhoff::Pack(data);
-
-  // matid
-  int matid = -1;
-  if (growth_params_ != nullptr)
-    matid = growth_params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void MAT::StVKGrowth::Unpack(const std::vector<char>& data)
-{
-  std::vector<char>::size_type position = 0;
-  // extract type
-  int type = 0;
-  ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
-  // extract base class
-  std::vector<char> basedata(0);
-  ExtractfromPack(position, data, basedata);
-  MAT::StVenantKirchhoff::Unpack(basedata);
-
-  // matid and recover params_
-  int matid;
-  ExtractfromPack(position, data, matid);
-  growth_params_ = nullptr;
-  if (DRT::Problem::Instance()->Materials() != Teuchos::null)
-  {
-    if (DRT::Problem::Instance()->Materials()->Num() != 0)
-    {
-      const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
-      MAT::PAR::Parameter* mat =
-          DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
-      if (mat->Type() == MaterialType())
-        growth_params_ = static_cast<MAT::PAR::StVKGrowth*>(mat);
-      else
-        dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
-            MaterialType());
-    }
-  }
-
-  if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }

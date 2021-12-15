@@ -904,26 +904,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-  // St.Venant--Kirchhoff with growth factor
-  {
-    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_StVK_Growth",
-        "St.Venant--Kirchhoff material with growth", INPAR::MAT::m_stvenant_growth));
-
-    AddNamedReal(m, "YOUNG", "Young's modulus");
-    AddNamedReal(m, "NUE", "Poisson's ratio");
-    AddNamedReal(m, "DENS", "mass density");
-    AddNamedReal(m, "THEXPANS", "coefficient of linear thermal expansion", 0.0, true);
-    AddNamedReal(m, "C0", "Base concentration");
-    AddNamedBool(m, "AOS_PROP_GROWTH",
-        "growth proportional to amount of substance (AOS) if true or proportional to concentration "
-        "if false");
-    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
-    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
-
-    AppendMaterialDefinition(matlist, m);
-  }
-
-  /*--------------------------------------------------------------------*/
   // St.Venant--Kirchhoff with temperature
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_ThrStVenantK",
@@ -3898,6 +3878,36 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "(optional) vector containing NUMTWINSETS entries for the work hardening coefficients by "
         "twins on non-coplanar systems",
         "NUMTWINSETS", 0., true);
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // linear elastic material in one direction
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition(
+        "MAT_LinElast1D", "linear elastic material in one direction", INPAR::MAT::m_linelast1D));
+
+    AddNamedReal(m, "YOUNG", "Young's modulus");
+    AddNamedReal(m, "DENS", "mass density");
+
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // linear elastic material with growth in one direction
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_LinElast1DGrowth",
+        "linear elastic material with growth in one direction", INPAR::MAT::m_linelast1D_growth));
+
+    AddNamedReal(m, "YOUNG", "Young's modulus");
+    AddNamedReal(m, "DENS", "mass density");
+    AddNamedReal(m, "C0", "reference concentration");
+    AddNamedBool(m, "AOS_PROP_GROWTH",
+        "growth proportional to amount of substance (AOS) if true or proportional to concentration "
+        "if false");
+    AddNamedInt(m, "POLY_PARA_NUM", "number of polynomial coefficients");
+    AddNamedRealVector(m, "POLY_PARAMS", "coefficients of polynomial", "POLY_PARA_NUM");
+
     AppendMaterialDefinition(matlist, m);
   }
 

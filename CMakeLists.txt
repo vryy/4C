@@ -493,6 +493,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/herschelbulkley.cpp
   src/drt_mat/ion.cpp
   src/drt_mat/inelastic_defgrad_factors.cpp
+  src/drt_mat/lin_elast_1D.cpp
   src/drt_mat/lubrication_law.cpp
   src/drt_mat/lubrication_mat.cpp
   src/drt_mat/material.cpp

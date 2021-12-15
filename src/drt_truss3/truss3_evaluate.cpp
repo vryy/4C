@@ -16,7 +16,7 @@ adapts assembly automatically according to the thereby changed number of nodal d
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/lin_elast_1D.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -210,8 +210,8 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy)
 {
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
   // get the material law
   Teuchos::RCP<const MAT::Material> currmat = Material();
 
-  const auto* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+  const auto* actmat = static_cast<const MAT::LinElast1D*>(currmat.get());
   const double ym = actmat->Youngs();
 
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
@@ -402,8 +402,8 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
     Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector& DummyForce)
 {
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
@@ -432,8 +432,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   // calculating Green-Lagrange strain epsilon from node position by scalar product:
   const double epsilon = (lcurr - lrefe_) / lrefe_;
 
-  const double youngs_modulus =
-      static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+  const double youngs_modulus = static_cast<const MAT::LinElast1D*>(Material().get())->Youngs();
   const double density = Material()->Density();
 
   // resulting force scaled by current length
@@ -520,8 +519,8 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     Epetra_SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only spring material supported for truss element");
 
   static LINALG::Matrix<6, 1> truss_disp;
   static LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -531,8 +530,7 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
 
   const int ndof = 6;
 
-  const double youngs_modulus =
-      static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+  const double youngs_modulus = static_cast<const MAT::LinElast1D*>(Material().get())->Youngs();
 
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
   const double epsilon_GL = 0.5 * (Lcurr2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
@@ -570,8 +568,8 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_spring)
+    dserror("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
   INPAR::STR::StressType iostress;
@@ -588,7 +586,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
   const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
-  Epetra_SerialDenseMatrix stress(intpoints.nquad, MAT::NUM_STRESS_3D);
+  Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
   switch (iostress)
   {
@@ -600,16 +598,16 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
       PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
-      const double youngs_modulus =
-          static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
+      const double youngs_modulus = static_cast<const MAT::LinElast1D*>(Material().get())->Youngs();
 
       // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
       const double epsilon_GL = 0.5 * (Lcurr2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
       // 2nd Piola-Kirchhoff stress
-      const double PK2 = youngs_modulus * epsilon_GL;
+      const double youngs = static_cast<const MAT::LinElast1D*>(Material().get())->Youngs();
+      const double PK2 = youngs * epsilon_GL;
 
-      for (int ip = 0; ip < intpoints.nquad; ++ip) stress(ip, 0) = PK2;
+      for (int gp = 0; gp < intpoints.nquad; ++gp) stress(gp, 0) = PK2;
       break;
     }
     case INPAR::STR::stress_cauchy:

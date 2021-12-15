@@ -12,7 +12,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/lin_elast_1D.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -162,18 +162,18 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
     Epetra_SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
-      Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff growth material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
+      Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
-    case INPAR::MAT::m_stvenant:
+    case INPAR::MAT::m_linelast1D:
     {
       Truss3::CalcInternalForceStiffTotLag(ele_state, forcevec, stiffmat);
       break;
     }
-    case INPAR::MAT::m_stvenant_growth:
+    case INPAR::MAT::m_linelast1D_growth:
     {
       LINALG::Matrix<6, 1> truss_disp;
       LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -185,11 +185,10 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
           truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
 
       // get data from input
-      const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
-      const double c_0 = stvk_growth_mat->C0();
-      const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
-      const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
-      const double youngs_modulus = stvk_growth_mat->Youngs();
+      const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
+      const double c_0 = growth_mat->C0();
+      const std::vector<double> poly_params = growth_mat->PolyParams();
+      const bool amount_prop_growth = growth_mat->AmountPropGrowth();
 
       // get Gauss rule
       auto intpoints = DRT::UTILS::IntegrationPoints1D(gaussrule_);
@@ -212,8 +211,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
 
         // calculate stress
         const double E_el_1D =
-            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) - 1.0);
-        const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
+            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * growth_factor * growth_factor) - 1.0);
+        const double PK2_1D = 2.0 * growth_mat->Youngs() * E_el_1D / growth_factor;
 
         // calculate residual (force.vec) and linearisation (stiffmat)
         for (int row = 0; row < ndof; ++row)
@@ -225,8 +224,8 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
           {
             const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
             const double sign = (col < 3 ? 1.0 : -1.0);
-            const double dPK2_1D_du = 2.0 * youngs_modulus / growth_factor * 1.0 /
-                                      (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) * sign *
+            const double dPK2_1D_du = 2.0 * growth_mat->Youngs() / growth_factor * 1.0 /
+                                      (lrefe_ * lrefe_ * growth_factor * growth_factor) * sign *
                                       truss_disp(col);
             const double first_part = dN_dx(row) * ddef_grad_du * PK2_1D;
             const double second_part = dN_dx(row) * def_grad * dPK2_1D_du;
@@ -250,18 +249,18 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
-      Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff growth material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
+      Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
-    case INPAR::MAT::m_stvenant:
+    case INPAR::MAT::m_linelast1D:
     {
       Truss3::CalcGPStresses(params, ele_state);
       break;
     }
-    case INPAR::MAT::m_stvenant_growth:
+    case INPAR::MAT::m_linelast1D_growth:
     {
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       INPAR::STR::StressType iostress;
@@ -279,7 +278,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
       const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
-      Epetra_SerialDenseMatrix stress(intpoints.nquad, MAT::NUM_STRESS_3D);
+      Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
       switch (iostress)
       {
@@ -294,11 +293,10 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
               truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
 
           // get data from input
-          const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
-          const double c_0 = stvk_growth_mat->C0();
-          const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
-          const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
-          const double youngs_modulus = stvk_growth_mat->Youngs();
+          const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
+          const double c_0 = growth_mat->C0();
+          const std::vector<double> poly_params = growth_mat->PolyParams();
+          const bool amount_prop_growth = growth_mat->AmountPropGrowth();
 
           for (int i = 0; i < intpoints.nquad; ++i)
           {
@@ -312,8 +310,9 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
             // calculate stress
             const double E_el_1D =
-                0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) - 1.0);
-            const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
+                0.5 *
+                (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * growth_factor * growth_factor) - 1.0);
+            const double PK2_1D = 2.0 * growth_mat->Youngs() * E_el_1D / growth_factor;
 
             stress(i, 0) = PK2_1D;
           }
@@ -450,18 +449,18 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
     Epetra_SerialDenseVector& intenergy)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant_growth and
-      Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff growth material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D_growth and
+      Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic growth material supported for truss element");
 
   switch (Material()->MaterialType())
   {
-    case INPAR::MAT::m_stvenant:
+    case INPAR::MAT::m_linelast1D:
     {
       Truss3::Energy(ele_state, params, intenergy);
       break;
     }
-    case INPAR::MAT::m_stvenant_growth:
+    case INPAR::MAT::m_linelast1D_growth:
     {
       LINALG::Matrix<6, 1> truss_disp;
       LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -472,11 +471,10 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
           truss_disp, dtruss_disp_du, dN_dx, nodal_concentration, ele_state);
 
       // get data from input
-      const auto* stvk_growth_mat = static_cast<const MAT::StVKGrowth*>(Material().get());
-      const double c_0 = static_cast<const MAT::StVKGrowth*>(Material().get())->C0();
-      const std::vector<double> poly_params = stvk_growth_mat->PolyParams();
-      const bool amount_prop_growth = stvk_growth_mat->AmountPropGrowth();
-      const double youngs_modulus = stvk_growth_mat->Youngs();
+      const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
+      const double c_0 = growth_mat->C0();
+      const std::vector<double> poly_params = growth_mat->PolyParams();
+      const bool amount_prop_growth = growth_mat->AmountPropGrowth();
 
       // get Gauss rule
       auto gauss_points = DRT::UTILS::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
@@ -494,8 +492,8 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
                                : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
 
         const double E_el_1D =
-            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * std::pow(growth_factor, 2)) - 1.0);
-        const double PK2_1D = 2.0 * youngs_modulus * E_el_1D / growth_factor;
+            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * growth_factor * growth_factor) - 1.0);
+        const double PK2_1D = 2.0 * growth_mat->Youngs() * E_el_1D / growth_factor;
         eint_ = 0.5 * PK2_1D * E_el_1D * int_fac;
       }
       break;

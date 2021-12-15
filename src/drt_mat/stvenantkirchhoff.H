@@ -14,10 +14,6 @@ St. Venant-Kirchhoff material
 #include "matpar_parameter.H"
 #include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Teuchos_ParameterList.hpp>
-
 
 namespace MAT
 {
@@ -48,35 +44,7 @@ namespace MAT
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class StVenantKirchhoff
-
-    /*----------------------------------------------------------------------*/
-    /// material parameters for St. Venant--Kirchhoff growth
-    class StVKGrowth : public StVenantKirchhoff
-    {
-     public:
-      /// standard constructor
-      StVKGrowth(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// @name material parameters
-      //@{
-
-      /// reference concentration without inelastic deformation
-      const double c0_;
-
-      /// order of polynomial for inelastic growth
-      const int poly_num_;
-
-      /// parameters of polynomial for inelastic growth
-      const std::vector<double> poly_params_;
-
-      /// growth proportional to amount of substance (true) or porportional to concentration (false)
-      const bool amount_prop_growth_;
-
-      //@}
-
-      Teuchos::RCP<MAT::Material> CreateMaterial() override;
-    };
-  }  // namespace PAR
+  }     // namespace PAR
 
   class StVenantKirchhoffType : public DRT::ParObjectType
   {
@@ -178,63 +146,6 @@ namespace MAT
    private:
     /// my material parameters
     MAT::PAR::StVenantKirchhoff* params_;
-  };
-
-
-  class StVKGrowthType : public DRT::ParObjectType
-  {
-   public:
-    std::string Name() const override { return "StVKGrowthType"; }
-
-    static StVKGrowthType& Instance() { return instance_; };
-
-    DRT::ParObject* Create(const std::vector<char>& data) override;
-
-   private:
-    static StVKGrowthType instance_;
-  };
-
-  /*----------------------------------------------------------------------*/
-  /// Wrapper for St.-Venant-Kirchhoff material with growth properties
-  class StVKGrowth : public StVenantKirchhoff
-  {
-   public:
-    /// construct empty material object
-    StVKGrowth();
-
-    /// construct the material object given material parameters
-    explicit StVKGrowth(MAT::PAR::StVKGrowth* params);
-
-    int UniqueParObjectId() const override
-    {
-      return StVKGrowthType::Instance().UniqueParObjectId();
-    }
-
-    void Unpack(const std::vector<char>& data) override;
-
-    void Pack(DRT::PackBuffer& data) const override;
-
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_stvenant_growth; }
-
-    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new StVKGrowth(*this)); }
-
-    /// reference concentration without inelastic deformation
-    double C0() const { return growth_params_->c0_; }
-
-    /// parameters of polynomial for inelastic growth
-    int PolyNum() const { return growth_params_->poly_num_; }
-
-    /// parameters of polynomial for inelastic growth
-    std::vector<double> PolyParams() const { return growth_params_->poly_params_; }
-
-    /// growth proportional to amount of substance or to concentration
-    bool AmountPropGrowth() const { return growth_params_->amount_prop_growth_; }
-
-    MAT::PAR::Parameter* Parameter() const override { return growth_params_; }
-
-   private:
-    /// my material parameters
-    MAT::PAR::StVKGrowth* growth_params_;
   };
 }  // namespace MAT
 

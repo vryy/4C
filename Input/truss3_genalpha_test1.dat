@@ -67,7 +67,7 @@ NODE 2 COORD 1.000000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 TRUSS3 LINE2 1 2 MAT 1 CROSS 19e-6 KINEM totlag
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.3e9 NUE 0.3 DENS 1.384e-9 THEXPANS 0.0
+MAT 1 MAT_LinElast1D YOUNG 1.3e9 DENS 1.384e-9
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -4.1796430705801502e+00 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 5.8203569293631139e+00 TOLERANCE 1e-12
