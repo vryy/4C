@@ -421,7 +421,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const LINALG::Matrix<3, 1, dou
   LINALG::Matrix<3, 1, scalar_type_rot_vec> current_normal;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     current_normal(i_dim) = surface_basis_current(i_dim, 2);
-  if (abs(surface_material_director_current.Dot(current_normal)) < 1e-10)
+  if (abs(surface_material_director_current.Dot(current_normal)) > 1e-10)
     dserror("The current material director has to lie within the surface tangent plane.");
 #endif
 }
