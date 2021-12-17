@@ -130,7 +130,8 @@ namespace MAT
           LINALG::Matrix<6, 1>& stress,     ///< 2nd PK-stress
           double I3,                        ///< third principal invariant
           int gp,                           ///< Gauss point
-          int eleGID                        ///< element GID
+          int eleGID,                       ///< element GID
+          Teuchos::ParameterList& params    ///< Container for additional information
       );
 
       /// retrieve coefficients of first, second and third derivative

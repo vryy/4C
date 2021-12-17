@@ -25,6 +25,7 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "elast_coup13apow.H"
 #include "elast_isoexpopow.H"
 #include "elast_isomooneyrivlin.H"
+#include "elast_isomuscle_blemker.H"
 #include "elast_isotestmaterial.H"
 #include "elast_coupSaintVenantKirchhoff.H"
 #include "elast_coupsimopister.H"
@@ -82,6 +83,7 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   switch (curmat->Type())
   {
     case INPAR::MAT::mes_isoanisoexpo:
+    case INPAR::MAT::mes_isomuscleblemker:
     case INPAR::MAT::mes_coupanisoexpo:
     case INPAR::MAT::mes_coupanisoexpoactive:
     case INPAR::MAT::mes_coupanisoexpotwocoup:
@@ -354,6 +356,16 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
       auto* params = dynamic_cast<MAT::ELASTIC::PAR::IsoAnisoExpo*>(curmat->Parameter());
       return Teuchos::rcp(new IsoAnisoExpo(params));
     }
+
+    case INPAR::MAT::mes_isomuscleblemker:
+    {
+      if (curmat->Parameter() == NULL)
+        curmat->SetParameter(new MAT::ELASTIC::PAR::IsoMuscleBlemker(curmat));
+      MAT::ELASTIC::PAR::IsoMuscleBlemker* params =
+          static_cast<MAT::ELASTIC::PAR::IsoMuscleBlemker*>(curmat->Parameter());
+      return Teuchos::rcp(new IsoMuscleBlemker(params));
+    }
+
     case INPAR::MAT::mes_coupvarga:
     {
       if (curmat->Parameter() == nullptr)

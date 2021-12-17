@@ -352,6 +352,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (species in solid)
   {
@@ -369,6 +370,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // scalar transport reaction material (temperature)
   {
@@ -818,6 +820,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // material collection with chemotaxis (thon 06/15)
   {
@@ -968,6 +971,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // Thermo mechanical material with three phases with St.Venant--Kirchhoff and Fourier laws
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_ThermoMech_ThreePhase",
         "Thermo mechanical material with three phases with thermo St.Venant--Kirchhoff and Fourier "
@@ -1183,6 +1188,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*--------------------------------------------------------------------*/
   // aneurysm wall material according to Raghavan and Vorp [2000]
   {
@@ -1243,7 +1249,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
-
 
   /*--------------------------------------------------------------------*/
   // aneurysm wall material SEF according  to Raghavan and Vorp [2000],
@@ -1503,10 +1508,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-
   /*--------------------------------------------------------------------*/
-
   // compressible neo-Hooke material acc. to Holzapfel
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_CoupNeoHooke",
@@ -1611,7 +1613,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-
   // isochoric contribution of iso1pow
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -1634,7 +1635,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-
   // contribution of coup1pow
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -1668,7 +1668,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-
   // contribution of coup13apow
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_Coup13aPow",
@@ -1682,7 +1681,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*--------------------------------------------------------------------*/
-
   // isochoric contribution of expo
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoExpoPow",
@@ -1694,8 +1692,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-
   /*--------------------------------------------------------------------*/
   // isochoric contribution of mooney rivlin
   {
@@ -1705,6 +1701,27 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AddNamedReal(m, "C1", "Linear modulus for first invariant");
     AddNamedReal(m, "C2", "Linear modulus for second invariant");
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // isochoric anisotropic material with one exponential fiber family
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoMuscle_Blemker",
+        "anisotropic Blemker muscle material", INPAR::MAT::mes_isomuscleblemker));
+
+    AddNamedReal(m, "G1", "muscle along fiber shear modulus");
+    AddNamedReal(m, "G2", "muscle cross fiber shear modulus");
+    AddNamedReal(m, "P1", "linear material parameter for passive along-fiber response");
+    AddNamedReal(m, "P2", "exponential material parameter for passive along-fiber response");
+    AddNamedReal(m, "SIGMAMAX", "maximal active isometric stress");
+    AddNamedReal(m, "LAMBDAOFL", "optimal fiber stretch");
+    AddNamedReal(
+        m, "LAMBDASTAR", "stretch at which the normalized passive fiber force becomes linear");
+    AddNamedReal(m, "ALPHA", "tetanised activation level,");
+    AddNamedReal(m, "BETA", "constant scaling tanh-type activation function");
+    AddNamedReal(m, "ACTSTARTTIME", "starting time of muscle activation");
+
     AppendMaterialDefinition(matlist, m);
   }
 
@@ -1748,7 +1765,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
   /*--------------------------------------------------------------------*/
   // volumetric penalty contribution
   {
@@ -1772,7 +1788,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
-
 
   /*--------------------------------------------------------------------*/
   // volumetric power law contribution
@@ -1933,7 +1948,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
-
 
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with variable stress coefficient
@@ -2130,10 +2144,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-  /*--------------------------------------------------------------------*/
-
-  /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   // 1D Artery material with constant properties
   {
@@ -2166,7 +2176,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   // Fourier's law
   {
@@ -2179,7 +2188,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   // Fourier's law for multiple phases with variable conductivity and capacity
   {
@@ -2198,8 +2206,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-  /*----------------------------------------------------------------------*/
   /*--------------------------------------------------------------------*/
   // consolidation manager providing all common methods
   {
@@ -2229,7 +2235,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, matsoret);
   }
 
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // integration point based growth
   {
@@ -2457,7 +2462,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   // anisotropic strain-dependent growth law (Goektepe et al., J Theor Biol 2010, Lee et al., BMMB
   // 2017)
   {
@@ -2478,7 +2482,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   // anisotropic strain-dependent growth law (Goektepe et al., J Theor Biol 2010, Lee et al., BMMB
   // 2017)
   {
@@ -2498,8 +2501,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in
   // time)
@@ -2522,7 +2523,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   // anisotropic strain-dependent growth law with constant prescribed trigger (for multiscale in
   // time)
   {
@@ -2543,8 +2543,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // isotropic growth law (cf. Diss Tinkl 2015, LNM)
   {
@@ -2564,7 +2562,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   // simple atherosclerosis growth law, scalar-dependent volumetric growth
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -2578,7 +2575,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // atherosclerosis growth law, scalar depended growth in radial direction
   {
@@ -2594,7 +2590,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   // atherosclerosis growth law, scalar depended growth in radial direction
   {
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_GrowthACRadialRefConc",
@@ -2609,7 +2604,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   }
 
   /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   // constant rate growth law
   {
     auto m = Teuchos::rcp(new MaterialDefinition(
@@ -2620,8 +2614,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // growth and remodeling of arteries
   {
@@ -2730,6 +2722,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // incompressible skeleton law for porosity in porous media problems
   {
@@ -2741,6 +2734,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // incompressible skeleton law for porosity depending on the density
   {
@@ -2751,6 +2745,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // density law for constant density in porous multiphase medium
   {
@@ -2760,6 +2755,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // density law for constant density in porous multiphase medium
   {
@@ -2770,6 +2766,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "BULKMODULUS", "bulk modulus of porous medium");
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // permeability law for constant permeability in porous multiphase medium
   {
@@ -2780,6 +2777,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "VALUE", "constant value of permeability");
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // permeability law for permeability depending on saturation according to (saturation)^exp
   // in porous multiphase medium
@@ -2792,6 +2790,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "MIN_SAT", "minimum saturation which is used for calculation");
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // viscosity law for constant viscosity in porous multiphase medium
   {
@@ -2802,6 +2801,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "VALUE", "constant value of viscosity");
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // viscosity law for viscosity-dependency modelling cell adherence
   {
@@ -2814,6 +2814,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "PSI", "psi parameter for modelling cell adherence");
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity with reaction
   {
@@ -2829,6 +2830,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // hyperelastic material for poroelasticity with reaction
   {
@@ -2844,6 +2846,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "Id of DOF within scalar transport problem, which controls the reaction");
     AppendMaterialDefinition(matlist, m);
   }
+
   /*----------------------------------------------------------------------*/
   // fluid flow in a poroelastic material
   {
@@ -3403,7 +3406,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-
   /*--------------------------------------------------------------------*/
   // 0D NeoHookean Acinar material
   {
@@ -3565,7 +3567,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AppendMaterialDefinition(matlist, m);
   }
 
-  /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   // active fiber formation for the modeling of living cells
   {

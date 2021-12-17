@@ -672,7 +672,8 @@ void MAT::ViscoElastHyper::Evaluate(const LINALG::Matrix<3, 3>* defgrd,
 
   if (summandProperties_.anisomod)
   {
-    ElastHyperAddAnisotropicMod(*stress, *cmat, C_strain, iC_strain, prinv, gp, eleGID, potsum_);
+    ElastHyperAddAnisotropicMod(
+        *stress, *cmat, C_strain, iC_strain, prinv, gp, eleGID, params, potsum_);
   }
   return;
 }

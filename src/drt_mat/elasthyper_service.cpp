@@ -73,7 +73,8 @@ void MAT::ElastHyperEvaluate(const LINALG::Matrix<3, 3>& defgrd,
 
   // Evaluate anisotropic stress response from summands with modified invariants formulation
   if (properties.anisomod)
-    ElastHyperAddAnisotropicMod(stress, cmat, C_strain, iC_strain, prinv, gp, eleGID, potsum);
+    ElastHyperAddAnisotropicMod(
+        stress, cmat, C_strain, iC_strain, prinv, gp, eleGID, params, potsum);
 }
 
 void MAT::EvaluateRightCauchyGreenStrainLikeVoigt(
@@ -393,7 +394,7 @@ void MAT::ElastHyperAddAnisotropicPrinc(LINALG::Matrix<6, 1>& S_stress, LINALG::
 
 void MAT::ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
     const LINALG::Matrix<6, 1>& C_strain, const LINALG::Matrix<6, 1>& iC_strain,
-    const LINALG::Matrix<3, 1>& prinv, const int gp, int eleGID,
+    const LINALG::Matrix<3, 1>& prinv, const int gp, int eleGID, Teuchos::ParameterList& params,
     const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum)
 {
   static LINALG::Matrix<6, 1> iC_stress(false);
@@ -402,7 +403,7 @@ void MAT::ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Ma
   // ToDo: This should be solved in analogy to the solution in elast_remodelfiber.cpp
   // ToDo: i.e. by evaluating the derivatives of the potsum w.r.t. the anisotropic invariants
   for (auto& p : potsum)
-    p->AddStressAnisoModified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID);
+    p->AddStressAnisoModified(C_strain, iC_stress, cmat, S_stress, prinv(2), gp, eleGID, params);
 }
 
 void MAT::CalculateGammaDelta(LINALG::Matrix<3, 1>& gamma, LINALG::Matrix<8, 1>& delta,

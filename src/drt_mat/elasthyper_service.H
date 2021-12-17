@@ -222,11 +222,12 @@ namespace MAT
    * @param iC_strain Inverse Right Cauchy-Green deformation tensor in strain like Voigt notation
    * @param prinv Principal invariants of the Right Cauchy-Green strain tensor
    * @param eleGID Global element id
+   * @param params Container for additional information
    * @param potsum Summands of the Free-energy function
    */
   void ElastHyperAddAnisotropicMod(LINALG::Matrix<6, 1>& S_stress, LINALG::Matrix<6, 6>& cmat,
       const LINALG::Matrix<6, 1>& C_strain, const LINALG::Matrix<6, 1>& iC_strain,
-      const LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
+      const LINALG::Matrix<3, 1>& prinv, int gp, int eleGID, Teuchos::ParameterList& params,
       const std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>& potsum);
 
   /*!

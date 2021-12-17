@@ -255,13 +255,14 @@ namespace INPAR
       mes_iso2pow,       ///< isochoric general power hyperelastic potential summand for modiinv II
       mes_isoanisoexpo,  ///< isochoric anisotropic single fiber material
       mes_isoexpopow,    ///< isochoric exponential hyperelastic potential summand
-      mes_isomooneyrivlin,  ///< isochoric Mooney-Rivlin hyperelastic potential summand
-      mes_isoneohooke,      ///< isochoric Neo-Hooke hyperelastic potential summand
-      mes_isoratedep,       ///< isotropic isochoric frequency dependent viscous potential summand
-      mes_isotestmaterial,  ///< material to test the elasthyper-toolbox
-      mes_isovarga,         ///< isotropic isochoric Varga material
-      mes_isovolaaagasser,  ///< isochoric and volumetric summands for thrombus material (varible
-                            ///< stiffness)
+      mes_isomooneyrivlin,   ///< isochoric Mooney-Rivlin hyperelastic potential summand
+      mes_isomuscleblemker,  ///< isochoric Blemker muscle material
+      mes_isoneohooke,       ///< isochoric Neo-Hooke hyperelastic potential summand
+      mes_isoratedep,        ///< isotropic isochoric frequency dependent viscous potential summand
+      mes_isotestmaterial,   ///< material to test the elasthyper-toolbox
+      mes_isovarga,          ///< isotropic isochoric Varga material
+      mes_isovolaaagasser,   ///< isochoric and volumetric summands for thrombus material (variable
+                             ///< stiffness)
       mes_isovolHUdependentneohooke,  ///< isochoric and volumetric summands for HU dependent
                                       ///< material
       mes_isoyeoh,                    ///< isochoric Yeoh hyperelastic potential summand

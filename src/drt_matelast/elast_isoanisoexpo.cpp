@@ -111,7 +111,7 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* li
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 1>& rcg,
     const LINALG::Matrix<6, 1>& icg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
-    double I3, const int gp, const int eleGID)
+    double I3, const int gp, const int eleGID, Teuchos::ParameterList& params)
 {
   double incJ = std::pow(I3, -1.0 / 3.0);  // J^{-2/3}
 
