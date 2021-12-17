@@ -5,6 +5,7 @@
 
 \level 1
 Created on: Dec 1, 2011
+Modified on: Dec 17, 2021
 */
 /*----------------------------------------------------------------------*/
 
@@ -30,8 +31,8 @@ namespace LINALG
   namespace SOLVER
   {
     /*! \brief General layout of the MueLu preconditioner working with sparse matrices
-     * in the CRS format. For more specialized versions (e.g. block systems) derive from this
-     * class as it fullfills all necessary components of a MueLu preconditioner.
+     * in CRS format. For more specialized versions (e.g. block systems) derive from this
+     * class as it already owns all core components of a MueLu preconditioner.
      *
      * \author m.firmbach (modified)
      * \date 12/21
@@ -45,7 +46,7 @@ namespace LINALG
        *
        * The MueLu preconditioner only works for matrices of the type
        * Epetra_CrsMatrix. We check whether the input matrix is of proper type
-       * and throw an error if not.
+       * and throw an error if not!
        *
        * This routine either re-creates the entire preconditioner from scratch or
        * it re-uses the existing preconditioner and only updates the fine level matrix
@@ -69,7 +70,7 @@ namespace LINALG
 
       void Print(std::ostream& stream) { stream << "MueLuPreconditioner"; }
 
-      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      //! return name of sublist in paramterlist which contains parameters for preconditioner
       const std::string getParameterListName() const { return "MueLu Parameters"; }
 
      private:
@@ -77,19 +78,19 @@ namespace LINALG
       Teuchos::RCP<Epetra_CrsMatrix> Pmatrix_;
 
      protected:
-      // MueLu parameter list
+      //! MueLu parameter list
       Teuchos::ParameterList& muelulist_;
 
-      // preconditioner
+      //! preconditioner
       Teuchos::RCP<Epetra_Operator> P_;
 
-      // MueLu hierarchy
+      //! MueLu hierarchy
       Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H_;
 
     };  // class MueLuPreconditioner
 
-    /*! \brief MueLu preconditioner for blocked linear systems of equations for fluids
-     * Set of single-matrix algebraic multi-grid preconditioners for blocked problems
+
+    /*! \brief Specialized MueLu preconditioner for blocked fluid systems.
      *
      * \author m.firmbach (modified)
      * \date 12/21
@@ -103,11 +104,7 @@ namespace LINALG
        *
        * The Muelu block-preconditioner only works for matrices of the type
        * Epetra_BlockCrsMatrix. We check whether the input matrix is of proper type
-       * and throw an error if not.
-       *
-       * This routine either re-create the entire preconditioner from scratch or
-       * it re-uses the existing preconditioner and only updates the fine level matrix
-       * for the Krylov solver.
+       * and throw an error if not!
        *
        * @param create Boolean flag to enforce (re-)creation of the preconditioner
        * @param matrix BlockSparseMatrixBase to be used as input for the preconditioner
@@ -119,7 +116,7 @@ namespace LINALG
 
       void Print(std::ostream& stream) final { stream << "MueLuFlBlockPreconditioner"; }
 
-      // return name of sublist in paramterlist which contains parameters for preconditioner
+      //! return name of sublist in paramterlist which contains parameters for preconditioner
       const std::string getParameterListName() const final { return "MueLu (Fluid) Parameters"; }
 
      private:
@@ -128,8 +125,8 @@ namespace LINALG
 
     };  // class MueLuFlBlockPreconditioner
 
-    /*! \brief MueLu preconditioner for blocked linear systems of equations for tsi
-     * Set of single-matrix algebraic multi-grid preconditioners for blocked problems
+
+    /*! \brief Specialized MueLu preconditioner for blocked tsi systems.
      *
      * \author m.firmbach (modified)
      * \date 11/21
@@ -143,11 +140,7 @@ namespace LINALG
        *
        * The Muelu block-preconditioner only works for matrices of the type
        * Epetra_BlockCrsMatrix. We check whether the input matrix is of proper type
-       * and throw an error if not.
-       *
-       * This routine either re-create the entire preconditioner from scratch or
-       * it re-uses the existing preconditioner and only updates the fine level matrix
-       * for the Krylov solver.
+       * and throw an error if not!
        *
        * @param create Boolean flag to enforce (re-)creation of the preconditioner
        * @param matrix BlockSparseMatrixBase to be used as input for the preconditioner
@@ -168,8 +161,9 @@ namespace LINALG
 
     };  // class MueLuTsiBlockPreconditioner
 
-    /*! \brief MueLu preconditioner for blocked linear systems of equations for contact
-     * Set of single-matrix algebraic multi-grid preconditioners for blocked problems
+
+    /*! \brief MueLu preconditioner for blocked linear systems of equations for contact problems
+     * in saddlepoint formulation.
      *
      * \author m.mayr
      * \date
@@ -214,6 +208,7 @@ namespace LINALG
       Teuchos::RCP<BlockSparseMatrixBase> Pmatrix_;
 
     };  // class MueLuContactSpPreconditioner
+
 
     namespace MUELU
     {

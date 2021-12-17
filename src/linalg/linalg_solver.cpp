@@ -848,6 +848,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         mllist.set("repartition: enable", 0);
     }
     break;
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:   // MueLu operator (fluid)
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:     // MueLu operator (tsi)
     case INPAR::SOLVER::azprec_MueLuAMG_sym:     // MueLu operator (smoothed aggregation)
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:  // MueLu operator (Petrov-Galerkin)
     {

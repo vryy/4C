@@ -92,12 +92,6 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
   {
     if (create)
     {
-      if (!muelulist_.isParameter("MUELU_XML_FILE"))
-        dserror(
-            "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
-            "Please set it as entry 'MUELU_XML_FILE'.");
-      std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
-
       // prepare nullspace vector for MueLu
       int numdf = muelulist_.get<int>("PDE equations", -1);
       int dimns = muelulist_.get<int>("null space: dimension", -1);
@@ -110,6 +104,12 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
       nullspace = LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(rowMap, muelulist_);
 
       mueluOp->SetFixedBlockSize(numdf);
+
+      if (!muelulist_.isParameter("MUELU_XML_FILE"))
+        dserror(
+            "XML-file w/ MueLu preconditioner configuration is missing in solver parameter list. "
+            "Please set it as entry 'MUELU_XML_FILE'.");
+      std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
 
       MueLu::ParameterListInterpreter<Scalar, LocalOrdinal, GlobalOrdinal, Node> mueLuFactory(
           xmlFileName, *(mueluOp->getRowMap()->getComm()));
@@ -359,31 +359,36 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
           Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
 
+      // prepare nullspace vector for MueLu
+      int numdf = muelulist_.get<int>("PDE equations", -1);
+      int dimns = muelulist_.get<int>("null space: dimension", -1);
+      if (dimns == -1 || numdf == -1)
+        dserror("Error: PDE equations or null space dimension wrong.");
+
       // define strided maps
-      int nPDE = muelulist_.sublist("Inverse1").get<int>("PDE equations", 1);
       std::vector<size_t> stridingInfo1;
       std::vector<size_t> stridingInfo2;
-      stridingInfo1.push_back(nPDE);
+      stridingInfo1.push_back(numdf);
       stridingInfo2.push_back(1);
 
-      Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> strMap1 =
+      Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedMap1 =
           Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
               xA11->getRowMap(), stridingInfo1, xA11->getRowMap()->getIndexBase(), -1, 0));
-      Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> strMap2 =
+      Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedMap2 =
           Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
               xA22->getRowMap(), stridingInfo2, xA22->getRowMap()->getIndexBase(), -1, 0));
 
       // build map extractor
-      std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> xmaps;
-      xmaps.push_back(strMap1);
-      xmaps.push_back(strMap2);
+      std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> stridedMaps;
+      stridedMaps.push_back(stridedMap1);
+      stridedMaps.push_back(stridedMap2);
 
 #ifdef TRILINOS_Q1_2015
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, xmaps);
+          Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, stridedMaps);
 #else
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, xmaps);
+          Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, stridedMaps);
 #endif
 
       // build blocked Xpetra operator
@@ -403,31 +408,29 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
 #endif
       bOp->fillComplete();
 
-      // extract null space for primary field
-      int dimns = muelulist_.sublist("Inverse1").get<int>("null space: dimension", 1);
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector1 =
-          Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(xA11->getRowMap(), dimns, true);
-      Teuchos::RCP<std::vector<double>> nsdata =
-          muelulist_.sublist("Inverse1")
-              .get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
-
-      for (size_t i = 0; i < Teuchos::as<size_t>(dimns); i++)
+      // Get/compute nullspace vectors
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace11 = Teuchos::null;
+      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace22 = Teuchos::null;
       {
-        Teuchos::ArrayRCP<Scalar> nspVector11i = nspVector1->getDataNonConst(i);
-        const size_t myLength = nspVector1->getLocalLength();
-        for (size_t j = 0; j < myLength; j++)
+        // Extract pre-computed nullspace for block (0,0) from Baci's ML parameter list
+        nullspace11 =
+            LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(stridedMap1, muelulist_);
+
+        // Compute default nullspace for block (1,1)
         {
-          nspVector11i[j] = (*nsdata)[i * myLength + j];
-        }
-      }
+          const int dimNS2 = numdf;
+          nullspace22 = Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(stridedMap2, dimNS2);
 
-      // extract null space for secondary field
-      Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector2 =
-          Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(strMap2, 1, true);
-      Teuchos::ArrayRCP<Scalar> nsValues2 = nspVector2->getDataNonConst(0);
-      for (int j = 0; j < nsValues2.size(); ++j)
-      {
-        nsValues2[j] = 1.0;
+          for (int i = 0; i < dimNS2; ++i)
+          {
+            Teuchos::ArrayRCP<Scalar> nsValues22 = nullspace22->getDataNonConst(i);
+            int numBlocks = nsValues22.size() / dimNS2;
+            for (int j = 0; j < numBlocks; ++j)
+            {
+              nsValues22[j * dimNS2 + i] = 1.0;
+            }
+          }
+        }
       }
 
       // use parameters from user-provided XML file
@@ -437,19 +440,13 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
             "Please set it as entry 'MUELU_XML_FILE'.");
       std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
 
-      Teuchos::RCP<Teuchos::FancyOStream> fos =
-          Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-      fos->setOutputToRootOnly(0);
-      *fos << "Use XML file " << xmlFileName << " for generating MueLu multigrid hierarchy"
-           << std::endl;
-
       MueLu::ParameterListInterpreter<SC, LO, GO, NO> mueLuFactory(
           xmlFileName, *(bOp->getRangeMap()->getComm()));
 
       Teuchos::RCP<MueLu::Hierarchy<SC, LO, GO, NO>> H = mueLuFactory.CreateHierarchy();
       H->GetLevel(0)->Set("A", Teuchos::rcp_dynamic_cast<Xpetra::Matrix<SC, LO, GO, NO>>(bOp));
-      H->GetLevel(0)->Set("Nullspace1", nspVector1);
-      H->GetLevel(0)->Set("Nullspace2", nspVector2);
+      H->GetLevel(0)->Set("Nullspace1", nullspace11);
+      H->GetLevel(0)->Set("Nullspace2", nullspace22);
 
       mueLuFactory.SetupHierarchy(*H);
 
@@ -460,7 +457,7 @@ void LINALG::SOLVER::MueLuTsiBlockPreconditioner::Setup(
   }    // if (xmlfile)
   else
   {
-    dserror("Only works with .xml file");
+    dserror("The MueLu preconditioner for TSI problems only works with an appropriate .xml file");
   }
 }
 
@@ -487,6 +484,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 #endif
 
   SetupLinearProblem(matrix, x, b);
+
+  // output of usage of preconditioner
+  Teuchos::RCP<Teuchos::FancyOStream> fos =
+      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+  fos->setOutputToRootOnly(0);
+  *fos << "=== Setting up ";
+  Print(*fos);
+  *fos << " ===\n";
 
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<BlockSparseMatrixBase> A =
@@ -769,9 +774,6 @@ Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>>
 LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(
     const Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>& rowMap, Teuchos::ParameterList& muelulist)
 {
-  using Teuchos::ArrayRCP;
-  using Teuchos::RCP;
-
   // Extract info about nullspace dimension
   if (!muelulist.isParameter("null space: dimension"))
     dserror("Multigrid parameter 'null space: dimension' missing  in solver parameter list.");
@@ -781,17 +783,16 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(
 
   // Create an Xpetra::MultiVector, where the i-th column will then be filled with the i-th
   // nullspace vector
-  RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
+  Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
       Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(rowMap, nspDimension, true);
-  RCP<std::vector<double>> nsdata =
-      muelulist.get<RCP<std::vector<double>>>("nullspace", Teuchos::null);
+  Teuchos::RCP<std::vector<double>> nsdata =
+      muelulist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
   for (size_t dim = 0; dim < Teuchos::as<size_t>(nspDimension); ++dim)
   {
-    ArrayRCP<Scalar> nspVectorData = nullspace->getDataNonConst(dim);
-    const LocalOrdinal myLength = nullspace->getLocalLength();
-    for (LocalOrdinal dofLID = 0; dofLID < myLength; ++dofLID)
+    Teuchos::ArrayRCP<SC> nspVectorData = nullspace->getDataNonConst(dim);
+    const LO myLength = nullspace->getLocalLength();
+    for (LO dofLID = 0; dofLID < myLength; ++dofLID)
       nspVectorData[dofLID] = (*nsdata)[dim * myLength + dofLID];
   }
-
   return nullspace;
 }
