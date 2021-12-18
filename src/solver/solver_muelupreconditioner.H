@@ -4,8 +4,6 @@
 \brief Interface class for MueLu preconditioner
 
 \level 1
-Created on: Dec 1, 2011
-Modified on: Dec 17, 2021
 */
 /*----------------------------------------------------------------------*/
 
@@ -14,14 +12,14 @@ Modified on: Dec 17, 2021
 
 #include "solver_preconditionertype.H"
 
+// Xpetra
+#include <Xpetra_MultiVector.hpp>
+
 // MueLu
 #include <MueLu_Hierarchy.hpp>
 
 // Header files for default types must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp>
-
-// Xpetra
-#include <Xpetra_MultiVector.hpp>
 
 // Baci
 #include "../linalg/linalg_blocksparsematrix.H"
@@ -31,11 +29,10 @@ namespace LINALG
   namespace SOLVER
   {
     /*! \brief General layout of the MueLu preconditioner working with sparse matrices
-     * in CRS format. For more specialized versions (e.g. block systems) derive from this
-     * class as it already owns all core components of a MueLu preconditioner.
+     * in CRS format.
      *
-     * \author m.firmbach (modified)
-     * \date 12/21
+     * For more specialized versions (e.g. block systems) derive from this
+     * class as it already owns all core components of a MueLu preconditioner.
      */
     class MueLuPreconditioner : public PreconditionerType
     {
@@ -91,14 +88,11 @@ namespace LINALG
 
 
     /*! \brief Specialized MueLu preconditioner for blocked fluid systems.
-     *
-     * \author m.firmbach (modified)
-     * \date 12/21
      */
-    class MueLuFlBlockPreconditioner : public MueLuPreconditioner
+    class MueLuFluidBlockPreconditioner : public MueLuPreconditioner
     {
      public:
-      MueLuFlBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
+      MueLuFluidBlockPreconditioner(FILE* outfile, Teuchos::ParameterList& muelulist);
 
       /*! \brief Create and compute the preconditioner
        *
@@ -111,13 +105,13 @@ namespace LINALG
        * @param x Solution of the linear system
        * @param b Right-hand side of the linear system
        */
-      void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
+      void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+          Epetra_MultiVector* b) override;
 
-      void Print(std::ostream& stream) final { stream << "MueLuFlBlockPreconditioner"; }
+      void Print(std::ostream& stream) override { stream << "MueLuFlBlockPreconditioner"; }
 
       //! return name of sublist in paramterlist which contains parameters for preconditioner
-      const std::string getParameterListName() const final { return "MueLu (Fluid) Parameters"; }
+      const std::string getParameterListName() const override { return "MueLu (Fluid) Parameters"; }
 
      private:
       //! system of equations used for preconditioning used by P_ only
@@ -127,9 +121,6 @@ namespace LINALG
 
 
     /*! \brief Specialized MueLu preconditioner for blocked tsi systems.
-     *
-     * \author m.firmbach (modified)
-     * \date 11/21
      */
     class MueLuTsiBlockPreconditioner : public MueLuPreconditioner
     {
@@ -147,13 +138,13 @@ namespace LINALG
        * @param x Solution of the linear system
        * @param b Right-hand side of the linear system
        */
-      void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
+      void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+          Epetra_MultiVector* b) override;
 
-      void Print(std::ostream& stream) final { stream << "MueLuTsiBlockPreconditioner"; }
+      void Print(std::ostream& stream) override { stream << "MueLuTsiBlockPreconditioner"; }
 
       // return name of sublist in paramterlist which contains parameters for preconditioner
-      const std::string getParameterListName() const final { return "MueLu (TSI) Parameters"; }
+      const std::string getParameterListName() const override { return "MueLu (TSI) Parameters"; }
 
      private:
       //! system of equations used for preconditioning used by P_ only
@@ -164,9 +155,6 @@ namespace LINALG
 
     /*! \brief MueLu preconditioner for blocked linear systems of equations for contact problems
      * in saddlepoint formulation.
-     *
-     * \author m.mayr
-     * \date
      */
     class MueLuContactSpPreconditioner : public MueLuPreconditioner
     {
@@ -195,13 +183,16 @@ namespace LINALG
        * @param x Solution of the linear system
        * @param b Right-hand side of the linear system
        */
-      void Setup(
-          bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b) final;
+      void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
+          Epetra_MultiVector* b) override;
 
-      void Print(std::ostream& stream) final { stream << "MueLuContactSpPreconditioner"; }
+      void Print(std::ostream& stream) override { stream << "MueLuContactSpPreconditioner"; }
 
       /// return name of sublist in paramterlist which contains parameters for preconditioner
-      const std::string getParameterListName() const final { return "MueLu (Contact) Parameters"; }
+      const std::string getParameterListName() const override
+      {
+        return "MueLu (Contact) Parameters";
+      }
 
      private:
       //! system of equations used for preconditioning used by P_ only
@@ -229,6 +220,20 @@ namespace LINALG
         ExtractNullspaceFromMLList(
             const Teuchos::RCP<const Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>>& rowMap,
             Teuchos::ParameterList& muelulist);
+
+        /*!
+         * \brief Sets the striding maps of a matrix
+         *
+         * \note this function is copied from Xpetra and can be
+         * removed after the next trilinos update
+         *
+         * @param matrix Matrix with striding maps to be set
+         * @param rangeStridingInfo Range map striding information
+         * @param domainStridingInfo Domain map striding information
+         */
+        void convertMatrixToStridedMaps(
+            Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> matrix,
+            std::vector<size_t>& rangeStridingInfo, std::vector<size_t>& domainStridingInfo);
 
       }  // namespace UTILS
     }    // namespace MUELU

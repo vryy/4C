@@ -1956,6 +1956,7 @@ baci_test(meshtying3D_sp_std_uzawa 3 "")
 endif (TRILINOS_DEVELOP)
 
 baci_test(f2_drivencavity20x20_muelu_xml_PGAMG 2 "")
+baci_test(f2_drivencavity20x20_muelu_blocked 2 "")
 
 # testing the AMGnxn and MueLu with a TSI problem
 baci_test(tsi_simplrocketnozzle_monolithic_amgnxn_AMGBGS 2 "")

@@ -35,7 +35,6 @@
 #include <EpetraExt_BlockMapOut.h>
 
 // Xpetra
-#include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
 #ifndef TRILINOS_Q1_2015
 #include <Xpetra_IO.hpp>
@@ -159,7 +158,7 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::MueLuFlBlockPreconditioner::MueLuFlBlockPreconditioner(
+LINALG::SOLVER::MueLuFluidBlockPreconditioner::MueLuFluidBlockPreconditioner(
     FILE* outfile, Teuchos::ParameterList& muelulist)
     : MueLuPreconditioner(outfile, muelulist)
 {
@@ -167,7 +166,7 @@ LINALG::SOLVER::MueLuFlBlockPreconditioner::MueLuFlBlockPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::MueLuFlBlockPreconditioner::Setup(
+void LINALG::SOLVER::MueLuFluidBlockPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
 #ifdef TRILINOS_DEVELOP
@@ -179,9 +178,9 @@ void LINALG::SOLVER::MueLuFlBlockPreconditioner::Setup(
   SetupLinearProblem(matrix, x, b);
 
   // adapt nullspace for splitted pure fluid problem
-  int nv = 0;           // number of velocity dofs
-  int np = 0;           // number of pressure dofs
-  int ndofpernode = 0;  // dofs per node
+  int nv = 0;     // number of velocity dofs
+  int np = 0;     // number of pressure dofs
+  int numdf = 0;  // dofs per node
 
   Teuchos::RCP<BlockSparseMatrixBase> A =
       Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
@@ -195,28 +194,18 @@ void LINALG::SOLVER::MueLuFlBlockPreconditioner::Setup(
     if (create)
     {
       // fix null space for ML inverses
-      Teuchos::ParameterList& inv1 = muelulist_.sublist("SubSmoother1");
-      ndofpernode = inv1.sublist("NodalBlockInformation").get<int>("number of dofs per node", 0);
-      nv = inv1.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
-      np = inv1.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
+      numdf = muelulist_.sublist("NodalBlockInformation").get<int>("number of dofs per node", 0);
+      nv = muelulist_.sublist("NodalBlockInformation").get<int>("number of momentum dofs", 0);
+      np = muelulist_.sublist("NodalBlockInformation").get<int>("number of constraint dofs", 0);
 
       // build fluid null space in MueLu format
-      if (ndofpernode == 0 || nv == 0 || np == 0)
+      if (numdf == 0 || nv == 0 || np == 0)
         dserror("Error: PDE equations or null space dimension wrong.");
 
       // define strided maps
       std::vector<size_t> stridingInfo;
       stridingInfo.push_back(nv);
       stridingInfo.push_back(np);
-
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
-      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
-          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
 
       // create maps
       Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> epetra_fullrangemap =
@@ -228,11 +217,19 @@ void LINALG::SOLVER::MueLuFlBlockPreconditioner::Setup(
       Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> fullrangemap =
           Xpetra::StridedMapFactory<LO, GO, NO>::Build(epetra_fullrangemap, stridingInfo, -1, 0);
       Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> strMap1 =
-          Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
-              xA11->getRowMap(), stridingInfo, xA11->getRowMap()->getIndexBase(), 0, 0));
+          Xpetra::StridedMapFactory<LO, GO, NO>::Build(fullrangemap, 0);
       Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> strMap2 =
-          Teuchos::rcp(new Xpetra::StridedMap<LO, GO, NO>(
-              xA22->getRowMap(), stridingInfo, xA22->getRowMap()->getIndexBase(), 1, 0));
+          Xpetra::StridedMapFactory<LO, GO, NO>::Build(fullrangemap, 1);
+
+      // split matrix into components
+      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA11 =
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 0).EpetraMatrix()));
+      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA12 =
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(0, 1).EpetraMatrix()));
+      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA21 =
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 0).EpetraMatrix()));
+      Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> xA22 =
+          Teuchos::rcp(new EpetraCrsMatrix(A->Matrix(1, 1).EpetraMatrix()));
 
       // build map extractor
       std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> xmaps;
@@ -244,12 +241,13 @@ void LINALG::SOLVER::MueLuFlBlockPreconditioner::Setup(
           Xpetra::MapExtractorFactory<SC, LO, GO>::Build(fullrangemap, xmaps);
 #else
       Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, xmaps);
+          Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap->getMap(), xmaps);
 #endif
 
       // build blocked Xpetra operator
       Teuchos::RCP<Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>> bOp = Teuchos::rcp(
           new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 10));
+
 #ifdef TRILINOS_Q1_2015
       bOp->setMatrix(0, 0, xA11);
       bOp->setMatrix(0, 1, xA12);
@@ -266,13 +264,13 @@ void LINALG::SOLVER::MueLuFlBlockPreconditioner::Setup(
       // create velocity null space
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nspVector1 =
           Xpetra::MultiVectorFactory<SC, LO, GO, NO>::Build(strMap1, nv, true);
-      for (int i = 0; i < ndofpernode - 1; ++i)
+      for (int i = 0; i < numdf - 1; ++i)
       {
         Teuchos::ArrayRCP<SC> nsValues = nspVector1->getDataNonConst(i);
-        int numBlocks = nsValues.size() / (ndofpernode - 1);
+        int numBlocks = nsValues.size() / (numdf - 1);
         for (int j = 0; j < numBlocks; ++j)
         {
-          nsValues[j * (ndofpernode - 1) + i] = 1.0;
+          nsValues[j * (numdf - 1) + i] = 1.0;
         }
       }
 
@@ -484,14 +482,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup(
 #endif
 
   SetupLinearProblem(matrix, x, b);
-
-  // output of usage of preconditioner
-  Teuchos::RCP<Teuchos::FancyOStream> fos =
-      Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  fos->setOutputToRootOnly(0);
-  *fos << "=== Setting up ";
-  Print(*fos);
-  *fos << " ===\n";
 
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<BlockSparseMatrixBase> A =
@@ -795,4 +785,20 @@ LINALG::SOLVER::MUELU::UTILS::ExtractNullspaceFromMLList(
       nspVectorData[dofLID] = (*nsdata)[dim * myLength + dofLID];
   }
   return nullspace;
+}
+
+void LINALG::SOLVER::MUELU::UTILS::convertMatrixToStridedMaps(
+    Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> matrix, std::vector<size_t>& rangeStridingInfo,
+    std::vector<size_t>& domainStridingInfo)
+{
+  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> stridedRowMap =
+      Xpetra::StridedMapFactory<LO, GO, NO>::Build(matrix->getRowMap(), rangeStridingInfo, -1, 0);
+  Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> stridedColMap =
+      Xpetra::StridedMapFactory<LO, GO, NO>::Build(matrix->getColMap(), domainStridingInfo, -1, 0);
+
+  if (matrix->IsView("stridedMaps") == true)
+  {
+    matrix->RemoveView("stridedMaps");
+    matrix->CreateView("stridedMaps", stridedRowMap, stridedColMap);
+  }
 }

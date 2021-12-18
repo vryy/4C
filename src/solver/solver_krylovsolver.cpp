@@ -236,12 +236,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
       preconditioner_ = Teuchos::rcp(
           new LINALG::SOLVER::MueLuPreconditioner(outfile_, Params().sublist("MueLu Parameters")));
     }
-    else if (Params().isSublist("MueLu (Contact) Parameters"))
-    {
-#ifndef TRILINOS_DEVELOP
-      dserror("MueLu (Contact) preconditioner not available in Trilinos Q1_2015 or Q4_2019.");
-#endif
-    }
     else if (azlist.get<int>("AZ_precond") == AZ_none)  // FIXME Attention: this is dangerous.
     {
       preconditioner_ = Teuchos::rcp(new LINALG::SOLVER::NonePreconditioner(outfile_, Params()));
@@ -309,8 +303,8 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     }
     else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
-      preconditioner_ = Teuchos::rcp(
-          new MueLuFlBlockPreconditioner(outfile_, Params().sublist("MueLu (Fluid) Parameters")));
+      preconditioner_ = Teuchos::rcp(new MueLuFluidBlockPreconditioner(
+          outfile_, Params().sublist("MueLu (Fluid) Parameters")));
     }
     else if (Params().isSublist("MueLu (TSI) Parameters"))
     {
