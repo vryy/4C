@@ -235,6 +235,12 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
       // local storage position of desired dof gid
       discretization_->Dof(ele->Nodes()[numbering[inode]], nodedofs);
 
+      // adjust resultdofs according to elements dof
+      if (nodedofs.size() < result_num_dofs_per_node)
+      {
+        result_num_dofs_per_node = nodedofs.size();
+      }
+
       for (unsigned int idof = 0; idof < result_num_dofs_per_node; ++idof)
       {
         const int lid =
