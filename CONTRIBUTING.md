@@ -140,23 +140,21 @@ Please see [this wiki page](https://gitlab.lrz.de/baci/baci/wikis/Doxygen) for o
 
 #### Integrate changes from `master` into your feature branch
 
-While working on your feature in your local `<branchName>` branch in BACI, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is
+While working on your feature in your local `<branchName>` branch in BACI, other commits will likely make it into the remote `master` branch.  There are a variety of ways to incorporate these changes into your local feature branch. Our preferred possibility is a rebase onto the newest available `master`, e.g. by running:
 
 ```bash
-git checkout master
-git pull
-git checkout <branchName>
-git merge master
+git fetch
+git rebase -i origin/master
 ```
 
-though there are others that are equally valid.
+For more information on `git rebase` you may want to check out [the documentation](https://git-scm.com/book/en/v2/Git-Branching-Rebasing).
 
-> **Note:** It might happen that conflicts arise during the `git merge master` operation. After seeing a conflict, you can do two things:
+> **Note:** It might happen that conflicts arise during the `git rebase` operation. After seeing a conflict, you can do two things:
 >
-> * Decide not to merge. Run `git merge --abort` to abort the merge operation and to restore your version of the code (without incorporating changes from `master`).
-> * Resolve the conflicts. Git will mark the conflicts in the working tree. Edit the files into shape and `git add` them to the index. Use `git commit` to seal the deal.
+> * Decide not to rebase. Run `git rebase --abort` to abort the rebase operation and to restore your version of the code (without incorporating changes from `master`).
+> * Resolve the conflicts. Git will mark the conflicts in the working tree. Edit the files into shape and `git add` them to the index. The editing is especially simple if you run `git mergetool`, which guides you through conflict resolution. Use `git commit` to seal the deal. 
 
-> **Note:** You might want to integrate changes from `master` on a regular basis to ease resolving of possible conflicts.
+> **Note:** You might want to integrate changes from `master` in this fashion on a regular basis to ease resolving of possible conflicts.
 
 [↑ Contents](#contents)
 
@@ -180,8 +178,6 @@ Push your local feature branch up to the remote with:
 ```bash
 git push --set-upstream origin <branchName>
 ```
-
-> **Important**: Use `git rebase -i` only on commits that haven't been pushed to the remote, yet.
 
 #### Create a Merge Request
 
@@ -230,7 +226,7 @@ rather than having to look at the entire change set at once.
 #### Feedback, Review, and Approval
 
 At this point you'll enter into a stage where you and various BACI developers will iterate back and forth until your changes are in an acceptable state and can be merged in.
-If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote.  Make sure you don't delete your remote feature branch before your merge request has been merged.
+If you need to make changes to your merge request, make additional commits on your `<branchName>` branch and push them up to the remote. If the changes are minor changes (typos, renames, etc.) compared to the original commits, please add them to the respective commits, to keep the commit log meaningful. This can be achieved with `git rebase` and `git commit --amend`. Make sure you don't delete your remote feature branch before your merge request has been merged.
 
 > Independent of your level of expertise, experience with BACI, employment status, or whatsoever, you are encouraged to actively participate in this process _in the best interest of collaborative code development_. **Every contribution is valuable!**
 
@@ -245,7 +241,7 @@ To stimulate an open and constructive discussion and to get the MR ready to be m
 Some remarks on code review:
 
 - Code review is intended to be a constructive discussion about the **Why?** and **How?** of the proposed changes.
-- Recongnizing the fact, that there might be more than one good solution to a given problem, code review is intended to increase overall code quality and hopefully detect some critical points before merging.
+- Recognizing the fact, that there might be more than one good solution to a given problem, code review is intended to increase overall code quality and hopefully detect some critical points before merging.
 - We have a few mandatory [coding guidelines](https://gitlab.lrz.de/baci/baci/-/wikis/Baci-development-guidelines#coding-guidelines) in place, that need to be enforced during code review.
 
 [↑ Contents](#contents)
@@ -258,6 +254,9 @@ To merge changes into `master`, a feature branch needs to satisfy the following 
 * No build errors and warnings
 * All tests are passing.
 * Approval of the changes by at least one respective code owner (cf. `<path/to/baci-source-code>/.gitlab/CODEOWNERS.md`)
+
+Before the merge is performed, please rebase your branch into a final clean state. For instance, if you added small
+modifications during review these should be squashed into the appropriate commits, as the exact history of these changes is not of interest in the long run and pollutes the log.
 
 When these conditions are met,
 the merge can be triggered using the "Merge" button on the merge request page on GitLab.
