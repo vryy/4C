@@ -1,0 +1,11 @@
+----------- Mesh contents -----------
+Mesh consists of 8 Nodes, 1 Elements, organized in 
+1 ElementBlocks, 0 NodeSets, 0 SideSets 
+------------------------------------------------BCSPECS
+Element Block, named: 
+of Shape: HEX8
+has 1 Elements
+*eb1="ELEMENT"
+sectionname="STRUCTURE"
+description="MAT 1 KINEM nonlinear EAS none"
+elementname="SOLIDH8"

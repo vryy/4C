@@ -1929,6 +1929,9 @@ baci_framework_test(tutorial_fluid 2 "")
 baci_framework_test(tutorial_fsi 2 "")
 baci_framework_test(tutorial_fsi_3d 2 fsi_part_struct_solver.xml)
 
+# generate default head file and test pre_exo using generated head file
+pre_processing(pre_exo_cube 1)
+
 # cut test
 cut_test(2)
 
