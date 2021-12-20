@@ -38,7 +38,7 @@ variables:
 
     # Flags for entering interactive mode on specific machines # (0: off, 1: on)
     GITLAB_INTERACTIVE_MODE: "0"
-    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
+    # Flag for the machine to start interactive session (none, lnm_workstation, lnm_workstation_ubuntu, lnm_bruteforce_icc, lnm_bruteforce_gcc, lnm_deep, lnm_schmarrn, imcs_ubuntu20)
     GITLAB_INTERACTIVE_MACHINE: "none"
     # Flags for doing a clean build in interactive mode # (0: off, 1: on)
     GITLAB_INTERACTIVE_CLEAN: "0"
@@ -457,6 +457,16 @@ lnm-codeclimate:
     tags:
         - lnm-clangtidy-codeclimate
 
+lnm-buildtest_minimal_ubuntu2004:
+    <<: *buildtest_minimal
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-minimal-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation_ubuntu20-04.config"
+    tags:
+        - lnm-ubuntu
+    needs: ["checkcode"]
+
 lnm-buildtest_minimal:
     <<: *buildtest_minimal
     variables:
@@ -466,6 +476,16 @@ lnm-buildtest_minimal:
         CTEST_DROP_SITE_CDASH_GITLAB: "1"
     tags:
         - lnm-release-mastermod-minimal
+    needs: ["checkcode"]
+
+lnm-buildtest_full_ubuntu2004:
+    <<: *buildtest_full
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation_ubuntu20-04.config"
+    tags:
+        - lnm-ubuntu
     needs: ["checkcode"]
 
 lnm-buildtest_full:
@@ -490,6 +510,20 @@ lnm-workstation-buildtest_interactive:
         - lnm-workstation-interactive
     rules:
         - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_workstation"'
+          when: always
+
+lnm-workstation-buildtest_ubuntu2004_interactive:
+    <<: *buildtest_interactive
+    variables:
+        TEST_TAG: ""
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-Ubuntu2004-interactive-$TEST_TAG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation_ubuntu20-04.config"
+        GIT_STRATEGY: fetch
+    tags:
+        - lnm-ubuntu-interactive
+    rules:
+        - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_workstation_ubuntu"'
           when: always
 
 lnm-buildtest_coverage_weekly:
@@ -552,6 +586,16 @@ pages: # job name needs to be pages
             - master
     tags:
         - lnm-release-weekly-coverage
+
+lnm-buildtest_daily_ubuntu2004:
+    <<: *buildtest_daily
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation_ubuntu20-04.config"
+    tags:
+        - lnm-ubuntu
+    needs: ["checkcode"]
 
 lnm-buildtest_daily:
     <<: *buildtest_daily
@@ -695,6 +739,16 @@ lnm-buildtest-schmarrn_interactive:
     rules:
         - if: '$GITLAB_INTERACTIVE_MODE == "1" && $GITLAB_INTERACTIVE_MACHINE == "lnm_schmarrn"'
           when: always
+
+lnm-buildtest_daily_debug_ubuntu2004:
+    <<: *buildtest_daily_debug
+    variables:
+        CTEST_MAKE: "make full -j3"
+        CTEST_BUILD_NAME_GITLAB: "LnM-Workstation DEBUG-GITLAB"
+        CTEST_BUILD_CONFIG_GITLAB: "lnm_workstation_ubuntu20-04.config"
+    tags:
+        - lnm-ubuntu
+    needs: ["checkcode"]
 
 lnm-buildtest_daily_debug:
     <<: *buildtest_daily_debug
