@@ -48,39 +48,34 @@ void MAT::ELASTIC::IsoVarga::AddShearMod(bool& haveshearmod,  ///< non-zero shea
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(
-    LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
-    LINALG::Matrix<6, 1>&
-        delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
-    const LINALG::Matrix<3, 1>&
-        modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]
-)
+void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(LINALG::Matrix<3, 1>& modgamma,
+    LINALG::Matrix<6, 1>& moddelta, const LINALG::Matrix<3, 1>& modstr)
 {
   // parameters
   const double alpha = 2.0 * params_->mue_ - params_->beta_;
   const double beta = params_->beta_;
 
   // first derivatives
-  // \frac{\partial Psi}{\partial \lambda_1}
-  gamma(0) += alpha - beta / (modstr(0) * modstr(0));
-  // \frac{\partial Psi}{\partial \lambda_2}
-  gamma(1) += alpha - beta / (modstr(1) * modstr(1));
-  // \frac{\partial Psi}{\partial \lambda_3}
-  gamma(2) += alpha - beta / (modstr(2) * modstr(2));
+  // \frac{\partial Psi}{\partial \bar{\lambda}_1}
+  modgamma(0) += alpha - beta / (modstr(0) * modstr(0));
+  // \frac{\partial Psi}{\partial \bar{\lambda}_2}
+  modgamma(1) += alpha - beta / (modstr(1) * modstr(1));
+  // \frac{\partial Psi}{\partial \bar{\lambda}_3}
+  modgamma(2) += alpha - beta / (modstr(2) * modstr(2));
 
   // second derivatives
-  // \frac{\partial^2 Psi}{\partial\lambda_1^2}
-  delta(0) += 2.0 * beta / (modstr(0) * modstr(0) * modstr(0));
-  // \frac{\partial^2 Psi}{\partial\lambda_2^2}
-  delta(1) += 2.0 * beta / (modstr(1) * modstr(1) * modstr(1));
-  // \frac{\partial^2 Psi}{\partial\lambda_3^2}
-  delta(2) += 2.0 * beta / (modstr(2) * modstr(2) * modstr(2));
-  // \frac{\partial^2 Psi}{\partial\lambda_1 \partial\lambda_2}
-  delta(3) += 0.0;
-  // \frac{\partial^2 Psi}{\partial\lambda_2 \partial\lambda_3}
-  delta(4) += 0.0;
-  // \frac{\partial^2 Psi}{\partial\lambda_3 \partial\lambda_1}
-  delta(5) += 0.0;
+  // \frac{\partial^2 Psi}{\partial\bar{\lambda}_1^2}
+  moddelta(0) += 2.0 * beta / (modstr(0) * modstr(0) * modstr(0));
+  // \frac{\partial^2 Psi}{\partial\bar{\lambda}_2^2}
+  moddelta(1) += 2.0 * beta / (modstr(1) * modstr(1) * modstr(1));
+  // \frac{\partial^2 Psi}{\partial\bar{\lambda}_3^2}
+  moddelta(2) += 2.0 * beta / (modstr(2) * modstr(2) * modstr(2));
+  // \frac{\partial^2 Psi}{\partial\bar{\lambda}_1 \partial\bar{\lambda}_2}
+  moddelta(3) += 0.0;
+  // \frac{\partial^2 Psi}{\partial\bar{\lambda}_2 \partial\bar{\lambda}_3}
+  moddelta(4) += 0.0;
+  // \frac{\partial^2 Psi}{\partial\bar{\lambda}_3 \partial\bar{\lambda}_1}
+  moddelta(5) += 0.0;
 
   // done
   return;
