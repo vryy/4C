@@ -9,18 +9,12 @@ The input line should read
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coupblatzko.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       mue_(matdata->GetDouble("MUE")),
@@ -29,15 +23,8 @@ MAT::ELASTIC::PAR::CoupBlatzKo::CoupBlatzKo(const Teuchos::RCP<MAT::PAR::Materia
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupBlatzKo::CoupBlatzKo(MAT::ELASTIC::PAR::CoupBlatzKo* params) : params_(params) {}
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -64,11 +51,6 @@ void MAT::ELASTIC::CoupBlatzKo::AddStrainEnergy(double& psi, const LINALG::Matri
     psi += psiadd;
 }
 
-
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -92,12 +74,8 @@ void MAT::ELASTIC::CoupBlatzKo::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dP
                       pow(prinv(2), beta - 2.) * (beta - 1.))) *
                   0.5;
   ddPII(3) -= (1. - f) * 0.5 * mue / prinv(2) / prinv(2);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10, 1>& dddPIII_iso,
     const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -119,10 +97,7 @@ void MAT::ELASTIC::CoupBlatzKo::AddThirdDerivativesPrincipalIso(LINALG::Matrix<1
 
   dddPIII_iso(8) += -(-1. + f) * mu * pow(prinv(2), -3.);
 }
-/*----------------------------------------------------------------------*/
 
-
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupBlatzKo::AddCoupDerivVol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
@@ -174,4 +149,3 @@ void MAT::ELASTIC::CoupBlatzKo::AddCoupDerivVol(
                 12. * pow(J * J, beta) * pow(J, -4.)) /
             2.;
 }
-/*----------------------------------------------------------------------*/

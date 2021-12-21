@@ -9,17 +9,12 @@ The input line should read
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coupmooneyrivlin.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -29,17 +24,11 @@ MAT::ELASTIC::PAR::CoupMooneyRivlin::CoupMooneyRivlin(
 {
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupMooneyRivlin::CoupMooneyRivlin(MAT::ELASTIC::PAR::CoupMooneyRivlin* params)
     : params_(params)
 {
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -55,9 +44,6 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddStrainEnergy(double& psi, const LINALG::
          c3 * pow((sqrt(prinv(2)) - 1.), 2.);
 }
 
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupMooneyRivlin::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -70,12 +56,8 @@ void MAT::ELASTIC::CoupMooneyRivlin::AddDerivativesPrincipal(LINALG::Matrix<3, 1
   dPI(2) += c3 * (1 - std::pow(prinv(2), -0.5)) - (c1 + 2. * c2) * std::pow(prinv(2), -1.);
 
   ddPII(2) += (c1 + 2 * c2) * std::pow(prinv(2), -2.) + 0.5 * c3 * std::pow(prinv(2), -1.5);
-
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupMooneyRivlin::AddCoupDerivVol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {

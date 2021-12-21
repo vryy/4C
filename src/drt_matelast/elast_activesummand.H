@@ -22,6 +22,7 @@ namespace MAT
     {
      public:
       ~ActiveSummand() override = default;
+
       /*!
        * \brief adds the active part of the summand to the stress and stiffness matrix
        *
@@ -38,7 +39,6 @@ namespace MAT
           LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
           int gp,                          ///< Gauss point
           int eleGID) const = 0;           ///< element GID
-
 
       /*!
        * \brief Evaluates the first derivative of active fiber potential w.r.t. the active fiber

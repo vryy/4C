@@ -5,12 +5,12 @@
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoexpobase.H"
 
 #include "../drt_mat/matpar_material.H"
+
 
 MAT::ELASTIC::PAR::CoupAnisoExpoBase::CoupAnisoExpoBase(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
@@ -33,9 +33,6 @@ MAT::ELASTIC::CoupAnisoExpoBase::CoupAnisoExpoBase(MAT::ELASTIC::PAR::CoupAnisoE
 {
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoBase::AddStrainEnergy(double& psi,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
     const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
@@ -113,8 +110,6 @@ void MAT::ELASTIC::CoupAnisoExpoBase::EvaluateSecondDerivativesAniso(
                    std::exp(k2 * std::pow((I4 - scalarProduct), 2));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::CoupAnisoExpoBase::GetDerivativesAniso(LINALG::Matrix<2, 1, T>& dPI_aniso,
     LINALG::Matrix<3, 1, T>& ddPII_aniso, LINALG::Matrix<4, 1, T>& dddPIII_aniso,
@@ -144,8 +139,6 @@ void MAT::ELASTIC::CoupAnisoExpoBase::GetDerivativesAniso(LINALG::Matrix<2, 1, T
                      (I4 - scalarProduct) * std::exp(k2 * std::pow((I4 - scalarProduct), 2));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoBase::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int gp, const int eleGID)

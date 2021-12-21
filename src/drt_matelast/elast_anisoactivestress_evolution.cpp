@@ -7,8 +7,6 @@
 */
 /*---------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_anisoactivestress_evolution.H"
 
 #include "../drt_mat/matpar_material.H"
@@ -17,9 +15,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/anisotropy_extension.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -38,9 +34,6 @@ MAT::ELASTIC::PAR::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
 {
 }
 
-/*----------------------------------------------------------------------*
- *         Constructor Material Parameter Class                         *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
     MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params)
     : params_(params),
@@ -53,17 +46,12 @@ MAT::ELASTIC::AnisoActiveStress_Evolution::AnisoActiveStress_Evolution(
                                              FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
 }
 
-/*----------------------------------------------------------------------*
- *            Constructor Material Class                               *
- *----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, tauc_n_);
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -77,8 +65,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::RegisterAnisotropyExtensions(
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::Setup(
     int numgp, DRT::INPUT::LineDefinition* linedef)
 {
@@ -102,8 +88,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::PostSetup(Teuchos::ParameterList
   Summand::PostSetup(params);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
@@ -211,8 +195,6 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::AddStressAnisoPrincipal(
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
@@ -230,13 +212,9 @@ void MAT::ELASTIC::AnisoActiveStress_Evolution::GetFiberVecs(
   fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
-/*----------------------------------------------------------------------*
- |  Update internal stress variables              (public)         05/08|
- *----------------------------------------------------------------------*/
+// Update internal stress variables
 void MAT::ELASTIC::AnisoActiveStress_Evolution::Update() { tauc_n_ = tauc_np_; }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::AnisoActiveStress_Evolution::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {

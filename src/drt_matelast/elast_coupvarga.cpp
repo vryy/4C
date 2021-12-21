@@ -8,31 +8,19 @@ The input line should read
 \level 2
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coupvarga.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupVarga::CoupVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->GetDouble("MUE")), beta_(matdata->GetDouble("BETA"))
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupVarga::CoupVarga(MAT::ELASTIC::PAR::CoupVarga* params) : params_(params) {}
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod                                           ///< variable to add upon
     ) const
@@ -42,13 +30,8 @@ void MAT::ELASTIC::CoupVarga::AddShearMod(bool& haveshearmod,  ///< non-zero she
 
   // material parameters for isochoric part
   shearmod += params_->mue_;
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
     LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
     LINALG::Matrix<6, 1>&
@@ -81,9 +64,4 @@ void MAT::ELASTIC::CoupVarga::AddCoefficientsStretchesPrincipal(
   delta(4) += 0.0;
   // \frac{\partial^2 Psi}{\partial\lambda_3 \partial\lambda_1}
   delta(5) += 0.0;
-
-  // done
-  return;
 }
-
-/*----------------------------------------------------------------------*/

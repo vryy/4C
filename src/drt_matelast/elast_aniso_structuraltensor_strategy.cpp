@@ -15,9 +15,7 @@
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_lib/voigt_notation.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -70,30 +68,18 @@ MAT::ELASTIC::PAR::StructuralTensorParameter::StructuralTensorParameter(
     dserror("Invalid choice of parameter 'DISTR' in anisotropic material definition.");
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  rauch 10/17 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::StructuralTensorStrategyBase::StructuralTensorStrategyBase(
     MAT::ELASTIC::PAR::StructuralTensorParameter* params)
     : params_(params)
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  rauch 10/17 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::StructuralTensorStrategyStandard::StructuralTensorStrategyStandard(
     MAT::ELASTIC::PAR::StructuralTensorParameter* params)
     : StructuralTensorStrategyBase(params)
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  rauch 10/17 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
     StructuralTensorStrategyByDistributionFunction(
         MAT::ELASTIC::PAR::StructuralTensorParameter* params)
@@ -101,10 +87,6 @@ MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                   (public)  rauch 10/17 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::
     StructuralTensorStrategyDispersedTransverselyIsotropic(
         MAT::ELASTIC::PAR::StructuralTensorParameter* params)
@@ -112,9 +94,6 @@ MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::
 {
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
     const LINALG::Matrix<3, 1>& M, LINALG::Matrix<6, 1>& result)
 {
@@ -125,36 +104,24 @@ void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
   result(5) = M(0) * M(2);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyBase::DyadicProduct(
     const LINALG::Matrix<3, 1>& M, LINALG::Matrix<3, 3>& result)
 {
   result.MultiplyNT(M, M);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
   DyadicProduct(fiber_vector, structural_tensor_stress);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyStandard::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
 {
   DyadicProduct(fiber_vector, structural_tensor);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
@@ -313,10 +280,6 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
   structural_tensor_stress.Scale(1.0 / trace);
 }
 
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
 {
@@ -325,9 +288,6 @@ void MAT::ELASTIC::StructuralTensorStrategyByDistributionFunction::SetupStructur
   UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<6, 1>& structural_tensor_stress)
 {
@@ -344,10 +304,6 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::Setup
   structural_tensor_stress.Update(c1, Identity, (1.0 - 3.0 * c1));
 }
 
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::SetupStructuralTensor(
     const LINALG::Matrix<3, 1>& fiber_vector, LINALG::Matrix<3, 3>& structural_tensor)
 {
@@ -356,9 +312,6 @@ void MAT::ELASTIC::StructuralTensorStrategyDispersedTransverselyIsotropic::Setup
   UTILS::VOIGT::Stresses::VectorToMatrix(structural_tensor_stress, structural_tensor);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 double MAT::ELASTIC::StructuralTensorStrategyBase::GetResidualTol()
 {
   double restol = -1.0;

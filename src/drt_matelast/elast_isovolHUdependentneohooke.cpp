@@ -14,9 +14,7 @@ CT_MIN 30.0 CT_MAX 600.0 NUE 0.49 BETA -2.0
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
@@ -28,36 +26,23 @@ MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                 (public)   AMaier 06/11 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(
     MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params)
     : params_(params)
 {
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, alpha_);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   ExtractfromPack(position, data, alpha_);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   double HU = 0.0;
@@ -110,10 +95,6 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddStrainEnergy(double& psi,
     psi += kappa / 2. * pow(std::log(modinv(2)), 2.);
 }
 
-
-/*----------------------------------------------------------------------
- *                                                      birzle 12/2014  */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
     LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
@@ -126,8 +107,4 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::AddDerivativesModified(LINALG::Mat
   ddPmodII(2) +=
       (2. * alpha_ * (-1. + std::pow(modinv(2), -params_->beta_) * (1. + params_->beta_))) /
       ((1. - 2. * params_->nue_) * params_->beta_ * modinv(2) * modinv(2));
-
-  return;
 }
-
-/*----------------------------------------------------------------------*/

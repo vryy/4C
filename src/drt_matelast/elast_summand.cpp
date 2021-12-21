@@ -8,7 +8,6 @@ Interface class for materials of (visco)elasthyper toolbox.
 */
 /*----------------------------------------------------------------------*/
 
-
 #include "elast_couplogneohooke.H"
 #include "elast_couplogmixneohooke.H"
 #include "elast_coupexppol.H"
@@ -59,10 +58,6 @@ Interface class for materials of (visco)elasthyper toolbox.
 #include "../drt_mat/matpar_bundle.H"
 #include "elast_summand.H"
 
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {
   // for the sake of safety
@@ -435,30 +430,20 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
   return Teuchos::null;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Summand::AddShearMod(bool& haveshearmod, double& shearmod) const
 {
   dserror("MAT::ELASTIC::Summand::AddShearMod: Add Shear Modulus not implemented - do so!");
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
 int MAT::ELASTIC::Summand::UniqueParObjectId() const { return -1; }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Summand::Pack(DRT::PackBuffer& data) const { return; }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Summand::Unpack(const std::vector<char>& data) { return; };
 
-/*----------------------------------------------------------------------*
- * Function which reads in the given fiber value due to the
- * FIBER1 nomenclature
- *----------------------------------------------------------------------*/
+
+// Function which reads in the given fiber value due to the FIBER1 nomenclature
 void MAT::ELASTIC::Summand::ReadFiber(DRT::INPUT::LineDefinition* linedef,
     const std::string& specifier, LINALG::Matrix<3, 1>& fiber_vector)
 {
@@ -476,10 +461,7 @@ void MAT::ELASTIC::Summand::ReadFiber(DRT::INPUT::LineDefinition* linedef,
   for (int i = 0; i < 3; ++i) fiber_vector(i) = fiber1[i] / f1norm;
 }
 
-/*----------------------------------------------------------------------*
- * Function which reads in the given fiber value due to the
- * CIR-AXI-RAD nomenclature
- *----------------------------------------------------------------------*/
+// Function which reads in the given fiber value due to the CIR-AXI-RAD nomenclature
 void MAT::ELASTIC::Summand::ReadRadAxiCir(
     DRT::INPUT::LineDefinition* linedef, LINALG::Matrix<3, 3>& locsys)
 {

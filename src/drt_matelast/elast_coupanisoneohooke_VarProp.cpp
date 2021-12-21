@@ -5,9 +5,8 @@
 \level 3
 
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoneohooke_VarProp.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
@@ -16,9 +15,7 @@
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -31,27 +28,18 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
     MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp* params)
     : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -59,8 +47,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::UnpackSummand(
   ExtractfromPack(position, data, A_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
@@ -137,8 +123,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(int numgp, DRT::INPUT::LineD
     dserror("INIT mode not implemented");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
@@ -159,8 +143,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
   // cmat.MultiplyNT(delta, A_, A_, 1.0);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
@@ -168,8 +150,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::GetFiberVecs(
   fibervecs.push_back(a_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {

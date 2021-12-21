@@ -10,32 +10,22 @@ isochoric parts of the Elasthyper-Toolbox.
 
 
 *----------------------------------------------------------------------*/
-/* macros */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_isotestmaterial.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::IsoTestMaterial::IsoTestMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->GetDouble("C1")), c2_(matdata->GetDouble("C2"))
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoTestMaterial::IsoTestMaterial(MAT::ELASTIC::PAR::IsoTestMaterial* params)
     : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -55,9 +45,6 @@ void MAT::ELASTIC::IsoTestMaterial::AddStrainEnergy(double& psi, const LINALG::M
          d * (modinv(0) - 3) * (modinv(1) - 3);
 }
 
-/*----------------------------------------------------------------------
- *                                                      birzle 11/2014  */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoTestMaterial::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
     LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
@@ -73,10 +60,4 @@ void MAT::ELASTIC::IsoTestMaterial::AddDerivativesModified(LINALG::Matrix<3, 1>&
   ddPmodII(0) += c1;
   ddPmodII(1) += c2;
   ddPmodII(5) += d;
-
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/

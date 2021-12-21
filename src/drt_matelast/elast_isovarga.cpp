@@ -9,45 +9,25 @@ The input line should read
 
 */
 
-/*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_isovarga.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::IsoVarga::IsoVarga(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->GetDouble("MUE")), beta_(matdata->GetDouble("BETA"))
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoVarga::IsoVarga(MAT::ELASTIC::PAR::IsoVarga* params) : params_(params) {}
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVarga::AddShearMod(bool& haveshearmod,  ///< non-zero shear modulus was added
-    double& shearmod                                          ///< variable to add upon
-    ) const
+void MAT::ELASTIC::IsoVarga::AddShearMod(bool& haveshearmod, double& shearmod) const
 {
   // indeed, a shear modulus is provided
   haveshearmod = haveshearmod or true;
 
   // material parameters for isochoric part
   shearmod += params_->mue_;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(LINALG::Matrix<3, 1>& modgamma,
     LINALG::Matrix<6, 1>& moddelta, const LINALG::Matrix<3, 1>& modstr)
 {
@@ -76,9 +56,4 @@ void MAT::ELASTIC::IsoVarga::AddCoefficientsStretchesModified(LINALG::Matrix<3, 
   moddelta(4) += 0.0;
   // \frac{\partial^2 Psi}{\partial\bar{\lambda}_3 \partial\bar{\lambda}_1}
   moddelta(5) += 0.0;
-
-  // done
-  return;
 }
-
-/*----------------------------------------------------------------------*/

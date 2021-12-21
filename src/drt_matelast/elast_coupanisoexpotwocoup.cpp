@@ -7,9 +7,8 @@ B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
 \level 2
 
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoexpotwocoup.H"
 
 #include "../drt_mat/matpar_material.H"
@@ -17,9 +16,7 @@ B6 11.120 A8 0.216 B8 11.436 GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
 #include "../drt_mat/material_service.H"
 #include "../drt_mat/anisotropy_extension.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -36,10 +33,6 @@ MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                                         |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(
     MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup* params)
     : params_(params), anisotropyExtension_(params_)
@@ -59,8 +52,6 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::UnpackSummand(
   anisotropyExtension_.UnpackAnisotropy(data, position);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int gp, const int eleGID)
@@ -111,8 +102,6 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::AddStressAnisoPrincipal(const LINALG::M
   cmat.MultiplyNT(delta, A1A2, A1A2, 1.0);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
@@ -131,13 +120,12 @@ void MAT::ELASTIC::CoupAnisoExpoTwoCoup::GetFiberVecs(
   fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 1));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
   anisotropyExtension_.SetFiberVecs(newgamma, locsys, defgrd);
 }
+
 void MAT::ELASTIC::CoupAnisoExpoTwoCoup::RegisterAnisotropyExtensions(MAT::Anisotropy& anisotropy)
 {
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);

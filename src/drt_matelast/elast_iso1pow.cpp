@@ -10,27 +10,18 @@ The input line should read
 
 */
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_iso1pow.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::Iso1Pow::Iso1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::Iso1Pow::Iso1Pow(MAT::ELASTIC::PAR::Iso1Pow* params) : params_(params) {}
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -44,11 +35,6 @@ void MAT::ELASTIC::Iso1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3,
   psi += c * pow((modinv(0) - 3.), d);
 }
 
-
-
-/*----------------------------------------------------------------------
- *                                                      birzle 11/2014  */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Iso1Pow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
     LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
@@ -71,9 +57,4 @@ void MAT::ELASTIC::Iso1Pow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
     ddPmodII(0) += c * d * (d - 1.);
   else
     ddPmodII(0) += c * d * (d - 1.) * pow(modinv(0) - 3., d - 2.);
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/

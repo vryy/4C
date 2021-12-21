@@ -5,9 +5,8 @@
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoexpo.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
@@ -46,9 +45,6 @@ MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::GetStructuralTensor_stress(int g
   return DefaultAnisotropyExtension<1>::GetStructuralTensor_stress(gp, 0);
 }
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MAT::PAR::ParameterAniso(matdata),
       MAT::ELASTIC::PAR::CoupAnisoExpoBase(matdata),
@@ -57,10 +53,6 @@ MAT::ELASTIC::PAR::CoupAnisoExpo::CoupAnisoExpo(const Teuchos::RCP<MAT::PAR::Mat
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   st         03/12 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpo::CoupAnisoExpo(MAT::ELASTIC::PAR::CoupAnisoExpo* params)
     : MAT::ELASTIC::CoupAnisoExpoBase(params),
       params_(params),

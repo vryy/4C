@@ -9,19 +9,12 @@ The input line should read
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coup13apow.H"
 
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *         Constructor Material Parameter Class                         *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       c_(matdata->GetDouble("C")),
@@ -30,14 +23,8 @@ MAT::ELASTIC::PAR::Coup13aPow::Coup13aPow(const Teuchos::RCP<MAT::PAR::Material>
 {
 }
 
-/*----------------------------------------------------------------------*
- *            Constructor Material Class                                *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::Coup13aPow::Coup13aPow(MAT::ELASTIC::PAR::Coup13aPow* params) : params_(params) {}
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup13aPow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -52,10 +39,6 @@ void MAT::ELASTIC::Coup13aPow::AddStrainEnergy(double& psi, const LINALG::Matrix
   psi += c * pow((prinv(0) * (pow(prinv(2), -a)) - 3.), d);
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 11/2016 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -100,8 +83,4 @@ void MAT::ELASTIC::Coup13aPow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI
         -a * c * d * pow(prinv(2), -a - 1.) * pow(I1I3a3, d - 1.) -
         a * c * d * (d - 1.) * prinv(0) * pow(prinv(2), (-2. * a - 1.)) * pow(I1I3a3, d - 2.);
   }
-
-  return;
 }
-
-/*----------------------------------------------------------------------*/

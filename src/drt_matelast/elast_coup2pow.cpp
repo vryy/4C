@@ -9,31 +9,18 @@ The input line should read
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coup2pow.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *         Constructor Material Parameter Class                         *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
 
-
-/*----------------------------------------------------------------------*
- *            Constructor Material Class                               *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::Coup2Pow::Coup2Pow(MAT::ELASTIC::PAR::Coup2Pow* params) : params_(params) {}
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup2Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -47,11 +34,6 @@ void MAT::ELASTIC::Coup2Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3
   psi += c * pow((prinv(1) - 3.), d);
 }
 
-
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup2Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -70,10 +52,4 @@ void MAT::ELASTIC::Coup2Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     ddPII(1) += (c * d * d - c * d);
   else
     ddPII(1) += (c * d * d - c * d) * pow((prinv(1) - 3.), d - 2.);
-
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/

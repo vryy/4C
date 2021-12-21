@@ -10,15 +10,12 @@ C = Exponent D
 \level 1
 
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_isoexpopow.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       k1_(matdata->GetDouble("K1")),
@@ -27,14 +24,8 @@ MAT::ELASTIC::PAR::IsoExpoPow::IsoExpoPow(const Teuchos::RCP<MAT::PAR::Material>
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoExpoPow::IsoExpoPow(MAT::ELASTIC::PAR::IsoExpoPow* params) : params_(params) {}
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -48,10 +39,6 @@ void MAT::ELASTIC::IsoExpoPow::AddStrainEnergy(double& psi, const LINALG::Matrix
   if (k2 != 0) psi += k1 / (2. * k2) * (exp(k2 * pow(modinv(0) - 3., d)) - 1.);
 }
 
-
-/*----------------------------------------------------------------------
- *                                                      birzle 11/2014  */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
     LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
@@ -79,6 +66,4 @@ void MAT::ELASTIC::IsoExpoPow::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmo
   else
     ddPmodII(0) += k1 * d * d * k2 * 0.5 * expf * pow((modinv(0) - 3.), 2. * (d - 1.)) +
                    k1 * d * 0.5 * expf * (d - 1.) * pow((modinv(0) - 3.), (d - 2.));
-
-  return;
 }

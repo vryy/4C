@@ -5,9 +5,8 @@
 \level 3
 
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoexposhear.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 

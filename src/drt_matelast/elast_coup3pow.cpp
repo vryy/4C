@@ -6,31 +6,18 @@
 \level 2
 
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coup3pow.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *         Constructor Material Parameter Class                         *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::Coup3Pow::Coup3Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
 
-/*----------------------------------------------------------------------*
- *            Constructor Material Class                                *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::Coup3Pow::Coup3Pow(MAT::ELASTIC::PAR::Coup3Pow* params) : params_(params) {}
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup3Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1> glstrain, const int eleGID)
 {
@@ -42,10 +29,6 @@ void MAT::ELASTIC::Coup3Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3
   psi += c * pow((pow(prinv(2), 1. / 3.) - 1.), d);
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup3Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -69,8 +52,4 @@ void MAT::ELASTIC::Coup3Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
         -2. / 9. * c * d * pow(prinv(2), -5. / 3.) * pow((pow(prinv(2), 1. / 3.) - 1.), d - 1.) +
         1. / 9. * c * d * (d - 1.) * pow(prinv(2), -4. / 3.) *
             pow((pow(prinv(2), 1. / 3.) - 1.), d - 2.);
-
-  return;
 }
-
-/*----------------------------------------------------------------------*/

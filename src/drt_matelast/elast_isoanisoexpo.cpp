@@ -7,10 +7,8 @@ The input line should read
 \level 1
 
 */
-
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_isoanisoexpo.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
@@ -20,9 +18,7 @@ The input line should read
 #include "../drt_mat/material_service.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k1_(matdata->GetDouble("K1")),
@@ -35,25 +31,16 @@ MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Mater
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   st         03/12 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::IsoAnisoExpo::IsoAnisoExpo(MAT::ELASTIC::PAR::IsoAnisoExpo* params) : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -61,8 +48,6 @@ void MAT::ELASTIC::IsoAnisoExpo::UnpackSummand(
   ExtractfromPack(position, data, A_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   if (params_->init_ == 0)
@@ -107,8 +92,6 @@ void MAT::ELASTIC::IsoAnisoExpo::Setup(int numgp, DRT::INPUT::LineDefinition* li
     dserror("INIT mode not implemented");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 1>& rcg,
     const LINALG::Matrix<6, 1>& icg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     double I3, const int gp, const int eleGID, Teuchos::ParameterList& params)
@@ -153,9 +136,6 @@ void MAT::ELASTIC::IsoAnisoExpo::AddStressAnisoModified(const LINALG::Matrix<6, 
   cmat.Update(1.0, cmataniso, 1.0);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1>& dPI_aniso,
     LINALG::Matrix<3, 1>& ddPII_aniso, LINALG::Matrix<4, 1>& dddPIII_aniso, const double I4,
     const int gp, const int eleGID)
@@ -177,13 +157,8 @@ void MAT::ELASTIC::IsoAnisoExpo::GetDerivativesAniso(LINALG::Matrix<2, 1>& dPI_a
 
   dddPIII_aniso(0) = (3.0 + 2.0 * k2 * (I4 - 1.0) * (I4 - 1.0)) * 2.0 * k1 * k2 * (I4 - 1.0) *
                      exp(k2 * (I4 - 1.0) * (I4 - 1.0));
-
-  return;
 };
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
@@ -191,8 +166,6 @@ void MAT::ELASTIC::IsoAnisoExpo::GetFiberVecs(
   fibervecs.push_back(a_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoAnisoExpo::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
