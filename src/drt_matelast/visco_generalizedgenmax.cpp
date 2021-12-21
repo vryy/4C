@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
+\brief Implementation of the viscous contribution a generalized maxwell model
 
-\brief generalized maxwell model
 \level 2
-
 */
 /*----------------------------------------------------------------------*/
 #include "visco_generalizedgenmax.H"

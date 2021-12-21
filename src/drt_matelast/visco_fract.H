@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to read the material parameters
-and add the contribution of the viscous part, calculated according to a
-FSLS-Model.
-Depending on the other stresses this viscous part is added, always using
-the same tau, alpha and beta.
+\brief Definition of classes for a viscous material contribution, calculated according to an
+FSLS-model
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef VISCO_FRACT_H_
 #define VISCO_FRACT_H_
 

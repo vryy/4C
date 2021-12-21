@@ -1,12 +1,10 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Active stress material
-
+\brief Definition of classes for an active stress material
 
 \level 2
 */
 /*---------------------------------------------------------------------*/
-
 
 #ifndef ELAST_ANISOACTIVESTRESS_EVOLUTION_H_
 #define ELAST_ANISOACTIVESTRESS_EVOLUTION_H_

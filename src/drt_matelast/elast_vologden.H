@@ -1,17 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for the volumetic function
-suggested by Ogden, see Doll, S. and Schweizerhof, K.
-On the Development of Volumetric Strain Energy Functions
-Journal of Applied Mechanics, 2000
-The input line should read
-  MAT 1 ELAST_VolOgden KAPPA 100 BETA -2
+\brief Definition of classes for the volumetic contribution suggested by Ogden, see "Doll, S. and
+Schweizerhof, K. On the Development of Volumetric Strain Energy Functions Journal of Applied
+Mechanics, 2000"
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_VOLOGDEN_H_
 #define ELAST_VOLOGDEN_H_
 

@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the isochoric contribution
-of the aaagasser material and the corresponding volumetric contribution.
-
-MAT 20 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
+\brief Definition of classes for the isochoric contribution of the AAA Gasser material and the
+corresponding volumetric contribution.
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLAAAGASSER_H_
 #define ELAST_ISOVOLAAAGASSER_H_
 

@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief strategy for evaluation of the structural tensor in anisotropic materials
+\brief Implementation of a strategy evaluating the structural tensor in anisotropic materials
 
 \level 2
-
-
 */
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_STRUCTURALTENSOR_STRATEGY_
 #define ELAST_STRUCTURALTENSOR_STRATEGY_
 

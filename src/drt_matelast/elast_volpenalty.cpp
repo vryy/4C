@@ -1,14 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for the volumetic function
-of a penalty material
-For more details see Roernbauer2008 (student thesis)
-The input line should read
-  MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1.
+\brief Implementation of the volumetic penalty material as in Roernbauer2008 (student
+thesis)
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

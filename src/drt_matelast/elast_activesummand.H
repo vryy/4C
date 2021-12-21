@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains a summand of the ElastHyper Toolbox with active behavior
+\brief Summand of the ElastHyper Toolbox with active behavior
 
 \level 3
-
 */
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_ACTIVESUMMAND_H_
 #define ELAST_ACTIVESUMMAND_H_
 #include "elast_summand.H"
@@ -34,7 +34,7 @@ namespace MAT
        * \param eleGID global element id
        */
       virtual void AddActiveStressCmatAniso(
-          const LINALG::Matrix<3, 3>& CM,  ///< rigtht Cauchy Green tensor
+          const LINALG::Matrix<3, 3>& CM,  ///< right Cauchy Green tensor
           LINALG::Matrix<6, 6>& cmat,      ///< material stiffness matrix
           LINALG::Matrix<6, 1>& stress,    ///< 2nd PK-stress
           int gp,                          ///< Gauss point

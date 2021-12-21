@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief  This file contains the routines required to calculate the isochoric and volumetric
-contribution of the HU dependent neo hooke material. E.g used for inclusion of calcification in AAA
-simulations
+\brief  Definition of classes to calculate the isochoric and volumetric contribution of the HU
+dependent Neo Hooke material.
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
 #define ELAST_ISOVOLHUDEPENDENTNEOHOOKE_H_
 
@@ -21,7 +20,7 @@ namespace MAT
     namespace PAR
     {
       /*----------------------------------------------------------------------*/
-      /// This file contains the routines required to calculate the
+      /// Definition of classes to calculate the
       /// isochoric and volumetric contribution of the HU dependent Neo
       /// Hooke material. The Hounsfield Units (HU) of e.g. CT data are
       /// used to determine the material stiffness for each finite

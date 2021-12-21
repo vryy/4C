@@ -1,12 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief
-This file contains the routines required for Saint-Venant-Kirchhoff material
-The input line should read
-  MAT 1 ELAST_CoupSVK YOUNG 1.044E7 NUE 0.3
+Implementation of a coupled Saint-Venant-Kirchhoff material
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

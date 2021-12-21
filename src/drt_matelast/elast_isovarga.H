@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for Varga's material
-The input line should read
-  MAT 1 ELAST_IsoVarga MUE 200.0
+\brief Definition of classes for Varga's material
 
 \level 2
-
 */
-
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_ISOVARGA_H_
 #define ELAST_ISOVARGA_H_
 

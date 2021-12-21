@@ -1,10 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required for the anisotropic material using a pow-like
-material
+\brief Definition of classes for a pow-like anisotropic material
 
 \level 3
-
 */
 /*---------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOPOW_H_

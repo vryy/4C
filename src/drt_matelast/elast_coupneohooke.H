@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric
-contribution of a CoupNeoHookean material material.
-The input line should read
-  MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
+\brief Definition of classes for a coupled Neo Hookean material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPNEOHOOKE_H_
 #define ELAST_COUPNEOHOOKE_H_
 

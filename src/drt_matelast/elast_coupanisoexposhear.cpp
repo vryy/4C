@@ -3,7 +3,6 @@
 \brief Implentation for an exponential strain energy function for fibers
 
 \level 3
-
 */
 /*----------------------------------------------------------------------*/
 

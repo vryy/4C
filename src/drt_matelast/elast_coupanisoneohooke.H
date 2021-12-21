@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required for the anisotropic material using a neo-Hooke
-material
+\brief Definition of classes for a coupled anisotropic neo-Hooke material with one fiber direction
 
 \level 3
-
 */
-
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_COUPANISONEOHOOKE_H_
 #define ELAST_COUPANISONEOHOOKE_H_
 

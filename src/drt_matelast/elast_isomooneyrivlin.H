@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a Mooney-Rivlin-type material.
-The input line should read
-MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
+\brief Definition of classes for the isochoric contribution of a Mooney-Rivlin-type material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOMOONEYRIVLIN_H_
 #define ELAST_ISOMOONEYRIVLIN_H_
 

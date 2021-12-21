@@ -1,9 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
-the input line should read
-MAT 11 ELAST_RemodelFiber NUMMAT 2 MATIDS 111 112 TDECAY 101.0 GROWTHFAC 4.951051289713897e-04
-COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
+\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families.
 
 \level 2
 

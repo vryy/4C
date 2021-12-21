@@ -1,14 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the isochoric routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
-The input line should read
-  MAT 1 ELAST_IsoNeoHooke MUE 100
+\brief Implementation of an isochoric Neo Hooke material
 
 \level 2
-
 */
 /*----------------------------------------------------------------------*/
 

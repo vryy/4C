@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the contribution
-of a general power-type material.
-The input line should read
-  MAT 1 ELAST_Coup1Pow C 1 D 1
+\brief Definition of classes for an isotropic general power-type material in terms of the first
+Cauchy-Green invariant
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUP1POW_H_
 #define ELAST_COUP1POW_H_
 

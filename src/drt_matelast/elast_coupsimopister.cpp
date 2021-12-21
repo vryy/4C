@@ -1,15 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the Simo and Pister
-material model. (U(J) is not implemented).
-Always use in combination with at least one other material model of the
-Elasthyper Toolbox.
-The input line should read
-  MAT 1 ELAST_CoupSimoPister MUE 1000
-
+\brief Implementation of the Simo and Pister material model except the volumetric term
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

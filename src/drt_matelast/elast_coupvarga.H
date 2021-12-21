@@ -1,12 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for Varga's material.
-The input line should read
-  MAT 1 ELAST_CoupVarga MUE 200.0 BETA 1.0
+\brief Definition of classes for the isotropic Varga material
 
 \level 2
-
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for Blatz and Ko material model
-according to Holzapfel, "Nonlinear solid mechanics", 2001.
-The input line should read
-  MAT 1 ELAST_CoupBlatzKo MUE 1.044E7 NUE 0.3 F 0.5
+\brief Implementation of the Blatz and Ko material model according to Holzapfel, "Nonlinear solid
+mechanics", 2001.
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-
-\brief Definition of the isochoric part of the anisotropic Blemker active skeletal muscle material
+\brief Definition of classes for the isochoric part of the anisotropic Blemker active skeletal
+muscle material
 
 \level 3
 */

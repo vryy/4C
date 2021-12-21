@@ -1,13 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the contribution
-of a CoupMooneyRivlin material material.
-The input line should read
-  MAT 1 ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1
+\brief Implementation of a coupled Mooney Rivlin material
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Summand for the transversely hyperelastic isotropic material model
+\brief Definition of classes for a hyperelastic transversely isotropic material model for large
+strain computations
+
 \level 3
-
-
 */
 /*----------------------------------------------------------------------*/
 

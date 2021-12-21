@@ -1,18 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
-The input line should read either
-  MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
-or
-  MAT 1 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1.
+\brief Definition of classes for a logarithmic neo-Hooke material according to Bonet and Wood,
+"Nonlinear continuum mechanics for finite element analysis", Cambridge, 1997.
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_LOGNEOHOOKE_H_
 #define ELAST_LOGNEOHOOKE_H_
 

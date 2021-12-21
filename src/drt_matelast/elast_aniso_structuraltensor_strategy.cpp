@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief strategy for evaluation of the structural tensor in anisotropic materials
+\brief Definition of classes for a strategy evaluating the structural tensor in anisotropic
+materials
 
 \level 2
-
-
 */
 /*----------------------------------------------------------------------*/
+
 #include "elast_aniso_structuraltensor_strategy.H"
 
 #include "../drt_mat/matpar_material.H"

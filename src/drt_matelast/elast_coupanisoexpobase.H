@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief the input line should read
-  MAT 1 ELAST_CoupAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
+\brief Definition of the base functionality of an exponential anisotropic summand
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPOBASE_H_
 #define ELAST_COUPANISOEXPOBASE_H_
 

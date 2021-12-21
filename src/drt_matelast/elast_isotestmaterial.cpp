@@ -1,20 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a Material, which is not realistic, but contains all possible derivatives of invariants.
-With this material in combination with volsussmannbathe, it is possible to test all
-isochoric parts of the Elasthyper-Toolbox.
+\brief Implementation of the isochoric contribution of a material to test the isochoric parts of the
+Elasthyper-Toolbox.
 
 \level 1
-
-
-*----------------------------------------------------------------------*/
+*/
 /*----------------------------------------------------------------------*/
 
 #include "elast_isotestmaterial.H"
 #include "../drt_mat/matpar_material.H"
-
 
 MAT::ELASTIC::PAR::IsoTestMaterial::IsoTestMaterial(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c1_(matdata->GetDouble("C1")), c2_(matdata->GetDouble("C2"))

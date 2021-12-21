@@ -3,9 +3,9 @@
 \brief Definitions of classes for the coupled exponential summand for fibers
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPO_H_
 #define ELAST_COUPANISOEXPO_H_
 

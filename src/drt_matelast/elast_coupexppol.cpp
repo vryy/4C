@@ -1,20 +1,14 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for a strain energy function,
-which is exponential according to Weickenmeier_2014 and contains a linear
-(in I_1 and J) polynom in the exponent.
-The input line should read
-  MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
+\brief Implementation of an isotropic exponential coupled material according to Weickenmeier_2014
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 
 #include "elast_coupexppol.H"
 #include "../drt_mat/matpar_material.H"
-#include "../drt_lib/drt_globalproblem.H"  //<-- just in this material, because of special use of inv ana
+#include "../drt_lib/drt_globalproblem.H"
 
 
 MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>& matdata)

@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Interface class for materials of (visco)elasthyper toolbox.
+\brief Interface class for materials of the (visco)elasthyper toolbox.
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_SUMMAND_H
 #define ELAST_SUMMAND_H
-
-
 
 #include "../drt_inpar/inpar_material.H"
 #include "../linalg/linalg_fixedsizematrix.H"

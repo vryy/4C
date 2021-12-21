@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
+\brief Definition of classes for the viscous contribution of a generalized maxwell model
 
-\brief generalized maxwell model
 \level 2
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef VISCO_GENERALIZEDGENMAX_H_

@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief the input line should read
-  MAT 1 ELAST_CoupAnisoExpoActive K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE
-0 S 54000 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
+\brief Definition of classes for the coupled contribution of an anisotropic active fiber material
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPOACTIVE_H_
 #define ELAST_COUPANISOEXPOACTIVE_H_
 
@@ -85,8 +83,7 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// Coupled anisotropic active fiber function, implemented for one possible fiber family
     ///
-    /// This is an active anisotropic material
-    /// of the most simple kind.
+    /// This is an active anisotropic material of the most simple kind.
     ///
     /// Strain energy function is given by
     ///\f[

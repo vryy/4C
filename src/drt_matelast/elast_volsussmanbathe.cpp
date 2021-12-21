@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
-The input line should read
-  MAT 1 ELAST_VolSussmanBathe KAPPA 100
+\brief Implementation of the volumetric SussmanBathe material according to "Doll, S. and
+Schweizerhof, K. On the Development of Volumetric Strain Energy Functions Journal of Applied
+Mechanics, 2000"
+
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the coupled
-power-type material in invariant 1 multiplicative invariant 3^(-a).
-The input line should read
-  MAT 1 ELAST_Coup13aPow C 1 D 1 A 0.1
+\brief Definition of classes for an isotropic coupled material depending on the first Cauchy-Green
+invariant and the Jacobi determinant
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUP13APOW_H_
 #define ELAST_COUP13APOW_H_
 

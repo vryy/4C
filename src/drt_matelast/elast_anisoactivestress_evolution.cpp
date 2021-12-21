@@ -1,7 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Active stress material
-
+\brief Implementation on an active stress material
 
 \level 2
 */

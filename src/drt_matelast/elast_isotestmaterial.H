@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a Material, which is not realistic, but contains all possible derivatives of invariants.
-With this material in combination with volsussmannbathe, it is possible to test all
-isochoric parts of the Elasthyper-Toolbox.
+\brief Definition of classes for the isochoric contribution of a material to test the isochoric
+parts of the Elasthyper-Toolbox.
 
 \level 1
-
-
-
 *----------------------------------------------------------------------*/
+
 #ifndef ELAST_ISOTESTMATERIAL_H_
 #define ELAST_ISOTESTMATERIAL_H_
 
@@ -66,6 +61,9 @@ namespace MAT
     /*----------------------------------------------------------------------*/
     /// Isochoric Material to test the elasthyper-Toolbox
     ///
+    /// This material is not realistic, but contains all possible derivatives of invariants. With
+    /// this material in combination with volsussmanbathe, it is possible to test all isochoric
+    /// parts of the Elasthyper-Toolbox.
     ///
     /// Strain energy function is given by
     ///\f[

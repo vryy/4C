@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of an exponential material.
-The input line should read
-MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
-C = Exponent D
+\brief Definition of classes for the isochoric contribution of an isotropic exponential material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOEXPOPOW_H_
 #define ELAST_ISOEXPOPOW_H_
 

@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the volumetric contribution
-of a general power-type material.
+\brief Definition of classes for a volumetric general power-type material in terms of the Jacobi
+determinant
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUP3POW_H_
 #define ELAST_COUP3POW_H_
 

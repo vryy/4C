@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines for a volumetric power law.
-The resultant pressure depends on the prefactor and pressure.
-Should be combined with non-stiff volumetric law (eg. Ogden).
-The input line should read
-  MAT 1 ELAST_VolPow A 100 EXPON 5
+\brief Definition of classes for a volumetric power law
+
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_VOLPOW_H_
 #define ELAST_VOLPOW_H_
 
@@ -80,6 +76,9 @@ namespace MAT
     ///\f[
     /// p = -a (J^(-expon) -1)
     ///\f]
+    ///
+    /// The resultant pressure depends on the prefactor and pressure.
+    /// Should be combined with non-stiff volumetric law (eg. Ogden).
     ///
     /// \author birzle
     /// \date 11/15

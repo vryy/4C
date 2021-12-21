@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for Varga's material
-The input line should read
-  MAT 1 ELAST_IsoVarga MUE 200.0
+
+\brief Implementation of the isochoric part of the isotropic Varga material
 
 \level 2
-
 */
+/*----------------------------------------------------------------------*/
 
 #include "elast_isovarga.H"
 #include "../drt_mat/matpar_material.H"

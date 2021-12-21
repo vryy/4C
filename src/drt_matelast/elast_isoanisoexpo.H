@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-The input line should read
-  MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
+\brief Definition of classes for the isochoric contribution of a anisotropic exponential fiber
+material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOANISOEXPO_H_
 #define ELAST_ISOANISOEXPO_H_
 
@@ -21,7 +20,7 @@ namespace MAT
     namespace PAR
     {
       /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of a anisotropic exponential fiber material
+      /// material parameters for isochoric contribution of a anisotropic exponential fiber material
       ///
       /// <h3>Input line</h3>
       /// MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0

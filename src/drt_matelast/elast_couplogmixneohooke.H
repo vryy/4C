@@ -1,19 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for mixed-logarithmic neo-Hooke material
-according to example 1 in Stupkiewicz "An ALE formulation for implicit time integration of quasi-
-steady state wear problems" Comput. Methods Appl. Mech. Engrg. 260, 2013.
-The input line should read either
-  MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.044E7 C2 0.3
-  ( C1 = Young, c2 = nue)
-or
-  MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1. C2 1.
+\brief Definition of classes for a mixed-logarithmic neo-Hooke material according to example 1 in
+"Stupkiewicz. An ALE formulation for implicit time integration of quasi-steady state wear problems.
+Comput. Methods Appl. Mech. Engrg. 260, 2013"
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_LOGMIXNEOHOOKE_H_
 #define ELAST_LOGMIXNEOHOOKE_H_
 
@@ -30,7 +24,7 @@ namespace MAT
       /// material parameters for mixed logarithmic neo-Hooke material
       ///
       /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.0 C2 0.3
+      /// MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.0 C2 0.3 (C1 = Young, c2 = nue)
       /// MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1.0 C2 1.0
       class CoupLogMixNeoHooke : public MAT::PAR::Parameter
       {

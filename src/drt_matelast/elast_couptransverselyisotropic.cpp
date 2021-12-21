@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Summand for the transversely hyperelastic isotropic material model
+\brief Implementation of a hyperelastic transversely isotropic material model for large strain
+computations
+
 \level 3
-
-
 */
 /*----------------------------------------------------------------------*/
 

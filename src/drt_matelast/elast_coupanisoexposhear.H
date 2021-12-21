@@ -3,9 +3,9 @@
 \brief Definitions of classes for the exponential shear behavior for fibers
 
 \level 3
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOEXPOSHEAR_H_
 #define ELAST_COUPANISOEXPOSHEAR_H_
 

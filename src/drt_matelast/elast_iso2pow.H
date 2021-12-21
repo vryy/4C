@@ -1,15 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a general power-type material.
-The input line should read
-  MAT 1 ELAST_Iso2Pow C 1 D 1
+\brief Definition of classes for the isochoric contribution of an isotropic general power-type
+material in terms of the second Cauchy-Green invariant
+
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISO2POW_H_
 #define ELAST_ISO2POW_H_
 

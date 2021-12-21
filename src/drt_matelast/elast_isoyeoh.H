@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief
-This file contains the routines required to calculate the isochoric contribution
-of a Yeoh-type material.
-The input line should read
-  MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200
+Definition of classes for the isochoric contribution of a Yeoh-type material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOYEOH_H_
 #define ELAST_ISOYEOH_H_
 

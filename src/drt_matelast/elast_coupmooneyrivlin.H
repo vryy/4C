@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the contribution
-of a CoupMooneyRivlin material material.
-The input line should read
-  MAT 1 ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1
+\brief Definition of classes for a coupled Mooney Rivlin material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPMOONEYRIVLIN_H_
 #define ELAST_COUPMOONEYRIVLIN_H_
 
@@ -23,7 +19,7 @@ namespace MAT
     namespace PAR
     {
       /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a CoupMooneyRivlinan material
+      /// material parameters for coupled contribution of a CoupMooneyRivlinan material
       ///
       /// <h3>Input line</h3>
       /// MAT 1 ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1
@@ -86,8 +82,6 @@ namespace MAT
     ///
     /// \author rausch
     /// \date 03/12
-
-
     class CoupMooneyRivlin : public Summand
     {
      public:

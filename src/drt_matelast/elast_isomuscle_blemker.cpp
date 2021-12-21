@@ -1,10 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-
 \brief Implementation of the isochoric part of the Blemker active skeletal muscle material
 
 \level 3
-
 */
 /*----------------------------------------------------------------------*/
 

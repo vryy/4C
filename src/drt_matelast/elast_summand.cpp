@@ -1,10 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Interface class for materials of (visco)elasthyper toolbox.
+\brief Implementation of an interface class for materials of the (visco)elasthyper toolbox.
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Isochoric coupled viscous material with pseudo-potential representing the collagen and
-elastin matrix surrounding the myocardial fiber (chappelle12)
-The input line should read
-  MAT 1 VISCO_CoupMyocard N 1
+\brief Definition of classes for an isochoric coupled viscous material with pseudo-potential
+representing the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
 
 \level 2
-
 */
 /*---------------------------------------------------------------------*/
 #ifndef VISCO_COUPMYOCARD_H_

@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a general power-type material.
-The input line should read
-  MAT 1 ELAST_Iso1Pow C 1 D 1
+\brief Implementation of the isochoric contribution of an isotropic general power-type material in
+terms of the first Cauchy-Green invariant
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 

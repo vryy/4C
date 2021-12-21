@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Implementation of the base functionality of a exponential anisotropic summand
+\brief Implementation of the base functionality of an exponential anisotropic summand
 
 \level 1
-
 */
 /*----------------------------------------------------------------------*/
 
