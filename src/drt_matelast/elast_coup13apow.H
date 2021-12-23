@@ -19,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of a multiplicative coupled I1 and I3 power
-      /// material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_Coup13aPow C 1 D 1 A 1
+      /*!
+       * @brief material parameters for coupled contribution of a multiplicative coupled I1 and I3
+       * power material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_Coup13aPow C 1 D 1 A 1
+       */
       class Coup13aPow : public MAT::PAR::Parameter
       {
        public:
@@ -62,21 +63,18 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Coupled general power material
-    ///
-    /// This is a summand of a variable order hyperelastic, coupled
-    /// material depending on the first and third invariant of the right
-    /// Cauchy-Green tensor. The third invariant has a additional negative exponent.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = c (I_{\boldsymbol{C}}*(III_{\boldsymbol{C}}^(-a))-3)^d.
-    ///\f]
-    ///
-    ///
-    /// \author birzle
-    /// \date 11/16
+    /*!
+     * @brief Coupled general power material
+     *
+     * This is a summand of a variable order hyperelastic, coupled
+     * material depending on the first and third invariant of the right
+     * Cauchy-Green tensor. The third invariant has a additional negative exponent.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = c (I_{\boldsymbol{C}}*(III_{\boldsymbol{C}}^(-a))-3)^d.
+     * \f]
+     */
     class Coup13aPow : public Summand
     {
      public:
@@ -137,7 +135,6 @@ namespace MAT
         isoprinc = true;
         return;
       };
-
 
      private:
       /// my material parameters

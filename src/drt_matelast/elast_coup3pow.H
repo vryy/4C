@@ -19,11 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumtric contribution of a general power material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_Coup3Pow C 1 D 1
+      /*!
+       * @brief material parameters for volumtric contribution of a general power material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_Coup3Pow C 1 D 1
+       */
       class Coup3Pow : public MAT::PAR::Parameter
       {
        public:
@@ -56,23 +57,19 @@ namespace MAT
         //@}
 
       };  // class Coup3Pow
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
-    /// Volumtric general power material
-    ///
-    /// This is a summand of a variable order hyperelastic, volumetric
-    /// material depending on the first invariant of the right Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C (I_3^(1/3)-1)^D.
-    ///\f]
-    ///
-    ///
-    /// \author birzle
-    /// \date 07/17
+    /*!
+     * @brief Volumtric general power material
+     *
+     * This is a summand of a variable order hyperelastic, volumetric
+     * material depending on the first invariant of the right Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = C (I_3^(1/3)-1)^D.
+     * \f]
+     */
     class Coup3Pow : public Summand
     {
      public:

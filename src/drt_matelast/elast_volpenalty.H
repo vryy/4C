@@ -19,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumetric contribution
-      /// \f$\Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)\f$
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1.
+      /*!
+       * @brief material parameters for volumetric contribution
+       * \f$\Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)\f$
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1
+       */
       class VolPenalty : public MAT::PAR::Parameter
       {
        public:
@@ -61,19 +62,14 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Volumetric Penalty
-    ///
-    /// Strain energy function is given by
-    ///
-    ///
-    ///\f[
-    ///   \Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)
-    ///\f]
-    ///
-    ///
-    /// \author rausch
-    /// \date 08/09
+    /*!
+     * @brief Volumetric Penalty
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)
+     * \f]
+     */
     class VolPenalty : public Summand
     {
      public:

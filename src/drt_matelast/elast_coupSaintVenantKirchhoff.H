@@ -53,22 +53,18 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Saint Venant Kirchhoff - Material
-    ///
-    ///
-    /// The material strain energy density function is
-    ///\f[
-    /// \Psi = \Big(\frac{1}{4}\mu + \frac{1}{8}\lambda \Big) \, I_{1}^2
-    ///       - \big( \frac{3}{4}\lambda + \frac{1}{2}\mu \big)  \, I_{1} - \frac{1}{2}\mu \, I_{2}
-    ///      + \frac{9}{8}\lambda + \frac{3}{4}\mu
-    ///\f]
-    /// More details at #AddCoefficientsPrincipal()
-    ///
-    ///
-    /// \date 12/14
-
-
+    /*!
+     * @brief Saint Venant Kirchhoff - Material
+     *
+     *
+     * The material strain energy density function is
+     * \f[
+     * \Psi = \Big(\frac{1}{4}\mu + \frac{1}{8}\lambda \Big) \, I_{1}^2
+     *       - \big( \frac{3}{4}\lambda + \frac{1}{2}\mu \big)  \, I_{1} - \frac{1}{2}\mu \, I_{2}
+     *      + \frac{9}{8}\lambda + \frac{3}{4}\mu
+     * \f]
+     * More details at #AddCoefficientsPrincipal()
+     */
     class CoupSVK : public Summand
     {
      public:

@@ -20,12 +20,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumetric contribution
-      /// \f$\Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_VolOgden KAPPA 100 BETA -2
+      /*!
+       * @brief material parameters for volumetric contribution
+       * \f$\Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_VolOgden KAPPA 100 BETA -2
+       */
       class VolOgden : public MAT::PAR::Parameter
       {
        public:
@@ -63,21 +64,17 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Volumetric Ogden material according to [1].
-    ///
-    /// Strain energy function is given by
-    ///
-    ///
-    ///\f[
-    ///   \Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)
-    ///\f]
-    ///
-    ///
-    /// [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
-    ///     Journal of Applied Mechanics, 2000
-    /// \author rausch
-    /// \date 04/09
+    /*!
+     * @brief Volumetric Ogden material according to [1].
+     *
+     *  Strain energy function is given by
+     * \f[
+     *    \Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)
+     * \f]
+     *
+     * [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
+     *      Journal of Applied Mechanics, 2000
+     */
     class VolOgden : public Summand
     {
      public:

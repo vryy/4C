@@ -17,13 +17,14 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution to a viscoelastic branch of a generalized
-      /// Maxwell model
-      ///
-      /// <h3>Input line</h3>
-      ///  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE CONVOL
-      ///  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE OST
+      /*!
+       * @brief material parameters for viscous contribution to a viscoelastic branch of a
+       * generalized Maxwell model
+       *
+       * <h3>Input line</h3>
+       *  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE CONVOL
+       *  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE OST
+       */
       class GeneralizedGenMax : public MAT::PAR::Parameter
       {
        public:
@@ -56,12 +57,13 @@ namespace MAT
       };  // class GeneralizedGenMax
 
 
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution to a viscoelastic branch of a generalized
-      /// Maxwell modell
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_BRANCH NUMMAT 2 MATIDS 2 3
+      /*!
+       * @brief material parameters for viscous contribution to a viscoelastic branch of a
+       * generalized Maxwell modell
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_BRANCH NUMMAT 2 MATIDS 2 3
+       */
       class ViscoBranch : public MAT::PAR::Parameter
       {
        public:
@@ -97,12 +99,13 @@ namespace MAT
 
       };  // class ViscoBranch
 
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution to a viscoelastic branch of a generalized
-      /// Maxwell modell
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_PART TAU 1.5
+      /*!
+       * @brief material parameters for viscous contribution to a viscoelastic branch of a
+       * generalized Maxwell modell
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_PART TAU 1.5
+       */
       class ViscoPart : public MAT::PAR::Parameter
       {
        public:
@@ -149,8 +152,6 @@ namespace MAT
       {
         return INPAR::MAT::mes_generalizedgenmax;
       }
-
-
       //@}
 
       /// Read material parameters
@@ -269,7 +270,6 @@ namespace MAT
       /// material type
       INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscopart; }
 
-
       //@}
 
       /// Read material parameters
@@ -280,7 +280,6 @@ namespace MAT
       /// @name Access methods
       //@{
       double Tau() const { return params_->tau_; }
-
       //@}
 
       /// Indicator for formulation
@@ -308,7 +307,6 @@ namespace MAT
         return;
       };
 
-
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::ViscoPart* params_;
@@ -318,6 +316,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-
-
-#endif /* VISCO_GENERALIZEDGENMAX_H_ */
+#endif  // VISCO_GENERALIZEDGENMAX_H_

@@ -19,12 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution according the FSLS-model
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
-
+      /*!
+       * @brief material parameters for viscous contribution according the FSLS-model
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
+       */
       class Fract : public MAT::PAR::Parameter
       {
        public:
@@ -63,28 +63,23 @@ namespace MAT
     }  // namespace PAR
 
 
-    /*----------------------------------------------------------------------*/
     /*!
-     *  Material Viscofract
+     * @brief Material Viscofract
      *
-     *  This material offers a viscous and hyperelastic part. The model consists
-     *  of one spring in parallel to one sequential branch of a spring and a springpot.
+     * This material offers a viscous and hyperelastic part. The model consists
+     * of one spring in parallel to one sequential branch of a spring and a springpot.
      *
-     *  A springpot is between a spring and a dashpot. The parameter alpha regulates
-     *  how much damping is introduced.
-     *  Alpha=0, means the springpot is a spring
-     *  Alpha=1, means the springpot is a dashpot; this is equal to the GenMax Material
+     * A springpot is between a spring and a dashpot. The parameter alpha regulates
+     * how much damping is introduced.
+     * Alpha=0, means the springpot is a spring
+     * Alpha=1, means the springpot is a dashpot; this is equal to the GenMax Material
      *
-     *  <h3>References</h3>
-     *  <ul>
-     *  <li> [1] Adolfson and Enelund (2003): Fractional Derivative Visocelasticity at
-     *           Large Deformations
-     *  </ul>
-     *
-     *  \author birzle
-     *  \date 12/17
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Visocelasticity at
+     *          Large Deformations
+     * </ul>
      */
-
     class Fract : public Summand
     {
      public:
@@ -140,7 +135,6 @@ namespace MAT
         viscofract = true;
         return;
       };
-
 
      private:
       /// my material parameters

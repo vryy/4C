@@ -18,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters of Varga's material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoVarga MUE 1.0 BETA 1.0
+      /*!
+       * @brief material parameters of Varga's material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoVarga MUE 1.0 BETA 1.0
+       */
       class IsoVarga : public MAT::PAR::Parameter
       {
        public:
@@ -53,31 +54,29 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric Varga's material according to [1], [2]
-    ///
-    /// This is a compressible, hyperelastic, isotropic material
-    /// of the most simple kind.
-    ///
-    /// The material strain energy density function is
-    ///\f[
-    /// \Psi = \underbrace{(2\mu-\beta)}_{\displaystyle\alpha} \Big(\bar{\lambda}_1 +
-    /// \bar{\lambda}_2 + \bar{\lambda}_3 - 3\Big)
-    ///      + \beta \Big(\frac{1}{\bar{\lambda}_1} + \frac{1}{\bar{\lambda}_2} +
-    ///      \frac{1}{\bar{\lambda}_3} - 3\Big)
-    ///\f]
-    /// which was taken from [1] Eq (6.129) and [2] Eq (1.3).
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for
-    ///          finitely deformed incompressible elastic materials",
-    ///          IMA J Appl Math, 54:109-123, 1995.
-    /// </ul>
-    ///
-    /// \author bborn
-    /// \date 08/09
+    /*!
+     * \brief Isochoric Varga's material according to [1], [2]
+     *
+     * This is a compressible, hyperelastic, isotropic material
+     * of the most simple kind.
+     *
+     * The material strain energy density function is
+     * \f[
+     * \Psi = \underbrace{(2\mu-\beta)}_{\displaystyle\alpha} \Big(\bar{\lambda}_1 +
+     * \bar{\lambda}_2 + \bar{\lambda}_3 - 3\Big)
+     *      + \beta \Big(\frac{1}{\bar{\lambda}_1} + \frac{1}{\bar{\lambda}_2} +
+     *      \frac{1}{\bar{\lambda}_3} - 3\Big)
+     * \f]
+     * which was taken from [1] Eq (6.129) and [2] Eq (1.3).
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+     * <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for
+     *          finitely deformed incompressible elastic materials",
+     *          IMA J Appl Math, 54:109-123, 1995.
+     * </ul>
+     */
     class IsoVarga : public Summand
     {
      public:
@@ -134,7 +133,7 @@ namespace MAT
       };
 
      private:
-      /// my material parameters
+      /// Varga material parameters
       MAT::ELASTIC::PAR::IsoVarga* params_;
     };
 

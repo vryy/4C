@@ -18,12 +18,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a exponential type material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
-      /// C = Exponent D
+      /*!
+       * @brief material parameters for isochoric contribution of a exponential type material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
+       * C = Exponent D
+       */
       class IsoExpoPow : public MAT::PAR::Parameter
       {
        public:
@@ -61,18 +62,14 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric exponential material
-    ///
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac{k_1}{2k_2} (e^{k_2 (\overline{I}_{\boldsymbol{C}}-3)^d}-1).
-    ///\f]
-    ///
-    ///
-    /// \author rausch
-    /// \date 08/09
+    /*!
+     * @brief Isochoric exponential material
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = \frac{k_1}{2k_2} (e^{k_2 (\overline{I}_{\boldsymbol{C}}-3)^d}-1).
+     * \f]
+     */
     class IsoExpoPow : public Summand
     {
      public:

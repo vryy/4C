@@ -19,11 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a general power material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_Coup1Pow C 1 D 1
+      /*!
+       * @brief material parameters for isochoric contribution of a general power material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_Coup1Pow C 1 D 1
+       */
       class Coup1Pow : public MAT::PAR::Parameter
       {
        public:
@@ -59,20 +60,17 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric general power material
-    ///
-    /// This is a summand of a variable order hyperelastic, isotropic
-    /// material depending on the first invariant of the right Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C (I_{\boldsymbol{C}}-3)^D.
-    ///\f]
-    ///
-    ///
-    /// \author rausch
-    /// \date 03/11
+    /*!
+     * @brief Isochoric general power material
+     *
+     * This is a summand of a variable order hyperelastic, isotropic
+     * material depending on the first invariant of the right Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = C (I_{\boldsymbol{C}}-3)^D.
+     * \f]
+     */
     class Coup1Pow : public Summand
     {
      public:
@@ -139,7 +137,6 @@ namespace MAT
         isoprinc = true;
         return;
       };
-
 
      private:
       /// my material parameters

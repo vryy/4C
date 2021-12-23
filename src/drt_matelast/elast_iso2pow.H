@@ -3,7 +3,6 @@
 \brief Definition of classes for the isochoric contribution of an isotropic general power-type
 material in terms of the second Cauchy-Green invariant
 
-
 \level 1
 */
 /*----------------------------------------------------------------------*/
@@ -20,11 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a general power material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_Iso2Pow C 1 D 1
+      /*!
+       * @brief material parameters for isochoric contribution of a general power material
+       *
+       *  <h3>Input line</h3>
+       *  MAT 1 ELAST_Iso2Pow C 1 D 1
+       */
       class Iso2Pow : public MAT::PAR::Parameter
       {
        public:
@@ -60,20 +60,17 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric general power material
-    ///
-    /// This is the isochoric part of a variable order hyperelastic, isotropic
-    /// material depending on the seccond invariant of the right Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C (\overline{II}_{\boldsymbol{C}}-3)^D.
-    ///\f]
-    ///
-    ///
-    /// \author rausch
-    /// \date 03/11
+    /*!
+     * @brief Isochoric general power material
+     *
+     * This is the isochoric part of a variable order hyperelastic, isotropic
+     * material depending on the seccond invariant of the right Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = C (\overline{II}_{\boldsymbol{C}}-3)^D.
+     * \f]
+     */
     class Iso2Pow : public Summand
     {
      public:

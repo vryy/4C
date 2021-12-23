@@ -20,12 +20,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of an anisotropic active fiber material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupAnisoExpoActive K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
-      /// ADAPT_ANGLE 0 S 54000 LAMBDAM 1.4 LAMBDA0 0.8 DENS 1050
+      /*!
+       * @brief material parameters for coupled contribution of an anisotropic active fiber material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupAnisoExpoActive K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
+       * ADAPT_ANGLE 0 S 54000 LAMBDAM 1.4 LAMBDA0 0.8 DENS 1050
+       */
       class CoupAnisoExpoActive : public MAT::PAR::ParameterAniso
       {
        public:
@@ -80,29 +81,25 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Coupled anisotropic active fiber function, implemented for one possible fiber family
-    ///
-    /// This is an active anisotropic material of the most simple kind.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac {s}{\rho} \left(1.0 + \frac{1}{3} \frac{\left(\lambda_m - 1.0
-    ///   \right)^3}{\left(\lambda_m - \lambda_0 \right)^2} \right).
-    ///\f]
-    /// [1]
-    ///
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] Wilson, J.S., S. Baek, and J.D. Humphrey, Parametric study of effects of collagen
-    /// turnover on the natural history of
-    ///          abdominal aortic aneurysms. Proc. R. Soc. A, 2013. 469(2150): p. 20120556.
-    /// </ul>
-    ///
-    /// \author braeu
-    /// \date 07/16
-
+    /*!
+     * @brief Coupled anisotropic active fiber function, implemented for one possible fiber family
+     * as in [1]
+     *
+     * This is an active anisotropic material of the most simple kind.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = \frac {s}{\rho} \left(1.0 + \frac{1}{3} \frac{\left(\lambda_m - 1.0
+     *   \right)^3}{\left(\lambda_m - \lambda_0 \right)^2} \right).
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] Wilson, J.S., S. Baek, and J.D. Humphrey, Parametric study of effects of collagen
+     * turnover on the natural history of abdominal aortic aneurysms. Proc. R. Soc. A, 2013.
+     * 469(2150): p. 20120556.
+     * </ul>
+     */
     class CoupAnisoExpoActive : public ActiveSummand, public FiberAnisotropyExtensionProvider<1>
     {
      public:
@@ -241,7 +238,6 @@ namespace MAT
         anisoprinc = true;
       };
 
-
       /*!
        * \brief Returns the reference to the used MAT::FiberAnisotropyExtension
        *
@@ -267,7 +263,7 @@ namespace MAT
 
       /// Anisotropy extension that manages fibers and structural tensors
       DefaultAnisotropyExtension<1> anisotropyExtension_;
-    };
+    };  // namespace PAR
 
   }  // namespace ELASTIC
 }  // namespace MAT

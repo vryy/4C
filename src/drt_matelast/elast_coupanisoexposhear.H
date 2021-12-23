@@ -87,12 +87,13 @@ namespace MAT
 
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of a anisotropic exponential fiber
-      /// material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupAnisoExpoShear K1 10.0 K2 1.0 K1COMP 0.0 K2COMP 1.0 INIT 0 FIBER_IDS 1 2
+      /*!
+       * @brief material parameters for coupled contribution of a anisotropic exponential fiber
+       * material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupAnisoExpoShear K1 10.0 K2 1.0 K1COMP 0.0 K2COMP 1.0 INIT 0 FIBER_IDS 1 2
+       */
       class CoupAnisoExpoShear : public MAT::PAR::Parameter,
                                  public MAT::ELASTIC::PAR::CoupAnisoExpoBase
       {

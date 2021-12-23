@@ -19,12 +19,14 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a anisotropic exponential fiber material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
-      /// ADAPT_ANGLE 0
+      /*!
+       * @brief material parameters for isochoric contribution of a anisotropic exponential fiber
+       * material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE
+       * 0
+       */
       class IsoAnisoExpo : public MAT::PAR::ParameterAniso
       {
        public:
@@ -70,28 +72,23 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric anisotropic exponential fiber function, implemented for one possible fiber family
-    /// [1]
-    /// This is a hyperelastic, anisotropic material
-    /// of the most simple kind.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac {k_1}{2 k_2} \left(e^{k_2 (\overline{IV}_{\boldsymbol C}-1)^2 }-1 \right).
-    ///\f]
-    ///
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial
-    /// wall mechanics
-    ///          and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
-    /// </ul>
-    ///
-    /// \author st
-    /// \date 03/12
-
+    /*!
+     * @brief Isochoric anisotropic exponential fiber function, implemented for one possible fiber
+     * family [1]
+     *
+     * This is a hyperelastic, anisotropic material of the most simple kind.
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = \frac {k_1}{2 k_2} \left(e^{k_2 (\overline{IV}_{\boldsymbol C}-1)^2 }-1 \right).
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial
+     * wall mechanics and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
+     * </ul>
+     */
     class IsoAnisoExpo : public Summand
     {
      public:

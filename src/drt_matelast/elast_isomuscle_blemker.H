@@ -45,7 +45,6 @@ namespace MAT
         double lambda_star_;  ///< stretch where normalized passive fiber force becomes linear
         //! @}
 
-
         //! @name time-dependent activation level
         //! @{
         double alpha_;        ///< tetanised activation level, 0<alpha<1
@@ -84,7 +83,7 @@ namespace MAT
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
 
-      // Provide the material type
+      /// Provide the material type
       INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_isomuscleblemker;
@@ -127,30 +126,30 @@ namespace MAT
       MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
 
       /*!
-       *  \brief  Evaluate total fiber cauchy stress and derivative w.r.t the fibre stretch
+       * \brief Evaluate total fiber cauchy stress and derivative w.r.t the fibre stretch
        *
-       *  The total fiber cauchy stress is computed as the normalized total fiber force (sum of
+       * The total fiber cauchy stress is computed as the normalized total fiber force (sum of
        * active and passive component) scaled by the maximal isometric stress and the ratio between
        * current fiber length and optimal fiber length
        *
-       *  \param[in] modI4 modified forth invariant of right Cauchy Green tensor
-       *  \param[in] alpha_act activation level
-       *  \param[in, out] sigma_fiber_total total fiber cauchy stress
-       *  \param[in, out] deriv_sigma_fiber_total derivative of total fiber cauchy stress w.r.t.
+       * \param[in] modI4 modified forth invariant of right Cauchy Green tensor
+       * \param[in] alpha_act activation level
+       * \param[in, out] sigma_fiber_total total fiber cauchy stress
+       * \param[in, out] deriv_sigma_fiber_total derivative of total fiber cauchy stress w.r.t.
        * fibre stretch
        */
       void EvaluateTotalFiberCauchyStressAndDerivative(double modI4, double alpha_act,
           double& sigma_fiber_total, double& deriv_sigma_fiber_total);
 
       /*!
-       *  \brief  Evaluate time-dependent activation function
+       * \brief Evaluate time-dependent activation function
        *
-       *  The activation follows the time-dependent function alpha_act =
+       * The activation follows the time-dependent function alpha_act =
        * alpha*tanh(beta*(t_tot-t_act_start)) for any t_tot>t_act_start.
        *
-       *  \param[in] alpha tetanised activation level
-       *  \param[in] beta scaling factor
-       *  \param[in] t_tot total time
+       * \param[in] alpha tetanised activation level
+       * \param[in] beta scaling factor
+       * \param[in] t_tot total time
        */
       double EvaluateTimeDependentActivationLevel(double alpha, double beta, double t_tot);
     };

@@ -19,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumetric power law contribution \f$\Psi = \frac{a}{expon-1}
-      /// J^(-expon+1) + aJ\f$
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_VolPow A 100 EXPON 5
+      /*!
+       * @brief material parameters for volumetric power law contribution \f$\Psi =
+       * \frac{a}{expon-1} J^(-expon+1) + aJ\f$
+       *
+       *  <h3>Input line</h3>
+       *  MAT 1 ELAST_VolPow A 100 EXPON 5
+       */
       class VolPow : public MAT::PAR::Parameter
       {
        public:
@@ -61,27 +62,22 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Volumetric Power-law material.
-    ///
-    /// Strain energy function is given by
-    ///
-    ///
-    ///\f[
-    ///  \Psi = \frac{a}{expon-1} J^(-expon+1) + aJ
-    ///\f]
-    ///
-    /// results in the following pressure (stress)
-    ///
-    ///\f[
-    /// p = -a (J^(-expon) -1)
-    ///\f]
-    ///
-    /// The resultant pressure depends on the prefactor and pressure.
-    /// Should be combined with non-stiff volumetric law (eg. Ogden).
-    ///
-    /// \author birzle
-    /// \date 11/15
+    /*!
+     * @brief Volumetric Power-law material
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = \frac{a}{expon-1} J^(-expon+1) + aJ
+     * \f]
+     *
+     * results in the following pressure (stress)
+     * \f[
+     *  p = -a (J^(-expon) -1)
+     * \f]
+     *
+     * The resultant pressure depends on the prefactor and pressure.
+     * Should be combined with non-stiff volumetric law (eg. Ogden).
+     */
     class VolPow : public Summand
     {
      public:

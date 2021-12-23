@@ -20,12 +20,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled passive cardiac material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436
-      /// GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
+      /*!
+       * @brief material parameters for coupled passive cardiac material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupAnisoExpoTwoCoup A4 18.472 B4 16.026 A6 2.481 B6 11.120 A8 0.216 B8 11.436
+       * GAMMA 0.0 [INIT 1] [FIB_COMP Yes] [ADAPT_ANGLE No]
+       */
       class CoupAnisoExpoTwoCoup : public MAT::PAR::ParameterAniso
       {
        public:
@@ -113,7 +114,8 @@ namespace MAT
       void OnFibersInitialized() override;
 
       /*!
-       * \brief Returns the reference to the coupled structural tensor in stress like Voigt notation
+       * \brief Returns the reference to the coupled structural tensor in stress like Voigt
+       * notation
        *
        * \param gp Gauss point
        * \return const LINALG::Matrix<6, 1>& Reference to the coupled structural tensor in stress
@@ -138,30 +140,25 @@ namespace MAT
       std::vector<LINALG::Matrix<6, 1>> A1A2_;
     };
 
-    /*----------------------------------------------------------------------*/
-    /// Anisotropic cardiac material, implemented with two possible fiber families acc [1]
-    ///
-    /// This is a hyperelastic, anisotropic material for the passive response of cardiac material
-    ///
-    /// Strain energy function is given by:
-    ///\f[
-    ///   \Psi = \frac {a_4}{2 b_4} \left( e^{b_4 (IV_{\boldsymbol C} - 1)^2} - 1 \right) +
-    ///   \frac {a_6}{2 b_6} \left( e^{b_6 (VI_{\boldsymbol C} - 1)^2} - 1 \right) + \frac {a_8}{2
-    ///   b_8} \left( e^{b_8 \left( VIII_{\boldsymbol C} - a_0 \cdot b_0 \right)^2} - 1 \right)
-    ///\f]
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, RW Ogden, Constitutive modelling of passive myocardium: a
-    /// structurally based framework for material characterization
-    /// </ul>#include "../drt_mat/matpar_parameter.H"
-    /// <ul>
-    /// <li> [2] C Sansour, On the physical assumptions underlying the volumetric-isochoric split
-    /// and the case of anisotropy
-    /// </ul>
-    ///
-    /// \author nagler
-    /// \date 11/11
+    /*!
+     * @brief Anisotropic cardiac material, implemented with two possible fiber families as in [1]
+     *
+     * This is a hyperelastic, anisotropic material for the passive response of cardiac material
+     *
+     * Strain energy function is given by:
+     * \f[
+     *   \Psi = \frac {a_4}{2 b_4} \left( e^{b_4 (IV_{\boldsymbol C} - 1)^2} - 1 \right) +
+     *   \frac {a_6}{2 b_6} \left( e^{b_6 (VI_{\boldsymbol C} - 1)^2} - 1 \right) + \frac{a_8}{2b_8}
+     * \left( e^{b_8 \left( VIII_{\boldsymbol C} - a_0 \cdot b_0 \right)^2} - 1\right) \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, RW Ogden, Constitutive modelling of passive myocardium: a
+     * structurally based framework for material characterization
+     * <li> [2] C Sansour, On the physical assumptions underlying the volumetric-isochoric split
+     * and the case of anisotropy
+     * </ul>
+     */
     class CoupAnisoExpoTwoCoup : public Summand
     {
      public:
@@ -241,7 +238,7 @@ namespace MAT
 
       /// Special anisotropic behavior
       CoupAnisoExpoTwoCoupAnisoExtension anisotropyExtension_;
-    };
+    };  // namespace PAR
 
   }  // namespace ELASTIC
 }  // namespace MAT

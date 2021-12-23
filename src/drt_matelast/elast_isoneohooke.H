@@ -18,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a neo-Hooke material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoNeoHooke MUE 100
+      /*!
+       * @brief material parameters for isochoric contribution of a neo-Hooke material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoNeoHooke MUE 100
+       */
       class IsoNeoHooke : public MAT::PAR::Parameter
       {
        public:
@@ -56,25 +57,23 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric neo-Hooke material according to [1]
-    ///
-    /// This is a hyperelastic, isotropic material
-    /// of the most simple kind.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac{\mu}{2} (\overline{I}_{\boldsymbol{C}}-3) = \frac{\mu}{2}
-    ///   (J^{-2/3}{I}_{\boldsymbol{C}}-3)
-    ///\f]
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// </ul>
-    ///
-    /// \author rausch,tk
-    /// \date 04/09
+    /*!
+     * @brief Isochoric neo-Hooke material according to [1]
+     *
+     * This is a hyperelastic, isotropic material
+     * of the most simple kind.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = \frac{\mu}{2} (\overline{I}_{\boldsymbol{C}}-3) = \frac{\mu}{2}
+     *   (J^{-2/3}{I}_{\boldsymbol{C}}-3)
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+     * </ul>
+     */
     class IsoNeoHooke : public Summand
     {
      public:
@@ -118,7 +117,6 @@ namespace MAT
       /// @name Access methods
       //@{
       double Mue() const { return params_->mue_; }
-
       //@}
 
       /// Indicator for formulation
@@ -134,10 +132,8 @@ namespace MAT
         return;
       };
 
-
       // Add third derivatives with respect to modified invariants.
-      // REMARK: Only the ones' which are used in remodeling
-      //         are implemented (dddPIII_0,1,3,5)
+      // REMARK: Only the ones' which are used in remodeling are implemented (dddPIII_0,1,3,5)
       virtual void AddThirdDerivativesModified(
           LINALG::Matrix<10, 1>&
               dddPmodIII,  ///< third derivative with respect to modified invariants
@@ -146,8 +142,6 @@ namespace MAT
       {
         return;  // nothing
       }
-
-
 
      private:
       /// my material parameters

@@ -19,11 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a Yeoh material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200
+      /*!
+       * @brief material parameters for isochoric contribution of a Yeoh material
+       *
+       *  <h3>Input line</h3>
+       *  MAT 1 ELAST_IsoYeoh C1 100 C2 0 C3 200
+       */
       class IsoYeoh : public MAT::PAR::Parameter
       {
        public:
@@ -61,26 +62,23 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric Yeoh material according to [1]
-    ///
-    /// This is the isochoric part of a third order hyperelastic, isotropic
-    /// material depending on the modified trace of the right Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 +
-    ///          C3 (\overline{I}_{\boldsymbol{C}}-3)^3.
-    ///\f]
-    ///
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// </ul>
-    ///
-    /// \author rausch/tk
-    /// \date 04/09
+    /*!
+     * @brief Isochoric Yeoh material according to [1]
+     *
+     * This is the isochoric part of a third order hyperelastic, isotropic
+     * material depending on the modified trace of the right Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{I}_{\boldsymbol{C}}-3)^2 +
+     *          C3 (\overline{I}_{\boldsymbol{C}}-3)^3.
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+     * </ul>
+     */
     class IsoYeoh : public Summand
     {
      public:

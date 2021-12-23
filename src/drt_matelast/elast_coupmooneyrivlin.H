@@ -18,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of a CoupMooneyRivlinan material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1
+      /*!
+       * @brief material parameters for coupled contribution of a CoupMooneyRivlinan material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupMooneyRivlin C1 1 C2 1 C3 1
+       */
       class CoupMooneyRivlin : public MAT::PAR::Parameter
       {
        public:
@@ -59,29 +60,21 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// CoupMooneyRivlinan material
-    ///
-    ///
-    ///
-    ///
-    /// Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
-    ///
-    /// The underlying strain-energy function is (expressed in invariants I1 and I2):
-    ///
-    /// \f[
-    ///     \Psi= c_1 (I1 - 3)  +  c_2 (I2 - 3)  -  (2 c_1 + 4 c_2) ln(J) + c_3 * (J - 1)^2
-    ///\f]
-    ///
-    /// For references see Holzapfel p. 245,
-    ///
-    /// Parameters are \f$ c_1, c_2\f$ and \f$c_3\f$ as penalty factor to enforce incompressibility
-    /// (shear modulus \f$\mu = (c_1 + c_2) / 2)\f$
-    ///
-    ///
-    ///
-    /// \author rausch
-    /// \date 03/12
+    /*!
+     * @brief CoupMooneyRivlinan material
+     *
+     * Mooney-Rivlin type nearly incompressible, hyperelastic 3D material law.
+     *
+     * The underlying strain-energy function is (expressed in invariants I1 and I2):
+     * \f[
+     *     \Psi= c_1 (I1 - 3)  +  c_2 (I2 - 3)  -  (2 c_1 + 4 c_2) ln(J) + c_3 * (J - 1)^2
+     * \f]
+     *
+     * For references see Holzapfel p. 245
+     *
+     * Parameters are \f$ c_1, c_2\f$ and \f$c_3\f$ as penalty factor to enforce incompressibility
+     * (shear modulus \f$\mu = (c_1 + c_2) / 2)\f$
+     */
     class CoupMooneyRivlin : public Summand
     {
      public:

@@ -18,13 +18,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for anisochoric contribution of a
-      /// neo-Hooke material with one fiber direction with space-time varying coefficients
-      ///
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+      /*!
+       * @brief material parameters for anisotropic contribution of a neo-Hooke material with one
+       * fiber direction with space-time varying coefficients
+       *
+       * <h3>Input line</h3>
+       * MAT 1 CoupAnisoNeoHooke_VarProp C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+       */
       class CoupAnisoNeoHooke_VarProp : public MAT::PAR::ParameterAniso
       {
        public:
@@ -68,26 +68,23 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Coupled anisotropic exponential fiber function, implemented for one possible fiber family
-    /// [1]
-    /// This is a hyperelastic, anisotropic material
-    /// of the most simple kind. The material parameter can vary in space and time
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = c(X,t) \left(IV_{\boldsymbol C}-1\right).
-    ///\f]
-    ///
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, TC Gasser, A viscoelastic model for fiber-reinforced composites at
-    /// finite strains: ... 2000
-    /// </ul>
-    ///
-    /// \author rausch
-    /// \date 05/09
+    /*!
+     * @brief Coupled anisotropic exponential fiber function, implemented for one possible fiber
+     * family as in [1]
+     *
+     * This is a hyperelastic, anisotropic material of the most simple kind. The material parameter
+     * can vary in space and time
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = c(X,t) \left(IV_{\boldsymbol C}-1\right)
+     * \f]
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, TC Gasser, A viscoelastic model for fiber-reinforced composites at
+     * finite strains: ... 2000
+     * </ul>
+     */
     class CoupAnisoNeoHooke_VarProp : public Summand
     {
      public:

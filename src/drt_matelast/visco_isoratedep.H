@@ -19,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a frequency independent viscoelastic
-      /// material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_IsoRateDep N 1
+      /*!
+       * @brief material parameters for isochoric contribution of a frequency independent
+       * viscoelastic material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_IsoRateDep N 1
+       */
       class IsoRateDep : public MAT::PAR::Parameter
       {
        public:
@@ -58,21 +59,19 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric general power material
-    ///
-    /// This is the isochoric part of a viscohyperelastic, isotropic
-    /// material depending on the modified invariants of the rate of the right
-    /// Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = n \overline{J}_2 (\overline{I}_1 -3).
-    ///\f]
-    /// (n = \eta)
-    ///
-    /// \author birzle
-    /// \date 09/13
+    /*!
+     * @brief Isochoric general power material
+     *
+     * This is the isochoric part of a viscohyperelastic, isotropic
+     * material depending on the modified invariants of the rate of the right
+     * Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = n \overline{J}_2 (\overline{I}_1 -3).
+     * \f]
+     * (n = \eta)
+     */
     class IsoRateDep : public Summand
     {
      public:
