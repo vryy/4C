@@ -63,13 +63,6 @@ MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasse
 {
 }
 
-void MAT::ELASTIC::IsoVolAAAGasser::PackSummand(DRT::PackBuffer& data) const {}
-
-void MAT::ELASTIC::IsoVolAAAGasser::UnpackSummand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
-{
-}
-
 void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle

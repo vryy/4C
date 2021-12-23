@@ -108,16 +108,6 @@ namespace MAT
       /// constructor with given material parameters
       IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params);
 
-      ///@name Packing and Unpacking
-      //@{
-
-      void PackSummand(DRT::PackBuffer& data) const override;
-
-      void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
-
-      //@}
-
       /// @name Access material constants
       //@{
 
