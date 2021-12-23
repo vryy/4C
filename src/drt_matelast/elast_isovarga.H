@@ -108,18 +108,6 @@ namespace MAT
                                               ///< \bar{\lambda}_2, \bar{\lambda}_3]
           ) override;
 
-      /// @name Access methods
-      //@{
-      double Mue() const { return params_->mue_; }
-      double Beta() const { return params_->beta_; }
-      //@}
-
-      /// @name Write methods
-      //@{
-      void SetMue(const double& mue) { params_->mue_ = mue; }
-      void SetBeta(const double& beta) { params_->beta_ = beta; }
-      //@}
-
       /// Indicator for formulation
       void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation

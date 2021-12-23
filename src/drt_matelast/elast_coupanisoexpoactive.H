@@ -68,18 +68,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetK1(const double k1) { k1_ = k1; }
-        void SetK2(const double k2) { k2_ = k2; }
-        void SetK1COMP(const double k1comp) { k1comp_ = k1comp; }
-        void SetK2COMP(const double k2comp) { k2comp_ = k2comp; }
-        //@}
-
       };  // class CoupAnisoExpoActive
-
-    }  // namespace PAR
+    }     // namespace PAR
 
     /*!
      * @brief Coupled anisotropic active fiber function, implemented for one possible fiber family
@@ -200,11 +190,6 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      double K1() const { return params_->k1_; }
-      double K2() const { return params_->k2_; }
-      double K1COMP() const { return params_->k1comp_; }
-      double K2COMP() const { return params_->k2comp_; }
-
       template <typename T>
       inline void GetDerivativeAnisoActive(T& dPIact) const
       {

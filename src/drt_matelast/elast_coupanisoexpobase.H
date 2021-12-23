@@ -87,14 +87,6 @@ namespace MAT
         int init_;
 
         //@}
-
-        /// @name Write methods
-        //@{
-        void SetK1(const double k1) { k1_ = k1; }
-        void SetK2(const double k2) { k2_ = k2; }
-        void SetK1COMP(const double k1comp) { k1comp_ = k1comp; }
-        void SetK2COMP(const double k2comp) { k2comp_ = k2comp; }
-        //@}
       };  // class CoupAnisoExpoBase
 
     }  // namespace PAR
@@ -227,15 +219,6 @@ namespace MAT
           LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
           int gp,                              ///< Gauss point
           int eleGID) const;                   ///< element GID
-
-
-      /// @name Access methods
-      ///@{
-      double K1() const { return params_->k1_; }
-      double K2() const { return params_->k2_; }
-      double K1COMP() const { return params_->k1comp_; }
-      double K2COMP() const { return params_->k2comp_; }
-      ///@}
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,       ///< new angle

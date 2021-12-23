@@ -47,15 +47,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetN(const double n) { n_ = n; }
-        //@}
-
       };  // class CoupMyocard
-
-    }  // namespace PAR
+    }     // namespace PAR
 
     /*!
      * @brief Isochoric coupled viscous material with pseudo-potential
@@ -102,12 +95,6 @@ namespace MAT
           LINALG::Matrix<33, 1>& xi,          ///< necassary coefficients for viscosity tensor
           LINALG::Matrix<7, 1>& rateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
-
-      /// @name Access methods
-      //@{
-      double N() const { return params_->n_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

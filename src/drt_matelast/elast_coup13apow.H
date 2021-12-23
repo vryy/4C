@@ -51,14 +51,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double c) { c_ = c; }
-        void SetD(const int d) { d_ = d; }
-        void SetA(const double a) { a_ = a; }
-        //@}
-
       };  // class Coup13aPow
 
     }  // namespace PAR
@@ -114,14 +106,6 @@ namespace MAT
       {
         dserror("not implemented");
       }
-
-      /// @name Access methods
-      //@{
-      double C() const { return params_->c_; }
-      int D() const { return params_->d_; }
-      double A() const { return params_->a_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

@@ -50,14 +50,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetTau(const double tau) { tau_ = tau; }
-        void SetBeta(const double beta) { beta_ = beta; }
-        void SetSolve(const std::string& solve) { solve_ = solve; }
-        //@}
-
       };  // class GenMax
 
     }  // namespace PAR
@@ -119,14 +111,6 @@ namespace MAT
           std::string&
               solve  //!< variant of the solution of the evolution integral (just for genmax)
           ) override;
-
-      /// @name Access methods
-      //@{
-      double Tau() const { return params_->tau_; }
-      double Beta() const { return params_->beta_; }
-      std::string Solve() const { return params_->solve_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

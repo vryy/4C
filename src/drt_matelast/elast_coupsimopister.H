@@ -45,12 +45,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        //@}
-
       };  // class CoupSimoPister
 
     }  // namespace PAR
@@ -117,12 +111,6 @@ namespace MAT
       {
         dserror("not implemented");
       }
-
-      /// @name Access methods
-      //@{
-      double Mue() const { return params_->mue_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

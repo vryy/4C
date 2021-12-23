@@ -51,13 +51,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetK1(const double k1) { k1_ = k1; }
-        void SetK2(const double k2) { k2_ = k2; }
-        //@}
-
       };  // class IsoExpoPow
 
     }  // namespace PAR
@@ -102,13 +95,6 @@ namespace MAT
           int gp,                              ///< Gauss point
           const int eleGID                     ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double K1() const { return params_->k1_; }
-      double K2() const { return params_->k2_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

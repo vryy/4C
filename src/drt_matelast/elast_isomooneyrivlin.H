@@ -48,16 +48,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC1(const double c1) { c1_ = c1; }
-        void SetC2(const double c2) { c2_ = c2; }
-        //@}
-
       };  // class IsoMooneyRivlin
-
-    }  // namespace PAR
+    }     // namespace PAR
 
     /*!
      * @brief Isochoric Mooney-Rivlin material according to [1]
@@ -107,13 +99,6 @@ namespace MAT
           int gp,                              ///< Gauss point
           int eleGID                           ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double C1() const { return params_->c1_; }
-      double C2() const { return params_->c2_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

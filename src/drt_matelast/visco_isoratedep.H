@@ -49,12 +49,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetN(const double n) { n_ = n; }
-        //@}
-
       };  // class IsoRateDep
 
     }  // namespace PAR
@@ -93,12 +87,6 @@ namespace MAT
           LINALG::Matrix<33, 1>& modxi,  ///< necassary coefficients for viscosity tensor
           LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
-
-      /// @name Access methods
-      //@{
-      double N() const { return params_->n_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

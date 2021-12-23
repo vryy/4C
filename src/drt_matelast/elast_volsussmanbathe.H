@@ -49,12 +49,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetKappa(const double kappa) { kappa_ = kappa; }
-        //@}
-
       };  // class VolSussmanBathe
 
     }  // namespace PAR
@@ -110,11 +104,9 @@ namespace MAT
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
 
-
       /// @name Access methods
       //@{
       double Kappa() const { return params_->kappa_; }
-
       //@}
 
       /// Indicator for formulation

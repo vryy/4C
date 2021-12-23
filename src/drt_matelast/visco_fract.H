@@ -50,17 +50,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetTau(const double tau) { tau_ = tau; }
-        void SetAlpha(const double alpha) { alpha_ = alpha; }
-        void SetBeta(const double beta) { beta_ = beta; }
-        //@}
-
       };  // class Fract
-
-    }  // namespace PAR
+    }     // namespace PAR
 
 
     /*!
@@ -101,14 +92,6 @@ namespace MAT
           std::string&
               solve  //!< variant of the solution of the evolution integral (just for genmax)
           ) override;
-
-      /// @name Access methods
-      //@{
-      double Tau() const { return params_->tau_; }
-      double Alpha() const { return params_->alpha_; }
-      double Beta() const { return params_->beta_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

@@ -47,15 +47,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        //@}
-
       };  // class IsoNeoHooke
-
-    }  // namespace PAR
+    }     // namespace PAR
 
     /*!
      * @brief Isochoric neo-Hooke material according to [1]
@@ -113,7 +106,6 @@ namespace MAT
           int eleGID                           ///< element GID
           ) override;
 
-
       /// @name Access methods
       //@{
       double Mue() const { return params_->mue_; }
@@ -131,17 +123,6 @@ namespace MAT
         isomod = true;
         return;
       };
-
-      // Add third derivatives with respect to modified invariants.
-      // REMARK: Only the ones' which are used in remodeling are implemented (dddPIII_0,1,3,5)
-      virtual void AddThirdDerivativesModified(
-          LINALG::Matrix<10, 1>&
-              dddPmodIII,  ///< third derivative with respect to modified invariants
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const int eleGID)                    ///< global ID of element
-      {
-        return;  // nothing
-      }
 
      private:
       /// my material parameters

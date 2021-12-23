@@ -71,12 +71,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double sigma) { sigma_ = sigma; }
-        //@}
-
       };  // class AnisoActiveStress_Evolution
 
     }  // namespace PAR
@@ -173,12 +167,6 @@ namespace MAT
           int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double SIGMA() const { return params_->sigma_; }
-
-      //@}
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,       ///< new angle

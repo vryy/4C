@@ -63,17 +63,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetA4(const double A4) { A4_ = A4; }
-        void SetB4(const double B4) { B4_ = B4; }
-        void SetA6(const double A6) { A6_ = A6; }
-        void SetB6(const double B6) { B6_ = B6; }
-        void SetA8(const double A8) { A8_ = A8; }
-        void SetB8(const double B8) { B8_ = B8; }
-        //@}
-
       };  // class CoupAnisoExpoTwoCoup
 
     }  // namespace PAR
@@ -199,15 +188,6 @@ namespace MAT
           int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
-      /// @name Access methods
-      //@{
-      double A4() const { return params_->A4_; }
-      double B4() const { return params_->B4_; }
-      double A6() const { return params_->A6_; }
-      double B6() const { return params_->B6_; }
-      double A8() const { return params_->A8_; }
-      double B8() const { return params_->B8_; }
-      //@}
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,       ///< new angle

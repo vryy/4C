@@ -54,13 +54,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double c) { c_ = c; }
-        void SetBeta(const double beta) { beta_ = beta; }
-        //@}
-
       };  // class CoupNeoHooke
 
     }  // namespace PAR
@@ -154,8 +147,6 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      double C() const { return params_->c_; }
-      double BETA() const { return params_->beta_; }
       double NUE() const { return params_->nue_; }
       double YOUNGS() const { return params_->youngs_; }
       //@}

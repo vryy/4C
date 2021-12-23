@@ -43,14 +43,7 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetLambda(const double lambda) { lambda_ = lambda; }
-        void SetMue(const double mue) { mue_ = mue; }
-        //@}
       };
-
     }  // namespace PAR
 
     /*!
@@ -106,12 +99,6 @@ namespace MAT
       /// isochoric deformation
       void AddCoupDerivVol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override;
-
-      /// @name Access methods
-      //@{
-      double LAMBDA() const { return params_->lambda_; }
-      double MUE() const { return params_->mue_; }
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

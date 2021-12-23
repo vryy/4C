@@ -49,14 +49,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetA(const double a) { a_ = a; }
-        void SetB(const double b) { b_ = b; }
-        void SetC(const double c) { c_ = c; }
-        //@}
-
       };  // class CoupExpPol
 
     }  // namespace PAR
@@ -106,13 +98,6 @@ namespace MAT
           int gp,                             ///< Gauss point
           int eleGID                          ///< element GID
           ) override;
-      /// @name Access methods
-      //@{
-      double A() const { return params_->a_; }
-      double B() const { return params_->b_; }
-      double C() const { return params_->c_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

@@ -51,16 +51,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetA(const double a) { a_ = a; }
-        void SetExpon(const double expon) { expon_ = expon; }
-        //@}
-
       };  // class VolPow
-
-    }  // namespace PAR
+    }     // namespace PAR
 
     /*!
      * @brief Volumetric Power-law material
@@ -114,13 +106,6 @@ namespace MAT
 
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
-
-
-      /// @name Access methods
-      //@{
-      double A() const { return params_->a_; }
-      double Expon() const { return params_->expon_; }
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

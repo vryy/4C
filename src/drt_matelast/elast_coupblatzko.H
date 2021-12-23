@@ -52,14 +52,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        void SetNue(const double nue) { nue_ = nue; }
-        void SetF(const double f) { f_ = f; }
-        //@}
-
       };  // class CoupBlatzKo
 
     }  // namespace PAR
@@ -134,8 +126,6 @@ namespace MAT
       //@{
       double Mue() const { return params_->mue_; }
       double Nue() const { return params_->nue_; }
-      double F() const { return params_->f_; }
-
       //@}
 
       /// Indicator for formulation

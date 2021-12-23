@@ -48,14 +48,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC1(const double c1) { c1_ = c1; }
-        void SetC2(const double c2) { c2_ = c2; }
-        void SetC3(const double c3) { c3_ = c3; }
-        //@}
-
       };  // class CoupMooneyRivlin
 
     }  // namespace PAR
@@ -114,14 +106,6 @@ namespace MAT
       /// isochoric deformation
       void AddCoupDerivVol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override;
-
-      /// @name Access methods
-      //@{
-      double C1() const { return params_->c1_; }
-      double C2() const { return params_->c2_; }
-      double C3() const { return params_->c3_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

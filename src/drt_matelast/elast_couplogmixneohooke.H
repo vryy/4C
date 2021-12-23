@@ -52,13 +52,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        void SetLambda(const double lambda) { lambda_ = lambda; }
-        //@}
-
       };  // class CoupLogNeoHooke
 
     }  // namespace PAR
@@ -144,13 +137,6 @@ namespace MAT
       {
         dserror("not implemented");
       }
-
-      /// @name Access methods
-      //@{
-      double Mue() const { return params_->mue_; }
-      double Lambda() const { return params_->lambda_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

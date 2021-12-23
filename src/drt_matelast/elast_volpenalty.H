@@ -51,13 +51,6 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetEpsilon(const double eps) { eps_ = eps; }
-        void SetGamma(const double gam) { gam_ = gam; }
-        //@}
-
       };  // class VolPenalty
 
     }  // namespace PAR
@@ -102,15 +95,9 @@ namespace MAT
           int gp,                              ///< Gauss point
           int eleGID                           ///< element GID
           ) override;
+
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
-
-      /// @name Access methods
-      //@{
-      double Epsilon() const { return params_->eps_; }
-      double Gamma() const { return params_->gam_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

@@ -52,17 +52,8 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetKappa(const double kappa) { kappa_ = kappa; }
-        void SetBeta(const double beta) { beta_ = beta; }
-        //@}
-
-
       };  // class VolOgden
-
-    }  // namespace PAR
+    }     // namespace PAR
 
     /*!
      * @brief Volumetric Ogden material according to [1].
@@ -110,13 +101,6 @@ namespace MAT
 
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
-
-      /// @name Access methods
-      //@{
-      double Kappa() const { return params_->kappa_; }
-      double Beta() const { return params_->beta_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

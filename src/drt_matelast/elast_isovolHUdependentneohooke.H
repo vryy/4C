@@ -132,23 +132,6 @@ namespace MAT
           int gp,                              ///< Gauss point
           const int eleGID                     ///< element GID
           ) override;
-      /// @name Access methods
-      //@{
-      double ALPHA_MAX() const { return params_->alphamax_; }
-      double CT_MIN() const { return params_->ctmin_; }
-      double CT_MAX() const { return params_->ctmax_; }
-      double NUE() const { return params_->nue_; }
-      double BETA() const { return params_->beta_; }
-      //@}
-
-      /// @name Write methods
-      //@{
-      void SetALPHA_MAX(const double alphamax) { params_->alphamax_ = alphamax; }
-      void SetCT_MIN(const double ctmin) { params_->ctmin_ = ctmin; }
-      void SetCT_MAX(const double ctmax) { params_->ctmax_ = ctmax; }
-      void SetNUE(const double nue) { params_->nue_ = nue; }
-      void SetBETA(const double beta) { params_->beta_ = beta; }
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(
