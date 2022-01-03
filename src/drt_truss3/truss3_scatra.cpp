@@ -186,9 +186,6 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
 
       // get data from input
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
-      const double c_0 = growth_mat->C0();
-      const std::vector<double> poly_params = growth_mat->PolyParams();
-      const bool amount_prop_growth = growth_mat->AmountPropGrowth();
 
       // get Gauss rule
       auto intpoints = DRT::UTILS::IntegrationPoints1D(gaussrule_);
@@ -196,23 +193,17 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
       // computing forcevec and stiffmat
       forcevec.Scale(0.0);
       stiffmat.Scale(0.0);
-      for (int i = 0; i < intpoints.nquad; ++i)
+      for (int gp = 0; gp < intpoints.nquad; ++gp)
       {
         const double dx_dxi = lrefe_ / 2.0;
-        const double int_fac = dx_dxi * intpoints.qwgt[i] * crosssec_;
+        const double int_fac = dx_dxi * intpoints.qwgt[gp] * crosssec_;
 
         // get concentration at Gauss point
-        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
-
-        // growth propotional to amount of substance of proportional to concentration
-        const double growth_factor =
-            amount_prop_growth ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params, truss_disp)
-                               : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
+        const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
 
         // calculate stress
-        const double E_el_1D =
-            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * growth_factor * growth_factor) - 1.0);
-        const double PK2_1D = 2.0 * growth_mat->Youngs() * E_el_1D / growth_factor;
+        const double PK2_1D = growth_mat->EvaluatePK2(Disp(truss_disp) / lrefe_, c_GP);
+        const double stiffness = growth_mat->EvaluateStiffness(Disp(truss_disp) / lrefe_, c_GP);
 
         // calculate residual (force.vec) and linearisation (stiffmat)
         for (int row = 0; row < ndof; ++row)
@@ -224,9 +215,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcInternalForceStiffTotLag(
           {
             const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
             const double sign = (col < 3 ? 1.0 : -1.0);
-            const double dPK2_1D_du = 2.0 * growth_mat->Youngs() / growth_factor * 1.0 /
-                                      (lrefe_ * lrefe_ * growth_factor * growth_factor) * sign *
-                                      truss_disp(col);
+            const double dPK2_1D_du = 2.0 * stiffness * dDispdu(truss_disp, col) / lrefe_ * sign;
             const double first_part = dN_dx(row) * ddef_grad_du * PK2_1D;
             const double second_part = dN_dx(row) * def_grad * dPK2_1D_du;
             stiffmat(row, col) += (first_part + second_part) * int_fac;
@@ -294,27 +283,14 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
           // get data from input
           const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
-          const double c_0 = growth_mat->C0();
-          const std::vector<double> poly_params = growth_mat->PolyParams();
-          const bool amount_prop_growth = growth_mat->AmountPropGrowth();
 
-          for (int i = 0; i < intpoints.nquad; ++i)
+          for (int gp = 0; gp < intpoints.nquad; ++gp)
           {
             // get concentration at Gauss point
-            const double c_GP = ProjectScalarToGaussPoint(intpoints.qxg[i][0], nodal_concentration);
+            const double c_GP =
+                ProjectScalarToGaussPoint(intpoints.qxg[gp][0], nodal_concentration);
 
-            // growth propotional to amount of substance of proportional to concentration
-            const double growth_factor =
-                amount_prop_growth ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params, truss_disp)
-                                   : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
-
-            // calculate stress
-            const double E_el_1D =
-                0.5 *
-                (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * growth_factor * growth_factor) - 1.0);
-            const double PK2_1D = 2.0 * growth_mat->Youngs() * E_el_1D / growth_factor;
-
-            stress(i, 0) = PK2_1D;
+            stress(gp, 0) = growth_mat->EvaluatePK2(Disp(truss_disp) / lrefe_, c_GP);
           }
 
           break;
@@ -355,24 +331,6 @@ double DRT::ELEMENTS::Truss3Scatra::ProjectScalarToGaussPoint(
     const double xi, const LINALG::Matrix<2, 1>& c) const
 {
   return (c(1) - c(0)) / 2.0 * xi + (c(1) + c(0)) / 2.0;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorConcProp(
-    const double c_GP, const double c_0, const std::vector<double>& poly_params) const
-{
-  return DRT::UTILS::Polynomial(poly_params).Evaluate(c_GP - c_0);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-// Get growth factor with Amount of substance instead of concentration
-double DRT::ELEMENTS::Truss3Scatra::GetGrowthFactorAoSProp(const double c_GP, const double c_0,
-    const std::vector<double>& poly_params, const LINALG::Matrix<6, 1>& truss_disp) const
-{
-  const double def_grad = Lcurr(truss_disp) / lrefe_;
-  return DRT::UTILS::Polynomial(poly_params).Evaluate(c_GP * def_grad - c_0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -472,9 +430,6 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
 
       // get data from input
       const auto* growth_mat = static_cast<const MAT::LinElast1DGrowth*>(Material().get());
-      const double c_0 = growth_mat->C0();
-      const std::vector<double> poly_params = growth_mat->PolyParams();
-      const bool amount_prop_growth = growth_mat->AmountPropGrowth();
 
       // get Gauss rule
       auto gauss_points = DRT::UTILS::IntegrationPoints1D(MyGaussRule(2, gaussexactintegration));
@@ -487,14 +442,7 @@ void DRT::ELEMENTS::Truss3Scatra::Energy(
 
         const double c_GP = ProjectScalarToGaussPoint(gauss_points.qxg[j][0], nodal_concentration);
 
-        const double growth_factor =
-            amount_prop_growth ? GetGrowthFactorAoSProp(c_GP, c_0, poly_params, truss_disp)
-                               : GetGrowthFactorConcProp(c_GP, c_0, poly_params);
-
-        const double E_el_1D =
-            0.5 * (Lcurr2(truss_disp) / (lrefe_ * lrefe_ * growth_factor * growth_factor) - 1.0);
-        const double PK2_1D = 2.0 * growth_mat->Youngs() * E_el_1D / growth_factor;
-        eint_ = 0.5 * PK2_1D * E_el_1D * int_fac;
+        eint_ = growth_mat->EvaluateElasticEnergy(Disp(truss_disp) / lrefe_, c_GP) * int_fac;
       }
       break;
     }

@@ -10,6 +10,8 @@ quantity (e.g. concentration)
 /*----------------------------------------------------------------------*/
 
 #include "lin_elast_1D.H"
+
+#include "../drt_lib/drt_function_library.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 
@@ -186,4 +188,90 @@ void MAT::LinElast1DGrowth::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::LinElast1DGrowth::EvaluatePK2(const double def_grad, const double conc) const
+{
+  const double def_grad_inel =
+      AmountPropGrowth() ? GetGrowthFactorAoSProp(conc, def_grad) : GetGrowthFactorConcProp(conc);
+
+  const double def_grad_el = def_grad / def_grad_inel;
+  const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
+
+  return 2.0 * growth_params_->youngs_ * epsilon_el / def_grad_inel;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::LinElast1DGrowth::EvaluateStiffness(const double def_grad, const double conc) const
+{
+  // F_in
+  const double def_grad_inel =
+      AmountPropGrowth() ? GetGrowthFactorAoSProp(conc, def_grad) : GetGrowthFactorConcProp(conc);
+
+  // F_el
+  const double def_grad_el = def_grad / def_grad_inel;
+
+  // E_el
+  const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
+
+  // dF_in/dF
+  const double d_def_grad_inel_d_def_grad =
+      AmountPropGrowth() ? GetGrowthFactorAoSPropDeriv(conc, def_grad) : 0.0;
+
+  // dF_el_dF
+  const double d_def_grad_el_d_def_grad =
+      (def_grad_inel - def_grad * d_def_grad_inel_d_def_grad) / (def_grad_inel * def_grad_inel);
+
+  // dE_el_dFel
+  const double d_epsilon_el_d_def_grad_el = def_grad_el;
+
+  // dE_el_dF
+  const double d_epsilon_el_d_def_grad = d_epsilon_el_d_def_grad_el * d_def_grad_el_d_def_grad;
+
+  return 2.0 * growth_params_->youngs_ *
+         (d_epsilon_el_d_def_grad * def_grad_inel - epsilon_el * d_def_grad_inel_d_def_grad) /
+         (def_grad_inel * def_grad_inel);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::LinElast1DGrowth::EvaluateElasticEnergy(double def_grad, double conc) const
+{
+  const double def_grad_inel =
+      AmountPropGrowth() ? GetGrowthFactorAoSProp(conc, def_grad) : GetGrowthFactorConcProp(conc);
+
+  const double def_grad_el = def_grad / def_grad_inel;
+  const double epsilon_el = 0.5 * (def_grad_el * def_grad_el - 1.0);
+
+  return 0.5 * (2.0 * growth_params_->youngs_ * epsilon_el / def_grad_inel) * epsilon_el;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::LinElast1DGrowth::GetGrowthFactorConcProp(const double conc) const
+{
+  return DRT::UTILS::Polynomial(growth_params_->poly_params_).Evaluate(conc - growth_params_->c0_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::LinElast1DGrowth::GetGrowthFactorAoSProp(const double conc, const double def_grad) const
+{
+  return DRT::UTILS::Polynomial(growth_params_->poly_params_)
+      .Evaluate(conc * def_grad - growth_params_->c0_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::LinElast1DGrowth::GetGrowthFactorAoSPropDeriv(
+    const double conc, const double def_grad) const
+{
+  LINALG::Matrix<2, 1> derivs(false);
+  DRT::UTILS::Polynomial(growth_params_->poly_params_)
+      .Evaluate(conc * def_grad - growth_params_->c0_, derivs);
+
+  return derivs(1) * conc;
 }

@@ -335,7 +335,7 @@ double BEAMINTERACTION::BeamLinkTruss::GetCurrentLinkerLength() const
   truss_disp(4) = truss_disp(1);
   truss_disp(5) = truss_disp(2);
 
-  return linkele_->Lcurr(truss_disp);
+  return linkele_->Disp(truss_disp);
 }
 
 /*----------------------------------------------------------------------------*
