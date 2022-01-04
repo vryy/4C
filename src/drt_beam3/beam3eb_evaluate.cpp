@@ -1054,54 +1054,6 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       }  // if (massmatrix != NULL)
     }    // for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-
-    // Uncomment the following line to print the elment stiffness matrix to matlab format
-    /*
-    const std::string fname = "stiffmatrixele.mtl";
-    std::cout<<"Printing stiffmatrixele to file"<<std::endl;
-    LINALG::PrintSerialDenseMatrixInMatlabFormat(fname,*stiffmatrix);
-    */
-
-    //  //with the following lines the conditioning of the stiffness matrix should be improved: its
-    //  not fully tested up to now!!! bool precond = PreConditioning; if (precond)
-    //  {
-    //    #if NODALDOFS ==3
-    //      dserror("Preconditioning only implemented for NODALDOFS ==2!!!");
-    //    #endif
-    //    double length = jacobi_*2.0;
-    //    double radius = std::pow(crosssec_/M_PI,0.5);
-    //    for (int zeile=0; zeile <2; zeile++)
-    //    {
-    //      for (int spalte=0; spalte<12; spalte++)
-    //      {
-    //        (*stiffmatrix)(6*zeile,spalte)=(*stiffmatrix)(6*zeile,spalte)*length;
-    //        (*stiffmatrix)(6*zeile+1,spalte)=(*stiffmatrix)(6*zeile+1,spalte)*std::pow(length,3.0)/std::pow(radius,2.0);
-    //        (*stiffmatrix)(6*zeile+2,spalte)=(*stiffmatrix)(6*zeile+2,spalte)*std::pow(length,3.0)/std::pow(radius,2.0);
-    //        (*stiffmatrix)(6*zeile+4,spalte)=(*stiffmatrix)(6*zeile+4,spalte)*std::pow(length,2.0)/std::pow(radius,2.0);
-    //        (*stiffmatrix)(6*zeile+5,spalte)=(*stiffmatrix)(6*zeile+5,spalte)*std::pow(length,2.0)/std::pow(radius,2.0);
-    //      }
-    //        (*force)(6*zeile)=(*force)(6*zeile)*length;
-    //        (*force)(6*zeile+1)=(*force)(6*zeile+1)*std::pow(length,3.0)/std::pow(radius,2.0);
-    //        (*force)(6*zeile+2)=(*force)(6*zeile+2)*std::pow(length,3.0)/std::pow(radius,2.0);
-    //        (*force)(6*zeile+4)=(*force)(6*zeile+4)*std::pow(length,2.0)/std::pow(radius,2.0);
-    //        (*force)(6*zeile+5)=(*force)(6*zeile+5)*std::pow(length,2.0)/std::pow(radius,2.0);
-    //    }
-    //  }
-    //
-    //  //with the following lines the conditioning of the stiffness matrix can be improved by
-    //  multiplying the lines and columns with the factors
-    //  //ScaleFactorLine and ScaleFactorColumn
-    //  double Factor = ScaleFactorLine;
-    //  Factor = Factor * ScaleFactorColumn;
-    //
-    //  for (int zeile=0; zeile <nnode*dofpn; zeile++)
-    //  {
-    //    for (int spalte=0; spalte<nnode*dofpn; spalte++)
-    //    {
-    //      (*stiffmatrix)(zeile,spalte)=(*stiffmatrix)(zeile,spalte)*Factor;
-    //    }
-    //    (*force)(zeile)=(*force)(zeile)*ScaleFactorLine;
-    //  }
   }
 #else
   {

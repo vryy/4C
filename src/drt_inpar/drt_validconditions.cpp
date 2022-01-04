@@ -929,22 +929,6 @@ DRT::INPUT::ValidConditions()
   condlist.push_back(nodeonplaneconst3D);
 
   /*--------------------------------------------------------------------*/
-  //  // Multi point constraint in 3D for a node over a plane
-  //
-  //  Teuchos::RCP<ConditionDefinition> nodeonlineconst3D =
-  //    Teuchos::rcp(new ConditionDefinition("DESIGN LINE MULTIPNT CONSTRAINT 3D",
-  //                                         "MPC_NodeOnLine_3D",
-  //                                         "Node on Line Constraint",
-  //                                         DRT::Condition::MPC_NodeOnLine_3D,
-  //                                         false,
-  //                                         DRT::Condition::Line));
-  //
-  //  nodeonlineconst3D->AddComponent(Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  //  nodeonlineconst3D->AddComponent(Teuchos::rcp(new RealConditionComponent("activTime")));
-  //  nodeonlineconst3D->AddComponent(Teuchos::rcp(new
-  //  IntVectorConditionComponent("curveNodes",2))); condlist.push_back(nodeonlineconst3D);
-  //
-  /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously
 
   Teuchos::RCP<ConditionDefinition> nodemasterconst3D =

@@ -191,22 +191,6 @@ namespace MAT
      *  \date 02/17 */
     double GetInteractionRadius() const;
 
-    //@}
-
-
-    //! @name Evaluation methods
-    //@{
-
-    // Todo @grill implement and call this instead of calculating stress resultant in element itself
-    //  /** \brief evaluate constitutive relations, i.e. compute stress resultants from given
-    //  strains
-    //   *
-    //   *  \author grill
-    //   *  \date 02/17 */
-    //  void Evaluate() const;
-
-    //@}
-
    private:
     /// my material parameters
     MAT::PAR::BeamElastHyperMaterialParameterGeneric* params_;
