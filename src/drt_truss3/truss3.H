@@ -127,18 +127,23 @@ namespace DRT
 
       inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
-      //! Return the current length of this element computed from the truss displacement @p
-      //! truss_disp
-      double Lcurr(const LINALG::Matrix<6, 1>& truss_disp) const
+      //! Return the magnitude of the components of the truss displacement @p truss_disp
+      double Disp(const LINALG::Matrix<6, 1>& truss_disp) const
       {
         return truss_disp.Norm2() * M_SQRT1_2;
       }
 
-      //! Return the squared current length of this element computed from the truss displacement @p
-      //! truss_disp
-      double Lcurr2(const LINALG::Matrix<6, 1>& truss_disp) const
+      //! derivative of magnitude of the components of the truss displacement @p truss_disp w.r.t.
+      //! entry of the truss displacement at index @p col
+      double dDispdu(const LINALG::Matrix<6, 1>& truss_disp, const int col) const
       {
-        return Lcurr(truss_disp) * Lcurr(truss_disp);
+        return truss_disp(col) / truss_disp.Norm2() * M_SQRT1_2;
+      }
+
+      //! Return the squared value of the components of the truss displacement @p truss_disp
+      double Disp2(const LINALG::Matrix<6, 1>& truss_disp) const
+      {
+        return Disp(truss_disp) * Disp(truss_disp);
       }
 
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override;

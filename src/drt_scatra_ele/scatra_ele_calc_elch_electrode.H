@@ -208,10 +208,7 @@ namespace DRT
       //! \param conc             result vector for scalar integrals to be computed
       virtual void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseVector& conc)
-      {
-        dserror("not implemented!");
-      }
+          Epetra_SerialDenseVector& conc);
 
       //! calculate weighted mass flux (no reactive flux so far)
       virtual void CalculateFlux(LINALG::Matrix<my::nsd_, 1>& q,  //!< flux of species k

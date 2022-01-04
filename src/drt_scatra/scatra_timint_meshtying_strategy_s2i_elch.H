@@ -49,6 +49,8 @@ namespace SCATRA
     //! compute meshtying residual terms and their linearizations
     void EvaluateMeshtying();
 
+    void EvaluatePointCoupling() override;
+
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
     void Update() const;
 

@@ -824,7 +824,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     Epetra_SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:
-  // Micro state must exist for electrolyte -> set value to 1.0
+  // Micro state must exist for electrolyte -> set value to 0.0
   for (int node = 0; node < static_cast<int>(my::nen_); ++node) conc(node) = 0.0;
 }
 // template classes

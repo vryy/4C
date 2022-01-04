@@ -109,7 +109,7 @@ void INPAR::S2I::SetValidConditions(
             DRT::Condition::Line));
 
     // definition of scatra-scatra interface mesh tying surface condition
-    Teuchos::RCP<ConditionDefinition> s2imeshtyingsurf =
+    auto s2imeshtyingsurf =
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I MESHTYING SURF CONDITIONS", "S2IMeshtying",
             "Scatra-scatra surface interface mesh tying", DRT::Condition::S2IMeshtying, true,
             DRT::Condition::Surface));
@@ -139,6 +139,12 @@ void INPAR::S2I::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // scatra-scatra interface kinetics condition
   {
+    // definition of scatra-scatra interface kinetics point condition
+    auto s2ikineticspoint =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS POINT CONDITIONS", "S2IKinetics",
+            "Scatra-scatra line interface kinetics", DRT::Condition::S2IKinetics, true,
+            DRT::Condition::Point));
+
     // definition of scatra-scatra interface kinetics line condition
     auto s2ikineticsline =
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS LINE CONDITIONS", "S2IKinetics",
@@ -150,6 +156,12 @@ void INPAR::S2I::SetValidConditions(
         Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS SURF CONDITIONS", "S2IKinetics",
             "Scatra-scatra surface interface kinetics", DRT::Condition::S2IKinetics, true,
             DRT::Condition::Surface));
+
+    // Macro-micro coupling condition for micro scale in multi-scale scalar transport problems
+    auto multiscalecouplingpoint =
+        Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS",
+            "ScatraMultiScaleCoupling", "Scalar transport multi-scale coupling condition",
+            DRT::Condition::ScatraMultiScaleCoupling, false, DRT::Condition::Point));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<ConditionComponent>> s2icomponents;
@@ -542,6 +554,9 @@ void INPAR::S2I::SetValidConditions(
           slaveside.emplace_back(
               Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
 
+          // add all components from slave side to multi-scale condition
+          for (const auto& component : slaveside) multiscalecouplingpoint->AddComponent(component);
+
           // insert slave-side condition components into vector of interface sides
           interfacesides.emplace_back(
               Teuchos::rcp(new CondCompBundle("Slave", slaveside, INPAR::S2I::side_slave)));
@@ -565,13 +580,17 @@ void INPAR::S2I::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& s2icomponent : s2icomponents)
     {
+      s2ikineticspoint->AddComponent(s2icomponent);
       s2ikineticsline->AddComponent(s2icomponent);
       s2ikineticssurf->AddComponent(s2icomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
+    condlist.emplace_back(s2ikineticspoint);
     condlist.emplace_back(s2ikineticsline);
     condlist.emplace_back(s2ikineticssurf);
+
+    condlist.emplace_back(multiscalecouplingpoint);
   }
 
 
@@ -580,14 +599,14 @@ void INPAR::S2I::SetValidConditions(
   {
     // definition of scatra-scatra interface coupling line condition involving interface layer
     // growth
-    Teuchos::RCP<ConditionDefinition> s2igrowthline = Teuchos::rcp(
+    auto s2igrowthline = Teuchos::rcp(
         new ConditionDefinition("DESIGN S2I COUPLING GROWTH LINE CONDITIONS", "S2ICouplingGrowth",
             "Scatra-scatra line interface coupling involving interface layer growth",
             DRT::Condition::S2ICouplingGrowth, true, DRT::Condition::Line));
 
     // definition of scatra-scatra interface coupling surface condition involving interface layer
     // growth
-    Teuchos::RCP<ConditionDefinition> s2igrowthsurf = Teuchos::rcp(
+    auto s2igrowthsurf = Teuchos::rcp(
         new ConditionDefinition("DESIGN S2I COUPLING GROWTH SURF CONDITIONS", "S2ICouplingGrowth",
             "Scatra-scatra surface interface coupling involving interface layer growth",
             DRT::Condition::S2ICouplingGrowth, true, DRT::Condition::Surface));

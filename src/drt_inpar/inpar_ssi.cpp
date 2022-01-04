@@ -213,15 +213,12 @@ void INPAR::SSI::SetValidConditions(
 
 
   /*--------------------------------------------------------------------*/
-  Teuchos::RCP<ConditionDefinition> linessiplain =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING LINE CONDITIONS", "SSICoupling",
-          "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfssiplain =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SURF CONDITIONS", "SSICoupling",
-          "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Surface));
-  Teuchos::RCP<ConditionDefinition> volssiplain =
-      Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING VOL CONDITIONS", "SSICoupling",
-          "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Volume));
+  auto linessiplain = Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING LINE CONDITIONS",
+      "SSICoupling", "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Line));
+  auto surfssiplain = Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SURF CONDITIONS",
+      "SSICoupling", "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Surface));
+  auto volssiplain = Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING VOL CONDITIONS",
+      "SSICoupling", "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponentsplain;
@@ -241,15 +238,15 @@ void INPAR::SSI::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   //! set solid dofset on scatra discretization
-  Teuchos::RCP<ConditionDefinition> linessi =
+  auto linessi =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA LINE CONDITIONS",
           "SSICouplingSolidToScatra", "SSI Coupling SolidToScatra",
           DRT::Condition::SSICouplingSolidToScatra, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfssi =
+  auto surfssi =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA SURF CONDITIONS",
           "SSICouplingSolidToScatra", "SSI Coupling SolidToScatra",
           DRT::Condition::SSICouplingSolidToScatra, true, DRT::Condition::Surface));
-  Teuchos::RCP<ConditionDefinition> volssi =
+  auto volssi =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA VOL CONDITIONS",
           "SSICouplingSolidToScatra", "SSI Coupling SolidToScatra",
           DRT::Condition::SSICouplingSolidToScatra, true, DRT::Condition::Volume));
@@ -272,15 +269,15 @@ void INPAR::SSI::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   //! set scatra dofset on solid discretization
-  Teuchos::RCP<ConditionDefinition> linessi2 =
+  auto linessi2 =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID LINE CONDITIONS",
           "SSICouplingScatraToSolid", "SSI Coupling ScatraToSolid",
           DRT::Condition::SSICouplingScatraToSolid, true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfssi2 =
+  auto surfssi2 =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID SURF CONDITIONS",
           "SSICouplingScatraToSolid", "SSI Coupling ScatraToSolid",
           DRT::Condition::SSICouplingScatraToSolid, true, DRT::Condition::Surface));
-  Teuchos::RCP<ConditionDefinition> volssi2 =
+  auto volssi2 =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID VOL CONDITIONS",
           "SSICouplingScatraToSolid", "SSI Coupling ScatraToSolid",
           DRT::Condition::SSICouplingScatraToSolid, true, DRT::Condition::Volume));
@@ -303,11 +300,15 @@ void INPAR::SSI::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // set ScaTra-Structure interaction interface meshtying condition
-  Teuchos::RCP<ConditionDefinition> linessiinterfacemeshtying =
+  auto pointssiinterfacemeshtying =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS",
+          "SSIInterfaceMeshtying", "SSI Interface Meshtying", DRT::Condition::SSIInterfaceMeshtying,
+          true, DRT::Condition::Point));
+  auto linessiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING LINE CONDITIONS",
           "SSIInterfaceMeshtying", "SSI Interface Meshtying", DRT::Condition::SSIInterfaceMeshtying,
           true, DRT::Condition::Line));
-  Teuchos::RCP<ConditionDefinition> surfssiinterfacemeshtying =
+  auto surfssiinterfacemeshtying =
       Teuchos::rcp(new ConditionDefinition("DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS",
           "SSIInterfaceMeshtying", "SSI Interface Meshtying", DRT::Condition::SSIInterfaceMeshtying,
           true, DRT::Condition::Surface));
@@ -332,10 +333,12 @@ void INPAR::SSI::SetValidConditions(
   // insert input file line components into condition definitions
   for (auto& conditioncomponent : ssiinterfacemeshtying)
   {
+    pointssiinterfacemeshtying->AddComponent(conditioncomponent);
     linessiinterfacemeshtying->AddComponent(conditioncomponent);
     surfssiinterfacemeshtying->AddComponent(conditioncomponent);
   }
 
+  condlist.push_back(pointssiinterfacemeshtying);
   condlist.push_back(linessiinterfacemeshtying);
   condlist.push_back(surfssiinterfacemeshtying);
 

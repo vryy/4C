@@ -161,6 +161,9 @@ namespace SCATRA
     //! compute meshtying residual terms and their linearizations
     virtual void EvaluateMeshtying() = 0;
 
+    //! evaluate coupling between two points/nodes. Does not need to be evaluated on element level
+    virtual void EvaluatePointCoupling(){};
+
     //! explicit predictor step to obtain better starting value for Newton-Raphson iteration
     virtual void ExplicitPredictor() const { return; };
 

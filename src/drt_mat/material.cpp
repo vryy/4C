@@ -118,6 +118,7 @@
 #include "particle_wall_material_dem.H"
 #include "superelastic_sma.H"
 #include "mixture_elasthyper.H"
+#include "lin_elast_1D.H"
 
 
 /*----------------------------------------------------------------------*
@@ -173,12 +174,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::StVenantKirchhoff(curmat));
       auto* params = static_cast<MAT::PAR::StVenantKirchhoff*>(curmat->Parameter());
-      return params->CreateMaterial();
-    }
-    case INPAR::MAT::m_stvenant_growth:
-    {
-      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::StVKGrowth(curmat));
-      auto* params = static_cast<MAT::PAR::StVKGrowth*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_thermostvenant:
@@ -1124,6 +1119,19 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::CrystalPlasticity(curmat));
       auto* params = dynamic_cast<MAT::PAR::CrystalPlasticity*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_linelast1D:
+    {
+      if (curmat->Parameter() == nullptr) curmat->SetParameter(new MAT::PAR::LinElast1D(curmat));
+      auto* params = static_cast<MAT::PAR::LinElast1D*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_linelast1D_growth:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::LinElast1DGrowth(curmat));
+      auto* params = static_cast<MAT::PAR::LinElast1DGrowth*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     default:

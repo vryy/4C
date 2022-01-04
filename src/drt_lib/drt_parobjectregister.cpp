@@ -102,6 +102,7 @@
 #include "../drt_mat/scatra_mat_multiporo.H"
 #include "../drt_mat/myocard.H"
 #include "../drt_mat/ion.H"
+#include "../drt_mat/lin_elast_1D.H"
 #include "../drt_mat/mixfrac.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/fluid_murnaghantait.H"
@@ -349,8 +350,8 @@ std::string DRT::ParObjectList()
     << MAT::ScatraMatMultiPoroSolidType::Instance().Name() << " "
     << MAT::ScatraMatMultiPoroTemperatureType::Instance().Name() << " "
     << MAT::StVenantKirchhoffType::Instance().Name() << " "
-    << MAT::StVKGrowthType::Instance().Name() << " "
-    << MAT::ThermoMechThreePhaseType::Instance().Name() << " "
+    << MAT::LinElast1DType::Instance().Name() << " " << MAT::LinElast1DGrowthType::Instance().Name()
+    << " " << MAT::ThermoMechThreePhaseType::Instance().Name() << " "
     << MAT::SutherlandType::Instance().Name() << " " << MAT::TempDepWaterType::Instance().Name()
     << " " << MAT::ThermoStVenantKirchhoffType::Instance().Name() << " "
     << MAT::ThermoPlasticLinElastType::Instance().Name() << " "

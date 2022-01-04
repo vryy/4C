@@ -61,6 +61,7 @@
 
 #include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_solver.H"
+#include "../drt_scatra_ele/scatra_ele_boundary_calc_elch_electrode_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -2489,7 +2490,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateSolutionDependingConditions(
   strategy_->EvaluateMeshtying();
 
   // evaluate macro-micro coupling on micro scale in multi-scale scalar transport problems
-  EvaluateMacroMicroCoupling();
+  if (micro_scale_) EvaluateMacroMicroCoupling();
+  strategy_->EvaluatePointCoupling();
 }
 
 /*----------------------------------------------------------------------------*
@@ -3209,7 +3211,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
         constexpr double four_pi = 4.0 * M_PI;
         const double fac = DRT::INPUT::IntegralValue<bool>(*params_, "SPHERICALCOORDS")
                                ? *node->X() * *node->X() * four_pi
-                               : 0.0;
+                               : 1.0;
 
         // extract degrees of freedom from node
         const std::vector<int> dofs = discret_->Dof(0, node);
@@ -3223,7 +3225,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
 
           // compute matrix and vector contributions according to kinetic model for current
           // macro-micro coupling condition
-          switch (condition->GetInt("kinetic model"))
+          const int kinetic_model = condition->GetInt("kinetic model");
+
+          switch (kinetic_model)
           {
             case INPAR::S2I::kinetics_constperm:
             {
@@ -3354,22 +3358,18 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
               // core residual term associated with Butler-Volmer mass flux density
               q_ = j0 * expterm;
 
-              // core linearizations associated with Butler-Volmer mass flux density
-              const double dj_dc_ed =
-                  (condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
-                          ? 0.0
-                          : kr * std::pow(conc_el, alphaa) *
-                                std::pow(cmax - conc_ed, alphaa - 1.0) *
-                                std::pow(conc_ed, alphac - 1.0) *
-                                (-alphaa * conc_ed + alphac * (cmax - conc_ed)) * expterm) +
-                  j0 * (-alphaa * frt * epdderiv * expterm1 - alphac * frt * epdderiv * expterm2);
-              dq_dphi_[0] =
-                  condition->GetInt("kinetic model") == INPAR::S2I::kinetics_butlervolmerreduced
-                      ? 0.0
-                      : j0 * alphaa / conc_el * expterm;
-              dq_dphi_[1] =
-                  -j0 * (alphaa * frt * expterm1 + alphac * frt * expterm2);  // dj_dpot_el
-              dq_dphi_[2] = -dq_dphi_[1];                                     // dj_dpot_ed
+              const double dummyresistance(0.0);
+              // define flux linearization terms
+              double dj_dc_ed(0.0), dj_dc_el(0.0), dj_dpot_ed(0.0), dj_dpot_el(0.0);
+              // calculate flux linearizations
+              DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
+                  CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, epdderiv, alphaa,
+                      alphac, dummyresistance, expterm1, expterm2, kr, faraday, conc_el, conc_ed,
+                      cmax, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
+
+              dq_dphi_[0] = dj_dc_el;
+              dq_dphi_[1] = dj_dpot_el;
+              dq_dphi_[2] = dj_dpot_ed;
 
               // assemble contribution from macro-micro coupling into global residual vector
               (*residual_)[lid] -= timefacrhsfac * q_;
@@ -3636,6 +3636,36 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   DRT::AssembleStrategy strategy(nds_micro_, nds_micro_, Teuchos::null, Teuchos::null, phinp_micro_,
       Teuchos::null, Teuchos::null);
   discret_->Evaluate(eleparams, strategy);
+
+  // copy states from first dof of MAT_Electrode
+  for (int ele_lid = 0; ele_lid < discret_->ElementRowMap()->NumMyElements(); ++ele_lid)
+  {
+    const int ele_gid = discret_->ElementRowMap()->GID(ele_lid);
+    auto* ele = discret_->gElement(ele_gid);
+
+    if (ele->Material()->MaterialType() != INPAR::MAT::m_electrode) continue;
+
+    auto* nodes = ele->Nodes();
+
+    for (int node_lid = 0; node_lid < ele->NumNode(); ++node_lid)
+    {
+      // micro and macro dofs at this node
+      auto* node = nodes[node_lid];
+      int dof_macro = discret_->Dof(0, node)[0];
+      int dof_micro = discret_->Dof(nds_micro_, node)[0];
+
+      const int dof_lid_micro = phinp_micro_->Map().LID(dof_micro);
+      const int dof_lid_macro = phinp_->Map().LID(dof_macro);
+
+      // only if owned by this proc
+      if (dof_lid_micro != -1 and dof_lid_macro != -1)
+      {
+        const double macro_value = (*phinp_)[dof_lid_macro];
+        // Sum, because afterwards it is divided by the number of adjacent nodes
+        phinp_micro_->SumIntoMyValue(dof_lid_micro, 0, macro_value);
+      }
+    }
+  }
 
   // divide nodal values by number of adjacent elements (due to assembly)
   const auto* node_row_map = discret_->NodeRowMap();

@@ -16,7 +16,7 @@ adapts assembly automatically according to the thereby changed number of nodal d
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
 
-#include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_mat/lin_elast_1D.H"
 
 #include "../drt_structure_new/str_elements_paramsinterface.H"
 
@@ -210,19 +210,10 @@ int DRT::ELEMENTS::Truss3::EvaluateNeumann(Teuchos::ParameterList& params,
 void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy)
 {
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
-
-  // initialization of internal energy
-  double intenergy_calc = 0.0;
-
-  // get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-
-  const auto* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-  const double ym = actmat->Youngs();
 
   // current node position (first entries 0 .. 2 for first node, 3 ..5 for second node)
   LINALG::Matrix<6, 1> xcurr;
@@ -242,33 +233,16 @@ void DRT::ELEMENTS::Truss3::Energy(const std::map<std::string, std::vector<doubl
 
   double lcurr = std::sqrt(aux(0) * aux(0) + aux(1) * aux(1) + aux(2) * aux(2));
 
-  switch (kintype_)
-  {
-    case KinematicType::tr3_totlag:
-    {
-      // calculate deformation gradient
-      const double def_grad = lcurr / lrefe_;
+  // calculate deformation gradient
+  const double def_grad = lcurr / lrefe_;
 
-      // calculating Green-Lagrange strain epsilon
-      const double epsilon = 0.5 * (def_grad * def_grad - 1.0);
+  //  strain for total Lagrange or engineering strain
+  const double epsilon = kintype_ == KinematicType::tr3_totlag ? 0.5 * (def_grad * def_grad - 1.0)
+                                                               : (lcurr - lrefe_) / lrefe_;
 
-      // W_int = 1/2*E*A*lrefe*\epsilon^2
-      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * epsilon * epsilon);
-    }
-    break;
-    case KinematicType::tr3_engstrain:
-    {
-      // calculating strain epsilon from node position by scalar product:
-      const double epsilon = (lcurr - lrefe_) / lrefe_;
-
-      // W_int = 1/2*E*A*lrefe*\epsilon^2
-      intenergy_calc = 0.5 * (ym * crosssec_ * lrefe_ * epsilon * epsilon);
-    }
-    break;
-    default:
-      dserror("Unknown type kintype_ for Truss3");
-      break;
-  }
+  // W_int = 1/2*PK2*A*lrefe*\epsilon
+  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const double intenergy_calc = mat->EvaluateElasticEnergy(epsilon) * crosssec_ * lrefe_;
 
   if (IsParamsInterface())  // new structural time integration
     ParamsInterface().AddContributionToEnergyType(intenergy_calc, STR::internal_energy);
@@ -402,8 +376,8 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
     Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector& DummyForce)
 {
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only linear elastic material supported for truss element");
 
   const std::vector<double>& disp_ele = ele_state.at("disp");
 
@@ -432,12 +406,13 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   // calculating Green-Lagrange strain epsilon from node position by scalar product:
   const double epsilon = (lcurr - lrefe_) / lrefe_;
 
-  const double youngs_modulus =
-      static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
   const double density = Material()->Density();
 
   // resulting force scaled by current length
-  double forcescalar = (youngs_modulus * crosssec_ * epsilon) / lcurr;
+  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const double PK2 = mat->EvaluatePK2(epsilon);
+
+  double forcescalar = (PK2 * crosssec_) / lcurr;
 
   // computing global internal forces
   for (int i = 0; i < ndof; ++i) DummyForce(i) = forcescalar * aux(i);
@@ -457,7 +432,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   {
     for (int j = 0; j < ndof; ++j)
       DummyStiffMatrix(i, j) +=
-          (youngs_modulus * crosssec_ / (lcurr * lcurr * lcurr)) * aux(i) * aux(j);
+          (mat->EvaluateStiffness() * crosssec_ / (lcurr * lcurr * lcurr)) * aux(i) * aux(j);
   }
 
   // calculating mass matrix.
@@ -520,8 +495,8 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     Epetra_SerialDenseMatrix& stiffmat)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_linelast1D)
+    dserror("only spring material supported for truss element");
 
   static LINALG::Matrix<6, 1> truss_disp;
   static LINALG::Matrix<6, 6> dtruss_disp_du;
@@ -531,15 +506,14 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
 
   const int ndof = 6;
 
-  const double youngs_modulus =
-      static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
-
   // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-  const double epsilon_GL = 0.5 * (Lcurr2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+  const double epsilon_GL = 0.5 * (Disp2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
   // 2nd Piola-Kirchhoff stress
-  const double PK2 = youngs_modulus * epsilon_GL;
 
+  const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+  const double PK2 = mat->EvaluatePK2(epsilon_GL);
+  double stiffness = mat->EvaluateStiffness();
   // domain integration factor for linear shape functions -> constant strains and stresses ->
   // constant factor
   const double int_fac = crosssec_ * lrefe_;
@@ -551,15 +525,18 @@ void DRT::ELEMENTS::Truss3::CalcInternalForceStiffTotLag(
     forcevec(row) = dN_dx(row) * def_grad * PK2 * int_fac;
     for (int col = 0; col < ndof; ++col)
     {
+      const double d_epsilon_dtruss_disp = truss_disp(col) / (lrefe_ * lrefe_);
       // derivative of deformation gradient w.r.t. nodal displacement
       const double ddef_grad_du = dtruss_disp_du(row, col) / lrefe_;
       // derivative of 2nd Piola Kirchhoff stress w.r.t. nodal displacement
       const double sign = (col < 3 ? 1.0 : -1.0);
-      const double dPK2_du = youngs_modulus / (lrefe_ * lrefe_) * sign * truss_disp(col);
+
+      const double d_epsilon_du = d_epsilon_dtruss_disp * sign;
+      const double dPK2_du = stiffness * d_epsilon_du;
       // product rule for derivative of forcevec w.r.t. nodal displacement = stiffmat
-      const double first_part = dN_dx(row) * ddef_grad_du * PK2 * int_fac;
-      const double second_part = dN_dx(row) * def_grad * dPK2_du * int_fac;
-      stiffmat(row, col) = first_part + second_part;
+      const double first_part = dN_dx(row) * ddef_grad_du * PK2;
+      const double second_part = dN_dx(row) * def_grad * dPK2_du;
+      stiffmat(row, col) = (first_part + second_part) * int_fac;
     }
   }
 }
@@ -570,8 +547,8 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
-  if (Material()->MaterialType() != INPAR::MAT::m_stvenant)
-    dserror("only St. Venant Kirchhoff material supported for truss element");
+  if (Material()->MaterialType() != INPAR::MAT::m_spring)
+    dserror("only linear elastic material supported for truss element");
 
   Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
   INPAR::STR::StressType iostress;
@@ -588,7 +565,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
   const DRT::UTILS::IntegrationPoints1D intpoints(gaussrule_);
 
-  Epetra_SerialDenseMatrix stress(intpoints.nquad, MAT::NUM_STRESS_3D);
+  Epetra_SerialDenseMatrix stress(intpoints.nquad, 1);
 
   switch (iostress)
   {
@@ -600,16 +577,14 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
 
       PrepCalcInternalForceStiffTotLag(ele_state, truss_disp, dtruss_disp_du, dN_dx);
 
-      const double youngs_modulus =
-          static_cast<const MAT::StVenantKirchhoff*>(Material().get())->Youngs();
-
       // Green-Lagrange strain ( 1D truss: epsilon = 0.5 (l^2 - L^2)/L^2)
-      const double epsilon_GL = 0.5 * (Lcurr2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
+      const double epsilon_GL = 0.5 * (Disp2(truss_disp) - lrefe_ * lrefe_) / (lrefe_ * lrefe_);
 
       // 2nd Piola-Kirchhoff stress
-      const double PK2 = youngs_modulus * epsilon_GL;
+      const auto* mat = static_cast<const MAT::LinElast1D*>(Material().get());
+      const double PK2 = mat->EvaluatePK2(epsilon_GL);
 
-      for (int ip = 0; ip < intpoints.nquad; ++ip) stress(ip, 0) = PK2;
+      for (int gp = 0; gp < intpoints.nquad; ++gp) stress(gp, 0) = PK2;
       break;
     }
     case INPAR::STR::stress_cauchy:

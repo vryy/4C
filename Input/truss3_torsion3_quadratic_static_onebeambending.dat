@@ -107,7 +107,7 @@ NODE 11 COORD 42.42640687 42.42640687 0
 18 TORSION3 LINE3 8 9 10 MAT 2 BENDINGPOTENTIAL quadratic
 19 TORSION3 LINE3 9 10 11 MAT 2 BENDINGPOTENTIAL quadratic
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.3e9 NUE 0.3 DENS 1.384e-9 THEXPANS 0.0
+MAT 1 MAT_LinElast1D YOUNG 1.3e9 DENS 1.384e-9
 MAT 2 MAT_Struct_Spring STIFFNESS 1.701696021 DENS 0.0
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a

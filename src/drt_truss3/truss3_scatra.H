@@ -106,14 +106,6 @@ namespace DRT
       //! calculation of concentration at Gauss Points, given concentration at nodes
       double ProjectScalarToGaussPoint(double xi, const LINALG::Matrix<2, 1>& c) const;
 
-      //! compute polynomial growth factor
-      double GetGrowthFactorConcProp(
-          double c_GP, double c_0, const std::vector<double>& poly_params) const;
-
-      //! compute polynomial growth factor based on amount of substance
-      double GetGrowthFactorAoSProp(double c_GP, double c_0, const std::vector<double>& poly_params,
-          const LINALG::Matrix<6, 1>& truss_disp) const;
-
       // don't want = operator
       Truss3Scatra& operator=(const Truss3Scatra& old);
     };
