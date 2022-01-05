@@ -21,8 +21,6 @@ namespace MAT
     class ActiveSummand : public Summand
     {
      public:
-      ~ActiveSummand() override = default;
-
       /*!
        * \brief adds the active part of the summand to the stress and stiffness matrix
        *

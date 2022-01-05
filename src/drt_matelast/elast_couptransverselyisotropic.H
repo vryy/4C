@@ -123,9 +123,6 @@ namespace MAT
       /// standard constructor
       explicit CoupTransverselyIsotropic(my_params* params);
 
-      /// default destructor
-      ~CoupTransverselyIsotropic() override = default;
-
       /// @name Packing and Unpacking
       /// @{
 

@@ -117,8 +117,6 @@ namespace MAT
       /// constructor with given material parameters
       explicit AnisoActiveStress_Evolution(MAT::ELASTIC::PAR::AnisoActiveStress_Evolution* params);
 
-      ~AnisoActiveStress_Evolution() override = default;
-
       ///@name Packing and Unpacking
       //@{
 
