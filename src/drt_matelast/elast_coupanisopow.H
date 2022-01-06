@@ -1,10 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required for the anisotropic material using a pow-like
-material
+\brief Definition of classes for a pow-like anisotropic material
 
 \level 3
-
 */
 /*---------------------------------------------------------------------*/
 #ifndef ELAST_COUPANISOPOW_H_
@@ -19,13 +17,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for anisochoric contribution of a
-      /// pow like material with one fiber direction
-      ///
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 CoupAnisoPow C 1.0 D 2.0 [ GAMMA 35.0 INIT 0 ADAPT_ANGLE 0]
+      /*!
+       * @brief material parameters for anisochoric contribution of a pow like material with one
+       * fiber direction
+       *
+       * <h3>Input line</h3>
+       * MAT 1 CoupAnisoPow C 1.0 D 2.0 [ GAMMA 35.0 INIT 0 ADAPT_ANGLE 0]
+       */
       class CoupAnisoPow : public MAT::PAR::ParameterAniso
       {
        public:
@@ -63,46 +61,36 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        //      void SetK(const double k) { k_ = k; };
-        //      void SetD1(const double d) { d_ = d; };
-        //@}
-
       };  // class CoupAnisoPow
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Coupled anisotropic pow-like fiber function, implemented for one possible fiber family
-    /// [1]
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = K \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2}.
-    ///\f]
-    ///
-    /// The corresponding derivatives are
-    ///
-    ///\f[
-    ///   \frac{d\Psi}{d IV_{\boldsymbol C}} = K\ D2\ D1\ (IV_{\boldsymbol C})^{D1-1}
-    ///   \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-1}.
-    ///\f]
-    ///
-    ///\f[
-    ///   \frac{d^2\Psi}{d^2 IV_{\boldsymbol C}} = K\ D2\ (D2-1)\ \left( D1\ (IV_{\boldsymbol
-    ///   C})^{D1-1} \right)^2 \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-2}\ +\ K\ D2\ D1
-    ///   (D1-1)\ (IV_{\boldsymbol C})^{D1-2}\ \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-1}
-    ///\f]
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, Nonlinear solid mechanics 2004
-    /// </ul>
-    ///
-    /// \author nagler
-    /// \date 07/13
+    /*!
+     * @brief Coupled anisotropic pow-like fiber function, implemented for one possible fiber family
+     * as in [1]
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = K \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2}.
+     * \f]
+     *
+     * The corresponding derivatives are
+     * \f[
+     *   \frac{d\Psi}{d IV_{\boldsymbol C}} = K\ D2\ D1\ (IV_{\boldsymbol C})^{D1-1}
+     *   \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-1}.
+     * \f]
+     * and
+     * \f[
+     *   \frac{d^2\Psi}{d^2 IV_{\boldsymbol C}} = K\ D2\ (D2-1)\ \left( D1\ (IV_{\boldsymbol
+     *   C})^{D1-1} \right)^2 \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-2}\ +\ K\ D2\ D1
+     *   (D1-1)\ (IV_{\boldsymbol C})^{D1-2}\ \left((IV_{\boldsymbol C})^{D1}-1\right)^{D2-1}
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, Nonlinear solid mechanics 2004
+     * </ul>
+     */
     class CoupAnisoPow : public Summand
     {
      public:
@@ -111,22 +99,17 @@ namespace MAT
 
       ///@name Packing and Unpacking
       //@{
-
       void PackSummand(DRT::PackBuffer& data) const override;
 
       void UnpackSummand(
           const std::vector<char>& data, std::vector<char>::size_type& position) override;
-
       //@}
-
 
       /// material type
       INPAR::MAT::MaterialType MaterialType() const override
       {
         return INPAR::MAT::mes_coupanisoneohooke;
       }
-
-      //@}
 
       /// Setup of summand
       void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
@@ -140,15 +123,6 @@ namespace MAT
           int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
-
-      /// @name Access material constants
-      //@{
-      /// Get stiffness
-      //    double C() const { return params_->c_; };
-      /// Get exponent factor
-      //    double D() const { return params_->d_; };
-
-      //@}
 
       /// Set fiber directions
       void SetFiberVecs(const double newgamma,  ///< new angle

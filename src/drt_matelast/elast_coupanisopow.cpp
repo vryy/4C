@@ -1,12 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief MAT 1 CoupAnisoPow C 100 D 2.0 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+\brief Implementation of a pow-like anisotropic material
 
 \level 3
-
 */
 /*-----------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisopow.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
@@ -14,9 +13,6 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-/*----------------------------------------------------------------------*
- |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
       k_(matdata->GetDouble("K")),
@@ -30,25 +26,16 @@ MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Mater
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoPow::CoupAnisoPow(MAT::ELASTIC::PAR::CoupAnisoPow* params) : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -56,8 +43,6 @@ void MAT::ELASTIC::CoupAnisoPow::UnpackSummand(
   ExtractfromPack(position, data, A_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // path if fibers aren't given in .dat file
@@ -104,8 +89,6 @@ void MAT::ELASTIC::CoupAnisoPow::Setup(int numgp, DRT::INPUT::LineDefinition* li
     dserror("INIT mode not implemented");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int gp, const int eleGID)
@@ -164,8 +147,6 @@ void MAT::ELASTIC::CoupAnisoPow::AddStressAnisoPrincipal(const LINALG::Matrix<6,
   cmat.MultiplyNT(delta, A_, A_, 1.0);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
@@ -173,8 +154,6 @@ void MAT::ELASTIC::CoupAnisoPow::GetFiberVecs(
   fibervecs.push_back(a_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoPow::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {

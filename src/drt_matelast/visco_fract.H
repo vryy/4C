@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to read the material parameters
-and add the contribution of the viscous part, calculated according to a
-FSLS-Model.
-Depending on the other stresses this viscous part is added, always using
-the same tau, alpha and beta.
+\brief Definition of classes for a viscous material contribution, calculated according to an
+FSLS-model
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef VISCO_FRACT_H_
 #define VISCO_FRACT_H_
 
@@ -23,12 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution according the FSLS-model
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
-
+      /*!
+       * @brief material parameters for viscous contribution according the FSLS-model
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
+       */
       class Fract : public MAT::PAR::Parameter
       {
        public:
@@ -54,41 +50,27 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetTau(const double tau) { tau_ = tau; }
-        void SetAlpha(const double alpha) { alpha_ = alpha; }
-        void SetBeta(const double beta) { beta_ = beta; }
-        //@}
-
       };  // class Fract
+    }     // namespace PAR
 
-    }  // namespace PAR
 
-
-    /*----------------------------------------------------------------------*/
     /*!
-     *  Material Viscofract
+     * @brief Material Viscofract
      *
-     *  This material offers a viscous and hyperelastic part. The model consists
-     *  of one spring in parallel to one sequential branch of a spring and a springpot.
+     * This material offers a viscous and hyperelastic part. The model consists
+     * of one spring in parallel to one sequential branch of a spring and a springpot.
      *
-     *  A springpot is between a spring and a dashpot. The parameter alpha regulates
-     *  how much damping is introduced.
-     *  Alpha=0, means the springpot is a spring
-     *  Alpha=1, means the springpot is a dashpot; this is equal to the GenMax Material
+     * A springpot is between a spring and a dashpot. The parameter alpha regulates
+     * how much damping is introduced.
+     * Alpha=0, means the springpot is a spring
+     * Alpha=1, means the springpot is a dashpot; this is equal to the GenMax Material
      *
-     *  <h3>References</h3>
-     *  <ul>
-     *  <li> [1] Adolfson and Enelund (2003): Fractional Derivative Visocelasticity at
-     *           Large Deformations
-     *  </ul>
-     *
-     *  \author birzle
-     *  \date 12/17
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] Adolfson and Enelund (2003): Fractional Derivative Visocelasticity at
+     *          Large Deformations
+     * </ul>
      */
-
     class Fract : public Summand
     {
      public:
@@ -110,14 +92,6 @@ namespace MAT
           std::string&
               solve  //!< variant of the solution of the evolution integral (just for genmax)
           ) override;
-
-      /// @name Access methods
-      //@{
-      double Tau() const { return params_->tau_; }
-      double Alpha() const { return params_->alpha_; }
-      double Beta() const { return params_->beta_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(
@@ -144,7 +118,6 @@ namespace MAT
         viscofract = true;
         return;
       };
-
 
      private:
       /// my material parameters

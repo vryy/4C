@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief the input line should read
-  MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+\brief Implementation of a coupled anisotropic neo-Hooke material with one fiber direction
 
 \level 3
-
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoneohooke.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
@@ -16,9 +13,7 @@
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -29,26 +24,17 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke::CoupAnisoNeoHooke(
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoNeoHooke::CoupAnisoNeoHooke(MAT::ELASTIC::PAR::CoupAnisoNeoHooke* params)
     : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, a_);
   AddtoPack(data, A_);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -56,8 +42,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::UnpackSummand(
   ExtractfromPack(position, data, A_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // warning message
@@ -105,8 +89,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinitio
     dserror("INIT mode not implemented");
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int gp, const int eleGID)
@@ -121,8 +103,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::AddStressAnisoPrincipal(const LINALG::Matr
   // cmat.MultiplyNT(delta, A_, A_, 1.0);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs  ///< vector of all fiber vectors
 )
@@ -130,8 +110,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke::GetFiberVecs(
   fibervecs.push_back(a_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {

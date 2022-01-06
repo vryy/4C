@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for a strain energy function,
-which is exponential according to Weickenmeier_2014 and contains a linear
-(in I_1 and J) polynom in the exponent.
-The input line should read
-  MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
+\brief Definition of classes for an isotropic exponential coupled material according to
+Weickenmeier_2014
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_EXPPOL_H_
 #define ELAST_EXPPOL_H_
 
@@ -23,12 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for compressible soft tissue material
-      ///
-      /// <h3>Input line</h3>
-      ////  MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
-
+      /*!
+       * @brief material parameters for compressible soft tissue material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
+       */
       class CoupExpPol : public MAT::PAR::Parameter
       {
        public:
@@ -53,39 +49,26 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetA(const double a) { a_ = a; }
-        void SetB(const double b) { b_ = b; }
-        void SetC(const double c) { c_ = c; }
-        //@}
-
       };  // class CoupExpPol
 
     }  // namespace PAR
 
-    /* ----------------------------------------------------------------*/
-    /// coupled compressible, isotropic material
-    /// according to [1] with linear summands in exponent
-    ///
-    /// This is a compressible, hyperelastic, isotropic material.
-    ///
-    /// The material strain energy density function is
-    ///\f[
-    /// \Psi = a \exp[ b(I_1 - 3) - (2b + c)ln{J} + c(J-1) ] - a
-    ///\f]
-    /// More details at #AddCoefficientsPrincipal()
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] Weickenmeier, Jabareen "Elastic-viscoplastic modeling of soft biological
-    ///           tissues using a mixed finite element formulation based on the relative
-    ///           deformation gradient", 2014
-    /// </ul>
-    ///
-    /// \author abirzle
-    /// \date 07/14
+    /*!
+     * @brief coupled hyperelastic, compressible, isotropic material according to [1] with linear
+     * summands in exponent The material strain energy density function is
+     * \f[
+     *    \Psi = a \exp[ b(I_1- 3) - (2b + c)ln{J} + c(J-1) ] - a
+     * \f]
+     *
+     * More details at #AddCoefficientsPrincipal()
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] Weickenmeier, Jabareen "Elastic-viscoplastic modeling of soft biological
+     *           tissues using a mixed finite element formulation based on the relative
+     *           deformation gradient", 2014
+     * </ul>
+     */
     class CoupExpPol : public Summand
     {
      public:
@@ -107,7 +90,7 @@ namespace MAT
           int eleGID                             ///< element GID
           ) override;
 
-
+      // add first and second derivative w.r.t. principal invariants
       void AddDerivativesPrincipal(
           LINALG::Matrix<3, 1>& dPI,          ///< first derivative with respect to invariants
           LINALG::Matrix<6, 1>& ddPII,        ///< second derivative with respect to invariants
@@ -115,13 +98,6 @@ namespace MAT
           int gp,                             ///< Gauss point
           int eleGID                          ///< element GID
           ) override;
-      /// @name Access methods
-      //@{
-      double A() const { return params_->a_; }
-      double B() const { return params_->b_; }
-      double C() const { return params_->c_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

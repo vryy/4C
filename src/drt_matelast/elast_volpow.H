@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines for a volumetric power law.
-The resultant pressure depends on the prefactor and pressure.
-Should be combined with non-stiff volumetric law (eg. Ogden).
-The input line should read
-  MAT 1 ELAST_VolPow A 100 EXPON 5
+\brief Definition of classes for a volumetric power law
+
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_VOLPOW_H_
 #define ELAST_VOLPOW_H_
 
@@ -23,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumetric power law contribution \f$\Psi = \frac{a}{expon-1}
-      /// J^(-expon+1) + aJ\f$
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_VolPow A 100 EXPON 5
+      /*!
+       * @brief material parameters for volumetric power law contribution \f$\Psi =
+       * \frac{a}{expon-1} J^(-expon+1) + aJ\f$
+       *
+       *  <h3>Input line</h3>
+       *  MAT 1 ELAST_VolPow A 100 EXPON 5
+       */
       class VolPow : public MAT::PAR::Parameter
       {
        public:
@@ -54,35 +51,25 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetA(const double a) { a_ = a; }
-        void SetExpon(const double expon) { expon_ = expon; }
-        //@}
-
       };  // class VolPow
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
-    /// Volumetric Power-law material.
-    ///
-    /// Strain energy function is given by
-    ///
-    ///
-    ///\f[
-    ///  \Psi = \frac{a}{expon-1} J^(-expon+1) + aJ
-    ///\f]
-    ///
-    /// results in the following pressure (stress)
-    ///
-    ///\f[
-    /// p = -a (J^(-expon) -1)
-    ///\f]
-    ///
-    /// \author birzle
-    /// \date 11/15
+    /*!
+     * @brief Volumetric Power-law material
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = \frac{a}{expon-1} J^(-expon+1) + aJ
+     * \f]
+     *
+     * results in the following pressure (stress)
+     * \f[
+     *  p = -a (J^(-expon) -1)
+     * \f]
+     *
+     * The resultant pressure depends on the prefactor and pressure.
+     * Should be combined with non-stiff volumetric law (eg. Ogden).
+     */
     class VolPow : public Summand
     {
      public:
@@ -119,13 +106,6 @@ namespace MAT
 
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
-
-
-      /// @name Access methods
-      //@{
-      double A() const { return params_->a_; }
-      double Expon() const { return params_->expon_; }
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

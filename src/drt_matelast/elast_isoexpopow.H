@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of an exponential material.
-The input line should read
-MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
-C = Exponent D
+\brief Definition of classes for the isochoric contribution of an isotropic exponential material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOEXPOPOW_H_
 #define ELAST_ISOEXPOPOW_H_
 
@@ -23,12 +18,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a exponential type material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
-      /// C = Exponent D
+      /*!
+       * @brief material parameters for isochoric contribution of a exponential type material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoExpoPow K1 5000. K2 5. C 1.
+       * C = Exponent D
+       */
       class IsoExpoPow : public MAT::PAR::Parameter
       {
        public:
@@ -55,29 +51,18 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetK1(const double k1) { k1_ = k1; }
-        void SetK2(const double k2) { k2_ = k2; }
-        //@}
-
       };  // class IsoExpoPow
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric exponential material
-    ///
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac{k_1}{2k_2} (e^{k_2 (\overline{I}_{\boldsymbol{C}}-3)^d}-1).
-    ///\f]
-    ///
-    ///
-    /// \author rausch
-    /// \date 08/09
+    /*!
+     * @brief Isochoric exponential material
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = \frac{k_1}{2k_2} (e^{k_2 (\overline{I}_{\boldsymbol{C}}-3)^d}-1).
+     * \f]
+     */
     class IsoExpoPow : public Summand
     {
      public:
@@ -110,13 +95,6 @@ namespace MAT
           int gp,                              ///< Gauss point
           const int eleGID                     ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double K1() const { return params_->k1_; }
-      double K2() const { return params_->k2_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

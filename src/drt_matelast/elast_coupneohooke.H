@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric
-contribution of a CoupNeoHookean material material.
-The input line should read
-  MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
+\brief Definition of classes for a coupled Neo Hookean material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPNEOHOOKE_H_
 #define ELAST_COUPNEOHOOKE_H_
 
@@ -22,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a CoupNeoHookean material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
+      /*!
+       * @brief material parameters for isochoric contribution of a CoupNeoHookean material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
+       */
       class CoupNeoHooke : public MAT::PAR::Parameter
       {
        public:
@@ -35,9 +32,6 @@ namespace MAT
 
         /// @name material parameters
         //@{
-
-        /// material parameters
-
 
         /// Young's modulus
         double youngs_;
@@ -48,7 +42,6 @@ namespace MAT
         double beta_;
         /// Shear modulus / 2
         double c_;
-
 
         //@}
 
@@ -61,46 +54,35 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double c) { c_ = c; }
-        void SetBeta(const double beta) { beta_ = beta; }
-        //@}
-
       };  // class CoupNeoHooke
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// CoupNeoHookean material
-    ///
-    /// This is the summand of a hyperelastic, isotropic CoupNeoHookean material
-    /// depending on the first and the third invariant of the right Cauchy-Green tensor.
-    /// The formulation is based on [1] p. 247,248 and 263
-    ///
-    /// The implemented material is the coupled form of the compressible NeoHook
-    /// model. The Parameters read in are the Young's modulus and the Poisson's
-    /// ratio.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = c(I_{\boldsymbol{C}}-3)+\frac {c}{\beta} (J^{-2\beta}-1)
-    ///\f]
-    ///
-    /// with
-    ///\f[
-    ///   \beta = \frac {\nu}{1-2\nu}
-    ///\f]
-    ///
-    /// \f$ c=\frac {\mu}{2} = \frac {\text{Young's modulus}}{4(1+\nu)} \f$
-    /// and \f$\mu\f$ and \f$\nu\f$ denoting the shear modulus
-    /// and the Poisson's ratio, respectively.
-    ///
-    /// [1] Holzapfel, G. A., Nonlinear Solid Mechanics, 2002
-    ///
-    /// \author rausch
-    /// \date 03/11
+    /*!
+     * @brief CoupNeoHookean material
+     *
+     * This is the summand of a hyperelastic, isotropic CoupNeoHookean material depending on the
+     * first and the third invariant of the right Cauchy-Green tensor. The formulation is based on
+     * [1] p. 247,248 and 263
+     *
+     * The implemented material is the coupled form of the compressible NeoHooke model. The
+     * Parameters read in are the Young's modulus and the Poisson's ratio.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = c(I_{\boldsymbol{C}}-3)+\frac {c}{\beta} (J^{-2\beta}-1)
+     * \f]
+     *
+     * with
+     * \f[
+     *   \beta = \frac {\nu}{1-2\nu}
+     * \f]
+     *
+     * \f$ c=\frac {\mu}{2} = \frac {\text{Young's modulus}}{4(1+\nu)} \f$ and \f$\mu\f$ and
+     * \f$\nu\f$ denoting the shear modulus and the Poisson's ratio, respectively.
+     *
+     * [1] Holzapfel, G. A., Nonlinear Solid Mechanics, 2002
+     */
     class CoupNeoHooke : public Summand
     {
      public:
@@ -134,6 +116,7 @@ namespace MAT
       void AddYoungsMod(double& young, double& shear, double& bulk) override { young += YOUNGS(); };
 
       //@}
+
       // add strain energy
       void AddStrainEnergy(double& psi,       ///< strain energy function
           const LINALG::Matrix<3, 1>& prinv,  ///< principal invariants of right Cauchy-Green tensor
@@ -164,8 +147,6 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      double C() const { return params_->c_; }
-      double BETA() const { return params_->beta_; }
       double NUE() const { return params_->nue_; }
       double YOUNGS() const { return params_->youngs_; }
       //@}

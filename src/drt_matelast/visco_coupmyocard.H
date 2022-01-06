@@ -1,13 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-Isochoric coupled viscous material with pseudo-potential representing the collagen and
-elastin matrix surrounding the myocardial fiber (chappelle12)
-The input line should read
-  MAT 1 VISCO_CoupMyocard N 1
+\brief Definition of classes for an isochoric coupled viscous material with pseudo-potential
+representing the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
 
 \level 2
-
 */
 /*---------------------------------------------------------------------*/
 #ifndef VISCO_COUPMYOCARD_H_
@@ -22,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous part of myocardial matrix
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_CoupMyocard N 1
+      /*!
+       * @brief material parameters for viscous part of myocardial matrix
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_CoupMyocard N 1
+       */
       class CoupMyocard : public MAT::PAR::Parameter
       {
        public:
@@ -50,43 +47,32 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetN(const double n) { n_ = n; }
-        //@}
-
       };  // class CoupMyocard
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
     /*!
-     *  Isochoric coupled viscous material with pseudo-potential
+     * @brief Isochoric coupled viscous material with pseudo-potential
      *
-     *  Strain energy function is given by
+     * Strain energy function is given by
      * \f[
-     *    \Psi_v = \eta/2 tr(\dot{E}^2) = \eta/8 tr(\dot{C}^2).
+     *   \Psi_v = \eta/2 tr(\dot{E}^2) = \eta/8 tr(\dot{C}^2).
      * \f]
      *
-     *  Viscous second Piola-Kirchhoff stress
+     * Viscous second Piola-Kirchhoff stress
      * \f[
-     *    S_v =  2 \frac{\partial \Psi_v}{\partial \dot{C}} = \eta/2 \dot{C}.
+     *   S_v =  2 \frac{\partial \Psi_v}{\partial \dot{C}} = \eta/2 \dot{C}.
      * \f]
      *
-     *  Viscous constitutive tensor
+     * Viscous constitutive tensor
      * \f[
-     *    C_v =  4 \frac{\partial^2 W_v}{\partial \dot{C} \partial \dot{C}} = \eta I^\#,
+     *   C_v =  4 \frac{\partial^2 W_v}{\partial \dot{C} \partial \dot{C}} = \eta I^\#,
      * \f]
      *
-     *  with
+     * with
      *
      * \f[
-     *    I^\#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
+     *   I^\#_{ijkl} = \frac{1}{2}(\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
      * \f]
-     *
-     *  \author pfaller
-     *  \date 04/15
      */
     class CoupMyocard : public Summand
     {
@@ -109,12 +95,6 @@ namespace MAT
           LINALG::Matrix<33, 1>& xi,          ///< necassary coefficients for viscosity tensor
           LINALG::Matrix<7, 1>& rateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
-
-      /// @name Access methods
-      //@{
-      double N() const { return params_->n_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

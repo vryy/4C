@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the isochoric routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
-The input line should read
-  MAT 1 ELAST_IsoNeoHooke MUE 100
+\brief Definition of classes for an isochoric Neo Hooke material
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISONEOHOOKE_H_
 #define ELAST_ISONEOHOOKE_H_
 
@@ -23,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a neo-Hooke material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoNeoHooke MUE 100
+      /*!
+       * @brief material parameters for isochoric contribution of a neo-Hooke material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoNeoHooke MUE 100
+       */
       class IsoNeoHooke : public MAT::PAR::Parameter
       {
        public:
@@ -51,35 +47,26 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        //@}
-
       };  // class IsoNeoHooke
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
-    /// Isochoric neo-Hooke material according to [1]
-    ///
-    /// This is a hyperelastic, isotropic material
-    /// of the most simple kind.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac{\mu}{2} (\overline{I}_{\boldsymbol{C}}-3) = \frac{\mu}{2}
-    ///   (J^{-2/3}{I}_{\boldsymbol{C}}-3)
-    ///\f]
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// </ul>
-    ///
-    /// \author rausch,tk
-    /// \date 04/09
+    /*!
+     * @brief Isochoric neo-Hooke material according to [1]
+     *
+     * This is a hyperelastic, isotropic material
+     * of the most simple kind.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = \frac{\mu}{2} (\overline{I}_{\boldsymbol{C}}-3) = \frac{\mu}{2}
+     *   (J^{-2/3}{I}_{\boldsymbol{C}}-3)
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+     * </ul>
+     */
     class IsoNeoHooke : public Summand
     {
      public:
@@ -119,11 +106,9 @@ namespace MAT
           int eleGID                           ///< element GID
           ) override;
 
-
       /// @name Access methods
       //@{
       double Mue() const { return params_->mue_; }
-
       //@}
 
       /// Indicator for formulation
@@ -138,21 +123,6 @@ namespace MAT
         isomod = true;
         return;
       };
-
-
-      // Add third derivatives with respect to modified invariants.
-      // REMARK: Only the ones' which are used in remodeling
-      //         are implemented (dddPIII_0,1,3,5)
-      virtual void AddThirdDerivativesModified(
-          LINALG::Matrix<10, 1>&
-              dddPmodIII,  ///< third derivative with respect to modified invariants
-          const LINALG::Matrix<3, 1>& modinv,  ///< modified invariants of right Cauchy-Green tensor
-          const int eleGID)                    ///< global ID of element
-      {
-        return;  // nothing
-      }
-
-
 
      private:
       /// my material parameters

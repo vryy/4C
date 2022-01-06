@@ -1,13 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required for the anisotropic material using a neo-Hooke
-material
+\brief Definition of classes for a coupled anisotropic neo-Hooke material with one fiber direction
 
 \level 3
-
 */
-
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_COUPANISONEOHOOKE_H_
 #define ELAST_COUPANISONEOHOOKE_H_
 
@@ -20,13 +18,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for anisochoric contribution of a
-      /// neo-Hooke material with one fiber direction
-      ///
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+      /*!
+       * @brief material parameters for anisochoric contribution of a neo-Hooke material with one
+       * fiber direction
+       *
+       * <h3>Input line</h3>
+       * MAT 1 CoupAnisoNeoHooke C 100 GAMMA 35.0 INIT 0 ADAPT_ANGLE 0
+       */
       class CoupAnisoNeoHooke : public MAT::PAR::ParameterAniso
       {
        public:
@@ -56,37 +54,28 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double c) { c_ = c; }
-        //@}
-
       };  // class CoupAnisoNeoHooke
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Coupled anisotropic exponential fiber function, implemented for one possible fiber family
-    /// [1]
-    /// This is a hyperelastic, anisotropic material of the most simple kind.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = c \left(IV_{\boldsymbol C}-1\right).
-    ///\f]
-    ///
-    /// !!!Warning!!! The current implementation does not automatically respect the stress free
-    /// state of the reference configuration
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, TC Gasser, A viscoelastic model for fiber-reinforced composites at
-    /// finite strains: ... 2000
-    /// </ul>
-    ///
-    /// \author rausch
-    /// \date 05/09
+    /*!
+     * @brief Coupled anisotropic exponential fiber function, implemented for one possible fiber
+     * family as in [1] This is a hyperelastic, anisotropic material of the most simple kind.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = c \left(IV_{\boldsymbol C}-1\right).
+     * \f]
+     *
+     * !!!Warning!!! The current implementation does not automatically respect the stress free
+     * state of the reference configuration
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, TC Gasser, A viscoelastic model for fiber-reinforced composites at
+     * finite strains: ... 2000
+     * </ul>
+     */
     class CoupAnisoNeoHooke : public Summand
     {
      public:
@@ -129,12 +118,6 @@ namespace MAT
           int gp,      ///< Gauss point
           int eleGID   ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double C() const { return params_->c_; }
-
-      //@}
 
       /// Set fiber directions
       void SetFiberVecs(const double newgamma,  ///< new angle

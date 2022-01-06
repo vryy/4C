@@ -1,9 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Summand for the transversely hyperelastic isotropic material model
+\brief Implementation of a hyperelastic transversely isotropic material model for large strain
+computations
+
 \level 3
-
-
 */
 /*----------------------------------------------------------------------*/
 
@@ -21,8 +21,7 @@
 
 #include "../drt_lib/voigt_notation.H"
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -36,8 +35,6 @@ MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
   /* empty */
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::PAR::CoupTransverselyIsotropic::Print() const
 {
   IO::cout << "--- Material parameters of CoupTransverselyIsotropic\n";
@@ -50,16 +47,12 @@ void MAT::ELASTIC::PAR::CoupTransverselyIsotropic::Print() const
   IO::cout << "----------------------------------------------------\n";
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 MAT::ELASTIC::CoupTransverselyIsotropic::CoupTransverselyIsotropic(my_params* params)
     : params_(params)
 {
   /* empty */
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   switch (params_->init_)
@@ -114,17 +107,12 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::Setup(int numgp, DRT::INPUT::LineD
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, A_);
   AddtoPack(data, AA_);
 }
 
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -132,16 +120,12 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UnpackSummand(
   ExtractfromPack(position, data, AA_);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::GetFiberVecs(
     std::vector<LINALG::Matrix<3, 1>>& fibervecs)
 {
   fibervecs.push_back(A_);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {
@@ -167,8 +151,6 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::SetFiberVecs(
   params_->StructuralTensorStrategy()->SetupStructuralTensor(A_, AA_);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
     const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
@@ -193,8 +175,6 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
          0.5 * alpha * (I5_ - 1.0);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
     const LINALG::Matrix<6, 1>& rcg, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
@@ -212,8 +192,6 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::AddStressAnisoPrincipal(
   UpdateElasticityTensor(cmat, rcg_inv_s);
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
     LINALG::Matrix<6, 6>& cmat, const LINALG::Matrix<6, 1>& rcg_inv_s) const
 {
@@ -277,8 +255,6 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateElasticityTensor(
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
     const LINALG::Matrix<6, 1>& rcg, const Teuchos::ParameterList* params)
 {
@@ -311,8 +287,6 @@ int MAT::ELASTIC::CoupTransverselyIsotropic::ResetInvariants(
   return 0;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
     LINALG::Matrix<6, 1>& stress, const LINALG::Matrix<6, 1>& rcg_s,
     LINALG::Matrix<6, 1>& rcg_inv_s) const
@@ -349,8 +323,6 @@ void MAT::ELASTIC::CoupTransverselyIsotropic::UpdateSecondPiolaKirchhoffStress(
   }
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupTransverselyIsotropic::ErrorHandling(
     const Teuchos::ParameterList* params, std::stringstream& msg) const
 {

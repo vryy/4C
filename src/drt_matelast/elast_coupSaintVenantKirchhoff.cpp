@@ -1,25 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 \brief
-This file contains the routines required for Saint-Venant-Kirchhoff material
-The input line should read
-  MAT 1 ELAST_CoupSVK YOUNG 1.044E7 NUE 0.3
+Implementation of a coupled Saint-Venant-Kirchhoff material
 
 \level 1
-
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coupSaintVenantKirchhoff.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
@@ -35,13 +26,8 @@ MAT::ELASTIC::PAR::CoupSVK::CoupSVK(const Teuchos::RCP<MAT::PAR::Material>& matd
     dserror("Poisson's ratio must be between -1.0 and 0.5!");
 }
 
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupSVK::CoupSVK(MAT::ELASTIC::PAR::CoupSVK* params) : params_(params) {}
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -56,10 +42,6 @@ void MAT::ELASTIC::CoupSVK::AddStrainEnergy(double& psi, const LINALG::Matrix<3,
          0.75 * mue;
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -70,22 +52,14 @@ void MAT::ELASTIC::CoupSVK::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
   dPI(1) -= 0.5 * mue;
 
   ddPII(0) += 0.5 * mue + 0.25 * lambda;
-
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupSVK::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10, 1>& dddPIII_iso,
     const LINALG::Matrix<3, 1>& prinv_iso, const int gp, const int eleGID)
 {
   // do nothing
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupSVK::AddCoupDerivVol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {
@@ -108,5 +82,3 @@ void MAT::ELASTIC::CoupSVK::AddCoupDerivVol(
              56. / 27. * (3. / 4. * lambda + mu / 2.) * pow(J, -10. / 3.) -
              20. / 27. * mu * pow(J, -8. / 3.);
 }
-
-/*----------------------------------------------------------------------*/

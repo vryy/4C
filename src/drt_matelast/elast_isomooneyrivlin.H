@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a Mooney-Rivlin-type material.
-The input line should read
-MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
+\brief Definition of classes for the isochoric contribution of a Mooney-Rivlin-type material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOMOONEYRIVLIN_H_
 #define ELAST_ISOMOONEYRIVLIN_H_
 
@@ -22,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a Mooney-Rivlin type material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
+      /*!
+       * @brief material parameters for isochoric contribution of a Mooney-Rivlin type material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoMooneyRivlin C1 100 C2 50
+       */
       class IsoMooneyRivlin : public MAT::PAR::Parameter
       {
        public:
@@ -51,34 +48,22 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC1(const double c1) { c1_ = c1; }
-        void SetC2(const double c2) { c2_ = c2; }
-        //@}
-
       };  // class IsoMooneyRivlin
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
-    /// Isochoric Mooney-Rivlin material according to [1]
-    ///
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{II}_{\boldsymbol{C}}-3).
-    ///\f]
-    ///
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// </ul>
-    ///
-    /// \author rausch,tk
-    /// \date 04/09
+    /*!
+     * @brief Isochoric Mooney-Rivlin material according to [1]
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + C2 (\overline{II}_{\boldsymbol{C}}-3).
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+     * </ul>
+     */
     class IsoMooneyRivlin : public Summand
     {
      public:
@@ -114,13 +99,6 @@ namespace MAT
           int gp,                              ///< Gauss point
           int eleGID                           ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double C1() const { return params_->c1_; }
-      double C2() const { return params_->c2_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

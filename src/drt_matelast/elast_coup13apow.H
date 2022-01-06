@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the coupled
-power-type material in invariant 1 multiplicative invariant 3^(-a).
-The input line should read
-  MAT 1 ELAST_Coup13aPow C 1 D 1 A 0.1
+\brief Definition of classes for an isotropic coupled material depending on the first Cauchy-Green
+invariant and the Jacobi determinant
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUP13APOW_H_
 #define ELAST_COUP13APOW_H_
 
@@ -22,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of a multiplicative coupled I1 and I3 power
-      /// material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_Coup13aPow C 1 D 1 A 1
+      /*!
+       * @brief material parameters for coupled contribution of a multiplicative coupled I1 and I3
+       * power material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_Coup13aPow C 1 D 1 A 1
+       */
       class Coup13aPow : public MAT::PAR::Parameter
       {
        public:
@@ -53,33 +51,22 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double c) { c_ = c; }
-        void SetD(const int d) { d_ = d; }
-        void SetA(const double a) { a_ = a; }
-        //@}
-
       };  // class Coup13aPow
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Coupled general power material
-    ///
-    /// This is a summand of a variable order hyperelastic, coupled
-    /// material depending on the first and third invariant of the right
-    /// Cauchy-Green tensor. The third invariant has a additional negative exponent.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = c (I_{\boldsymbol{C}}*(III_{\boldsymbol{C}}^(-a))-3)^d.
-    ///\f]
-    ///
-    ///
-    /// \author birzle
-    /// \date 11/16
+    /*!
+     * @brief Coupled general power material
+     *
+     * This is a summand of a variable order hyperelastic, coupled
+     * material depending on the first and third invariant of the right
+     * Cauchy-Green tensor. The third invariant has a additional negative exponent.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = c (I_{\boldsymbol{C}}*(III_{\boldsymbol{C}}^(-a))-3)^d.
+     * \f]
+     */
     class Coup13aPow : public Summand
     {
      public:
@@ -120,14 +107,6 @@ namespace MAT
         dserror("not implemented");
       }
 
-      /// @name Access methods
-      //@{
-      double C() const { return params_->c_; }
-      int D() const { return params_->d_; }
-      double A() const { return params_->a_; }
-
-      //@}
-
       /// Indicator for formulation
       void SpecifyFormulation(
           bool& isoprinc,     ///< global indicator for isotropic principal formulation
@@ -140,7 +119,6 @@ namespace MAT
         isoprinc = true;
         return;
       };
-
 
      private:
       /// my material parameters

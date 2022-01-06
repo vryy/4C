@@ -1,9 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
+\brief Definition of classes for the viscous contribution of a generalized maxwell model
 
-\brief generalized maxwell model
 \level 2
-
 */
 /*----------------------------------------------------------------------*/
 #ifndef VISCO_GENERALIZEDGENMAX_H_
@@ -18,13 +17,14 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution to a viscoelastic branch of a generalized
-      /// Maxwell model
-      ///
-      /// <h3>Input line</h3>
-      ///  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE CONVOL
-      ///  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE OST
+      /*!
+       * @brief material parameters for viscous contribution to a viscoelastic branch of a
+       * generalized Maxwell model
+       *
+       * <h3>Input line</h3>
+       *  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE CONVOL
+       *  MAT 1 VISCO_GeneralizedGenMax NUMBRANCH 3 MATIDS 4 5 6 SOLVE OST
+       */
       class GeneralizedGenMax : public MAT::PAR::Parameter
       {
        public:
@@ -46,23 +46,16 @@ namespace MAT
         /// create material instance of matching type with my parameters
 
         Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
-
-        /// @name Write methods
-        //@{
-        void SetNumbranch(const int& numbranch) { numbranch_ = numbranch; }
-        void SetMatids(const std::vector<int>* matids) { matids_ = matids; }
-        void SetSolve(const std::string& solve) { solve_ = solve; }
-        //@}
-
       };  // class GeneralizedGenMax
 
 
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution to a viscoelastic branch of a generalized
-      /// Maxwell modell
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_BRANCH NUMMAT 2 MATIDS 2 3
+      /*!
+       * @brief material parameters for viscous contribution to a viscoelastic branch of a
+       * generalized Maxwell modell
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_BRANCH NUMMAT 2 MATIDS 2 3
+       */
       class ViscoBranch : public MAT::PAR::Parameter
       {
        public:
@@ -89,21 +82,15 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetNummat(const double nummat) { nummat_ = nummat; }
-        void SetMatids(const std::vector<int>* matids) { matids_ = matids; }
-        //@}
-
       };  // class ViscoBranch
 
-      /*----------------------------------------------------------------------*/
-      /// material parameters for viscous contribution to a viscoelastic branch of a generalized
-      /// Maxwell modell
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_PART TAU 1.5
+      /*!
+       * @brief material parameters for viscous contribution to a viscoelastic branch of a
+       * generalized Maxwell modell
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_PART TAU 1.5
+       */
       class ViscoPart : public MAT::PAR::Parameter
       {
        public:
@@ -123,13 +110,6 @@ namespace MAT
 
         /// create material instance of matching type with my parameters
         Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
-
-        /// @name Write methods
-        //@{
-
-        void SetTau(const double tau) { tau_ = tau; }
-        //@}
-
       };  // class ViscoPart
 
     }  // namespace PAR
@@ -150,8 +130,6 @@ namespace MAT
       {
         return INPAR::MAT::mes_generalizedgenmax;
       }
-
-
       //@}
 
       /// Read material parameters
@@ -162,15 +140,11 @@ namespace MAT
 
       /// @name Access methods
       //@{
-      double Numbranch() const { return params_->numbranch_; }
-      const std::vector<int>* Matids() const { return params_->matids_; }
       const std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> GetBranchespotsum() const
       {
         return branchespotsum_;
       }
-      std::string Solve() const { return params_->solve_; }
       //@}
-
 
       /// Indicator for formulation
       void SpecifyFormulation(
@@ -222,20 +196,12 @@ namespace MAT
       /// material type
       INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscobranch; }
 
-
       //@}
 
       /// Read material parameters
       void ReadMaterialParameters(double& nummat,  ///< number of materials in one branch
           const std::vector<int>*& matids          ///< matierial IDs of each part of the branch
           ) override;
-
-      /// @name Access methods
-      //@{
-      double Nummat() const { return params_->nummat_; }
-      const std::vector<int>* Matids() const { return params_->matids_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(
@@ -270,19 +236,12 @@ namespace MAT
       /// material type
       INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::mes_viscopart; }
 
-
       //@}
 
       /// Read material parameters
       virtual void ReadMaterialParameters(
           double& tau  ///< viscous contribution to viscoelastic part
       );
-
-      /// @name Access methods
-      //@{
-      double Tau() const { return params_->tau_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(
@@ -309,7 +268,6 @@ namespace MAT
         return;
       };
 
-
      private:
       /// my material parameters
       MAT::ELASTIC::PAR::ViscoPart* params_;
@@ -319,6 +277,4 @@ namespace MAT
   }  // namespace ELASTIC
 }  // namespace MAT
 
-
-
-#endif /* VISCO_GENERALIZEDGENMAX_H_ */
+#endif  // VISCO_GENERALIZEDGENMAX_H_

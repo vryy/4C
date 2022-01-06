@@ -1,13 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-The input line should read
-  MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE 0
+\brief Definition of classes for the isochoric contribution of a anisotropic exponential fiber
+material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOANISOEXPO_H_
 #define ELAST_ISOANISOEXPO_H_
 
@@ -20,12 +19,14 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for coupled contribution of a anisotropic exponential fiber material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
-      /// ADAPT_ANGLE 0
+      /*!
+       * @brief material parameters for isochoric contribution of a anisotropic exponential fiber
+       * material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoAnisoExpo K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0 ADAPT_ANGLE
+       * 0
+       */
       class IsoAnisoExpo : public MAT::PAR::ParameterAniso
       {
        public:
@@ -58,41 +59,27 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetK1(const double k1) { k1_ = k1; }
-        void SetK2(const double k2) { k2_ = k2; }
-        void SetK1COMP(const double k1comp) { k1comp_ = k1comp; }
-        void SetK2COMP(const double k2comp) { k2comp_ = k2comp; }
-        //@}
-
       };  // class IsoAnisoExpo
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric anisotropic exponential fiber function, implemented for one possible fiber family
-    /// [1]
-    /// This is a hyperelastic, anisotropic material
-    /// of the most simple kind.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = \frac {k_1}{2 k_2} \left(e^{k_2 (\overline{IV}_{\boldsymbol C}-1)^2 }-1 \right).
-    ///\f]
-    ///
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial
-    /// wall mechanics
-    ///          and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
-    /// </ul>
-    ///
-    /// \author st
-    /// \date 03/12
-
+    /*!
+     * @brief Isochoric anisotropic exponential fiber function, implemented for one possible fiber
+     * family [1]
+     *
+     * This is a hyperelastic, anisotropic material of the most simple kind.
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = \frac {k_1}{2 k_2} \left(e^{k_2 (\overline{IV}_{\boldsymbol C}-1)^2 }-1 \right).
+     * \f]
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] G.A. Holzapfel, T.C. Gasser, R.W. Ogden: A new constitutive framework for arterial
+     * wall mechanics and a comparative study of material models, J. of Elasticity 61 (2000) 1-48.
+     * </ul>
+     */
     class IsoAnisoExpo : public Summand
     {
      public:
@@ -143,14 +130,6 @@ namespace MAT
           double I4,                            ///< fourth invariant
           int gp,                               ///< Gauss point
           int eleGID);                          ///< element GID
-
-      /// @name Access methods
-      //@{
-      double K1() const { return params_->k1_; }
-      double K2() const { return params_->k2_; }
-      double K1COMP() const { return params_->k1comp_; }
-      double K2COMP() const { return params_->k2comp_; }
-      //@}
 
       /// Set fiber directions
       void SetFiberVecs(const double newgamma,  ///< new angle

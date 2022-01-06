@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for Varga's material
-The input line should read
-  MAT 1 ELAST_IsoVarga MUE 200.0
+\brief Definition of classes for Varga's material
 
 \level 2
-
 */
-
 /*----------------------------------------------------------------------*/
+
 #ifndef ELAST_ISOVARGA_H_
 #define ELAST_ISOVARGA_H_
 
@@ -22,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters of Varga's material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoVarga MUE 1.0 BETA 1.0
+      /*!
+       * @brief material parameters of Varga's material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoVarga MUE 1.0 BETA 1.0
+       */
       class IsoVarga : public MAT::PAR::Parameter
       {
        public:
@@ -57,31 +54,29 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric Varga's material according to [1], [2]
-    ///
-    /// This is a compressible, hyperelastic, isotropic material
-    /// of the most simple kind.
-    ///
-    /// The material strain energy density function is
-    ///\f[
-    /// \Psi = \underbrace{(2\mu-\beta)}_{\displaystyle\alpha} \Big(\bar{\lambda}_1 +
-    /// \bar{\lambda}_2 + \bar{\lambda}_3 - 3\Big)
-    ///      + \beta \Big(\frac{1}{\bar{\lambda}_1} + \frac{1}{\bar{\lambda}_2} +
-    ///      \frac{1}{\bar{\lambda}_3} - 3\Big)
-    ///\f]
-    /// which was taken from [1] Eq (6.129) and [2] Eq (1.3).
-    ///
-    /// <h3>References</h3>
-    /// <ul>
-    /// <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
-    /// <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for
-    ///          finitely deformed incompressible elastic materials",
-    ///          IMA J Appl Math, 54:109-123, 1995.
-    /// </ul>
-    ///
-    /// \author bborn
-    /// \date 08/09
+    /*!
+     * \brief Isochoric Varga's material according to [1], [2]
+     *
+     * This is a compressible, hyperelastic, isotropic material
+     * of the most simple kind.
+     *
+     * The material strain energy density function is
+     * \f[
+     * \Psi = \underbrace{(2\mu-\beta)}_{\displaystyle\alpha} \Big(\bar{\lambda}_1 +
+     * \bar{\lambda}_2 + \bar{\lambda}_3 - 3\Big)
+     *      + \beta \Big(\frac{1}{\bar{\lambda}_1} + \frac{1}{\bar{\lambda}_2} +
+     *      \frac{1}{\bar{\lambda}_3} - 3\Big)
+     * \f]
+     * which was taken from [1] Eq (6.129) and [2] Eq (1.3).
+     *
+     * <h3>References</h3>
+     * <ul>
+     * <li> [1] GA Holzapfel, "Nonlinear solid mechanics", Wiley, 2000.
+     * <li> [2] JM Hill and DJ Arrigo, "New families of exact solutions for
+     *          finitely deformed incompressible elastic materials",
+     *          IMA J Appl Math, 54:109-123, 1995.
+     * </ul>
+     */
     class IsoVarga : public Summand
     {
      public:
@@ -104,26 +99,14 @@ namespace MAT
       /// Answer if coefficients with respect to principal stretches are provided
       bool HaveCoefficientsStretchesModified() override { return true; }
 
-      /// Add coefficients with respect to principal stretches (or zeros)
+      /// Add coefficients with respect to modified principal stretches (or zeros)
       void AddCoefficientsStretchesModified(
-          LINALG::Matrix<3, 1>& gamma,  ///< see above, [gamma_1, gamma_2, gamma_3]
-          LINALG::Matrix<6, 1>&
-              delta,  ///< see above, [delta_11, delta_22, delta_33, delta_12, delta_23, delta_31]
-          const LINALG::Matrix<3, 1>&
-              modstr  ///< modified principal stretches, [lambda_1, lambda_2, lambda_3]
+          LINALG::Matrix<3, 1>& modgamma,  ///< [\bar{\gamma}_1, \bar{\gamma}_2, \bar{\gamma}_3]
+          LINALG::Matrix<6, 1>& moddelta,  ///< [\bar{\delta}_11, \bar{\delta}_22, \bar{\delta}_33,
+                                           ///< \bar{\delta}_12,\bar{\delta}_23, \bar{\delta}_31]
+          const LINALG::Matrix<3, 1>& modstr  ///< modified principal stretches, [\bar{\lambda}_1,
+                                              ///< \bar{\lambda}_2, \bar{\lambda}_3]
           ) override;
-
-      /// @name Access methods
-      //@{
-      double Mue() const { return params_->mue_; }
-      double Beta() const { return params_->beta_; }
-      //@}
-
-      /// @name Write methods
-      //@{
-      void SetMue(const double& mue) { params_->mue_ = mue; }
-      void SetBeta(const double& beta) { params_->beta_ = beta; }
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(
@@ -138,7 +121,7 @@ namespace MAT
       };
 
      private:
-      /// my material parameters
+      /// Varga material parameters
       MAT::ELASTIC::PAR::IsoVarga* params_;
     };
 

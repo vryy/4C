@@ -1,45 +1,26 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the Simo and Pister
-material model. (U(J) is not implemented).
-Always use in combination with at least one other material model of the
-Elasthyper Toolbox.
-The input line should read
-  MAT 1 ELAST_CoupSimoPister MUE 1000
-
+\brief Implementation of the Simo and Pister material model except the volumetric term
 \level 1
-
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 
 #include <limits>
 
 #include "elast_coupsimopister.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupSimoPister::CoupSimoPister(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), mue_(matdata->GetDouble("MUE"))
 {
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupSimoPister::CoupSimoPister(MAT::ELASTIC::PAR::CoupSimoPister* params)
     : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupSimoPister::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -52,10 +33,6 @@ void MAT::ELASTIC::CoupSimoPister::AddStrainEnergy(double& psi, const LINALG::Ma
   psi += 0.5 * mue * (prinv(0) - 3.) - mue * log(std::pow(prinv(2), 0.5));
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupSimoPister::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -65,9 +42,4 @@ void MAT::ELASTIC::CoupSimoPister::AddDerivativesPrincipal(LINALG::Matrix<3, 1>&
   dPI(2) -= 0.5 * mue / prinv(2);
 
   ddPII(2) += 0.5 * mue / (prinv(2) * prinv(2));
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/

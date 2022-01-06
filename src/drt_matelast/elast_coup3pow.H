@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the volumetric contribution
-of a general power-type material.
+\brief Definition of classes for a volumetric general power-type material in terms of the Jacobi
+determinant
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUP3POW_H_
 #define ELAST_COUP3POW_H_
 
@@ -19,11 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumtric contribution of a general power material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_Coup3Pow C 1 D 1
+      /*!
+       * @brief material parameters for volumtric contribution of a general power material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_Coup3Pow C 1 D 1
+       */
       class Coup3Pow : public MAT::PAR::Parameter
       {
        public:
@@ -48,31 +49,20 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC(const double c) { c_ = c; }
-        void SetD(const int d) { d_ = d; }
-        //@}
-
       };  // class Coup3Pow
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
-    /// Volumtric general power material
-    ///
-    /// This is a summand of a variable order hyperelastic, volumetric
-    /// material depending on the first invariant of the right Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C (I_3^(1/3)-1)^D.
-    ///\f]
-    ///
-    ///
-    /// \author birzle
-    /// \date 07/17
+    /*!
+     * @brief Volumtric general power material
+     *
+     * This is a summand of a variable order hyperelastic, volumetric
+     * material depending on the first invariant of the right Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = C (I_3^(1/3)-1)^D.
+     * \f]
+     */
     class Coup3Pow : public Summand
     {
      public:
@@ -102,13 +92,6 @@ namespace MAT
           int gp,                             ///< Gauss point
           int eleGID                          ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double C() const { return params_->c_; }
-      int D() const { return params_->d_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

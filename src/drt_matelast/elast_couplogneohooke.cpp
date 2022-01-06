@@ -1,29 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
-The input line should read either
-  MAT 1 ELAST_CoupLogNeoHooke YOUNG 1.044E7 NUE 0.3
-or
-  MAT 1 ELAST_CoupLogNeoHooke MUE 1. LAMBDA 1.
+\brief Implementation of a logarithmic neo-Hooke material according to Bonet and Wood, "Nonlinear
+continuum mechanics for finite element analysis", Cambridge, 1997.
 
 \level 1
-
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_couplogneohooke.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata)
 {
@@ -52,16 +39,11 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(const Teuchos::RCP<MAT::PAR:
         "Poisson's ratio) or Lame");
 }
 
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   bborn 04/09 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupLogNeoHooke::CoupLogNeoHooke(MAT::ELASTIC::PAR::CoupLogNeoHooke* params)
     : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
@@ -70,12 +52,8 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddShearMod(
   haveshearmod = true;
 
   shearmod += params_->mue_;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -92,9 +70,6 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddStrainEnergy(double& psi, const LINALG::M
          lambda * 0.5 * pow(log(sqrt(prinv(2))), 2.);
 }
 
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupLogNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -108,9 +83,4 @@ void MAT::ELASTIC::CoupLogNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>
 
   ddPII(2) += lambda / (4. * prinv(2) * prinv(2)) + mue / (2. * prinv(2) * prinv(2)) -
               (lambda * logdetf) / (2. * prinv(2) * prinv(2));
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/

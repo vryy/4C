@@ -1,29 +1,18 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric
-contribution of a CoupNeoHookean material material.
-The input line should read
-  MAT 1 ELAST_CoupNeoHooke YOUNG 1 NUE 1
+\brief Implementation of a coupled Neo Hookean material
+
 
 \level 1
-
-
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 
 #include <limits>
 
 #include "elast_coupneohooke.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), youngs_(matdata->GetDouble("YOUNG")), nue_(matdata->GetDouble("NUE"))
 {
@@ -32,34 +21,25 @@ MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<MAT::PAR::Mater
   beta_ = nue_ / (1.0 - 2.0 * nue_);
 }
 
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupNeoHooke::CoupNeoHooke(MAT::ELASTIC::PAR::CoupNeoHooke* params) : params_(params)
 {
 }
 
-/*----------------------------------------------------------------------*
- * copy matparmas to summands
- *----------------------------------------------------------------------*/
+// copy matparmas to summands
 void MAT::ELASTIC::CoupNeoHooke::CopyStatInvAnaMatParams(
     std::vector<Teuchos::RCP<Epetra_Vector>> input)
 {
   params_->ReturnMatparams() = input;
 }
 
-/*----------------------------------------------------------------------*
- * Add parameters of elasthyper-summand for stat inverse analysis to matparams
- *----------------------------------------------------------------------*/
+// Add parameters of elasthyper-summand for stat inverse analysis to matparams
 void MAT::ELASTIC::CoupNeoHooke::SetStatInvAnaSummandMatParams()
 {
   params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coupneohooke_c)->PutScalar(params_->c_);
   params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coupneohooke_beta)->PutScalar(params_->beta_);
 }
 
-/*----------------------------------------------------------------------*
- * Add parameters of elasthyper-summand for stat inverse analysis
- *----------------------------------------------------------------------*/
+// Add parameters of elasthyper-summand for stat inverse analysis
 void MAT::ELASTIC::CoupNeoHooke::AddElastOptParams(std::map<std::string, int>* pnames)
 {
   pnames->insert(std::pair<std::string, int>("CoupNeoHooke_C", MAT::ELASTIC::PAR::coupneohooke_c));
@@ -67,8 +47,6 @@ void MAT::ELASTIC::CoupNeoHooke::AddElastOptParams(std::map<std::string, int>* p
       std::pair<std::string, int>("CoupNeoHooke_BETA", MAT::ELASTIC::PAR::coupneohooke_beta));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
     bool& haveshearmod,  ///< non-zero shear modulus was added
     double& shearmod     ///< variable to add upon
@@ -77,12 +55,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddShearMod(
   haveshearmod = true;
 
   shearmod += 2 * params_->c_;
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -102,10 +76,6 @@ void MAT::ELASTIC::CoupNeoHooke::AddStrainEnergy(double& psi, const LINALG::Matr
   psi += psiadd;
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -196,12 +166,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& d
   }
   else
     dPI(2) = ddPII(2) = std::numeric_limits<double>::quiet_NaN();
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(LINALG::Matrix<10, 1>& dddPIII_iso,
     const LINALG::Matrix<3, 1>& prinv_iso, const int gp, const int eleGID)
 {
@@ -209,11 +175,8 @@ void MAT::ELASTIC::CoupNeoHooke::AddThirdDerivativesPrincipalIso(LINALG::Matrix<
   const double c = params_->c_;
 
   dddPIII_iso(2) -= c * (beta + 1.0) * (beta + 2.0) * std::pow(prinv_iso(2), -beta - 3.0);
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupNeoHooke::AddCoupDerivVol(
     const double J, double* dPj1, double* dPj2, double* dPj3, double* dPj4)
 {

@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
+\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families.
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_REMODELFIBER_H_
 #define ELAST_REMODELFIBER_H_
 
@@ -37,6 +37,7 @@ namespace MAT
     {
       r = cur_rho_col * (1.0 - dt * k_sig * (sig - sig_h) / sig_h) - last_rho_col;
     };
+
     /// Evaluate derivative of growth evolution equation of the i-th fiber family w.r.t. the mass
     /// density of the i-th fiber family
     void EvaluatedFuncidrhoi(double& dridrhoi,  ///< Output
@@ -48,6 +49,7 @@ namespace MAT
     {
       dridrhoi = 1.0 - dt * k_sig * (sig - sig_h + cur_rho_col * dsigdrho) / sig_h;
     };
+
     /// Evaluate derivative of growth evolution equation of the i-th fiber family w.r.t. the mass
     /// density of the j-th fiber family
     void EvaluatedFuncidrhoj(double& dridrhoj,  ///< Output
@@ -59,6 +61,7 @@ namespace MAT
     {
       dridrhoj = -dt * k_sig * cur_rho_col * dsigdrho / sig_h;
     };
+
     /// Evaluate derivative of growth evolution equation w.r.t. the remodel stretch
     void EvaluatedFuncidlambr(double& drdlamb,  ///< Output
         double const& dsigdlamb,    ///< Derivative of Cauchy stress w.r.t. the mass density
@@ -68,6 +71,7 @@ namespace MAT
     {
       drdlamb = -dt * k_sig * cur_rho_col * dsigdlamb / sig_h;
     };
+
     /// Evaluate derivative of growth evolution equation w.r.t. the right Cauchy-Green tensor
     void EvaluatedFuncidC(LINALG::Matrix<1, 6>& drdC,  ///< Output
         LINALG::Matrix<6, 1> const&
@@ -78,6 +82,7 @@ namespace MAT
     {
       drdC.UpdateT(-cur_rho_col * dt * k_sig / sig_h, dsigdCv, 0.0);
     };
+
     /// Evaluate time derivative of the mass density of the i-th fiber family
     void Evaluatedrhodt(double& drhodt,  ///< Output
         double const& sig,               ///< Current Cauchy stress
@@ -111,6 +116,7 @@ namespace MAT
     {
       r = (k_sig * (sig - sig_h) / sig_h + 1. / t_decay) * (sig - sig_h) - 2.0 * dsigdCeM.Dot(YM);
     };
+
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
     void EvaluatedFuncidlambri(double& drdlambr,  ///< Output
@@ -130,6 +136,7 @@ namespace MAT
       drdlambr -= 2.0 * dsigdCedlambrM.Dot(YM);
       drdlambr -= 2.0 * dsigdCeM.Dot(dYdlambrM);
     };
+
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
     void EvaluatedFuncidrho(double& drdrho,  ///< Output
@@ -149,6 +156,7 @@ namespace MAT
       drdrho -= 2.0 * dsigdCedrhoM.Dot(YM);
       drdrho -= 2.0 * dsigdCeM.Dot(dYdrhoM);
     };
+
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
     /// inelastic (scalar) remodel stretch of the i-th fiber family
     void EvaluatedFuncidC(LINALG::Matrix<1, 6>& drdC,  ///< Output
@@ -171,6 +179,7 @@ namespace MAT
       drdC.MultiplyTN(-2.0, dsigdCe9x1, dYdC, 1.0);
       drdC.MultiplyTN(-2.0, Y_strain, dsigdCedC, 1.0);
     };
+
     /// Evaluate derivative of remodel evolution equation w.r.t. time derivative of the remodel
     /// stretch
     void Evaluatedlambrdt(double& dlambrdt,    ///< Output
@@ -280,9 +289,11 @@ namespace MAT
 
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0
+      /*!
+       * @brief <h3>Input line</h3>
+       *
+       * MAT 1 ELAST_RemodelFiber NUMMAT 1 MATIDS 100 TDECAY 1.0 SIGMAPRE 1.0
+       */
       class RemodelFiber : public MAT::PAR::Parameter
       {
        public:
@@ -326,9 +337,9 @@ namespace MAT
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// General interface for fibers which remodel
-
+    /*!
+     * @brief General interface for fibers which remodel
+     */
     class RemodelFiber : public Summand
     {
      public:
@@ -393,8 +404,8 @@ namespace MAT
       /// Update cauchy prestress of new mass which is deposited during G&R
       void UpdateSigH();
 
-      /// Returns the necessary derivations of the growth and remodel evolution equations and their
-      /// residuals
+      /// Returns the necessary derivations of the growth and remodel evolution equations and
+      /// their residuals
       void EvaluateDerivativesInternalNewton(
           LINALG::Matrix<3, 3> const* const defgrd,  ///< Deformation gradient
           int const nr_grf_proc,  ///< Global number of fibers which were already processed
@@ -412,9 +423,9 @@ namespace MAT
           std::vector<std::vector<double>>&
               dWdlambr,  ///< Derivative of the growth evolution eq. w.r.t. the inelastic remodel
                          ///< fiber stretch
-          std::vector<double>& W,  ///< Residual of growth evolution eq.
-          std::vector<std::vector<double>>&
-              dEdrho,  ///< Derivative of the remodel evolution eq. w.r.t. the current mass density
+          std::vector<double>& W,                    ///< Residual of growth evolution eq.
+          std::vector<std::vector<double>>& dEdrho,  ///< Derivative of the remodel evolution eq.
+                                                     ///< w.r.t. the current mass density
           std::vector<std::vector<double>>&
               dEdlambr,  ///< Derivative of the remodel evolution eq. w.r.t. the inelastic remodel
                          ///< fiber stretch
@@ -446,8 +457,8 @@ namespace MAT
               drhodC,  ///< Derivation of the current mass density w.r.t. the right Cauchy Green
                        ///< tensor
           std::vector<LINALG::Matrix<1, 6>> const&
-              dlambrdC,  ///< Derivation of the remodel fiber stretch w.r.t. the right Cauchy Green
-                         ///< tensor
+              dlambrdC,  ///< Derivation of the remodel fiber stretch w.r.t. the right Cauchy
+                         ///< Green tensor
           LINALG::Matrix<6, 6>& cmat,  ///< Material stiffness matrix due to G&R
           int const gp,                ///< Current gp
           int const eleGID) const;     ///< Element ID
@@ -624,8 +635,8 @@ namespace MAT
           Teuchos::RCP<MAT::ELASTIC::Summand> const fiber,  ///< Type of remodel fiber
           int gp,                                           ///< Gauss point
           ForceAnalytical const eleGID,                     ///< Element Id
-          LINALG::Matrix<3, 3, T>& dsigdC)
-          const;  ///< First derivative of local Cauchy stress w.r.t. the right Cauchy-Green tensor
+          LINALG::Matrix<3, 3, T>& dsigdC) const;  ///< First derivative of local Cauchy stress
+                                                   ///< w.r.t. the right Cauchy-Green tensor
 
       /// Derivative of local Cauchy stress w.r.t. to the right Cauchy-Green tensor (analytical
       /// differentiation)
@@ -637,12 +648,13 @@ namespace MAT
               AM,  ///< Structural tensor of associated anisotropic direction
           Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber,  ///< Type of remodel fiber
           int gp,
-          int eleGID,  ///< Element Id
-          LINALG::Matrix<3, 3, T>& dsigdC)
-          const;  ///< First derivative of local Cauchy stress w.r.t. the right Cauchy-Green tensor
+          int eleGID,                              ///< Element Id
+          LINALG::Matrix<3, 3, T>& dsigdC) const;  ///< First derivative of local Cauchy stress
+                                                   ///< w.r.t. the right Cauchy-Green tensor
 
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
-      /// the elastic right Cauchy Green tensor w.r.t. the mass density (automatic differentiation)
+      /// the elastic right Cauchy Green tensor w.r.t. the mass density (automatic
+      /// differentiation)
       template <typename ForceAnalytical>
       void EvaluateDerivativesCauchyGrowth(
           LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
@@ -656,11 +668,12 @@ namespace MAT
           ForceAnalytical const eleGID,           ///< Element Id
           double& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the mass density
           LINALG::Matrix<3, 3>& dsigdCedrhoM)
-          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t. the
-                  ///< mass density
+          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
+                  ///< the mass density
 
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
-      /// the elastic right Cauchy Green tensor w.r.t. the mass density (analytical differentiation)
+      /// the elastic right Cauchy Green tensor w.r.t. the mass density (analytical
+      /// differentiation)
       void EvaluateDerivativesCauchyGrowth(
           LINALG::Matrix<3, 3> const& CM,    ///< Right Cauchy-Green tensor
           LINALG::Matrix<3, 3> const& iFgM,  ///< Inverse growth deformation gradient (used in G&R)
@@ -673,8 +686,8 @@ namespace MAT
           int const eleGID,                       ///< Element Id
           double& dsigdrho,  ///< Derivative of Cauchy stress w.r.t. the mass density
           LINALG::Matrix<3, 3>& dsigdCedrhoM)
-          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t. the
-                  ///< mass density
+          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
+                  ///< the mass density
 
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
       /// the elastic right Cauchy Green tensor w.r.t. inverse remodeling stretch (automatic
@@ -689,8 +702,8 @@ namespace MAT
           double& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. inverse remodel deformation
                                ///< gradient
           LINALG::Matrix<3, 3>& dsigdCedlambrM)
-          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t. the
-                  ///< inelastic remodeling stretch
+          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
+                  ///< the inelastic remodeling stretch
 
       /// Evaluate derivative of local Cauchy stress/ derivative of the local Cauchy stress w.r.t.
       /// the elastic right Cauchy Green tensor w.r.t. inverse remodeling stretch (analytical
@@ -704,8 +717,8 @@ namespace MAT
           double& dsigdlambr,  ///< Derivative of Cauchy stress w.r.t. inverse remodel deformation
                                ///< gradient
           LINALG::Matrix<3, 3>& dsigdCedlambrM)
-          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t. the
-                  ///< inelastic remodeling stretch
+          const;  ///< Derivative of Cauchy stress w.r.t. elastic right Cauchy Green and w.r.t.
+                  ///< the inelastic remodeling stretch
 
       /// Evaluates growth and remodeling evolution equation
       void EvaluateEvolutionEquation(double& rg,  ///< Residual of growth evolution equation
@@ -760,8 +773,8 @@ namespace MAT
           int const gp,                      ///< Current Gauß-Point
           int const eleGID);                 ///< Element Id
 
-      /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the inelastic
-      /// remodel stretch (automatic differentiation)
+      /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
+      /// inelastic remodel stretch (automatic differentiation)
       template <typename ForceAnalytical>
       void EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
           LINALG::Matrix<6, 1>& dSidrhoi,    ///< Output
@@ -776,8 +789,8 @@ namespace MAT
           int const gp,                         ///< Current Gauß-Point
           ForceAnalytical const eleGID) const;  ///< Element Id
 
-      /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the inelastic
-      /// remodel stretch (analytical differentiation)
+      /// Derivative of 2nd Piola Kirchhoff stress w.r.t. the current mass density and the
+      /// inelastic remodel stretch (analytical differentiation)
       void EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
           LINALG::Matrix<6, 1>& dSidrhoi,    ///< Output
           LINALG::Matrix<6, 1>& dSidrhoj,    ///< Output
@@ -807,7 +820,7 @@ namespace MAT
 
       /// Current fiber Cauchy stress
       std::vector<std::vector<double>> cauchystress_;
-    };
+    };  // namespace PAR
 
   }  // namespace ELASTIC
 }  // namespace MAT

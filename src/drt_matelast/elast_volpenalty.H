@@ -1,16 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for the volumetic function
-of a penalty material
-For more details see Roernbauer2008 (student thesis)
-The input line should read
-  MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1.
+\brief Definition of classes for the volumetic penalty material as in Roernbauer2008
+(student thesis)
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_VOLPENALTY_H_
 #define ELAST_VOLPENALTY_H_
 
@@ -23,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumetric contribution
-      /// \f$\Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)\f$
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1.
+      /*!
+       * @brief material parameters for volumetric contribution
+       * \f$\Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)\f$
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_VolPenalty EPSILON 1. GAMMA 1
+       */
       class VolPenalty : public MAT::PAR::Parameter
       {
        public:
@@ -54,30 +51,18 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetEpsilon(const double eps) { eps_ = eps; }
-        void SetGamma(const double gam) { gam_ = gam; }
-        //@}
-
       };  // class VolPenalty
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Volumetric Penalty
-    ///
-    /// Strain energy function is given by
-    ///
-    ///
-    ///\f[
-    ///   \Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)
-    ///\f]
-    ///
-    ///
-    /// \author rausch
-    /// \date 08/09
+    /*!
+     * @brief Volumetric Penalty
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi=\epsilon \left( J^{\gamma} + \frac 1 {J^{\gamma}} -2 \right)
+     * \f]
+     */
     class VolPenalty : public Summand
     {
      public:
@@ -110,15 +95,9 @@ namespace MAT
           int gp,                              ///< Gauss point
           int eleGID                           ///< element GID
           ) override;
+
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
-
-      /// @name Access methods
-      //@{
-      double Epsilon() const { return params_->eps_; }
-      double Gamma() const { return params_->gam_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

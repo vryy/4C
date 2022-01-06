@@ -1,20 +1,12 @@
-/*----------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the isochoric contribution
-of the aaagasser material and the corresponding volumetric contribution.
-
-MAT 20 ELAST_isovolaaagasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
+\brief Implementation of the isochoric contribution of the AAA Gasser material and the corresponding
+volumetric contribution.
 
 \level 1
-
 */
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-/* macros */
+/*----------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-/* headers */
 #include "elast_isovolaaagasser.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -25,8 +17,7 @@ MAT 20 ELAST_isovolaaagasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA
 #include "../drt_mat/material_service.H"
 #include "../drt_comm/comm_utils.H"
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), isinit_(false)
 {
@@ -62,37 +53,16 @@ MAT::ELASTIC::PAR::IsoVolAAAGasser::IsoVolAAAGasser(const Teuchos::RCP<MAT::PAR:
   matparams_.at(xi)->PutScalar(10e12);
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::PAR::IsoVolAAAGasser::OptParams(std::map<std::string, int>* pnames)
 {
   pnames->insert(std::pair<std::string, int>("XI", xi));
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 MAT::ELASTIC::IsoVolAAAGasser::IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params)
     : params_(params)
 {
 }
 
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolAAAGasser::PackSummand(DRT::PackBuffer& data) const {}
-
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolAAAGasser::UnpackSummand(
-    const std::vector<char>& data, std::vector<char>::size_type& position)
-{
-}
-
-
-
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
@@ -127,8 +97,6 @@ void MAT::ELASTIC::IsoVolAAAGasser::CalcCele(const int eleGID)
     dserror("Unable to calculate valid stiffness parameter in material AAAGasser");
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, const int eleGID)
 {
   // map in GetParameter can now calculate LID, so we do not need it here       05/2017 birzle
@@ -171,8 +139,7 @@ void MAT::ELASTIC::IsoVolAAAGasser::SetupAAA(Teuchos::ParameterList& params, con
 
   params_->SetInitToTrue();
 }
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
+
 void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -209,8 +176,6 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddStrainEnergy(double& psi, const LINALG::M
     dserror("Material parameters have not been initialized yet!");
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(LINALG::Matrix<3, 1>& dPmodI,
     LINALG::Matrix<6, 1>& ddPmodII, const LINALG::Matrix<3, 1>& modinv, const int gp,
     const int eleGID)
@@ -238,21 +203,14 @@ void MAT::ELASTIC::IsoVolAAAGasser::AddDerivativesModified(LINALG::Matrix<3, 1>&
   }
   else
     dserror("Material parameters have not been initialized yet!");
-
-
-  return;
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolAAAGasser::VisNames(std::map<std::string, int>& names)
 {
   std::string temp = "cele";
   names[temp] = 1;  // scalar
 }
 
-/*----------------------------------------------------------------------------*/
-/*----------------------------------------------------------------------------*/
 bool MAT::ELASTIC::IsoVolAAAGasser::VisData(
     const std::string& name, std::vector<double>& data, int numgp, int eleGID)
 {

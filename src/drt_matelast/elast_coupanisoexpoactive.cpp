@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief the input line should read
-     MAT 1 ELAST_CoupAnisoExpoActive K1 10.0 K2 1.0 GAMMA 35.0 K1COMP 0.0 K2COMP 1.0 INIT 0
-ADAPT_ANGLE 0 S 54000 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
+\brief Implementation of the coupled contribution of an anisotropic active fiber material
 
 \level 2
-
 */
-
 /*----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_coupanisoexpoactive.H"
 #include "elast_aniso_structuraltensor_strategy.H"
 
@@ -17,9 +13,7 @@ ADAPT_ANGLE 0 S 54000 LAMBDAMAX 1.4 LAMBDA0 0.8 DENS 1050
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupAnisoExpoActive::CoupAnisoExpoActive(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),
@@ -37,10 +31,6 @@ MAT::ELASTIC::PAR::CoupAnisoExpoActive::CoupAnisoExpoActive(
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   fb         07/16 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupAnisoExpoActive::CoupAnisoExpoActive(
     MAT::ELASTIC::PAR::CoupAnisoExpoActive* params)
     : params_(params),
@@ -59,17 +49,12 @@ void MAT::ELASTIC::CoupAnisoExpoActive::RegisterAnisotropyExtensions(MAT::Anisot
   anisotropy.RegisterAnisotropyExtension(anisotropyExtension_);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::PackSummand(DRT::PackBuffer& data) const
 {
   AddtoPack(data, lambdaact_);
   anisotropyExtension_.PackAnisotropy(data);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -79,8 +64,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::UnpackSummand(
   dPIact_ = EvaluatedPsiActive();
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // setup first derivative of active fiber potential w.r.t. active fiber stretch (const during the
@@ -90,9 +73,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::Setup(int numgp, DRT::INPUT::LineDefinit
   dPIact_ = EvaluatedPsiActive();
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
     const LINALG::Matrix<3, 1>& prinv, const LINALG::Matrix<3, 1>& modinv,
     const LINALG::Matrix<6, 1>& glstrain, const int gp, const int eleGID)
@@ -125,9 +105,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
                                        std::pow(params_->lambdamax_ - params_->lambda0_, 2.0)));
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc(
     T& psi, LINALG::Matrix<3, 3, T> const& rcg, const int gp, int const eleGID) const
@@ -151,9 +128,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateFunc(
   psi += (k1 / (2.0 * k2)) * (exp(k2 * (I4_fad - 1.0) * (I4_fad - 1.0)) - 1.0);
 };
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(
     LINALG::Matrix<3, 3, T> const& CM, LINALG::Matrix<6, 6, T>& cmat,
@@ -172,9 +146,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateActiveStressCmatAniso(
   cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq), Av_T, Av_T, 0.0);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::AddActiveStressCmatAniso(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, const int gp, const int eleGID) const
 {
@@ -224,9 +195,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::EvaluateSecondDerivativesAniso(
       (1.0 + 2.0 * k2 * (I4 - 1.0) * (I4 - 1.0)) * k1 * exp(k2 * (I4 - 1.0) * (I4 - 1.0));
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso(LINALG::Matrix<2, 1, T>& dPI_aniso,
     LINALG::Matrix<3, 1, T>& ddPII_aniso, LINALG::Matrix<4, 1, T>& dddPIII_aniso,
@@ -260,9 +228,6 @@ void MAT::ELASTIC::CoupAnisoExpoActive::GetDerivativesAniso(LINALG::Matrix<2, 1,
                      exp(k2 * (I4 - 1.0) * (I4 - 1.0));
 };
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::AddStressAnisoPrincipal(const LINALG::Matrix<6, 1>& rcg,
     LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress, Teuchos::ParameterList& params,
     const int gp, const int eleGID)
@@ -287,17 +252,12 @@ void MAT::ELASTIC::CoupAnisoExpoActive::AddStressAnisoPrincipal(const LINALG::Ma
       anisotropyExtension_.GetStructuralTensor_stress(gp, 0), 1.0);
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::GetFiberVecs(std::vector<LINALG::Matrix<3, 1>>& fibervecs)
 {
   // this method does not support Gauss point fibers
   fibervecs.push_back(anisotropyExtension_.GetFiber(BaseAnisotropyExtension::GPDEFAULT, 0));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoExpoActive::SetFiberVecs(
     const double newgamma, const LINALG::Matrix<3, 3>& locsys, const LINALG::Matrix<3, 3>& defgrd)
 {

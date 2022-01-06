@@ -1,28 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for a strain energy function,
-which is exponential according to Weickenmeier_2014 and contains a linear
-(in I_1 and J) polynom in the exponent.
-The input line should read
-  MAT 1 ELAST_CoupExpPol A 600. B 2. C 5.
+\brief Implementation of an isotropic exponential coupled material according to Weickenmeier_2014
 
 \level 1
-
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coupexppol.H"
 #include "../drt_mat/matpar_material.H"
-#include "../drt_lib/drt_globalproblem.H"  //<-- just in this material, because of special use of inv ana
+#include "../drt_lib/drt_globalproblem.H"
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
+
 MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       a_(matdata->GetDouble("A")),
@@ -31,15 +19,8 @@ MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>
 {
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                                               (public)  |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::CoupExpPol::CoupExpPol(MAT::ELASTIC::PAR::CoupExpPol* params) : params_(params) {}
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -55,10 +36,6 @@ void MAT::ELASTIC::CoupExpPol::AddStrainEnergy(double& psi, const LINALG::Matrix
          a;
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupExpPol::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -82,9 +59,4 @@ void MAT::ELASTIC::CoupExpPol::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI
                   (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))) *
                       (-0.5 * (2. * b + c) / prinv(2) + 0.5 * c / std::sqrt(prinv(2))));
   ddPII(4) += a * b * expfunc * (c / (2. * std::sqrt(prinv(2))) - (2. * b + c) / (2. * prinv(2)));
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*/

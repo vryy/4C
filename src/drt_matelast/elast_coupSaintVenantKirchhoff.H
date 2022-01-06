@@ -1,14 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for Saint-Venant-Kirchhoff material
-The input line should read
-  MAT 1 ELAST_CoupSVK YOUNG 1.044E7 NUE 0.3
+\brief Definition of classes for a coupled Saint-Venant-Kirchhoff material
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_SVK_H_
 #define ELAST_SVK_H_
 
@@ -46,32 +43,21 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetLambda(const double lambda) { lambda_ = lambda; }
-        void SetMue(const double mue) { mue_ = mue; }
-        //@}
       };
-
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Saint Venant Kirchhoff - Material
-    ///
-    ///
-    /// The material strain energy density function is
-    ///\f[
-    /// \Psi = \Big(\frac{1}{4}\mu + \frac{1}{8}\lambda \Big) \, I_{1}^2
-    ///       - \big( \frac{3}{4}\lambda + \frac{1}{2}\mu \big)  \, I_{1} - \frac{1}{2}\mu \, I_{2}
-    ///      + \frac{9}{8}\lambda + \frac{3}{4}\mu
-    ///\f]
-    /// More details at #AddCoefficientsPrincipal()
-    ///
-    ///
-    /// \date 12/14
-
-
+    /*!
+     * @brief Saint Venant Kirchhoff - Material
+     *
+     *
+     * The material strain energy density function is
+     * \f[
+     * \Psi = \Big(\frac{1}{4}\mu + \frac{1}{8}\lambda \Big) \, I_{1}^2
+     *       - \big( \frac{3}{4}\lambda + \frac{1}{2}\mu \big)  \, I_{1} - \frac{1}{2}\mu \, I_{2}
+     *      + \frac{9}{8}\lambda + \frac{3}{4}\mu
+     * \f]
+     * More details at #AddCoefficientsPrincipal()
+     */
     class CoupSVK : public Summand
     {
      public:
@@ -113,12 +99,6 @@ namespace MAT
       /// isochoric deformation
       void AddCoupDerivVol(
           const double j, double* dPj1, double* dPj2, double* dPj3, double* dPj4) override;
-
-      /// @name Access methods
-      //@{
-      double LAMBDA() const { return params_->lambda_; }
-      double MUE() const { return params_->mue_; }
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

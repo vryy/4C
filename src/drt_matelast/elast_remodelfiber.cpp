@@ -1,15 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families
-the input line should read
-MAT 11 ELAST_RemodelFiber NUMMAT 2 MATIDS 111 112 TDECAY 101.0 GROWTHFAC 4.951051289713897e-04
-COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
+\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families.
 
 \level 2
 
-
 *----------------------------------------------------------------------*/
-/* headers */
+
 #include "elast_remodelfiber.H"
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -20,9 +16,6 @@ COLMASSFRAC 0.062 0.248 DEPOSITIONSTRETCH 1.062
 #include "Epetra_SerialDenseSolver.h"
 
 
-/*----------------------------------------------------------------------*
- |                                                                      |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata),
       nummat_(matdata->GetInt("NUMMAT")),
@@ -41,10 +34,6 @@ MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Mater
   if (t_decay_ <= 0.) dserror("decay time must be positive");
 }
 
-
-/*----------------------------------------------------------------------*
- |  Constructor                             (public)   fb         09/15 |
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params)
     : params_(params), potsumfiber_(0)
 {
@@ -59,8 +48,6 @@ MAT::ELASTIC::RemodelFiber::RemodelFiber(MAT::ELASTIC::PAR::RemodelFiber* params
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::PackSummand(DRT::PackBuffer& data) const
 {
   int num_fiber = 0;
@@ -95,13 +82,8 @@ void MAT::ELASTIC::RemodelFiber::PackSummand(DRT::PackBuffer& data) const
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
     for (const auto& k : potsumfiber_) k->fiber->PackSummand(data);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
@@ -147,8 +129,6 @@ void MAT::ELASTIC::RemodelFiber::UnpackSummand(
 
   // loop map of associated potential summands
   for (auto& k : potsumfiber_) k->fiber->UnpackSummand(data, position);
-
-  return;
 }
 
 void MAT::ELASTIC::RemodelFiber::RegisterAnisotropyExtensions(Anisotropy& anisotropy)
@@ -159,8 +139,6 @@ void MAT::ELASTIC::RemodelFiber::RegisterAnisotropyExtensions(Anisotropy& anisot
   }
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::Setup(
     int numgp, double rho_tot, DRT::INPUT::LineDefinition* linedef)
 {
@@ -247,13 +225,8 @@ void MAT::ELASTIC::RemodelFiber::Setup(
   // to be the real one))
   for (auto& k : potsumfiber_)
     for (int gp = 0; gp < numgp; ++gp) k->UpdateNewton(gp, 1.0);
-
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::SetupStructuralTensorsGR()
 {
   // identity tensor
@@ -274,23 +247,15 @@ void MAT::ELASTIC::RemodelFiber::SetupStructuralTensorsGR()
     potsumfiber_[k]->AM_orth.Update(1.0, potsumfiber_[k]->AM, 0.0);
     potsumfiber_[k]->AM_orth.Update(1.0, id, -1.0);
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::Update()
 {
   // update history variable
   for (auto& k : potsumfiber_)
     for (unsigned gp = 0; gp < k->cur_rho.size(); ++gp) k->UpdateHistory(gp);
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::UpdateFiberDirs(
     LINALG::Matrix<3, 3> const& locsys, const double& dt)
 {
@@ -305,12 +270,8 @@ void MAT::ELASTIC::RemodelFiber::UpdateFiberDirs(
     for (unsigned gp = 0; gp < potsumfiber_[0]->cur_lambr.size(); ++gp) k->UpdateNewton(gp, dt);
 
   UpdateSigH();
-
-  return;
 };
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::UpdateSigH()
 {
   // some variables
@@ -354,12 +315,8 @@ void MAT::ELASTIC::RemodelFiber::UpdateSigH()
       k->remodel->SetSigH(sig);
     }
   }
-
-  return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateAnisotropicStressCmat(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<6, 6>& cmat, LINALG::Matrix<6, 1>& stress,
     int const gp, double const& dt, int const eleGID)
@@ -373,13 +330,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateAnisotropicStressCmat(LINALG::Matrix<3,
     k->UpdateNewton(gp, dt);
     AddStressCmat(CM, iFgM, *k, gp, eleGID, stress, cmat);
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
     LINALG::Matrix<3, 3> const* const defgrd, int const nr_grf_proc, int const nr_grf_tot,
     int const gp, double const& dt, int const eleGID, LINALG::Matrix<3, 3> const& iFgM,
@@ -417,13 +369,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesInternalNewton(
         dWdrho[nr_grf_proc + k][l] = dWidrhoj;
     }
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
     LINALG::Matrix<3, 3> const* const defgrd, int const nr_grf_proc, int const gp, double const& dt,
     LINALG::Matrix<3, 3> const& iFgM, std::vector<LINALG::Matrix<1, 6>>& dWdC,
@@ -441,13 +388,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGreen(
     EvaluatedEvolutionEquationdC(dWdC[nr_grf_proc + k], dEdC[nr_grf_proc + k], CM, iFgM, dt,
         *(potsumfiber_[k]), k, gp, eleGID);
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateAdditionalGrowthRemodelCmat(
     LINALG::Matrix<3, 3> const* const defgrd, int const nr_grf_proc,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<3, 3> const& diFgdrhoM,
@@ -478,13 +420,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateAdditionalGrowthRemodelCmat(
     }
     cmat.MultiplyNN(2.0, dSdlambr, dlambrdC[nr_grf_proc + k], 1.0);
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(LINALG::Matrix<3, 3> const& defgrd,
     double const& dt, LINALG::Matrix<3, 3> const& iFgM, const int gp, const int eleGID)
 {
@@ -501,13 +438,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateGrowthAndRemodelingExpl(LINALG::Matrix<
 
     UpdateGrowthRemodelParameter(drhodt * dt, dlambrdt * dt, k, gp);
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <class FUNC, typename T, typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::DerivdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM, FUNC const& func,
@@ -536,13 +468,8 @@ void MAT::ELASTIC::RemodelFiber::DerivdC(LINALG::Matrix<3, 3, T> const& CM,
   LINALG::Matrix<3, 3> tmp(true);
   FirstDerivToMatrix(r_fad, tmp);
   dfuncdC.Update(1.0, tmp, 0.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <class FUNC, typename T>
 void MAT::ELASTIC::RemodelFiber::DerivdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM, FUNC const& func,
@@ -568,13 +495,8 @@ void MAT::ELASTIC::RemodelFiber::DerivdC(LINALG::Matrix<3, 3, T> const& CM,
   func.GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   dfuncdC.Update(dPIe(0) / CinM.Dot(AM), AM, 0.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <class FUNC, typename T, typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM, FUNC const& func,
@@ -605,13 +527,8 @@ void MAT::ELASTIC::RemodelFiber::DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,
     dfuncdCdC(4, j) = R_fad(1, 2).dx(j);
     dfuncdCdC(5, j) = R_fad(0, 2).dx(j);
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <class FUNC, typename T>
 void MAT::ELASTIC::RemodelFiber::DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM, FUNC const& func,
@@ -639,13 +556,8 @@ void MAT::ELASTIC::RemodelFiber::DerivdCdC(LINALG::Matrix<3, 3, T> const& CM,
   static LINALG::Matrix<6, 1, T> Av(true);
   UTILS::VOIGT::Stresses::MatrixToVector(AM, Av);
   dfuncdCdC.MultiplyNT(ddPIIe(0) / (CinM.Dot(AM) * CinM.Dot(AM)), Av, Av, 0.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::AddStressCmat(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, FiberData const& fiberdat, int const gp, int const eleGID,
     LINALG::Matrix<6, 1>& stress, LINALG::Matrix<6, 6>& cmat) const
@@ -681,13 +593,8 @@ void MAT::ELASTIC::RemodelFiber::AddStressCmat(LINALG::Matrix<3, 3> const& CM,
   UTILS::VOIGT::Stresses::MatrixToVector(firstderivM, firstderivv);
   stress.Update(2.0 * fiberdat.cur_rho[gp], firstderivv, 1.0);
   cmat.Update(4.0 * fiberdat.cur_rho[gp], secderiv, 1.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::RemodelFiber::EvaluateLocalCauchyStress(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM,
@@ -720,13 +627,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateLocalCauchyStress(LINALG::Matrix<3, 3, 
   }
 
   sig = 2.0 * dPIe(0) * CM.Dot(AM) / CinM.Dot(AM) + dPIact;
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCe(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFgM, LINALG::Matrix<3, 3, T> const& iFrM,
@@ -766,13 +668,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCe(LINALG::Matrix<3, 3, T> const& 
   }
 
   dsigdCe.Update(2.0 * (ddPIIe(0) * CeM.Dot(AgrM) + dPIe(0)), AgrM, 0.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<3, 3> const& iFrM,
@@ -816,13 +713,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& C
     dsigdCedC(5, j) = 0.25 * (dsigdCeM_fad(0, 2).dx(j) + dsigdCeM_fad(0, 2).dx(j + 3) +
                                  dsigdCeM_fad(2, 0).dx(j) + dsigdCeM_fad(2, 0).dx(j + 3));
   }
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<3, 3> const& iFrM,
     LINALG::Matrix<3, 3> const& AM, Teuchos::RCP<MAT::ELASTIC::Summand> const& fiber, const int gp,
@@ -867,13 +759,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(LINALG::Matrix<3, 3> const& C
   dsigdCedC.MultiplyNT(
       2.0 / CinM.Dot(AM) * (dddPIIIe(0) * CM.Dot(AM) / CinM.Dot(AM) + 2.0 * ddPIIe(0)), Agrv, Av,
       0.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<3, 3> const& dFgdrhoM,
@@ -922,13 +809,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(LINALG::Matrix<
   UTILS::VOIGT::Matrix3x3to9x1(diFgdrhoM, diFgdrho9x1);
   tmp6x1.MultiplyNN(1.0, dsigdCediFg, diFgdrho9x1, 0.0);
   UTILS::VOIGT::Stresses::VectorToMatrix(tmp6x1, dsigdCedrhoM);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, LINALG::Matrix<3, 3> const& dFgdrhoM,
     LINALG::Matrix<3, 3> const& diFgdrhoM, FiberData const& fiberdat, int const gp,
@@ -1004,13 +886,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(LINALG::Matrix<
   dAgrdrhoM.Update(2.0 * CinAFgTM.Dot(diFgdrhoM) / CinM.Dot(fiberdat.AM), AgrM, 1.0);
 
   dsigdCedrhoM.Update(2.0 * (ddPIIe(0) * CeM.Dot(AgrM) + dPIe(0)), dAgrdrhoM, 1.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, FiberData const& fiberdat, int const gp,
@@ -1058,13 +935,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(LINALG::Matrix
   UTILS::VOIGT::Matrix3x3to9x1(fiberdat.diFrdlambrM[gp], diFrdlambr9x1);
   tmp6x1.MultiplyNN(1.0, dsigdCediFr, diFrdlambr9x1, 0.0);
   UTILS::VOIGT::Stresses::VectorToMatrix(tmp6x1, dsigdCedlambrM);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(LINALG::Matrix<3, 3> const& CM,
     LINALG::Matrix<3, 3> const& iFgM, FiberData const& fiberdat, int const gp, int const eleGID,
     double& dsigdlambr, LINALG::Matrix<3, 3>& dsigdCedlambrM) const
@@ -1145,13 +1017,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(LINALG::Matrix
       2.0 * FrTFinAFinTM.Dot(fiberdat.diFrdlambrM[gp]) / CinM.Dot(fiberdat.AM), AgrM, 1.0);
 
   dsigdCedlambrM.Update(2.0 * (ddPIIe(0) * CeM.Dot(AgrM) + dPIe(0)), dAgrdlambrM, 1.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T, typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM,
@@ -1175,13 +1042,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& C
 
   LINALG::Matrix<3, 3, T> tmp(true);
   FirstDerivToMatrix(sig_fad, dsigdC);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename T>
 void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& CM,
     LINALG::Matrix<3, 3, T> const& iFinM, LINALG::Matrix<3, 3, T> const& AM,
@@ -1213,13 +1075,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdC(LINALG::Matrix<3, 3, T> const& C
     t2->GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   dsigdC.Update(2.0 / CinM.Dot(AM) * (ddPIIe(0) * CM.Dot(AM) / CinM.Dot(AM) + dPIe(0)), AM, 0.0);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateEvolutionEquation(double& rg, double& rr,
     LINALG::Matrix<3, 3> const& CM, LINALG::Matrix<3, 3> const& iFgM, double const& dt,
     FiberData const& fiberdat, int const gp, int const eleGID) const
@@ -1246,13 +1103,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateEvolutionEquation(double& rg, double& r
 
   // Remodel evolution equation
   fiberdat.remodel->EvaluateFunc(rr, sig, YM, dsigdCe, eleGID);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativeEvolutionEquation(double& dWidrhoi,
     double& dWidrhoj, double& dWdlambr, double& dEdrho, double& dEdlambr,
     LINALG::Matrix<3, 3> const& CM, LINALG::Matrix<3, 3> const& iFgM,
@@ -1320,14 +1172,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativeEvolutionEquation(double& dWi
 
   fiberdat.remodel->EvaluatedFuncidrho(
       dEdrho, sig, dsigdrho, YM, dYdrhoM, dsigdCeM, dsigdCedrhoM, eleGID);
-
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdC(LINALG::Matrix<1, 6>& dWdC,
     LINALG::Matrix<1, 6>& dEdC, LINALG::Matrix<3, 3> const& CM, LINALG::Matrix<3, 3> const& iFgM,
     double const& dt, FiberData const& fiberdat, int const k, int const gp, int const eleGID)
@@ -1376,14 +1222,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdC(LINALG::Matrix<1, 
 
   fiberdat.remodel->EvaluatedFuncidC(
       dEdC, sig, dsigdCv, Y_strain, dYdC, dsigdCe9x1, dsigdCedC, eleGID);
-
-  return;
 }
 
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdt(double& drhodt, double& dlambrdt,
     LINALG::Matrix<3, 3> const& CM, LINALG::Matrix<3, 3> const& iFgM, FiberData const& fiberdat,
     int const k, int const gp, int const eleGID)
@@ -1414,13 +1254,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdt(double& drhodt, do
   YredM.MultiplyNN(1.0, tmp, fiberdat.iFrM[gp], 0.0);
 
   fiberdat.remodel->Evaluatedlambrdt(dlambrdt, sig, YredM, dsigdCeM, eleGID);
-
-  return;
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 template <typename ForceAnalytical>
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
     LINALG::Matrix<6, 1>& dSidrhoi, LINALG::Matrix<6, 1>& dSidrhoj, LINALG::Matrix<6, 1>& dSdlambr,
@@ -1494,11 +1329,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
   static LINALG::Matrix<9, 1> diFrdlambr9x1(true);
   UTILS::VOIGT::Matrix3x3to9x1(fiberdat.diFrdlambrM[gp], diFrdlambr9x1);
   dSdlambr.MultiplyNN(1.0, dSdiFr, diFrdlambr9x1, 0.0);
-
-  return;
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemodel(
     LINALG::Matrix<6, 1>& dSidrhoi, LINALG::Matrix<6, 1>& dSidrhoj, LINALG::Matrix<6, 1>& dSdlambr,
     LINALG::Matrix<3, 3> const& CM, LINALG::Matrix<3, 3> const& iFgM,
@@ -1574,10 +1406,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
                       (ddPIIe(0) * iFgTCAFinTM.Dot(fiberdat.diFrdlambrM[gp]) +
                           dPIe(0) * FrTFinAFinTM.Dot(fiberdat.diFrdlambrM[gp])),
       Av, 0.0);
-
-  return;
 }
-
 
 /*---------------------------------------------------------------------*
  | return names of visualization data (public)                         |

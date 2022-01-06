@@ -1,14 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the isochoric contribution
-of the aaagasser material and the corresponding volumetric contribution.
-
-MAT 20 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3 CABLUM 1.73E3 NUE 0.49 BETA -2.0
+\brief Definition of classes for the isochoric contribution of the AAA Gasser material and the
+corresponding volumetric contribution.
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_ISOVOLAAAGASSER_H_
 #define ELAST_ISOVOLAAAGASSER_H_
 
@@ -21,32 +19,32 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// This material provides the isochoric and(!) the volumetric
-      /// contribution for a AAA thromubs. The input line should read
-      /// like this:
-      ///     MAT 21 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3
-      ///     CABLUM 1.73E3 NUE 0.49 BETA -2.0
-      ///
-      /// An Ogden type material
-      /// \f$\Psi=c\underset{i=1}{\overset{3}{\sum}}(\lambda_{i}^{4}-1)\f$ is chosen for the
-      /// isochoric contribution with spatially varying stiffness parameters governed by luminal
-      /// thrombus layer stiffness CLUM, the medial layer stiffness CMED and the abluminal thrombus
-      /// layer stiffness CABLUM (see: Gasser et al., Failure properties of intraluminal thrombus in
-      /// abdominal aortic aneurysm under static and pulsating
-      /// mechanical loads, J Vasc Surg, 2008). The volumetric
-      /// contribution is modeled by an Ogden-Simo_Miehe type SEF:
-      /// \f$\Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$ (see  Doll and Schweizerhof,
-      /// On the Development of Volumetric Strain Energy Functions, Journal of Applied Mechanics,
-      /// 2000).
-      ///
-      /// Strain energy function is given by
-      ///\f[
-      ///   \Psi = c (\overline{I}_1^2 - 2 \overline{I}_2 -3)
-      ///          + \frac{8c}{(1-2 \nu) \beta^2} \big(\beta log(J) + J^{-\beta} -1 \big)
-      ///\f]
-
-
+      /*!
+       * \brief This material provides the isochoric and(!) the volumetric
+       * contribution for a AAA thromubs.
+       *
+       * The input line should read like this:
+       *     MAT 21 ELAST_IsoVolAAAGasser CLUM 2.62E3 CMED 1.98E3
+       *     CABLUM 1.73E3 NUE 0.49 BETA -2.0
+       *
+       * An Ogden type material
+       * \f$\Psi=c\underset{i=1}{\overset{3}{\sum}}(\lambda_{i}^{4}-1)\f$ is chosen for the
+       * isochoric contribution with spatially varying stiffness parameters governed by luminal
+       * thrombus layer stiffness CLUM, the medial layer stiffness CMED and the abluminal thrombus
+       * layer stiffness CABLUM (see: Gasser et al., Failure properties of intraluminal thrombus in
+       * abdominal aortic aneurysm under static and pulsating
+       * mechanical loads, J Vasc Surg, 2008). The volumetric
+       * contribution is modeled by an Ogden-Simo_Miehe type SEF:
+       * \f$\Psi=\frac {\kappa}{\beta^2}(\beta lnJ + J^{-\beta}-1)\f$ (see  Doll and Schweizerhof,
+       * On the Development of Volumetric Strain Energy Functions, Journal of Applied Mechanics,
+       * 2000).
+       *
+       * Strain energy function is given by
+       * \f[
+       *   \Psi = c (\overline{I}_1^2 - 2 \overline{I}_2 -3)
+       *          + \frac{8c}{(1-2 \nu) \beta^2} \big(\beta log(J) + J^{-\beta} -1 \big)
+       * \f]
+       */
       class IsoVolAAAGasser : public MAT::PAR::Parameter
       {
        public:
@@ -110,16 +108,6 @@ namespace MAT
       /// constructor with given material parameters
       IsoVolAAAGasser(MAT::ELASTIC::PAR::IsoVolAAAGasser* params);
 
-      ///@name Packing and Unpacking
-      //@{
-
-      void PackSummand(DRT::PackBuffer& data) const override;
-
-      void UnpackSummand(
-          const std::vector<char>& data, std::vector<char>::size_type& position) override;
-
-      //@}
-
       /// @name Access material constants
       //@{
 
@@ -145,8 +133,6 @@ namespace MAT
           const int eleGID                       ///< element GID
           ) override;
 
-
-      // birzle 12/2014
       // Add derivatives with respect to modified invariants.
       void AddDerivativesModified(
           LINALG::Matrix<3, 1>& dPmodI,  ///< first derivative with respect to modified invariants

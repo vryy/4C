@@ -1,19 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for mixed-logarithmic neo-Hooke material
-according to example 1 in Stupkiewicz "An ALE formulation for implicit time integration of quasi-
-steady state wear problems" Comput. Methods Appl. Mech. Engrg. 260, 2013.
-The input line should read either
-  MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.044E7 C2 0.3
-  ( C1 = Young, c2 = nue)
-or
-  MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1. C2 1.
+\brief Definition of classes for a mixed-logarithmic neo-Hooke material according to example 1 in
+"Stupkiewicz. An ALE formulation for implicit time integration of quasi-steady state wear problems.
+Comput. Methods Appl. Mech. Engrg. 260, 2013"
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_LOGMIXNEOHOOKE_H_
 #define ELAST_LOGMIXNEOHOOKE_H_
 
@@ -26,12 +20,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for mixed logarithmic neo-Hooke material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.0 C2 0.3
-      /// MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1.0 C2 1.0
+      /*!
+       * @brief material parameters for mixed logarithmic neo-Hooke material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupLogMixNeoHooke MODE YN C1 1.0 C2 0.3 (C1 = Young, c2 = nue)
+       * MAT 1 ELAST_CoupLogMixNeoHooke MODE Lame C1 1.0 C2 1.0
+       */
       class CoupLogMixNeoHooke : public MAT::PAR::Parameter
       {
        public:
@@ -57,30 +52,20 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        void SetLambda(const double lambda) { lambda_ = lambda; }
-        //@}
-
       };  // class CoupLogNeoHooke
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Logarithmic mixed neo-Hooke material:
-    ///
-    /// This is a compressible, hyperelastic, isotropic material.
-    ///
-    /// The material strain energy density function is
-    ///\f[
-    /// \Psi = \frac{\mu}{2} (I_{\boldsymbol{C}} - 3)
-    ///       - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
-    ///      + \frac{\lambda}{2} \big( \sqrt{I\!I\!I_{\boldsymbol{C}}} -1 \big)^2
-    ///\f]
-    ///
-
+    /*!
+     * @brief Logarithmic mixed neo-Hooke material:
+     *
+     * This is a compressible, hyperelastic, isotropic material.
+     *
+     * The material strain energy density function is
+     * \f[
+     *    \Psi = \frac{\mu}{2} (I_{\boldsymbol{C}} - 3) - \mu \log(\sqrt{I\!I\!I_{\boldsymbol{C}}})
+     * + \frac{\lambda}{2} \big( \sqrt{I\!I\!I_{\boldsymbol{C}}} -1 \big)^2 \f]
+     */
     class CoupLogMixNeoHooke : public Summand
     {
      public:
@@ -103,29 +88,30 @@ namespace MAT
 
       //@}
 
-      /// Main material call to determine  2nd PK stress and material constitutive tensor
-      ///
-      /// The material strain energy density function is shown above.
-      ///
-      /// Here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
-      /// of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$
-      /// and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
-      /// The isochoric part is proportional to \f$\mu\f$,
-      /// whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
-      ///
-      /// The parameters are the shear modulus. In #params_->parmode_==0 it is set directly,
-      /// in #params_->parmode_==1 it is computed by
-      ///\f[
-      /// \mu = \frac{E}{2(1+\nu)}
-      ///\f]
-      /// and Lame's coefficient, again for #params_->parmode_==1, otherwise set by user,
-      ///\f[
-      /// \lambda = \left\{\begin{array}{ll}
-      ///      \frac{E \nu}{(1+\nu) (1-2\nu)} & \text{if $\nu \neq 1/2$}
-      ///   \\ 0                              & \text{else}
-      /// \end{array}\right.
-      ///\f]
-      ///
+      /*!
+       * @brief Main material call to determine 2nd PK stress and material constitutive tensor
+       *
+       * The material strain energy density function is shown above.
+       *
+       * Here is \f$I_{\boldsymbol{C}}\f$ the first principal invariant
+       * of the right Cauchy--Green strain tensor \f$\boldsymbol{C}\f$
+       * and \f$I\!I\!I_{\boldsymbol{C}}\f$ its third.
+       * The isochoric part is proportional to \f$\mu\f$,
+       * whereas the \f$\lambda\f$-proportional part constitutes the volumetric contribution.
+       *
+       * The parameters are the shear modulus. In #params_->parmode_==0 it is set directly,
+       * in #params_->parmode_==1 it is computed by
+       * \f[
+       * \mu = \frac{E}{2(1+\nu)}
+       * \f]
+       * and Lame's coefficient, again for #params_->parmode_==1, otherwise set by user,
+       * \f[
+       * \lambda = \left\{\begin{array}{ll}
+       *      \frac{E \nu}{(1+\nu) (1-2\nu)} & \text{if $\nu \neq 1/2$}
+       *   \\ 0                              & \text{else}
+       * \end{array}\right.
+       * \f]
+       */
 
       // add strain energy
       void AddStrainEnergy(double& psi,       ///< strain energy function
@@ -151,13 +137,6 @@ namespace MAT
       {
         dserror("not implemented");
       }
-
-      /// @name Access methods
-      //@{
-      double Mue() const { return params_->mue_; }
-      double Lambda() const { return params_->lambda_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

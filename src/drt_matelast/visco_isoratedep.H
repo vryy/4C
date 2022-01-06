@@ -1,15 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a viscous rate dependent material law, modified from Pioletti,1997
-The input line should read
-  MAT 1 VISCO_IsoRateDep N 1
+\brief Definition of classes for the isochoric contribution of a viscous rate dependent material
+law, modified from Pioletti, 1997
 
 \level 2
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef VISCO_ISORATEDEP_H_
 #define VISCO_ISORATEDEP_H_
 
@@ -22,12 +19,13 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a frequency independent viscoelastic
-      /// material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 VISCO_IsoRateDep N 1
+      /*!
+       * @brief material parameters for isochoric contribution of a frequency independent
+       * viscoelastic material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 VISCO_IsoRateDep N 1
+       */
       class IsoRateDep : public MAT::PAR::Parameter
       {
        public:
@@ -51,31 +49,23 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetN(const double n) { n_ = n; }
-        //@}
-
       };  // class IsoRateDep
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Isochoric general power material
-    ///
-    /// This is the isochoric part of a viscohyperelastic, isotropic
-    /// material depending on the modified invariants of the rate of the right
-    /// Cauchy-Green tensor.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = n \overline{J}_2 (\overline{I}_1 -3).
-    ///\f]
-    /// (n = \eta)
-    ///
-    /// \author birzle
-    /// \date 09/13
+    /*!
+     * @brief Isochoric general power material
+     *
+     * This is the isochoric part of a viscohyperelastic, isotropic
+     * material depending on the modified invariants of the rate of the right
+     * Cauchy-Green tensor.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = n \overline{J}_2 (\overline{I}_1 -3).
+     * \f]
+     * (n = \eta)
+     */
     class IsoRateDep : public Summand
     {
      public:
@@ -97,12 +87,6 @@ namespace MAT
           LINALG::Matrix<33, 1>& modxi,  ///< necassary coefficients for viscosity tensor
           LINALG::Matrix<7, 1>& modrateinv, Teuchos::ParameterList& params, int gp,
           int eleGID) override;
-
-      /// @name Access methods
-      //@{
-      double N() const { return params_->n_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

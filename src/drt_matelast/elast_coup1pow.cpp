@@ -1,64 +1,42 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief This file contains the routines required to calculate the contribution
-of a general power-type material.
-The input line should read
-  MAT 1 ELAST_Coup1Pow C 1 D 1
+\brief Implementation of an isotropic general power-type material in terms of the first Cauchy-Green
+invariant
 
 \level 1
-
 */
-
 /*----------------------------------------------------------------------*/
-/* macros */
 
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "elast_coup1pow.H"
 #include "../drt_mat/matpar_material.H"
 
-/*----------------------------------------------------------------------*
- *         Constructor Material Parameter Class                         *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : Parameter(matdata), c_(matdata->GetDouble("C")), d_(matdata->GetInt("D"))
 {
 }
 
-/*----------------------------------------------------------------------*
- *            Constructor Material Class                                *
- *----------------------------------------------------------------------*/
 MAT::ELASTIC::Coup1Pow::Coup1Pow(MAT::ELASTIC::PAR::Coup1Pow* params) : params_(params) {}
 
-
-/*----------------------------------------------------------------------*
- * copy matparmas to summands
- *----------------------------------------------------------------------*/
+// copy matparmas to summands
 void MAT::ELASTIC::Coup1Pow::CopyStatInvAnaMatParams(std::vector<Teuchos::RCP<Epetra_Vector>> input)
 {
   params_->ReturnMatparams() = input;
 }
 
-/*----------------------------------------------------------------------*
- * Add parameters of elasthyper-summand for stat inverse analysis to matparams_
- *----------------------------------------------------------------------*/
+// Add parameters of elasthyper-summand for stat inverse analysis to matparams_
 void MAT::ELASTIC::Coup1Pow::SetStatInvAnaSummandMatParams()
 {
   params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coup1pow_c)->PutScalar(params_->c_);
   params_->ReturnMatparams().at(MAT::ELASTIC::PAR::coup1pow_d)->PutScalar(params_->d_);
 }
 
-/*----------------------------------------------------------------------*
- * Add parameters of elasthyper-summand for stat inverse analysis
- *----------------------------------------------------------------------*/
+// Add parameters of elasthyper-summand for stat inverse analysis
 void MAT::ELASTIC::Coup1Pow::AddElastOptParams(std::map<std::string, int>* pnames)
 {
   pnames->insert(std::pair<std::string, int>("Coup1Pow_C", MAT::ELASTIC::PAR::coup1pow_c));
   pnames->insert(std::pair<std::string, int>("Coup1Pow_D", MAT::ELASTIC::PAR::coup1pow_d));
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3, 1>& prinv,
     const LINALG::Matrix<3, 1>& modinv, const LINALG::Matrix<6, 1>& glstrain, const int gp,
     const int eleGID)
@@ -72,10 +50,6 @@ void MAT::ELASTIC::Coup1Pow::AddStrainEnergy(double& psi, const LINALG::Matrix<3
   psi += c * pow((prinv(0) - 3.), d);
 }
 
-
-/*----------------------------------------------------------------------
- *                                                       birzle 12/2014 */
-/*----------------------------------------------------------------------*/
 void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     LINALG::Matrix<6, 1>& ddPII, const LINALG::Matrix<3, 1>& prinv, const int gp, const int eleGID)
 {
@@ -102,34 +76,30 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
    * This is the correct implementation for the use of stat inverse analysis
    * with elasthyper-materials.
    * However therefore the params-list params is necassary in this function.
-   * This is invasive in the code; consequently I did not implement it
-   * n the commited version.
-   * To Do: Think about a version, that's not so invasive.
-   *                                                                 abirzle 12/2017
-  // in case of stat inverse analysis
-  // calculate derivative of stress with respect to the parameters
-  // and safe in stress
-  int deriv = params.get<int>("matparderiv",-1);
-  // c
-  if (deriv == MAT::ELASTIC::PAR::coup1pow_c)
-  {
-    dPI(0) += d*pow((prinv(0)-3.),d-1.);
-  }
-  // normal case
-  // e.g. forward problem
-  else if(deriv == -1)
-  {
-    dPI(0) += c*d*pow((prinv(0)-3.),d-1.);
+   * This is invasive in the code; consequently I did not implement it in the commited version.
+   * To Do: Think about a version, that's not so invasive. abirzle 12/2017
+      // in case of stat inverse analysis
+      // calculate derivative of stress with respect to the parameters
+      // and safe in stress
+      int deriv = params.get<int>("matparderiv",-1);
+      // c
+      if (deriv == MAT::ELASTIC::PAR::coup1pow_c)
+      {
+        dPI(0) += d*pow((prinv(0)-3.),d-1.);
+      }
+      // normal case
+      // e.g. forward problem
+      else if(deriv == -1)
+      {
+        dPI(0) += c*d*pow((prinv(0)-3.),d-1.);
 
-    if (d==2)
-      ddPII(0) += (c*d*d-c*d);
-    else
-      ddPII(0) += (c*d*d-c*d)*pow((prinv(0)-3.),d-2.);
-  }
-  // other material --> do nothing
-  */
-
-
+        if (d==2)
+          ddPII(0) += (c*d*d-c*d);
+        else
+          ddPII(0) += (c*d*d-c*d)*pow((prinv(0)-3.),d-2.);
+      }
+      // other material --> do nothing
+    */
 
   /* Correct implementation for stat inverse analysis replaces this part*/
   // If d<2 the material model is not stress free in the reference configuration
@@ -144,8 +114,4 @@ void MAT::ELASTIC::Coup1Pow::AddDerivativesPrincipal(LINALG::Matrix<3, 1>& dPI,
     ddPII(0) += (c * d * d - c * d);
   else
     ddPII(0) += (c * d * d - c * d) * pow((prinv(0) - 3.), d - 2.);
-
-  return;
 }
-
-/*----------------------------------------------------------------------*/

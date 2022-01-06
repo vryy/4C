@@ -1,16 +1,11 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the isochoric contribution
-of a Material, which is not realistic, but contains all possible derivatives of invariants.
-With this material in combination with volsussmannbathe, it is possible to test all
-isochoric parts of the Elasthyper-Toolbox.
+\brief Definition of classes for the isochoric contribution of a material to test the isochoric
+parts of the Elasthyper-Toolbox.
 
 \level 1
-
-
-
 *----------------------------------------------------------------------*/
+
 #ifndef ELAST_ISOTESTMATERIAL_H_
 #define ELAST_ISOTESTMATERIAL_H_
 
@@ -23,11 +18,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of test material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_IsoTestMaterial C1 100 C2 50
+      /*!
+       * @brief material parameters for isochoric contribution of test material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_IsoTestMaterial C1 100 C2 50
+       */
       class IsoTestMaterial : public MAT::PAR::Parameter
       {
        public:
@@ -52,33 +48,26 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetC1(const double c1) { c1_ = c1; }
-        void SetC2(const double c2) { c2_ = c2; }
-        //@}
-
       };  // class IsoTestMaterial
+    }     // namespace PAR
 
-    }  // namespace PAR
-
-    /*----------------------------------------------------------------------*/
-    /// Isochoric Material to test the elasthyper-Toolbox
-    ///
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + 0.5 C1 (\overline{I}_{\boldsymbol{C}}-3)^2
-    ///        + C2 (\overline{II}_{\boldsymbol{C}}-3)  + 0.5 C2
-    ///        (\overline{II}_{\boldsymbol{C}}-3)^2
-    ///        + D (\overline{I}_{\boldsymbol{C}}-3) (\overline{II}_{\boldsymbol{C}}-3).
-    ///\f]
-    ///
-    /// with D = C1 + 2 C2
-    ///
-    /// \author birzle
-    /// \date 11/2014
+    /*!
+     * @brief Isochoric Material to test the elasthyper-Toolbox
+     *
+     * This material is not realistic, but contains all possible derivatives of invariants. With
+     * this material in combination with volsussmanbathe, it is possible to test all isochoric
+     * parts of the Elasthyper-Toolbox.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = C1 (\overline{I}_{\boldsymbol{C}}-3) + 0.5 C1 (\overline{I}_{\boldsymbol{C}}-3)^2
+     *        + C2 (\overline{II}_{\boldsymbol{C}}-3)  + 0.5 C2
+     *        (\overline{II}_{\boldsymbol{C}}-3)^2
+     *        + D (\overline{I}_{\boldsymbol{C}}-3) (\overline{II}_{\boldsymbol{C}}-3).
+     * \f]
+     *
+     * with D = C1 + 2 C2
+     */
     class IsoTestMaterial : public Summand
     {
      public:
@@ -113,13 +102,6 @@ namespace MAT
           int gp,                              ///< Gauss point
           const int eleGID                     ///< element GID
           ) override;
-
-      /// @name Access methods
-      //@{
-      double C1() const { return params_->c1_; }
-      double C2() const { return params_->c2_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

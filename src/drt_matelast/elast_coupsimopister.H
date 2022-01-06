@@ -1,17 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required to calculate the Simo and Pister
-material model. (U(J) is not implemented).
-Always use in combination with at least one other material model of the
-Elasthyper Toolbox.
-The input line should read
-  MAT 1 ELAST_CoupSimoPister MUE 1000
+\brief Definition of classes to calculate the Simo and Pister material model except the volumetric
+term
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_COUPSIMOPISTER_H_
 #define ELAST_COUPSIMOPISTER_H_
 
@@ -24,11 +19,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for isochoric contribution of a CoupSimoPisteran material
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_CoupSimoPister MUE 1000
+      /*!
+       * @brief material parameters for isochoric contribution of a CoupSimoPisteran material
+       *
+       * <h3>Input line</h3>
+       * MAT 1 ELAST_CoupSimoPister MUE 1000
+       */
       class CoupSimoPister : public MAT::PAR::Parameter
       {
        public:
@@ -37,14 +33,7 @@ namespace MAT
 
         /// @name material parameters
         //@{
-
-        /// material parameters
-
-
-        /// Material Parameter my
         double mue_;
-
-
         //@}
 
         /// Override this method and throw error, as the material should be created in within the
@@ -56,44 +45,35 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetMue(const double mue) { mue_ = mue; }
-        //@}
-
       };  // class CoupSimoPister
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// CoupSimoPisteran material
-    ///
-    /// This is the summand of a hyperelastic, isotropic CoupSimoPisteran material
-    /// depending on the first and the third invariant of the right Cauchy-Green tensor.
-    /// The formulation is based on [1] (4.3) or [2] (1)
-    ///
-    /// The implemented material is a coupled form of the Simo & Pister material
-    /// model. The part U(J) is not implemented. So this material model can/should
-    /// combined with any volumetric material model.
-    /// The Parameter read in is my.
-    ///
-    /// Strain energy function is given by
-    ///\f[
-    ///   \Psi = 0.5*\mu(I_{\boldsymbol{C}}-3) - \mu log(J)
-    ///\f]
-    ///
-    /// [1] Simo and Pister - 1984
-    /// [2] Hartmann - "The class of Simo & Pister-type Hyperelasticity Relastions"
-    ///
-    /// \author birzle
-    /// \date 04/16
+    /*!
+     * @brief CoupSimoPisteran material
+     *
+     * This is the summand of a hyperelastic, isotropic CoupSimoPisteran material
+     * depending on the first and the third invariant of the right Cauchy-Green tensor.
+     * The formulation is based on [1] (4.3) or [2] (1)
+     *
+     * The implemented material is a coupled form of the Simo & Pister material
+     * model. The part U(J) is not implemented. So this material model can/should
+     * combined with any volumetric material model.
+     * The Parameter read in is my.
+     *
+     * Strain energy function is given by
+     * \f[
+     *   \Psi = 0.5*\mu(I_{\boldsymbol{C}}-3) - \mu log(J)
+     * \f]
+     *
+     * [1] Simo and Pister - 1984
+     * [2] Hartmann - "The class of Simo & Pister-type Hyperelasticity Relastions"
+     */
     class CoupSimoPister : public Summand
     {
      public:
       /// constructor with given material parameters
       CoupSimoPister(MAT::ELASTIC::PAR::CoupSimoPister* params);
-
 
       /// @name Access material constants
       //@{
@@ -131,12 +111,6 @@ namespace MAT
       {
         dserror("not implemented");
       }
-
-      /// @name Access methods
-      //@{
-      double Mue() const { return params_->mue_; }
-
-      //@}
 
       /// Indicator for formulation
       void SpecifyFormulation(

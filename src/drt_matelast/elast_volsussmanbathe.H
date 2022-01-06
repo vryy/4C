@@ -1,16 +1,13 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief
-This file contains the routines required for logarithmic neo-Hooke material
-according to Bonet and Wood, "Nonlinear continuum mechanics for finite
-element analysis", Cambridge, 1997.
-The input line should read
-  MAT 1 ELAST_VolSussmanBathe KAPPA 100
+\brief Definition of classes for the volumetric SussmanBathe material according to "Doll, S. and
+Schweizerhof, K. On the Development of Volumetric Strain Energy Functions Journal of Applied
+Mechanics, 2000"
 
 \level 1
+*/
+/*----------------------------------------------------------------------*/
 
-
-*----------------------------------------------------------------------*/
 #ifndef ELAST_VOLSUSSMANBATHE_H_
 #define ELAST_VOLSUSSMANBATHE_H_
 
@@ -23,11 +20,12 @@ namespace MAT
   {
     namespace PAR
     {
-      /*----------------------------------------------------------------------*/
-      /// material parameters for volumetric contribution \f$\Psi=\kappa(J-1)^2\f$
-      ///
-      /// <h3>Input line</h3>
-      /// MAT 1 ELAST_VolSussmanBathe KAPPA 10000
+      /*!
+       * @brief material parameters for volumetric contribution \f$\Psi=\kappa(J-1)^2\f$
+       *
+       *  <h3>Input line</h3>
+       *  MAT 1 ELAST_VolSussmanBathe KAPPA 10000
+       */
       class VolSussmanBathe : public MAT::PAR::Parameter
       {
        public:
@@ -51,31 +49,21 @@ namespace MAT
               "MAT::ELASTIC::Summand::Factory.");
           return Teuchos::null;
         };
-
-        /// @name Write methods
-        //@{
-        void SetKappa(const double kappa) { kappa_ = kappa; }
-        //@}
-
       };  // class VolSussmanBathe
 
     }  // namespace PAR
 
-    /*----------------------------------------------------------------------*/
-    /// Volumetric SussmanBathe material according to [1].
-    ///
-    /// Strain energy function is given by
-    ///
-    ///
-    ///\f[
-    ///   \Psi = \frac \kappa 2 (J-1)^2
-    ///\f]
-    ///
-    ///
-    /// [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
-    ///     Journal of Applied Mechanics, 2000
-    /// \author rausch/tk
-    /// \date 04/09
+    /*!
+     * @brief Volumetric SussmanBathe material according to [1].
+     *
+     * Strain energy function is given by
+     * \f[
+     *    \Psi = \frac \kappa 2 (J-1)^2
+     * \f]
+     *
+     *  [1] Doll, S. and Schweizerhof, K. On the Development of Volumetric Strain Energy Functions
+     *      Journal of Applied Mechanics, 2000
+     */
     class VolSussmanBathe : public Summand
     {
      public:
@@ -116,11 +104,9 @@ namespace MAT
       /// Add third derivative w.r.t. J
       void Add3rdVolDeriv(const LINALG::Matrix<3, 1>& modinv, double& d3PsiVolDJ3) override;
 
-
       /// @name Access methods
       //@{
       double Kappa() const { return params_->kappa_; }
-
       //@}
 
       /// Indicator for formulation
