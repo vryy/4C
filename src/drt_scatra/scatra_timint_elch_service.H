@@ -101,7 +101,8 @@ namespace SCATRA
    public:
     //! constructor
     CCCVCondition(const DRT::Condition& cccvcyclingcondition,
-        const std::vector<DRT::Condition*>& cccvhalfcycleconditions, bool adaptivetimestepping);
+        const std::vector<DRT::Condition*>& cccvhalfcycleconditions, bool adaptivetimestepping,
+        int num_dofs);
 
     //! true, when all half cylces are completed
     bool NotFinished() const { return nhalfcycles_ >= ihalfcycle_; };
@@ -156,6 +157,9 @@ namespace SCATRA
     //! constant current
     void NextPhase(int step, double time, bool print);
 
+    //! number of dofs of this cccv condition
+    int NumDofs() const { return num_dofs_; }
+
     //! read restart
     void ReadRestart(IO::DiscretizationReader& reader);
 
@@ -199,6 +203,9 @@ namespace SCATRA
 
     //! number of steps after phase was changed until reset time step to original value
     const int num_add_adapt_timesteps_;
+
+    //! number of dofs of this cccv condition
+    const int num_dofs_;
 
     //! for time step adaptivity: was phase changed since last time step adaptivity?
     bool phasechanged_;

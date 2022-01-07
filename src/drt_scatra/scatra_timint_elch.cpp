@@ -234,11 +234,11 @@ void SCATRA::ScaTraTimIntElch::Setup()
       const DRT::Condition& cccvcyclingcondition = *cccvcyclingconditions[0];
 
       // safety checks
-      if (NumDofPerNode() != 2)
+      if (NumDofPerNode() != 2 and NumDofPerNode() != 3)
       {
         dserror(
-            "Must have exactly two degrees of freedom per node (lithium concentration and electric "
-            "potential) for lithium-ion cell cycling!");
+            "Must have exactly two (concentration and potential) or three (concentration and "
+            "potential, micro potential) degrees of freedom per node .");
       }
       if (cccvhalfcycleconditions.empty())
       {
@@ -257,7 +257,7 @@ void SCATRA::ScaTraTimIntElch::Setup()
       // new cccv condition
       cccv_condition_ =
           Teuchos::rcp(new SCATRA::CCCVCondition(cccvcyclingcondition, cccvhalfcycleconditions,
-              DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING")));
+              DRT::INPUT::IntegralValue<bool>(*params_, "ADAPTIVE_TIMESTEPPING"), NumDofPerNode()));
 
       break;
     }
@@ -2950,9 +2950,7 @@ void SCATRA::ScaTraTimIntElch::ApplyDirichletBC(
               {
                 // extract global ID of electric potential degree of freedom carried by current
                 // node
-                const int gid = discret_->Dof(
-                    0, node, 1);  // Do not remove the zero, i.e., the first function argument,
-                                  // otherwise an error is thrown in debug mode!
+                const int gid = discret_->Dof(0, node, cccv_condition_->NumDofs() - 1);
 
                 // add global ID to set
                 dbcgids.insert(gid);
@@ -3011,49 +3009,72 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
           // extract condition
           DRT::Condition& condition = *cccvhalfcyclecondition;
 
-          // To avoid code redundancy, we evaluate the condition using the element-based algorithm
-          // for standard Neumann boundary conditions. For this purpose, we must provide the
-          // condition with some features to make it look like a standard Neumann boundary
-          // condition.
-          std::vector<int> onoff(2, 0);
-          std::vector<double> val(2, 0.);
-          onoff[1] =
-              1;  // activate Neumann boundary condition for electric potential degree of freedom
-          val[1] = condition.GetDouble("Current");  // set value of Neumann boundary condition
-          condition.Add("numdof", 2);
-          condition.Add("funct", std::vector<int>(2, 0));
-          condition.Add("onoff", onoff);
-          condition.Add("val", val);
-
-          // create parameter list for elements
-          Teuchos::ParameterList params;
-
-          // set action for elements
-          params.set<int>("action", SCATRA::bd_calc_Neumann);
-
-          // number of dofset associated with displacement-related dofs
-          if (isale_) params.set<int>("ndsdisp", nds_disp_);
-
-          // loop over all conditioned elements
-          std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition.Geometry();
-          std::map<int, Teuchos::RCP<DRT::Element>>::iterator iterator;
-          for (iterator = geometry.begin(); iterator != geometry.end(); ++iterator)
+          if (condition.GType() != DRT::Condition::Point)
           {
-            // get location vector of current element
-            std::vector<int> lm;
-            std::vector<int> lmowner;
-            std::vector<int> lmstride;
-            iterator->second->LocationVector(*discret_, lm, lmowner, lmstride);
+            // To avoid code redundancy, we evaluate the condition using the element-based algorithm
+            // for standard Neumann boundary conditions. For this purpose, we must provide the
+            // condition with some features to make it look like a standard Neumann boundary
+            // condition.
+            std::vector<int> onoff(2, 0);
+            std::vector<double> val(2, 0.);
+            onoff[1] =
+                1;  // activate Neumann boundary condition for electric potential degree of freedom
+            val[1] = condition.GetDouble("Current");  // set value of Neumann boundary condition
+            condition.Add("numdof", 2);
+            condition.Add("funct", std::vector<int>(2, 0));
+            condition.Add("onoff", onoff);
+            condition.Add("val", val);
 
-            // initialize element-based vector of Neumann loads
-            Epetra_SerialDenseVector elevector(static_cast<int>(lm.size()));
+            // create parameter list for elements
+            Teuchos::ParameterList params;
 
-            // evaluate Neumann boundary condition
-            iterator->second->EvaluateNeumann(params, *discret_, condition, lm, elevector);
+            // set action for elements
+            params.set<int>("action", SCATRA::bd_calc_Neumann);
 
-            // assemble element-based vector of Neumann loads into global vector of Neumann loads
-            LINALG::Assemble(*neumann_loads, elevector, lm, lmowner);
-          }  // loop over all conditioned elements
+            // number of dofset associated with displacement-related dofs
+            if (isale_) params.set<int>("ndsdisp", nds_disp_);
+
+            // loop over all conditioned elements
+            std::map<int, Teuchos::RCP<DRT::Element>>& geometry = condition.Geometry();
+            std::map<int, Teuchos::RCP<DRT::Element>>::iterator iterator;
+            for (iterator = geometry.begin(); iterator != geometry.end(); ++iterator)
+            {
+              // get location vector of current element
+              std::vector<int> lm;
+              std::vector<int> lmowner;
+              std::vector<int> lmstride;
+              iterator->second->LocationVector(*discret_, lm, lmowner, lmstride);
+
+              // initialize element-based vector of Neumann loads
+              Epetra_SerialDenseVector elevector(static_cast<int>(lm.size()));
+
+              // evaluate Neumann boundary condition
+              iterator->second->EvaluateNeumann(params, *discret_, condition, lm, elevector);
+
+              // assemble element-based vector of Neumann loads into global vector of Neumann loads
+              LINALG::Assemble(*neumann_loads, elevector, lm, lmowner);
+            }  // loop over all conditioned elements
+          }
+          else
+          {
+            for (int node_gid : *condition.Nodes())
+            {
+              auto* node = discret_->gNode(node_gid);
+              auto dofs = discret_->Dof(0, node);
+              const int dof_gid = dofs[2];
+              const int dof_lid = DofRowMap()->LID(dof_gid);
+
+              const double neumann_value = condition.GetDouble("Current");
+
+              constexpr double four_pi = 4.0 * M_PI;
+              const double fac =
+                  DRT::INPUT::IntegralValue<bool>(*ScatraParameterList(), "SPHERICALCOORDS")
+                      ? *node->X() * *node->X() * four_pi
+                      : 1.0;
+
+              neumann_loads->SumIntoMyValue(dof_lid, 0, neumann_value * fac);
+            }
+          }
 
           // leave loop after relevant condition has been processed
           break;

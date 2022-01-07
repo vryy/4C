@@ -227,20 +227,21 @@ void SSI::SSIPart2WC::PrepareTimeLoop()
 void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  if (printheader) PrintHeader();
 
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   ScaTraField()->PrepareTimeStep();
 
-  // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
-  // to structure
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
+  // if adaptive time stepping and different time step size: calculate time step in scatra
+  // (PrepareTimeStep() of Scatra) and pass to other fields
+  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
 
   SetScatraSolution(ScaTraField()->Phinp());
   if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
 
   // NOTE: the predictor of the structure is called in here
   StructureField()->PrepareTimeStep();
+
+  if (printheader) PrintHeader();
 }
 
 /*----------------------------------------------------------------------*/

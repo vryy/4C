@@ -1058,6 +1058,9 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // adapt time step size if desired
   AdaptTimeStepSize();
 
+  // tell micro scale about updated time step
+  if (macro_scale_ and TimeStepAdapted()) SetTimeSteppingToMicroScale();
+
   // note the order of the following three functions is important
   IncrementTimeAndStep();
 
@@ -3773,4 +3776,21 @@ void SCATRA::ScaTraTimIntImpl::AddProblemSpecificParametersAndVectors(
     Teuchos::ParameterList& params)
 {
   if (micro_scale_) params.set<double>("rea_coeff", macro_micro_rea_coeff_);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetTimeSteppingToMicroScale()
+{
+  Teuchos::ParameterList eleparams;
+
+  eleparams.set<int>("action", SCATRA::micro_scale_set_time);
+
+  eleparams.set<double>("dt", dta_);
+  eleparams.set<double>("time", time_);
+  eleparams.set<int>("step", step_);
+
+  // call standard loop over elements
+  discret_->Evaluate(
+      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }

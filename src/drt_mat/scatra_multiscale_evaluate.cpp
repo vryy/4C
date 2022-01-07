@@ -124,3 +124,11 @@ void MAT::ScatraMultiScale::ReadRestart(const int gp_id) const
   // read restart on micro scale
   matgp_.at(gp_id)->ReadRestart();
 }
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void MAT::ScatraMultiScale::SetTimeStepping(
+    const int gp_id, const double dt, const double time, const int step)
+{
+  matgp_.at(gp_id)->SetTimeStepping(dt, time, step);
+}

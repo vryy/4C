@@ -279,6 +279,7 @@ int DRT::ELEMENTS::Transport::Evaluate(Teuchos::ParameterList& params,
     case SCATRA::micro_scale_update:
     case SCATRA::micro_scale_output:
     case SCATRA::micro_scale_read_restart:
+    case SCATRA::micro_scale_set_time:
     case SCATRA::calc_heteroreac_mat_and_rhs:
     case SCATRA::calc_mass_matrix:
     case SCATRA::transform_real_to_reference_point:

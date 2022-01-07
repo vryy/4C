@@ -177,11 +177,10 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
     Epetra_SerialDenseVector& elevec3_epetra)
 {
   // extract multi-scale material
-  const Teuchos::RCP<const MAT::ElchMat> elchmat =
-      Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
-  const Teuchos::RCP<const MAT::ElchPhase> elchphase =
+  auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());
+  auto elchphase =
       Teuchos::rcp_dynamic_cast<const MAT::ElchPhase>(elchmat->PhaseById(elchmat->PhaseID(0)));
-  const Teuchos::RCP<MAT::NewmanMultiScale> newmanmultiscale =
+  auto newmanmultiscale =
       Teuchos::rcp_dynamic_cast<MAT::NewmanMultiScale>(elchphase->MatById(elchphase->MatID(0)));
 
   // determine and evaluate action
@@ -279,6 +278,14 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Evalua
         newmanmultiscale->ReadRestart(iquad);
 
       break;
+    }
+    case SCATRA::micro_scale_set_time:
+    {
+      const DRT::UTILS::IntPointsAndWeights<my::nsd_ele_> intpoints(
+          SCATRA::DisTypeToOptGaussRule<distype>::rule);
+      for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        newmanmultiscale->SetTimeStepping(
+            iquad, params.get<double>("dt"), params.get<double>("time"), params.get<int>("step"));
     }
 
     default:
