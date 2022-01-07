@@ -289,6 +289,9 @@ namespace SSI
     //! macro-micro scatra problem?
     bool MacroScale() const { return macro_scale_; }
 
+    //! different time step size between scatra field and structure field
+    bool DiffTimeStepSize() const { return diff_time_step_size_; }
+
    private:
     /*!
      * @brief Checks whether flags for adaptive time stepping in ssi have been set consistently
@@ -332,6 +335,9 @@ namespace SSI
 
     /// set structure velocity field on scatra field
     void SetVelocityFields(Teuchos::RCP<const Epetra_Vector> vel);
+
+    //! different time step size between scatra field and structure field
+    const bool diff_time_step_size_;
 
     //! Type of coupling strategy between the two fields of the SSI problems
     const INPAR::SSI::FieldCoupling fieldcoupling_;

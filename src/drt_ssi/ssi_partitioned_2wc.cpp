@@ -86,7 +86,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
     }
   }
 
-  if (DRT::INPUT::IntegralValue<int>(ssicontrol, "DIFFTIMESTEPSIZE"))
+  if (DiffTimeStepSize())
   {
     dserror("Different time stepping for two way coupling not implemented yet.");
   }
@@ -189,7 +189,7 @@ void SSI::SSIPart2WC::DoScatraStep()
   // set structure-based scalar transport values
   SetScatraSolution(ScaTraField()->Phinp());
 
-  // set structure-based scalar transport values in case of Micro-Macro problem
+  // set micro scale value (projected to macro scale) to structure field
   if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
 
   // evaluate temperature from function and set to structural discretization
