@@ -484,6 +484,7 @@ void MIXTURE::MixtureConstituent_RemodelFiber::RegisterVtkOutputDataNames(
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig_h"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_sig"] = 1;
   names_and_size["mixture_constituent_" + std::to_string(Id()) + "_growth_scalar"] = 1;
+  names_and_size["mixture_constituent_" + std::to_string(Id()) + "_lambda_r"] = 1;
 }
 
 bool MIXTURE::MixtureConstituent_RemodelFiber::EvaluateVtkOutputData(
@@ -510,6 +511,14 @@ bool MIXTURE::MixtureConstituent_RemodelFiber::EvaluateVtkOutputData(
     for (int gp = 0; gp < NumGP(); ++gp)
     {
       data(gp, 0) = GetGrowthScalar(gp);
+    }
+    return true;
+  }
+  else if (name == "mixture_constituent_" + std::to_string(Id()) + "_lambda_r")
+  {
+    for (int gp = 0; gp < NumGP(); ++gp)
+    {
+      data(gp, 0) = cur_lambdar_[gp];
     }
     return true;
   }
