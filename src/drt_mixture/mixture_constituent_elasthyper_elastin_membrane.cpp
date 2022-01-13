@@ -234,10 +234,10 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::PreEvaluate(
   MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(mixtureRule, params, gp, eleGID);
 
   // Evaluate mue frac
-  Teuchos::RCP<ElastinMembranePrestressStrategy> strategy =
-      Teuchos::rcp_dynamic_cast<ElastinMembranePrestressStrategy>(params_->PrestressStrategy());
+  std::shared_ptr<ElastinMembranePrestressStrategy> strategy =
+      std::dynamic_pointer_cast<ElastinMembranePrestressStrategy>(PrestressStrategy());
 
-  if (Teuchos::is_null(strategy))
+  if (strategy == nullptr)
   {
     dserror(
         "The used prestretch strategy is not compatible with elastin materials. It has to "

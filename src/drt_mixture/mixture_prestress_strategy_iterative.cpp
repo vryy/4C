@@ -19,20 +19,28 @@
 
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : PrestressStrategy(matdata)
+    : PrestressStrategy(matdata), isochoric_(static_cast<bool>(matdata->GetInt("ISOCHORIC")))
 {
 }
 
-Teuchos::RCP<MIXTURE::PrestressStrategy>
+std::unique_ptr<MIXTURE::PrestressStrategy>
 MIXTURE::PAR::IterativePrestressStrategy::CreatePrestressStrategy()
 {
-  return Teuchos::rcp(new MIXTURE::IterativePrestressStrategy(this));
+  std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
+      new MIXTURE::IterativePrestressStrategy(this));
+  return prestressStrategy;
 }
 
 MIXTURE::IterativePrestressStrategy::IterativePrestressStrategy(
     MIXTURE::PAR::IterativePrestressStrategy* params)
     : PrestressStrategy(params), params_(params)
 {
+}
+
+void MIXTURE::IterativePrestressStrategy::Setup(
+    MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
+{
+  // nothing to do
 }
 
 void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,
@@ -49,23 +57,34 @@ void MIXTURE::IterativePrestressStrategy::UpdatePrestress(
     MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
     LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
-  // 1. Compute polar decomposition
+  // Compute isochoric part of the deformation
+  LINALG::Matrix<3, 3> F_bar;
+  if (params_->isochoric_)
+  {
+    F_bar.Update(std::pow(F.Determinant(), -1.0 / 3.0), F);
+  }
+  else
+  {
+    F_bar.Update(F);
+  }
 
-  // 1.1 Singular value decomposition of F = RU
+  // Compute new predeformation gradient
+  LINALG::Matrix<3, 3> G_old(G);
+  G.MultiplyNN(F_bar, G_old);
+
+
+  // Compute polar decomposition of the prestretch deformation gradient
+
+  // Singular value decomposition of F = RU
   LINALG::Matrix<3, 3> Q(true);
   LINALG::Matrix<3, 3> S(true);
   LINALG::Matrix<3, 3> VT(true);
 
-  LINALG::SVD<3, 3>(F, Q, S, VT);
+  LINALG::SVD<3, 3>(G, Q, S, VT);
 
-  // Compute stretch tensor U = V * S * VT
+  // Compute stretch tensor G = U = V * S * VT
   LINALG::Matrix<3, 3> VS;
-  LINALG::Matrix<3, 3> U;
 
   VS.MultiplyTN(VT, S);
-  U.MultiplyNN(VS, VT);
-
-  // 2. Update G with inverse of stretch
-  LINALG::Matrix<3, 3> Gold(G);
-  G.MultiplyNN(U, Gold);
+  G.MultiplyNN(VS, VT);
 }

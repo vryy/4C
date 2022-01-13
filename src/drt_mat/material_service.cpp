@@ -1489,6 +1489,15 @@ void MAT::PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor)
   }
 }
 
+
+template <int dim>
+void MAT::GetSymmetricPart(
+    const LINALG::Matrix<dim, dim>& inputM, LINALG::Matrix<dim, dim>& outputM)
+{
+  outputM.Update(0.5, inputM, 0.0);
+  outputM.UpdateT(0.5, inputM, 1.0);
+}
+
 /*----------------------------------------------------------------------------*/
 // explicit instantiation of template functions
 template void MAT::AddRightNonSymmetricHolzapfelProduct<double>(LINALG::Matrix<6, 9, double>&,
@@ -1549,3 +1558,6 @@ template void MAT::TransposeFourTensor12<3>(
     LINALG::FourTensor<3>& resultTensor, const LINALG::FourTensor<3>& inputTensor);
 
 template void MAT::PrintFourTensor<3>(const LINALG::FourTensor<3>& fourTensor);
+
+template void MAT::GetSymmetricPart<3>(
+    const LINALG::Matrix<3, 3>& inputM, LINALG::Matrix<3, 3>& outputM);

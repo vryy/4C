@@ -19,10 +19,15 @@
 #include <Teuchos_RCPDecl.hpp>
 #include <utility>
 #include "../drt_lib/drt_dserror.H"
+#include <memory>
 
 namespace MAT
 {
   class Material;
+}
+namespace DRT
+{
+  class PackBuffer;
 }
 namespace MAT
 {
@@ -74,7 +79,7 @@ namespace MIXTURE
       }
 
       /// create prestress strategy instance of matching type with my parameters
-      virtual Teuchos::RCP<MIXTURE::PrestressStrategy> CreatePrestressStrategy() = 0;
+      virtual std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() = 0;
 
       /*!
        * \brief Factory of the prestress strategy parameters
@@ -106,7 +111,43 @@ namespace MIXTURE
     virtual ~PrestressStrategy() = default;
 
     /*!
-     * @brief Evaluates the prestretch of the constituent
+     * \brief Pack data into a char vector from this class
+     *
+     * The vector data contains all information to rebuild the exact copy of an instance of a class
+     * on a different processor. The first entry in data hast to be an integer which is the unique
+     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
+     *
+     * @param data (in/put) : vector storing all data to be packed into this instance.
+     */
+    virtual void Pack(DRT::PackBuffer& data) const {};
+
+    /*!
+     * \brief Unpack data from a char vector into this class to be called from a derived class
+     *
+     * The vector data contains all information to rebuild the exact copy of an instance of a class
+     * on a different processor. The first entry in data hast to be an integer which is the unique
+     * parobject id defined at the top of the file and delivered by UniqueParObjectId().
+     *
+     * @param position (in/out) : current position to unpack data
+     * @param data (in) : vector storing all data to be unpacked into this instance.
+     */
+    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data){};
+
+    /*!
+     * @brief Setups the prestress strategy
+     *
+     * @param constituent (in) : Constituent to be prestressed
+     * @param params (in) : Container for additional information
+     * @param numgp (in) : number of Gauss points
+     * @param eleGID (in) : global element id
+     */
+    virtual void Setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params,
+        int numgp, int eleGID){};
+
+    /*!
+     * @brief
+     *
+     *
      * @param G (out) :  Prestretch of the constituent
      * @param params (in) : Container for additional information
      * @param gp (in) : Gauss-point

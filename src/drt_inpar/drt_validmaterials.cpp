@@ -3745,6 +3745,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
         "Simple iterative prestress strategy for any geometry. Needed to be used within the "
         "mixture framework.",
         INPAR::MAT::mix_prestress_strategy_iterative));
+    AddNamedBool(m, "ISOCHORIC", "Flag whether prestretch tensor is isochoric", false, true);
 
     AppendMaterialDefinition(matlist, m);
   }
