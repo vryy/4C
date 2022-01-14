@@ -32,29 +32,62 @@ namespace DRT
     {
      public:
       /*!
-       * \brief Sets a type of fiber
+       * \brief Sets a coordinate system direction of a specific point at every Gauss point
        *
        * @param type Type of the fiber
-       * @param fiber Vector of the fibers at the Gauss-points
+       * @param fiber Vector of the coordinate system direction at the Gauss-points
        */
-      void SetFiber(FiberType type, const std::vector<LINALG::Matrix<3, 1>>& fiber);
+      void SetCoordinateSystemDirection(
+          CoordinateSystemDirection type, const std::vector<LINALG::Matrix<3, 1>>& fiber);
 
       /*!
-       * \brief Returns a reference to a list of fibers belonging to the specific type
+       * \brief Returns a reference to coordinate system directions at every Gauss point belonging
+       * to the specific type
        *
-       * @param type Type of the fiber
-       * @return Reference to the fiber
+       * @param type Type of the coordinate system direction
+       * @return Reference to the coordinate system direction
        */
-      const std::vector<LINALG::Matrix<3, 1>>& GetFiber(FiberType type) const;
+      const std::vector<LINALG::Matrix<3, 1>>& GetCoordinateSystemDirection(
+          CoordinateSystemDirection type) const;
 
       /*!
-       * \brief Returns a reference to a list of fibers belonging to the specific type for each
-       * Gauss point
+       * \brief Returns a reference to coordinate system directions at every Gauss point belonging
+       * to the specific type
        *
-       * @param type Type of the fiber
+       * @param type Type of the coordinate system direction
+       * @return Reference to the coordinate system direction
+       */
+      std::vector<LINALG::Matrix<3, 1>>& GetCoordinateSystemDirectionMutual(
+          CoordinateSystemDirection type);
+      /*!
+       * \brief Inserts a fiber
+       *
+       * @param fiber Vector of the fiber at the Gauss-points
+       */
+      void AddFiber(const std::vector<LINALG::Matrix<3, 1>>& fiber);
+
+      /*!
+       * @brief Return the list of all fibers at all Gauss points
+       *
+       * @return Reference to the list of all fibers at all Gauss points
+       */
+      const std::vector<std::vector<LINALG::Matrix<3, 1>>>& GetFibers() const { return fibers_; }
+
+      /*!
+       * \brief Returns a reference to the specific fiber at every Gauss point
+       *
+       * @param fiberid Id of the fiber (starting from 0)
+       * @return Reference to the coordinate system direction
+       */
+      const std::vector<LINALG::Matrix<3, 1>>& GetFiber(std::size_t fiberid) const;
+
+      /*!
+       * \brief Returns a reference to the specific fiber at every Gauss point
+       *
+       * @param fiberid Id of the fiber (starting from 0)
        * @return Reference to the fiber
        */
-      std::vector<LINALG::Matrix<3, 1>>& GetFiberMutual(FiberType type);
+      std::vector<LINALG::Matrix<3, 1>>& GetFiberMutual(std::size_t fiberid);
 
       /*!
        * \brief Sets a type of angle
@@ -79,19 +112,25 @@ namespace DRT
        * \return true type is contained in the holder
        * \return false type is not contained in the holder
        */
-      bool ContainsFiber(FiberType type) const;
+      bool ContainsCoordinateSystemDirection(CoordinateSystemDirection type) const;
+
+      /**
+       * Returns the number of coordinate system directions stored in the fiber holder
+       * @return number of coordinate system directions
+       */
+      std::size_t CoordinateSystemSize() const;
 
       /**
        * Returns the number of fibers stored in the fiber holder
        * @return number of fibers
        */
-      unsigned int FibersSize() const;
+      std::size_t FibersSize() const;
 
       /**
        * Returns the number of angles stored in the fiber holder
        * @return number of fibers
        */
-      unsigned int AnglesSize() const;
+      std::size_t AnglesSize() const;
 
       /*!
        * \brief Print a short summary of the Map into an output stream.
@@ -104,8 +143,9 @@ namespace DRT
        */
       friend std::ostream& operator<<(std::ostream& os, const NodalFiberHolder& holder)
       {
-        os << "NodalFiberHolder {Fibers count=" << holder.FibersSize()
-           << ", Angles count=" << holder.AnglesSize() << "}";
+        os << "NodalFiberHolder {Cosy count=" << holder.CoordinateSystemSize()
+           << ", Fibers count=" << holder.FibersSize() << " Angles count = " << holder.AnglesSize()
+           << "}";
         return os;
       }
 
@@ -118,12 +158,17 @@ namespace DRT
       friend bool operator==(
           const DRT::FIBER::NodalFiberHolder& holder1, const DRT::FIBER::NodalFiberHolder& holder2)
       {
-        return holder1.fibers_ == holder2.fibers_ && holder1.angles_ == holder2.angles_;
+        return holder1.fibers_ == holder2.fibers_ && holder1.angles_ == holder2.angles_ &&
+               holder1.coordinateSystemDirections_ == holder2.coordinateSystemDirections_;
       }
 
      private:
-      /// Map holding GP fibers of different names
-      std::map<FiberType, std::vector<LINALG::Matrix<3, 1>>> fibers_;
+      /// Map holding GP coordinate system directions
+      std::map<CoordinateSystemDirection, std::vector<LINALG::Matrix<3, 1>>>
+          coordinateSystemDirections_;
+
+      /// List of numbered fibers
+      std::vector<std::vector<LINALG::Matrix<3, 1>>> fibers_;
 
       /// Map holding GP angles of different names
       std::map<AngleType, std::vector<double>> angles_;

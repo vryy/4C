@@ -17,17 +17,23 @@ DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 DRT::ParObject* DRT::FIBER::FiberNodeType::Create(const std::vector<char>& data)
 {
   std::array<double, 3> dummy_coords = {999., 999., 999.};
-  std::map<FIBER::FiberType, std::array<double, 3>> fibers;
+  std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections;
+  std::vector<std::array<double, 3>> fibers;
   std::map<FIBER::AngleType, double> angles;
-  auto* object = new DRT::FIBER::FiberNode(-1, dummy_coords, fibers, angles, -1);
+  auto* object =
+      new DRT::FIBER::FiberNode(-1, dummy_coords, coordinateSystemDirections, fibers, angles, -1);
   object->Unpack(data);
   return object;
 }
 
 DRT::FIBER::FiberNode::FiberNode(int id, std::array<double, 3> coords,
-    std::map<FIBER::FiberType, std::array<double, 3>> fibers,
-    std::map<FIBER::AngleType, double> angles, const int owner)
-    : DRT::Node(id, coords.data(), owner), fibers_(std::move(fibers)), angles_(std::move(angles))
+    std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections,
+    std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,
+    const int owner)
+    : DRT::Node(id, coords.data(), owner),
+      coordinateSystemDirections_(std::move(coordinateSystemDirections)),
+      fibers_(std::move(fibers)),
+      angles_(std::move(angles))
 {
 }
 
@@ -60,6 +66,7 @@ void DRT::FIBER::FiberNode::Pack(DRT::PackBuffer& data) const
 
   // Add fiber data
   DRT::ParObject::AddtoPack(data, fibers_);
+  DRT::ParObject::AddtoPack(data, coordinateSystemDirections_);
   DRT::ParObject::AddtoPack(data, angles_);
 }
 
@@ -82,6 +89,7 @@ void DRT::FIBER::FiberNode::Unpack(const std::vector<char>& data)
 
   // extract fiber data
   DRT::ParObject::ExtractfromPack(position, data, fibers_);
+  DRT::ParObject::ExtractfromPack(position, data, coordinateSystemDirections_);
   DRT::ParObject::ExtractfromPack(position, data, angles_);
 }
 

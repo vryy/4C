@@ -121,14 +121,12 @@ void MAT::Anisotropy::ReadAnisotropyFromParameterList(const Teuchos::ParameterLi
   {
     const auto& fiberHolder = params.get<DRT::FIBER::NodalFiberHolder>("fiberholder");
 
-    bool containsFiber1 = fiberHolder.ContainsFiber(DRT::FIBER::FiberType::Fiber1);
-    bool containsFiber2 = fiberHolder.ContainsFiber(DRT::FIBER::FiberType::Fiber2);
-    bool containsFiber3 = fiberHolder.ContainsFiber(DRT::FIBER::FiberType::Fiber3);
-
     gpFibers_.resize(numgp_);
-    if (containsFiber1) InsertFibers(fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber1));
-    if (containsFiber2) InsertFibers(fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber2));
-    if (containsFiber3) InsertFibers(fiberHolder.GetFiber(DRT::FIBER::FiberType::Fiber3));
+
+    for (const auto& fiber : fiberHolder.GetFibers())
+    {
+      InsertFibers(fiber);
+    }
   }
 
   OnGPFibersInitialized();

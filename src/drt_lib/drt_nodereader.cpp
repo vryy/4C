@@ -20,6 +20,7 @@
 
 #include <Epetra_Time.h>
 #include <istream>
+#include <string>
 
 namespace DRT
 {
@@ -306,9 +307,18 @@ namespace DRT
               // this is a special node with additional fiber information
               else if (tmp == "FNODE")
               {
+                enum class FiberType
+                {
+                  Unknown,
+                  Angle,
+                  Fiber,
+                  CosyDirection
+                };
+
                 // read fiber node
                 std::array<double, 3> coords = {0.0, 0.0, 0.0};
-                std::map<FIBER::FiberType, std::array<double, 3>> fibers;
+                std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
+                std::vector<std::array<double, 3>> fibers;
                 std::map<FIBER::AngleType, double> angles;
 
                 int nodeid;
@@ -324,49 +334,38 @@ namespace DRT
                   // try to read new fiber direction or coordinate system
                   file >> tmp2;
 
-                  DRT::FIBER::FiberType fiberType;
+                  DRT::FIBER::CoordinateSystemDirection coordinateSystemDirection;
                   DRT::FIBER::AngleType angleType;
-                  int num_components;
+                  FiberType type = FiberType::Unknown;
 
-                  if (tmp2 == "FIBER1")
+                  if (tmp2 == "FIBER" + std::to_string(1 + fibers.size()))
                   {
-                    fiberType = DRT::FIBER::FiberType::Fiber1;
-                    num_components = 3;
-                  }
-                  else if (tmp2 == "FIBER2")
-                  {
-                    fiberType = DRT::FIBER::FiberType::Fiber2;
-                    num_components = 3;
-                  }
-                  else if (tmp2 == "FIBER3")
-                  {
-                    fiberType = DRT::FIBER::FiberType::Fiber3;
-                    num_components = 3;
+                    type = FiberType::Fiber;
                   }
                   else if (tmp2 == "CIR")
                   {
-                    fiberType = DRT::FIBER::FiberType::Circular;
-                    num_components = 3;
+                    coordinateSystemDirection = DRT::FIBER::CoordinateSystemDirection::Circular;
+                    type = FiberType::CosyDirection;
                   }
                   else if (tmp2 == "TAN")
                   {
-                    fiberType = DRT::FIBER::FiberType::Tangential;
-                    num_components = 3;
+                    coordinateSystemDirection = DRT::FIBER::CoordinateSystemDirection::Tangential;
+                    type = FiberType::CosyDirection;
                   }
                   else if (tmp2 == "RAD")
                   {
-                    fiberType = DRT::FIBER::FiberType::Radial;
-                    num_components = 3;
+                    coordinateSystemDirection = DRT::FIBER::CoordinateSystemDirection::Radial;
+                    type = FiberType::CosyDirection;
                   }
                   else if (tmp2 == "HELIX")
                   {
                     angleType = DRT::FIBER::AngleType::Helix;
-                    num_components = 1;
+                    type = FiberType::Angle;
                   }
                   else if (tmp2 == "TRANS")
                   {
                     angleType = DRT::FIBER::AngleType::Transverse;
-                    num_components = 1;
+                    type = FiberType::Angle;
                   }
                   else
                   {
@@ -376,14 +375,33 @@ namespace DRT
                   }
 
                   // add fiber / angle to the map
-                  switch (num_components)
+                  switch (type)
                   {
-                    case 1:
+                    case FiberType::Unknown:
+                    {
+                      dserror(
+                          "Unknown fiber node attribute. Numbered fibers must be in order, i.e. "
+                          "FIBER1, FIBER2, ...");
+                    }
+                    case FiberType::Angle:
+                    {
                       file >> angles[angleType];
                       break;
-                    case 3:
-                      file >> fibers[fiberType][0] >> fibers[fiberType][1] >> fibers[fiberType][2];
+                    }
+                    case FiberType::Fiber:
+                    {
+                      std::array<double, 3> fiber_components;
+                      file >> fiber_components[0] >> fiber_components[1] >> fiber_components[2];
+                      fibers.emplace_back(fiber_components);
                       break;
+                    }
+                    case FiberType::CosyDirection:
+                    {
+                      file >> cosyDirections[coordinateSystemDirection][0] >>
+                          cosyDirections[coordinateSystemDirection][1] >>
+                          cosyDirections[coordinateSystemDirection][2];
+                      break;
+                    }
                     default:
                       dserror("Unknown number of components");
                   }
@@ -394,8 +412,8 @@ namespace DRT
                     FindDisNode(nodeid);
                 for (auto& dis : discretizations)
                 {
-                  auto node = Teuchos::rcp(
-                      new DRT::FIBER::FiberNode(nodeid, coords, fibers, angles, myrank));
+                  auto node = Teuchos::rcp(new DRT::FIBER::FiberNode(
+                      nodeid, coords, cosyDirections, fibers, angles, myrank));
                   dis->AddNode(node);
                 }
 
