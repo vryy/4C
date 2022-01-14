@@ -690,6 +690,25 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
       break;
     }
 
+    case SCATRA::micro_scale_set_time:
+    {
+      if (ele->Material()->MaterialType() == INPAR::MAT::m_scatra_multiscale)
+      {
+        const DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
+            SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+        // loop over all Gauss points
+        for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
+        {
+          Teuchos::rcp_dynamic_cast<MAT::ScatraMatMultiScale>(ele->Material())
+              ->SetTimeStepping(iquad, params.get<double>("dt"), params.get<double>("time"),
+                  params.get<int>("step"));
+        }
+      }
+
+      break;
+    }
+
     case SCATRA::calc_heteroreac_mat_and_rhs:
     {
       //--------------------------------------------------------------------------------

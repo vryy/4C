@@ -51,9 +51,8 @@ NUMSTEP                         20
 MAXTIME                         5.0
 TIMESTEP                        0.05
 THETA                           0.5
-VELOCITYFIELD                   zero
+VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    zero_field
-INITFUNCNO                      -1
 FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     yes

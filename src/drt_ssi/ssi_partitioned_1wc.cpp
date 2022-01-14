@@ -280,11 +280,14 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
         "interaction");
   }
 
-  // set zero velocity field for scatra
-  ScaTraField()->SetVelocityField(1);
+  // set zero velocity and displacement field for scatra
+  auto zeros_structure = LINALG::CreateVector(*StructureField()->DofRowMap(), true);
+  SetStructSolution(zeros_structure, zeros_structure);
+
+  ScaTraField()->PrepareTimeLoop();
 
   const int diffsteps = StructureField()->Dt() / ScaTraField()->Dt();
-  while (NotFinished())
+  while (!Finished())
   {
     PrepareTimeStep();
     DoScatraStep();  // It has its own time and timestep variables, and it increments them by
@@ -292,6 +295,9 @@ void SSI::SSIPart1WCScatraToSolid::Timeloop()
     if (ScaTraField()->Step() % diffsteps == 0)
     {
       SetScatraSolution(ScaTraField()->Phinp());
+
+      // set micro scale value (projected to macro scale) to structure field
+      if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
 
       // evaluate temperature from function and set to structural discretization
       EvaluateAndSetTemperatureField();
@@ -315,4 +321,17 @@ void SSI::SSIPart1WCScatraToSolid::PrepareTimeStep(bool printheader)
 
   ScaTraField()->PrepareTimeStep();
   // PrepareTimeStep of structure field is called later
+
+  // copy time step to SSI problem, in case it was modified in ScaTra
+  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool SSI::SSIPart1WCScatraToSolid::Finished() const
+{
+  if (DiffTimeStepSize())
+    return !NotFinished();
+  else
+    return !(NotFinished() and ScaTraField()->NotFinished());
 }

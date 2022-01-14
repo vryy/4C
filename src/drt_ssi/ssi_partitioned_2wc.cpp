@@ -86,7 +86,7 @@ void SSI::SSIPart2WC::Init(const Epetra_Comm& comm, const Teuchos::ParameterList
     }
   }
 
-  if (DRT::INPUT::IntegralValue<int>(ssicontrol, "DIFFTIMESTEPSIZE"))
+  if (DiffTimeStepSize())
   {
     dserror("Different time stepping for two way coupling not implemented yet.");
   }
@@ -189,7 +189,7 @@ void SSI::SSIPart2WC::DoScatraStep()
   // set structure-based scalar transport values
   SetScatraSolution(ScaTraField()->Phinp());
 
-  // set structure-based scalar transport values in case of Micro-Macro problem
+  // set micro scale value (projected to macro scale) to structure field
   if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
 
   // evaluate temperature from function and set to structural discretization
@@ -227,20 +227,21 @@ void SSI::SSIPart2WC::PrepareTimeLoop()
 void SSI::SSIPart2WC::PrepareTimeStep(bool printheader)
 {
   IncrementTimeAndStep();
-  if (printheader) PrintHeader();
 
   SetStructSolution(StructureField()->Dispnp(), StructureField()->Velnp());
   ScaTraField()->PrepareTimeStep();
 
-  // if adaptive time stepping: calculate time step in scatra (PrepareTimeStep() of Scatra) and pass
-  // to structure
-  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToStructure();
+  // if adaptive time stepping and different time step size: calculate time step in scatra
+  // (PrepareTimeStep() of Scatra) and pass to other fields
+  if (ScaTraField()->TimeStepAdapted()) SetDtFromScaTraToSSI();
 
   SetScatraSolution(ScaTraField()->Phinp());
   if (MacroScale()) SetMicroScatraSolution(ScaTraField()->PhinpMicro());
 
   // NOTE: the predictor of the structure is called in here
   StructureField()->PrepareTimeStep();
+
+  if (printheader) PrintHeader();
 }
 
 /*----------------------------------------------------------------------*/

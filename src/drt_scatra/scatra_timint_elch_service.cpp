@@ -15,7 +15,8 @@
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
-    const std::vector<DRT::Condition*>& cccvhalfcycleconditions, bool adaptivetimestepping)
+    const std::vector<DRT::Condition*>& cccvhalfcycleconditions, const bool adaptivetimestepping,
+    const int num_dofs)
     : adaptivetimesteppingonoff_(
           static_cast<bool>(cccvcyclingcondition.GetInt("AdaptiveTimeSteppingInitRelax"))),
       beginwithcharge_(static_cast<bool>(cccvcyclingcondition.GetInt("BeginWithCharging"))),
@@ -27,6 +28,7 @@ SCATRA::CCCVCondition::CCCVCondition(const DRT::Condition& cccvcyclingcondition,
       min_time_steps_during_init_relax_(cccvcyclingcondition.GetInt("MinTimeStepsDuringInitRelax")),
       nhalfcycles_(cccvcyclingcondition.GetInt("NumberOfHalfCycles")),
       num_add_adapt_timesteps_(cccvcyclingcondition.GetInt("NumAddAdaptTimeSteps")),
+      num_dofs_(num_dofs),
       phasechanged_(false),
       phaseinitialrelaxation_(false),
       steplastphasechange_(-1)

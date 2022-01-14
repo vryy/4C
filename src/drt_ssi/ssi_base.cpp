@@ -48,6 +48,8 @@
 /*----------------------------------------------------------------------*/
 SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : AlgorithmBase(comm, globaltimeparams),
+      diff_time_step_size_(
+          static_cast<int>(DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
       fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
       isinit_(false),
@@ -779,7 +781,7 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
   // problem section (e.g. ---SSI DYNAMIC or ---CELL DYNAMIC).
   const auto* structtimeparams = &globaltimeparams;
   const auto* scatratimeparams = &globaltimeparams;
-  if (DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))
+  if (diff_time_step_size_)
   {
     structtimeparams = &structparams;
     scatratimeparams = &scatraparams;

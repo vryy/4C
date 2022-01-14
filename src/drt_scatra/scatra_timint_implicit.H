@@ -204,7 +204,10 @@ namespace SCATRA
     {
       time_ = newtime;
       step_ = newstep;
-    };
+    }
+
+    //! set time stepping information from this time integration to micro scales
+    void SetTimeSteppingToMicroScale();
 
     //! set timestep value
     virtual void SetDt(const double newdt)
@@ -212,7 +215,7 @@ namespace SCATRA
       dta_ = newdt;
       // We have to set the newdt in the ele_calc's as well:
       SetElementTimeParameter();
-    };
+    }
 
     //! do explicit predictor step to obtain better starting value for Newton-Raphson iteration
     virtual void ExplicitPredictor() const;

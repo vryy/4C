@@ -137,16 +137,16 @@ void INPAR::ELCH::SetValidConditions(
   // electrode state of charge
   {
     // definition of electrode state of charge surface and volume conditions
-    Teuchos::RCP<ConditionDefinition> electrodesocline =
+    auto electrodesocline =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS",
             "ElectrodeSOC", "electrode state of charge line condition",
             DRT::Condition::ElectrodeSOC, true, DRT::Condition::Line));
 
-    Teuchos::RCP<ConditionDefinition> electrodesocsurf =
+    auto electrodesocsurf =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS",
             "ElectrodeSOC", "electrode state of charge surface condition",
             DRT::Condition::ElectrodeSOC, true, DRT::Condition::Surface));
-    Teuchos::RCP<ConditionDefinition> electrodesocvol =
+    auto electrodesocvol =
         Teuchos::rcp(new ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
             "ElectrodeSOC", "electrode state of charge volume condition",
             DRT::Condition::ElectrodeSOC, true, DRT::Condition::Volume));
@@ -184,15 +184,15 @@ void INPAR::ELCH::SetValidConditions(
   // cell voltage
   {
     // definition of cell voltage point, line, and surface conditions
-    Teuchos::RCP<ConditionDefinition> cellvoltagepoint = Teuchos::rcp(new ConditionDefinition(
+    auto cellvoltagepoint = Teuchos::rcp(new ConditionDefinition(
         "DESIGN CELL VOLTAGE POINT CONDITIONS", "CellVoltagePoint", "cell voltage point condition",
         DRT::Condition::CellVoltage, false, DRT::Condition::Point));
 
-    Teuchos::RCP<ConditionDefinition> cellvoltageline = Teuchos::rcp(new ConditionDefinition(
+    auto cellvoltageline = Teuchos::rcp(new ConditionDefinition(
         "DESIGN CELL VOLTAGE LINE CONDITIONS", "CellVoltage", "cell voltage line condition",
         DRT::Condition::CellVoltage, true, DRT::Condition::Line));
 
-    Teuchos::RCP<ConditionDefinition> cellvoltagesurf = Teuchos::rcp(new ConditionDefinition(
+    auto cellvoltagesurf = Teuchos::rcp(new ConditionDefinition(
         "DESIGN CELL VOLTAGE SURF CONDITIONS", "CellVoltage", "cell voltage surface condition",
         DRT::Condition::CellVoltage, true, DRT::Condition::Surface));
 
@@ -373,17 +373,17 @@ void INPAR::ELCH::SetValidConditions(
     elechemcomponents.emplace_back(
         Teuchos::rcp(new CondCompBundleSelector("kinetic model", reactionmodel)));
 
-    Teuchos::RCP<ConditionDefinition> electrodeboundarykineticspoint =
+    auto electrodeboundarykineticspoint =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
             "ElchBoundaryKineticsPoint", "point electrode boundary kinetics",
             DRT::Condition::ElchBoundaryKinetics, false, DRT::Condition::Point));
 
-    Teuchos::RCP<ConditionDefinition> electrodeboundarykineticsline =
+    auto electrodeboundarykineticsline =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS LINE CONDITIONS",
             "ElchBoundaryKinetics", "line electrode boundary kinetics",
             DRT::Condition::ElchBoundaryKinetics, true, DRT::Condition::Line));
 
-    Teuchos::RCP<ConditionDefinition> electrodeboundarykineticssurf =
+    auto electrodeboundarykineticssurf =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE BOUNDARY KINETICS SURF CONDITIONS",
             "ElchBoundaryKinetics", "surface electrode boundary kinetics",
             DRT::Condition::ElchBoundaryKinetics, true, DRT::Condition::Surface));
@@ -404,17 +404,17 @@ void INPAR::ELCH::SetValidConditions(
   // electrode kinetics as domain condition within electrolyte
   {
     // definition of line, surface, and volume conditions for electrode domain kinetics
-    Teuchos::RCP<ConditionDefinition> electrodedomainkineticsline =
+    auto electrodedomainkineticsline =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS LINE CONDITIONS",
             "ElchDomainKinetics", "line electrode domain kinetics",
             DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Line));
 
-    Teuchos::RCP<ConditionDefinition> electrodedomainkineticssurf =
+    auto electrodedomainkineticssurf =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS SURF CONDITIONS",
             "ElchDomainKinetics", "surface electrode domain kinetics",
             DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Surface));
 
-    Teuchos::RCP<ConditionDefinition> electrodedomainkineticsvol =
+    auto electrodedomainkineticsvol =
         Teuchos::rcp(new ConditionDefinition("ELECTRODE DOMAIN KINETICS VOL CONDITIONS",
             "ElchDomainKinetics", "volume electrode domain kinetics",
             DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Volume));
@@ -512,13 +512,18 @@ void INPAR::ELCH::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // boundary condition for constant-current constant-voltage (CCCV) cell cycling
   {
-    // definition of line and surface conditions for CCCV cell cycling
-    Teuchos::RCP<ConditionDefinition> cccvcyclingline = Teuchos::rcp(
+    // definition of point, line and surface conditions for CCCV cell cycling
+    auto cccvcyclingpoint = Teuchos::rcp(
+        new ConditionDefinition("DESIGN CCCV CELL CYCLING POINT CONDITIONS", "CCCVCycling",
+            "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
+            DRT::Condition::CCCVCycling, true, DRT::Condition::Point));
+
+    auto cccvcyclingline = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV CELL CYCLING LINE CONDITIONS", "CCCVCycling",
             "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
             DRT::Condition::CCCVCycling, true, DRT::Condition::Line));
 
-    Teuchos::RCP<ConditionDefinition> cccvcyclingsurf = Teuchos::rcp(
+    auto cccvcyclingsurf = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV CELL CYCLING SURF CONDITIONS", "CCCVCycling",
             "surface boundary condition for constant-current constant-voltage (CCCV) cell cycling",
             DRT::Condition::CCCVCycling, true, DRT::Condition::Surface));
@@ -563,11 +568,13 @@ void INPAR::ELCH::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& cccvcyclingcomponent : cccvcyclingcomponents)
     {
+      cccvcyclingpoint->AddComponent(cccvcyclingcomponent);
       cccvcyclingline->AddComponent(cccvcyclingcomponent);
       cccvcyclingsurf->AddComponent(cccvcyclingcomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
+    condlist.emplace_back(cccvcyclingpoint);
     condlist.emplace_back(cccvcyclingline);
     condlist.emplace_back(cccvcyclingsurf);
   }
@@ -575,13 +582,18 @@ void INPAR::ELCH::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // boundary condition for constant-current constant-voltage (CCCV) half-cycle
   {
-    // definition of line and surface conditions for CCCV half-cycle
-    Teuchos::RCP<ConditionDefinition> cccvhalfcycleline = Teuchos::rcp(
+    // definition of point, line and surface conditions for CCCV half-cycle
+    auto cccvhalfcyclepoint = Teuchos::rcp(
+        new ConditionDefinition("DESIGN CCCV HALF-CYCLE POINT CONDITIONS", "CCCVHalfCycle",
+            "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
+            DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Point));
+
+    auto cccvhalfcycleline = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV HALF-CYCLE LINE CONDITIONS", "CCCVHalfCycle",
             "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
             DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Line));
 
-    Teuchos::RCP<ConditionDefinition> cccvhalfcyclesurf = Teuchos::rcp(
+    auto cccvhalfcyclesurf = Teuchos::rcp(
         new ConditionDefinition("DESIGN CCCV HALF-CYCLE SURF CONDITIONS", "CCCVHalfCycle",
             "surface boundary condition for constant-current constant-voltage (CCCV) half-cycle",
             DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Surface));
@@ -616,11 +628,13 @@ void INPAR::ELCH::SetValidConditions(
     // insert input file line components into condition definitions
     for (auto& cccvhalfcyclecomponent : cccvhalfcyclecomponents)
     {
+      cccvhalfcyclepoint->AddComponent(cccvhalfcyclecomponent);
       cccvhalfcycleline->AddComponent(cccvhalfcyclecomponent);
       cccvhalfcyclesurf->AddComponent(cccvhalfcyclecomponent);
     }
 
     // insert condition definitions into global list of valid condition definitions
+    condlist.emplace_back(cccvhalfcyclepoint);
     condlist.emplace_back(cccvhalfcycleline);
     condlist.emplace_back(cccvhalfcyclesurf);
   }

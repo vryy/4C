@@ -45,8 +45,7 @@ SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.1
 THETA                           0.5
-VELOCITYFIELD                   zero
-VELFUNCNO                       -1
+VELOCITYFIELD                   Navier_Stokes
 INITIALFIELD                    field_by_function
 INITFUNCNO                      1
 FSSUGRDIFF                      No
