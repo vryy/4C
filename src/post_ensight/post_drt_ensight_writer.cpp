@@ -1548,6 +1548,7 @@ void EnsightWriter::WriteSpecialField(SpecialFieldInterface& special, PostResult
         bool mf = multiple_files[i];
         FileSwitcher(
             *(files[i]), mf, filesetmap_, resultfilepos, stepsize[i], fieldnames[i], filenames[i]);
+        multiple_files[i] = mf;
       }
     }
 
