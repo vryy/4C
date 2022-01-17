@@ -1528,10 +1528,21 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
   // isochoric contribution of Neo-Hooke
   {
     auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoNeoHooke",
-        "isochoric part of  neo-Hooke material acc. to Holzapfel", INPAR::MAT::mes_isoneohooke));
+        "isochoric part of neo-Hooke material acc. to Holzapfel", INPAR::MAT::mes_isoneohooke));
 
     AddNamedReal(m, "MUE", "Shear modulus");
 
+    AppendMaterialDefinition(matlist, m);
+  }
+
+  /*--------------------------------------------------------------------*/
+  // isochoric contribution of one-term Ogden material
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("ELAST_IsoOgden",
+        "isochoric part of the one-term Ogden material", INPAR::MAT::mes_isoogden));
+
+    AddNamedReal(m, "MUE", "Shear modulus");
+    AddNamedReal(m, "ALPHA", "Nonlinearity parameter");
     AppendMaterialDefinition(matlist, m);
   }
 

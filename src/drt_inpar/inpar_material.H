@@ -259,6 +259,7 @@ namespace INPAR
       mes_isomooneyrivlin,   ///< isochoric Mooney-Rivlin hyperelastic potential summand
       mes_isomuscleblemker,  ///< isochoric Blemker muscle material
       mes_isoneohooke,       ///< isochoric Neo-Hooke hyperelastic potential summand
+      mes_isoogden,          ///< isochoric one-term Ogden hyperelastic potential summand
       mes_isoratedep,        ///< isotropic isochoric frequency dependent viscous potential summand
       mes_isotestmaterial,   ///< material to test the elasthyper-toolbox
       mes_isovarga,          ///< isotropic isochoric Varga material
