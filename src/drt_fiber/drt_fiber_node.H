@@ -16,13 +16,10 @@ namespace DRT
   namespace FIBER
   {
     /*!
-     * \brief Type of the fiber
+     * \brief Type of the coordinate system direction
      */
-    enum class FiberType
+    enum class CoordinateSystemDirection
     {
-      Fiber1,
-      Fiber2,
-      Fiber3,
       Circular,
       Tangential,
       Radial
@@ -73,13 +70,16 @@ namespace DRT
 
       \param id     (in): A globally unique fiber node
       \param coords (in): vector of nodal coordinates, length 3
-      \param fibers (in): map of fiber vectors
+      \param coordinateSystemDirections (in): map of coordinate system directions
+      \param fibers (in): list of fiber vectors
       \param angles (in): map of angles
       \param owner  (in): Owner of this node.
       */
       FiberNode(int id, std::array<double, 3> coords,
-          std::map<FIBER::FiberType, std::array<double, 3>> fibers,
-          std::map<FIBER::AngleType, double> angles, const int owner);
+          std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>>
+              coordinateSystemDirections,
+          std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,
+          const int owner);
 
       FiberNode(const DRT::FIBER::FiberNode& old) = default;
 
@@ -124,7 +124,13 @@ namespace DRT
 
       //@}
 
-      inline const std::map<FiberType, std::array<double, 3>>& Fibers() const { return fibers_; }
+      inline const std::map<CoordinateSystemDirection, std::array<double, 3>>&
+      CoordinateSystemDirections() const
+      {
+        return coordinateSystemDirections_;
+      }
+
+      inline const std::vector<std::array<double, 3>>& Fibers() const { return fibers_; }
 
       inline const std::map<AngleType, double>& Angles() const { return angles_; }
 
@@ -138,8 +144,11 @@ namespace DRT
       //@}
 
      protected:
-      /// map of fibers
-      std::map<FiberType, std::array<double, 3>> fibers_;
+      /// map of coordinate system directions
+      std::map<CoordinateSystemDirection, std::array<double, 3>> coordinateSystemDirections_;
+
+      /// list of fibers
+      std::vector<std::array<double, 3>> fibers_;
 
       /// map of angles
       std::map<AngleType, double> angles_;

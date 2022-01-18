@@ -21,7 +21,9 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
   // number of nodes per element
   constexpr int nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
   std::array<DRT::FIBER::FiberNode*, nen> fiberNodes;
-  std::map<DRT::FIBER::FiberType, std::array<std::array<double, 3>, nen>> fibers;
+  std::vector<std::array<std::array<double, 3>, nen>> fibers;
+  std::map<DRT::FIBER::CoordinateSystemDirection, std::array<std::array<double, 3>, nen>>
+      coordinateSystemDirections;
   std::map<DRT::FIBER::AngleType, std::array<double, nen>> angles;
 
   for (int inode = 0; inode < nen; ++inode)
@@ -33,9 +35,19 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
       dserror("At least one node of the element does not provide fibers.");
     }
 
-    for (const auto& pair : fiberNodes[inode]->Fibers())
+    for (const auto& pair : fiberNodes[inode]->CoordinateSystemDirections())
     {
-      fibers[pair.first][inode] = pair.second;
+      coordinateSystemDirections[pair.first][inode] = pair.second;
+    }
+
+    for (std::size_t fiberid = 0; fiberid < fiberNodes[inode]->Fibers().size(); ++fiberid)
+    {
+      if (inode == 0)
+      {
+        // The first node has to create the array of fibers for each node
+        fibers.emplace_back(std::array<std::array<double, 3>, nen>());
+      }
+      fibers[fiberid][inode] = fiberNodes[inode]->Fibers()[fiberid];
     }
 
     for (const auto& pair : fiberNodes[inode]->Angles())
@@ -46,9 +58,26 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
 
 
   // project fibers
-  for (const auto& pair : fibers)
+  for (const auto& fiber : fibers)
   {
-    const DRT::FIBER::FiberType type = pair.first;
+    std::vector<LINALG::Matrix<3, 1>> gpQuantity;
+    ProjectQuantityWithShapeFunctions<distype, 3>(fiber, shapefcts, gpQuantity);
+
+    // normalize fiber vectors
+    for (LINALG::Matrix<3, 1>& quantity : gpQuantity)
+    {
+      quantity.Scale(1.0 / quantity.Norm2());
+    }
+
+    // add quantity to the fiber holder
+    gpFiberHolder.AddFiber(gpQuantity);
+  }
+
+
+  // project coordinate system directions
+  for (const auto& pair : coordinateSystemDirections)
+  {
+    const DRT::FIBER::CoordinateSystemDirection type = pair.first;
     std::vector<LINALG::Matrix<3, 1>> gpQuantity;
     ProjectQuantityWithShapeFunctions<distype, 3>(pair.second, shapefcts, gpQuantity);
 
@@ -59,7 +88,7 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
     }
 
     // add quantity to the fiber holder
-    gpFiberHolder.SetFiber(type, gpQuantity);
+    gpFiberHolder.SetCoordinateSystemDirection(type, gpQuantity);
   }
 
   // project angles
@@ -75,11 +104,13 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
 
 
   // orthogonalize coordinate system
-  if (gpFiberHolder.ContainsFiber(FiberType::Circular) &&
-      gpFiberHolder.ContainsFiber(FiberType::Tangential))
+  if (gpFiberHolder.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Circular) &&
+      gpFiberHolder.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Tangential))
   {
-    const std::vector<LINALG::Matrix<3, 1>>& cir = gpFiberHolder.GetFiber(FiberType::Circular);
-    std::vector<LINALG::Matrix<3, 1>>& tan = gpFiberHolder.GetFiberMutual(FiberType::Tangential);
+    const std::vector<LINALG::Matrix<3, 1>>& cir =
+        gpFiberHolder.GetCoordinateSystemDirection(CoordinateSystemDirection::Circular);
+    std::vector<LINALG::Matrix<3, 1>>& tan =
+        gpFiberHolder.GetCoordinateSystemDirectionMutual(CoordinateSystemDirection::Tangential);
 
     // orthogonalize tangential vector, preserve circular direction
     for (std::size_t gp = 0; gp < tan.size(); ++gp)
@@ -90,9 +121,10 @@ void DRT::FIBER::UTILS::ProjectFibersToGaussPoints(DRT::Node** nodes,
     }
 
     // orthogonalize radial vector, preserve circular and tangential direction
-    if (gpFiberHolder.ContainsFiber(FiberType::Radial))
+    if (gpFiberHolder.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Radial))
     {
-      std::vector<LINALG::Matrix<3, 1>>& rad = gpFiberHolder.GetFiberMutual(FiberType::Radial);
+      std::vector<LINALG::Matrix<3, 1>>& rad =
+          gpFiberHolder.GetCoordinateSystemDirectionMutual(CoordinateSystemDirection::Radial);
       for (std::size_t gp = 0; gp < tan.size(); ++gp)
       {
         double radcir = rad[gp].Dot(cir[gp]);
@@ -176,9 +208,9 @@ template <std::size_t dim>
 void DRT::FIBER::UTILS::SetupCardiacFibers(
     const NodalFiberHolder& fibers, std::vector<LINALG::Matrix<dim, 1>>& f)
 {
-  if (fibers.ContainsFiber(FiberType::Fiber1))
+  if (fibers.FibersSize() > 0)
   {
-    const std::vector<LINALG::Matrix<3, 1>>& fib = fibers.GetFiber(FiberType::Fiber1);
+    const std::vector<LINALG::Matrix<3, 1>>& fib = fibers.GetFiber(0);
     f.resize(fib.size());
     for (std::size_t gp = 0; gp < fib.size(); ++gp)
     {
@@ -188,10 +220,13 @@ void DRT::FIBER::UTILS::SetupCardiacFibers(
       }
     }
   }
-  else if (fibers.ContainsFiber(FiberType::Circular) && fibers.ContainsFiber(FiberType::Tangential))
+  else if (fibers.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Circular) &&
+           fibers.ContainsCoordinateSystemDirection(CoordinateSystemDirection::Tangential))
   {
-    const std::vector<LINALG::Matrix<3, 1>>& cir = fibers.GetFiber(FiberType::Circular);
-    const std::vector<LINALG::Matrix<3, 1>>& tan = fibers.GetFiber(FiberType::Tangential);
+    const std::vector<LINALG::Matrix<3, 1>>& cir =
+        fibers.GetCoordinateSystemDirection(CoordinateSystemDirection::Circular);
+    const std::vector<LINALG::Matrix<3, 1>>& tan =
+        fibers.GetCoordinateSystemDirection(CoordinateSystemDirection::Tangential);
     const std::vector<double>& helix = fibers.GetAngle(AngleType::Helix);
     const std::vector<double>& transverse = fibers.GetAngle(AngleType::Transverse);
     f.resize(cir.size());
