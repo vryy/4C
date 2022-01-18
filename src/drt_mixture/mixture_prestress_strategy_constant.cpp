@@ -9,6 +9,7 @@
 */
 /*----------------------------------------------------------------------*/
 #include "mixture_prestress_strategy_constant.H"
+#include <memory>
 #include "../drt_mat/matpar_bundle.H"
 #include "mixture_constituent_elasthyper.H"
 #include "../drt_matelast/elast_isoneohooke.H"
@@ -26,16 +27,24 @@ MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
   std::copy_n(matdata->Get<std::vector<double>>("PRESTRETCH")->begin(), 9, prestretch_.begin());
 }
 
-Teuchos::RCP<MIXTURE::PrestressStrategy>
+std::unique_ptr<MIXTURE::PrestressStrategy>
 MIXTURE::PAR::ConstantPrestressStrategy::CreatePrestressStrategy()
 {
-  return Teuchos::rcp(new MIXTURE::ConstantPrestressStrategy(this));
+  std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
+      new MIXTURE::ConstantPrestressStrategy(this));
+  return prestressStrategy;
 }
 
 MIXTURE::ConstantPrestressStrategy::ConstantPrestressStrategy(
     MIXTURE::PAR::ConstantPrestressStrategy* params)
     : PrestressStrategy(params), params_(params)
 {
+}
+
+void MIXTURE::ConstantPrestressStrategy::Setup(
+    MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
+{
+  // nothing to do
 }
 
 void MIXTURE::ConstantPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,

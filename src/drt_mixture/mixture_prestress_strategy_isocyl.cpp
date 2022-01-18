@@ -30,16 +30,24 @@ MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStra
 {
 }
 
-Teuchos::RCP<MIXTURE::PrestressStrategy>
+std::unique_ptr<MIXTURE::PrestressStrategy>
 MIXTURE::PAR::IsotropicCylinderPrestressStrategy::CreatePrestressStrategy()
 {
-  return Teuchos::rcp(new MIXTURE::IsotropicCylinderPrestressStrategy(this));
+  std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
+      new MIXTURE::IsotropicCylinderPrestressStrategy(this));
+  return prestressStrategy;
 }
 
 MIXTURE::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
     MIXTURE::PAR::IsotropicCylinderPrestressStrategy* params)
     : PrestressStrategy(params), params_(params)
 {
+}
+
+void MIXTURE::IsotropicCylinderPrestressStrategy::Setup(
+    MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
+{
+  // nothing to do
 }
 
 void MIXTURE::IsotropicCylinderPrestressStrategy::EvaluatePrestress(const MixtureRule& mixtureRule,

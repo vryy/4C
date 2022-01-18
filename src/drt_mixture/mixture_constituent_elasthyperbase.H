@@ -38,11 +38,6 @@ namespace MIXTURE
 
       int GetPrestressingMatId() const { return matid_prestress_strategy_; }
 
-      Teuchos::RCP<MIXTURE::PrestressStrategy> PrestressStrategy() const
-      {
-        return prestressStrategy_;
-      }
-
       /// @name material parameters
       /// @{
 
@@ -54,9 +49,6 @@ namespace MIXTURE
 
       /// List of material ids of the summands
       const std::vector<int>* matids_;
-
-      /// Strategy for prestressing the constituent
-      Teuchos::RCP<MIXTURE::PrestressStrategy> prestressStrategy_;
       /// @}
     };
   }  // namespace PAR
@@ -188,6 +180,8 @@ namespace MIXTURE
       return cosyAnisotropyExtension_;
     }
 
+    std::shared_ptr<MIXTURE::PrestressStrategy> PrestressStrategy() { return prestressStrategy_; }
+
    private:
     /// @name Flags to specify the elastic formulations (initialize with false)
     //@{
@@ -205,6 +199,9 @@ namespace MIXTURE
 
     /// AnisotropyExtension that handles the management of cylinder coordinate systems
     MAT::CylinderCoordinateSystemAnisotropyExtension cosyAnisotropyExtension_;
+
+    /// Strategy for prestressing the constituent
+    std::shared_ptr<MIXTURE::PrestressStrategy> prestressStrategy_;
   };
 
 }  // namespace MIXTURE

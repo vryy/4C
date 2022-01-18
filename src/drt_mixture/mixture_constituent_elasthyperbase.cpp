@@ -34,14 +34,6 @@ MIXTURE::PAR::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBa
         " %d",
         nummat_, matids_->size());
   }
-
-
-  // Create Prestress strategy
-  if (GetPrestressingMatId() > 0)
-  {
-    prestressStrategy_ =
-        MIXTURE::PAR::PrestressStrategy::Factory(GetPrestressingMatId())->CreatePrestressStrategy();
-  }
 }
 
 // Constructor of the constituent holding the material parameters
@@ -60,6 +52,13 @@ MIXTURE::MixtureConstituent_ElastHyperBase::MixtureConstituent_ElastHyperBase(
     if (sum == Teuchos::null) dserror("Failed to read elastic summand.");
     potsum_.push_back(sum);
   }
+
+  // Create Prestress strategy
+  if (params->GetPrestressingMatId() > 0)
+  {
+    prestressStrategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params->GetPrestressingMatId())
+                             ->CreatePrestressStrategy();
+  }
 }
 
 // Pack the constituent
@@ -76,6 +75,8 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PackConstituent(DRT::PackBuffer
   DRT::ParObject::AddtoPack(data, prestretch_);
 
   cosyAnisotropyExtension_.PackAnisotropy(data);
+
+  if (prestressStrategy_ != nullptr) prestressStrategy_->Pack(data);
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
@@ -125,6 +126,14 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
 
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
+    if (params_->GetPrestressingMatId() > 0)
+    {
+      prestressStrategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params_->GetPrestressingMatId())
+                               ->CreatePrestressStrategy();
+
+      prestressStrategy_->Unpack(position, data);
+    }
+
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
     for (m = params_->matids_->begin(); m != params_->matids_->end(); ++m)
@@ -134,13 +143,6 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UnpackConstituent(
       if (sum == Teuchos::null) dserror("Failed to allocate");
       potsum_.push_back(sum);
     }
-
-
-    /*if (params_->GetPrestressingMatId() > 0)
-    {
-      prestressStrategy_ = MIXTURE::PAR::PrestressStrategy::Factory(params_->GetPrestressingMatId())
-                               ->CreatePrestressStrategy();
-    }*/
 
     // loop map of associated potential summands
     for (auto& summand : potsum_) summand->UnpackSummand(data, position);
@@ -193,9 +195,8 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(LINALG::Matrix<
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    params_->PrestressStrategy()->UpdatePrestress(
-        cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, defgrd, prestretch_[gp],
-        params, gp, eleGID);
+    prestressStrategy_->UpdatePrestress(cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp),
+        *this, defgrd, prestretch_[gp], params, gp, eleGID);
   }
 }
 
@@ -206,6 +207,8 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::Setup(
   if (params_->GetPrestressingMatId() > 0)
   {
     prestretch_.resize(NumGP());
+
+    prestressStrategy_->Setup(*this, params, NumGP(), eleGID);
   }
 }
 
@@ -215,7 +218,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    params_->PrestressStrategy()->EvaluatePrestress(mixtureRule,
+    prestressStrategy_->EvaluatePrestress(mixtureRule,
         cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this, prestretch_[gp], params,
         gp, eleGID);
   }
@@ -224,7 +227,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::PreEvaluate(
 void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
     std::unordered_map<std::string, int>& names_and_size) const
 {
-  if (!Teuchos::is_null(params_->PrestressStrategy()))
+  if (prestressStrategy_ != nullptr)
   {
     names_and_size["mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch"] = 9;
   }
@@ -233,7 +236,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
 bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
     const std::string& name, Epetra_SerialDenseMatrix& data) const
 {
-  if (!Teuchos::is_null(params_->PrestressStrategy()) &&
+  if (prestressStrategy_ != nullptr &&
       name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")
   {
     for (int gp = 0; gp < NumGP(); ++gp)

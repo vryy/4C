@@ -36,7 +36,7 @@ namespace MIXTURE
       ~IsotropicCylinderPrestressStrategy() override = default;
 
       /// create prestress strategy instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
+      std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
 
       /// @name parameters of the prestress strategy
       /// @{
@@ -62,6 +62,9 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit IsotropicCylinderPrestressStrategy(
         MIXTURE::PAR::IsotropicCylinderPrestressStrategy* params);
+
+    void Setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
 
     /*!
      * @brief Evaluates the prestretch

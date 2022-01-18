@@ -35,7 +35,7 @@ namespace MIXTURE
       ~ConstantPrestressStrategy() override = default;
 
       /// create prestress strategy instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
+      std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
 
       /// @name parameters of the prestress strategy
       /// @{
@@ -53,6 +53,9 @@ namespace MIXTURE
    public:
     /// Constructor for the material given the material parameters
     explicit ConstantPrestressStrategy(MIXTURE::PAR::ConstantPrestressStrategy* params);
+
+    void Setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
 
     void EvaluatePrestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const MAT::CoordinateSystemProvider> cosy,

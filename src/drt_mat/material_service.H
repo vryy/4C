@@ -564,6 +564,16 @@ namespace MAT
   template <int dim>
   void PrintFourTensor(const LINALG::FourTensor<dim>& fourTensor);
 
+  /*!
+   * @brief Get the symmetric part of a matrix
+   *
+   * @tparam dim dimension of the matrix
+   * @param inputM non-symmetric input matrix
+   * @param outputM symmetric output matrix
+   */
+  template <int dim>
+  void GetSymmetricPart(const LINALG::Matrix<dim, dim>& inputM, LINALG::Matrix<dim, dim>& outputM);
+
 }  // namespace MAT
 
 #endif

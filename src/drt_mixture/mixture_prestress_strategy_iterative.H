@@ -42,11 +42,14 @@ namespace MIXTURE
       ~IterativePrestressStrategy() override = default;
 
       /// create prestress strategy instance of matching type with my parameters
-      Teuchos::RCP<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
+      std::unique_ptr<MIXTURE::PrestressStrategy> CreatePrestressStrategy() override;
 
 
       /// @name parameters of the prestress strategy
       /// @{
+
+      /// Flag whether the prestretch tensor is isochoric
+      const bool isochoric_;
       /// @}
     };
   }  // namespace PAR
@@ -64,12 +67,15 @@ namespace MIXTURE
     /// Constructor for the material given the material parameters
     explicit IterativePrestressStrategy(MIXTURE::PAR::IterativePrestressStrategy* params);
 
+    void Setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+        int eleGID) override;
+
     void EvaluatePrestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    virtual void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+    void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const LINALG::Matrix<3, 3>& F,
         LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
