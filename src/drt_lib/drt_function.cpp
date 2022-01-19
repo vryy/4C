@@ -13,7 +13,6 @@
 #include "drt_function.H"
 #include "drt_functionvariables.H"
 #include "drt_globalproblem.H"
-#include "standardtypes_cpp.H"
 #include "drt_linedefinition.H"
 #include "../drt_fluid/fluid_functions.H"
 #include "../drt_structure_new/str_functions.H"
@@ -328,8 +327,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions = lines->Read(reader, i);
 
     if (functions.size() == 0)
+    {
       break;
-
+    }
     else
     {
       Teuchos::RCP<DRT::INPUT::LineDefinition> function = functions[0];
@@ -340,29 +340,29 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         double c1;
         function->ExtractDouble("c1", c1);
 
-        functions_.push_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
+        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
       }
       else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction()));
       }
       else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
       {
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
       }
       else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFourier3Function()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
       {
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
       {
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
@@ -384,7 +384,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
         if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(mat_id, L, R, U)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
@@ -409,7 +409,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (U <= 0)
           dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(mat_id, L, R, U)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
@@ -422,7 +422,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (mat_id <= 0)
           dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(mat_id)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
@@ -435,7 +435,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (mat_id <= 0)
           dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(mat_id)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
@@ -448,7 +448,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (mat_id <= 0)
           dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
 
-        functions_.push_back(Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(mat_id)));
+        functions_.emplace_back(
+            Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(mat_id)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
       {
@@ -460,7 +461,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (mat_id <= 0)
           dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(mat_id)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
@@ -473,7 +474,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (mat_id <= 0)
           dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(mat_id)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
@@ -490,7 +491,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         if (mat_id_struc <= 0)
           dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
 
-        functions_.push_back(Teuchos::rcp(
+        functions_.emplace_back(Teuchos::rcp(
             new FLD::WeaklyCompressibleEtienneFSIFluidFunction(mat_id_fluid, mat_id_struc)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
@@ -503,15 +504,19 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT_STRUC", mat_id_struc);
 
         if (mat_id_fluid <= 0)
+        {
           dserror(
               "Please give a (reasonable) 'MAT_FLUID' in "
               "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
+        }
         if (mat_id_struc <= 0)
+        {
           dserror(
               "Please give a (reasonable) 'MAT_STRUC' in "
               "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
+        }
 
-        functions_.push_back(Teuchos::rcp(
+        functions_.emplace_back(Teuchos::rcp(
             new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(mat_id_fluid, mat_id_struc)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
@@ -524,15 +529,19 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT_STRUC", mat_id_struc);
 
         if (mat_id_fluid <= 0)
+        {
           dserror(
               "Please give a (reasonable) 'MAT_FLUID' in "
               "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
+        }
         if (mat_id_struc <= 0)
+        {
           dserror(
               "Please give a (reasonable) 'MAT_STRUC' in "
               "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
+        }
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
                 mat_id_fluid, mat_id_struc)));
       }
@@ -547,7 +556,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           dserror(
               "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(mat_id_struc)));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
@@ -558,24 +567,26 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT_STRUC", mat_id_struc);
 
         if (mat_id_struc <= 0)
+        {
           dserror(
               "Please give a (reasonable) 'MAT_STRUC' in "
               "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
+        }
 
-        functions_.push_back(Teuchos::rcp(
+        functions_.emplace_back(Teuchos::rcp(
             new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(mat_id_struc)));
       }
       else if (function->HaveNamed("KIM-MOIN"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::KimMoinFunction()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinFunction()));
       }
       else if (function->HaveNamed("BOCHEV-UP"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::BochevUPFunction()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::BochevUPFunction()));
       }
       else if (function->HaveNamed("BOCHEV-RHS"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::BochevRHSFunction()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::BochevRHSFunction()));
       }
       else if (function->HaveNamed("BELTRAMI-UP"))
       {
@@ -586,7 +597,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
-        functions_.push_back(Teuchos::rcp(new FLD::BeltramiUP(mat_id)));
+        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiUP(mat_id)));
       }
       else if (function->HaveNamed("BELTRAMI-GRADU"))
       {
@@ -597,7 +608,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
 
-        functions_.push_back(Teuchos::rcp(new FLD::BeltramiGradU(mat_id)));
+        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiGradU(mat_id)));
       }
       else if (function->HaveNamed("BELTRAMI-RHS"))
       {
@@ -610,7 +621,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
 
-        functions_.push_back(Teuchos::rcp(new FLD::BeltramiRHS(mat_id, (bool)is_stokes)));
+        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiRHS(mat_id, (bool)is_stokes)));
       }
       else if (function->HaveNamed("KIMMOIN-UP"))
       {
@@ -623,7 +634,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
-        functions_.push_back(Teuchos::rcp(new FLD::KimMoinUP(mat_id, (bool)is_stationary)));
+        functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinUP(mat_id, (bool)is_stationary)));
       }
       else if (function->HaveNamed("KIMMOIN-GRADU"))
       {
@@ -636,7 +647,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
 
-        functions_.push_back(Teuchos::rcp(new FLD::KimMoinGradU(mat_id, (bool)is_stationary)));
+        functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinGradU(mat_id, (bool)is_stationary)));
       }
       else if (function->HaveNamed("KIMMOIN-RHS"))
       {
@@ -651,7 +662,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
       }
       else if (function->HaveNamed("KIMMOIN-STRESS"))
@@ -667,80 +678,81 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary, amplitude)));
       }
       else if (function->HaveNamed("TURBBOULAYER"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::TurbBouLayerFunction()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::TurbBouLayerFunction()));
       }
       else if (function->HaveNamed("TURBBOULAYER-BFS"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::TurbBouLayerFunctionBFS()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::TurbBouLayerFunctionBFS()));
       }
       else if (function->HaveNamed("TURBBOULAYERORACLES"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::TurbBouLayerFunctionORACLES()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::TurbBouLayerFunctionORACLES()));
       }
       else if (function->HaveNamed("JEFFERY-HAMEL"))
       {
-        functions_.push_back(Teuchos::rcp(new FLD::JefferyHamelFlowFunction()));
+        functions_.emplace_back(Teuchos::rcp(new FLD::JefferyHamelFlowFunction()));
       }
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
-        functions_.push_back(Teuchos::rcp(new ZalesaksDiskFunction()));
+        functions_.emplace_back(Teuchos::rcp(new ZalesaksDiskFunction()));
       }
       else if (function->HaveNamed("CIRCULARFLAME2"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame2Function()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CircularFlame2Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME3"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame3Function()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CircularFlame3Function()));
       }
       else if (function->HaveNamed("CIRCULARFLAME4"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CircularFlame4Function()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CircularFlame4Function()));
       }
       else if (function->HaveNamed("DAMBREAKOBSTACLE"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::DamBreakObstacle()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::DamBreakObstacle()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunctionCoarse()));
+        functions_.emplace_back(
+            Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunctionCoarse()));
       }
       else if (function->HaveNamed("IMPACTDROP"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::ImpactFunction()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::ImpactFunction()));
       }
       else if (function->HaveNamed("BUBBLES"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::BubbleFunction()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::BubbleFunction()));
       }
       else if (function->HaveNamed("ORACLESGFUNC"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::ORACLESGFunction()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::ORACLESGFunction()));
       }
       else if (function->HaveNamed("ROTATINGCONE"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::RotatingConeFunction()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::RotatingConeFunction()));
       }
       else if (function->HaveNamed("LEVELSETCUTTEST"))
       {
-        functions_.push_back(Teuchos::rcp(new DRT::UTILS::LevelSetCutTestFunction()));
+        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::LevelSetCutTestFunction()));
       }
       else if (function->HaveNamed("FORWARDFACINGSTEP"))
       {
-        functions_.push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
+        functions_.emplace_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
       }
       else if (function->HaveNamed("SLIPLENGTHFUNCTION"))
       {
-        functions_.push_back(Teuchos::rcp(new SlipLengthLevelSetManipulator()));
+        functions_.emplace_back(Teuchos::rcp(new SlipLengthLevelSetManipulator()));
       }
       else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
       {
@@ -759,7 +771,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         double maxspeed;
         function->ExtractDouble("MAXSPEED", maxspeed);
 
-        functions_.push_back(Teuchos::rcp(
+        functions_.emplace_back(Teuchos::rcp(
             new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed)));
       }
       else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
@@ -787,7 +799,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         double viscosity;
         function->ExtractDouble("VISCOSITY", viscosity);
 
-        functions_.push_back(
+        functions_.emplace_back(
             Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
                 sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity)));
       }
@@ -796,7 +808,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         std::vector<double> coefficients;
         function->ExtractDoubleVector("COEFF", coefficients);
 
-        functions_.push_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
+        functions_.emplace_back(Teuchos::rcp(new FastPolynomialFunction(&coefficients)));
       }
       else if (function->HaveNamed("TRANSLATEDFUNCTION"))
       {
@@ -805,20 +817,24 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("LOCAL", local);
 
         if (origin <= 0 or origin >= i)
+        {
           dserror(
               "ORIGIN function ID (currently %d) must be positive and smaller than "
               "TRANSLATEDFUNCTION (currently %d).",
               origin, i);
+        }
         if (local <= 0 or local >= i)
+        {
           dserror(
               "LOCAL function ID (currently %d) must be positive and smaller than "
               "TRANSLATEDFUNCTION (currently %d).",
               local, i);
+        }
 
         Teuchos::RCP<Function> origin_funct = Teuchos::rcpFromRef(Funct(origin - 1));
         Teuchos::RCP<Function> local_funct = Teuchos::rcpFromRef(Funct(local - 1));
 
-        functions_.push_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
+        functions_.emplace_back(Teuchos::rcp(new TranslatedFunction(origin_funct, local_funct)));
       }
       else if (function->HaveNamed("VARFUNCTION"))
       {
@@ -832,7 +848,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           function->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
 
         vecfunc->AddExpr(component, constants);
-        functions_.push_back(vecfunc);
+        functions_.emplace_back(vecfunc);
       }
       else if (function->HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
       {
@@ -855,15 +871,21 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
           vecfunc = Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro(params));
         else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+        {
           vecfunc =
               Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont(params));
+        }
         else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
+        {
           vecfunc =
               Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc(params));
+        }
         else
+        {
           dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+        }
 
-        functions_.push_back(vecfunc);
+        functions_.emplace_back(vecfunc);
       }
       else if (DRT::UTILS::CombustFunctionHaveNamed(function, &functions_))
       {
@@ -881,16 +903,14 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         // evaluate the maximum component and the number of variables
         int maxcomp = 0;
         int maxvar = -1;
-        for (unsigned int n = 0; n < functions.size(); ++n)
+        for (const auto& ith_function : functions)
         {
-          Teuchos::RCP<DRT::INPUT::LineDefinition> functnumcompvar = functions[n];
-          functnumcompvar->ExtractInt("COMPONENT", maxcomp);
-          functnumcompvar->ExtractInt("VARIABLE", maxvar);
+          ith_function->ExtractInt("COMPONENT", maxcomp);
+          ith_function->ExtractInt("VARIABLE", maxvar);
         }
 
         // evaluate the number of rows used for the definition of the variables
-        int numrowsvar;
-        numrowsvar = functions.size() - maxcomp - 1;
+        std::size_t numrowsvar = functions.size() - maxcomp - 1;
 
         // define a vector of strings
         std::vector<std::string> functstring(maxcomp + 1);
@@ -924,7 +944,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         int varidold = -1;
 
         // read each row where the variables of the i-th function are defined
-        for (int j = 1; j <= numrowsvar; ++j)
+        for (std::size_t j = 1; j <= numrowsvar; ++j)
         {
           // update the current row
           Teuchos::RCP<DRT::INPUT::LineDefinition> timevar = functions[maxcomp + j];
@@ -1083,8 +1103,8 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
             timevar->ExtractStringVector("DESCRIPTION", description_vec);
 
             // check if the number of times = number of descriptions + 1
-            int numtimes = times.size();
-            int numdescriptions = description_vec.size();
+            std::size_t numtimes = times.size();
+            std::size_t numdescriptions = description_vec.size();
             if (numtimes != numdescriptions + 1)
               dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
@@ -1174,7 +1194,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           vecfunc->AddExpr(functstring[n], functvarvector);
         }
 
-        functions_.push_back(vecfunc);
+        functions_.emplace_back(vecfunc);
       }
     }
   }
@@ -1201,11 +1221,8 @@ DRT::UTILS::ExprFunction::ExprFunction()
 }
 
 
-DRT::UTILS::ExprFunction::~ExprFunction() {}
-
-
-void DRT::UTILS::ExprFunction::AddExpr(
-    std::string buf, std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables)
+void DRT::UTILS::ExprFunction::AddExpr(const std::string& buf,
+    const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables)
 {
   variables_ = variables;
 
@@ -1235,8 +1252,6 @@ void DRT::UTILS::ExprFunction::AddExpr(
   exprdd_.push_back(parserdd);
 
   isparsed_ = false;
-
-  return;
 }
 
 
@@ -1245,7 +1260,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
   if (not isparsed_) ParseExpressions();
 
-  double index_mod = index;
+  std::size_t index_mod = index;
 
   if (expr_.size() == 1)
   {
@@ -1266,7 +1281,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
     // find the right definition of the variable according to the hierarchy
     unsigned int n = 0;
     bool containtime = false;
-    while (containtime == false)
+    while (!containtime)
     {
       if (n == variables_[i].size())
       {
@@ -1276,7 +1291,7 @@ double DRT::UTILS::ExprFunction::Evaluate(const int index, const double* x, doub
       {
         containtime = variables_[i][n]->ContainTime(t);
       }
-      if (containtime == false)
+      if (!containtime)
       {
         ++n;
       }
@@ -1296,7 +1311,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
-  double index_mod = index;
+  std::size_t index_mod = index;
 
   if (expr_.size() == 1)
   {
@@ -1304,27 +1319,30 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
   }
 
   // define Fad object for evaluation
-  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double>> FAD;
+  using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
 
   // define FAD variables
+  // arguments are: x, y, z, and t
+  const int number_of_arguments = 4;
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  FAD xfad(4 + variables_.size(), 0, x[0]);
-  FAD yfad(4 + variables_.size(), 1, x[1]);
-  FAD zfad(4 + variables_.size(), 2, x[2]);
-  FAD tfad(4 + variables_.size(), 3, t);
+  const int fad_size = number_of_arguments + static_cast<int>(variables_.size());
+  FAD xfad(fad_size, 0, x[0]);
+  FAD yfad(fad_size, 1, x[1]);
+  FAD zfad(fad_size, 2, x[2]);
+  FAD tfad(fad_size, 3, t);
 
-  xfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 3, t);
+  xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
+  yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
+  zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
+  tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
 
   std::vector<FAD> fadvectvars(variables_.size());
-  for (unsigned int i = 0; i < variables_.size(); ++i)
+  for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
   {
     // find the right definition of the variable according to the hierarchy
     unsigned int n = 0;
     bool containtime = false;
-    while (containtime == false)
+    while (!containtime)
     {
       if (n == variables_[i].size())
       {
@@ -1334,14 +1352,14 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
       {
         containtime = variables_[i][n]->ContainTime(t);
       }
-      if (containtime == false)
+      if (!containtime)
       {
         ++n;
       }
     }
-    fadvectvars[i] = FAD(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
+    fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
     fadvectvars[i].val() =
-        Sacado::Fad::DFad<double>(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
+        Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
   }
   FAD fdfad;
 
@@ -1388,7 +1406,7 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateSpatialDerivative(
 
   // result vector
   std::vector<double> res(3, 0.0);
-  for (unsigned int d = 0; d < 3; ++d)
+  for (int d = 0; d < 3; ++d)
   {
     res[d] = fdfad.dx(d).val();
   }
@@ -1410,34 +1428,37 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
   // parse expression if not already parsed
   if (not isparsed_) ParseExpressions();
 
-  double index_mod = index;
+  std::size_t index_mod = index;
   if (expr_.size() == 1)
   {
     index_mod = 0;
   }
 
   // define Fad object for evaluation
-  typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double>> FAD;
+  using FAD = Sacado::Fad::DFad<Sacado::Fad::DFad<double>>;
 
   // define FAD variables
+  // arguments are: x, y, z, and t
+  const int number_of_arguments = 4;
   // we consider a function of the type F = F ( x, y, z, t, v1(t), ..., vn(t) )
-  FAD xfad(4 + variables_.size(), 0, x[0]);
-  FAD yfad(4 + variables_.size(), 1, x[1]);
-  FAD zfad(4 + variables_.size(), 2, x[2]);
-  FAD tfad(4 + variables_.size(), 3, t);
+  const int fad_size = number_of_arguments + static_cast<int>(variables_.size());
+  FAD xfad(fad_size, 0, x[0]);
+  FAD yfad(fad_size, 1, x[1]);
+  FAD zfad(fad_size, 2, x[2]);
+  FAD tfad(fad_size, 3, t);
 
-  xfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 0, x[0]);
-  yfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 1, x[1]);
-  zfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 2, x[2]);
-  tfad.val() = Sacado::Fad::DFad<double>(4 + variables_.size(), 3, t);
+  xfad.val() = Sacado::Fad::DFad<double>(fad_size, 0, x[0]);
+  yfad.val() = Sacado::Fad::DFad<double>(fad_size, 1, x[1]);
+  zfad.val() = Sacado::Fad::DFad<double>(fad_size, 2, x[2]);
+  tfad.val() = Sacado::Fad::DFad<double>(fad_size, 3, t);
 
   std::vector<FAD> fadvectvars(variables_.size());
-  for (unsigned int i = 0; i < variables_.size(); ++i)
+  for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
   {
     // find the right definition of the variable according to the hierarchy
     unsigned int n = 0;
     bool containtime = false;
-    while (containtime == false)
+    while (!containtime)
     {
       if (n == variables_[i].size())
       {
@@ -1447,14 +1468,14 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
       {
         containtime = variables_[i][n]->ContainTime(t);
       }
-      if (containtime == false)
+      if (!containtime)
       {
         ++n;
       }
     }
-    fadvectvars[i] = FAD(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
+    fadvectvars[i] = FAD(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
     fadvectvars[i].val() =
-        Sacado::Fad::DFad<double>(4 + variables_.size(), 4 + i, variables_[i][n]->Value(t));
+        Sacado::Fad::DFad<double>(fad_size, number_of_arguments + i, variables_[i][n]->Value(t));
   }
   FAD fdfad;
 
@@ -1505,24 +1526,25 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     // evaluation of dF/dt applying the chain rule:
     // dF/dt = dF*/dt + sum_i(dF/dvi*dvi/dt)
     double fdfad_dt = fdfad.dx(3).val();
-    for (unsigned int i = 0; i < variables_.size(); ++i)
+    for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
       // find the right definition of the variable according to the hierarchy
       unsigned int n = 0;
       bool containtime = false;
-      while (containtime == false)
+      while (!containtime)
       {
         containtime = variables_[i][n]->ContainTime(t);
         if (n == variables_[i].size())
         {
           dserror("the variable %d is not defined in the time considered", i);
         }
-        if (containtime == false)
+        if (!containtime)
         {
           ++n;
         }
       }
-      fdfad_dt += fdfad.dx(4 + i).val() * variables_[i][n]->TimeDerivativeValue(t);
+      fdfad_dt +=
+          fdfad.dx(number_of_arguments + i).val() * variables_[i][n]->TimeDerivativeValue(t);
     }
 
     res[1] = fdfad_dt;
@@ -1540,47 +1562,49 @@ std::vector<double> DRT::UTILS::ExprFunction::EvaluateTimeDerivative(
     double fdfad_dt2 = fdfad.dx(3).dx(3);
     std::vector<double> fdfad_dt2_term(variables_.size());
 
-    for (unsigned int i = 0; i < variables_.size(); ++i)
+    for (int i = 0; i < static_cast<int>(variables_.size()); ++i)
     {
       fdfad_dt2_term[i] = 0;
       // find the right definition of the variable according to the hierarchy
       unsigned int n = 0;
       bool containtime = false;
-      while (containtime == false)
+      while (!containtime)
       {
         containtime = variables_[i][n]->ContainTime(t);
         if (n == variables_[i].size())
         {
           dserror("the variable %d is not defined in the time considered", i);
         }
-        if (containtime == false)
+        if (!containtime)
         {
           ++n;
         }
       }
-      fdfad_dt2_term[i] += fdfad.dx(3).dx(4 + i);
-      fdfad_dt2_term[i] += fdfad.dx(4 + i).dx(3);
-      for (unsigned int j = 0; j < variables_.size(); ++j)
+      fdfad_dt2_term[i] += fdfad.dx(3).dx(number_of_arguments + i);
+      fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(3);
+      for (int j = 0; j < static_cast<int>(variables_.size()); ++j)
       {
         // find the right definition of the variable according to the hierarchy
         unsigned int m = 0;
-        bool containtime = false;
-        while (containtime == false)
+        bool containtime_inner = false;
+        while (!containtime_inner)
         {
-          containtime = variables_[j][m]->ContainTime(t);
+          containtime_inner = variables_[j][m]->ContainTime(t);
           if (m == variables_[j].size())
           {
             dserror("the variable %d is not defined in the time considered", j);
           }
-          if (containtime == false)
+          if (!containtime_inner)
           {
             ++m;
           }
         }
-        fdfad_dt2_term[i] += fdfad.dx(4 + i).dx(4 + j) * variables_[j][m]->TimeDerivativeValue(t);
+        fdfad_dt2_term[i] += fdfad.dx(number_of_arguments + i).dx(number_of_arguments + j) *
+                             variables_[j][m]->TimeDerivativeValue(t);
       }
       fdfad_dt2_term[i] *= variables_[i][n]->TimeDerivativeValue(t);
-      fdfad_dt2_term[i] += fdfad.dx(4 + i).val() * variables_[i][n]->TimeDerivativeValue(t, 2);
+      fdfad_dt2_term[i] +=
+          fdfad.dx(number_of_arguments + i).val() * variables_[i][n]->TimeDerivativeValue(t, 2);
       fdfad_dt2 += fdfad_dt2_term[i];
     }
 
@@ -1633,16 +1657,10 @@ void DRT::UTILS::ExprFunction::ParseExpressions()
 
   isparsed_ = true;
 }
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::UTILS::VariableExprFunction::VariableExprFunction() : isparsed_(false) {}
-
-
-DRT::UTILS::VariableExprFunction::~VariableExprFunction() {}
 
 
 void DRT::UTILS::VariableExprFunction::AddExpr(
-    std::string buf, std::vector<std::pair<std::string, double>> constants)
+    const std::string& buf, const std::vector<std::pair<std::string, double>>& constants)
 {
   // do the almost same as the expression function (base class) but do not yet parse!
 
@@ -1655,20 +1673,14 @@ void DRT::UTILS::VariableExprFunction::AddExpr(
       Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<double>>(buf));
 
   // add constants
-  for (std::vector<std::pair<std::string, double>>::iterator it = constants.begin();
-       it != constants.end(); it++)
-    parser->AddVariable(it->first, it->second);
-  for (std::vector<std::pair<std::string, double>>::iterator it = constants.begin();
-       it != constants.end(); it++)
-    parserd->AddVariable(it->first, it->second);
+  for (const auto& constant : constants) parser->AddVariable(constant.first, constant.second);
+  for (const auto& constant : constants) parserd->AddVariable(constant.first, constant.second);
 
   // save the parsers
   expr_.push_back(parser);
   exprd_.push_back(parserd);
 
   isparsed_ = false;
-
-  return;
 }
 
 
@@ -1747,15 +1759,14 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
 {
   if (not isparsed_) ParseExpressions();
 
-  // Fad object for evaluation
-  // sacado data type replaces "double"
-  typedef Sacado::Fad::DFad<double> FAD;
-
   // number of variables
-  int numvariables = variables.size();
+  int numvariables = static_cast<int>(variables.size());
 
   // counter for variable numbering
   int counter = 0;
+
+  // define Fad object for evaluation
+  using FAD = Sacado::Fad::DFad<double>;
 
   // set the values of the variables
   std::vector<std::pair<std::string, double>>::const_iterator it;
@@ -1788,15 +1799,14 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
 {
   if (not isparsed_) ParseExpressions();
 
-  // Fad object for evaluation
-  // sacado data type replaces "double"
-  typedef Sacado::Fad::DFad<double> FAD;
-
   // number of variables
-  int numvariables = variables.size();
+  int numvariables = static_cast<int>(variables.size());
 
   // counter for variable numbering
   int counter = 0;
+
+  // define Fad object for evaluation
+  using FAD = Sacado::Fad::DFad<double>;
 
   // set the values of the variables
   std::vector<std::pair<std::string, double>>::const_iterator it;
@@ -1840,22 +1850,22 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
   {
     case 3:
     {
-      variables.push_back(std::pair<std::string, double>("x", x[0]));  //-x_[index]
-      variables.push_back(std::pair<std::string, double>("y", x[1]));  //-y_[index]
-      variables.push_back(std::pair<std::string, double>("z", x[2]));  //-z_[index]
+      variables.emplace_back("x", x[0]);  //-x_[index]
+      variables.emplace_back("y", x[1]);  //-y_[index]
+      variables.emplace_back("z", x[2]);  //-z_[index]
     }
     case 2:
     {
-      variables.push_back(std::pair<std::string, double>("x", x[0]));  //-x_[index]
-      variables.push_back(std::pair<std::string, double>("y", x[1]));  //-y_[index]
+      variables.emplace_back("x", x[0]);  //-x_[index]
+      variables.emplace_back("y", x[1]);  //-y_[index]
     }
     case 1:
     {
-      variables.push_back(std::pair<std::string, double>("x", x[0]));  //-x_[index]
+      variables.emplace_back("x", x[0]);  //-x_[index]
     }
   }
 
-  variables.push_back(std::pair<std::string, double>("t", t));
+  variables.emplace_back("t", t);
 
   return Evaluate(index, variables);
 }
@@ -1864,7 +1874,9 @@ double DRT::UTILS::VariableExprFunction::Evaluate(const int index, const double*
 std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateSpatialDerivative(
     int index, const double* x, const double t)
 {
-  std::vector<std::pair<std::string, double>> variables(4);
+  // arguments are: x, y, z, and t
+  const int number_of_arguments = 4;
+  std::vector<std::pair<std::string, double>> variables(number_of_arguments);
 
   variables[0] = std::pair<std::string, double>("x", x[0]);
   variables[1] = std::pair<std::string, double>("y", x[1]);

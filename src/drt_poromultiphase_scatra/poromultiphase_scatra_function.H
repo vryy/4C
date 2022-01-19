@@ -13,8 +13,6 @@
 #include "../drt_lib/drt_function.H"
 #include "Sacado.hpp"
 
-// define Fad object for evaluation
-typedef Sacado::Fad::DFad<double> FAD;
 
 #ifndef SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_FUNCTION_H_
 #define SRC_DRT_POROMULTIPHASE_SCATRA_POROMULTIPHASE_SCATRA_FUNCTION_H_
@@ -195,7 +193,7 @@ namespace POROMULTIPHASESCATRA
 
     // return the number of components --> Reaction functions always have to have only one
     // component
-    int NumberComponents() { return 1; }
+    std::size_t NumberComponents() override { return 1; }
 
    protected:
     // function parameters for the specific POROMULTIPHASESCATRA_FUNCTION (have to be read in from

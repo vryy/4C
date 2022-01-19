@@ -44,20 +44,6 @@ namespace DRT
        */
       TranslatedFunction(Teuchos::RCP<Function> origin, Teuchos::RCP<Function> local);
 
-      /**
-       * \brief Evaluation of the translated function
-       *
-       * Evaluate the specified component of the translated function at the specified position and
-       * point in time.
-       *
-       * @param index (i) For vector-valued functions, index defines the
-                       function-component which should be evaluated
-       * @param t     (i) The point in time in which the
-                       function will be evaluated
-       * @param x     (i) The point in 3-dimensional space in which the
-                       function will be evaluated
-         @return function value
-       */
       double Evaluate(int index, const double* x, double t) override;
 
       /**
@@ -66,20 +52,15 @@ namespace DRT
        * Evaluate the specified component of the translated function at the specified position and
        * point in time and calculate the time derivative.
        *
-       * @param index (i) For vector-valued functions, index defines the
-                       function-component which should be evaluated
-       * @param t     (i) The point in time in which the
-                       function will be evaluated
-       * @param x     (i) The point in 3-dimensional space in which the
-                       function will be evaluated
+       * @param index (i) For vector-valued functions, index defines the function-component which
+       *                  should be evaluated
+       * @param x     (i) The point in 3-dimensional space in which the function will be evaluated
+       * @param t     (i) The point in time in which the function will be evaluated
        * @param deg   (i) maximum time derivative degree, has to be 0 or 1 for this implementation
          @return vector containing value and derivative
        */
-      std::vector<double> EvaluateTimeDerivative(int index,  ///< component of function
-          const double* x,                                   ///< coordinates
-          double t,                                          ///< time
-          unsigned deg                                       ///< degree of maximal derivative
-          ) override;
+      std::vector<double> EvaluateTimeDerivative(
+          int index, const double* x, double t, unsigned deg) override;
 
       //! number of spatial dimensions required to shift the origin
       const static int nsd_originTranslation = 3;
@@ -142,7 +123,7 @@ namespace DRT
                        function will be evaluated
       \throws dserror
       */
-      virtual double Evaluate(const int index, const double* x, double t)
+      double Evaluate(const int index, const double* x, double t) override
       {
         dserror("FastPolynomialFunction does not support this call.");
         return 0;

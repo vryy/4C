@@ -37,7 +37,7 @@ namespace DRT
       GerstenbergerForwardfacingStep();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
     };
 
 
@@ -56,7 +56,7 @@ namespace DRT
           std::vector<double>* direction, double distance, double maxspeed);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
      private:
       // Origin of the geometry
@@ -191,7 +191,7 @@ namespace DRT
           double maxspeed, std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
     };
 
     class MovingLevelSetTorusVelocity : public MovingLSTorus
@@ -204,7 +204,7 @@ namespace DRT
           std::vector<double>* rotvector, double rotspeed, double rotramptime);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
       /*
       \brief Return the number of components of this spatial function
@@ -213,7 +213,7 @@ namespace DRT
       \return number of components (u,v,w)
 
       */
-      virtual int NumberComponents() { return (3); };
+      std::size_t NumberComponents() override { return (3); };
     };
 
     class MovingLevelSetTorusSliplength : public MovingLSTorus
@@ -226,7 +226,7 @@ namespace DRT
           std::vector<double>* rotvector, double rotspeed, double rotramptime, int slipfunct);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
      private:
       int slipfunct_;
@@ -244,9 +244,10 @@ namespace DRT
           double traction_theta_inner, double traction_theta_outer, double viscosity);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
-      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t);
+      std::vector<double> EvaluateSpatialDerivative(
+          int index, const double* x, const double t) override;
 
      private:
       // Origin of the geometry
@@ -277,10 +278,11 @@ namespace DRT
           double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
       // Derivative
-      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t);
+      std::vector<double> EvaluateSpatialDerivative(
+          int index, const double* x, const double t) override;
 
      protected:
       double lengthx_;   // Length lx -> [-lx,lx]
@@ -305,12 +307,13 @@ namespace DRT
           double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
-      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t)
+      std::vector<double> EvaluateSpatialDerivative(
+          int index, const double* x, const double t) override
       {
         dserror("Derivative not implemented for UrquizaBoxFlowForce");
-        return std::vector<double>();
+        return {};
       }
     };
 
@@ -324,12 +327,13 @@ namespace DRT
           double density, int functno, std::vector<double> lincomb);
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
 
-      std::vector<double> EvaluateSpatialDerivative(int index, const double* x, const double t)
+      std::vector<double> EvaluateSpatialDerivative(
+          int index, const double* x, const double t) override
       {
         dserror("Derivative not implemented for UrquizaBoxFlowTraction");
-        return std::vector<double>();
+        return {};
       }
     };
 
@@ -342,7 +346,7 @@ namespace DRT
       SlipLengthLevelSetManipulator();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
     };
 
 

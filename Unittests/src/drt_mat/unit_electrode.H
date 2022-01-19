@@ -46,15 +46,15 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     container->Add("DIFF_COEF_CONC_DEP_FUNCT", 0);
     container->Add("DIFF_COEF_TEMP_SCALE_FUNCT", 0);
     container->Add("DIFF_PARA_NUM", 0);
-    container->Add("DIFF_PARA", std::vector<double>(0, 0.));
+    container->Add("DIFF_PARA", std::vector<double>(0, 0.0));
     container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-    container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.));
+    container->Add("DIFF_COEF_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
     container->Add("COND_CONC_DEP_FUNCT", 0);
     container->Add("COND_TEMP_SCALE_FUNCT", 0);
     container->Add("COND_PARA_NUM", 0);
-    container->Add("COND_PARA", std::vector<double>(0, 0.));
+    container->Add("COND_PARA", std::vector<double>(0, 0.0));
     container->Add("COND_TEMP_SCALE_FUNCT_PARA_NUM", 0);
-    container->Add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.));
+    container->Add("COND_TEMP_SCALE_FUNCT_PARA", std::vector<double>(0, 0.0));
 
     // obtain half-cell open-circuit equilibrium potential from cubic spline interpolation of *.csv
     // data points
@@ -64,12 +64,12 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     container->Add("C_MAX", 4793.3);
     container->Add("CHI_MAX", 1.0);
     container->Add("OCP_PARA_NUM", 0);
-    container->Add("OCP_PARA", std::vector<double>(0, 0.));
+    container->Add("OCP_PARA", std::vector<double>(0, 0.0));
     std::string ocpcsv(__FILE__);
     ocpcsv.replace(ocpcsv.end() - 1, ocpcsv.end(), "csv");
     container->Add("OCP_CSV", ocpcsv);
-    container->Add("X_MIN", -1.);
-    container->Add("X_MAX", -1.);
+    container->Add("X_MIN", -1.0);
+    container->Add("X_MAX", -1.0);
 
     // initialize parameter class for cathode material
     parameters_cathode_csv_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -79,7 +79,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 
     // define sample concentration values for cathode material
     // cf. master thesis by Alexander Rupp (2017)
-    concentrations_cathode_csv_.resize(3, 0.);
+    concentrations_cathode_csv_.resize(3, 0.0);
     concentrations_cathode_csv_[0] = 1677.6;  // cathode concentration at 100% state of charge
     concentrations_cathode_csv_[1] = 3115.6;  // cathode concentration at 50% intercalation fraction
     concentrations_cathode_csv_[2] = 4553.6;  // cathode concentration at 0% state of charge
@@ -92,7 +92,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     // 118-129
     container->Add("C_MAX", 16.1);
     container->Add("OCP_PARA_NUM", 16);
-    std::vector<double> ocp_para(16, 0.);
+    std::vector<double> ocp_para(16, 0.0);
     ocp_para[0] = 1.1652e4;
     ocp_para[1] = -3.268e3;
     ocp_para[2] = 3.955e3;
@@ -111,8 +111,8 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     ocp_para[15] = -3.280e4;
     container->Add("OCP_PARA", ocp_para);
     container->Add("OCP_CSV", "");
-    container->Add("X_MIN", -1.);
-    container->Add("X_MAX", -1.);
+    container->Add("X_MIN", -1.0);
+    container->Add("X_MAX", -1.0);
 
     // initialize parameter class for anode material
     parameters_anode_redlichkister_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -122,7 +122,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 
     // define sample concentration values for anode material
     // cf. Goldin et al., Electrochimica Acta 64 (2012) 118-129
-    concentrations_anode_redlichkister_.resize(3, 0.);
+    concentrations_anode_redlichkister_.resize(3, 0.0);
     concentrations_anode_redlichkister_[0] = 2.029;  // anode concentration at 0% state of charge
     concentrations_anode_redlichkister_[1] =
         8.05;  // anode concentration at 50% intercalation fraction (constitutes singularity in
@@ -133,7 +133,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     // 118-129
     container->Add("C_MAX", 23.9);
     container->Add("OCP_PARA_NUM", 21);
-    ocp_para.resize(21, 0.);
+    ocp_para.resize(21, 0.0);
     ocp_para[0] = 3.954616e5;
     ocp_para[1] = -7.676e4;
     ocp_para[2] = 3.799e4;
@@ -157,8 +157,8 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     ocp_para[20] = -1.084e6;
     container->Add("OCP_PARA", ocp_para);
     container->Add("OCP_CSV", "");
-    container->Add("X_MIN", -1.);
-    container->Add("X_MAX", -1.);
+    container->Add("X_MIN", -1.0);
+    container->Add("X_MAX", -1.0);
 
     // initialize parameter class for cathode material
     parameters_cathode_redlichkister_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -169,7 +169,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 
     // define sample concentration values for cathode material
     // cf. Goldin et al., Electrochimica Acta 64 (2012) 118-129
-    concentrations_cathode_redlichkister_.resize(3, 0.);
+    concentrations_cathode_redlichkister_.resize(3, 0.0);
     concentrations_cathode_redlichkister_[0] =
         10.56;  // cathode concentration at 100% state of charge
     concentrations_cathode_redlichkister_[1] =
@@ -186,15 +186,15 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     // Zausch (2012)
     container->Add("C_MAX", 24.681);
     container->Add("OCP_PARA_NUM", 13);
-    ocp_para.resize(13, 0.);
-    std::fill(ocp_para.begin(), ocp_para.end(), 0.);
+    ocp_para.resize(13, 0.0);
+    std::fill(ocp_para.begin(), ocp_para.end(), 0.0);
     ocp_para[0] = -0.132;
     ocp_para[10] = 1.41;
     ocp_para[11] = -3.52;
     container->Add("OCP_PARA", ocp_para);
     container->Add("OCP_CSV", "");
-    container->Add("X_MIN", -1.);
-    container->Add("X_MAX", -1.);
+    container->Add("X_MIN", -1.0);
+    container->Add("X_MAX", -1.0);
 
     // initialize parameter class for anode material
     parameters_anode_taralov_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -204,7 +204,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 
     // define sample concentration values for anode material
     // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-    concentrations_anode_taralov_.resize(3, 0.);
+    concentrations_anode_taralov_.resize(3, 0.0);
     concentrations_anode_taralov_[0] = 2.4681;   // anode concentration at 10% state of charge
     concentrations_anode_taralov_[1] = 12.3405;  // anode concentration at 50% state of charge
     concentrations_anode_taralov_[2] = 22.2129;  // anode concentration at 90% state of charge
@@ -223,12 +223,12 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     ocp_para[8] = 0.379571;
     ocp_para[9] = -1.576;
     ocp_para[10] = 0.01;
-    ocp_para[11] = -200.;
+    ocp_para[11] = -200.0;
     ocp_para[12] = -0.19;
     container->Add("OCP_PARA", ocp_para);
     container->Add("OCP_CSV", "");
-    container->Add("X_MIN", -1.);
-    container->Add("X_MAX", -1.);
+    container->Add("X_MIN", -1.0);
+    container->Add("X_MAX", -1.0);
 
     // initialize parameter class for cathode material
     parameters_cathode_taralov_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -238,7 +238,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 
     // define sample concentration values for cathode material
     // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-    concentrations_cathode_taralov_.resize(3, 0.);
+    concentrations_cathode_taralov_.resize(3, 0.0);
     concentrations_cathode_taralov_[0] = 4.02407;  // cathode concentration at 90% state of charge
     concentrations_cathode_taralov_[1] = 11.8355;  // cathode concentration at 50% state of charge
     concentrations_cathode_taralov_[2] = 21.3039;  // cathode concentration at 17% state of charge
@@ -249,12 +249,12 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     // add parameters for lithium metal anode to container
     container->Add("C_MAX", 100000.0);
     container->Add("OCP_PARA_NUM", 1);
-    ocp_para.resize(1, 0.);
-    ocp_para[0] = 0.;
+    ocp_para.resize(1, 0.0);
+    ocp_para[0] = 0.0;
     container->Add("OCP_PARA", ocp_para);
     container->Add("OCP_CSV", "");
-    container->Add("X_MIN", -1.);
-    container->Add("X_MAX", -1.);
+    container->Add("X_MIN", -1.0);
+    container->Add("X_MAX", -1.0);
 
     // initialize parameter class for anode material
     parameters_anode_polynomial_ = Teuchos::rcp(new MAT::PAR::Electrode(container));
@@ -263,7 +263,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     anode_polynomial_ = Teuchos::rcp(new MAT::Electrode(parameters_anode_polynomial_.get()));
 
     // define fictitious sample concentration values for anode material
-    concentrations_anode_polynomial_.resize(3, 0.);
+    concentrations_anode_polynomial_.resize(3, 0.0);
     concentrations_anode_polynomial_[0] = 500.;   // anode concentration at 10% state of charge
     concentrations_anode_polynomial_[1] = 2500.;  // anode concentration at 50% state of charge
     concentrations_anode_polynomial_[2] = 4500.;  // anode concentration at 90% state of charge
@@ -272,7 +272,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
     // Society 160 (4) (2013) A636-A649
     container->Add("C_MAX", 4793.3);
     container->Add("OCP_PARA_NUM", 5);
-    ocp_para.resize(5, 0.);
+    ocp_para.resize(5, 0.0);
     ocp_para[0] = 4.563;
     ocp_para[1] = 2.595;
     ocp_para[2] = -16.77;
@@ -291,7 +291,7 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
 
     // define sample concentration values for cathode material
     // cf. Ji et al., Journal of The Electrochemical Society 160 (4) (2013) A636-A649
-    concentrations_cathode_polynomial_.resize(3, 0.);
+    concentrations_cathode_polynomial_.resize(3, 0.0);
     concentrations_cathode_polynomial_[0] =
         1677.6;  // cathode concentration at 100% state of charge
     concentrations_cathode_polynomial_[1] = 3115.6;  // cathode concentration at 50% state of charge
@@ -326,14 +326,14 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   void TestComputeOpenCircuitPotential()
   {
     // define results and tolerances for anode materials
-    const double results_anode_redlichkister[] = {
+    const std::array<double, 3> results_anode_redlichkister = {
         1.78149102529067321354e-01, 1.00269118707846299765e-01, 8.08307883078566852264e-02};
-    const double tolerances_anode_redlichkister[] = {1.e-17, 1.e-17, 1.e-18};
-    const double results_anode_taralov[] = {
+    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-17, 1.0e-17, 1.0e-18};
+    const std::array<double, 3> results_anode_taralov = {
         8.59624971986640673549e-01, 1.10583257990501226953e-01, -7.26563582809017227682e-02};
-    const double tolerances_anode_taralov[] = {1.e-17, 1.e-17, 1.e-18};
-    const double results_anode_polynomial[] = {0., 0., 0.};
-    const double tolerances_anode_polynomial[] = {1.e-20, 1.e-20, 1.e-20};
+    const std::array<double, 3> tolerances_anode_taralov = {1.0e-17, 1.0e-17, 1.0e-18};
+    const std::array<double, 3> results_anode_polynomial = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_anode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
@@ -350,18 +350,18 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
           results_anode_polynomial[i], tolerances_anode_polynomial[i])
 
     // define results and tolerances for cathode materials
-    const double results_cathode_csv[] = {
+    const std::array<double, 3> results_cathode_csv = {
         4.26568197738244947459e+00, 3.85982096426498033637e+00, 3.49646582304368758187e+00};
-    const double tolerances_cathode_csv[] = {1.e-16, 1.e-16, 1.e-16};
-    const double results_cathode_redlichkister[] = {
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> results_cathode_redlichkister = {
         3.97322289583641552468e+00, 3.90180104449214848472e+00, 3.55923291247763096123e+00};
-    const double tolerances_cathode_redlichkister[] = {1.e-16, 1.e-16, 1.e-16};
-    const double results_cathode_taralov[] = {
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> results_cathode_taralov = {
         4.68476462172226959524e+00, 4.12283197556701885844e+00, 3.90987668507063856893e+00};
-    const double tolerances_cathode_taralov[] = {1.e-16, 1.e-16, 1.e-16};
-    const double results_cathode_polynomial[] = {
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> results_cathode_polynomial = {
         4.27993831912628497349e+00, 3.80888970352517386431e+00, 3.63594305532142847426e+00};
-    const double tolerances_cathode_polynomial[] = {1.e-16, 1.e-16, 1.e-16};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-16, 1.0e-16, 1.0e-16};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
@@ -386,14 +386,14 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   void TestComputeFirstDerivOpenCircuitPotentialConc()
   {
     // define results and tolerances for anode materials
-    const double results_anode_redlichkister[] = {
+    const std::array<double, 3> results_anode_redlichkister = {
         -4.67265915814377499893e-02, -4.69987444027383099998e-03, -8.94809228199507436519e-03};
-    const double tolerances_anode_redlichkister[] = {1.e-18, 1.e-19, 1.e-19};
-    const double results_anode_taralov[] = {
+    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-18, 1.0e-19, 1.0e-19};
+    const std::array<double, 3> results_anode_taralov = {
         -1.41425383954984579260e-01, -3.45971827773009360518e-02, -8.46358003529945959742e-03};
-    const double tolerances_anode_taralov[] = {1.e-17, 1.e-18, 1.e-19};
-    const double results_anode_polynomial[] = {0., 0., 0.};
-    const double tolerances_anode_polynomial[] = {1.e-20, 1.e-20, 1.e-20};
+    const std::array<double, 3> tolerances_anode_taralov = {1.0e-17, 1.0e-18, 1.0e-19};
+    const std::array<double, 3> results_anode_polynomial = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_anode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
@@ -410,18 +410,18 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
           results_anode_polynomial[i], tolerances_anode_polynomial[i])
 
     // define results and tolerances for cathode materials
-    const double results_cathode_csv[] = {
+    const std::array<double, 3> results_cathode_csv = {
         -3.97916196311376825587e-04, -1.82254204470957764054e-04, -1.19179495232888516508e-03};
-    const double tolerances_cathode_csv[] = {1.e-16, 1.e-16, 1.e-16};
-    const double results_cathode_redlichkister[] = {
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> results_cathode_redlichkister = {
         -5.87374545823974372749e-02, -4.59544093325152322449e-02, -2.40034452721541273490e-02};
-    const double tolerances_cathode_redlichkister[] = {1.e-18, 1.e-18, 1.e-18};
-    const double results_cathode_taralov[] = {
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-18, 1.0e-18, 1.0e-18};
+    const std::array<double, 3> results_cathode_taralov = {
         -4.61526542535566619563e+00, -3.29033139167962890639e-03, -3.97138702703261764482e-02};
-    const double tolerances_cathode_taralov[] = {1.e-16, 1.e-19, 1.e-18};
-    const double results_cathode_polynomial[] = {
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-16, 1.0e-19, 1.0e-18};
+    const std::array<double, 3> results_cathode_polynomial = {
         -4.60348767050483748987e-04, -1.48972359281208444927e-04, -2.87284599311867232425e-04};
-    const double tolerances_cathode_polynomial[] = {1.e-20, 1.e-20, 1.e-20};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
@@ -446,15 +446,15 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   void TestComputeFirstDerivOpenCircuitPotentialTemp()
   {
     // define results and tolerances for cathode materials
-    const double results_cathode_csv[] = {0.0, 0.0, 0.0};
-    const double tolerances_cathode_csv[] = {0.0, 0.0, 0.0};
-    const double results_cathode_redlichkister[] = {
+    const std::array<double, 3> results_cathode_csv = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_csv = {0.0, 0.0, 0.0};
+    const std::array<double, 3> results_cathode_redlichkister = {
         2.0138191402737653e-05, 0.0, -2.3115616026561951e-04};
-    const double tolerances_cathode_redlichkister[] = {1.0e-21, 0.0, 1.0e-20};
-    const double results_cathode_taralov[] = {0.0, 0.0, 0.0};
-    const double tolerances_cathode_taralov[] = {0.0, 0.0, 0.0};
-    const double results_cathode_polynomial[] = {0.0, 0.0, 0.0};
-    const double tolerances_cathode_polynomial[] = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-21, 0.0, 1.0e-20};
+    const std::array<double, 3> results_cathode_taralov = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_taralov = {0.0, 0.0, 0.0};
+    const std::array<double, 3> results_cathode_polynomial = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_cathode_polynomial = {0.0, 0.0, 0.0};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
@@ -479,14 +479,14 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
   void TestComputeSecondDerivOpenCircuitPotentialConc()
   {
     // define results and tolerances for anode materials
-    const double results_anode_redlichkister[] = {
+    const std::array<double, 3> results_anode_redlichkister = {
         3.04927774052812586292e-02, -1.05174077799887128251e-03, -7.35165984480485711766e-04};
-    const double tolerances_anode_redlichkister[] = {1.e-18, 1.e-19, 1.e-20};
-    const double results_anode_taralov[] = {
+    const std::array<double, 3> tolerances_anode_redlichkister = {1.0e-18, 1.0e-19, 1.0e-20};
+    const std::array<double, 3> results_anode_taralov = {
         2.01700640785035384406e-02, 4.93424429221260389677e-03, 1.20707433751687906627e-03};
-    const double tolerances_anode_taralov[] = {1.e-18, 1.e-19, 1.e-19};
-    const double results_anode_polynomial[] = {0., 0., 0.};
-    const double tolerances_anode_polynomial[] = {1.e-20, 1.e-20, 1.e-20};
+    const std::array<double, 3> tolerances_anode_taralov = {1.0e-18, 1.0e-19, 1.0e-19};
+    const std::array<double, 3> results_anode_polynomial = {0.0, 0.0, 0.0};
+    const std::array<double, 3> tolerances_anode_polynomial = {1.0e-20, 1.0e-20, 1.0e-20};
 
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
@@ -503,18 +503,18 @@ class MAT::Electrode_TestSuite : public BACICxxTestWrapper
           results_anode_polynomial[i], tolerances_anode_polynomial[i])
 
     // define results and tolerances for cathode materials
-    const double results_cathode_csv[] = {
+    const std::array<double, 3> results_cathode_csv = {
         1.63562986543888766237e-06, 1.43228888999912318160e-07, -1.10872570647637550212e-05};
-    const double tolerances_cathode_csv[] = {1.e-16, 1.e-16, 1.e-16};
-    const double results_cathode_redlichkister[] = {
+    const std::array<double, 3> tolerances_cathode_csv = {1.0e-16, 1.0e-16, 1.0e-16};
+    const std::array<double, 3> results_cathode_redlichkister = {
         1.41256487214221678611e-02, 5.72637600860917590773e-03, -7.56499159049272597299e-03};
-    const double tolerances_cathode_redlichkister[] = {1.e-18, 1.e-19, 1.e-19};
-    const double results_cathode_taralov[] = {
+    const std::array<double, 3> tolerances_cathode_redlichkister = {1.0e-18, 1.0e-19, 1.0e-19};
+    const std::array<double, 3> results_cathode_taralov = {
         3.89765224056106092121e+01, -7.34373323389212427637e-03, -2.27647861985425976894e-02};
-    const double tolerances_cathode_taralov[] = {1.e-15, 1.e-19, 1.e-18};
-    const double results_cathode_polynomial[] = {
+    const std::array<double, 3> tolerances_cathode_taralov = {1.0e-15, 1.0e-19, 1.0e-18};
+    const std::array<double, 3> results_cathode_polynomial = {
         3.69515732169165666976e-08, 2.28146222921396267486e-07, -5.88484654599405069383e-07};
-    const double tolerances_cathode_polynomial[] = {1.e-24, 1.e-23, 1.e-23};
+    const std::array<double, 3> tolerances_cathode_polynomial = {1.0e-24, 1.0e-23, 1.0e-23};
 
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)

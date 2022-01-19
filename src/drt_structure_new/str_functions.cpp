@@ -19,7 +19,7 @@
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
     int mat_id_struc)
-    : Function(), youngmodulus_(0.0), poissonratio_(0.0), strucdensity_(0.0)
+    : Function(), poissonratio_(0.0)
 {
   // get materials
   Teuchos::RCP<MAT::PAR::Material> mat_struc =
@@ -27,15 +27,12 @@ STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSI
   if (mat_struc->Type() != INPAR::MAT::m_stvenant)
     dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
   MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  MAT::PAR::StVenantKirchhoff* fparams_struc =
-      dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
+  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
   if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
 
 
   // get data
-  youngmodulus_ = fparams_struc->youngs_;
   poissonratio_ = fparams_struc->poissonratio_;
-  strucdensity_ = fparams_struc->density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -130,8 +127,7 @@ STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
   if (mat_struc->Type() != INPAR::MAT::m_stvenant)
     dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
   MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  MAT::PAR::StVenantKirchhoff* fparams_struc =
-      dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
+  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
   if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
 
   // get data

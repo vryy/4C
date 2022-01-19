@@ -61,50 +61,69 @@ namespace DRT
     class Function
     {
      public:
-      virtual ~Function(){};
-
-      /// Evaluate time and space dependent FUNCT
-      virtual double Evaluate(const int index,  ///< component of function
-          const double* x,                      ///< coordinates
-          double t                              ///< time
-          ) = 0;
+      /*!
+       * @brief Evaluation of time and space dependent FUNCT
+       *
+       * Evaluate the specified component of the function at the specified position and point in
+       * time.
+       *
+       * @param index (i) For vector-valued functions, index defines the function-component which
+       *                  should be evaluated
+       * @param x     (i) The point in 3-dimensional space in which the function will be evaluated
+       * @param t     (i) The point in time in which the function will be evaluated
+       * @return function value
+       */
+      virtual double Evaluate(const int index, const double* x, double t) = 0;
 
 
       /// Evaluate time dependent FUNCT
       double EvaluateTime(double t  ///< time
       )
       {
-        double dummy[3] = {0.0};
+        std::array<double, 3> dummy = {0.0};
 
 #ifdef DEBUG
-        double dummy2[3] = {123.456};
-        if (fabs(Evaluate(0, dummy, t) - Evaluate(0, dummy2, t)) > 1.0e-14)
+        std::array<double, 3> dummy2 = {123.456};
+        if (std::abs(Evaluate(0, dummy.data(), t) - Evaluate(0, dummy2.data(), t)) > 1.0e-14)
           dserror("You evaluate a FUNCT solely by time even if it dependents on x,y or z!");
 #endif
 
-        return Evaluate(0, dummy, t);
+        return Evaluate(0, dummy.data(), t);
       }
 
 
-      /// Evaluate first spatial derivatives of time and space dependent FUNCT
+      /*!
+       * \brief evaluate first spatial derivatives of time and space dependent FUNCT
+       *
+       * \param index (i) For vector-valued functions, index defines the function-component which
+       *                  should be evaluated. For scalar functions, index is always set to 0
+       * \param x     (i) The point in 3-dimensional space in which the function will be evaluated
+       * \param t     (i) Absolute time in which the function will be evaluated
+       * \return first spatial derivative of FUNCT
+       */
       virtual std::vector<double> EvaluateSpatialDerivative(
-          const int index,  ///< component of function
-          const double* x,  ///< coordinates
-          const double t    ///< time
-      )
+          const int index, const double* x, const double t)
       {
         dserror("The evaluation of the derivative is not implemented for this function");
         std::vector<double> emptyvector;
         return emptyvector;
       };
 
-      /// Evaluate first or second time derivative of time and space dependent FUNCT
+      /**
+       * \brief Evaluate time derivatives and value of the time and space dependent FUNCT
+       *
+       * Evaluate the specified component of the function at the specified position and point in
+       * time and calculate the time derivative(s).
+       *
+       * @param index (i) For vector-valued functions, index defines the function-component which
+       *                  should be evaluated
+       * @param x     (i) The point in 3-dimensional space in which the function will be evaluated
+       * @param t     (i) The point in time in which the function will be evaluated
+       * @param deg   (i) maximum time derivative degree
+         @return vector containing value and time derivative(s)
+       */
       virtual std::vector<double> EvaluateTimeDerivative(
-          const int index,    ///< component of function
-          const double* x,    ///< coordinates
-          const double t,     ///< time
-          const unsigned deg  ///< degree of maximal derivative
-      )
+          const int index, const double* x, const double t, const unsigned deg)
       {
         dserror("The evaluation of the time derivative is not implemented for this function");
         std::vector<double> emptyvector;
@@ -117,27 +136,29 @@ namespace DRT
           const unsigned deg                                      ///< degree of maximal derivative
       )
       {
-        double dummy[3] = {0.0};
+        std::array<double, 3> dummy = {0.0};
 
 #ifdef DEBUG
-        std::vector<double> res1 = EvaluateTimeDerivative(0, dummy, t, deg);
-        double dummy2[3] = {123.456};
-        std::vector<double> res2 = EvaluateTimeDerivative(0, dummy2, t, deg);
+        std::vector<double> res1 = EvaluateTimeDerivative(0, dummy.data(), t, deg);
+        std::array<double, 3> dummy2 = {123.456};
+        std::vector<double> res2 = EvaluateTimeDerivative(0, dummy2.data(), t, deg);
         for (unsigned int i = 0; i < deg; i++)
         {
-          if (fabs(res1[deg] - res2[deg]) > 1.0e-14)
+          if (std::abs(res1[deg] - res2[deg]) > 1.0e-14)
+          {
             dserror(
                 "You evaluate the time derivative of a FUNCT solely by time even if it dependents "
                 "on x,y or z!");
+          }
         }
 #endif
 
-        return EvaluateTimeDerivative(0, dummy, t, deg);
+        return EvaluateTimeDerivative(0, dummy.data(), t, deg);
       };
 
 
       /// Return number of components of FUNCT
-      virtual int NumberComponents() { return 0; }
+      virtual std::size_t NumberComponents() { return 0; }
     };
 
 
@@ -147,34 +168,42 @@ namespace DRT
      public:
       ExprFunction();
 
-      virtual ~ExprFunction();
-
       /// add an expression to the function
-      virtual void AddExpr(
-          std::string buf, std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables);
+      void AddExpr(const std::string& buf,
+          const std::vector<std::vector<Teuchos::RCP<FunctionVariable>>>& variables);
 
-      /// evaluate the function at given space and time
-      virtual double Evaluate(const int index, const double* x, double t);
+      double Evaluate(const int index, const double* x, double t) override;
 
-      /// evaluate the first derivative of the function at given space and time
-      virtual std::vector<double> EvaluateSpatialDerivative(
-          const int index, const double* x, const double t);
+      std::vector<double> EvaluateSpatialDerivative(
+          const int index, const double* x, const double t) override;
 
-      /// evaluate the 1st or 2nd time derivative of the function at given space and time
-      virtual std::vector<double> EvaluateTimeDerivative(
-          const int index, const double* x, const double t, const unsigned deg);
+      std::vector<double> EvaluateTimeDerivative(
+          const int index, const double* x, const double t, const unsigned deg) override;
 
       /// return the number of components
-      virtual int NumberComponents() { return (expr_.size()); }
+      std::size_t NumberComponents() override { return (expr_.size()); }
 
-      /// check if it is a variable
-      bool IsVariable(const int index, const std::string& varname) const;
+      /*!
+       * \brief  check if a given name is a variable
+       *
+       * \param index    (i)  For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
+       * \param varname  (i)  Variable name to be checked
+       */
+      virtual bool IsVariable(const int index, const std::string& varname) const;
 
-      /// add a variable to the function
-      void AddVariable(const int index, const std::string& varname, double varvalue);
+      /*!
+       * \brief  add a variable to the function
+       *
+       * \param index    (i)  For vector-valued functions, index defines the function-component
+       *                      which should be evaluated
+       * \param varname  (i)  Variable name
+       * \param varvalue (i)  Value of the variable
+       */
+      virtual void AddVariable(const int index, const std::string& varname, double varvalue);
 
       /// pars the expressions
-      void ParseExpressions();
+      virtual void ParseExpressions();
 
      protected:
       /// dimension of the problem
@@ -203,8 +232,6 @@ namespace DRT
     class FunctionManager
     {
      public:
-      FunctionManager() {}
-
       Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
 
       /// read the baci input file and set up all functions
@@ -214,12 +241,6 @@ namespace DRT
       Function& Funct(int num);
 
      private:
-      /// no copying
-      FunctionManager(const FunctionManager&);
-
-      /// no copying
-      FunctionManager& operator=(const FunctionManager&);
-
       /// all functions defined. The functions may be vector valued!
       std::vector<Teuchos::RCP<Function>> functions_;
     };
@@ -229,21 +250,6 @@ namespace DRT
     class VariableExprFunction : public ExprFunction
     {
      public:
-      /*!
-
-      \brief Default constructor creating empty object. Expressions are
-             added with add function
-
-      */
-      VariableExprFunction();
-
-      /*!
-
-      \brief clean up parse tree
-
-      */
-      virtual ~VariableExprFunction();
-
       /*!
 
       \brief add expression to an existing ExprFunction in order to extend
@@ -256,22 +262,10 @@ namespace DRT
       \param constants   (i) vector containing constants defined by a pair (name and value)
 
       */
-      virtual void AddExpr(std::string buf, std::vector<std::pair<std::string, double>> constants);
+      void AddExpr(
+          const std::string& buf, const std::vector<std::pair<std::string, double>>& constants);
 
-      /*!
-
-      \brief evaluate function at given time and position
-
-      \param index (i) For vector-valued functions, index defines the
-                       function-component which should be evaluated
-                       For scalar functions, index is always set to 0
-      \param t     (i) The point in time in which the
-                       function will be evaluated
-      \param x     (i) The point in 3-dimensional space in which the
-                       function will be evaluated
-
-      */
-      virtual double Evaluate(const int index, const double* x, const double t);
+      double Evaluate(const int index, const double* x, const double t) override;
 
       /*!
 
@@ -299,21 +293,8 @@ namespace DRT
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants);
 
-      /*!
-
-      \brief evaluate derivatives function at given position in space
-
-      \param index (i) For vector-valued functions, index defines the
-                       function-component which should be evaluated
-                       For scalar functions, index is always set to 0
-      \param x     (i) The point in 3-dimensional space in which the
-                       function will be evaluated
-      \param t     (i) Absolute time in which the
-                       function will be evaluated
-
-      */
-      virtual std::vector<double> EvaluateSpatialDerivative(
-          const int index, const double* x, const double t);
+      std::vector<double> EvaluateSpatialDerivative(
+          const int index, const double* x, const double t) override;
 
       /*!
 
@@ -341,32 +322,14 @@ namespace DRT
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants);
 
-      /*!
-      \brief  check if a given name is a variable
+      bool IsVariable(const int index, const std::string& varname) const override;
 
-      \param index    (i)  For vector-valued functions, index defines the
-                           function-component which should be evaluated
-      \param varname  (i)  Variable name to be checked
-
-      */
-      virtual bool IsVariable(const int index, const std::string& varname) const;
-
-      /*!
-      \brief  add a variable to the parser object
-
-      \param index    (i)  For vector-valued functions, index defines the
-                           function-component which should be evaluated
-      \param varname  (i)  Variable name
-
-      \param varvalue (i)  Value of the variable
-
-      */
-      virtual void AddVariable(const int index, const std::string& varname, double varvalue);
+      void AddVariable(const int index, const std::string& varname, double varvalue) override;
 
       /*!
       \brief  parse the underlying expression
       */
-      virtual void ParseExpressions();
+      void ParseExpressions() override;
 
      private:
       //! flag indicating whether expression was parsed
