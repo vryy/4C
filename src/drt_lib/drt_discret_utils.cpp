@@ -25,7 +25,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if ((!solveparams.isSublist("Aztec Parameters") && !solveparams.isSublist("Belos Parameters") &&
           !solveparams.isSublist("Stratimikos Parameters")) ||
       solveparams.isSublist("IFPACK Parameters"))
+  {
     return;
+  }
 
   int numdf = 1;  // default value for no. of degrees of freedom per node
   int dimns = 1;  // default value for no. of nullspace vectors
@@ -216,7 +218,7 @@ void DRT::Discretization::ComputeNullSpace(
     return;
   }
 
-  // for rotational degrees of freedom:
+  // for rigid body rotations
   // compute nodal center of the discretization
   double x0send[3] = {0.0, 0.0, 0.0};
   for (int i = 0; i < NumMyRowNodes(); ++i)

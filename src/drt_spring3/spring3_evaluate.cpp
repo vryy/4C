@@ -962,7 +962,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
     }
 
 
-  // Create torsional siffness matrix
+  // Create torsional stiffness matrix
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
     {
