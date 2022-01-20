@@ -1539,6 +1539,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         case INPAR::SOLVER::azsolv_GMRES:
           azlist.set("AZ_solver", AZ_gmres);
           break;
+        case INPAR::SOLVER::azsolv_GMRES_CONDEST:
+          azlist.set("AZ_solver", AZ_gmres_condnum);
+          break;
         case INPAR::SOLVER::azsolv_GMRESR:
           azlist.set("AZ_solver", AZ_GMRESR);
           break;

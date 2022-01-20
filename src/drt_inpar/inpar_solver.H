@@ -44,14 +44,15 @@ namespace INPAR
     /// \date 9/01,11/08
     enum AzSolverType
     {
-      azsolv_CG,        ///< cg-solver
-      azsolv_GMRES,     ///< gmres-solver
-      azsolv_GMRESR,    ///< restarted gmres-solver
-      azsolv_CGS,       ///< cg-squared-solver (can handle unsymmetric problems)
-      azsolv_BiCGSTAB,  ///< bicgstab-solver
-      azsolv_LU,        ///< LU-solver (I think this doesn't work for some reasons)
-      azsolv_TFQMR,     ///< quasi-minimum residual-solver (never used it)
-      belos_FGMRES      ///< flexible GMRES in Belos
+      azsolv_CG,             ///< cg-solver
+      azsolv_GMRES,          ///< gmres-solver
+      azsolv_GMRES_CONDEST,  ///< gmres-solver with condition number estimate
+      azsolv_GMRESR,         ///< restarted gmres-solver
+      azsolv_CGS,            ///< cg-squared-solver (can handle unsymmetric problems)
+      azsolv_BiCGSTAB,       ///< bicgstab-solver
+      azsolv_LU,             ///< LU-solver (I think this doesn't work for some reasons)
+      azsolv_TFQMR,          ///< quasi-minimum residual-solver (never used it)
+      belos_FGMRES           ///< flexible GMRES in Belos
     };
 
     /// Different preconditioners within the Aztec package
