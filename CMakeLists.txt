@@ -2061,6 +2061,7 @@ set(OBJS_DRT_CONSTRAINT
 )
 
 set(OBJS_DRT_IO_LIB
+  src/drt_io/csv_reader.cpp
   src/drt_io/io.cpp
   src/drt_io/io_control.cpp
   src/drt_io/io_hdf.cpp
