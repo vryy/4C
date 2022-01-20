@@ -751,7 +751,6 @@ void FLD::XWall::SetupL2Projection()
       {
         case INPAR::SOLVER::azprec_ML:
         case INPAR::SOLVER::azprec_MLfluid:
-        case INPAR::SOLVER::azprec_MLAPI:
         case INPAR::SOLVER::azprec_MLfluid2:
         case INPAR::SOLVER::azprec_MueLuAMG_sym:
         case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
