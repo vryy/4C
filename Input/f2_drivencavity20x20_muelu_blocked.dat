@@ -33,10 +33,10 @@ INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 SIMPLER                         yes
 -----------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
-TOL_VEL_RES	                    1.0E-9
-TOL_VEL_INC	                    1.0E-9
-TOL_PRES_RES	                  1.0E-9
-TOL_PRES_INC	                  1.0E-9
+TOL_VEL_RES	                1.0E-9
+TOL_VEL_INC	                1.0E-9
+TOL_PRES_RES	                1.0E-9
+TOL_PRES_INC	                1.0E-9
 ----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic

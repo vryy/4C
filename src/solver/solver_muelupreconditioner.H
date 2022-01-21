@@ -33,6 +33,10 @@ namespace LINALG
      *
      * For more specialized versions (e.g. block systems) derive from this
      * class as it already owns all core components of a MueLu preconditioner.
+     *
+     * MueLu User's Guide: L. Berger-Vergiat, C. A. Glusa, J. J. Hu, M. Mayr,
+     * A. Prokopenko, C. M. Siefert, R. S. Tuminaro, T. A. Wiesner:
+     * MueLu User’s Guide, Technical Report, Sandia National Laboratories, SAND2019-0537, 2019
      */
     class MueLuPreconditioner : public PreconditionerType
     {
@@ -155,6 +159,10 @@ namespace LINALG
 
     /*! \brief MueLu preconditioner for blocked linear systems of equations for contact problems
      * in saddlepoint formulation.
+     *
+     *  T. A. Wiesner, M. Mayr, A. Popp, M. W. Gee, W. A. Wall: Algebraic multigrid methods for
+     * saddle point systems arising from mortar contact formulations, International Journal for
+     * Numerical Methods in Engineering, 122(15):3749-3779, 2021, https://doi.org/10.1002/nme.6680
      */
     class MueLuContactSpPreconditioner : public MueLuPreconditioner
     {
