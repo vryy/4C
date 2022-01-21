@@ -30,7 +30,6 @@ class Epetra_Map;
 namespace LINALG
 {
   class SparseMatrix;
-  class AztecOOConditionNumber;
 }  // namespace LINALG
 namespace NOX
 {
@@ -271,10 +270,6 @@ namespace NOX
       /// replace the Jacobian diagonal block \c diag_bid
       void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid) const;
 
-      /// compute the condition number of the Jacobian matrix
-      NOX::Abstract::Group::ReturnType computeJacobianConditionNumber(int maxIters,
-          double tolerance, int krylovSubspaceSize = 100, bool printOutput = false) override;
-
       /// compute the condition number of the Jacobian matrix (serial mode)
       NOX::Abstract::Group::ReturnType computeSerialJacobianConditionNumber(
           const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput);
@@ -306,17 +301,11 @@ namespace NOX
       //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
       Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator> prePostOperatorPtr_;
 
-      /// pointer to the aztec condition number object
-      Teuchos::RCP<LINALG::AztecOOConditionNumber> azconditionnumberptr_ = Teuchos::null;
-
       /// container for eigenvalue info
       struct Eigenvalues
       {
         /// assign operator
         Eigenvalues& operator=(const Eigenvalues& src);
-
-        /// set the aztec estimates
-        void setAztecEstimates(LINALG::AztecOOConditionNumber& azconditionnumber);
 
         /// real part of the eigenvalues
         LINALG::SerialDenseVector realpart_;

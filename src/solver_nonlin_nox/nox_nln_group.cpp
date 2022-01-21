@@ -21,8 +21,6 @@
 #include <NOX_StatusTest_NormF.H>
 
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
-#include "../solver/solver_aztecoo_conditionnumber.H"
-#include <az_aztec_defs.h>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -708,31 +706,6 @@ void NOX::NLN::Group::replaceDiagonalOfJacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeJacobianConditionNumber(
-    int maxIters, double tolerance, int krylovSubspaceSize, bool printOutput)
-{
-  if (isConditionNumber()) return NOX::Abstract::Group::Ok;
-
-  if (maxIters <= 0)
-    dserror(
-        "The direct computation of the condition number via LAPACK is "
-        "in parallel not possible. Please try the GMRES based variant by "
-        "providing a meaningful set of input parameters.");
-
-  if (azconditionnumberptr_.is_null())
-    azconditionnumberptr_ = Teuchos::rcp(new LINALG::AztecOOConditionNumber);
-  azConditionNumberPtr = Teuchos::rcpFromRef(*azconditionnumberptr_);
-
-  NOX::Abstract::Group::ReturnType rtype = NOX::Epetra::Group::computeJacobianConditionNumber(
-      maxIters, tolerance, krylovSubspaceSize, printOutput);
-
-  ev_.setAztecEstimates(*azconditionnumberptr_);
-
-  return rtype;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianConditionNumber(
     const NOX::NLN::LinSystem::ConditionNumber condnum_type, bool printOutput)
 {
@@ -868,27 +841,6 @@ NOX::NLN::Group::Eigenvalues& NOX::NLN::Group::Eigenvalues::operator=(const Eige
   this->isvalid_ = src.isvalid_;
 
   return *this;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void NOX::NLN::Group::Eigenvalues::setAztecEstimates(
-    LINALG::AztecOOConditionNumber& azconditionnumber)
-{
-  if (isvalid_) return;
-
-  real_max_ = azconditionnumber.getStatus(AZ_lambda_real_max);
-  real_min_ = azconditionnumber.getStatus(AZ_lambda_real_min);
-
-  realpart_.Size(2);
-  realpart_(0) = azconditionnumber.getStatus(AZ_lambda_real_max);
-  realpart_(1) = azconditionnumber.getStatus(AZ_lambda_real_min);
-
-  imaginarypart_.Size(2);
-  imaginarypart_(0) = azconditionnumber.getStatus(AZ_lambda_imag_max);
-  imaginarypart_(1) = azconditionnumber.getStatus(AZ_lambda_imag_min);
-
-  isvalid_ = true;
 }
 
 /*----------------------------------------------------------------------------*

@@ -1976,7 +1976,6 @@ set(OBJS_SOLVER
   src/solver/solver_amgnxn_hierarchies.cpp
   src/solver/solver_amgnxn_smoothers.cpp
   src/solver/solver_amgnxn_objects.cpp
-  src/solver/solver_aztecoo_conditionnumber.cpp
 )
 
 set(OBJS_SOLVER_NONLIN_NOX
