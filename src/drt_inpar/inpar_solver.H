@@ -75,7 +75,6 @@ namespace INPAR
       azprec_ICC,                  ///< incomplete cholesky
       azprec_MLfluid,              ///< ML for Fluids
       azprec_MLfluid2,             ///< energy optimal unsymmetric ML for Fluids
-      azprec_MLAPI,                ///< experimental mlapi preconditioner
       azprec_ML,                   ///< standard ML for structures
       azprec_BGS2x2,               ///< Block Gauss-Seidel for 2x2 system
       azprec_TekoSIMPLE,           ///< SIMPLE preconditioner for 2x2 block system (Teko)

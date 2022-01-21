@@ -407,7 +407,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(
       break;
     case INPAR::SOLVER::azprec_ML:
     case INPAR::SOLVER::azprec_MLfluid:
-    case INPAR::SOLVER::azprec_MLAPI:
     case INPAR::SOLVER::azprec_MLfluid2:
     {
       outparams.set("Preconditioner Type", "ML");
@@ -761,9 +760,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   {
     case INPAR::SOLVER::azprec_ML:  // do nothing, this is standard
       break;
-    case INPAR::SOLVER::azprec_MLAPI:  // set flag to use mlapi operator
-      mllist.set<bool>("LINALG::AMG_Operator", true);
-      break;
     case INPAR::SOLVER::azprec_MueLuAMG_sym:  // MueLu operator (smoothed aggregation)
     {
       std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
@@ -831,7 +827,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   switch (prectyp)
   {
     case INPAR::SOLVER::azprec_ML:        // do nothing, this is standard
-    case INPAR::SOLVER::azprec_MLAPI:     // set flag to use mlapi operator
     case INPAR::SOLVER::azprec_MLfluid:   // unsymmetric, unsmoothed restriction
     case INPAR::SOLVER::azprec_MLfluid2:  // full Pretrov-Galerkin unsymmetric smoothed
     {
@@ -1327,7 +1322,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
       break;
     case INPAR::SOLVER::azprec_ML:
     case INPAR::SOLVER::azprec_MLfluid:
-    case INPAR::SOLVER::azprec_MLAPI:
     case INPAR::SOLVER::azprec_MLfluid2:
     case INPAR::SOLVER::azprec_MueLuAMG_sym:
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
@@ -1416,7 +1410,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   }
   //------------------------------------- set parameters for ML if used
   if (azprectyp == INPAR::SOLVER::azprec_ML || azprectyp == INPAR::SOLVER::azprec_MLfluid ||
-      azprectyp == INPAR::SOLVER::azprec_MLfluid2 || azprectyp == INPAR::SOLVER::azprec_MLAPI)
+      azprectyp == INPAR::SOLVER::azprec_MLfluid2)
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
     mllist = LINALG::Solver::TranslateBACIToML(inparams, &beloslist);
@@ -1637,7 +1631,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
           break;
         case INPAR::SOLVER::azprec_ML:
         case INPAR::SOLVER::azprec_MLfluid:
-        case INPAR::SOLVER::azprec_MLAPI:
         case INPAR::SOLVER::azprec_MLfluid2:
         case INPAR::SOLVER::azprec_BGS2x2:
         case INPAR::SOLVER::azprec_BGSnxn:
@@ -1733,7 +1726,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
       }
       //------------------------------------- set parameters for ML if used
       if (azprectyp == INPAR::SOLVER::azprec_ML || azprectyp == INPAR::SOLVER::azprec_MLfluid ||
-          azprectyp == INPAR::SOLVER::azprec_MLfluid2 || azprectyp == INPAR::SOLVER::azprec_MLAPI)
+          azprectyp == INPAR::SOLVER::azprec_MLfluid2)
       {
         Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
         mllist = LINALG::Solver::TranslateBACIToML(inparams, &azlist);

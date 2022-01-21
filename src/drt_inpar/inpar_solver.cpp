@@ -72,8 +72,8 @@ namespace INPAR
       {
         // this one is longer than 15 and the tuple<> function does not support this,
         // so build the Tuple class directly (which can be any size)
-        Teuchos::Tuple<std::string, 25> name;
-        Teuchos::Tuple<int, 25> number;
+        Teuchos::Tuple<std::string, 24> name;
+        Teuchos::Tuple<int, 24> number;
 
         name[0] = "none";
         number[0] = azprec_none;
@@ -101,30 +101,28 @@ namespace INPAR
         number[11] = azprec_MLfluid;
         name[12] = "MLFLUID2";
         number[12] = azprec_MLfluid2;
-        name[13] = "MLAPI";
-        number[13] = azprec_MLAPI;
-        name[14] = "GaussSeidel";
-        number[14] = azprec_GaussSeidel;
-        name[15] = "DownwindGaussSeidel";
-        number[15] = azprec_DownwindGaussSeidel;
-        name[16] = "BGS2x2";
-        number[16] = azprec_BGS2x2;
-        name[17] = "BGSnxn";
-        number[17] = azprec_BGSnxn;
-        name[18] = "TekoSIMPLE";
-        number[18] = azprec_TekoSIMPLE;
-        name[19] = "CheapSIMPLE";
-        number[19] = azprec_CheapSIMPLE;
-        name[20] = "MueLu_sym";
-        number[20] = azprec_MueLuAMG_sym;
-        name[21] = "MueLu_nonsym";
-        number[21] = azprec_MueLuAMG_nonsym;
-        name[22] = "MueLu_contactSP";
-        number[22] = azprec_MueLuAMG_contactSP;
-        name[23] = "AMGnxn";
-        number[23] = azprec_AMGnxn;
-        name[24] = "Chebyshev";
-        number[24] = azprec_Chebyshev;
+        name[13] = "GaussSeidel";
+        number[13] = azprec_GaussSeidel;
+        name[14] = "DownwindGaussSeidel";
+        number[14] = azprec_DownwindGaussSeidel;
+        name[15] = "BGS2x2";
+        number[15] = azprec_BGS2x2;
+        name[16] = "BGSnxn";
+        number[16] = azprec_BGSnxn;
+        name[17] = "TekoSIMPLE";
+        number[17] = azprec_TekoSIMPLE;
+        name[18] = "CheapSIMPLE";
+        number[18] = azprec_CheapSIMPLE;
+        name[19] = "MueLu_sym";
+        number[19] = azprec_MueLuAMG_sym;
+        name[20] = "MueLu_nonsym";
+        number[20] = azprec_MueLuAMG_nonsym;
+        name[21] = "MueLu_contactSP";
+        number[21] = azprec_MueLuAMG_contactSP;
+        name[22] = "AMGnxn";
+        number[22] = azprec_AMGnxn;
+        name[23] = "Chebyshev";
+        number[23] = azprec_Chebyshev;
 
         setStringToIntegralParameter<int>("AZPREC", "ILU",
             "Type of internal preconditioner to use.\n"

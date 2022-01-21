@@ -440,7 +440,6 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
     {
       case INPAR::SOLVER::azprec_ML:
       case INPAR::SOLVER::azprec_MLfluid:
-      case INPAR::SOLVER::azprec_MLAPI:
       case INPAR::SOLVER::azprec_MLfluid2:
       case INPAR::SOLVER::azprec_MueLuAMG_sym:
       case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
@@ -448,7 +447,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
         Teuchos::ParameterList* preclist_ptr = NULL;
         // switch here between ML and MueLu cases
         if (prectyp == INPAR::SOLVER::azprec_ML or prectyp == INPAR::SOLVER::azprec_MLfluid or
-            prectyp == INPAR::SOLVER::azprec_MLAPI or prectyp == INPAR::SOLVER::azprec_MLfluid2)
+            prectyp == INPAR::SOLVER::azprec_MLfluid2)
           preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
         else if (prectyp == INPAR::SOLVER::azprec_MueLuAMG_sym or
                  prectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
