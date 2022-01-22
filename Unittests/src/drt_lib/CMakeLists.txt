@@ -1,4 +1,5 @@
 set_property(GLOBAL APPEND PROPERTY unit_files
+${CMAKE_CURRENT_SOURCE_DIR}/unit_drt_cubic_spline_interpolation.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_drt_domainreader.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_drt_function_library.H
 ${CMAKE_CURRENT_SOURCE_DIR}/unit_drt_linedefinition.H

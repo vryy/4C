@@ -395,6 +395,7 @@ set(OBJS_DRT_LIB
   src/drt_lib/drt_condition.cpp
   src/drt_lib/drt_conditiondefinition.cpp
   src/drt_lib/drt_container.cpp
+  src/drt_lib/drt_cubic_spline_interpolation.cpp
   src/drt_lib/drt_discret.cpp
   src/drt_lib/drt_discret_faces.cpp
   src/drt_lib/drt_discret_hdg.cpp
