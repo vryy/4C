@@ -29,7 +29,9 @@
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_EpetraOperator.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
+#ifdef TRILINOS_DEVELOP
 #include <MueLu_CreateXpetraPreconditioner.hpp>
+#endif
 
 // EpetraExt
 #include <EpetraExt_BlockMapOut.h>
