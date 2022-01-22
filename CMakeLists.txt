@@ -1965,14 +1965,12 @@ set(OBJS_SOLVER
   src/solver/solver_ifpackpreconditioner.cpp
   src/solver/solver_mlpreconditioner.cpp
   src/solver/solver_muelupreconditioner.cpp
-  src/solver/solver_muelucontactsppreconditioner.cpp
   src/solver/solver_tekopreconditioner.cpp
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp
   src/solver/solver_aztecsolver_projectedresidual.cpp
   src/solver/solver_stratimikossolver.cpp
   src/solver/teko/teko_baciepetraoperatorwrapper.cpp
-  src/solver/muelu/muelu_utils.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
   src/solver/solver_amgnxn_vcycle.cpp
   src/solver/solver_amgnxn_hierarchies.cpp

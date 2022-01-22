@@ -756,11 +756,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
 
   ML_Epetra::SetDefaults("SA", mllist);
   const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams, "AZPREC");
+
   switch (prectyp)
   {
     case INPAR::SOLVER::azprec_ML:  // do nothing, this is standard
       break;
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:  // MueLu operator (smoothed aggregation)
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:  // MueLu operator (fluid)
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:    // MueLu operator (tsi)
+    case INPAR::SOLVER::azprec_MueLuAMG_sym:    // MueLu operator (smoothed aggregation)
     {
       std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
       if (xmlfile != "none") mllist.set("MUELU_XML_FILE", xmlfile);
@@ -845,6 +848,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
         mllist.set("repartition: enable", 0);
     }
     break;
+    case INPAR::SOLVER::azprec_MueLuAMG_fluid:   // MueLu operator (fluid)
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:     // MueLu operator (tsi)
     case INPAR::SOLVER::azprec_MueLuAMG_sym:     // MueLu operator (smoothed aggregation)
     case INPAR::SOLVER::azprec_MueLuAMG_nonsym:  // MueLu operator (Petrov-Galerkin)
     {
@@ -1640,6 +1645,14 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         case INPAR::SOLVER::azprec_AMGnxn:
           azlist.set("AZ_precond", AZ_user_precond);
           break;
+        case INPAR::SOLVER::azprec_MueLuAMG_fluid:
+          azlist.set("AZ_precond", AZ_user_precond);
+          azlist.set("Preconditioner Type", "Fluid");
+          break;
+        case INPAR::SOLVER::azprec_MueLuAMG_tsi:
+          azlist.set("AZ_precond", AZ_user_precond);
+          azlist.set("Preconditioner Type", "TSI");
+          break;
         case INPAR::SOLVER::azprec_MueLuAMG_contactSP:
           azlist.set("AZ_precond", AZ_user_precond);
           azlist.set("Preconditioner Type", "ContactSP");
@@ -1735,6 +1748,18 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
           azprectyp == INPAR::SOLVER::azprec_MueLuAMG_nonsym)
       {
         Teuchos::ParameterList& muelulist = outparams.sublist("MueLu Parameters");
+        muelulist = LINALG::Solver::TranslateBACIToML(
+            inparams, &azlist);  // MueLu reuses the ML parameter list
+      }
+      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_fluid)
+      {
+        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (Fluid) Parameters");
+        muelulist = LINALG::Solver::TranslateBACIToML(
+            inparams, &azlist);  // MueLu reuses the ML parameter list
+      }
+      if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_tsi)
+      {
+        Teuchos::ParameterList& muelulist = outparams.sublist("MueLu (TSI) Parameters");
         muelulist = LINALG::Solver::TranslateBACIToML(
             inparams, &azlist);  // MueLu reuses the ML parameter list
       }

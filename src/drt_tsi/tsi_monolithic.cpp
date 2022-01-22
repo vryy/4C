@@ -350,7 +350,7 @@ void TSI::Monolithic::CreateLinearSolver()
 #endif
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
     {
@@ -404,56 +404,13 @@ void TSI::Monolithic::CreateLinearSolver()
 
       break;
     }
-    case INPAR::SOLVER::azprec_MueLuAMG_sym:
+    case INPAR::SOLVER::azprec_MueLuAMG_tsi:
     {
-      solver_ = Teuchos::rcp(new LINALG::Solver(tsisolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
-          Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
-
-      // use solver blocks for structure and temperature (thermal field)
-      const Teuchos::ParameterList& ssolverparams =
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber);
-      const Teuchos::ParameterList& tsolverparams =
-          DRT::Problem::Instance()->SolverParams(tlinsolvernumber);
-
-      // This is not very elegant:
-      // first read in solver parameters. These have to contain ML parameters such that...
-      solver_->PutSolverParamsToSubParams("Inverse1", ssolverparams);
-      solver_->PutSolverParamsToSubParams("Inverse2", tsolverparams);
-
-      // ... BACI calculates the null space vectors. These are then stored in the sublists
-      //     Inverse1 and Inverse2 from where they...
-      StructureField()->Discretization()->ComputeNullSpaceIfNecessary(
-          solver_->Params().sublist("Inverse1"));
-      ThermoField()->Discretization()->ComputeNullSpaceIfNecessary(
-          solver_->Params().sublist("Inverse2"));
-
-      // ... are copied from here to ...
-      const Teuchos::ParameterList& inv1source =
-          solver_->Params().sublist("Inverse1").sublist("ML Parameters");
-      const Teuchos::ParameterList& inv2source =
-          solver_->Params().sublist("Inverse2").sublist("ML Parameters");
-
-      // ... here. The "MueLu Parameters" sublists "Inverse1" and "Inverse2" only contain the basic
-      //     information about the corresponding null space vectors, which are actually copied ...
-      Teuchos::ParameterList& inv1 =
-          solver_->Params().sublist("MueLu Parameters").sublist("Inverse1");
-      Teuchos::ParameterList& inv2 =
-          solver_->Params().sublist("MueLu Parameters").sublist("Inverse2");
-
-      // ... here.
-      inv1.set<int>("PDE equations", inv1source.get<int>("PDE equations"));
-      inv2.set<int>("PDE equations", inv2source.get<int>("PDE equations"));
-      inv1.set<int>("null space: dimension", inv1source.get<int>("null space: dimension"));
-      inv2.set<int>("null space: dimension", inv2source.get<int>("null space: dimension"));
-      inv1.set<double*>("null space: vectors", inv1source.get<double*>("null space: vectors"));
-      inv2.set<double*>("null space: vectors", inv2source.get<double*>("null space: vectors"));
-      inv1.set<Teuchos::RCP<std::vector<double>>>(
-          "nullspace", inv1source.get<Teuchos::RCP<std::vector<double>>>("nullspace"));
-      inv2.set<Teuchos::RCP<std::vector<double>>>(
-          "nullspace", inv2source.get<Teuchos::RCP<std::vector<double>>>("nullspace"));
-
-      solver_->Params().sublist("MueLu Parameters").set("TSI", true);
+      solver_ = Teuchos::rcp(new LINALG::Solver(
+          tsisolverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
+      // Structure Nullspace calculation, Temperature Nullspace is directly set
+      // inside the preconditioner
+      StructureField()->Discretization()->ComputeNullSpaceIfNecessary(solver_->Params());
       break;
     }
     default:

@@ -1704,7 +1704,7 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
         solver->Params().set("FLUID", true);
       }
       break;
-      case INPAR::SOLVER::azprec_MueLuAMG_sym:
+      case INPAR::SOLVER::azprec_MueLuAMG_fluid:
       {
         // add Inverse1 block for velocity dofs
         // tell Inverse1 block about NodalBlockInformation
@@ -1714,11 +1714,8 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
         // information for the subblocks. Therefore we need the nodal block information in the first
         // subblock for the velocities. The pressure null space is trivial to be built using a
         // constant vector
-        Teuchos::ParameterList& inv1 =
-            solver->Params().sublist("MueLu Parameters").sublist("SubSmoother1");
-        inv1.sublist("NodalBlockInformation") = solver->Params().sublist("NodalBlockInformation");
-
-        solver->Params().sublist("MueLu Parameters").set("FLUID", true);
+        solver->Params().sublist("MueLu (Fluid) Parameters").sublist("NodalBlockInformation") =
+            solver->Params().sublist("NodalBlockInformation");
       }
       break;
       default:
@@ -1726,8 +1723,8 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
             "If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as "
             "preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER "
             "%i block in your dat file. Alternatively you can also try a multigrid block "
-            "preconditioner. Use then \"MueLu_sym\" as preconditioner and provide a parameter xml "
-            "file.",
+            "preconditioner. Use then \"MueLu_fluid\" as preconditioner and provide a parameter "
+            "xml file.",
             linsolvernumber);
         break;
     }
