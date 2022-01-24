@@ -29,18 +29,26 @@
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_EpetraOperator.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
+#ifdef TRILINOS_DEVELOP
 #include <MueLu_CreateXpetraPreconditioner.hpp>
+#endif
 
 // EpetraExt
 #include <EpetraExt_BlockMapOut.h>
 
 // Xpetra
+#include <Xpetra_BlockedCrsMatrix.hpp>
+#include <Xpetra_CrsMatrix.hpp>
+#include <Xpetra_EpetraCrsMatrix.hpp>
 #include <Xpetra_EpetraMap.hpp>
 #ifndef TRILINOS_Q1_2015
 #include <Xpetra_IO.hpp>
 #endif
 #include <Xpetra_Map.hpp>
+#include <Xpetra_MapExtractor.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
+#include <Xpetra_StridedMap.hpp>
 
 // define some trillinos shortcuts
 using SC = Scalar;
