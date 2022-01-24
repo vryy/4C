@@ -11,7 +11,6 @@ function)
 #ifndef MAT_BEAM_ELASTHYPER_H_
 #define MAT_BEAM_ELASTHYPER_H_
 
-#include "material.H"
 #include "../drt_inpar/inpar_material.H"
 
 #include "../drt_lib/drt_parobjectfactory.H"
@@ -19,6 +18,8 @@ function)
 #include "../linalg/linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
+#include "beam_templated_material_generic.H"
+#include <typeinfo>
 
 
 // forward declaration
@@ -36,10 +37,11 @@ namespace MAT
   }
 
   /// singleton for constitutive law of a beam formulation (hyperelastic stored energy function)
+  template <typename T>
   class BeamElastHyperMaterialType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "BeamElastHyperMaterialType"; }
+    std::string Name() const { return typeid(this).name(); }
 
     static BeamElastHyperMaterialType& Instance() { return instance_; };
 
@@ -53,7 +55,8 @@ namespace MAT
 
   /*---------------------------------------------------------------------------------------------*/
   /// constitutive relations for beam cross-section resultants (hyperelastic stored energy function)
-  class BeamElastHyperMaterial : public Material
+  template <typename T>
+  class BeamElastHyperMaterial : public BeamMaterialTemplated<T>
   {
    public:
     /// construct empty material object
@@ -71,9 +74,9 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of drt_parobject.H and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
-      return BeamElastHyperMaterialType::Instance().UniqueParObjectId();
+      return BeamElastHyperMaterialType<T>::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -86,7 +89,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -100,44 +103,17 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
-
-    /*
-     * \brief Compute axial stress contributions
-     *
-     *\param[out] stressN axial stress
-     *
-     *\param[in] CN constitutive matrix
-     *
-     *\param[in] Gamma
-     */
-    template <typename T>
-    void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
-        LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 1, T>& Gamma) const;
-
-    /*
-     * \brief Compute moment stress contributions
-     *
-     *\param[out] stressM moment stress
-     *
-     *\param[in] CM constitutive matrix
-     *
-     *\param[in] K curvature
-     */
-    template <typename T>
-    void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
-        LINALG::Matrix<3, 3, T>& CM, LINALG::Matrix<3, 1, T>& K) const;
 
     //! @name derived access methods
     //@{
 
     /** \brief get type of this material
      *
-     *  \author grill
-     *  \date 02/17 */
-    virtual INPAR::MAT::MaterialType MaterialType() const
+     */
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       /* the idea is that we have a generic type of material (this class), but two
        * possible types of material parameter definitions and hence types
@@ -147,18 +123,16 @@ namespace MAT
 
     /** \brief return copy of this material object
      *
-     *  \author grill
-     *  \date 02/17 */
-    virtual Teuchos::RCP<Material> Clone() const
+     */
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new BeamElastHyperMaterial(*this));
     }
 
     /** \brief get quick accessible material parameter data
      *
-     *  \author grill
-     *  \date 02/17 */
-    virtual MAT::PAR::Parameter* Parameter() const;
+     */
+    MAT::PAR::Parameter* Parameter() const override;
 
     //@}
 
@@ -168,53 +142,84 @@ namespace MAT
 
     /** \brief get quick accessible material parameter data
      *
-     *  \author grill
-     *  \date 02/17 */
+     */
     const MAT::PAR::BeamElastHyperMaterialParameterGeneric& Params() const;
 
-    /** \brief throw error if pointer to parameter class is not set
+    /*
+     * \brief Compute axial stress contributions
      *
-     *  \author grill
-     *  \date 02/17 */
-    void ThrowErrorIfParamsPointerIsNull() const;
+     *\param[out] stressM axial stress
+     *
+     *\param[in] CM constitutive matrix
+     *
+     *\param[in] K curvature
+     */
+    void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
+        const LINALG::Matrix<3, 3, T>& CM, const LINALG::Matrix<3, 1, T>& K) const override;
+
+    /*
+     * \brief Compute axial stress contributions
+     *
+     *\param[out] stressN axial stress
+     *
+     *\param[in] CN constitutive matrix
+     *
+     *\param[in] Gamma triad
+     */
+
+    void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
+        const LINALG::Matrix<3, 3, T>& CN, const LINALG::Matrix<3, 1, T>& Gamma) const override;
+
+    /*
+     * \brief Update material-dependent variables
+     */
+    void ComputeConstitutiveParameter(
+        LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) const override;
 
     /** \brief get constitutive matrix relating stress force resultants and translational strain
      *         measures, expressed w.r.t. material frame
      *
-     *  \author grill
-     *  \date 02/17 */
-    template <typename T>
-    void GetConstitutiveMatrixOfForcesMaterialFrame(LINALG::Matrix<3, 3, T>& C_N) const;
+     */
+    void GetConstitutiveMatrixOfForcesMaterialFrame(LINALG::Matrix<3, 3, T>& C_N) const override;
 
     /** \brief get constitutive matrix relating stress moment resultants and rotational strain
      *         measures, expressed w.r.t. material frame
      *
-     *  \author grill
-     *  \date 02/17 */
-    template <typename T>
-    void GetConstitutiveMatrixOfMomentsMaterialFrame(LINALG::Matrix<3, 3, T>& C_M) const;
+     */
+    void GetConstitutiveMatrixOfMomentsMaterialFrame(LINALG::Matrix<3, 3, T>& C_M) const override;
 
     /** \brief get mass inertia factor with respect to translational accelerations
      *         (usually: density * cross-section area)
-     *
-     *  \author grill
-     *  \date 02/17 */
-    double GetTranslationalMassInertiaFactor() const;
+     */
+    double GetTranslationalMassInertiaFactor() const override;
 
     /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
      *
-     *  \author grill
-     *  \date 02/17 */
-    template <typename T>
-    void GetMassMomentOfInertiaTensorMaterialFrame(LINALG::Matrix<3, 3, T>& J) const;
+     */
+    void GetMassMomentOfInertiaTensorMaterialFrame(LINALG::Matrix<3, 3>& J) const override;
+
+    /** \brief get mass moment of inertia tensor, expressed w.r.t. material frame
+     */
+    void GetMassMomentOfInertiaTensorMaterialFrame(
+        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const override;
+
 
 
     /** \brief get the radius of a circular cross-section that is ONLY to be used for evaluation of
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)
      *
-     *  \author grill
-     *  \date 02/17 */
+     */
     double GetInteractionRadius() const;
+
+    void GetStiffnessMatrixOfMoments(LINALG::Matrix<3, 3, T>& stiffness_matrix,
+        const LINALG::Matrix<3, 3, T>& C_M) const override;
+
+    void GetStiffnessMatrixOfForces(LINALG::Matrix<3, 3, T>& stiffness_matrix,
+        const LINALG::Matrix<3, 3, T>& C_N) const override;
+
+    void Update() const override{};
+
+    void Reset() const override{};
 
    private:
     /// my material parameters

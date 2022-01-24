@@ -10,7 +10,7 @@
 
 #include "beam3_base.H"
 
-#include "../drt_mat/beam_elasthyper.H"
+#include "../drt_mat/beam_templated_material_generic.H"
 
 #include "../drt_beaminteraction/periodic_boundingbox.H"
 
@@ -22,6 +22,7 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../headers/FAD_utils.H"
 #include <Sacado.hpp>
 
 /*----------------------------------------------------------------------*
@@ -185,21 +186,21 @@ void DRT::ELEMENTS::Beam3Base::GetRefPosAtXi(LINALG::Matrix<3, 1>& refpos, const
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-const MAT::BeamElastHyperMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
+const MAT::BeamMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() const
 {
   // Todo @grill think about storing the casted pointer as class variable or other solution to
   //      avoid cast in every element evaluation
 
-  const MAT::BeamElastHyperMaterial* beam_material_ptr = NULL;
+  MAT::BeamMaterial* beam_material_ptr = NULL;
 
   // get the material law
-  Teuchos::RCP<const MAT::Material> material_ptr = Material();
+  Teuchos::RCP<MAT::Material> material_ptr = Material();
 
   switch (material_ptr->MaterialType())
   {
     case INPAR::MAT::m_beam_elast_hyper_generic:
     {
-      beam_material_ptr = static_cast<const MAT::BeamElastHyperMaterial*>(material_ptr.get());
+      beam_material_ptr = dynamic_cast<MAT::BeamMaterial*>(material_ptr.get());
 
       if (beam_material_ptr == NULL) dserror("cast to beam material class failed!");
 
@@ -215,14 +216,15 @@ const MAT::BeamElastHyperMaterial& DRT::ELEMENTS::Beam3Base::GetBeamMaterial() c
   return *beam_material_ptr;
 }
 
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
 void DRT::ELEMENTS::Beam3Base::GetConstitutiveMatrices(
     LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 3, T>& CM) const
 {
-  GetBeamMaterial().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
-  GetBeamMaterial().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
+  GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfForcesMaterialFrame(CN);
+  GetTemplatedBeamMaterial<T>().GetConstitutiveMatrixOfMomentsMaterialFrame(CM);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -446,3 +448,8 @@ template void DRT::ELEMENTS::Beam3Base::GetBackgroundVelocity<3, Sacado::Fad::DF
     Teuchos::ParameterList&, const LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+
+template const MAT::BeamMaterialTemplated<double>&
+DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<double>() const;
+template const MAT::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
+DRT::ELEMENTS::Beam3Base::GetTemplatedBeamMaterial<Sacado::Fad::DFad<double>>() const;

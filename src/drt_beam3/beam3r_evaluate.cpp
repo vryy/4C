@@ -13,7 +13,6 @@
 #include "triad_interpolation_local_rotation_vectors.H"
 #include "beam_spatial_discretization_utils.H"
 
-// Todo @grill: check for obsolete header inclusions
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_exporter.H"
@@ -385,6 +384,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtconvGPmass_ = rtnewGPmass_;
       rconvGPmass_ = rnewGPmass_;
       QconvGPdampstoch_ = QnewGPdampstoch_;
+      GetBeamMaterial().Update();
       break;
     }
 
@@ -407,6 +407,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
       rtnewGPmass_ = rtconvGPmass_;
       rnewGPmass_ = rconvGPmass_;
       QnewGPdampstoch_ = QconvGPdampstoch_;
+      GetBeamMaterial().Reset();
       break;
     }
 
@@ -899,7 +900,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
    *****************************************************************************************************/
 
   // setup constitutive matrices
-  GetConstitutiveMatrices<T>(CN, CM);
+  GetTemplatedBeamMaterial<T>().ComputeConstitutiveParameter(CN, CM);
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
@@ -909,6 +910,8 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
   // reset triad interpolation scheme based on nodal quaternions
   triad_interpolation_scheme_ptr->Reset(Qnode);
 
+  // matrix containing contributions to the jacobian depending on the material model
+  LINALG::Matrix<3, 3, T> stiffness_contribution(true);
 
   /******************************* elasticity: compute fint and stiffmatrix
    *****************************
@@ -964,11 +967,10 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // compute material strains Gamma and K
     computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
 
-    GetBeamMaterial().EvaluateForceContributionsToStress(stressN, CN, Gamma);
+    GetTemplatedBeamMaterial<T>().EvaluateForceContributionsToStress(stressN, CN, Gamma);
+    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfForces(stiffness_contribution, CN);
 
-    /* compute spatial stresses and constitutive matrices from convected ones according to Jelenic
-     * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward<T>(Lambda, stressN, CN, stressn, cn);
+    pushforward<T>(Lambda, stressN, stiffness_contribution, stressn, cn);
 
     /* computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up
      * with respect to single blocks of matrix in eq. (4.3)*/
@@ -1086,11 +1088,11 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
                             FADUTILS::CastToDouble(K(2)) * FADUTILS::CastToDouble(K(2)));
     if (Kmax > Kmax_) Kmax_ = Kmax;
 
-    GetBeamMaterial().EvaluateMomentContributionsToStress(stressM, CM, K);
+    GetTemplatedBeamMaterial<T>().EvaluateMomentContributionsToStress(stressM, CM, K);
+    GetTemplatedBeamMaterial<T>().GetStiffnessMatrixOfMoments(stiffness_contribution, CM);
 
-    /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
-     * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
-    pushforward<T>(Lambda, stressM, CM, stressm, cm);
+    pushforward<T>(Lambda, stressM, stiffness_contribution, stressm, cm);
+
 
     /* computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up
      * with respect to single blocks of matrix in eq. (4.3)*/

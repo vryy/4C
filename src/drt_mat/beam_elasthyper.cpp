@@ -20,15 +20,17 @@ function)
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::BeamElastHyperMaterialType MAT::BeamElastHyperMaterialType::instance_;
+template <typename T>
+MAT::BeamElastHyperMaterialType<T> MAT::BeamElastHyperMaterialType<T>::instance_;
 
 
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-DRT::ParObject* MAT::BeamElastHyperMaterialType::Create(const std::vector<char>& data)
+template <typename T>
+DRT::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<char>& data)
 {
-  MAT::BeamElastHyperMaterial* matobject = new MAT::BeamElastHyperMaterial();
+  MAT::Material* matobject = new MAT::BeamElastHyperMaterial<T>();
   matobject->Unpack(data);
   return matobject;
 }
@@ -37,14 +39,16 @@ DRT::ParObject* MAT::BeamElastHyperMaterialType::Create(const std::vector<char>&
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::BeamElastHyperMaterial::BeamElastHyperMaterial() : params_(NULL)
+template <typename T>
+MAT::BeamElastHyperMaterial<T>::BeamElastHyperMaterial() : params_(NULL)
 {
   // empty constructor
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::BeamElastHyperMaterial::BeamElastHyperMaterial(
+template <typename T>
+MAT::BeamElastHyperMaterial<T>::BeamElastHyperMaterial(
     MAT::PAR::BeamElastHyperMaterialParameterGeneric* params)
     : params_(params)
 {
@@ -56,9 +60,9 @@ MAT::BeamElastHyperMaterial::BeamElastHyperMaterial(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress(
-    LINALG::Matrix<3, 1, T>& stressN, LINALG::Matrix<3, 3, T>& CN,
-    LINALG::Matrix<3, 1, T>& Gamma) const
+void MAT::BeamElastHyperMaterial<T>::EvaluateForceContributionsToStress(
+    LINALG::Matrix<3, 1, T>& stressN, const LINALG::Matrix<3, 3, T>& CN,
+    const LINALG::Matrix<3, 1, T>& Gamma) const
 {
   // compute material stresses by multiplying strains with constitutive matrix
   stressN.Multiply(CN, Gamma);
@@ -67,42 +71,57 @@ void MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial::EvaluateMomentContributionsToStress(
-    LINALG::Matrix<3, 1, T>& stressM, LINALG::Matrix<3, 3, T>& CM, LINALG::Matrix<3, 1, T>& K) const
+void MAT::BeamElastHyperMaterial<T>::EvaluateMomentContributionsToStress(
+    LINALG::Matrix<3, 1, T>& stressM, const LINALG::Matrix<3, 3, T>& CM,
+    const LINALG::Matrix<3, 1, T>& K) const
 {
   // compute material stresses by multiplying curvature with constitutive matrix
   stressM.Multiply(CM, K);
 }
+
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void MAT::BeamElastHyperMaterial::Pack(DRT::PackBuffer& data) const
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::ComputeConstitutiveParameter(
+    LINALG::Matrix<3, 3, T>& C_N, LINALG::Matrix<3, 3, T>& C_M) const
+{
+  // setup constitutive matrices
+  MAT::BeamElastHyperMaterial<T>::GetConstitutiveMatrixOfForcesMaterialFrame(C_N);
+  MAT::BeamElastHyperMaterial<T>::GetConstitutiveMatrixOfMomentsMaterialFrame(C_M);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::Pack(DRT::PackBuffer& data) const
 {
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  AddtoPack(data, type);
+  this->AddtoPack(data, type);
 
   // matid
   int matid = -1;
   if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
-  AddtoPack(data, matid);
+  this->AddtoPack(data, matid);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void MAT::BeamElastHyperMaterial::Unpack(const std::vector<char>& data)
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
-  ExtractfromPack(position, data, type);
+  this->ExtractfromPack(position, data, type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // matid and recover params_
   int matid;
-  ExtractfromPack(position, data, matid);
+  this->ExtractfromPack(position, data, matid);
   params_ = NULL;
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
@@ -132,28 +151,30 @@ void MAT::BeamElastHyperMaterial::Unpack(const std::vector<char>& data)
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-MAT::PAR::Parameter* MAT::BeamElastHyperMaterial::Parameter() const { return params_; }
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-const MAT::PAR::BeamElastHyperMaterialParameterGeneric& MAT::BeamElastHyperMaterial::Params() const
-{
-  ThrowErrorIfParamsPointerIsNull();
-
-  return *params_;
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void MAT::BeamElastHyperMaterial::ThrowErrorIfParamsPointerIsNull() const
+template <typename T>
+MAT::PAR::Parameter* MAT::BeamElastHyperMaterial<T>::Parameter() const
 {
   if (params_ == NULL) dserror("pointer to parameter class is not set!");
+
+  return params_;
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame(
+const MAT::PAR::BeamElastHyperMaterialParameterGeneric& MAT::BeamElastHyperMaterial<T>::Params()
+    const
+{
+  if (params_ == NULL) dserror("pointer to parameter class is not set!");
+
+  return *params_;
+}
+
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::GetConstitutiveMatrixOfForcesMaterialFrame(
     LINALG::Matrix<3, 3, T>& C_N) const
 {
   // defining material constitutive matrix CN between Gamma and N
@@ -168,7 +189,7 @@ void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame(
+void MAT::BeamElastHyperMaterial<T>::GetConstitutiveMatrixOfMomentsMaterialFrame(
     LINALG::Matrix<3, 3, T>& C_M) const
 {
   // defining material constitutive matrix CM between curvature and moment
@@ -182,7 +203,8 @@ void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double MAT::BeamElastHyperMaterial::GetTranslationalMassInertiaFactor() const
+template <typename T>
+double MAT::BeamElastHyperMaterial<T>::GetTranslationalMassInertiaFactor() const
 {
   return Params().GetTranslationalMassInertia();
 }
@@ -190,8 +212,8 @@ double MAT::BeamElastHyperMaterial::GetTranslationalMassInertiaFactor() const
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame(
-    LINALG::Matrix<3, 3, T>& J) const
+void MAT::BeamElastHyperMaterial<T>::GetMassMomentOfInertiaTensorMaterialFrame(
+    LINALG::Matrix<3, 3>& J) const
 {
   J.Clear();
 
@@ -202,41 +224,47 @@ void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double MAT::BeamElastHyperMaterial::GetInteractionRadius() const
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::GetMassMomentOfInertiaTensorMaterialFrame(
+    LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& J) const
 {
-  return Params().GetInteractionRadius();
+  J.Clear();
+
+  J(0, 0) = Params().GetPolarMassMomentOfInertia();
+  J(1, 1) = Params().GetMassMomentOfInertia2();
+  J(2, 2) = Params().GetMassMomentOfInertia3();
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+double MAT::BeamElastHyperMaterial<T>::GetInteractionRadius() const
+{
+  return this->Params().GetInteractionRadius();
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfMoments(
+    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_M) const
+{
+  stiffness_matrix = C_M;
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void MAT::BeamElastHyperMaterial<T>::GetStiffnessMatrixOfForces(
+    LINALG::Matrix<3, 3, T>& stiffness_matrix, const LINALG::Matrix<3, 3, T>& C_N) const
+{
+  stiffness_matrix = C_N;
 }
 
 // explicit template instantiations
-template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame<double>(
-    LINALG::Matrix<3, 3, double>&) const;
-template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfForcesMaterialFrame<
-    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+template class MAT::BeamElastHyperMaterial<double>;
+template class MAT::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>;
 
-template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame<double>(
-    LINALG::Matrix<3, 3, double>&) const;
-template void MAT::BeamElastHyperMaterial::GetConstitutiveMatrixOfMomentsMaterialFrame<
-    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
-template void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame<double>(
-    LINALG::Matrix<3, 3, double>&) const;
-template void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame<
-    Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
-
-template void MAT::BeamElastHyperMaterial::EvaluateMomentContributionsToStress<double>(
-    LINALG::Matrix<3, 1, double>& stressM, LINALG::Matrix<3, 3, double>& CM,
-    LINALG::Matrix<3, 1, double>& K) const;
-template void
-    MAT::BeamElastHyperMaterial::EvaluateMomentContributionsToStress<Sacado::Fad::DFad<double>>(
-        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressM,
-        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM,
-        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& K) const;
-
-template void MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress<double>(
-    LINALG::Matrix<3, 1, double>& stressN, LINALG::Matrix<3, 3, double>& CN,
-    LINALG::Matrix<3, 1, double>& Gamma) const;
-template void
-    MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress<Sacado::Fad::DFad<double>>(
-        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressN,
-        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
-        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& Gamma) const;
+template class MAT::BeamElastHyperMaterialType<double>;
+template class MAT::BeamElastHyperMaterialType<Sacado::Fad::DFad<double>>;

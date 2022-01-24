@@ -92,7 +92,7 @@ double MAT::PAR::DetermineDefaultInteractionRadiusIsotropic(
  *-----------------------------------------------------------------------------------------------*/
 MAT::PAR::BeamElastHyperMaterialParameterGeneric::BeamElastHyperMaterialParameterGeneric(
     Teuchos::RCP<MAT::PAR::Material> matdata)
-    : Parameter(matdata)
+    : Parameter(matdata), use_fad_(matdata->GetInt("FAD"))
 {
   // empty constructor
 }
@@ -104,7 +104,15 @@ Teuchos::RCP<MAT::Material> MAT::PAR::BeamElastHyperMaterialParameterGeneric::Cr
   /* all the different parameter sets (Reissner/Kirchhoff/..., 'classic'/'by modes') are used to
    * parameterize the same constitutive relations based on a hyperelastic stored energy function
    * formulated for cross-section resultants which are implemented in BeamElastHyperMaterial */
-  return Teuchos::rcp(new MAT::BeamElastHyperMaterial(this));
+  Teuchos::RCP<MAT::Material> matobject;
+
+  if (Use_FAD())
+  {
+    matobject = Teuchos::rcp(new MAT::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>(this));
+  }
+  else
+    matobject = Teuchos::rcp(new MAT::BeamElastHyperMaterial<double>(this));
+  return matobject;
 }
 
 
