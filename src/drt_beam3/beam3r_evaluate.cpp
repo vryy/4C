@@ -705,8 +705,6 @@ inline void DRT::ELEMENTS::Beam3r::pushforward(const LINALG::Matrix<3, 3, T>& La
   // page 148
   temp.Multiply(Lambda, C_mat);
   c_spatial.MultiplyNT(temp, Lambda);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1139,8 +1137,6 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     spatial_y_moment_2_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(1));
     spatial_z_moment_3_GP_elastm_[numgp] = FADUTILS::CastToDouble(stressm(2));
   }
-
-  return;
 }
 
 template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
