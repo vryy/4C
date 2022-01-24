@@ -51,6 +51,28 @@ MAT::BeamElastHyperMaterial::BeamElastHyperMaterial(
   // empty constructor
 }
 
+
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress(
+    LINALG::Matrix<3, 1, T>& stressN, LINALG::Matrix<3, 3, T>& CN,
+    LINALG::Matrix<3, 1, T>& Gamma) const
+{
+  // compute material stresses by multiplying strains with constitutive matrix
+  stressN.Multiply(CN, Gamma);
+}
+
+/*-----------------------------------------------------------------------------------------------*
+ *-----------------------------------------------------------------------------------------------*/
+template <typename T>
+void MAT::BeamElastHyperMaterial::EvaluateMomentContributionsToStress(
+    LINALG::Matrix<3, 1, T>& stressM, LINALG::Matrix<3, 3, T>& CM, LINALG::Matrix<3, 1, T>& K) const
+{
+  // compute material stresses by multiplying curvature with constitutive matrix
+  stressM.Multiply(CM, K);
+}
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void MAT::BeamElastHyperMaterial::Pack(DRT::PackBuffer& data) const
@@ -200,3 +222,21 @@ template void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialF
     LINALG::Matrix<3, 3, double>&) const;
 template void MAT::BeamElastHyperMaterial::GetMassMomentOfInertiaTensorMaterialFrame<
     Sacado::Fad::DFad<double>>(LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
+
+template void MAT::BeamElastHyperMaterial::EvaluateMomentContributionsToStress<double>(
+    LINALG::Matrix<3, 1, double>& stressM, LINALG::Matrix<3, 3, double>& CM,
+    LINALG::Matrix<3, 1, double>& K) const;
+template void
+    MAT::BeamElastHyperMaterial::EvaluateMomentContributionsToStress<Sacado::Fad::DFad<double>>(
+        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressM,
+        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM,
+        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& K) const;
+
+template void MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress<double>(
+    LINALG::Matrix<3, 1, double>& stressN, LINALG::Matrix<3, 3, double>& CN,
+    LINALG::Matrix<3, 1, double>& Gamma) const;
+template void
+    MAT::BeamElastHyperMaterial::EvaluateForceContributionsToStress<Sacado::Fad::DFad<double>>(
+        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressN,
+        LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
+        LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& Gamma) const;

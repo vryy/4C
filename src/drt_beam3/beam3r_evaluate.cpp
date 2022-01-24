@@ -20,6 +20,7 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_utils.H"
+#include "../drt_mat/beam_elasthyper.H"
 #include "../linalg/linalg_utils_sparse_algebra_math.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../linalg/linalg_fixedsizematrix.H"
@@ -965,8 +966,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     // compute material strains Gamma and K
     computeGamma<T>(r_s, Lambda, GammarefGP_[numgp], Gamma);
 
-    // compute material stresses by multiplying strains with constitutive matrix
-    stressN.Multiply(CN, Gamma);
+    GetBeamMaterial().EvaluateForceContributionsToStress(stressN, CN, Gamma);
 
     /* compute spatial stresses and constitutive matrices from convected ones according to Jelenic
      * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/
@@ -1088,8 +1088,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
                             FADUTILS::CastToDouble(K(2)) * FADUTILS::CastToDouble(K(2)));
     if (Kmax > Kmax_) Kmax_ = Kmax;
 
-    // compute material stresses by multiplying curvature with constitutive matrix
-    stressM.Multiply(CM, K);
+    GetBeamMaterial().EvaluateMomentContributionsToStress(stressM, CM, K);
 
     /* compute spatial stresses and constitutive matrix from material ones according to Jelenic
      * 1999, page 148, paragraph between (2.22) and (2.23) and Romero 2004, (3.10)*/

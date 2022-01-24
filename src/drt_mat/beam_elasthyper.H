@@ -104,6 +104,31 @@ namespace MAT
 
     //@}
 
+    /*
+     * \brief Compute axial stress contributions
+     *
+     *\param[out] stressN axial stress
+     *
+     *\param[in] CN constitutive matrix
+     *
+     *\param[in] Gamma
+     */
+    template <typename T>
+    void EvaluateForceContributionsToStress(LINALG::Matrix<3, 1, T>& stressN,
+        LINALG::Matrix<3, 3, T>& CN, LINALG::Matrix<3, 1, T>& Gamma) const;
+
+    /*
+     * \brief Compute moment stress contributions
+     *
+     *\param[out] stressM moment stress
+     *
+     *\param[in] CM constitutive matrix
+     *
+     *\param[in] K curvature
+     */
+    template <typename T>
+    void EvaluateMomentContributionsToStress(LINALG::Matrix<3, 1, T>& stressM,
+        LINALG::Matrix<3, 3, T>& CM, LINALG::Matrix<3, 1, T>& K) const;
 
     //! @name derived access methods
     //@{
