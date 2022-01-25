@@ -2954,12 +2954,13 @@ ENABLE_TESTING()
 include(CTest)
 
 ###------------------------------------------------------------------ Unit Tests
+separate_arguments (MPIEXEC_EXTRA_OPTS_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS})
 
 add_executable(cut_test EXCLUDE_FROM_ALL ${OBJS_CUT_TEST})
 target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} ${LAPACK_LIBRARIES}
  -Wl,--start-group ${BACI_LIBRARIES} -Wl,--end-group ${LIBRARIES})
 
-add_test(NAME run_cut_test COMMAND ${MPI_RUN} $<TARGET_FILE:cut_test>)
+add_test(NAME run_cut_test COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} $<TARGET_FILE:cut_test>)
 
 include (TestingFramework.cmake)
 include (UnittestingFramework.cmake)

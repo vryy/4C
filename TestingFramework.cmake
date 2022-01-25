@@ -34,7 +34,7 @@ message("The scaled global test timeout is ${GLOBAL_TEST_TIMEOUT_SCALED} s.")
 # Definition of default baci tests with restart (and optional "minimal" flag)
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
-    COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
   if( "${ARGN}" STREQUAL "minimal")
     set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED} LABELS minimal)
   else ()
@@ -43,7 +43,7 @@ macro (baci_test arg nproc restart)
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+      COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
     set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
   endif (${restart})
 endmacro (baci_test)
@@ -54,12 +54,12 @@ macro (baci_test_extended_timeout arg nproc restart testtimeout)
   math(EXPR actualtesttimeout "${GLOBAL_TEST_TIMEOUT_SCALE} * ${testtimeout}")
 
   add_test(NAME ${arg}-p${nproc}
-    COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx)
   set_tests_properties(${arg}-p${nproc} PROPERTIES TIMEOUT ${actualtesttimeout})
 
   if (${restart})
     add_test(NAME ${arg}-p${nproc}-restart
-      COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
+      COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx restart=${restart})
     set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${actualtesttimeout})
   endif (${restart})
 endmacro (baci_test_extended_timeout)
@@ -83,7 +83,7 @@ macro (baci_test_and_post_ensight_test arg nproc restart)
   set_tests_properties(${arg}-p${nproc}-post_ensight-ser PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
 
   # additionally run postprocessing in parallel mode
-  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --outputtype=bin\ --stress=ndxyz)
+  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx\ --output=xxx_PAR\ --outputtype=bin\ --stress=ndxyz)
 
   add_test(NAME ${arg}-p${nproc}-post_ensight-par
     COMMAND sh -c " ${RUNPOSTFILTER_PAR} && ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/tests/post_processing_test/ensight_comparison.py ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx_PAR_structure.case")
@@ -100,7 +100,7 @@ macro (baci_test_restartonly arg nproc restart)
   endif()
 
   add_test(NAME ${arg}-p${nproc}-restart
-    COMMAND ${MPI_RUN} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx${IDENTIFIER} restart=${restart})
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${nproc} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg}.dat xxx${IDENTIFIER} restart=${restart})
 
   set_tests_properties(${arg}-p${nproc}-restart PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
 endmacro (baci_test_restartonly)
@@ -108,11 +108,11 @@ endmacro (baci_test_restartonly)
 # Run test case for nested parallelism
 macro (baci_test_Nested_Par arg1 arg2 restart)
   add_test(NAME ${arg1}-nestedPar
-    COMMAND ${MPI_RUN} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional)
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional)
 
   if (${restart})
     add_test(NAME ${arg1}-nestedPar-restart
-    COMMAND ${MPI_RUN} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional restart=${restart})
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx restart=${restart} ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxxAdditional restart=${restart})
   endif (${restart})
 
   set_tests_properties(${arg1}-nestedPar PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
@@ -124,7 +124,7 @@ endmacro (baci_test_Nested_Par)
 # arg3 is the number of groups
 macro (baci_test_Nested_Par_CopyDat arg1 arg2 arg3)
   add_test(NAME ${arg1}-nestedPar_CopyDat-p${arg2}
-    COMMAND ${MPI_RUN} -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${arg2} $<TARGET_FILE:${baciname}> -ngroup=${arg3} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx )
     if( "${ARGN}" STREQUAL "minimal")
       set_tests_properties(${arg1}-nestedPar_CopyDat-p${arg2} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED} LABELS minimal)
     else ()
@@ -143,15 +143,15 @@ endmacro (baci_test_Nested_Par_CopyDat)
 macro (baci_test_Nested_Par_CopyDat_prepost arg1 arg2 arg3 arg4 arg5 restart)
   # precursor simulation
   add_test(NAME ${arg2}_precursor-p${arg4}
-    COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx)
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${arg4} $<TARGET_FILE:${baciname}> ${PROJECT_SOURCE_DIR}/Input/${arg1}.dat xxx)
   # restart from precursor output
   add_test(NAME ${arg2}-p${arg4}
-    COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx)
+    COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg2}.dat xxx)
 
   # add postprocessing simulation in case
   if (NOT ${arg3} STREQUAL "")
     add_test(NAME ${arg2}_postprocess-p${arg4}
-      COMMAND ${MPI_RUN} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg3}.dat xxx restart=${restart})
+      COMMAND ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_LIST} -np ${arg4} $<TARGET_FILE:${baciname}> -ngroup=${arg5} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${arg3}.dat xxx restart=${restart})
   endif(NOT ${arg3} STREQUAL "")
   if( "${ARGN}" STREQUAL "minimal")
     set_tests_properties(${arg2}_precursor-p${arg4} PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED} LABELS minimal)
@@ -176,8 +176,8 @@ macro (baci_framework_test testname nproc xmlfilename)
   if (NOT ${xmlfilename} STREQUAL "")
     file(COPY ${PROJECT_SOURCE_DIR}/Input/${xmlfilename} DESTINATION ./) # if a XML file name is given, it is copied from the baci input directory to the build directory
   endif(NOT ${xmlfilename} STREQUAL "")
-  set (RUNBACI ${MPI_RUN}\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx) # baci is run using the generated dat file
-  set (RUNPOSTFILTER ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx) # post_drt_ensight is run for the resulting output
+  set (RUNBACI ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${nproc}\ $<TARGET_FILE:${baciname}>\ xxx.dat\ xxx) # baci is run using the generated dat file
+  set (RUNPOSTFILTER ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx) # post_drt_ensight is run for the resulting output
   add_test(NAME ${testname}-p${nproc}-fw
   COMMAND sh -c "${RUNCUBIT} && ${RUNPREEXODUS} && ${RUNBACI} && ${RUNPOSTFILTER}")
 
@@ -191,7 +191,7 @@ endmacro (baci_framework_test)
 
 # CUT TESTS
 macro (cut_test nproc)
-  set (RUNTESTS ${MPI_RUN}\ -np\ ${nproc}\ cut_test)
+  set (RUNTESTS ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${nproc}\ cut_test)
   add_test(NAME test-p${nproc}-cut
   COMMAND sh -c "${RUNTESTS}")
   set_tests_properties(test-p${nproc}-cut PROPERTIES TIMEOUT ${GLOBAL_TEST_TIMEOUT_SCALED})
@@ -227,7 +227,7 @@ macro(post_processing arg nproc stresstype straintype startstep)
 
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_SER_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
-  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
+  set(RUNPOSTFILTER_PAR ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS}\ -np\ ${nproc}\ ./post_drt_ensight\ --file=xxx${IDENTIFIER}\ --output=xxx${IDENTIFIER}_PAR_${arg}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep})
 
   # specify test case
   add_test(NAME ${arg}${IDENTIFIER}${FIELD}-p${nproc}-pp
