@@ -390,7 +390,7 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
     case ELEMENTS::struct_calc_reset_istep:
     {
       /* the action calc_struct_reset_istep is called by the adaptive time step controller; carries
-       * out one test step whose purpose is only figuring out a suitabel timestep; thus this step
+       * out one test step whose purpose is only figuring out a suitable time step; thus this step
        * may be a very bad one in order to iterated towards the new dynamic equilibrium and the
        * thereby gained new geometric configuration should not be applied as starting point for any
        * further iteration step; as a consequence the thereby generated change of the geometric
