@@ -15,6 +15,7 @@ TRILINOS_EXPERIMENTAL=OFF  # use experimental Trilinos version (e.g. current sta
 SHARED_LIBS=OFF
 CCACHE_COMMAND=ccache
 MPIEXEC_EXTRA_OPTS=
+USE_LLD=0
 
 USE_TRILINOS_Q1_2015=OFF
 USE_TRILINOS_Q4_2019=OFF
@@ -34,11 +35,11 @@ USE_TRILINOS_Q4_2019=OFF
 # testing is achieved by setting '--debug-optimized'
 # Note: Use only one of them! No checks in place if both are specified.
 
-OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,no-ccache,ide: -- "$@"`
+OPTIONS=`getopt -o hc:daef -l help,config:,debug,debug-optimized,trilinos-debug,profiling,coverage,useACML,experimental,forceBuild,no-ccache,uselld,ide: -- "$@"`
 
 [ $? -ne 0 ] && exit 1
 
-USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache]"
+USAGEINFO="usage: do-configure --config=configurationfile [--debug] [--debug-optimized] [--trilinos-debug] [--profiling] [--coverage] [--experimental] [--useACML] [--forceBuild] [--ide=clion/eclipse/vscode] [--no-ccache] [--uselld]"
 
 eval set -- $OPTIONS
 
@@ -79,6 +80,9 @@ while true; do
       ;;
     --no-ccache)
       CCACHE_COMMAND=""
+      ;;
+    --uselld)
+      USE_LLD=1
       ;;
     --ide)
       ADAPT_IDE_CLION=0
@@ -156,6 +160,23 @@ if [[ $CCACHE_COMMAND != "" ]]; then
         CCACHE_COMMAND=""
     fi
 fi
+
+##############################################################
+if [[ $USE_LLD == 1 ]]; then
+
+    # check if lld is installed
+    if ! command -v lld &> /dev/null
+    then
+        echo "lld is not installed and can therefore not be used for linking"
+        exit 2
+    fi
+
+    LINKER_EXECUTABLE=lld
+else
+    LINKER_EXECUTABLE=gold
+fi
+
+
 
 
 
