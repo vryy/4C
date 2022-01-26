@@ -67,9 +67,6 @@ typedef Node NO;
 #include "solver_mlpreconditioner.H"
 #include "solver_muelupreconditioner.H"
 #include "solver_amgnxn_preconditioner.H"
-#ifdef TRILINOS_DEVELOP
-#include "solver_muelucontactsppreconditioner.H"
-#endif
 #ifdef HAVE_TEKO
 #include "solver_tekopreconditioner.H"
 #endif  // HAVE_TEKO

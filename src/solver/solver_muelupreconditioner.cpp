@@ -44,6 +44,9 @@
 #ifndef TRILINOS_Q1_2015
 #include <Xpetra_IO.hpp>
 #endif
+#ifdef TRILINOS_DEVELOP
+#include <Xpetra_MatrixUtils.hpp>
+#endif
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MapExtractor.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
