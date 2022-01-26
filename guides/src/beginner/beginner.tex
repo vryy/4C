@@ -123,9 +123,9 @@ will also want to choose your favorite text editor. (See section~\ref{sec:Text-e
 Before compiling a \texttt{Makefile} needs to be generated. There
 is a configuration script to do this.
 
-The scripts \texttt{do-configure} and \texttt{do-configure-debug}
-generate the \texttt{Makefile} for either the release or the debug
-version of BACI. Run the required one in the console.
+The script \texttt{do-configure} generates the \texttt{Makefile} for
+the release version of BACI, a debug version is enabled by adding the
+option \texttt{--debug}. Run the respective command in the console.
 
 After reconfiguring use \texttt{make clean} before recompiling
 
@@ -1623,7 +1623,7 @@ home directory. This way they can access their code from another machine next ti
 \begin{itemize}
   \item \texttt{mkdir /scratch/<student\_name>/workspace/baci\_debug}
   \item \texttt{cd /scratch/<student\_name>/workspace/baci\_debug}
-  \item \texttt{../baci/do-configure-debug}
+  \item \texttt{../baci/do-configure --debug}
   \item it will take some seconds
 \end{itemize}
 

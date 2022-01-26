@@ -21,7 +21,6 @@ USE_TRILINOS_Q1_2015=OFF
 USE_TRILINOS_Q4_2019=OFF
 
 # activate debug version: ./do-configure --debug
-# or choose do-configure-debug which does the same
 
 # Info about profiling mode: ./do-configure --profiling
 # This does not profile the code on its own but merely adds debug info
