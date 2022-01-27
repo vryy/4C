@@ -204,9 +204,9 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::ComputeInterfaceViscosityPartic
 
     // compute artificial viscosity
     const double artvisc_i =
-        UTILS::VecNormTwo(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
+        UTILS::VecNormTwo(cfg_i) * h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
     const double artvisc_j =
-        UTILS::VecNormTwo(cfg_j) / h_j * artvisc_lg_int_ + tempfac_j * artvisc_sl_int_;
+        UTILS::VecNormTwo(cfg_j) * h_j * artvisc_lg_int_ + tempfac_j * artvisc_sl_int_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0 or artvisc_j > 0.0)
@@ -324,7 +324,7 @@ void PARTICLEINTERACTION::SPHInterfaceViscosity::
 
     // compute artificial viscosity
     const double artvisc_i =
-        UTILS::VecNormTwo(cfg_i) / h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
+        UTILS::VecNormTwo(cfg_i) * h_i * artvisc_lg_int_ + tempfac_i * artvisc_sl_int_;
 
     // evaluate artificial viscosity
     if (artvisc_i > 0.0)
