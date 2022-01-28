@@ -10,15 +10,16 @@
 /*----------------------------------------------------------------------*/
 
 #include <Sacado.hpp>
+#include <utility>
 #include "drt_functionvariables.H"
 #include "drt_parser.H"
 
 
-DRT::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(name) {}
+DRT::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}
 
 
-DRT::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(std::string name, std::string buf)
-    : FunctionVariable(name),
+DRT::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(std::string name, const std::string& buf)
+    : FunctionVariable(std::move(name)),
       timefunction_(Teuchos::rcp(new DRT::PARSER::Parser<double>(buf))),
       timederivative_(
           Teuchos::rcp(new DRT::PARSER::Parser<Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>(buf)))
@@ -82,9 +83,9 @@ bool DRT::UTILS::ParsedFunctionVariable::ContainTime(const double t) { return tr
 
 DRT::UTILS::LinearInterpolationVariable::LinearInterpolationVariable(std::string name,
     std::vector<double> times, std::vector<double> values, struct periodicstruct periodicdata)
-    : FunctionVariable(name),
-      times_(times),
-      values_(values),
+    : FunctionVariable(std::move(name)),
+      times_(std::move(times)),
+      values_(std::move(values)),
       periodic_(periodicdata.periodic),
       t1_(periodicdata.t1),
       t2_(periodicdata.t2)
@@ -103,7 +104,7 @@ double DRT::UTILS::LinearInterpolationVariable::Value(const double t)
     t_equivalent = fmod(t + 1.0e-14, times_[times_.size() - 1] - times_[0]) - 1.0e-14;
   }
 
-  const double value = Value<double>(t_equivalent);
+  const auto value = Value<double>(t_equivalent);
 
   return value;
 }
@@ -213,8 +214,8 @@ bool DRT::UTILS::LinearInterpolationVariable::ContainTime(const double t)
 DRT::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
     std::vector<double> times, std::vector<std::string> description_vec,
     struct periodicstruct periodicdata)
-    : FunctionVariable(name),
-      times_(times),
+    : FunctionVariable(std::move(name)),
+      times_(std::move(times)),
       periodic_(periodicdata.periodic),
       t1_(periodicdata.t1),
       t2_(periodicdata.t2)
@@ -382,9 +383,9 @@ bool DRT::UTILS::MultiFunctionVariable::ContainTime(const double t)
 
 DRT::UTILS::FourierInterpolationVariable::FourierInterpolationVariable(std::string name,
     std::vector<double> times, std::vector<double> values, struct periodicstruct periodicdata)
-    : FunctionVariable(name),
-      times_(times),
-      values_(values),
+    : FunctionVariable(std::move(name)),
+      times_(std::move(times)),
+      values_(std::move(values)),
       periodic_(periodicdata.periodic),
       t1_(periodicdata.t1),
       t2_(periodicdata.t2)
@@ -402,7 +403,7 @@ double DRT::UTILS::FourierInterpolationVariable::Value(const double t)
     t_equivalent = fmod(t + 1.0e-14, times_[times_.size() - 1] - times_[0]) - 1.0e-14;
   }
 
-  const double value = Value<double>(t_equivalent);
+  const auto value = Value<double>(t_equivalent);
 
   return value;
 }
@@ -415,7 +416,7 @@ ScalarT DRT::UTILS::FourierInterpolationVariable::Value(const ScalarT& t)
   const double PI = 3.14159265358979323846;
 
   // number of interpolation nodes
-  double N = (const double)times_.size();
+  auto N = (const double)times_.size();
 
   // adjusting the spacing of the given independent variable
   const double scale = (times_[1] - times_[0]) * N / 2;

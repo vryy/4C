@@ -40,8 +40,6 @@ namespace DRT
      public:
       FunctionVariable(std::string name);
 
-      virtual ~FunctionVariable(){};
-
       /// evaluate the function at given time
       virtual double Value(const double t) = 0;
 
@@ -66,18 +64,16 @@ namespace DRT
     class ParsedFunctionVariable : public FunctionVariable
     {
      public:
-      ParsedFunctionVariable(std::string name, std::string buf);
-
-      virtual ~ParsedFunctionVariable(){};
+      ParsedFunctionVariable(std::string name, const std::string& buf);
 
       /// evaluate the function at given time
-      virtual double Value(const double t);
+      double Value(const double t) override;
 
       /// evaluate the time derivative at given time
-      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
+      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
       /// check the inclusion of the considered time
-      virtual bool ContainTime(const double t);
+      bool ContainTime(const double t) override;
 
      private:
       /// parsed function
@@ -96,20 +92,18 @@ namespace DRT
       LinearInterpolationVariable(std::string name, std::vector<double> times,
           std::vector<double> values, struct periodicstruct periodicdata);
 
-      virtual ~LinearInterpolationVariable(){};
-
       /// evaluate the function at given time
-      virtual double Value(const double t);
+      double Value(const double t) override;
 
       /// templated function to evaluate and to derive from using sacado
       template <typename ScalarT>
       ScalarT Value(const ScalarT& t);
 
       /// evaluate the time derivative at given time
-      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
+      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
       /// check the inclusion of the considered time
-      virtual bool ContainTime(const double t);
+      bool ContainTime(const double t) override;
 
      private:
       /// times for the interpolation
@@ -136,16 +130,14 @@ namespace DRT
       MultiFunctionVariable(std::string name, std::vector<double> times,
           std::vector<std::string> description_vec, struct periodicstruct periodicdata);
 
-      virtual ~MultiFunctionVariable(){};
-
       /// evaluate the function at given time
-      virtual double Value(const double t);
+      double Value(const double t) override;
 
       /// evaluate the time derivative at given time
-      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
+      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
       /// check the inclusion of the considered time
-      virtual bool ContainTime(const double t);
+      bool ContainTime(const double t) override;
 
      private:
       /// times defining each interval
@@ -176,20 +168,18 @@ namespace DRT
       FourierInterpolationVariable(std::string name, std::vector<double> times,
           std::vector<double> values, struct periodicstruct periodicdata);
 
-      virtual ~FourierInterpolationVariable(){};
-
       /// evaluate the function at given time
-      virtual double Value(const double t);
+      double Value(const double t) override;
 
       /// templated function to evaluate and to derive from using sacado
       template <typename ScalarT>
       ScalarT Value(const ScalarT& t);
 
       /// evaluate the time derivative at given time
-      virtual double TimeDerivativeValue(const double t, const unsigned deg = 1);
+      double TimeDerivativeValue(const double t, const unsigned deg = 1) override;
 
       /// check the inclusion of the considered time
-      virtual bool ContainTime(const double t);
+      bool ContainTime(const double t) override;
 
      private:
       /// times for the interpolation
