@@ -35,7 +35,7 @@ namespace DRT
       ZalesaksDiskFunction();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
     };
 
     /// special implementation two-phase flow test case
@@ -46,7 +46,7 @@ namespace DRT
       CollapsingWaterColumnFunction();
 
       /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t);
+      double Evaluate(int index, const double* x, double t) override;
     };
   }  // namespace UTILS
 }  // namespace DRT

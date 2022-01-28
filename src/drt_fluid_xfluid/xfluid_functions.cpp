@@ -9,6 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
+#include <utility>
+
 #include "xfluid_functions.H"
 #include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -1112,7 +1114,7 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
  *----------------------------------------------------------------------*/
 DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
-    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lincomb)
+    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
 
@@ -1269,7 +1271,7 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, do
  *----------------------------------------------------------------------*/
 DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
-    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lincomb)
+    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
 

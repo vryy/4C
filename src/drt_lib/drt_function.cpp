@@ -285,7 +285,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
   {
     std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> functions = lines->Read(reader, i);
 
-    if (functions.size() == 0)
+    if (functions.empty())
     {
       break;
     }
@@ -823,7 +823,9 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
           timevar->ExtractString("TYPE", vartype);
 
           // read periodicity data
-          struct periodicstruct periodicdata;
+          struct periodicstruct periodicdata
+          {
+          };
           periodicdata.periodic = timevar->FindString("PERIODIC");
           if (periodicdata.periodic)
           {
@@ -1608,7 +1610,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(
   if (not isparsed_) ParseExpressions();
 
   // number of variables
-  int numvariables = static_cast<int>(variables.size());
+  auto numvariables = static_cast<int>(variables.size());
 
   // counter for variable numbering
   int counter = 0;
@@ -1648,7 +1650,7 @@ std::vector<double> DRT::UTILS::VariableExprFunction::EvaluateDerivative(int ind
   if (not isparsed_) ParseExpressions();
 
   // number of variables
-  int numvariables = static_cast<int>(variables.size());
+  auto numvariables = static_cast<int>(variables.size());
 
   // counter for variable numbering
   int counter = 0;
