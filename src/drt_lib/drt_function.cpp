@@ -99,16 +99,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   DRT::INPUT::LineDefinition correctiontermchannelweaklycompressible;
   correctiontermchannelweaklycompressible.AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE");
 
-  DRT::INPUT::LineDefinition channelweaklycompressiblefourier3;
-  channelweaklycompressiblefourier3.AddTag("CHANNELWEAKLYCOMPRESSIBLEFOURIER3");
-
-  DRT::INPUT::LineDefinition correctiontermchannelweaklycompressiblefourier3;
-  correctiontermchannelweaklycompressiblefourier3.AddTag(
-      "CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3");
-
-  DRT::INPUT::LineDefinition bodyforcechannelweaklycompressiblefourier3;
-  bodyforcechannelweaklycompressiblefourier3.AddTag("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3");
-
   DRT::INPUT::LineDefinition weaklycompressiblepoiseuille;
   weaklycompressiblepoiseuille.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
       .AddNamedInt("MAT")
@@ -167,15 +157,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
       .AddNamedInt("MAT_STRUC");
 
-  DRT::INPUT::LineDefinition kimmoin;
-  kimmoin.AddTag("KIM-MOIN");
-
-  DRT::INPUT::LineDefinition bochevup;
-  bochevup.AddTag("BOCHEV-UP");
-
-  DRT::INPUT::LineDefinition bochevrhs;
-  bochevrhs.AddTag("BOCHEV-RHS");
-
   DRT::INPUT::LineDefinition beltramiup;
   beltramiup.AddTag("BELTRAMI-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
 
@@ -202,18 +183,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddNamedInt("MAT")
       .AddNamedInt("ISSTAT")
       .AddNamedDouble("AMPLITUDE");
-
-  DRT::INPUT::LineDefinition turbboulayer;
-  turbboulayer.AddTag("TURBBOULAYER");
-
-  DRT::INPUT::LineDefinition turbboulayerbfs;
-  turbboulayerbfs.AddTag("TURBBOULAYER-BFS");
-
-  DRT::INPUT::LineDefinition turbboulayeroracles;
-  turbboulayeroracles.AddTag("TURBBOULAYERORACLES");
-
-  DRT::INPUT::LineDefinition jefferyhamel;
-  jefferyhamel.AddTag("JEFFERY-HAMEL");
 
   DRT::INPUT::LineDefinition womersley;
   womersley.AddTag("WOMERSLEY")
@@ -270,9 +239,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(beltrami);
   lines->Add(channelweaklycompressible);
   lines->Add(correctiontermchannelweaklycompressible);
-  lines->Add(channelweaklycompressiblefourier3);
-  lines->Add(correctiontermchannelweaklycompressiblefourier3);
-  lines->Add(bodyforcechannelweaklycompressiblefourier3);
   lines->Add(weaklycompressiblepoiseuille);
   lines->Add(weaklycompressiblepoiseuilleforce);
   lines->Add(weaklycompressiblemanufacturedflow);
@@ -285,9 +251,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(weaklycompressibleetiennefsifluidviscosity);
   lines->Add(weaklycompressibleetiennefsistructure);
   lines->Add(weaklycompressibleetiennefsistructureforce);
-  lines->Add(kimmoin);
-  lines->Add(bochevup);
-  lines->Add(bochevrhs);
   lines->Add(beltramiup);
   lines->Add(beltramigradu);
   lines->Add(beltramirhs);
@@ -295,10 +258,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(kimmoingradu);
   lines->Add(kimmoinrhs);
   lines->Add(kimmoinstress);
-  lines->Add(turbboulayer);
-  lines->Add(turbboulayerbfs);
-  lines->Add(turbboulayeroracles);
-  lines->Add(jefferyhamel);
   lines->Add(womersley);
   lines->Add(localwomersley);
   lines->Add(cylinder3d);
@@ -350,20 +309,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
       {
         functions_.emplace_back(
             Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
-      }
-      else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFourier3Function()));
-      }
-      else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
-      {
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFourier3Function()));
-      }
-      else if (function->HaveNamed("BODYFORCECHANNELWEAKLYCOMPRESSIBLEFOURIER3"))
-      {
-        functions_.emplace_back(
-            Teuchos::rcp(new FLD::BodyForceChannelWeaklyCompressibleFourier3Function()));
       }
       else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
       {
@@ -576,18 +521,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         functions_.emplace_back(Teuchos::rcp(
             new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(mat_id_struc)));
       }
-      else if (function->HaveNamed("KIM-MOIN"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinFunction()));
-      }
-      else if (function->HaveNamed("BOCHEV-UP"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::BochevUPFunction()));
-      }
-      else if (function->HaveNamed("BOCHEV-RHS"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::BochevRHSFunction()));
-      }
       else if (function->HaveNamed("BELTRAMI-UP"))
       {
         // read material
@@ -599,17 +532,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiUP(mat_id)));
       }
-      else if (function->HaveNamed("BELTRAMI-GRADU"))
-      {
-        // read material
-        int mat_id = -1;
-
-        function->ExtractInt("MAT", mat_id);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
-
-        functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiGradU(mat_id)));
-      }
       else if (function->HaveNamed("BELTRAMI-RHS"))
       {
         // read material
@@ -619,7 +541,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT", mat_id);
         function->ExtractInt("ISSTOKES", is_stokes);
 
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-GRADU");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
         functions_.emplace_back(Teuchos::rcp(new FLD::BeltramiRHS(mat_id, (bool)is_stokes)));
       }
@@ -636,19 +558,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinUP(mat_id, (bool)is_stationary)));
       }
-      else if (function->HaveNamed("KIMMOIN-GRADU"))
-      {
-        // read material
-        int mat_id = -1;
-        int is_stationary = 0;
-
-        function->ExtractInt("MAT", mat_id);
-        function->ExtractInt("ISSTAT", is_stationary);
-
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
-
-        functions_.emplace_back(Teuchos::rcp(new FLD::KimMoinGradU(mat_id, (bool)is_stationary)));
-      }
       else if (function->HaveNamed("KIMMOIN-RHS"))
       {
         // read material
@@ -660,7 +569,7 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("ISSTAT", is_stationary);
         function->ExtractInt("ISSTOKES", is_stokes);
 
-        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
+        if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
         functions_.emplace_back(
             Teuchos::rcp(new FLD::KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
@@ -681,78 +590,17 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         functions_.emplace_back(
             Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary, amplitude)));
       }
-      else if (function->HaveNamed("TURBBOULAYER"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::TurbBouLayerFunction()));
-      }
-      else if (function->HaveNamed("TURBBOULAYER-BFS"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::TurbBouLayerFunctionBFS()));
-      }
-      else if (function->HaveNamed("TURBBOULAYERORACLES"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::TurbBouLayerFunctionORACLES()));
-      }
-      else if (function->HaveNamed("JEFFERY-HAMEL"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new FLD::JefferyHamelFlowFunction()));
-      }
       else if (function->HaveNamed("ZALESAKSDISK"))
       {
         functions_.emplace_back(Teuchos::rcp(new ZalesaksDiskFunction()));
-      }
-      else if (function->HaveNamed("CIRCULARFLAME2"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CircularFlame2Function()));
-      }
-      else if (function->HaveNamed("CIRCULARFLAME3"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CircularFlame3Function()));
-      }
-      else if (function->HaveNamed("CIRCULARFLAME4"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CircularFlame4Function()));
-      }
-      else if (function->HaveNamed("DAMBREAKOBSTACLE"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::DamBreakObstacle()));
       }
       else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
       {
         functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
       }
-      else if (function->HaveNamed("COLLAPSINGWATERCOLUMNCOARSE"))
-      {
-        functions_.emplace_back(
-            Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunctionCoarse()));
-      }
-      else if (function->HaveNamed("IMPACTDROP"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::ImpactFunction()));
-      }
-      else if (function->HaveNamed("BUBBLES"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::BubbleFunction()));
-      }
-      else if (function->HaveNamed("ORACLESGFUNC"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::ORACLESGFunction()));
-      }
-      else if (function->HaveNamed("ROTATINGCONE"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::RotatingConeFunction()));
-      }
-      else if (function->HaveNamed("LEVELSETCUTTEST"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::LevelSetCutTestFunction()));
-      }
       else if (function->HaveNamed("FORWARDFACINGSTEP"))
       {
         functions_.emplace_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
-      }
-      else if (function->HaveNamed("SLIPLENGTHFUNCTION"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new SlipLengthLevelSetManipulator()));
       }
       else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
       {

@@ -32,9 +32,6 @@ namespace FLD
    public:
     BeltramiUP(int mat_id);
 
-    BeltramiUP(Teuchos::RCP<MAT::Material>& mat);
-
-
     /*!
 
       \brief evaluate function at given position in space
@@ -79,15 +76,11 @@ namespace FLD
   };
 
 
-
   /// special implementation beltrami flow (gradient of velocity)
   class BeltramiGradU : public DRT::UTILS::Function
   {
    public:
     BeltramiGradU(int mat_id);
-
-    BeltramiGradU(Teuchos::RCP<MAT::Material>& mat);
-
 
     /*!
 
@@ -132,16 +125,12 @@ namespace FLD
   };
 
 
-
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity,
   /// pressure)
   class KimMoinUP : public DRT::UTILS::Function
   {
    public:
     KimMoinUP(int mat_id, bool is_stationary);
-
-    KimMoinUP(Teuchos::RCP<MAT::Material>& mat, bool is_stationary);
-
 
     /*!
 
@@ -188,16 +177,12 @@ namespace FLD
   };
 
 
-
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (gradient of
   /// velocity)
   class KimMoinGradU : public DRT::UTILS::Function
   {
    public:
     KimMoinGradU(int mat_id, bool is_stationary);
-
-    KimMoinGradU(Teuchos::RCP<MAT::Material>& mat, bool is_stationary);
-
 
     /*!
 
@@ -243,6 +228,7 @@ namespace FLD
     double kinviscosity_;
     bool is_stationary_;
   };
+
 
   /// special implementation for 3d Beltrami flow
   class BeltramiFunction : public DRT::UTILS::Function
@@ -292,6 +278,7 @@ namespace FLD
     double c1_;
   };
 
+
   /// special implementation for weakly compressible flow in a channel
   class ChannelWeaklyCompressibleFunction : public DRT::UTILS::Function
   {
@@ -334,6 +321,7 @@ namespace FLD
     */
     std::size_t NumberComponents() override { return (3); };
   };
+
 
   /// correction term for weakly compressible flow in a channel
   class CorrectionTermChannelWeaklyCompressibleFunction : public DRT::UTILS::Function
@@ -378,136 +366,6 @@ namespace FLD
     std::size_t NumberComponents() override { return (1); };
   };
 
-  /// special implementation for weakly compressible flow in a channel with Fourier expansion up to
-  /// 3rd order
-  class ChannelWeaklyCompressibleFourier3Function : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief evaluate first or second time derivative
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the time derivative will
-                     be evaluated
-    \param t     (i) The point in time in which the time derivative will
-                     be evaluated
-    \param deg   (i) The degree of the time derivative
-
-    */
-    std::vector<double> EvaluateTimeDerivative(
-        const int index, const double* x, const double t, const unsigned deg) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,w,p)
-
-    */
-    std::size_t NumberComponents() override { return (3); };
-  };
-
-  /// body force for weakly compressible flow in a channel with Fourier expansion up to 3rd order
-  class BodyForceChannelWeaklyCompressibleFourier3Function : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief evaluate first or second time derivative
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the time derivative will
-                     be evaluated
-    \param t     (i) The point in time in which the time derivative will
-                     be evaluated
-    \param deg   (i) The degree of the time derivative
-
-    */
-    std::vector<double> EvaluateTimeDerivative(
-        const int index, const double* x, const double t, const unsigned deg) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,w,p)
-
-    */
-    std::size_t NumberComponents() override { return (1); };
-  };
-
-  /// correction term for weakly compressible flow in a channel with Fourier expansion up to 3rd
-  /// order
-  class CorrectionTermChannelWeaklyCompressibleFourier3Function : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief evaluate first or second time derivative
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the time derivative will
-                     be evaluated
-    \param t     (i) The point in time in which the time derivative will
-                     be evaluated
-    \param deg   (i) The degree of the time derivative
-
-    */
-    std::vector<double> EvaluateTimeDerivative(
-        const int index, const double* x, const double t, const unsigned deg) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,w,p)
-
-    */
-    std::size_t NumberComponents() override { return (1); };
-  };
 
   /// special implementation for weakly compressible Poiseuille flow
   class WeaklyCompressiblePoiseuilleFunction : public DRT::UTILS::Function
@@ -1028,113 +886,6 @@ namespace FLD
   };
 
 
-  /// special implementation for 2d Kim-Moin flow
-  class KimMoinFunction : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-      \brief evaluate first or second time derivative
-
-      \param index (i) index defines the function-component which will
-                       be evaluated
-      \param x     (i) The point in space in which the time derivative will
-                       be evaluated
-      \param t     (i) The point in time in which the time derivative will
-                       be evaluated
-      \param deg   (i) The degree of the time derivative
-
-     */
-    std::vector<double> EvaluateTimeDerivative(
-        const int index, const double* x, const double t, const unsigned deg) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (this is a vector-valued functions)
-
-    \return number of components (u,v,p)
-
-    */
-    std::size_t NumberComponents() override { return (3); };
-  };
-
-
-  /// special implementation for 2d Bochev test case (velocity and pressure)
-  class BochevUPFunction : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,p)
-
-    */
-    std::size_t NumberComponents() override { return (3); };
-  };
-
-
-  /// special implementation for 2d Bochev test case (rhs function)
-  class BochevRHSFunction : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (f1,f2)
-
-    */
-    std::size_t NumberComponents() override { return (2); };
-  };
-
-
-
   /// special implementation for beltrami flow (rhs)
   class BeltramiRHS : public DRT::UTILS::Function
   {
@@ -1185,7 +936,6 @@ namespace FLD
     double kinviscosity_;
     bool is_stokes_;
   };
-
 
 
   /// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
@@ -1240,14 +990,13 @@ namespace FLD
     bool is_stokes_;
   };
 
+
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (analytical
   /// stress)
   class KimMoinStress : public DRT::UTILS::Function
   {
    public:
     KimMoinStress(int mat_id, bool is_stationary, double amplitude = 1.0);
-
-    KimMoinStress(Teuchos::RCP<MAT::Material>& mat, bool is_stationary, double amplitude = 1.0);
 
 
     /*!
@@ -1277,137 +1026,6 @@ namespace FLD
     double density_;
     bool is_stationary_;
     double amplitude_;
-  };
-
-
-  /// special implementation for (randomly) disturbed 3d turbulent
-  /// boundary-layer profile
-  /// (currently fixed for low-Mach-number flow through a backward-facing step,
-  ///  but may be easily manipulated to fit other profiles in other geometries)
-  class TurbBouLayerFunction : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,w,p)
-
-    */
-    std::size_t NumberComponents() override { return (4); };
-  };
-
-
-  /// special implementation for (randomly) disturbed 3d turbulent
-  /// boundary-layer profile
-  /// (incompressible flow over backward-facing step,
-  ///  corresponding to geometry of DNS by Le, Moin and Kim)
-  class TurbBouLayerFunctionBFS : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,w,p)
-
-    */
-    std::size_t NumberComponents() override { return (4); };
-  };
-
-
-  /// special implementation for (randomly) disturbed 3d turbulent boundary-layer profile
-  /// (incompressible flow in the ORACLES test rig)
-  class TurbBouLayerFunctionORACLES : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-  };
-
-
-  /// special implementation for stationary 2d Jeffery-Hamel flow
-  class JefferyHamelFlowFunction : public DRT::UTILS::Function
-  {
-   public:
-    /*!
-
-    \brief evaluate function at given position in space
-
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
-    \param t     (i) The point in time in which the function will be
-                     evaluated
-
-    */
-    double Evaluate(const int index, const double* x, double t) override;
-
-    /*!
-
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
-
-    \return number of components (u,v,w,p)
-
-    */
-    std::size_t NumberComponents() override { return (4); };
-
-    /*!
-
-    compute radial flow u as a function of the angle alpha
-
-    \return radial velocity u
-
-    \note this function is static such that we can get the radial velocity
-          without creating the Function object
-
-    */
-    static double RadialVelocity(
-        const double& theta  ///< angle between 0 and PI/4 (range is checked in debug mode)
-    );
   };
 
 }  // namespace FLD

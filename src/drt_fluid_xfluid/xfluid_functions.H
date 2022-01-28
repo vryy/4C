@@ -317,7 +317,7 @@ namespace DRT
       }
     };
 
-    /* SlipLengthManipulator. Useful for testing different slip-length functions.
+    /* UrquizaBoxFlowTraction.
      */
     class UrquizaBoxFlowTraction : public UrquizaBoxFlow  // public Function
     {
@@ -336,20 +336,6 @@ namespace DRT
         return {};
       }
     };
-
-    /* SlipLengthManipulator. Useful for testing different slip-length functions.
-     */
-    class SlipLengthLevelSetManipulator : public Function
-    {
-     public:
-      /// ctor
-      SlipLengthLevelSetManipulator();
-
-      /// evaluate function at given position in space
-      double Evaluate(int index, const double* x, double t) override;
-    };
-
-
   }  // namespace UTILS
 }  // namespace DRT
 
