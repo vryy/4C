@@ -19,15 +19,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_Time.h>
 
-typedef int idxtype;
-extern "C"
-{
-  void METIS_PartGraphRecursive(int *, idxtype *, idxtype *, idxtype *, idxtype *, int *, int *,
-      int *, int *, int *, idxtype *);
-  void METIS_PartGraphKway(int *, idxtype *, idxtype *, idxtype *, idxtype *, int *, int *, int *,
-      int *, int *, idxtype *);
-}
-
 // forward declarations
 namespace DRT
 {
@@ -306,7 +297,7 @@ class PeriodicBoundaryConditions
    \return void
 
   */
-  void BalanceLoadUsingMetis();
+  void BalanceLoad();
 
   //@}
 
