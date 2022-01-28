@@ -189,32 +189,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         case INPAR::SOLVER::azprec_CheapSIMPLE:
         case INPAR::SOLVER::azprec_BGS2x2:  // block preconditioners, that are implemented in BACI
           break;
-        case INPAR::SOLVER::azprec_BGSnxn:  // block preconditioners from Teko
-        case INPAR::SOLVER::azprec_TekoSIMPLE:
-        {
-#ifdef HAVE_TEKO
-          // check if structural solver and thermal solver are Stratimikos based (Teko expects
-          // stratimikos)
-          int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-              DRT::Problem::Instance()->SolverParams(fluidsolver), "SOLVER");
-          if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
-              solvertype != INPAR::SOLVER::stratimikos_aztec &&
-              solvertype != INPAR::SOLVER::stratimikos_belos)
-            dserror("Teko expects a STRATIMIKOS solver object in SOLVER %i", fluidsolver);
-
-          solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-              DRT::Problem::Instance()->SolverParams(fluidpressuresolver), "SOLVER");
-          if (solvertype != INPAR::SOLVER::stratimikos_amesos &&
-              solvertype != INPAR::SOLVER::stratimikos_aztec &&
-              solvertype != INPAR::SOLVER::stratimikos_belos)
-            dserror("Teko expects a STRATIMIKOS solver object in SOLVER %i", fluidpressuresolver);
-#else
-          dserror(
-              "Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV "
-              "(>Q1/2011)");
-#endif
-        }
-        break;
         default:
           dserror(
               "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
@@ -233,8 +207,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         case INPAR::SOLVER::azprec_CheapSIMPLE:
           break;                            // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
         case INPAR::SOLVER::azprec_BGS2x2:  // block preconditioners, that are implemented in BACI
-        case INPAR::SOLVER::azprec_BGSnxn:  // block preconditioners from Teko
-        case INPAR::SOLVER::azprec_TekoSIMPLE:
         {
           // set Inverse blocks for block preconditioner
           // for BGS preconditioner
@@ -324,8 +296,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           }
           break;
           case INPAR::SOLVER::azprec_BGS2x2:
-          case INPAR::SOLVER::azprec_BGSnxn:  // block preconditioners from Teko
-          case INPAR::SOLVER::azprec_TekoSIMPLE:
           {
             actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse1"), true);
             actdis->ComputeNullSpaceIfNecessary(solver->Params().sublist("Inverse2"), true);
@@ -1685,7 +1655,6 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
     switch (prec)
     {
       case INPAR::SOLVER::azprec_CheapSIMPLE:
-      case INPAR::SOLVER::azprec_TekoSIMPLE:
       {
         // add Inverse1 block for velocity dofs
         // tell Inverse1 block about NodalBlockInformation
@@ -1720,11 +1689,10 @@ void ADAPTER::FluidBaseAlgorithm::CreateSecondSolver(
       break;
       default:
         dserror(
-            "If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as "
-            "preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER "
-            "%i block in your dat file. Alternatively you can also try a multigrid block "
-            "preconditioner. Use then \"MueLu_fluid\" as preconditioner and provide a parameter "
-            "xml file.",
+            "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioners in your "
+            "fluid solver. Choose CheapSIMPLE in the SOLVER %i block in your dat file. "
+            "Alternatively you can also try a multigrid block preconditioner. Use then "
+            "\"MueLu_fluid\" as preconditioner and provide a parameter xml file.",
             linsolvernumber);
         break;
     }

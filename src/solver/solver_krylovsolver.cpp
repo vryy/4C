@@ -67,9 +67,6 @@ typedef Node NO;
 #include "solver_mlpreconditioner.H"
 #include "solver_muelupreconditioner.H"
 #include "solver_amgnxn_preconditioner.H"
-#ifdef HAVE_TEKO
-#include "solver_tekopreconditioner.H"
-#endif  // HAVE_TEKO
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -289,14 +286,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(Teuchos::ParameterList& 
     {
       preconditioner_ = Teuchos::rcp(
           new BGSPreconditioner(outfile_, Params(), Params().sublist("BGS Parameters")));
-    }
-    else if (Params().isSublist("Teko Parameters"))
-    {
-#ifdef HAVE_TEKO
-      preconditioner_ = Teuchos::rcp(new TekoPreconditioner(outfile_, Params()));
-#else
-      dserror("You need the HAVE_TEKO define flag set. Works only for Trilinos Q1/2012 or newer.");
-#endif
     }
     else if (Params().isSublist("MueLu (Fluid) Parameters"))
     {
