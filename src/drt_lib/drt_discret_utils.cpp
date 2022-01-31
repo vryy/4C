@@ -22,8 +22,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     Teuchos::ParameterList& solveparams, bool recompute)
 {
   // see whether we have a list for an iterative solver
-  if ((!solveparams.isSublist("Aztec Parameters") && !solveparams.isSublist("Belos Parameters") &&
-          !solveparams.isSublist("Stratimikos Parameters")) ||
+  if ((!solveparams.isSublist("Aztec Parameters") && !solveparams.isSublist("Belos Parameters")) ||
       solveparams.isSublist("IFPACK Parameters"))
   {
     return;
@@ -75,10 +74,6 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
     beloslist.set<int>("downwinding nv", nv);
     beloslist.set<int>("downwinding np", np);
   }
-  else if (solveparams.isSublist("Stratimikos Parameters"))
-  {
-    // no up and downwinding supported within Stratimikos...
-  }
   else
   {
     dserror("No suitable parameter list for iterative solver available.");
@@ -89,23 +84,10 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (!solveparams.isSublist("ML Parameters") && !solveparams.isSublist("MueLu Parameters") &&
       !solveparams.isSublist("MueLu (Contact) Parameters") &&
       !solveparams.isSublist("MueLu (Fluid) Parameters") &&
-      !solveparams.isSublist("MueLu (TSI) Parameters") &&
-      !solveparams.isSublist("Stratimikos Parameters"))
+      !solveparams.isSublist("MueLu (TSI) Parameters"))
     return;
   Teuchos::ParameterList* mllist_ptr = NULL;
-  if (solveparams.isSublist("Stratimikos Parameters"))
-  {
-    // TODO: what about MueLu?
-    if (solveparams.sublist("Stratimikos Parameters").get<std::string>("Preconditioner Type") !=
-        "ML")
-      return;
-    else
-      mllist_ptr = &(solveparams.sublist("Stratimikos Parameters")
-                         .sublist("Preconditioner Types")
-                         .sublist("ML")
-                         .sublist("ML Settings"));
-  }
-  else if (solveparams.isSublist("ML Parameters"))
+  if (solveparams.isSublist("ML Parameters"))
     mllist_ptr = &(solveparams.sublist("ML Parameters"));
   else if (solveparams.isSublist("MueLu Parameters"))
     mllist_ptr = &(solveparams.sublist("MueLu Parameters"));

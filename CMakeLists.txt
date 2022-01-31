@@ -78,12 +78,6 @@ if (DEBUGCUTLIBRARY)
   add_definitions("-DDEBUGCUTLIBRARY")
 endif (DEBUGCUTLIBRARY)
 
-option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" OFF)
-if (HAVE_Stratimikos)
-  MESSAGE("II Turn on support for Stratimikos")
-  add_definitions("-DHAVE_Stratimikos")
-endif (HAVE_Stratimikos)
-
 option (TRILINOS_Q1_2015 "Select Trilinos installation Q1_2015" OFF)
 if (TRILINOS_Q1_2015)
   MESSAGE("II Trilinos installation: Q1_2015")
@@ -1962,7 +1956,6 @@ set(OBJS_SOLVER
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp
   src/solver/solver_aztecsolver_projectedresidual.cpp
-  src/solver/solver_stratimikossolver.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
   src/solver/solver_amgnxn_vcycle.cpp
   src/solver/solver_amgnxn_hierarchies.cpp

@@ -27,8 +27,8 @@ namespace INPAR
 
       // Solver options
       {
-        Teuchos::Tuple<std::string, 12> solver_name;
-        Teuchos::Tuple<int, 12> solver_number;
+        Teuchos::Tuple<std::string, 9> solver_name;
+        Teuchos::Tuple<int, 9> solver_number;
 
         solver_name[0] = "Amesos_KLU_sym";
         solver_number[0] = amesos_klu_sym;
@@ -46,14 +46,8 @@ namespace INPAR
         solver_number[6] = umfpack;
         solver_name[7] = "Belos";
         solver_number[7] = belos;
-        solver_name[8] = "Stratimikos_Amesos";
-        solver_number[8] = stratimikos_amesos;
-        solver_name[9] = "Stratimikos_Aztec";
-        solver_number[9] = stratimikos_aztec;
-        solver_name[10] = "Stratimikos_Belos";
-        solver_number[10] = stratimikos_belos;
-        solver_name[11] = "undefined";
-        solver_number[11] = undefined;
+        solver_name[8] = "undefined";
+        solver_number[8] = undefined;
 
         setStringToIntegralParameter<int>("SOLVER", "undefined",
             "The solver to attack the system of linear equations arising of FE approach with.",
