@@ -18,6 +18,462 @@
 #include "../drt_mat/fluid_linear_density_viscosity.H"
 #include "../drt_mat/fluid_weakly_compressible.H"
 #include "../drt_mat/stvenantkirchhoff.H"
+#include "../drt_structure_new/str_functions.cpp"
+#include "Teuchos_RCP.hpp"
+
+
+static MAT::PAR::WeaklyCompressibleFluid GetWeaklyCompressibleFluidMatPars(int mat_id)
+{
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
+    dserror("Material %d is not a weakly compressible fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
+  return *fparams;
+}
+
+
+static MAT::PAR::NewtonianFluid GetNewtonianFluidMatPars(int mat_id)
+{
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams) dserror("Material does not cast to Newtonian fluid");
+  return *fparams;
+}
+
+
+void FLD::FluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition beltrami;
+  beltrami.AddTag("BELTRAMI").AddNamedDouble("c1");
+
+  DRT::INPUT::LineDefinition channelweaklycompressible;
+  channelweaklycompressible.AddTag("CHANNELWEAKLYCOMPRESSIBLE");
+
+  DRT::INPUT::LineDefinition correctiontermchannelweaklycompressible;
+  correctiontermchannelweaklycompressible.AddTag("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE");
+
+  DRT::INPUT::LineDefinition weaklycompressiblepoiseuille;
+  weaklycompressiblepoiseuille.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE")
+      .AddNamedInt("MAT")
+      .AddNamedDouble("L")
+      .AddNamedDouble("R")
+      .AddNamedDouble("U");
+
+  DRT::INPUT::LineDefinition weaklycompressiblepoiseuilleforce;
+  weaklycompressiblepoiseuilleforce.AddTag("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE")
+      .AddNamedInt("MAT")
+      .AddNamedDouble("L")
+      .AddNamedDouble("R")
+      .AddNamedDouble("U");
+
+  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflow;
+  weaklycompressiblemanufacturedflow.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressiblemanufacturedflowforce;
+  weaklycompressiblemanufacturedflowforce.AddTag("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfd;
+  weaklycompressibleetiennecfd.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD").AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdforce;
+  weaklycompressibleetiennecfdforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennecfdviscosity;
+  weaklycompressibleetiennecfdviscosity.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY")
+      .AddNamedInt("MAT");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluid;
+  weaklycompressibleetiennefsifluid.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID")
+      .AddNamedInt("MAT_FLUID")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluidforce;
+  weaklycompressibleetiennefsifluidforce.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE")
+      .AddNamedInt("MAT_FLUID")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsifluidviscosity;
+  weaklycompressibleetiennefsifluidviscosity
+      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY")
+      .AddNamedInt("MAT_FLUID")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition beltramiup;
+  beltramiup.AddTag("BELTRAMI-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
+
+  DRT::INPUT::LineDefinition beltramigradu;
+  beltramigradu.AddTag("BELTRAMI-GRADU").AddNamedInt("MAT").AddNamedInt("ISSTAT");
+
+  DRT::INPUT::LineDefinition beltramirhs;
+  beltramirhs.AddTag("BELTRAMI-RHS")
+      .AddNamedInt("MAT")
+      .AddNamedInt("ISSTAT")
+      .AddNamedInt("ISSTOKES");
+
+  DRT::INPUT::LineDefinition kimmoinup;
+  kimmoinup.AddTag("KIMMOIN-UP").AddNamedInt("MAT").AddNamedInt("ISSTAT");
+
+  DRT::INPUT::LineDefinition kimmoingradu;
+  kimmoingradu.AddTag("KIMMOIN-GRADU").AddNamedInt("MAT").AddNamedInt("ISSTAT");
+
+  DRT::INPUT::LineDefinition kimmoinrhs;
+  kimmoinrhs.AddTag("KIMMOIN-RHS").AddNamedInt("MAT").AddNamedInt("ISSTAT").AddNamedInt("ISSTOKES");
+
+  DRT::INPUT::LineDefinition kimmoinstress;
+  kimmoinstress.AddTag("KIMMOIN-STRESS")
+      .AddNamedInt("MAT")
+      .AddNamedInt("ISSTAT")
+      .AddNamedDouble("AMPLITUDE");
+
+  lines->Add(beltrami);
+  lines->Add(channelweaklycompressible);
+  lines->Add(correctiontermchannelweaklycompressible);
+  lines->Add(weaklycompressiblepoiseuille);
+  lines->Add(weaklycompressiblepoiseuilleforce);
+  lines->Add(weaklycompressiblemanufacturedflow);
+  lines->Add(weaklycompressiblemanufacturedflowforce);
+  lines->Add(weaklycompressibleetiennecfd);
+  lines->Add(weaklycompressibleetiennecfdforce);
+  lines->Add(weaklycompressibleetiennecfdviscosity);
+  lines->Add(weaklycompressibleetiennefsifluid);
+  lines->Add(weaklycompressibleetiennefsifluidforce);
+  lines->Add(weaklycompressibleetiennefsifluidviscosity);
+  lines->Add(beltramiup);
+  lines->Add(beltramigradu);
+  lines->Add(beltramirhs);
+  lines->Add(kimmoinup);
+  lines->Add(kimmoingradu);
+  lines->Add(kimmoinrhs);
+  lines->Add(kimmoinstress);
+}
+
+bool FLD::FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
+    std::vector<Teuchos::RCP<DRT::UTILS::Function>>* functions_)
+{
+  bool found_fluid_name = true;
+
+  if (function->HaveNamed("BELTRAMI"))
+  {
+    double c1;
+    function->ExtractDouble("c1", c1);
+
+    functions_->emplace_back(Teuchos::rcp(new FLD::BeltramiFunction(c1)));
+  }
+  else if (function->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
+  {
+    functions_->emplace_back(Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction()));
+  }
+  else if (function->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
+  {
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction()));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+  {
+    // read data
+    int mat_id = -1;
+    double L = 0.0;
+    double R = 0.0;
+    double U = 0.0;
+
+    function->ExtractInt("MAT", mat_id);
+    function->ExtractDouble("L", L);
+    function->ExtractDouble("R", R);
+    function->ExtractDouble("U", U);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+    if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+    if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+    if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(&fparams, L, R, U)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+  {
+    // read data
+    int mat_id = -1;
+    double L = 0.0;
+    double R = 0.0;
+    double U = 0.0;
+
+    function->ExtractInt("MAT", mat_id);
+    function->ExtractDouble("L", L);
+    function->ExtractDouble("R", R);
+    function->ExtractDouble("U", U);
+
+    if (mat_id <= 0)
+      dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+    if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+    if (R <= 0) dserror("Please give a (reasonable) 'R' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+    if (U <= 0) dserror("Please give a (reasonable) 'U' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(&fparams, L, R, U)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+  {
+    // read data
+    int mat_id = -1;
+
+    function->ExtractInt("MAT", mat_id);
+
+    if (mat_id <= 0)
+      dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(&fparams)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+  {
+    // read data
+    int mat_id = -1;
+
+    function->ExtractInt("MAT", mat_id);
+
+    if (mat_id <= 0)
+      dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(&fparams)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+  {
+    // read data
+    int mat_id = -1;
+
+    function->ExtractInt("MAT", mat_id);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(&fparams)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+  {
+    // read data
+    int mat_id = -1;
+
+    function->ExtractInt("MAT", mat_id);
+
+    if (mat_id <= 0)
+      dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(&fparams)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+  {
+    // read data
+    int mat_id = -1;
+
+    function->ExtractInt("MAT", mat_id);
+
+    if (mat_id <= 0)
+      dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
+
+    // get materials
+    auto fparams = GetWeaklyCompressibleFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(&fparams)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
+  {
+    // read data
+    int mat_id_fluid = -1;
+    int mat_id_struc = -1;
+
+    function->ExtractInt("MAT_FLUID", mat_id_fluid);
+    function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+    if (mat_id_fluid <= 0)
+      dserror("Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+    if (mat_id_struc <= 0)
+      dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
+
+    // get materials
+    auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
+    auto fparams_struc = GetSVKMatPars(mat_id_struc);
+
+    functions_->emplace_back(Teuchos::rcp(
+        new FLD::WeaklyCompressibleEtienneFSIFluidFunction(&fparams_fluid, &fparams_struc)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
+  {
+    // read data
+    int mat_id_fluid = -1;
+    int mat_id_struc = -1;
+
+    function->ExtractInt("MAT_FLUID", mat_id_fluid);
+    function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+    if (mat_id_fluid <= 0)
+    {
+      dserror(
+          "Please give a (reasonable) 'MAT_FLUID' in "
+          "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
+    }
+    if (mat_id_struc <= 0)
+    {
+      dserror(
+          "Please give a (reasonable) 'MAT_STRUC' in "
+          "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE");
+    }
+
+    // get materials
+    auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
+    auto fparams_struc = GetSVKMatPars(mat_id_struc);
+
+    functions_->emplace_back(Teuchos::rcp(
+        new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(&fparams_fluid, &fparams_struc)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
+  {
+    // read data
+    int mat_id_fluid = -1;
+    int mat_id_struc = -1;
+
+    function->ExtractInt("MAT_FLUID", mat_id_fluid);
+    function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+    if (mat_id_fluid <= 0)
+    {
+      dserror(
+          "Please give a (reasonable) 'MAT_FLUID' in "
+          "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
+    }
+    if (mat_id_struc <= 0)
+    {
+      dserror(
+          "Please give a (reasonable) 'MAT_STRUC' in "
+          "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY");
+    }
+
+    // get materials
+    auto fparams_fluid = GetWeaklyCompressibleFluidMatPars(mat_id_fluid);
+    auto fparams_struc = GetSVKMatPars(mat_id_struc);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
+            &fparams_fluid, &fparams_struc)));
+  }
+  else if (function->HaveNamed("BELTRAMI-UP"))
+  {
+    // read material
+    int mat_id = -1;
+
+    function->ExtractInt("MAT", mat_id);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
+
+    // get material
+    auto fparams = GetNewtonianFluidMatPars(mat_id);
+
+    functions_->emplace_back(Teuchos::rcp(new FLD::BeltramiUP(&fparams)));
+  }
+  else if (function->HaveNamed("BELTRAMI-RHS"))
+  {
+    // read material
+    int mat_id = -1;
+    int is_stokes = 0;
+
+    function->ExtractInt("MAT", mat_id);
+    function->ExtractInt("ISSTOKES", is_stokes);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
+
+    // get material
+    auto fparams = GetNewtonianFluidMatPars(mat_id);
+
+    functions_->emplace_back(Teuchos::rcp(new FLD::BeltramiRHS(&fparams, (bool)is_stokes)));
+  }
+  else if (function->HaveNamed("KIMMOIN-UP"))
+  {
+    // read material
+    int mat_id = -1;
+    int is_stationary = 0;
+
+    function->ExtractInt("MAT", mat_id);
+    function->ExtractInt("ISSTAT", is_stationary);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
+
+    // get material
+    auto fparams = GetNewtonianFluidMatPars(mat_id);
+
+    functions_->emplace_back(Teuchos::rcp(new FLD::KimMoinUP(&fparams, (bool)is_stationary)));
+  }
+  else if (function->HaveNamed("KIMMOIN-RHS"))
+  {
+    // read material
+    int mat_id = -1;
+    int is_stationary = 0;
+    int is_stokes = 0;
+
+    function->ExtractInt("MAT", mat_id);
+    function->ExtractInt("ISSTAT", is_stationary);
+    function->ExtractInt("ISSTOKES", is_stokes);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
+
+    // get material
+    auto fparams = GetNewtonianFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::KimMoinRHS(&fparams, (bool)is_stationary, (bool)is_stokes)));
+  }
+  else if (function->HaveNamed("KIMMOIN-STRESS"))
+  {
+    // read material
+    int mat_id = -1;
+    int is_stationary = 0;
+    double amplitude = 1.0;
+
+    function->ExtractInt("MAT", mat_id);
+    function->ExtractInt("ISSTAT", is_stationary);
+    function->ExtractDouble("AMPLITUDE", amplitude);
+
+    if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
+
+    // get material
+    auto fparams = GetNewtonianFluidMatPars(mat_id);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new FLD::KimMoinStress(&fparams, (bool)is_stationary, amplitude)));
+  }
+  else
+  {
+    found_fluid_name = false;
+  }
+
+  return found_fluid_name;
+}
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -570,7 +1026,7 @@ std::vector<double> FLD::CorrectionTermChannelWeaklyCompressibleFunction::Evalua
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
-    int mat_id, double L, double R, double U)
+    MAT::PAR::WeaklyCompressibleFluid* fparams, double L, double R, double U)
     : Function(),
       length_(0.0),
       halfheight_(0.0),
@@ -580,14 +1036,6 @@ FLD::WeaklyCompressiblePoiseuilleFunction::WeaklyCompressiblePoiseuilleFunction(
       refpressure_(0.0),
       comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   length_ = L;
   halfheight_ = R;
@@ -694,7 +1142,7 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForceFunction(
-    int mat_id, double L, double R, double U)
+    MAT::PAR::WeaklyCompressibleFluid* fparams, double L, double R, double U)
     : Function(),
       length_(0.0),
       halfheight_(0.0),
@@ -704,14 +1152,6 @@ FLD::WeaklyCompressiblePoiseuilleForceFunction::WeaklyCompressiblePoiseuilleForc
       refpressure_(0.0),
       comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   length_ = L;
   halfheight_ = R;
@@ -803,17 +1243,9 @@ std::vector<double> FLD::WeaklyCompressiblePoiseuilleForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowFunction::WeaklyCompressibleManufacturedFlowFunction(
-    int mat_id)
+    MAT::PAR::WeaklyCompressibleFluid* fparams)
     : Function(), viscosity_(0.0), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   viscosity_ = fparams->viscosity_;
   refdensity_ = fparams->refdensity_;
@@ -956,17 +1388,9 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowFunction::EvaluateTim
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleManufacturedFlowForceFunction::
-    WeaklyCompressibleManufacturedFlowForceFunction(int mat_id)
+    WeaklyCompressibleManufacturedFlowForceFunction(MAT::PAR::WeaklyCompressibleFluid* fparams)
     : Function(), viscosity_(0.0), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   viscosity_ = fparams->viscosity_;
   refdensity_ = fparams->refdensity_;
@@ -1229,17 +1653,10 @@ std::vector<double> FLD::WeaklyCompressibleManufacturedFlowForceFunction::Evalua
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(int mat_id)
+FLD::WeaklyCompressibleEtienneCFDFunction::WeaklyCompressibleEtienneCFDFunction(
+    MAT::PAR::WeaklyCompressibleFluid* fparams)
     : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   refdensity_ = fparams->refdensity_;
   refpressure_ = fparams->refpressure_;
@@ -1392,17 +1809,9 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDFunction::EvaluateTimeDeriv
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDForceFunction::WeaklyCompressibleEtienneCFDForceFunction(
-    int mat_id)
+    MAT::PAR::WeaklyCompressibleFluid* fparams)
     : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   refdensity_ = fparams->refdensity_;
   refpressure_ = fparams->refpressure_;
@@ -1820,17 +2229,9 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDForceFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneCFDViscosityFunction::WeaklyCompressibleEtienneCFDViscosityFunction(
-    int mat_id)
+    MAT::PAR::WeaklyCompressibleFluid* fparams)
     : Function(), refdensity_(0.0), refpressure_(0.0), comprcoeff_(0.0)
 {
-  // get material
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Weakly compressible fluid");
-
   // get data
   refdensity_ = fparams->refdensity_;
   refpressure_ = fparams->refpressure_;
@@ -1895,7 +2296,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneCFDViscosityFunction::Evaluate
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFluidFunction(
-    int mat_id_fluid, int mat_id_struc)
+    MAT::PAR::WeaklyCompressibleFluid* fparams_fluid, MAT::PAR::StVenantKirchhoff* fparams_struc)
     : Function(),
       refdensity_(0.0),
       refpressure_(0.0),
@@ -1904,24 +2305,6 @@ FLD::WeaklyCompressibleEtienneFSIFluidFunction::WeaklyCompressibleEtienneFSIFlui
       poissonratio_(0.0),
       strucdensity_(0.0)
 {
-  // get materials
-  Teuchos::RCP<MAT::PAR::Material> mat_fluid =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_fluid);
-  if (mat_fluid->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id_fluid);
-  MAT::PAR::Parameter* params_fluid = mat_fluid->Parameter();
-  auto* fparams_fluid = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params_fluid);
-  if (!fparams_fluid) dserror("Material does not cast to Weakly compressible fluid");
-
-  Teuchos::RCP<MAT::PAR::Material> mat_struc =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_struc);
-  if (mat_struc->Type() != INPAR::MAT::m_stvenant)
-    dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
-  MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
-  if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
-
-
   // get data
   refdensity_ = fparams_fluid->refdensity_;
   refpressure_ = fparams_fluid->refpressure_;
@@ -2240,7 +2623,7 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidFunction::EvaluateTime
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFSIFluidForceFunction(
-    int mat_id_fluid, int mat_id_struc)
+    MAT::PAR::WeaklyCompressibleFluid* fparams_fluid, MAT::PAR::StVenantKirchhoff* fparams_struc)
     : Function(),
       refdensity_(0.0),
       refpressure_(0.0),
@@ -2249,23 +2632,6 @@ FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::WeaklyCompressibleEtienneFS
       poissonratio_(0.0),
       strucdensity_(0.0)
 {
-  // get materials
-  Teuchos::RCP<MAT::PAR::Material> mat_fluid =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_fluid);
-  if (mat_fluid->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id_fluid);
-  MAT::PAR::Parameter* params_fluid = mat_fluid->Parameter();
-  auto* fparams_fluid = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params_fluid);
-  if (!fparams_fluid) dserror("Material does not cast to Weakly compressible fluid");
-
-  Teuchos::RCP<MAT::PAR::Material> mat_struc =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_struc);
-  if (mat_struc->Type() != INPAR::MAT::m_stvenant)
-    dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
-  MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
-  if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
-
   // get data
   refdensity_ = fparams_fluid->refdensity_;
   refpressure_ = fparams_fluid->refpressure_;
@@ -5822,7 +6188,9 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidForceFunction::Evaluat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
-    WeaklyCompressibleEtienneFSIFluidViscosityFunction(int mat_id_fluid, int mat_id_struc)
+    WeaklyCompressibleEtienneFSIFluidViscosityFunction(
+        MAT::PAR::WeaklyCompressibleFluid* fparams_fluid,
+        MAT::PAR::StVenantKirchhoff* fparams_struc)
     : Function(),
       refdensity_(0.0),
       refpressure_(0.0),
@@ -5831,23 +6199,6 @@ FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::
       poissonratio_(0.0),
       strucdensity_(0.0)
 {
-  // get materials
-  Teuchos::RCP<MAT::PAR::Material> mat_fluid =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_fluid);
-  if (mat_fluid->Type() != INPAR::MAT::m_fluid_weakly_compressible)
-    dserror("Material %d is not a weakly compressible fluid", mat_id_fluid);
-  MAT::PAR::Parameter* params_fluid = mat_fluid->Parameter();
-  auto* fparams_fluid = dynamic_cast<MAT::PAR::WeaklyCompressibleFluid*>(params_fluid);
-  if (!fparams_fluid) dserror("Material does not cast to Weakly compressible fluid");
-
-  Teuchos::RCP<MAT::PAR::Material> mat_struc =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_struc);
-  if (mat_struc->Type() != INPAR::MAT::m_stvenant)
-    dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
-  MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
-  if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
-
   // get data
   refdensity_ = fparams_fluid->refdensity_;
   refpressure_ = fparams_fluid->refpressure_;
@@ -6028,15 +6379,9 @@ std::vector<double> FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction::Eva
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiUP::BeltramiUP(int mat_id) : Function(), density_(-999.0e99), kinviscosity_(-999.0e99)
+FLD::BeltramiUP::BeltramiUP(MAT::PAR::NewtonianFluid* fparams)
+    : Function(), density_(-999.0e99), kinviscosity_(-999.0e99)
 {
-  // get material parameters for fluid
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-
   // get density
   density_ = fparams->density_;
 
@@ -6137,15 +6482,9 @@ std::vector<double> FLD::BeltramiUP::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiGradU::BeltramiGradU(int mat_id) : Function(), kinviscosity_(-999.0e99)
+FLD::BeltramiGradU::BeltramiGradU(MAT::PAR::NewtonianFluid* fparams)
+    : Function(), kinviscosity_(-999.0e99)
 {
-  // get material parameters for fluid
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-
   // get kinematic viscosity
   kinviscosity_ = fparams->viscosity_ / fparams->density_;
 }
@@ -6272,16 +6611,9 @@ std::vector<double> FLD::BeltramiGradU::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::BeltramiRHS::BeltramiRHS(int mat_id, bool is_stokes)
+FLD::BeltramiRHS::BeltramiRHS(MAT::PAR::NewtonianFluid* fparams, bool is_stokes)
     : Function(), kinviscosity_(-999.0e99), is_stokes_(is_stokes)
 {
-  // get material parameters for fluid
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-
   // get kinematic viscosity
   kinviscosity_ = fparams->viscosity_ / fparams->density_;
 }
@@ -6392,16 +6724,9 @@ std::vector<double> FLD::BeltramiRHS::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinUP::KimMoinUP(int mat_id, bool is_stationary)
+FLD::KimMoinUP::KimMoinUP(MAT::PAR::NewtonianFluid* fparams, bool is_stationary)
     : Function(), density_(-999.0e99), kinviscosity_(-999.0e99), is_stationary_(is_stationary)
 {
-  // get material parameters for fluid
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-
   // get density
   density_ = fparams->density_;
 
@@ -6541,15 +6866,9 @@ std::vector<double> FLD::KimMoinUP::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinGradU::KimMoinGradU(int mat_id, bool is_stationary)
+FLD::KimMoinGradU::KimMoinGradU(MAT::PAR::NewtonianFluid* fparams, bool is_stationary)
     : Function(), kinviscosity_(-999.0e99), is_stationary_(is_stationary)
 {
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-
   // get kinematic viscosity
   kinviscosity_ = fparams->viscosity_ / fparams->density_;
 }
@@ -6713,16 +7032,9 @@ std::vector<double> FLD::KimMoinGradU::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinRHS::KimMoinRHS(int mat_id, bool is_stationary, bool is_stokes)
+FLD::KimMoinRHS::KimMoinRHS(MAT::PAR::NewtonianFluid* fparams, bool is_stationary, bool is_stokes)
     : Function(), kinviscosity_(-999.0e99), is_stationary_(is_stationary), is_stokes_(is_stokes)
 {
-  // get material parameters for fluid
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
-
   // get kinematic viscosity
   kinviscosity_ = fparams->viscosity_ / fparams->density_;
 }
@@ -6904,20 +7216,14 @@ std::vector<double> FLD::KimMoinRHS::EvaluateTimeDerivative(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::KimMoinStress::KimMoinStress(int mat_id, bool is_stationary, double amplitude)
+FLD::KimMoinStress::KimMoinStress(
+    MAT::PAR::NewtonianFluid* fparams, bool is_stationary, double amplitude)
     : Function(), kinviscosity_(-999.0e99), is_stationary_(is_stationary), amplitude_(amplitude)
 {
   if (amplitude_ != 1.0)
     dserror(
         "At the moment other implementation of Kimmoin Functions do not include the amplitude "
         "functionality!");
-
-  // get material parameters for fluid
-  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
-  if (mat->Type() != INPAR::MAT::m_fluid) dserror("Material %d is not a fluid", mat_id);
-  MAT::PAR::Parameter* params = mat->Parameter();
-  auto* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
-  if (!fparams) dserror("Material does not cast to Newtonian fluid");
 
   // get density
   density_ = fparams->density_;

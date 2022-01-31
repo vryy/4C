@@ -10,6 +10,9 @@
 /*-----------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/fluid_weakly_compressible.H"
+#include "../drt_mat/stvenantkirchhoff.H"
 
 #ifndef FLUID_FUNCTION_H
 #define FLUID_FUNCTION_H
@@ -26,11 +29,35 @@ namespace DRT
 
 namespace FLD
 {
+  // SEBASTIAN
+  // using FunctioMap = std::unordered_map<std::string,
+  // std::function<Teuchos::RCP<DRT::Function>(DRT::LineDefinition)>>;
+
+  // FunctionMap GetFunctions()
+  //{
+  //  return {
+  //    {"Waklaynfkjgkjagj", BeltramiUP::from}
+  //  };
+  //}
+
+  /// Valid fluid function lines
+  void FluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+
+  /// Return fluid function for given line definition
+  bool FluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
+      std::vector<Teuchos::RCP<DRT::UTILS::Function>>* function_);
+
+
   /// special implementation for beltrami flow (velocity, pressure)
   class BeltramiUP : public DRT::UTILS::Function
   {
    public:
-    BeltramiUP(int mat_id);
+    BeltramiUP(MAT::PAR::NewtonianFluid* fparams);
+
+
+    // SEBASTIAN
+    // static Teuchos::RCP<DRT::Function> from(LineDefinition lineDef);
 
     /*!
 
@@ -80,7 +107,7 @@ namespace FLD
   class BeltramiGradU : public DRT::UTILS::Function
   {
    public:
-    BeltramiGradU(int mat_id);
+    BeltramiGradU(MAT::PAR::NewtonianFluid* fparams);
 
     /*!
 
@@ -130,7 +157,7 @@ namespace FLD
   class KimMoinUP : public DRT::UTILS::Function
   {
    public:
-    KimMoinUP(int mat_id, bool is_stationary);
+    KimMoinUP(MAT::PAR::NewtonianFluid* fparams, bool is_stationary);
 
     /*!
 
@@ -182,7 +209,7 @@ namespace FLD
   class KimMoinGradU : public DRT::UTILS::Function
   {
    public:
-    KimMoinGradU(int mat_id, bool is_stationary);
+    KimMoinGradU(MAT::PAR::NewtonianFluid* fparams, bool is_stationary);
 
     /*!
 
@@ -371,7 +398,8 @@ namespace FLD
   class WeaklyCompressiblePoiseuilleFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressiblePoiseuilleFunction(int mat_id, double L, double R, double U);
+    WeaklyCompressiblePoiseuilleFunction(
+        MAT::PAR::WeaklyCompressibleFluid* fparams, double L, double R, double U);
     /*!
 
     \brief evaluate function at given position in space
@@ -425,7 +453,8 @@ namespace FLD
   class WeaklyCompressiblePoiseuilleForceFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressiblePoiseuilleForceFunction(int mat_id, double L, double R, double U);
+    WeaklyCompressiblePoiseuilleForceFunction(
+        MAT::PAR::WeaklyCompressibleFluid* fparams, double L, double R, double U);
     /*!
 
     \brief evaluate function at given position in space
@@ -479,7 +508,7 @@ namespace FLD
   class WeaklyCompressibleManufacturedFlowFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleManufacturedFlowFunction(int mat_id);
+    WeaklyCompressibleManufacturedFlowFunction(MAT::PAR::WeaklyCompressibleFluid* fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -530,7 +559,7 @@ namespace FLD
   class WeaklyCompressibleManufacturedFlowForceFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleManufacturedFlowForceFunction(int mat_id);
+    WeaklyCompressibleManufacturedFlowForceFunction(MAT::PAR::WeaklyCompressibleFluid* fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -581,7 +610,7 @@ namespace FLD
   class WeaklyCompressibleEtienneCFDFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneCFDFunction(int mat_id);
+    WeaklyCompressibleEtienneCFDFunction(MAT::PAR::WeaklyCompressibleFluid* fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -631,7 +660,7 @@ namespace FLD
   class WeaklyCompressibleEtienneCFDForceFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneCFDForceFunction(int mat_id);
+    WeaklyCompressibleEtienneCFDForceFunction(MAT::PAR::WeaklyCompressibleFluid* fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -681,7 +710,7 @@ namespace FLD
   class WeaklyCompressibleEtienneCFDViscosityFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneCFDViscosityFunction(int mat_id);
+    WeaklyCompressibleEtienneCFDViscosityFunction(MAT::PAR::WeaklyCompressibleFluid* fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -731,7 +760,8 @@ namespace FLD
   class WeaklyCompressibleEtienneFSIFluidFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIFluidFunction(int mat_id_fluid, int mat_id_struc);
+    WeaklyCompressibleEtienneFSIFluidFunction(MAT::PAR::WeaklyCompressibleFluid* fparams_fluid,
+        MAT::PAR::StVenantKirchhoff* fparams_struc);
     /*!
 
     \brief evaluate function at given position in space
@@ -784,7 +814,8 @@ namespace FLD
   class WeaklyCompressibleEtienneFSIFluidForceFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIFluidForceFunction(int mat_id_fluid, int mat_id_struc);
+    WeaklyCompressibleEtienneFSIFluidForceFunction(MAT::PAR::WeaklyCompressibleFluid* fparams_fluid,
+        MAT::PAR::StVenantKirchhoff* fparams_struc);
     /*!
 
     \brief evaluate function at given position in space
@@ -837,7 +868,9 @@ namespace FLD
   class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIFluidViscosityFunction(int mat_id_fluid, int mat_id_struc);
+    WeaklyCompressibleEtienneFSIFluidViscosityFunction(
+        MAT::PAR::WeaklyCompressibleFluid* fparams_fluid,
+        MAT::PAR::StVenantKirchhoff* fparams_struc);
     /*!
 
     \brief evaluate function at given position in space
@@ -890,7 +923,7 @@ namespace FLD
   class BeltramiRHS : public DRT::UTILS::Function
   {
    public:
-    BeltramiRHS(int mat_id, bool is_stokes);
+    BeltramiRHS(MAT::PAR::NewtonianFluid* fparams, bool is_stokes);
 
     /*!
 
@@ -942,7 +975,7 @@ namespace FLD
   class KimMoinRHS : public DRT::UTILS::Function
   {
    public:
-    KimMoinRHS(int mat_id, bool is_stationary, bool is_stokes);
+    KimMoinRHS(MAT::PAR::NewtonianFluid* fparams, bool is_stationary, bool is_stokes);
 
     /*!
 
@@ -996,7 +1029,7 @@ namespace FLD
   class KimMoinStress : public DRT::UTILS::Function
   {
    public:
-    KimMoinStress(int mat_id, bool is_stationary, double amplitude = 1.0);
+    KimMoinStress(MAT::PAR::NewtonianFluid* fparams, bool is_stationary, double amplitude = 1.0);
 
 
     /*!

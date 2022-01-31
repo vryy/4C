@@ -10,6 +10,8 @@
 /*-----------------------------------------------------------*/
 
 #include "../drt_lib/drt_function.H"
+#include "../drt_mat/stvenantkirchhoff.H"
+
 
 #ifndef STR_FUNCTION_H
 #define STR_FUNCTION_H
@@ -26,11 +28,20 @@ namespace DRT
 
 namespace STR
 {
+  /// Valid fluid function lines
+  void StructureValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+
+  /// Return structure function for given line definition
+  bool StructureFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> functionnamed,
+      std::vector<Teuchos::RCP<DRT::UTILS::Function>>* function_);
+
+
   /// special implementation for weakly compressible flow - Etienne FSI problem
   class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIStructureFunction(int mat_id_struc);
+    WeaklyCompressibleEtienneFSIStructureFunction(MAT::PAR::StVenantKirchhoff* fparams);
     /*!
 
     \brief evaluate function at given position in space
@@ -78,7 +89,7 @@ namespace STR
   class WeaklyCompressibleEtienneFSIStructureForceFunction : public DRT::UTILS::Function
   {
    public:
-    WeaklyCompressibleEtienneFSIStructureForceFunction(int mat_id_struc);
+    WeaklyCompressibleEtienneFSIStructureForceFunction(MAT::PAR::StVenantKirchhoff* fparams);
     /*!
 
     \brief evaluate function at given position in space

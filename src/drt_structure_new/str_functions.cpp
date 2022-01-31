@@ -15,24 +15,93 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
+
+static MAT::PAR::StVenantKirchhoff GetSVKMatPars(int mat_id)
+{
+  Teuchos::RCP<MAT::PAR::Material> mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_stvenant)
+    dserror("Material %d is not a St.Venant-Kirchhoff structure material", mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  auto* fparams = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params);
+  if (!fparams) dserror("Material does not cast to St.Venant-Kirchhoff structure material");
+  return *fparams;
+}
+
+void STR::StructureValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+{
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure;
+  weaklycompressibleetiennefsistructure.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
+      .AddNamedInt("MAT_STRUC");
+
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructureforce;
+  weaklycompressibleetiennefsistructureforce
+      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
+      .AddNamedInt("MAT_STRUC");
+
+  lines->Add(weaklycompressibleetiennefsistructure);
+  lines->Add(weaklycompressibleetiennefsistructureforce);
+}
+
+bool STR::StructureFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition> function,
+    std::vector<Teuchos::RCP<DRT::UTILS::Function>>* functions_)
+{
+  bool found_structure_name = true;
+
+
+  if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
+  {
+    // read data
+    int mat_id_struc = -1;
+
+    function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+    if (mat_id_struc <= 0)
+      dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
+
+    // get materials
+    auto fparams = GetSVKMatPars(mat_id_struc);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(&fparams)));
+  }
+  else if (function->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
+  {
+    // read data
+    int mat_id_struc = -1;
+
+    function->ExtractInt("MAT_STRUC", mat_id_struc);
+
+    if (mat_id_struc <= 0)
+    {
+      dserror(
+          "Please give a (reasonable) 'MAT_STRUC' in "
+          "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
+    }
+
+    // get materials
+    auto fparams = GetSVKMatPars(mat_id_struc);
+
+    functions_->emplace_back(
+        Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(&fparams)));
+  }
+  else
+  {
+    found_structure_name = false;
+  }
+
+  return found_structure_name;
+}
+
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
-    int mat_id_struc)
+    MAT::PAR::StVenantKirchhoff* fparams)
     : Function(), poissonratio_(0.0)
 {
-  // get materials
-  Teuchos::RCP<MAT::PAR::Material> mat_struc =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_struc);
-  if (mat_struc->Type() != INPAR::MAT::m_stvenant)
-    dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
-  MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
-  if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
-
-
   // get data
-  poissonratio_ = fparams_struc->poissonratio_;
+  poissonratio_ = fparams->poissonratio_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -118,22 +187,13 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
-    WeaklyCompressibleEtienneFSIStructureForceFunction(int mat_id_struc)
+    WeaklyCompressibleEtienneFSIStructureForceFunction(MAT::PAR::StVenantKirchhoff* fparams)
     : Function(), youngmodulus_(0.0), poissonratio_(0.0), strucdensity_(0.0)
 {
-  // get materials
-  Teuchos::RCP<MAT::PAR::Material> mat_struc =
-      DRT::Problem::Instance()->Materials()->ById(mat_id_struc);
-  if (mat_struc->Type() != INPAR::MAT::m_stvenant)
-    dserror("Material %d is not a St.Venant-Kirchhoff structure", mat_id_struc);
-  MAT::PAR::Parameter* params_struc = mat_struc->Parameter();
-  auto* fparams_struc = dynamic_cast<MAT::PAR::StVenantKirchhoff*>(params_struc);
-  if (!fparams_struc) dserror("Material does not cast to St.Venant-Kirchhoff structure");
-
   // get data
-  youngmodulus_ = fparams_struc->youngs_;
-  poissonratio_ = fparams_struc->poissonratio_;
-  strucdensity_ = fparams_struc->density_;
+  youngmodulus_ = fparams->youngs_;
+  poissonratio_ = fparams->poissonratio_;
+  strucdensity_ = fparams->density_;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
