@@ -78,12 +78,6 @@ if (DEBUGCUTLIBRARY)
   add_definitions("-DDEBUGCUTLIBRARY")
 endif (DEBUGCUTLIBRARY)
 
-option (HAVE_TEKO "Turn on Teko support (needs Teko and Stratimikos to be compiled within Trilinos)" OFF)
-if (HAVE_TEKO)
-  MESSAGE("II Turn on support for Teko")
-  add_definitions("-DHAVE_TEKO")
-endif (HAVE_TEKO)
-
 option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" OFF)
 if (HAVE_Stratimikos)
   MESSAGE("II Turn on support for Stratimikos")
@@ -1965,12 +1959,10 @@ set(OBJS_SOLVER
   src/solver/solver_ifpackpreconditioner.cpp
   src/solver/solver_mlpreconditioner.cpp
   src/solver/solver_muelupreconditioner.cpp
-  src/solver/solver_tekopreconditioner.cpp
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp
   src/solver/solver_aztecsolver_projectedresidual.cpp
   src/solver/solver_stratimikossolver.cpp
-  src/solver/teko/teko_baciepetraoperatorwrapper.cpp
   src/solver/solver_amgnxn_preconditioner.cpp
   src/solver/solver_amgnxn_vcycle.cpp
   src/solver/solver_amgnxn_hierarchies.cpp

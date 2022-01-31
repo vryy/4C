@@ -72,8 +72,8 @@ namespace INPAR
       {
         // this one is longer than 15 and the tuple<> function does not support this,
         // so build the Tuple class directly (which can be any size)
-        Teuchos::Tuple<std::string, 26> name;
-        Teuchos::Tuple<int, 26> number;
+        Teuchos::Tuple<std::string, 24> name;
+        Teuchos::Tuple<int, 24> number;
 
         name[0] = "none";
         number[0] = azprec_none;
@@ -107,26 +107,22 @@ namespace INPAR
         number[14] = azprec_DownwindGaussSeidel;
         name[15] = "BGS2x2";
         number[15] = azprec_BGS2x2;
-        name[16] = "BGSnxn";
-        number[16] = azprec_BGSnxn;
-        name[17] = "TekoSIMPLE";
-        number[17] = azprec_TekoSIMPLE;
-        name[18] = "CheapSIMPLE";
-        number[18] = azprec_CheapSIMPLE;
-        name[19] = "MueLu_sym";
-        number[19] = azprec_MueLuAMG_sym;
-        name[20] = "MueLu_nonsym";
-        number[20] = azprec_MueLuAMG_nonsym;
-        name[21] = "MueLu_fluid";
-        number[21] = azprec_MueLuAMG_fluid;
-        name[22] = "MueLu_tsi";
-        number[22] = azprec_MueLuAMG_tsi;
-        name[23] = "MueLu_contactSP";
-        number[23] = azprec_MueLuAMG_contactSP;
-        name[24] = "AMGnxn";
-        number[24] = azprec_AMGnxn;
-        name[25] = "Chebyshev";
-        number[25] = azprec_Chebyshev;
+        name[16] = "CheapSIMPLE";
+        number[16] = azprec_CheapSIMPLE;
+        name[17] = "MueLu_sym";
+        number[17] = azprec_MueLuAMG_sym;
+        name[18] = "MueLu_nonsym";
+        number[18] = azprec_MueLuAMG_nonsym;
+        name[19] = "MueLu_fluid";
+        number[19] = azprec_MueLuAMG_fluid;
+        name[20] = "MueLu_tsi";
+        number[20] = azprec_MueLuAMG_tsi;
+        name[21] = "MueLu_contactSP";
+        number[21] = azprec_MueLuAMG_contactSP;
+        name[22] = "AMGnxn";
+        number[22] = azprec_AMGnxn;
+        name[23] = "Chebyshev";
+        number[23] = azprec_Chebyshev;
 
         setStringToIntegralParameter<int>("AZPREC", "ILU",
             "Type of internal preconditioner to use.\n"

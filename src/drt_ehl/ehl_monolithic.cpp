@@ -209,13 +209,6 @@ void EHL::Monolithic::CreateLinearSolver()
   {
     case INPAR::SOLVER::azprec_BGS2x2:
       break;
-    case INPAR::SOLVER::azprec_BGSnxn:
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    {
-      dserror(
-          "Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
-      break;
-    }
     case INPAR::SOLVER::azprec_MueLuAMG_sym:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
@@ -236,8 +229,6 @@ void EHL::Monolithic::CreateLinearSolver()
   switch (azprectype)
   {
     case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_BGSnxn:
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
     {

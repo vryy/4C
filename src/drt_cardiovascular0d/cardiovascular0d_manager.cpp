@@ -1072,7 +1072,6 @@ int UTILS::Cardiovascular0DManager::Solve(Teuchos::RCP<LINALG::SparseMatrix> mat
       switch (prec)
       {
         case INPAR::SOLVER::azprec_CheapSIMPLE:
-        case INPAR::SOLVER::azprec_TekoSIMPLE:
         {
           // add Inverse1 block for "velocity" dofs
           // tell Inverse1 block about NodalBlockInformation

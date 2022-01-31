@@ -304,8 +304,6 @@ void LINALG::SOLVER::BGSPreconditioner::Setup(
           block1_iter, block1_omega, block2_iter, block2_omega, fliporder, outfile_));
     }
     else
-      dserror(
-          "Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system. Use BGSnxn "
-          "for a common block Gauss-Seidel implementation (based on Teko package in Trilinos).");
+      dserror("Block Gauss-Seidel BGS2x2 is currently only implemented for a 2x2 system.");
   }
 }

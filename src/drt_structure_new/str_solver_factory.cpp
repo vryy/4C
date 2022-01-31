@@ -270,13 +270,12 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
       if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE && prec != INPAR::SOLVER::azprec_TekoSIMPLE &&
+        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
             prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)  // TODO adapt error message
           dserror(
-              "You have chosen an iterative linear solver. For mortar/Contact "
-              "in saddlepoint formulation you have to choose a block preconditioner "
-              "such as SIMPLE. Choose CheapSIMPLE, TekoSIMPLE (if Teko is available) "
-              "or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in "
+              "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
+              "formulation you have to choose a block preconditioner such as SIMPLE. Choose "
+              "CheapSIMPLE or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in "
               "your dat file.",
               lin_solver_id);
       }
@@ -304,7 +303,7 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolve
           sol_type == INPAR::CONTACT::solution_steepest_ascent_sp)
       {
         // provide null space information
-        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE || prec == INPAR::SOLVER::azprec_TekoSIMPLE)
+        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE)
         {
           // Inverse2 is created within blockpreconditioners.cpp
           actdis.ComputeNullSpaceIfNecessary(
@@ -403,7 +402,6 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolve
       switch (prec)
       {
         case INPAR::SOLVER::azprec_CheapSIMPLE:
-        case INPAR::SOLVER::azprec_TekoSIMPLE:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about NodalBlockInformation
@@ -479,7 +477,6 @@ Teuchos::RCP<LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolve
       switch (prec)
       {
         case INPAR::SOLVER::azprec_CheapSIMPLE:
-        case INPAR::SOLVER::azprec_TekoSIMPLE:
         {
           // add Inverse1 block for velocity dofs
           // tell Inverse1 block about NodalBlockInformation

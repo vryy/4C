@@ -325,31 +325,6 @@ void TSI::Monolithic::CreateLinearSolver()
   {
     case INPAR::SOLVER::azprec_BGS2x2:
       break;
-    case INPAR::SOLVER::azprec_BGSnxn:
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    {
-#ifdef HAVE_TEKO
-      // check if structural solver and thermal solver are Stratimikos based (Teko expects
-      // stratimikos)
-      int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-          DRT::Problem::Instance()->SolverParams(slinsolvernumber), "SOLVER");
-      if ((solvertype != INPAR::SOLVER::stratimikos_amesos) and
-          (solvertype != INPAR::SOLVER::stratimikos_aztec) and
-          (solvertype != INPAR::SOLVER::stratimikos_belos))
-        dserror("Teko expects a STRATIMIKOS solver object in STRUCTURE SOLVER");
-
-      solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-          DRT::Problem::Instance()->SolverParams(tlinsolvernumber), "SOLVER");
-      if ((solvertype != INPAR::SOLVER::stratimikos_amesos) and
-          (solvertype != INPAR::SOLVER::stratimikos_aztec) and
-          (solvertype != INPAR::SOLVER::stratimikos_belos))
-        dserror("Teko expects a STRATIMIKOS solver object in thermal solver %3d", tlinsolvernumber);
-#else
-      dserror(
-          "Teko preconditioners only available with HAVE_TEKO flag for TRILINOS_DEV (>Q1/2011)");
-#endif
-      break;
-    }
     case INPAR::SOLVER::azprec_MueLuAMG_tsi:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
@@ -370,8 +345,6 @@ void TSI::Monolithic::CreateLinearSolver()
   switch (azprectype)
   {
     case INPAR::SOLVER::azprec_BGS2x2:
-    case INPAR::SOLVER::azprec_BGSnxn:
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
     case INPAR::SOLVER::azprec_AMGnxn:
     case INPAR::SOLVER::azprec_CheapSIMPLE:
     {

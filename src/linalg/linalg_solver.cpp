@@ -400,11 +400,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateToStratimikos(
       alist = TranslateIfpackToStratimikos(inparams);
     }
     break;
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    case INPAR::SOLVER::azprec_BGSnxn:
-      // using Teko
-      dserror("Teko not supported by Stratimikos by default");
-      break;
     case INPAR::SOLVER::azprec_ML:
     case INPAR::SOLVER::azprec_MLfluid:
     case INPAR::SOLVER::azprec_MLfluid2:
@@ -1230,33 +1225,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(
   return mllist;
 }
 
-const Teuchos::ParameterList LINALG::Solver::TranslateBACIToTeko(
-    const Teuchos::ParameterList& inparams)
-{
-  Teuchos::ParameterList tekolist;
-
-  const int prectyp = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(inparams, "AZPREC");
-  switch (prectyp)
-  {
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    {
-      tekolist.set("Prec Type", "SIMPLE");
-      tekolist.set("alpha", inparams.get<double>("SIMPLE_DAMPING"));
-    }
-    break;
-    case INPAR::SOLVER::azprec_BGSnxn:
-    {
-      tekolist.set("Prec Type", "BGS");
-    }
-    break;
-    default:
-      dserror("LINALG::Solver::TranslateBACIToTeko: wrong type of preconditioner");
-      break;
-  }
-
-  return tekolist;
-}
-
 const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     const Teuchos::ParameterList& inparams)
 {
@@ -1302,11 +1270,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
     case INPAR::SOLVER::azprec_ILU:
       // using ifpack
       beloslist.set("Preconditioner Type", "ILU");
-      break;
-    case INPAR::SOLVER::azprec_TekoSIMPLE:
-    case INPAR::SOLVER::azprec_BGSnxn:
-      // using Teko
-      beloslist.set("Preconditioner Type", "Teko");
       break;
     case INPAR::SOLVER::azprec_Jacobi:
     case INPAR::SOLVER::azprec_SymmGaussSeidel:
@@ -1393,12 +1356,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
-  }
-  //------------------------------------- set parameters for Teko if used
-  if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE || azprectyp == INPAR::SOLVER::azprec_BGSnxn)
-  {
-    Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
-    tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
   }
   //------------------------------------- set parameters for CheapSIMPLE if used
   if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)
@@ -1638,8 +1595,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
         case INPAR::SOLVER::azprec_MLfluid:
         case INPAR::SOLVER::azprec_MLfluid2:
         case INPAR::SOLVER::azprec_BGS2x2:
-        case INPAR::SOLVER::azprec_BGSnxn:
-        case INPAR::SOLVER::azprec_TekoSIMPLE:
         case INPAR::SOLVER::azprec_MueLuAMG_sym:
         case INPAR::SOLVER::azprec_MueLuAMG_nonsym:
         case INPAR::SOLVER::azprec_AMGnxn:
@@ -1717,13 +1672,6 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(
       {
         Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
         ifpacklist = LINALG::Solver::TranslateBACIToIfpack(inparams);
-      }
-      //------------------------------------- set parameters for Teko if used
-      if (azprectyp == INPAR::SOLVER::azprec_TekoSIMPLE ||
-          azprectyp == INPAR::SOLVER::azprec_BGSnxn)
-      {
-        Teuchos::ParameterList& tekolist = outparams.sublist("Teko Parameters");
-        tekolist = LINALG::Solver::TranslateBACIToTeko(inparams);
       }
       //------------------------------------- set parameters for CheapSIMPLE if used
       if (azprectyp == INPAR::SOLVER::azprec_CheapSIMPLE)

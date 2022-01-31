@@ -574,14 +574,13 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       if (sol != INPAR::SOLVER::umfpack && sol != INPAR::SOLVER::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
-        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE && prec != INPAR::SOLVER::azprec_TekoSIMPLE &&
+        if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
             prec != INPAR::SOLVER::azprec_MueLuAMG_contactSP)
           dserror(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "
-              "appropriate block preconditioner such as CheapSIMPLE, TekoSIMPLE (if Teko is "
-              "available) or MueLu_contactSP (if MueLu is available) in the SOLVER %i block in "
-              "your input file.",
+              "appropriate block preconditioner such as CheapSIMPLE or MueLu_contactSP "
+              "(if MueLu is available) in the SOLVER %i block in your input file.",
               linsolvernumber);
       }
 
@@ -616,7 +615,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
               "STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
-        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE || prec == INPAR::SOLVER::azprec_TekoSIMPLE)
+        if (prec == INPAR::SOLVER::azprec_CheapSIMPLE)
         {
           actdis->ComputeNullSpaceIfNecessary(
               solver->Params()

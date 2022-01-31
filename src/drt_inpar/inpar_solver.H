@@ -77,8 +77,6 @@ namespace INPAR
       azprec_MLfluid2,             ///< energy optimal unsymmetric ML for Fluids
       azprec_ML,                   ///< standard ML for structures
       azprec_BGS2x2,               ///< Block Gauss-Seidel for 2x2 system
-      azprec_TekoSIMPLE,           ///< SIMPLE preconditioner for 2x2 block system (Teko)
-      azprec_BGSnxn,               ///< Block Gauss-Seidel for nxn system (Teko)
       azprec_CheapSIMPLE,          ///< CheapSIMPLE
                                    ///< (BACI implementation for contact/meshtying/constraints)
       azprec_MueLuAMG_sym,         ///< MueLu AMG preconditioner

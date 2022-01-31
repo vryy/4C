@@ -605,13 +605,11 @@ void ADAPTER::ScaTraBaseAlgorithm::Setup()
       const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
       auto prec = DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(
           DRT::Problem::Instance()->SolverParams(linsolvernumber), "AZPREC");
-      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE &&
-          prec != INPAR::SOLVER::azprec_TekoSIMPLE)  // TODO adapt error message
+      if (prec != INPAR::SOLVER::azprec_CheapSIMPLE)  // TODO adapt error message
       {
         dserror(
-            "If SIMPLER flag is set to YES you can only use CheapSIMPLE or TekoSIMPLE as "
-            "preconditioners in your fluid solver. Choose CheapSIMPLE or TekoSIMPLE in the SOLVER "
-            "%i block in your dat file.",
+            "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioner in your "
+            "fluid solver. Choose CheapSIMPLE in the SOLVER %i block in your dat file.",
             linsolvernumber);
       }
 
