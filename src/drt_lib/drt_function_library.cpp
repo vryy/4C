@@ -41,12 +41,11 @@ double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argum
 
 DRT::UTILS::TranslatedFunction::TranslatedFunction(
     Teuchos::RCP<Function> origin, Teuchos::RCP<Function> local)
+    : originFunction_(std::move(origin)), localFunction_(std::move(local))
 {
-  if (origin->NumberComponents() != nsd_originTranslation)
+  if (originFunction_->NumberComponents() != nsd_originTranslation)
     dserror("Origin function needs to have exactly %d components but %d were given.",
-        nsd_originTranslation, origin->NumberComponents());
-  originFunction_ = origin;
-  localFunction_ = local;
+        nsd_originTranslation, originFunction_->NumberComponents());
 }
 
 double DRT::UTILS::TranslatedFunction::Evaluate(const int index, const double* x, double t)
