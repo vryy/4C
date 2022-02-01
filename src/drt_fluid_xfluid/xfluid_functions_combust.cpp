@@ -161,11 +161,11 @@ bool DRT::UTILS::CombustFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinitio
 
   if (function->HaveNamed("ZALESAKSDISK"))
   {
-    functions_->push_back(Teuchos::rcp(new DRT::UTILS::ZalesaksDiskFunction()));
+    functions_->push_back(Teuchos::rcp(new ZalesaksDiskFunction()));
   }
   else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
   {
-    functions_->push_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
+    functions_->push_back(Teuchos::rcp(new CollapsingWaterColumnFunction()));
   }
   else
   {
