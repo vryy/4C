@@ -242,31 +242,7 @@ namespace LINALG
         const Teuchos::ParameterList& inparams);
 
     /*!
-     \brief Translate BACI dat file parameters to Stratimikos
-     */
-    static const Teuchos::ParameterList TranslateToStratimikos(
-        const Teuchos::ParameterList& inparams);
-
-    /*!
-     \brief Translate Trilinos parameters to Stratimikos
-     */
-    static const Teuchos::ParameterList TranslateAmesosToStratimikos(
-        const Teuchos::ParameterList& inparams);
-
-    static const Teuchos::ParameterList TranslateAztecToStratimikos(
-        const Teuchos::ParameterList& inparams);
-
-    static const Teuchos::ParameterList TranslateBelosToStratimikos(
-        const Teuchos::ParameterList& inparams);
-
-    static const Teuchos::ParameterList TranslateIfpackToStratimikos(
-        const Teuchos::ParameterList& inparams);
-
-    static const Teuchos::ParameterList TranslateMLToStratimikos(
-        const Teuchos::ParameterList& inparams);
-
-    /*!
-    \brief Translate BACI dat file parameters to Stratimikos (Amesos)
+    \brief Translate BACI dat file parameters
 
     */
     static const Teuchos::ParameterList TranslateBACIToML(
@@ -274,8 +250,6 @@ namespace LINALG
 
     static const Teuchos::ParameterList TranslateBACIToIfpack(
         const Teuchos::ParameterList& inparams);
-
-    static const Teuchos::ParameterList TranslateBACIToTeko(const Teuchos::ParameterList& inparams);
 
     static const Teuchos::ParameterList TranslateBACIToBelos(
         const Teuchos::ParameterList& inparams);
