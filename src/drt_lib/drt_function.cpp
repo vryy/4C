@@ -81,15 +81,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddOptionalNamedInt("NUMCONSTANTS")
       .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
 
-  DRT::INPUT::LineDefinition linelin;
-  linelin.AddNamedDoubleVector("LINE_LIN", 8);
-
-  DRT::INPUT::LineDefinition radiuslin;
-  radiuslin.AddNamedDoubleVector("RADIUS_LIN", 8);
-
-  DRT::INPUT::LineDefinition radiusquad;
-  radiusquad.AddNamedDoubleVector("RADIUS_QUAD", 6);
-
   DRT::INPUT::LineDefinition beltrami;
   beltrami.AddTag("BELTRAMI").AddNamedDouble("c1");
 
@@ -184,39 +175,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
       .AddNamedInt("ISSTAT")
       .AddNamedDouble("AMPLITUDE");
 
-  DRT::INPUT::LineDefinition womersley;
-  womersley.AddTag("WOMERSLEY")
-      .AddNamedInt("Local")
-      .AddNamedInt("MAT")
-      .AddNamedInt("CURVE")
-      .AddNamedString("FSI");
-
-  DRT::INPUT::LineDefinition localwomersley;
-  localwomersley.AddTag("WOMERSLEY")
-      .AddNamedInt("Local")
-      .AddNamedDouble("Radius")
-      .AddNamedInt("MAT")
-      .AddNamedInt("CURVE");
-
-  DRT::INPUT::LineDefinition cylinder3d;
-  cylinder3d.AddNamedDouble("CYLINDER_3D");
-
-  DRT::INPUT::LineDefinition ramptovalue;
-  ramptovalue.AddTag("RAMPTOVALUE")
-      .AddNamedDouble("VALUE")
-      .AddNamedDouble("STARTTIME")
-      .AddNamedDouble("DURATION")
-      .AddNamedString("TYPE");
-
-  DRT::INPUT::LineDefinition nodenormal;
-  nodenormal.AddTag("NODENORMAL")
-      .AddNamedString("GEOMETRY")
-      .AddNamedDoubleVector("ORIGIN", 3)
-      .AddNamedDouble("RADIUS")
-      .AddNamedDouble("CYLINDERHEIGHT")
-      .AddNamedDoubleVector("ORIENTATION", 3)
-      .AddNamedDouble("CASSINIA");
-
   DRT::INPUT::LineDefinition poromultiphasescatra_funct;
   poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
       .AddOptionalNamedInt("NUMPARAMS")
@@ -233,9 +191,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(translatedfunction_funct);
 
   lines->Add(varfunct);
-  lines->Add(linelin);
-  lines->Add(radiuslin);
-  lines->Add(radiusquad);
   lines->Add(beltrami);
   lines->Add(channelweaklycompressible);
   lines->Add(correctiontermchannelweaklycompressible);
@@ -258,14 +213,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(kimmoingradu);
   lines->Add(kimmoinrhs);
   lines->Add(kimmoinstress);
-  lines->Add(womersley);
-  lines->Add(localwomersley);
-  lines->Add(cylinder3d);
-  lines->Add(ramptovalue);
-  lines->Add(nodenormal);
   lines->Add(poromultiphasescatra_funct);
   lines->Add(fastpolynomial_funct);
-  // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   DRT::UTILS::CombustValidFunctionLines(lines);
   DRT::UTILS::XfluidValidFunctionLines(lines);
@@ -293,7 +242,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
     {
       Teuchos::RCP<DRT::INPUT::LineDefinition> function = functions[0];
 
-      // Old function +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       if (function->HaveNamed("BELTRAMI"))
       {
         double c1;
@@ -589,67 +537,6 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 
         functions_.emplace_back(
             Teuchos::rcp(new FLD::KimMoinStress(mat_id, (bool)is_stationary, amplitude)));
-      }
-      else if (function->HaveNamed("ZALESAKSDISK"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new ZalesaksDiskFunction()));
-      }
-      else if (function->HaveNamed("COLLAPSINGWATERCOLUMN"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction()));
-      }
-      else if (function->HaveNamed("FORWARDFACINGSTEP"))
-      {
-        functions_.emplace_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
-      }
-      else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
-      {
-        std::vector<double> origin;
-        function->ExtractDoubleVector("ORIGIN", origin);
-
-        double radius;
-        function->ExtractDouble("RADIUS", radius);
-
-        std::vector<double> direction;
-        function->ExtractDoubleVector("DIRECTION", direction);
-
-        double distance;
-        function->ExtractDouble("DISTANCE", distance);
-
-        double maxspeed;
-        function->ExtractDouble("MAXSPEED", maxspeed);
-
-        functions_.emplace_back(Teuchos::rcp(
-            new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed)));
-      }
-      else if (function->HaveNamed("TAYLORCOUETTEFLOW"))
-      {
-        double radius_i;
-        function->ExtractDouble("RADIUS_I", radius_i);
-        double radius_o;
-        function->ExtractDouble("RADIUS_O", radius_o);
-
-        double vel_theta_i;
-        function->ExtractDouble("VEL_THETA_I", vel_theta_i);
-        double vel_theta_o;
-        function->ExtractDouble("VEL_THETA_O", vel_theta_o);
-
-        double sliplength_i;
-        function->ExtractDouble("SLIPLENGTH_I", sliplength_i);
-        double sliplength_o;
-        function->ExtractDouble("SLIPLENGTH_O", sliplength_o);
-
-        double traction_theta_i;
-        function->ExtractDouble("TRACTION_THETA_I", traction_theta_i);
-        double traction_theta_o;
-        function->ExtractDouble("TRACTION_THETA_O", traction_theta_o);
-
-        double viscosity;
-        function->ExtractDouble("VISCOSITY", viscosity);
-
-        functions_.emplace_back(
-            Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
-                sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity)));
       }
       else if (function->HaveNamed("FASTPOLYNOMIAL"))
       {
