@@ -1277,20 +1277,6 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::EvaluateAll(const int startfunc,
     }
     break;
 
-    case INPAR::FLUID::initfield_channel_weakly_compressible_fourier_3:
-    {
-      FLD::ChannelWeaklyCompressibleFourier3Function* channelfunc =
-          new FLD::ChannelWeaklyCompressibleFourier3Function;
-      u(0) = channelfunc->Evaluate(0, xyz.A(), 0);
-      u(1) = channelfunc->Evaluate(1, xyz.A(), 0);
-      p = channelfunc->Evaluate(2, xyz.A(), 0);
-      grad(0, 0) = channelfunc->Evaluate(3, xyz.A(), 0);
-      grad(0, 1) = channelfunc->Evaluate(4, xyz.A(), 0);
-      grad(1, 0) = channelfunc->Evaluate(5, xyz.A(), 0);
-      grad(1, 1) = channelfunc->Evaluate(6, xyz.A(), 0);
-    }
-    break;
-
     case INPAR::FLUID::initfield_field_by_function:
     case INPAR::FLUID::initfield_disturbed_field_from_function:
     {

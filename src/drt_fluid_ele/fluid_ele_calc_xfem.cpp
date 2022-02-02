@@ -405,8 +405,8 @@ namespace DRT
           // evaluate velocity and pressure
           // evaluate the velocity gradient
 
-          function = Teuchos::rcp(new FLD::BeltramiUP(mat));
-          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(mat));
+          function = Teuchos::rcp(new FLD::BeltramiUP(mat->Parameter()->Id()));
+          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(mat->Parameter()->Id()));
 
           if (my::nsd_ == 3)
           {
@@ -539,8 +539,9 @@ namespace DRT
             is_stationary = false;
           }
 
-          function = Teuchos::rcp(new FLD::KimMoinUP(mat, is_stationary));
-          function_grad = Teuchos::rcp(new FLD::KimMoinGradU(mat, is_stationary));
+          function = Teuchos::rcp(new FLD::KimMoinUP(mat->Parameter()->Id(), is_stationary));
+          function_grad =
+              Teuchos::rcp(new FLD::KimMoinGradU(mat->Parameter()->Id(), is_stationary));
 
           if (my::nsd_ == 3)
           {
@@ -637,28 +638,6 @@ namespace DRT
           }
           else
             dserror("3D analytical solution is not implemented yet");
-        }
-        break;
-
-        case INPAR::FLUID::jeffery_hamel_flow:
-        {
-          // LINALG::Matrix<3,1> physpos(true);
-          // GEO::elementToCurrentCoordinates(distype, xyzint, xsi_, physpos);
-
-          // function evaluation requires a 3D position vector!!
-          double position[3];
-          position[0] = xyzint(0);
-          position[1] = xyzint(1);
-          position[2] = 0.0;
-
-          if (1.0 < position[0] and position[0] < 2.0 and 0.0 < position[1] and
-              position[1] < position[0])
-          {
-            const double u_exact_x = DRT::Problem::Instance()->Funct(0).Evaluate(0, position, t);
-            const double u_exact_y = DRT::Problem::Instance()->Funct(0).Evaluate(1, position, t);
-            u(0) = u_exact_x;
-            u(1) = u_exact_y;
-          }
         }
         break;
 

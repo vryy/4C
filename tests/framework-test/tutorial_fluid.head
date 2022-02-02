@@ -50,7 +50,6 @@ GRIDVEL                         BE
 //                              FLAME_VORTEX_INTERACTION
 //                              BELTRAMI-FLOW
 //                              KIM-MOIN-FLOW
-//                              BOCHEV-TEST
 INITIALFIELD                    zero_field
 //
 // max number of nonlinear iterations for initial stationary solution

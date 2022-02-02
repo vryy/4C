@@ -243,13 +243,11 @@ namespace INPAR
       initfield_flame_vortex_interaction,
       initfield_beltrami_flow,
       initfield_kim_moin_flow,
-      initfield_bochev_test,
       initfield_hit_comte_bellot_corrsin,
       initfield_forced_hit_simple_algebraic_spectrum,
       initfield_forced_hit_numeric_spectrum,
       initfield_passive_hit_const_input,
-      initfield_channel_weakly_compressible,
-      initfield_channel_weakly_compressible_fourier_3
+      initfield_channel_weakly_compressible
     };
 
     /// initial field
@@ -261,7 +259,6 @@ namespace INPAR
       topoptchannel,
       gravitation,
       shear_flow,
-      jeffery_hamel_flow,
       byfunct,
       beltrami_stat_stokes,
       beltrami_stat_navier_stokes,
@@ -273,7 +270,6 @@ namespace INPAR
       kimmoin_instat_navier_stokes,
       fsi_fluid_pusher,  ///< pseudo 1D FSI fluid pusher
       channel_weakly_compressible,
-      channel_weakly_compressible_fourier_3
     };
 
     /// average pressure boundary condition for hdg

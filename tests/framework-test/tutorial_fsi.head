@@ -80,7 +80,6 @@ ALPHA_M                         1
 //                              channel2D
 //                              gravitation
 //                              shear_flow
-//                              jeffery_hamel_flow
 //                              byfunct1
 //                              beltrami_stat_stokes
 //                              beltrami_stat_navier_stokes
@@ -126,7 +125,6 @@ INFNORMSCALING                  no
 //                              FLAME_VORTEX_INTERACTION
 //                              BELTRAMI-FLOW
 //                              KIM-MOIN-FLOW
-//                              BOCHEV-TEST
 INITIALFIELD                    zero_field
 //
 // max number of nonlinear iterations for initial stationary solution

@@ -9,6 +9,8 @@
 /*----------------------------------------------------------------------*/
 
 
+#include <utility>
+
 #include "xfluid_functions.H"
 #include "../drt_lib/drt_discret_interface.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -89,33 +91,6 @@ double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(int index, const dou
   //=========================================================
 
   return distance;
-}
-
-/*----------------------------------------------------------------------*
- | constructor                                          winter    11/15 |
- *----------------------------------------------------------------------*/
-DRT::UTILS::SlipLengthLevelSetManipulator::SlipLengthLevelSetManipulator() : Function() {}
-
-/*----------------------------------------------------------------------*
- | evaluation of xfluid level set test case             winter    09/14 |
- *----------------------------------------------------------------------*/
-double DRT::UTILS::SlipLengthLevelSetManipulator::Evaluate(int index, const double* xp, double t)
-{
-  double x_cut = 0.4;
-  double scalar;
-  //  if(xp[0]<x_cut)
-  //    scalar = 0.0;
-  //  else
-  //  {
-  //    scalar = 1000*(std::pow(1.6,xp[0]-x_cut));
-  //  }
-
-  if (xp[0] > x_cut)
-    scalar = 0.0;
-  else
-    scalar = 1000 * (std::pow(1.6, x_cut - xp[0]));
-
-  return scalar;
 }
 
 /*----------------------------------------------------------------------*
@@ -1139,7 +1114,7 @@ std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
  *----------------------------------------------------------------------*/
 DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
-    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lincomb)
+    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
 
@@ -1296,7 +1271,7 @@ double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(int index, const double* xp, do
  *----------------------------------------------------------------------*/
 DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, double lengthy,
     double rotation, double viscosity, double density, int functno, std::vector<double> lincomb)
-    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lincomb)
+    : UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, std::move(lincomb))
 {
 }
 
@@ -1479,9 +1454,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
   DRT::INPUT::LineDefinition gerstenbergerforwardfacingstep;
   gerstenbergerforwardfacingstep.AddTag("FORWARDFACINGSTEP");
 
-  DRT::INPUT::LineDefinition sliplengthlevelsetmanipulator;
-  sliplengthlevelsetmanipulator.AddTag("SLIPLENGTHFUNCTION");
-
   DRT::INPUT::LineDefinition movinglevelsetcylinder;
   movinglevelsetcylinder.AddTag("MOVINGLEVELSETCYLINDER")
       .AddNamedDoubleVector("ORIGIN", 3)
@@ -1573,7 +1545,6 @@ void DRT::UTILS::XfluidValidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
       .AddOptionalNamedDoubleVector("COMBINATION", 2);
 
   lines->Add(gerstenbergerforwardfacingstep);
-  lines->Add(sliplengthlevelsetmanipulator);
   lines->Add(movinglevelsetcylinder);
   lines->Add(movinglevelsettorus);
   lines->Add(movinglevelsettorusvelocity);
@@ -1592,10 +1563,6 @@ bool DRT::UTILS::XfluidFunctionHaveNamed(Teuchos::RCP<DRT::INPUT::LineDefinition
   if (function->HaveNamed("FORWARDFACINGSTEP"))
   {
     functions_->push_back(Teuchos::rcp(new GerstenbergerForwardfacingStep()));
-  }
-  else if (function->HaveNamed("SLIPLENGTHFUNCTION"))
-  {
-    functions_->push_back(Teuchos::rcp(new SlipLengthLevelSetManipulator()));
   }
   else if (function->HaveNamed("MOVINGLEVELSETCYLINDER"))
   {

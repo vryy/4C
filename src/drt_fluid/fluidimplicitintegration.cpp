@@ -4478,53 +4478,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     if (err != 0) dserror("dof not on proc");
   }
-  // special initial function: test case due to Bochev et al. (2007) (2-D)
-  else if (initfield == INPAR::FLUID::initfield_bochev_test)
-  {
-    const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    int err = 0;
-
-    // check whether present flow is indeed two-dimensional
-    if (numdim_ != 2) dserror("Bochev test case is a two-dimensional flow!");
-
-    // define vectors for velocity and pressure field as well as node coordinates
-    std::vector<double> up(numdim_ + 1);
-    std::vector<double> xy(numdim_);
-
-    // loop all nodes on the processor
-    for (int lnodeid = 0; lnodeid < discret_->NumMyRowNodes(); lnodeid++)
-    {
-      // get the processor local node
-      DRT::Node* lnode = discret_->lRowNode(lnodeid);
-
-      // the set of degrees of freedom associated with the node
-      std::vector<int> nodedofset = discret_->Dof(lnode);
-
-      // set node coordinates
-      for (int dim = 0; dim < numdim_; dim++)
-      {
-        xy[dim] = lnode->X()[dim];
-      }
-
-      // compute initial velocity and pressure components
-      up[0] = sin(M_PI * xy[0] - 0.7) * sin(M_PI * xy[1] + 0.2);
-      up[1] = cos(M_PI * xy[0] - 0.7) * cos(M_PI * xy[1] + 0.2);
-      up[2] = sin(xy[0]) * cos(xy[1]) + (cos(1.0) - 1.0) * sin(1.0);
-
-      // set initial velocity and pressure components
-      for (int ndof = 0; ndof < numdim_ + 1; ndof++)
-      {
-        const int gid = nodedofset[ndof];
-        int lid = dofrowmap->LID(gid);
-        err += velnp_->ReplaceMyValues(1, &(up[ndof]), &lid);
-        err += veln_->ReplaceMyValues(1, &(up[ndof]), &lid);
-        err += velnm_->ReplaceMyValues(1, &(up[ndof]), &lid);
-      }
-    }  // end loop nodes lnodeid
-
-    if (err != 0) dserror("dof not on proc");
-  }
   else if (initfield == INPAR::FLUID::initfield_hit_comte_bellot_corrsin or
            initfield == INPAR::FLUID::initfield_forced_hit_simple_algebraic_spectrum or
            initfield == INPAR::FLUID::initfield_forced_hit_numeric_spectrum or
@@ -4546,7 +4500,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
   {
     dserror(
         "Only initial fields such as a zero field, initial fields by (un-)disturbed functions, "
-        "three special initial fields (counter-rotating vortices, Beltrami flow and Bochev test) "
+        "three special initial fields (counter-rotating vortices, Beltrami flow) "
         "as well as initial fields for homegeneous isotropic turbulence are available up to now!");
   }
 
@@ -4768,7 +4722,6 @@ Teuchos::RCP<std::vector<double>> FLD::FluidImplicitTimeInt::EvaluateErrorCompar
     case INPAR::FLUID::fsi_fluid_pusher:
     case INPAR::FLUID::byfunct:
     case INPAR::FLUID::channel_weakly_compressible:
-    case INPAR::FLUID::channel_weakly_compressible_fourier_3:
     {
       // std::vector containing
       // [0]: relative L2 velocity error

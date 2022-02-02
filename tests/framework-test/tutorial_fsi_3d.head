@@ -447,7 +447,6 @@ INCONSISTENT_RESIDUAL           No
 //     FLAME_VORTEX_INTERACTION
 //     BELTRAMI-FLOW
 //     KIM-MOIN-FLOW
-//     BOCHEV-TEST
 //     hit_comte_bellot_corrsin_initial_field
 //     forced_hit_simple_algebraic_spectrum
 //     forced_hit_numeric_spectrum
@@ -487,7 +486,6 @@ ALLDOFCOUPLED                   Yes
 //     channel2D
 //     gravitation
 //     shear_flow
-//     jeffery_hamel_flow
 //     byfunct
 //     beltrami_stat_stokes
 //     beltrami_stat_navier_stokes
